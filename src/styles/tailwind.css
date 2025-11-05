@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    background: theme('colors.bg');
+    color: theme('colors.fg');
+  }
+
+  * {
+    border-color: rgb(100 116 139 / 0.2); /* muted with 20% opacity */
+  }
+
+  .dark * {
+    border-color: rgb(148 163 184 / 0.2); /* dark mode muted with 20% opacity */
+  }
+
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  /* Add custom component styles here if needed */
+}
+
+@layer utilities {
+  /* Add custom utilities here if needed */
+}
