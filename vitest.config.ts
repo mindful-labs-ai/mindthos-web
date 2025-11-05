@@ -29,8 +29,8 @@ export default defineConfig({
         '**/*.stories.tsx',
         'dist/',
         '.storybook/',
-        'src/App.tsx',      // 데모 파일
-        'src/main.tsx',     // 엔트리 파일
+        'src/App.tsx', // 데모 파일
+        'src/main.tsx', // 엔트리 파일
       ],
       thresholds: {
         lines: 80,
