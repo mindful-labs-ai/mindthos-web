@@ -1,19 +1,20 @@
-import { Slot } from '@radix-ui/react-slot'
-import clsx from 'clsx'
-import React from 'react'
+import React from 'react';
+
+import { Slot } from '@radix-ui/react-slot';
+import clsx from 'clsx';
 
 export type ButtonProps = React.ComponentProps<'button'> & {
-  asChild?: boolean
-  variant?: 'solid' | 'outline' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
-  isLoading?: boolean
-}
+  asChild?: boolean;
+  variant?: 'solid' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+};
 
 const sizeMap = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-base',
   lg: 'px-5 py-2.5 text-lg',
-}
+};
 
 const variantMap = {
   solid:
@@ -22,7 +23,7 @@ const variantMap = {
     'border-2 border-primary-500 text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:border-primary-400 dark:hover:bg-primary-950',
   ghost:
     'text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-950',
-}
+};
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -38,8 +39,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const Comp = asChild ? Slot : 'button'
-    const isDisabled = disabled || isLoading
+    const Comp = asChild ? Slot : 'button';
+    const isDisabled = disabled || isLoading;
 
     // Only add role="button" when using asChild with non-button elements
     const buttonProps = {
@@ -58,13 +59,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className
       ),
       ...rest,
-    }
+    };
 
     return (
       <Comp {...buttonProps}>
         {isLoading && (
           <svg
-            className="animate-spin -ml-1 mr-2 h-4 w-4"
+            className="-ml-1 mr-2 h-4 w-4 animate-spin"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -87,8 +88,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {children}
       </Comp>
-    )
+    );
   }
-)
+);
 
-Button.displayName = 'Button'
+Button.displayName = 'Button';

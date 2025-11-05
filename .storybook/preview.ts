@@ -1,6 +1,6 @@
-import type { Preview } from '@storybook/react'
-import '../src/styles/tokens.css'
-import '../src/styles/tailwind.css'
+import type { Preview } from '@storybook/react';
+import '../src/styles/tailwind.css';
+import '../src/styles/tokens.css';
 
 const preview: Preview = {
   parameters: {
@@ -45,16 +45,16 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      const theme = context.globals.theme || 'light'
+      const theme = context.globals.theme || 'light';
 
       // Apply theme class to html element
       if (typeof document !== 'undefined') {
-        document.documentElement.classList.toggle('dark', theme === 'dark')
+        document.documentElement.classList.toggle('dark', theme === 'dark');
       }
 
-      return Story()
+      return Story();
     },
   ],
-}
+};
 
-export default preview
+export default preview;

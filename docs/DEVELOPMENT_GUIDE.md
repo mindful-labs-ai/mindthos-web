@@ -61,7 +61,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         className={clsx(
           // 기본 스타일
           'rounded-lg border-2 transition-colors duration-200',
-          'focus:ring-2 focus:ring-offset-2 focus:outline-none',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2',
           'disabled:cursor-not-allowed disabled:opacity-60',
 
           // 배경 및 텍스트 (토큰 사용)
@@ -308,7 +308,7 @@ export const FullWidth: Story = {
 export const WithLabel: Story = {
   render: (args) => (
     <div className="space-y-2">
-      <label htmlFor="email" className="text-fg block text-sm font-medium">
+      <label htmlFor="email" className="block text-sm font-medium text-fg">
         이메일
       </label>
       <Input
@@ -327,7 +327,7 @@ export const FormExample: Story = {
       <div>
         <label
           htmlFor="name"
-          className="text-fg mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-fg"
         >
           이름
         </label>
@@ -336,7 +336,7 @@ export const FormExample: Story = {
       <div>
         <label
           htmlFor="email"
-          className="text-fg mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-fg"
         >
           이메일
         </label>
@@ -350,7 +350,7 @@ export const FormExample: Story = {
       <div>
         <label
           htmlFor="password"
-          className="text-fg mb-2 block text-sm font-medium"
+          className="mb-2 block text-sm font-medium text-fg"
         >
           비밀번호
         </label>

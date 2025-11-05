@@ -12,7 +12,7 @@
   "proseWrap": "preserve",
   "quoteProps": "as-needed",
   "jsxSingleQuote": false,
-  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-tailwindcss"],
+  "plugins": ["prettier-plugin-tailwindcss"],
   "tailwindFunctions": ["cn", "cva"],
   "overrides": [
     {

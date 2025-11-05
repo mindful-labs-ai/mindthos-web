@@ -1,6 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react'
-import { expect, userEvent, within } from '@storybook/test'
-import { Button } from './Button'
+import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from '@storybook/test';
+
+import { Button } from './Button';
 
 const meta = {
   title: 'UI/Button',
@@ -36,60 +37,60 @@ const meta = {
   args: {
     children: 'Button',
   },
-} satisfies Meta<typeof Button>
+} satisfies Meta<typeof Button>;
 
-export default meta
-type Story = StoryObj<typeof meta>
+export default meta;
+type Story = StoryObj<typeof meta>;
 
 export const Solid: Story = {
   args: {
     variant: 'solid',
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const button = canvas.getByRole('button')
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button');
 
     // Verify button is visible and has correct classes
-    await expect(button).toBeVisible()
-    await expect(button).toHaveClass('bg-primary-500')
+    await expect(button).toBeVisible();
+    await expect(button).toHaveClass('bg-primary-500');
 
     // Test click interaction
-    await userEvent.click(button)
+    await userEvent.click(button);
   },
-}
+};
 
 export const Outline: Story = {
   args: {
     variant: 'outline',
   },
-}
+};
 
 export const Ghost: Story = {
   args: {
     variant: 'ghost',
   },
-}
+};
 
 export const Small: Story = {
   args: {
     size: 'sm',
     variant: 'solid',
   },
-}
+};
 
 export const Medium: Story = {
   args: {
     size: 'md',
     variant: 'solid',
   },
-}
+};
 
 export const Large: Story = {
   args: {
     size: 'lg',
     variant: 'solid',
   },
-}
+};
 
 export const Disabled: Story = {
   args: {
@@ -97,14 +98,14 @@ export const Disabled: Story = {
     variant: 'solid',
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const button = canvas.getByRole('button')
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button');
 
     // Verify button is disabled
-    await expect(button).toBeDisabled()
-    await expect(button).toHaveAttribute('aria-disabled', 'true')
+    await expect(button).toBeDisabled();
+    await expect(button).toHaveAttribute('aria-disabled', 'true');
   },
-}
+};
 
 export const Loading: Story = {
   args: {
@@ -112,18 +113,18 @@ export const Loading: Story = {
     variant: 'solid',
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const button = canvas.getByRole('button')
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button');
 
     // Verify loading state
-    await expect(button).toHaveAttribute('aria-busy', 'true')
-    await expect(button).toBeDisabled()
+    await expect(button).toHaveAttribute('aria-busy', 'true');
+    await expect(button).toBeDisabled();
 
     // Verify spinner is present
-    const spinner = button.querySelector('svg')
-    await expect(spinner).toBeInTheDocument()
+    const spinner = button.querySelector('svg');
+    await expect(spinner).toBeInTheDocument();
   },
-}
+};
 
 export const AllVariants: Story = {
   render: () => (
@@ -157,7 +158,7 @@ export const AllVariants: Story = {
       </div>
     </div>
   ),
-}
+};
 
 export const AllSizes: Story = {
   render: () => (
@@ -167,21 +168,21 @@ export const AllSizes: Story = {
       <Button size="lg">Large</Button>
     </div>
   ),
-}
+};
 
 export const KeyboardAccessible: Story = {
   args: {
     variant: 'solid',
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const button = canvas.getByRole('button')
+    const canvas = within(canvasElement);
+    const button = canvas.getByRole('button');
 
     // Test keyboard focus
-    button.focus()
-    await expect(button).toHaveFocus()
+    button.focus();
+    await expect(button).toHaveFocus();
 
     // Test keyboard activation
-    await userEvent.keyboard('{Enter}')
+    await userEvent.keyboard('{Enter}');
   },
-}
+};

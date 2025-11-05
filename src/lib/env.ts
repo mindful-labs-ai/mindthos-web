@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod';
 
 /**
  * Environment variable schema
@@ -18,7 +18,7 @@ const envSchema = z.object({
   DEV: z.boolean(),
   MODE: z.enum(['development', 'production', 'test']),
   PROD: z.boolean(),
-})
+});
 
 /**
  * Validates environment variables at startup
@@ -26,21 +26,23 @@ const envSchema = z.object({
  */
 function validateEnv() {
   try {
-    return envSchema.parse(import.meta.env)
+    return envSchema.parse(import.meta.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors.map((err) => {
-        const path = err.path.join('.')
-        return `  - ${path}: ${err.message}`
-      })
+        const path = err.path.join('.');
+        return `  - ${path}: ${err.message}`;
+      });
 
-      console.error('❌ Environment validation failed:')
-      console.error(missingVars.join('\n'))
-      console.error('\nPlease check your .env file and ensure all required variables are set.')
+      console.error('❌ Environment validation failed:');
+      console.error(missingVars.join('\n'));
+      console.error(
+        '\nPlease check your .env file and ensure all required variables are set.'
+      );
 
-      throw new Error('Invalid environment variables')
+      throw new Error('Invalid environment variables');
     }
-    throw error
+    throw error;
   }
 }
 
@@ -48,9 +50,9 @@ function validateEnv() {
  * Validated and type-safe environment variables
  * Usage: import { env } from '@/lib/env'
  */
-export const env = validateEnv()
+export const env = validateEnv();
 
 /**
  * Type for environment variables
  */
-export type Env = z.infer<typeof envSchema>
+export type Env = z.infer<typeof envSchema>;

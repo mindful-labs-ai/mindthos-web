@@ -1,14 +1,20 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import jsxA11y from 'eslint-plugin-jsx-a11y'
-import importPlugin from 'eslint-plugin-import'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import js from '@eslint/js';
+import importPlugin from 'eslint-plugin-import';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import { defineConfig, globalIgnores } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist', 'node_modules', '.storybook', 'storybook-static', 'coverage']),
+  globalIgnores([
+    'dist',
+    'node_modules',
+    '.storybook',
+    'storybook-static',
+    'coverage',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -35,12 +41,32 @@ export default defineConfig([
       'import/order': [
         'error',
         {
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-          'newlines-between': 'never',
+          groups: [
+            'builtin', // Node.js 내장 모듈
+            'external', // npm 패키지
+            'internal', // @/* 경로 별칭
+            'parent', // ../
+            'sibling', // ./
+            'index', // ./index
+          ],
+          'newlines-between': 'always',
           alphabetize: {
             order: 'asc',
             caseInsensitive: true,
           },
+          pathGroups: [
+            {
+              pattern: 'react',
+              group: 'builtin',
+              position: 'before',
+            },
+            {
+              pattern: '@/**',
+              group: 'internal',
+              position: 'after',
+            },
+          ],
+          pathGroupsExcludedImportTypes: ['react'],
         },
       ],
       'import/no-duplicates': 'error',
@@ -59,4 +85,4 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
-])
+]);
