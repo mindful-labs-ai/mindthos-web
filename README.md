@@ -155,10 +155,10 @@ document.documentElement.classList.toggle('dark');
 Vitest와 React Testing Library를 사용하며 다음과 같은 커버리지 임계값을
 설정했습니다:
 
-- Lines: 90%
-- Functions: 90%
-- Statements: 90%
-- Branches: 80%
+- Lines: 80%
+- Functions: 80%
+- Statements: 80%
+- Branches: 70%
 
 ```bash
 # Watch 모드
