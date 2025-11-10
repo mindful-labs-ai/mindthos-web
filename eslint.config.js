@@ -8,7 +8,6 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  reactHooks.configs.flat.recommended,
   globalIgnores([
     'dist',
     'node_modules',
@@ -16,17 +15,15 @@ export default defineConfig([
     'storybook-static',
     'coverage',
   ]),
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  reactHooks.configs.flat.recommended,
+  jsxA11y.flatConfigs.recommended,
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs['recommended-latest'],
-      reactRefresh.configs.vite,
-      jsxA11y.flatConfigs.recommended,
-    ],
     plugins: {
       import: importPlugin,
+      'react-refresh': reactRefresh,
     },
     languageOptions: {
       ecmaVersion: 2020,
@@ -84,6 +81,15 @@ export default defineConfig([
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+  {
+    files: ['**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+      },
     },
   },
 ]);
