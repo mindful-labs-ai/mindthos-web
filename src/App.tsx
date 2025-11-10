@@ -63,9 +63,18 @@ function App() {
                 Button Variants
               </h3>
               <div className="flex flex-wrap gap-3">
-                <Button variant="solid">Solid</Button>
-                <Button variant="outline">Outline</Button>
-                <Button variant="ghost">Ghost</Button>
+                <Button variant="solid" tone="primary">
+                  Solid
+                </Button>
+                <Button variant="outline" tone="primary">
+                  Outline
+                </Button>
+                <Button variant="ghost" tone="primary">
+                  Ghost
+                </Button>
+                <Button variant="soft" tone="primary">
+                  Soft
+                </Button>
               </div>
             </div>
 
@@ -85,7 +94,7 @@ function App() {
                 Button States
               </h3>
               <div className="flex flex-wrap gap-3">
-                <Button isLoading={isLoading} onClick={handleLoadingDemo}>
+                <Button loading={isLoading} onClick={handleLoadingDemo}>
                   {isLoading ? 'Loading...' : 'Click to Load'}
                 </Button>
                 <Button disabled>Disabled</Button>
