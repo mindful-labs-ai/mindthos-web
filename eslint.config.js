@@ -8,6 +8,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
+  reactHooks.configs.flat.recommended,
   globalIgnores([
     'dist',
     'node_modules',
