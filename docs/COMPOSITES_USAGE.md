@@ -1,7 +1,8 @@
 # Composites 컴포넌트 사용 가이드
 
-이 문서는 복잡한 구조를 가진 Composites 컴포넌트들의 사용법을 설명합니다.
-Atoms 컴포넌트와 달리, Composites는 특별한 패턴이나 Context, Hook 등을 사용하므로 별도의 사용 가이드가 필요합니다.
+이 문서는 복잡한 구조를 가진 Composites 컴포넌트들의 사용법을 설명합니다. Atoms
+컴포넌트와 달리, Composites는 특별한 패턴이나 Context, Hook 등을 사용하므로
+별도의 사용 가이드가 필요합니다.
 
 ---
 
@@ -64,25 +65,26 @@ const [value, setValue] = useState<string>('1');
   items={items}
   value={value}
   onValueChange={(newValue) => setValue(newValue as string)}
-/>
+/>;
 ```
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `type` | `'single' \| 'multiple'` | - | 단일/다중 선택 모드 |
-| `items` | `AccordionItem[]` | - | 아코디언 아이템 배열 |
-| `value` | `string \| string[]` | - | Controlled 값 |
-| `defaultValue` | `string \| string[]` | - | Uncontrolled 기본 값 |
-| `onValueChange` | `(value) => void` | - | 값 변경 핸들러 |
-| `disabled` | `boolean` | - | 비활성화 (아이템별 설정 가능) |
+| Prop            | Type                     | Default | 설명                          |
+| --------------- | ------------------------ | ------- | ----------------------------- |
+| `type`          | `'single' \| 'multiple'` | -       | 단일/다중 선택 모드           |
+| `items`         | `AccordionItem[]`        | -       | 아코디언 아이템 배열          |
+| `value`         | `string \| string[]`     | -       | Controlled 값                 |
+| `defaultValue`  | `string \| string[]`     | -       | Uncontrolled 기본 값          |
+| `onValueChange` | `(value) => void`        | -       | 값 변경 핸들러                |
+| `disabled`      | `boolean`                | -       | 비활성화 (아이템별 설정 가능) |
 
 ---
 
 ## Card
 
-헤더, 바디, 푸터로 구성된 카드 컴포넌트입니다. **서브컴포넌트 패턴**을 사용합니다.
+헤더, 바디, 푸터로 구성된 카드 컴포넌트입니다. **서브컴포넌트 패턴**을
+사용합니다.
 
 ### 기본 사용법
 
@@ -99,7 +101,7 @@ import { Card } from '@/components/ui/composites/Card';
   <Card.Footer>
     <Button>액션</Button>
   </Card.Footer>
-</Card>
+</Card>;
 ```
 
 ### 선택적 사용
@@ -107,9 +109,7 @@ import { Card } from '@/components/ui/composites/Card';
 ```tsx
 // Header와 Footer는 선택적
 <Card>
-  <Card.Body>
-    간단한 카드 내용
-  </Card.Body>
+  <Card.Body>간단한 카드 내용</Card.Body>
 </Card>
 ```
 
@@ -124,20 +124,20 @@ import { Card } from '@/components/ui/composites/Card';
 
 ### Props
 
-**Card (Root)**
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `as` | `'div' \| 'section' \| 'article'` | `'div'` | HTML 요소 타입 |
-| `className` | `string` | - | 커스텀 클래스 |
+**Card (Root)** | Prop | Type | Default | 설명 |
+|------|------|---------|------| | `as` | `'div' \| 'section' \| 'article'` |
+`'div'` | HTML 요소 타입 | | `className` | `string` | - | 커스텀 클래스 |
 
 **Card.Header / Card.Body / Card.Footer**
+
 - 모두 표준 `HTMLDivElement` props 지원
 
 ---
 
 ## Toast
 
-알림 토스트 메시지를 표시하는 컴포넌트입니다. **Context + Hook 패턴**을 사용합니다.
+알림 토스트 메시지를 표시하는 컴포넌트입니다. **Context + Hook 패턴**을
+사용합니다.
 
 ### 설정 (필수)
 
@@ -147,11 +147,7 @@ import { Card } from '@/components/ui/composites/Card';
 import { ToastProvider } from '@/components/ui/composites/Toast';
 
 function App() {
-  return (
-    <ToastProvider>
-      {/* 앱 컴포넌트들 */}
-    </ToastProvider>
-  );
+  return <ToastProvider>{/* 앱 컴포넌트들 */}</ToastProvider>;
 }
 ```
 
@@ -203,12 +199,12 @@ toast({
 
 ### ToastOptions
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `title` | `string` | - | 토스트 제목 (필수) |
-| `description` | `string` | - | 토스트 설명 |
-| `action` | `ToastAction` | - | 액션 버튼 |
-| `duration` | `number` | `5000` | 자동 닫힘 시간 (ms), 0이면 수동 닫기만 가능 |
+| Prop          | Type          | Default | 설명                                        |
+| ------------- | ------------- | ------- | ------------------------------------------- |
+| `title`       | `string`      | -       | 토스트 제목 (필수)                          |
+| `description` | `string`      | -       | 토스트 설명                                 |
+| `action`      | `ToastAction` | -       | 액션 버튼                                   |
+| `duration`    | `number`      | `5000`  | 자동 닫힘 시간 (ms), 0이면 수동 닫기만 가능 |
 
 ---
 
@@ -223,7 +219,7 @@ import { Tooltip } from '@/components/ui/composites/Tooltip';
 
 <Tooltip content="도움말 텍스트">
   <button>호버해보세요</button>
-</Tooltip>
+</Tooltip>;
 ```
 
 ### 위치 지정
@@ -256,13 +252,13 @@ import { Tooltip } from '@/components/ui/composites/Tooltip';
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `children` | `ReactElement` | - | 트리거 요소 (하나만) |
-| `content` | `ReactNode` | - | 툴팁 내용 |
-| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | 툴팁 위치 |
-| `delay` | `number` | `200` | 표시 지연 시간 (ms) |
-| `disabled` | `boolean` | `false` | 비활성화 |
+| Prop        | Type                                     | Default | 설명                 |
+| ----------- | ---------------------------------------- | ------- | -------------------- |
+| `children`  | `ReactElement`                           | -       | 트리거 요소 (하나만) |
+| `content`   | `ReactNode`                              | -       | 툴팁 내용            |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | 툴팁 위치            |
+| `delay`     | `number`                                 | `200`   | 표시 지연 시간 (ms)  |
+| `disabled`  | `boolean`                                | `false` | 비활성화             |
 
 ---
 
@@ -310,16 +306,17 @@ function MyComponent() {
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `open` | `boolean` | - | 열림 상태 (필수, controlled) |
-| `onOpenChange` | `(open: boolean) => void` | - | 상태 변경 핸들러 (필수) |
-| `title` | `string` | - | 모달 제목 |
-| `description` | `string` | - | 모달 설명 |
-| `closeOnOverlay` | `boolean` | `false` | 배경 클릭 시 닫기 |
-| `children` | `ReactNode` | - | 모달 내용 |
+| Prop             | Type                      | Default | 설명                         |
+| ---------------- | ------------------------- | ------- | ---------------------------- |
+| `open`           | `boolean`                 | -       | 열림 상태 (필수, controlled) |
+| `onOpenChange`   | `(open: boolean) => void` | -       | 상태 변경 핸들러 (필수)      |
+| `title`          | `string`                  | -       | 모달 제목                    |
+| `description`    | `string`                  | -       | 모달 설명                    |
+| `closeOnOverlay` | `boolean`                 | `false` | 배경 클릭 시 닫기            |
+| `children`       | `ReactNode`               | -       | 모달 내용                    |
 
-**참고**: 모달이 열리면 자동으로 `body`에 `overflow: hidden`이 적용되어 스크롤이 방지됩니다.
+**참고**: 모달이 열리면 자동으로 `body`에 `overflow: hidden`이 적용되어 스크롤이
+방지됩니다.
 
 ---
 
@@ -342,7 +339,7 @@ const items = [
   items={items}
   placeholder="옵션을 선택하세요"
   onChange={(value) => console.log(value)}
-/>
+/>;
 ```
 
 ### 다중 선택
@@ -361,11 +358,11 @@ const items = [
 ```tsx
 // 단일 선택
 const [value, setValue] = useState<string>('1');
-<Select items={items} value={value} onChange={setValue} />
+<Select items={items} value={value} onChange={setValue} />;
 
 // 다중 선택
 const [values, setValues] = useState<string[]>(['1', '2']);
-<Select items={items} multiple value={values} onChange={setValues} />
+<Select items={items} multiple value={values} onChange={setValues} />;
 ```
 
 ### 비활성화된 옵션
@@ -377,20 +374,20 @@ const items = [
   { value: '3', label: '옵션 3' },
 ];
 
-<Select items={items} />
+<Select items={items} />;
 ```
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `items` | `SelectItem[]` | - | 선택 항목 배열 |
-| `multiple` | `boolean` | `false` | 다중 선택 모드 |
-| `value` | `string \| string[]` | - | Controlled 값 |
-| `defaultValue` | `string \| string[]` | - | Uncontrolled 기본 값 |
-| `onChange` | `(value) => void` | - | 값 변경 핸들러 |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `disabled` | `boolean` | `false` | 비활성화 |
+| Prop           | Type                 | Default | 설명                 |
+| -------------- | -------------------- | ------- | -------------------- |
+| `items`        | `SelectItem[]`       | -       | 선택 항목 배열       |
+| `multiple`     | `boolean`            | `false` | 다중 선택 모드       |
+| `value`        | `string \| string[]` | -       | Controlled 값        |
+| `defaultValue` | `string \| string[]` | -       | Uncontrolled 기본 값 |
+| `onChange`     | `(value) => void`    | -       | 값 변경 핸들러       |
+| `placeholder`  | `string`             | -       | 플레이스홀더         |
+| `disabled`     | `boolean`            | `false` | 비활성화             |
 
 ---
 
@@ -413,7 +410,7 @@ const items = [
   items={items}
   placeholder="검색하세요..."
   onChange={(value) => console.log(value)}
-/>
+/>;
 ```
 
 ### 커스텀 필터 함수
@@ -422,7 +419,7 @@ const items = [
 <Combobox
   items={items}
   filterFn={(items, query) => {
-    return items.filter(item =>
+    return items.filter((item) =>
       item.label.toLowerCase().includes(query.toLowerCase())
     );
   }}
@@ -434,24 +431,20 @@ const items = [
 ```tsx
 const [value, setValue] = useState<string>('');
 
-<Combobox
-  items={items}
-  value={value}
-  onChange={setValue}
-/>
+<Combobox items={items} value={value} onChange={setValue} />;
 ```
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `items` | `ComboboxItem[]` | - | 항목 배열 |
-| `value` | `string` | - | Controlled 값 |
-| `defaultValue` | `string` | - | Uncontrolled 기본 값 |
-| `onChange` | `(value: string) => void` | - | 값 변경 핸들러 |
-| `placeholder` | `string` | - | 플레이스홀더 |
-| `filterFn` | `(items, query) => items` | - | 커스텀 필터 함수 |
-| `disabled` | `boolean` | `false` | 비활성화 |
+| Prop           | Type                      | Default | 설명                 |
+| -------------- | ------------------------- | ------- | -------------------- |
+| `items`        | `ComboboxItem[]`          | -       | 항목 배열            |
+| `value`        | `string`                  | -       | Controlled 값        |
+| `defaultValue` | `string`                  | -       | Uncontrolled 기본 값 |
+| `onChange`     | `(value: string) => void` | -       | 값 변경 핸들러       |
+| `placeholder`  | `string`                  | -       | 플레이스홀더         |
+| `filterFn`     | `(items, query) => items` | -       | 커스텀 필터 함수     |
+| `disabled`     | `boolean`                 | `false` | 비활성화             |
 
 ---
 
@@ -474,7 +467,7 @@ const steps = [
 <Stepper
   steps={steps}
   currentStep={1} // 0-indexed
-/>
+/>;
 ```
 
 ### 클릭 가능한 Stepper
@@ -487,28 +480,24 @@ const [currentStep, setCurrentStep] = useState(0);
   currentStep={currentStep}
   clickable // 완료된 스텝 클릭 가능
   onStepClick={(step) => setCurrentStep(step)}
-/>
+/>;
 ```
 
 ### 세로 방향
 
 ```tsx
-<Stepper
-  steps={steps}
-  currentStep={1}
-  orientation="vertical"
-/>
+<Stepper steps={steps} currentStep={1} orientation="vertical" />
 ```
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `steps` | `Step[]` | - | 스텝 배열 |
-| `currentStep` | `number` | - | 현재 스텝 (0-indexed) |
-| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | 방향 |
-| `clickable` | `boolean` | `false` | 완료된 스텝 클릭 가능 여부 |
-| `onStepClick` | `(step: number) => void` | - | 스텝 클릭 핸들러 |
+| Prop          | Type                         | Default        | 설명                       |
+| ------------- | ---------------------------- | -------------- | -------------------------- |
+| `steps`       | `Step[]`                     | -              | 스텝 배열                  |
+| `currentStep` | `number`                     | -              | 현재 스텝 (0-indexed)      |
+| `orientation` | `'horizontal' \| 'vertical'` | `'horizontal'` | 방향                       |
+| `clickable`   | `boolean`                    | `false`        | 완료된 스텝 클릭 가능 여부 |
+| `onStepClick` | `(step: number) => void`     | -              | 스텝 클릭 핸들러           |
 
 ---
 
@@ -525,18 +514,18 @@ const items = [
   {
     icon: <HomeIcon />,
     label: '홈',
-    value: 'home'
+    value: 'home',
   },
   {
     icon: <SettingsIcon />,
     label: '설정',
-    value: 'settings'
+    value: 'settings',
   },
   {
     icon: <UserIcon />,
     label: '프로필',
     value: 'profile',
-    disabled: true
+    disabled: true,
   },
 ];
 
@@ -544,7 +533,7 @@ const items = [
   items={items}
   activeValue="home"
   onSelect={(value) => console.log(value)}
-/>
+/>;
 ```
 
 ### 링크로 사용
@@ -555,25 +544,26 @@ const items = [
   { icon: <AboutIcon />, label: '소개', href: '/about' },
 ];
 
-<Sidebar items={items} activeValue="/" />
+<Sidebar items={items} activeValue="/" />;
 ```
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `items` | `SidebarItem[]` | - | 사이드바 항목 배열 |
-| `activeValue` | `string` | - | 현재 활성 항목 |
-| `onSelect` | `(value: string) => void` | - | 항목 선택 핸들러 |
-| `collapsible` | `boolean` | `false` | 접기 가능 여부 (미구현) |
+| Prop          | Type                      | Default | 설명                    |
+| ------------- | ------------------------- | ------- | ----------------------- |
+| `items`       | `SidebarItem[]`           | -       | 사이드바 항목 배열      |
+| `activeValue` | `string`                  | -       | 현재 활성 항목          |
+| `onSelect`    | `(value: string) => void` | -       | 항목 선택 핸들러        |
+| `collapsible` | `boolean`                 | `false` | 접기 가능 여부 (미구현) |
 
 **SidebarItem**
+
 ```typescript
 interface SidebarItem {
   icon?: ReactNode;
   label: string;
-  href?: string;      // 링크로 사용 시
-  value?: string;     // 값으로 사용 시
+  href?: string; // 링크로 사용 시
+  value?: string; // 값으로 사용 시
   disabled?: boolean;
 }
 ```
@@ -590,13 +580,9 @@ interface SidebarItem {
 import { FormField } from '@/components/ui/composites/FormField';
 import { Input } from '@/components/ui/atoms/Input';
 
-<FormField
-  label="이메일"
-  required
-  helperText="회사 이메일을 입력하세요"
->
+<FormField label="이메일" required helperText="회사 이메일을 입력하세요">
   <Input type="email" />
-</FormField>
+</FormField>;
 ```
 
 ### 에러 표시
@@ -627,7 +613,7 @@ const validateEmail = (value: string) => {
       validateEmail(e.target.value);
     }}
   />
-</FormField>
+</FormField>;
 ```
 
 ### TextArea와 함께 사용
@@ -635,23 +621,20 @@ const validateEmail = (value: string) => {
 ```tsx
 import { TextArea } from '@/components/ui/atoms/TextArea';
 
-<FormField
-  label="설명"
-  helperText="최대 500자"
->
+<FormField label="설명" helperText="최대 500자">
   <TextArea rows={5} maxLength={500} />
-</FormField>
+</FormField>;
 ```
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `label` | `string` | - | 라벨 텍스트 |
-| `required` | `boolean` | `false` | 필수 필드 표시 |
-| `error` | `string` | - | 에러 메시지 |
-| `helperText` | `string` | - | 도움말 텍스트 |
-| `children` | `ReactNode` | - | 입력 필드 (Input, TextArea 등) |
+| Prop         | Type        | Default | 설명                           |
+| ------------ | ----------- | ------- | ------------------------------ |
+| `label`      | `string`    | -       | 라벨 텍스트                    |
+| `required`   | `boolean`   | `false` | 필수 필드 표시                 |
+| `error`      | `string`    | -       | 에러 메시지                    |
+| `helperText` | `string`    | -       | 도움말 텍스트                  |
+| `children`   | `ReactNode` | -       | 입력 필드 (Input, TextArea 등) |
 
 **참고**: 에러가 있으면 helperText는 표시되지 않습니다.
 
@@ -673,7 +656,7 @@ const items = [
   { label: '상품 상세' }, // 마지막 항목은 href 없음
 ];
 
-<BreadCrumb items={items} />
+<BreadCrumb items={items} />;
 ```
 
 ### 아이콘 추가
@@ -683,22 +666,19 @@ const items = [
   {
     icon: <HomeIcon />,
     label: '홈',
-    href: '/'
+    href: '/',
   },
   { label: '제품', href: '/products' },
   { label: '상품 상세' },
 ];
 
-<BreadCrumb items={items} />
+<BreadCrumb items={items} />;
 ```
 
 ### 커스텀 구분자
 
 ```tsx
-<BreadCrumb
-  items={items}
-  separator={<span>→</span>}
-/>
+<BreadCrumb items={items} separator={<span>→</span>} />
 ```
 
 ### 클릭 핸들러
@@ -715,13 +695,14 @@ const items = [
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `items` | `BreadCrumbItem[]` | - | 브레드크럼 항목 배열 |
-| `separator` | `ReactNode` | `<ChevronRightIcon />` | 구분자 |
-| `onItemClick` | `(item, index) => void` | - | 항목 클릭 핸들러 |
+| Prop          | Type                    | Default                | 설명                 |
+| ------------- | ----------------------- | ---------------------- | -------------------- |
+| `items`       | `BreadCrumbItem[]`      | -                      | 브레드크럼 항목 배열 |
+| `separator`   | `ReactNode`             | `<ChevronRightIcon />` | 구분자               |
+| `onItemClick` | `(item, index) => void` | -                      | 항목 클릭 핸들러     |
 
 **BreadCrumbItem**
+
 ```typescript
 interface BreadCrumbItem {
   label: string;
@@ -749,7 +730,7 @@ import { PopUp } from '@/components/ui/composites/PopUp';
       <button>액션</button>
     </div>
   }
-/>
+/>;
 ```
 
 ### Controlled Mode
@@ -762,7 +743,7 @@ const [isOpen, setIsOpen] = useState(false);
   content={<p>팝업 내용</p>}
   open={isOpen}
   onOpenChange={setIsOpen}
-/>
+/>;
 ```
 
 ### 위치 지정
@@ -783,13 +764,13 @@ const [isOpen, setIsOpen] = useState(false);
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `trigger` | `ReactNode` | - | 트리거 요소 |
-| `content` | `ReactNode` | - | 팝업 내용 |
-| `open` | `boolean` | - | Controlled 열림 상태 |
-| `onOpenChange` | `(open: boolean) => void` | - | 상태 변경 핸들러 |
-| `placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | 팝업 위치 |
+| Prop           | Type                                     | Default    | 설명                 |
+| -------------- | ---------------------------------------- | ---------- | -------------------- |
+| `trigger`      | `ReactNode`                              | -          | 트리거 요소          |
+| `content`      | `ReactNode`                              | -          | 팝업 내용            |
+| `open`         | `boolean`                                | -          | Controlled 열림 상태 |
+| `onOpenChange` | `(open: boolean) => void`                | -          | 상태 변경 핸들러     |
+| `placement`    | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | 팝업 위치            |
 
 **참고**: ESC 키를 누르거나 외부 클릭 시 자동으로 닫힙니다.
 
@@ -844,14 +825,14 @@ function MyComponent() {
 
 ### Props
 
-| Prop | Type | Default | 설명 |
-|------|------|---------|------|
-| `currentPage` | `number` | - | 현재 페이지 (1-indexed) |
-| `totalPages` | `number` | - | 총 페이지 수 |
-| `onPageChange` | `(page: number) => void` | - | 페이지 변경 핸들러 |
-| `siblingCount` | `number` | `1` | 현재 페이지 주변 표시 페이지 수 |
-| `showFirstLast` | `boolean` | `true` | 처음/마지막 버튼 표시 |
-| `disabled` | `boolean` | `false` | 비활성화 |
+| Prop            | Type                     | Default | 설명                            |
+| --------------- | ------------------------ | ------- | ------------------------------- |
+| `currentPage`   | `number`                 | -       | 현재 페이지 (1-indexed)         |
+| `totalPages`    | `number`                 | -       | 총 페이지 수                    |
+| `onPageChange`  | `(page: number) => void` | -       | 페이지 변경 핸들러              |
+| `siblingCount`  | `number`                 | `1`     | 현재 페이지 주변 표시 페이지 수 |
+| `showFirstLast` | `boolean`                | `true`  | 처음/마지막 버튼 표시           |
+| `disabled`      | `boolean`                | `false` | 비활성화                        |
 
 **참고**: 페이지가 많을 경우 자동으로 생략 부호(...)가 표시됩니다.
 
@@ -864,19 +845,22 @@ function MyComponent() {
 대부분의 컴포넌트는 두 가지 모드를 지원합니다:
 
 **Uncontrolled (기본값 사용)**
+
 ```tsx
 <Select items={items} defaultValue="1" onChange={handleChange} />
 ```
 
 **Controlled (상태 직접 관리)**
+
 ```tsx
 const [value, setValue] = useState('1');
-<Select items={items} value={value} onChange={setValue} />
+<Select items={items} value={value} onChange={setValue} />;
 ```
 
 ### Context + Hook 패턴
 
 Toast처럼 Context를 사용하는 컴포넌트는:
+
 1. 최상위에 Provider 추가
 2. Hook을 통해 기능 사용
 
@@ -884,7 +868,7 @@ Toast처럼 Context를 사용하는 컴포넌트는:
 // App.tsx
 <ToastProvider>
   <App />
-</ToastProvider>
+</ToastProvider>;
 
 // Component.tsx
 const { toast } = useToast();
