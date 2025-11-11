@@ -8,7 +8,8 @@
 - **테스트 라이브러리**: @testing-library/react v16.3.0
 - **커버리지 목표**: 80% (lines/functions/statements), 70% (branches)
 - **총 컴포넌트 수**: 50+ 개
-- **총 테스트 수**: 200+ 테스트 케이스
+- **총 테스트 수**: 218 테스트 케이스
+- **현재 커버리지**: 89.29% statements, 90.33% lines (목표 초과 달성)
 
 ## 테스트 실행
 
@@ -98,10 +99,16 @@ pnpm test:all
 
 - ✅ 모든 탭 렌더링
 - ✅ 클릭 시 탭 전환
-- ✅ onChange로 탭 값 전달
+- ✅ onValueChange로 탭 값 전달
 - ✅ 제어 값
-- ✅ 화살표 키 네비게이션
+- ✅ 화살표 키 네비게이션 (ArrowLeft/ArrowRight)
+- ✅ Home 키로 첫 탭 이동
+- ✅ End 키로 마지막 탭 이동
+- ✅ 끝에서 처음으로 순환 네비게이션 (ArrowRight)
+- ✅ 처음에서 끝으로 순환 네비게이션 (ArrowLeft)
 - ✅ 비활성화 탭
+- ✅ 커스텀 사이즈(size prop)
+- ✅ 커스텀 className
 - ✅ 접근성 (tablist, aria-selected)
 
 ### Dropdown (`Dropdown.test.tsx`)
@@ -111,8 +118,15 @@ pnpm test:all
 - ✅ 클릭 시 열림
 - ✅ 옵션 선택
 - ✅ 선택 후 닫힘
-- ✅ 제어 값
-- ✅ 화살표 키 네비게이션
+- ✅ 제어 값 (controlled mode)
+- ✅ 화살표 키 네비게이션 (ArrowDown/ArrowUp)
+- ✅ Enter 키로 선택
+- ✅ Space 키로 드롭다운 열기
+- ✅ Escape 키로 닫기
+- ✅ 타이프어헤드 검색(typeahead)
+- ✅ 외부 클릭 시 닫힘
+- ✅ 비활성화 아이템 처리
+- ✅ defaultValue를 통한 비제어 모드
 - ✅ 비활성화 상태
 
 ### Chip (`Chip.test.tsx`)
@@ -230,21 +244,34 @@ pnpm test:all
 - ✅ 닫힘 상태에서 숨김
 - ✅ aria-modal 속성
 - ✅ ESC 키로 닫힘
-- ✅ 배경 클릭으로 닫힘
-- ✅ 제목 렌더링
+- ✅ closeOnOverlay prop에 따른 배경 클릭 처리
+  - ✅ closeOnOverlay=true일 때 배경 클릭 시 닫힘
+  - ✅ closeOnOverlay=false일 때 배경 클릭 무시
+- ✅ 제목(title prop) 렌더링
+- ✅ 설명(description prop) 렌더링
 - ✅ 콘텐츠 렌더링
+- ✅ 닫기 버튼 클릭 처리
+- ✅ 모달 열릴 때 body 스크롤 방지 (overflow:hidden)
+- ✅ onOpenChange 콜백 호출
 - ✅ 포커스 트랩 동작
 
 ### Select (`Select.test.tsx`)
 
-- ✅ combobox 속성
+- ✅ combobox 속성 (aria-haspopup="listbox")
 - ✅ 플레이스홀더 표시
 - ✅ 드롭다운 열림
-- ✅ 단일 선택
-- ✅ 다중 선택(카운트 표시)
-- ✅ 다중 모드 체크박스
+- ✅ 단일 선택 모드
+- ✅ 다중 선택 모드
+  - ✅ 선택된 개수 표시 (예: "2 selected")
+  - ✅ 체크박스 표시 (aria-multiselectable)
+  - ✅ 배열 value 처리
+- ✅ Enter 키로 선택
+- ✅ Escape 키로 닫기
+- ✅ 외부 클릭 시 닫힘
+- ✅ 화살표 키 네비게이션
+- ✅ 비활성화 아이템 처리
+- ✅ defaultValue를 통한 비제어 모드
 - ✅ 비활성화 상태
-- ✅ 키보드 네비게이션
 
 ### Combobox (`Combobox.test.tsx`)
 
@@ -252,10 +279,16 @@ pnpm test:all
 - ✅ 플레이스홀더
 - ✅ 검색 필터링
 - ✅ 항목 선택
-- ✅ “No results” 메시지
-- ✅ ESC 키로 닫기
+- ✅ "No results found" 메시지
+- ✅ Enter 키로 선택
+- ✅ Escape 키로 닫기
+- ✅ 외부 클릭 시 닫힘
+- ✅ 화살표 키 네비게이션 (ArrowDown/ArrowUp)
+- ✅ 비활성화 아이템 처리
+- ✅ 커스텀 필터 함수 (filterFn prop)
+- ✅ 닫힌 상태에서 클릭 시 입력 초기화 및 모든 항목 표시
+- ✅ 제어 값 처리 (controlled value)
 - ✅ 비활성화 상태
-- ✅ 커스텀 필터 함수
 
 ### Tooltip (`Tooltip.test.tsx`)
 
@@ -360,12 +393,12 @@ describe('ComponentName', () => {
 
 ## 커버리지 목표
 
-| 구분       | 목표 | 현재 |
-| ---------- | ---- | ---- |
-| Lines      | 80%  | ✅   |
-| Functions  | 80%  | ✅   |
-| Statements | 80%  | ✅   |
-| Branches   | 70%  | ✅   |
+| 구분       | 목표 | 현재    | 상태 |
+| ---------- | ---- | ------- | ---- |
+| Lines      | 80%  | 90.33%  | ✅   |
+| Functions  | 80%  | 89.95%  | ✅   |
+| Statements | 80%  | 89.29%  | ✅   |
+| Branches   | 70%  | 81.79%  | ✅   |
 
 ---
 
