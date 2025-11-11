@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui';
 
 import './App.css';
-import reactLogo from './assets/react.svg';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -27,12 +26,6 @@ function App() {
           <Button variant="outline" size="sm" onClick={toggleDarkMode}>
             {isDark ? '☀️ Light' : '🌙 Dark'}
           </Button>
-        </div>
-
-        <div className="mb-8 flex justify-center gap-8">
-          <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-            <img src={reactLogo} className="logo react" alt="React logo" />
-          </a>
         </div>
 
         <h1 className="mb-8 text-center text-4xl font-bold">Mindthos V2</h1>

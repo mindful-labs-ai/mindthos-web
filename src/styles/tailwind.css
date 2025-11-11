@@ -2,13 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/Pretendard-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   html,
   body,
   #root {
     height: 100%;
     background: theme('colors.bg');
-    color: theme('colors.fg');
+    color: theme('colors.fg.DEFAULT');
   }
 
   * {
@@ -20,6 +28,13 @@
   }
 
   body {
+    font-family:
+      'Pretendard',
+      -apple-system,
+      BlinkMacSystemFont,
+      system-ui,
+      Roboto,
+      sans-serif;
     @apply antialiased;
   }
 }
