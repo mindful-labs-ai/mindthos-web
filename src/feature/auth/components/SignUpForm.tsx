@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { HyperLink } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { CheckBox } from '@/components/ui/atoms/CheckBox';
 import { Input } from '@/components/ui/atoms/Input';
@@ -56,39 +57,40 @@ const SignUpForm = () => {
           <div className="flex items-center space-x-2">
             <CheckBox
               id="terms"
+              tone="neutral"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
             />
             <label htmlFor="terms" className="text-sm text-muted">
               <span>서비스 이용약관에 동의합니다.</span>
-              <a
-                href="https://rare-puppy-06f.notion.site/1a7dd162832d80939543ce9414b1476b?pvs=4"
-                target="_blank"
-                rel="noopener noreferrer"
+              <HyperLink
+                href="/terms?type=service"
+                external
+                underline="hover"
                 className="ml-1 text-primary-500 hover:text-primary-600"
               >
                 [보기]
-              </a>
+              </HyperLink>
             </label>
           </div>
 
           <div className="flex items-center space-x-2">
             <CheckBox
               id="privacy"
-              tone="secondary"
+              tone="neutral"
               checked={privacyAccepted}
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
             />
             <label htmlFor="privacy" className="text-sm text-muted">
               <span>개인정보 처리방침에 동의합니다.</span>
-              <a
-                href="https://rare-puppy-06f.notion.site/17cdd162832d8071b61ce2b96b0d464c?pvs=4"
-                target="_blank"
-                rel="noopener noreferrer"
+              <HyperLink
+                href="/terms?type=privacy"
+                external
+                underline="hover"
                 className="ml-1 text-primary-500 hover:text-primary-600"
               >
                 [보기]
-              </a>
+              </HyperLink>
             </label>
           </div>
         </div>
