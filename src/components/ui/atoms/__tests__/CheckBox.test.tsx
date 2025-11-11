@@ -92,11 +92,11 @@ describe('CheckBox', () => {
       );
     });
 
-    it('applies custom className', () => {
+    it('applies custom className to wrapper', () => {
       render(<CheckBox label="Custom" className="custom-checkbox" />);
-      expect(screen.getByRole('checkbox').closest('div')).toHaveClass(
-        'custom-checkbox'
-      );
+      const label = screen.getByText('Custom');
+      const wrapper = label.parentElement?.parentElement;
+      expect(wrapper).toHaveClass('custom-checkbox');
     });
   });
 

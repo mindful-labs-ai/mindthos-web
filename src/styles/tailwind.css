@@ -4,7 +4,7 @@
 
 @font-face {
   font-family: 'Pretendard';
-  src: url('/fonts/Pretendard-Variable.woff2') format('woff2-variations');
+  src: url('/fonts/PretendardVariable.woff2') format('woff2-variations');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -15,7 +15,7 @@
   body,
   #root {
     height: 100%;
-    background: theme('colors.bg');
+    background: theme('colors.bg.DEFAULT');
     color: theme('colors.fg.DEFAULT');
   }
 

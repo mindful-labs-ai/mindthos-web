@@ -54,7 +54,6 @@ export const Text = React.forwardRef<HTMLElement, TextProps>(
       <Component
         ref={ref as React.Ref<HTMLParagraphElement>}
         className={cn(
-          'text-sm',
           muted ? 'text-fg-muted' : 'text-fg',
           truncate && 'overflow-hidden truncate',
           className
