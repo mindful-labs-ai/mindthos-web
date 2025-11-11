@@ -15,7 +15,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const HomeIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -92,10 +97,7 @@ export const DotSeparator: Story = {
 
 export const ShortPath: Story = {
   args: {
-    items: [
-      { label: 'Home', href: '/' },
-      { label: 'Current Page' },
-    ],
+    items: [{ label: 'Home', href: '/' }, { label: 'Current Page' }],
   },
   render: (args) => (
     <div className="w-[600px]">

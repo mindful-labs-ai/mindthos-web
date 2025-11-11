@@ -46,7 +46,12 @@ const toneStyles: Record<RemainTone, string> = {
 };
 
 const ClockIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -56,10 +61,7 @@ const ClockIcon = () => (
   </svg>
 );
 
-const formatTime = (
-  milliseconds: number,
-  format: RemainFormat
-): string => {
+const formatTime = (milliseconds: number, format: RemainFormat): string => {
   if (milliseconds <= 0) return 'Ended';
 
   const seconds = Math.floor(milliseconds / 1000);

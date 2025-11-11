@@ -59,7 +59,8 @@ export const Disabled: Story = {
 
 export const WithContent: Story = {
   args: {
-    defaultValue: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    defaultValue:
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
     rows: 6,
   },
 };

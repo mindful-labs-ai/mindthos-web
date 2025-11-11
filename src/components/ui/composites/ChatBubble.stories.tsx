@@ -15,7 +15,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const Avatar = ({ name }: { name: string }) => (
-  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-surface font-semibold">
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-semibold text-surface">
     {name[0]}
   </div>
 );
@@ -65,16 +65,34 @@ export const WithoutAvatar: Story = {
 export const Conversation: Story = {
   render: () => (
     <div className="w-[600px] space-y-4">
-      <ChatBubble author="Alice" time="2:30 PM" avatar={<Avatar name="Alice" />}>
+      <ChatBubble
+        author="Alice"
+        time="2:30 PM"
+        avatar={<Avatar name="Alice" />}
+      >
         Hey, did you see the latest updates?
       </ChatBubble>
-      <ChatBubble mine author="You" time="2:31 PM" avatar={<Avatar name="You" />}>
+      <ChatBubble
+        mine
+        author="You"
+        time="2:31 PM"
+        avatar={<Avatar name="You" />}
+      >
         Yes! The new features look amazing.
       </ChatBubble>
-      <ChatBubble author="Alice" time="2:32 PM" avatar={<Avatar name="Alice" />}>
+      <ChatBubble
+        author="Alice"
+        time="2:32 PM"
+        avatar={<Avatar name="Alice" />}
+      >
         I agree! Can't wait to try them out.
       </ChatBubble>
-      <ChatBubble mine author="You" time="2:33 PM" avatar={<Avatar name="You" />}>
+      <ChatBubble
+        mine
+        author="You"
+        time="2:33 PM"
+        avatar={<Avatar name="You" />}
+      >
         Same here. Let's catch up later!
       </ChatBubble>
     </div>

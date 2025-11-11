@@ -17,7 +17,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const HomeIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -28,7 +33,12 @@ const HomeIcon = () => (
 );
 
 const SettingsIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -45,7 +55,12 @@ const SettingsIcon = () => (
 );
 
 const UserIcon = () => (
-  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <svg
+    className="h-5 w-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -59,7 +74,12 @@ const items = [
   { icon: <HomeIcon />, label: 'Home', value: 'home' },
   { icon: <UserIcon />, label: 'Profile', value: 'profile' },
   { icon: <SettingsIcon />, label: 'Settings', value: 'settings' },
-  { icon: <SettingsIcon />, label: 'Disabled Item', value: 'disabled', disabled: true },
+  {
+    icon: <SettingsIcon />,
+    label: 'Disabled Item',
+    value: 'disabled',
+    disabled: true,
+  },
 ];
 
 export const Default: Story = {

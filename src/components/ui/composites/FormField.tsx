@@ -72,10 +72,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       {label && (
-        <label
-          htmlFor={fieldId}
-          className="text-sm font-medium text-fg"
-        >
+        <label htmlFor={fieldId} className="text-sm font-medium text-fg">
           {label}
           {required && (
             <span className="ml-1 text-danger" aria-label="required">

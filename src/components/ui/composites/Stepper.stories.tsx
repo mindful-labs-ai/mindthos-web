@@ -91,7 +91,9 @@ export const Interactive: Story = {
               </Button>
               <Button
                 size="sm"
-                onClick={() => setCurrent(Math.min(steps.length - 1, current + 1))}
+                onClick={() =>
+                  setCurrent(Math.min(steps.length - 1, current + 1))
+                }
                 disabled={current === steps.length - 1}
               >
                 {current === steps.length - 1 ? 'Complete' : 'Next'}
@@ -119,11 +121,7 @@ export const Completed: Story = {
 
 export const Simple: Story = {
   args: {
-    steps: [
-      { label: 'Step 1' },
-      { label: 'Step 2' },
-      { label: 'Step 3' },
-    ],
+    steps: [{ label: 'Step 1' }, { label: 'Step 2' }, { label: 'Step 3' }],
     currentStep: 1,
   },
   render: (args) => (

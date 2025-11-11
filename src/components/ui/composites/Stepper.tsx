@@ -39,8 +39,18 @@ export interface StepperProps {
 }
 
 const CheckIcon = () => (
-  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={3}
+      d="M5 13l4 4L19 7"
+    />
   </svg>
 );
 
@@ -99,7 +109,9 @@ export const Stepper: React.FC<StepperProps> = ({
             <div
               className={cn(
                 'flex',
-                isHorizontal ? 'flex-col items-center' : 'flex-row items-start gap-3'
+                isHorizontal
+                  ? 'flex-col items-center'
+                  : 'flex-row items-start gap-3'
               )}
             >
               <button
@@ -137,7 +149,9 @@ export const Stepper: React.FC<StepperProps> = ({
                   {step.label}
                 </span>
                 {step.description && (
-                  <span className="text-xs text-fg-muted">{step.description}</span>
+                  <span className="text-xs text-fg-muted">
+                    {step.description}
+                  </span>
                 )}
               </div>
             </div>
@@ -145,9 +159,7 @@ export const Stepper: React.FC<StepperProps> = ({
               <div
                 className={cn(
                   'bg-border',
-                  isHorizontal
-                    ? 'mx-2 mt-5 h-0.5 flex-1'
-                    : 'ml-5 h-8 w-0.5'
+                  isHorizontal ? 'mx-2 mt-5 h-0.5 flex-1' : 'ml-5 h-8 w-0.5'
                 )}
                 aria-hidden="true"
               />

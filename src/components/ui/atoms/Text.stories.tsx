@@ -30,7 +30,8 @@ export const Muted: Story = {
 export const Truncated: Story = {
   args: {
     truncate: true,
-    children: 'This is a very long text that will be truncated with an ellipsis when it exceeds the maximum width',
+    children:
+      'This is a very long text that will be truncated with an ellipsis when it exceeds the maximum width',
     className: 'max-w-[200px]',
   },
 };
@@ -56,7 +57,8 @@ export const AllVariants: Story = {
       <Text muted>Muted text</Text>
       <Text as="span">Inline span text</Text>
       <Text truncate className="max-w-xs">
-        Very long text that will be truncated: Lorem ipsum dolor sit amet consectetur adipisicing elit
+        Very long text that will be truncated: Lorem ipsum dolor sit amet
+        consectetur adipisicing elit
       </Text>
     </div>
   ),

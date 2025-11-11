@@ -112,7 +112,9 @@ export const Credit: React.FC<CreditProps> = ({
         aria-label={`${label ? `${label}: ` : ''}${used} of ${total} used`}
       >
         {label && (
-          <span className={cn('font-medium text-fg-muted', sizeStyles[size].text)}>
+          <span
+            className={cn('font-medium text-fg-muted', sizeStyles[size].text)}
+          >
             {label}:
           </span>
         )}
@@ -194,7 +196,9 @@ export const Credit: React.FC<CreditProps> = ({
       aria-label={`${label ? `${label}: ` : ''}${used} of ${total} used`}
     >
       {label && (
-        <span className={cn('font-medium text-fg-muted', sizeStyles[size].text)}>
+        <span
+          className={cn('font-medium text-fg-muted', sizeStyles[size].text)}
+        >
           {label}
         </span>
       )}

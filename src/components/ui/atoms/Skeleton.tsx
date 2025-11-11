@@ -70,13 +70,16 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <div
-      className={cn(
-        'animate-pulse bg-surface-contrast',
-        className
-      )}
+      className={cn('animate-pulse bg-surface-contrast', className)}
       style={{
-        width: typeof defaultStyles.width === 'number' ? `${defaultStyles.width}px` : defaultStyles.width,
-        height: typeof defaultStyles.height === 'number' ? `${defaultStyles.height}px` : defaultStyles.height,
+        width:
+          typeof defaultStyles.width === 'number'
+            ? `${defaultStyles.width}px`
+            : defaultStyles.width,
+        height:
+          typeof defaultStyles.height === 'number'
+            ? `${defaultStyles.height}px`
+            : defaultStyles.height,
         borderRadius: defaultStyles.borderRadius,
       }}
       aria-busy="true"

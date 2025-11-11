@@ -107,7 +107,9 @@ export const FullForm: Story = {
             label="Email"
             required
             error={emailError}
-            helperText={!emailError ? "We'll never share your email" : undefined}
+            helperText={
+              !emailError ? "We'll never share your email" : undefined
+            }
           >
             <Input
               type="email"

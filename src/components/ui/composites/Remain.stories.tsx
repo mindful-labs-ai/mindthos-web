@@ -53,7 +53,10 @@ export const DifferentDurations: Story = {
         </div>
         <div className="flex items-center gap-3">
           <span className="w-32 text-sm text-fg-muted">1 day:</span>
-          <Remain endTime={new Date(now + 24 * 60 * 60 * 1000)} format="short" />
+          <Remain
+            endTime={new Date(now + 24 * 60 * 60 * 1000)}
+            format="short"
+          />
         </div>
       </div>
     );
@@ -70,7 +73,9 @@ export const AutoTone: Story = {
           <Remain endTime={new Date(now + 60 * 60 * 1000)} format="short" />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-fg-muted">Warning (20 minutes left)</span>
+          <span className="text-xs text-fg-muted">
+            Warning (20 minutes left)
+          </span>
           <Remain endTime={new Date(now + 20 * 60 * 1000)} format="short" />
         </div>
         <div className="flex flex-col gap-1">
@@ -117,7 +122,12 @@ export const CustomIcon: Story = {
     endTime: new Date(Date.now() + 45 * 60 * 1000),
     format: 'short',
     icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg
+        className="h-4 w-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -147,14 +157,17 @@ export const InContext: Story = {
         <div className="rounded-lg border-2 border-border bg-surface p-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-fg">Flash Sale</h3>
-            <Remain endTime={new Date(now + 2 * 60 * 60 * 1000)} format="short" />
+            <Remain
+              endTime={new Date(now + 2 * 60 * 60 * 1000)}
+              format="short"
+            />
           </div>
           <p className="mt-2 text-sm text-fg-muted">
             Get 50% off on selected items. Hurry up!
           </p>
         </div>
 
-        <div className="rounded-lg border-2 border-warn/20 bg-warn/10 p-4">
+        <div className="border-warn/20 bg-warn/10 rounded-lg border-2 p-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-warn">Session Timeout</h3>
             <Remain

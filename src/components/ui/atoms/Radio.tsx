@@ -53,7 +53,10 @@ export interface RadioGroupProps {
   className?: string;
 }
 
-const sizeStyles: Record<RadioSize, { radio: string; text: string; desc: string }> = {
+const sizeStyles: Record<
+  RadioSize,
+  { radio: string; text: string; desc: string }
+> = {
   sm: { radio: 'h-4 w-4', text: 'text-sm', desc: 'text-xs' },
   md: { radio: 'h-5 w-5', text: 'text-base', desc: 'text-sm' },
   lg: { radio: 'h-6 w-6', text: 'text-lg', desc: 'text-base' },
@@ -90,7 +93,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   disabled = false,
   className,
 }) => {
-  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue || '');
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(
+    defaultValue || ''
+  );
   const isControlled = controlledValue !== undefined;
   const selectedValue = isControlled ? controlledValue : uncontrolledValue;
   const groupId = React.useId();
@@ -105,7 +110,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
     const enabledOptions = options.filter((opt) => !opt.disabled);
-    const currentEnabledIndex = enabledOptions.findIndex((opt) => opt.value === options[currentIndex].value);
+    const currentEnabledIndex = enabledOptions.findIndex(
+      (opt) => opt.value === options[currentIndex].value
+    );
 
     let nextIndex = currentEnabledIndex;
     const isHorizontal = orientation === 'horizontal';
@@ -113,16 +120,24 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
     switch (e.key) {
       case 'ArrowDown':
       case 'ArrowRight':
-        if ((e.key === 'ArrowDown' && !isHorizontal) || (e.key === 'ArrowRight' && isHorizontal)) {
+        if (
+          (e.key === 'ArrowDown' && !isHorizontal) ||
+          (e.key === 'ArrowRight' && isHorizontal)
+        ) {
           e.preventDefault();
           nextIndex = (currentEnabledIndex + 1) % enabledOptions.length;
         }
         break;
       case 'ArrowUp':
       case 'ArrowLeft':
-        if ((e.key === 'ArrowUp' && !isHorizontal) || (e.key === 'ArrowLeft' && isHorizontal)) {
+        if (
+          (e.key === 'ArrowUp' && !isHorizontal) ||
+          (e.key === 'ArrowLeft' && isHorizontal)
+        ) {
           e.preventDefault();
-          nextIndex = (currentEnabledIndex - 1 + enabledOptions.length) % enabledOptions.length;
+          nextIndex =
+            (currentEnabledIndex - 1 + enabledOptions.length) %
+            enabledOptions.length;
         }
         break;
       case ' ':
@@ -158,7 +173,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             key={option.value}
             htmlFor={optionId}
             className={cn(
-              'flex items-start gap-2 cursor-pointer',
+              'flex cursor-pointer items-start gap-2',
               isDisabled && 'cursor-not-allowed opacity-50'
             )}
           >
@@ -180,7 +195,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                   sizeStyles[size].radio,
                   isSelected
                     ? 'border-primary bg-primary'
-                    : 'border-border bg-surface hover:border-primary/50',
+                    : 'hover:border-primary/50 border-border bg-surface',
                   isDisabled && 'hover:border-border',
                   'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
                 )}
@@ -198,7 +213,9 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
               </div>
             </div>
             <div className="flex flex-col">
-              <span className={cn('font-medium text-fg', sizeStyles[size].text)}>
+              <span
+                className={cn('font-medium text-fg', sizeStyles[size].text)}
+              >
                 {option.label}
               </span>
               {option.description && (

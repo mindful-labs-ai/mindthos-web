@@ -196,8 +196,14 @@ export const InContext: Story = {
             Please verify your email address to access all features.
           </Alert>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-fg">Email</label>
+            <label
+              htmlFor="email-input"
+              className="text-sm font-medium text-fg"
+            >
+              Email
+            </label>
             <input
+              id="email-input"
               type="email"
               className="w-full rounded-lg border-2 border-border bg-surface px-3 py-2 text-fg"
               value="user@example.com"

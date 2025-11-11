@@ -20,7 +20,9 @@ export const Default: Story = {
   args: {
     onFilesSelected: (files) => {
       console.log('Selected files:', files);
-      alert(`Selected ${files.length} file(s): ${files.map((f) => f.name).join(', ')}`);
+      alert(
+        `Selected ${files.length} file(s): ${files.map((f) => f.name).join(', ')}`
+      );
     },
   },
   render: (args) => (
@@ -115,7 +117,7 @@ export const CustomContent: Story = {
     <div className="w-[400px]">
       <FileDrop {...args}>
         <div className="flex flex-col items-center gap-3">
-          <div className="rounded-full bg-primary/10 p-4">
+          <div className="bg-primary/10 rounded-full p-4">
             <svg
               className="h-8 w-8 text-primary"
               fill="none"
@@ -220,7 +222,9 @@ export const WithValidation: Story = {
             maxSize={1 * 1024 * 1024} // 1MB
             onFilesSelected={(files) => {
               setError('');
-              setSuccess(`Successfully uploaded: ${files.map((f) => f.name).join(', ')}`);
+              setSuccess(
+                `Successfully uploaded: ${files.map((f) => f.name).join(', ')}`
+              );
             }}
             onError={(err) => {
               setSuccess('');
@@ -228,12 +232,12 @@ export const WithValidation: Story = {
             }}
           />
           {error && (
-            <div className="rounded-lg border-2 border-danger/20 bg-danger/10 p-3">
+            <div className="border-danger/20 bg-danger/10 rounded-lg border-2 p-3">
               <p className="text-sm text-danger">{error}</p>
             </div>
           )}
           {success && (
-            <div className="rounded-lg border-2 border-success/20 bg-success/10 p-3">
+            <div className="border-success/20 bg-success/10 rounded-lg border-2 p-3">
               <p className="text-sm text-success">{success}</p>
             </div>
           )}

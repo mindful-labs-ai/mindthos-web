@@ -67,7 +67,7 @@ export const Sizes: Story = {
 
 export const AllVariants: Story = {
   render: () => (
-    <div className="flex flex-col gap-6 w-[400px]">
+    <div className="flex w-[400px] flex-col gap-6">
       <Credit used={250} total={300} label="Default" variant="default" />
       <Credit used={250} total={300} label="Bar" variant="bar" />
       <Credit used={250} total={300} label="Minimal" variant="minimal" />
@@ -77,22 +77,46 @@ export const AllVariants: Story = {
 
 export const UsageStates: Story = {
   render: () => (
-    <div className="flex flex-col gap-4 w-[300px]">
+    <div className="flex w-[300px] flex-col gap-4">
       <div className="space-y-2">
         <p className="text-xs text-fg-muted">Normal (50%)</p>
-        <Credit used={150} total={300} label="사용횟수" variant="bar" showPercentage />
+        <Credit
+          used={150}
+          total={300}
+          label="사용횟수"
+          variant="bar"
+          showPercentage
+        />
       </div>
       <div className="space-y-2">
         <p className="text-xs text-fg-muted">Warning (85%)</p>
-        <Credit used={255} total={300} label="사용횟수" variant="bar" showPercentage />
+        <Credit
+          used={255}
+          total={300}
+          label="사용횟수"
+          variant="bar"
+          showPercentage
+        />
       </div>
       <div className="space-y-2">
         <p className="text-xs text-fg-muted">Danger (98%)</p>
-        <Credit used={294} total={300} label="사용횟수" variant="bar" showPercentage />
+        <Credit
+          used={294}
+          total={300}
+          label="사용횟수"
+          variant="bar"
+          showPercentage
+        />
       </div>
       <div className="space-y-2">
         <p className="text-xs text-fg-muted">Full (100%)</p>
-        <Credit used={300} total={300} label="사용횟수" variant="bar" showPercentage />
+        <Credit
+          used={300}
+          total={300}
+          label="사용횟수"
+          variant="bar"
+          showPercentage
+        />
       </div>
     </div>
   ),
@@ -100,7 +124,7 @@ export const UsageStates: Story = {
 
 export const CustomThresholds: Story = {
   render: () => (
-    <div className="flex flex-col gap-4 w-[300px]">
+    <div className="flex w-[300px] flex-col gap-4">
       <Credit
         used={150}
         total={300}
@@ -201,24 +225,42 @@ export const InContext: Story = {
 
 export const AllSizesAllVariants: Story = {
   render: () => (
-    <div className="space-y-8 w-[400px]">
+    <div className="w-[400px] space-y-8">
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-fg">Small</h4>
         <Credit used={250} total={300} label="Default" size="sm" />
         <Credit used={250} total={300} label="Bar" variant="bar" size="sm" />
-        <Credit used={250} total={300} label="Minimal" variant="minimal" size="sm" />
+        <Credit
+          used={250}
+          total={300}
+          label="Minimal"
+          variant="minimal"
+          size="sm"
+        />
       </div>
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-fg">Medium</h4>
         <Credit used={250} total={300} label="Default" size="md" />
         <Credit used={250} total={300} label="Bar" variant="bar" size="md" />
-        <Credit used={250} total={300} label="Minimal" variant="minimal" size="md" />
+        <Credit
+          used={250}
+          total={300}
+          label="Minimal"
+          variant="minimal"
+          size="md"
+        />
       </div>
       <div className="space-y-3">
         <h4 className="text-sm font-semibold text-fg">Large</h4>
         <Credit used={250} total={300} label="Default" size="lg" />
         <Credit used={250} total={300} label="Bar" variant="bar" size="lg" />
-        <Credit used={250} total={300} label="Minimal" variant="minimal" size="lg" />
+        <Credit
+          used={250}
+          total={300}
+          label="Minimal"
+          variant="minimal"
+          size="lg"
+        />
       </div>
     </div>
   ),

@@ -46,7 +46,8 @@ export const Placements: Story = {
 
 export const LongContent: Story = {
   args: {
-    content: 'This is a longer tooltip message that will wrap to multiple lines when it exceeds the maximum width.',
+    content:
+      'This is a longer tooltip message that will wrap to multiple lines when it exceeds the maximum width.',
     children: <Button>Hover for long tooltip</Button>,
   },
 };

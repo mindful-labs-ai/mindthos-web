@@ -32,10 +32,18 @@ export const External: Story = {
 export const UnderlineVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
-      <HyperLink href="#" underline="auto">Auto underline (default)</HyperLink>
-      <HyperLink href="#" underline="hover">Underline on hover</HyperLink>
-      <HyperLink href="#" underline="always">Always underline</HyperLink>
-      <HyperLink href="#" underline={false}>No underline</HyperLink>
+      <HyperLink href="#" underline="auto">
+        Auto underline (default)
+      </HyperLink>
+      <HyperLink href="#" underline="hover">
+        Underline on hover
+      </HyperLink>
+      <HyperLink href="#" underline="always">
+        Always underline
+      </HyperLink>
+      <HyperLink href="#" underline={false}>
+        No underline
+      </HyperLink>
     </div>
   ),
 };

@@ -74,7 +74,11 @@ export const Controlled: Story = {
             content={
               <div>
                 <p className="text-sm text-fg">Controlled popup</p>
-                <Button size="sm" className="mt-2" onClick={() => setOpen(false)}>
+                <Button
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => setOpen(false)}
+                >
                   Close
                 </Button>
               </div>
@@ -96,7 +100,7 @@ export const RichContent: Story = {
     content: (
       <div className="space-y-3">
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-full bg-primary text-surface flex items-center justify-center font-semibold">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary font-semibold text-surface">
             JD
           </div>
           <div>

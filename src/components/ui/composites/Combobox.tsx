@@ -43,11 +43,12 @@ export interface ComboboxProps {
   className?: string;
 }
 
-const defaultFilter = (items: ComboboxItem[], query: string): ComboboxItem[] => {
+const defaultFilter = (
+  items: ComboboxItem[],
+  query: string
+): ComboboxItem[] => {
   const lowerQuery = query.toLowerCase();
-  return items.filter((item) =>
-    item.label.toLowerCase().includes(lowerQuery)
-  );
+  return items.filter((item) => item.label.toLowerCase().includes(lowerQuery));
 };
 
 /**
@@ -80,7 +81,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
   filterFn = defaultFilter,
   className,
 }) => {
-  const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue || '');
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(
+    defaultValue || ''
+  );
   const [isOpen, setIsOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [focusedIndex, setFocusedIndex] = React.useState(0);
@@ -113,7 +116,11 @@ export const Combobox: React.FC<ComboboxProps> = ({
     switch (e.key) {
       case 'Enter':
         e.preventDefault();
-        if (isOpen && focusedIndex >= 0 && focusedIndex < filteredItems.length) {
+        if (
+          isOpen &&
+          focusedIndex >= 0 &&
+          focusedIndex < filteredItems.length
+        ) {
           const item = filteredItems[focusedIndex];
           if (!item.disabled) {
             handleSelect(item.value);
@@ -141,7 +148,10 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
         setSearchQuery('');
       }
@@ -149,7 +159,8 @@ export const Combobox: React.FC<ComboboxProps> = ({
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen]);
 
@@ -159,7 +170,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     }
   }, [searchQuery, isOpen]);
 
-  const displayValue = isOpen ? searchQuery : (selectedItem?.label || '');
+  const displayValue = isOpen ? searchQuery : selectedItem?.label || '';
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
@@ -216,7 +227,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
           )}
         >
           {filteredItems.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-fg-muted">No results found</li>
+            <li className="px-3 py-2 text-sm text-fg-muted">
+              No results found
+            </li>
           ) : (
             filteredItems.map((item, index) => (
               <li
@@ -224,12 +237,19 @@ export const Combobox: React.FC<ComboboxProps> = ({
                 role="option"
                 aria-selected={selectedValue === item.value}
                 onClick={() => !item.disabled && handleSelect(item.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!item.disabled) handleSelect(item.value);
+                  }
+                }}
                 className={cn(
                   'cursor-pointer px-3 py-2 text-sm transition-colors duration-200',
                   'hover:bg-surface-contrast',
                   item.disabled && 'cursor-not-allowed opacity-50',
                   focusedIndex === index && 'bg-surface-contrast',
-                  selectedValue === item.value && 'bg-primary/10 font-medium text-primary'
+                  selectedValue === item.value &&
+                    'bg-primary/10 font-medium text-primary'
                 )}
               >
                 {item.label}

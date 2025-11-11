@@ -114,7 +114,9 @@ export const InContext: Story = {
       const [plan, setPlan] = useState('standard');
       return (
         <div className="w-[400px] rounded-lg border-2 border-border bg-surface p-6">
-          <h3 className="mb-4 text-lg font-semibold text-fg">Choose your plan</h3>
+          <h3 className="mb-4 text-lg font-semibold text-fg">
+            Choose your plan
+          </h3>
           <Radio
             options={optionsWithDesc}
             value={plan}

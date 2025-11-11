@@ -64,9 +64,7 @@ export const Controlled: Story = {
             onChange={setValue}
             placeholder="Search frameworks..."
           />
-          <p className="text-sm text-fg-muted">
-            Selected: {value || 'None'}
-          </p>
+          <p className="text-sm text-fg-muted">Selected: {value || 'None'}</p>
         </div>
       );
     };
@@ -130,10 +128,15 @@ export const InContext: Story = {
 
       return (
         <div className="w-[400px] rounded-lg border-2 border-border bg-surface p-6">
-          <h3 className="mb-4 text-lg font-semibold text-fg">Developer Survey</h3>
+          <h3 className="mb-4 text-lg font-semibold text-fg">
+            Developer Survey
+          </h3>
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-fg">
+              <label
+                htmlFor="framework-combobox"
+                className="mb-1.5 block text-sm font-medium text-fg"
+              >
                 Favorite Framework
               </label>
               <Combobox
@@ -144,7 +147,10 @@ export const InContext: Story = {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-fg">
+              <label
+                htmlFor="country-combobox"
+                className="mb-1.5 block text-sm font-medium text-fg"
+              >
                 Country
               </label>
               <Combobox
@@ -178,10 +184,7 @@ export const LargeDataset: Story = {
     return (
       <div className="w-[300px] space-y-2">
         <p className="text-xs text-fg-muted">100 items with search</p>
-        <Combobox
-          items={largeDataset}
-          placeholder="Search 100 items..."
-        />
+        <Combobox items={largeDataset} placeholder="Search 100 items..." />
       </div>
     );
   },

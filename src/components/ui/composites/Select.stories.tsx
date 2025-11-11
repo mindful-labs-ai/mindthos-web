@@ -54,7 +54,11 @@ export const ControlledSingle: Story = {
       const [value, setValue] = useState('');
       return (
         <div className="w-[300px] space-y-4">
-          <Select items={items} value={value} onChange={(v) => setValue(v as string)} />
+          <Select
+            items={items}
+            value={value}
+            onChange={(v) => setValue(v as string)}
+          />
           <p className="text-sm text-fg-muted">Selected: {value || 'None'}</p>
         </div>
       );

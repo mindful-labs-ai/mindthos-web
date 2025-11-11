@@ -49,7 +49,7 @@ export const WithMinMax: Story = {
 
 export const Sizes: Story = {
   render: () => (
-    <div className="flex flex-col gap-4 w-[300px]">
+    <div className="flex w-[300px] flex-col gap-4">
       <DateInput size="sm" />
       <DateInput size="md" />
       <DateInput size="lg" />

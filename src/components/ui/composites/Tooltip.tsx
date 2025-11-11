@@ -89,25 +89,30 @@ export const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
-  const trigger = React.cloneElement(children, {
-    onMouseEnter: (e: React.MouseEvent) => {
-      showTooltip();
-      children.props.onMouseEnter?.(e);
-    },
-    onMouseLeave: (e: React.MouseEvent) => {
-      hideTooltip();
-      children.props.onMouseLeave?.(e);
-    },
-    onFocus: (e: React.FocusEvent) => {
-      showTooltip();
-      children.props.onFocus?.(e);
-    },
-    onBlur: (e: React.FocusEvent) => {
-      hideTooltip();
-      children.props.onBlur?.(e);
-    },
-    'aria-describedby': isVisible ? tooltipId : undefined,
-  });
+  const trigger = React.useMemo(
+    () =>
+      React.cloneElement(children, {
+        onMouseEnter: (e: React.MouseEvent) => {
+          showTooltip();
+          children.props.onMouseEnter?.(e);
+        },
+        onMouseLeave: (e: React.MouseEvent) => {
+          hideTooltip();
+          children.props.onMouseLeave?.(e);
+        },
+        onFocus: (e: React.FocusEvent) => {
+          showTooltip();
+          children.props.onFocus?.(e);
+        },
+        onBlur: (e: React.FocusEvent) => {
+          hideTooltip();
+          children.props.onBlur?.(e);
+        },
+        'aria-describedby': isVisible ? tooltipId : undefined,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [children, isVisible, tooltipId]
+  );
 
   return (
     <div className="relative inline-block">

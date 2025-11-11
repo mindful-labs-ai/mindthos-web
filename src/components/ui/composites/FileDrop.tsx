@@ -212,10 +212,10 @@ export const FileDrop: React.FC<FileDropProps> = ({
         'transition-all duration-200',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
         disabled
-          ? 'cursor-not-allowed border-border/50 bg-surface-contrast/50 opacity-50'
+          ? 'border-border/50 bg-surface-contrast/50 cursor-not-allowed opacity-50'
           : isDragOver
-            ? 'border-primary bg-primary/5 cursor-copy'
-            : 'border-border bg-surface hover:border-primary/50 hover:bg-surface-contrast cursor-pointer',
+            ? 'bg-primary/5 cursor-copy border-primary'
+            : 'hover:border-primary/50 cursor-pointer border-border bg-surface hover:bg-surface-contrast',
         className
       )}
     >
@@ -235,7 +235,9 @@ export const FileDrop: React.FC<FileDropProps> = ({
           <UploadIcon />
           <div className="space-y-1">
             <p className="text-sm font-medium text-fg">
-              {isDragOver ? 'Drop files here' : 'Click to upload or drag and drop'}
+              {isDragOver
+                ? 'Drop files here'
+                : 'Click to upload or drag and drop'}
             </p>
             <p className="text-xs text-fg-muted">
               {accept && `Accepted: ${accept}`}

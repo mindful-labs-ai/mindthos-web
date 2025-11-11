@@ -72,9 +72,9 @@ export const Select: React.FC<SelectProps> = ({
   disabled = false,
   className,
 }) => {
-  const [uncontrolledValue, setUncontrolledValue] = React.useState<string | string[]>(
-    defaultValue || (multiple ? [] : '')
-  );
+  const [uncontrolledValue, setUncontrolledValue] = React.useState<
+    string | string[]
+  >(defaultValue || (multiple ? [] : ''));
   const [isOpen, setIsOpen] = React.useState(false);
   const [focusedIndex, setFocusedIndex] = React.useState(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -156,14 +156,18 @@ export const Select: React.FC<SelectProps> = ({
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isOpen]);
 
@@ -176,7 +180,6 @@ export const Select: React.FC<SelectProps> = ({
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-multiselectable={multiple}
         className={cn(
           'flex w-full items-center justify-between gap-2',
           'rounded-[var(--radius-md)] border-2 border-border bg-surface px-3 py-2',
@@ -244,12 +247,24 @@ export const Select: React.FC<SelectProps> = ({
                   <div
                     className={cn(
                       'flex h-4 w-4 items-center justify-center rounded border-2',
-                      selected ? 'border-primary bg-primary' : 'border-border bg-surface'
+                      selected
+                        ? 'border-primary bg-primary'
+                        : 'border-border bg-surface'
                     )}
                   >
                     {selected && (
-                      <svg className="h-3 w-3 text-surface" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="h-3 w-3 text-surface"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                   </div>
