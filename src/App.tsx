@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui';
 
 import './App.css';
-import reactLogo from './assets/react.svg';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -27,12 +26,6 @@ function App() {
           <Button variant="outline" size="sm" onClick={toggleDarkMode}>
             {isDark ? '☀️ Light' : '🌙 Dark'}
           </Button>
-        </div>
-
-        <div className="mb-8 flex justify-center gap-8">
-          <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-            <img src={reactLogo} className="logo react" alt="React logo" />
-          </a>
         </div>
 
         <h1 className="mb-8 text-center text-4xl font-bold">Mindthos V2</h1>
@@ -63,9 +56,18 @@ function App() {
                 Button Variants
               </h3>
               <div className="flex flex-wrap gap-3">
-                <Button variant="solid">Solid</Button>
-                <Button variant="outline">Outline</Button>
-                <Button variant="ghost">Ghost</Button>
+                <Button variant="solid" tone="primary">
+                  Solid
+                </Button>
+                <Button variant="outline" tone="primary">
+                  Outline
+                </Button>
+                <Button variant="ghost" tone="primary">
+                  Ghost
+                </Button>
+                <Button variant="soft" tone="primary">
+                  Soft
+                </Button>
               </div>
             </div>
 
@@ -85,7 +87,7 @@ function App() {
                 Button States
               </h3>
               <div className="flex flex-wrap gap-3">
-                <Button isLoading={isLoading} onClick={handleLoadingDemo}>
+                <Button loading={isLoading} onClick={handleLoadingDemo}>
                   {isLoading ? 'Loading...' : 'Click to Load'}
                 </Button>
                 <Button disabled>Disabled</Button>
