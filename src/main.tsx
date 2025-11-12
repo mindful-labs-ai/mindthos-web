@@ -3,7 +3,6 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 
-import { AuthProvider } from './components/providers/AuthInitializer';
 import { ToastProvider } from './components/ui/composites/Toast';
 import ErrorBoundary from './feature/error/components/ErrorBoundary';
 import { router } from './router';
@@ -15,9 +14,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <ToastProvider>
-        <AuthProvider>
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <RouterProvider router={router} />
       </ToastProvider>
     </ErrorBoundary>
   </StrictMode>
