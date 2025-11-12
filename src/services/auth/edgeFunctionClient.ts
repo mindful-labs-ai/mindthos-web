@@ -4,7 +4,8 @@ import { EDGE_FUNCTION_BASE_URL } from './constants';
 
 export async function callEdgeFunction<T>(
   endpoint: string,
-  body: Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body: any
 ): Promise<T> {
   const {
     data: { session },

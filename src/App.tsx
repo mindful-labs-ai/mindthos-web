@@ -21,8 +21,6 @@ function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
 
-  console.log(user);
-
   const toggleDarkMode = () => {
     document.documentElement.classList.toggle('dark');
     setIsDark(!isDark);
