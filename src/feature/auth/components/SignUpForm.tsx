@@ -1,34 +1,65 @@
 import React from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import { HyperLink } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { CheckBox } from '@/components/ui/atoms/CheckBox';
 import { Input } from '@/components/ui/atoms/Input';
 import { FormField } from '@/components/ui/composites/FormField';
+import { ROUTES } from '@/router/constants';
+import { useAuthStore } from '@/stores/authStore';
 
 const SignUpForm = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [privacyAccepted, setPrivacyAccepted] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [error, setError] = React.useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const signup = useAuthStore((state) => state.signup);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!termsAccepted || !privacyAccepted) {
-      alert('약관에 동의해주세요.');
+      setError('약관에 동의해주세요.');
       return;
     }
-    // TODO: 회원가입 로직
-    console.log('회원가입:', {
-      email,
-      password,
-      termsAccepted,
-      privacyAccepted,
-    });
+
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      await signup(email, password, {
+        termsAccepted,
+        privacyAccepted,
+      });
+
+      navigate(ROUTES.EMAIL_VERIFICATION, {
+        state: { email },
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : '회원가입에 실패했습니다. 다시 시도해주세요.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
+          {error}
+        </div>
+      )}
+
       <div className="space-y-4">
         <FormField>
           <Input
@@ -39,6 +70,7 @@ const SignUpForm = () => {
             required
             autoComplete="email"
             className="h-12 text-base"
+            disabled={isSubmitting}
           />
         </FormField>
         <FormField>
@@ -50,6 +82,7 @@ const SignUpForm = () => {
             required
             autoComplete="new-password"
             className="h-12 text-base"
+            disabled={isSubmitting}
           />
         </FormField>
 
@@ -60,6 +93,7 @@ const SignUpForm = () => {
               tone="neutral"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
+              disabled={isSubmitting}
             />
             <label htmlFor="terms" className="text-sm text-muted">
               <span>서비스 이용약관에 동의합니다.</span>
@@ -80,6 +114,7 @@ const SignUpForm = () => {
               tone="neutral"
               checked={privacyAccepted}
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
+              disabled={isSubmitting}
             />
             <label htmlFor="privacy" className="text-sm text-muted">
               <span>개인정보 처리방침에 동의합니다.</span>
@@ -101,10 +136,10 @@ const SignUpForm = () => {
         tone="primary"
         size="lg"
         variant="solid"
-        disabled={!termsAccepted || !privacyAccepted}
+        disabled={!termsAccepted || !privacyAccepted || isSubmitting}
         className="h-12 w-full bg-primary-500 text-base hover:bg-primary-600 disabled:cursor-not-allowed"
       >
-        이메일 인증하기
+        {isSubmitting ? '처리 중...' : '이메일 인증하기'}
       </Button>
     </form>
   );

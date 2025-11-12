@@ -16,20 +16,24 @@ router/
 ## 설계 원칙
 
 ### 1. 중첩 라우트 (Nested Routes)
+
 - `RootLayout`을 부모로 사용하여 모든 페이지에 공통 설정 적용
 - `errorElement`는 루트에서 한 번만 정의하여 중복 제거
 
 ### 2. 경로 중앙 관리
+
 - 모든 경로는 `constants.ts`에 정의
 - 하드코딩된 문자열 대신 상수 사용으로 타입 안전성 확보
 
 ### 3. 선언적 구조
+
 - 주석으로 TODO 표시
 - 간결한 children 배열로 가독성 향상
 
 ## 사용 예시
 
 ### 경로 상수 사용
+
 ```tsx
 import { ROUTES } from '@/router/constants';
 
@@ -41,6 +45,7 @@ navigate(ROUTES.AUTH);
 ```
 
 ### 새 라우트 추가
+
 1. `constants.ts`에 경로 추가
 2. `index.tsx`의 children 배열에 라우트 설정 추가
 

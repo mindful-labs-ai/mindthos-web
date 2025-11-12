@@ -25,7 +25,7 @@ const ErrorPage = () => {
             </pre>
           </details>
         )}
-        <div className="flex gap-4 justify-center">
+        <div className="flex justify-center gap-4">
           <HyperLink
             underline="hover"
             href="/"
