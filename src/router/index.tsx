@@ -3,14 +3,18 @@ import { createBrowserRouter } from 'react-router-dom';
 import App from '@/App';
 import AuthPage from '@/feature/auth/page/AuthPage';
 import EmailVerificationPage from '@/feature/auth/page/EmailVerificationPage';
+import { ClientListPage } from '@/feature/client/page/ClientListPage';
 import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
+import HomePage from '@/feature/home/page/HomePage';
 import TermsPage from '@/feature/terms/page/TermsPage';
 
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { PublicOnlyRoute } from './components/PublicOnlyRoute';
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';
+import SideTabLayout from './layouts/SideTabLayout';
 
 /**
  * 애플리케이션 라우터 설정
@@ -29,7 +33,25 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        index: true,
+        element: (
+          <ProtectedRoute>
+            <SideTabLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+          },
+          {
+            path: '/clients',
+            element: <ClientListPage />,
+          },
+          // TODO: 다른 메인 페이지들 (상담 기록, 템플릿 등)
+        ],
+      },
+      {
+        path: '/demo',
         element: <App />,
       },
       {
@@ -52,15 +74,6 @@ export const router = createBrowserRouter([
         path: ROUTES.ERROR_TEST,
         element: <ErrorTestPage />,
       },
-      // TODO: 인증이 필요한 보호된 라우트 예시
-      // {
-      //   path: '/dashboard',
-      //   element: (
-      //     <ProtectedRoute>
-      //       <DashboardPage />
-      //     </ProtectedRoute>
-      //   ),
-      // },
       {
         path: ROUTES.NOT_FOUND,
         element: <NotFoundPage />,
