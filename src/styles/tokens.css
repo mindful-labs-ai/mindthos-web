@@ -9,13 +9,14 @@
   --color-bg-subtle: #f8fafc;
   --color-bg-whisper: #f1f5f9;
   --color-fg: #0f172a;
-  --color-fg-muted: #64748b;
+  --color-fg-muted: #8898ad;
   --color-muted: #64748b;
   --color-accent: #10b981;
 
   /* Surface colors */
   --color-surface: #ffffff;
-  --color-surface-contrast: #f8fafc;
+  --color-surface-contrast: #f1f4f6;
+  --color-surface-strong: #e1e4e7;
 
   /* Border & Ring */
   --color-border: #e2e8f0;
@@ -70,6 +71,7 @@
   /* Surface colors */
   --color-surface: #0b1020;
   --color-surface-contrast: #1e293b;
+  --color-surface-strong: #2d384b;
 
   /* Border & Ring */
   --color-border: #334155;

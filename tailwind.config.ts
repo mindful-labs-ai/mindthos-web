@@ -19,6 +19,7 @@ export default {
         surface: {
           DEFAULT: 'var(--color-surface)',
           contrast: 'var(--color-surface-contrast)',
+          strong: 'var(--color-surface-strong)',
         },
         border: 'var(--color-border)',
         ring: 'var(--color-ring)',

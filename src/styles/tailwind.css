@@ -1,13 +1,23 @@
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Pretendard';
-  src: url('/fonts/PretendardVariable.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
+body {
+  font-family:
+    'Pretendard',
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    sans-serif;
 }
 
 @layer base {
@@ -20,29 +30,20 @@
   }
 
   * {
-    border-color: rgb(100 116 139 / 0.2); /* muted with 20% opacity */
+    border-color: rgb(100 116 139 / 0.2);
   }
 
   .dark * {
-    border-color: rgb(148 163 184 / 0.2); /* dark mode muted with 20% opacity */
+    border-color: rgb(148 163 184 / 0.2);
   }
 
   body {
-    font-family:
-      'Pretendard',
-      -apple-system,
-      BlinkMacSystemFont,
-      system-ui,
-      Roboto,
-      sans-serif;
     @apply antialiased;
   }
 }
 
 @layer components {
-  /* Add custom component styles here if needed */
 }
 
 @layer utilities {
-  /* Add custom utilities here if needed */
 }
