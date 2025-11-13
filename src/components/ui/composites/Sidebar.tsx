@@ -102,9 +102,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <nav
       className={cn(
-        'flex flex-col gap-1 p-2',
+        'flex flex-col gap-1 py-2',
         'border-r-2 border-border bg-surface',
-        'min-w-[240px]',
+
         className
       )}
     >
@@ -127,14 +127,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2',
+              'flex items-center gap-3 rounded-[var(--radius-md)] p-2',
               'text-left text-sm font-medium',
               'transition-colors duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+              'active:bg-surface-strong',
               'disabled:cursor-not-allowed disabled:opacity-50',
               isActive
-                ? 'bg-primary/10 text-primary'
-                : 'text-fg hover:bg-surface-contrast'
+                ? 'bg-surface-contrast text-fg'
+                : 'text-fg-muted hover:bg-surface-contrast'
             )}
           >
             {item.icon && <span className="flex-shrink-0">{item.icon}</span>}

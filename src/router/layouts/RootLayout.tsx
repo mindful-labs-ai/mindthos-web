@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { AuthProvider } from '@/components/providers/AuthInitializer';
 import { OnboardingModal } from '@/feature/onboarding/components/OnboardingModal';
@@ -8,12 +8,16 @@ import { OnboardingModal } from '@/feature/onboarding/components/OnboardingModal
  * 모든 페이지에 공통으로 적용되는 레이아웃
  */
 const RootLayout = () => {
+  const location = useLocation();
+
+  const shouldShowOnboarding =
+    !location.pathname.startsWith('/auth/verify-email') &&
+    !location.pathname.startsWith('/auth');
+
   return (
     <AuthProvider>
-      {/* 공통 헤더, 네비게이션 등이 필요하면 여기에 추가 */}
       <Outlet />
-      {/* 공통 푸터 등이 필요하면 여기에 추가 */}
-      <OnboardingModal />
+      {shouldShowOnboarding && <OnboardingModal />}
     </AuthProvider>
   );
 };
