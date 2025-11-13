@@ -53,7 +53,9 @@ export function CompleteStep({
         <h2 id="onboarding-title" className="text-2xl font-bold text-fg">
           준비 완료!
         </h2>
-        <p className="mt-4 text-fg-muted">이제 모든 기능을 사용할 수 있습니다</p>
+        <p className="mt-4 text-fg-muted">
+          이제 모든 기능을 사용할 수 있습니다
+        </p>
         <div className="mt-6 text-4xl">🎉</div>
       </div>
 

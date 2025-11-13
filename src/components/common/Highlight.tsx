@@ -49,10 +49,7 @@ export const Highlight: React.FC<HighlightProps> = ({
         <React.Fragment key={index}>
           {part.highlight ? (
             <mark
-              className={cn(
-                'rounded px-0.5 font-semibold',
-                highlightClassName
-              )}
+              className={cn('rounded px-0.5 font-semibold', highlightClassName)}
             >
               {part.text}
             </mark>
