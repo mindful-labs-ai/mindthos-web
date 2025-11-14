@@ -26,6 +26,11 @@ export interface ProgressCircleProps {
    */
   strokeWidth?: number;
   /**
+   * Show percentage value in center
+   * @default true
+   */
+  showValue?: boolean;
+  /**
    * Additional className
    */
   className?: string;
@@ -55,6 +60,7 @@ export const ProgressCircle = React.forwardRef<
       indeterminate = false,
       size = 48,
       strokeWidth = 4,
+      showValue = true,
       className,
     },
     ref
@@ -91,7 +97,7 @@ export const ProgressCircle = React.forwardRef<
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-surface-contrast"
+            className="text-border"
           />
           {/* Progress circle */}
           <circle
@@ -111,7 +117,7 @@ export const ProgressCircle = React.forwardRef<
             }}
           />
         </svg>
-        {!indeterminate && (
+        {!indeterminate && showValue && (
           <span className="absolute text-xs font-medium text-fg">
             {clampedValue}%
           </span>

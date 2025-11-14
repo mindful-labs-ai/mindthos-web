@@ -5,7 +5,12 @@ import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@/lib/cn';
 
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'free';
-export type ButtonTone = 'primary' | 'secondary' | 'accent' | 'neutral';
+export type ButtonTone =
+  | 'primary'
+  | 'secondary'
+  | 'accent'
+  | 'neutral'
+  | 'surface';
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
@@ -88,6 +93,12 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
     outline:
       'border-2 border-border text-fg bg-transparent hover:bg-surface-contrast',
     ghost: 'bg-transparent text-fg hover:bg-surface-contrast',
+    soft: 'bg-surface-contrast text-fg hover:bg-border',
+  },
+  surface: {
+    solid: 'bg-surface text-fg-muted hover:bg-border',
+    outline: 'border-2 border-border text-fg bg-transparent hover:bg-surface',
+    ghost: 'bg-transparent text-fg hover:bg-surface',
     soft: 'bg-surface-contrast text-fg hover:bg-border',
   },
 };
