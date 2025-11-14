@@ -2,8 +2,9 @@ import { type AuthChangeEvent, type Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 
+import { callEdgeFunction } from '../../shared/utils/edgeFunctionClient';
+
 import { EDGE_FUNCTION_ENDPOINTS, ERROR_MESSAGES } from './constants';
-import { callEdgeFunction } from './edgeFunctionClient';
 import { handleAuthError, handleEdgeFunctionError } from './errorHandlers';
 import {
   AuthError,

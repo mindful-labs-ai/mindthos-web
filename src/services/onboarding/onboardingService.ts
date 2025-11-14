@@ -1,4 +1,4 @@
-import { callEdgeFunction } from '@/services/auth/edgeFunctionClient';
+import { callEdgeFunction } from '@/shared/utils/edgeFunctionClient';
 
 import { ONBOARDING_ENDPOINTS } from './constants';
 import type {

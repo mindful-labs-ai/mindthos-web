@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 
-import { EDGE_FUNCTION_BASE_URL } from './constants';
+import { EDGE_FUNCTION_BASE_URL } from '../../services/auth/constants';
 
 export async function callEdgeFunction<T>(
   endpoint: string,
