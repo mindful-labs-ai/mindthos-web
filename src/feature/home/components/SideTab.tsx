@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Button, Sidebar, Text } from '@/components/ui';
+import { Button, ProgressCircle, Sidebar, Text } from '@/components/ui';
+import { mockSettingsData } from '@/feature/settings/data/mockData';
 
 interface SideTabProps {
   isOpen: boolean;
@@ -117,22 +118,62 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
         />
       </div>
 
-      {/* Bottom Navigation using Sidebar component */}
+      {/* TODO : usage indicator data fix */}
       <div>
         {/* Usage Section */}
-        <div className="space-y-3 border-t border-border px-3 pb-6 pt-4">
+        <div className="mx-3 mb-6 space-y-3 rounded-lg border-t border-border bg-surface-contrast px-1 py-4 text-left">
           <Text className="px-3 text-xs font-medium text-fg-muted">
             주이용 툴기
           </Text>
-          <div className="space-y-2 px-3">
-            <UsageItem label="1900분 남음" total="2000분" value={1900} />
+          <div className="flex items-center gap-2 px-3">
+            <ProgressCircle
+              value={Math.floor(
+                ((mockSettingsData.plan.audio_credit -
+                  mockSettingsData.usage.voice_transcription.credit) /
+                  mockSettingsData.plan.audio_credit) *
+                  100
+              )}
+              size={28}
+              strokeWidth={4}
+              showValue={false}
+            />
+            <div className="text-center">
+              <Text className="text-sm text-fg">
+                <span className="font-bold text-primary">
+                  {mockSettingsData.plan.audio_credit -
+                    mockSettingsData.usage.voice_transcription.credit}
+                  분 남음
+                </span>{' '}
+                / {mockSettingsData.plan.audio_credit}분
+              </Text>
+            </div>
           </div>
 
           <Text className="px-3 text-xs font-medium text-fg-muted">
-            AI 분석
+            요약 생성
           </Text>
-          <div className="space-y-2 px-3">
-            <UsageItem label="100회 남음" total="200회" value={100} />
+          <div className="flex items-center gap-2 px-3">
+            <ProgressCircle
+              value={Math.floor(
+                ((mockSettingsData.plan.summary_credit -
+                  mockSettingsData.usage.summary_generation.credit) /
+                  mockSettingsData.plan.summary_credit) *
+                  100
+              )}
+              size={28}
+              strokeWidth={4}
+              showValue={false}
+            />
+            <div className="text-center">
+              <Text className="text-sm text-fg">
+                <span className="font-bold text-primary">
+                  {mockSettingsData.plan.summary_credit -
+                    mockSettingsData.usage.summary_generation.credit}
+                  회 남음
+                </span>{' '}
+                / {mockSettingsData.plan.summary_credit}회
+              </Text>
+            </div>
           </div>
         </div>
         <div className="border-t border-border px-3 py-3">
@@ -145,31 +186,5 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
         </div>
       </div>
     </aside>
-  );
-};
-
-// UsageItem Component
-interface UsageItemProps {
-  label: string;
-  total: string;
-  value: number;
-}
-
-const UsageItem: React.FC<UsageItemProps> = ({ label, total, value }) => {
-  const percentage = (value / parseInt(total.replace(/\D/g, ''))) * 100;
-
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-primary-500">{label}</span>
-        <span className="text-fg-muted">/ {total}</span>
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-subtle">
-        <div
-          className="h-full bg-primary-500 transition-all"
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-    </div>
   );
 };

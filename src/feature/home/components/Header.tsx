@@ -12,7 +12,7 @@ const routeNameMap: Record<string, string> = {
   '/': '홈',
   '/clients': '클라이언트',
   '/history': '상담 기록',
-  '/template': '템플릿',
+  '/template': '상담 노트 템플릿',
   '/settings': '설정',
   '/help': '도움말 및 지원',
 };
