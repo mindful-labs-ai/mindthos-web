@@ -28,9 +28,9 @@ export function NameStep({
           마음토스에 오신 것을 환영합니다!
         </Title>
         <Text className="mt-2 text-sm text-fg-muted">
-          사용하기 앞서 상담자님의 원활한 마음토스 사용을 도와드릴게요.
+          사용하기 앞서 선생님의 원활한 마음토스 사용을 도와드릴게요.
           <br />
-          먼저, 상담자님의 성함은 무엇인가요?
+          먼저, 선생님의 성함은 무엇인가요?
         </Text>
       </div>
 
