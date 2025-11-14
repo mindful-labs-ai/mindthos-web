@@ -3,21 +3,9 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ProgressBarProps {
-  /**
-   * Progress value (0-100)
-   */
   value: number;
-  /**
-   * Accessible label
-   */
   label?: string;
-  /**
-   * Indeterminate state (loading animation)
-   */
   indeterminate?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

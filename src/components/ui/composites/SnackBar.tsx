@@ -8,30 +8,11 @@ export interface SnackBarAction {
 }
 
 export interface SnackBarProps {
-  /**
-   * Open state
-   */
   open: boolean;
-  /**
-   * Message text
-   */
   message: string;
-  /**
-   * Action button
-   */
   action?: SnackBarAction;
-  /**
-   * Change handler
-   */
   onOpenChange: (open: boolean) => void;
-  /**
-   * Auto-hide duration (ms), 0 for no auto-hide
-   * @default 5000
-   */
   duration?: number;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

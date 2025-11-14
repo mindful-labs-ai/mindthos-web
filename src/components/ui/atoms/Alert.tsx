@@ -5,40 +5,13 @@ import { cn } from '@/lib/cn';
 export type AlertTone = 'info' | 'success' | 'warn' | 'danger';
 
 export interface AlertProps {
-  /**
-   * Alert title
-   */
   title?: string;
-  /**
-   * Alert content/description
-   */
   children: React.ReactNode;
-  /**
-   * Tone variant
-   * @default 'info'
-   */
   tone?: AlertTone;
-  /**
-   * Show icon
-   * @default true
-   */
   showIcon?: boolean;
-  /**
-   * Custom icon
-   */
   icon?: React.ReactNode;
-  /**
-   * Dismissible
-   * @default false
-   */
   dismissible?: boolean;
-  /**
-   * Dismiss handler
-   */
   onDismiss?: () => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

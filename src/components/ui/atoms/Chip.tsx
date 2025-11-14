@@ -6,27 +6,10 @@ export type ChipSize = 'sm' | 'md' | 'lg' | 'free';
 export type ChipTone = 'primary' | 'secondary' | 'accent' | 'neutral';
 
 export interface ChipProps {
-  /**
-   * Label text
-   */
   label: React.ReactNode;
-  /**
-   * Tone variant
-   * @default 'neutral'
-   */
   tone?: ChipTone;
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: ChipSize;
-  /**
-   * Close handler (shows close button when provided)
-   */
   onClose?: () => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

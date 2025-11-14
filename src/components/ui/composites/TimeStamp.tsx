@@ -3,22 +3,9 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface TimeStampProps {
-  /**
-   * Date value (Date, string, or number)
-   */
   value: Date | string | number;
-  /**
-   * Format string (simple implementation)
-   * @default undefined (shows ISO string)
-   */
   format?: string;
-  /**
-   * Show relative time (e.g., "2 hours ago")
-   */
   relative?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

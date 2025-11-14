@@ -9,13 +9,7 @@ export interface FootPrintItem {
 }
 
 export interface FootPrintProps {
-  /**
-   * Meta items
-   */
   items: FootPrintItem[];
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

@@ -9,37 +9,13 @@ export interface ComboboxItem {
 }
 
 export interface ComboboxProps {
-  /**
-   * Combobox items
-   */
   items: ComboboxItem[];
-  /**
-   * Controlled value
-   */
   value?: string;
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string;
-  /**
-   * Change handler
-   */
   onChange?: (value: string) => void;
-  /**
-   * Placeholder text
-   */
   placeholder?: string;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * Custom filter function
-   */
   filterFn?: (items: ComboboxItem[], query: string) => ComboboxItem[];
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

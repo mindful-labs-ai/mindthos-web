@@ -6,46 +6,14 @@ export type CreditSize = 'sm' | 'md' | 'lg';
 export type CreditVariant = 'default' | 'bar' | 'minimal';
 
 export interface CreditProps {
-  /**
-   * Current usage count
-   */
   used: number;
-  /**
-   * Total available count
-   */
   total: number;
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: CreditSize;
-  /**
-   * Display variant
-   * @default 'default'
-   */
   variant?: CreditVariant;
-  /**
-   * Label text
-   */
   label?: string;
-  /**
-   * Show percentage
-   * @default false
-   */
   showPercentage?: boolean;
-  /**
-   * Warning threshold (0-1, triggers warning color)
-   * @default 0.8
-   */
   warningThreshold?: number;
-  /**
-   * Danger threshold (0-1, triggers danger color)
-   * @default 0.95
-   */
   dangerThreshold?: number;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

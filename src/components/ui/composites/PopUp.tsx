@@ -5,30 +5,11 @@ import { cn } from '@/lib/cn';
 export type PopUpPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 export interface PopUpProps {
-  /**
-   * Trigger element
-   */
   trigger: React.ReactNode;
-  /**
-   * Content to display in popup
-   */
   content: React.ReactNode;
-  /**
-   * Controlled open state
-   */
   open?: boolean;
-  /**
-   * Change handler
-   */
   onOpenChange?: (open: boolean) => void;
-  /**
-   * Placement
-   * @default 'bottom'
-   */
   placement?: PopUpPlacement;
-  /**
-   * Additional className for content
-   */
   className?: string;
 }
 

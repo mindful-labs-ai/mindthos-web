@@ -6,36 +6,12 @@ export type RemainFormat = 'full' | 'short' | 'minimal';
 export type RemainTone = 'neutral' | 'warn' | 'danger';
 
 export interface RemainProps {
-  /**
-   * Target end time (Date, string, or number)
-   */
   endTime: Date | string | number;
-  /**
-   * Display format
-   * @default 'full'
-   */
   format?: RemainFormat;
-  /**
-   * Tone variant (changes based on urgency)
-   * @default 'neutral'
-   */
   tone?: RemainTone;
-  /**
-   * Auto-update interval in milliseconds
-   * @default 1000
-   */
   updateInterval?: number;
-  /**
-   * Callback when countdown ends
-   */
   onEnd?: () => void;
-  /**
-   * Show icon
-   */
   icon?: React.ReactNode;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

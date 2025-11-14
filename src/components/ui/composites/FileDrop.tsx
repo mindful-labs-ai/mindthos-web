@@ -3,38 +3,13 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface FileDropProps {
-  /**
-   * Accepted file types (e.g., 'image/*', '.pdf', 'image/png,image/jpeg')
-   */
   accept?: string;
-  /**
-   * Allow multiple files
-   * @default false
-   */
   multiple?: boolean;
-  /**
-   * Max file size in bytes
-   */
   maxSize?: number;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * File selection handler
-   */
   onFilesSelected?: (files: File[]) => void;
-  /**
-   * Error handler
-   */
   onError?: (error: string) => void;
-  /**
-   * Custom content
-   */
   children?: React.ReactNode;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

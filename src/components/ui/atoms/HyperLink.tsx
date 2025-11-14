@@ -6,22 +6,9 @@ import { cn } from '@/lib/cn';
 export type HyperLinkUnderline = 'auto' | 'hover' | 'always' | false;
 
 export interface HyperLinkProps extends React.ComponentPropsWithoutRef<'a'> {
-  /**
-   * Link destination
-   */
   href: string;
-  /**
-   * Content
-   */
   children: React.ReactNode;
-  /**
-   * External link (adds rel and icon)
-   */
   external?: boolean;
-  /**
-   * Underline behavior
-   * @default 'auto'
-   */
   underline?: HyperLinkUnderline;
 }
 

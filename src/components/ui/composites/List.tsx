@@ -3,18 +3,8 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ListProps {
-  /**
-   * List items
-   */
   items: React.ReactNode[];
-  /**
-   * Render as ordered list
-   * @default false
-   */
   ordered?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

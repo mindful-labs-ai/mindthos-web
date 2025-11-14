@@ -11,30 +11,11 @@ export interface TabItem {
 }
 
 export interface TabProps {
-  /**
-   * Tab items
-   */
   items: TabItem[];
-  /**
-   * Controlled value
-   */
   value?: string;
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string;
-  /**
-   * Change handler
-   */
   onValueChange?: (value: string) => void;
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: TabSize;
-  /**
-   * Additional className for the tab list
-   */
   className?: string;
 }
 

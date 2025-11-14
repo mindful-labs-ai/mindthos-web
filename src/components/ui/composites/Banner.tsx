@@ -10,34 +10,12 @@ export interface BannerAction {
 }
 
 export interface BannerProps {
-  /**
-   * Banner title
-   */
   title: string;
-  /**
-   * Banner description
-   */
   description?: string;
-  /**
-   * Tone variant
-   * @default 'info'
-   */
   tone?: BannerTone;
-  /**
-   * Action button
-   */
   action?: BannerAction;
-  /**
-   * Dismissible banner
-   */
   dismissible?: boolean;
-  /**
-   * Dismiss handler
-   */
   onDismiss?: () => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

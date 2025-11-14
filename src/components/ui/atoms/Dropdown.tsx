@@ -9,37 +9,13 @@ export interface DropdownItem {
 }
 
 export interface DropdownProps {
-  /**
-   * Dropdown items
-   */
   items: DropdownItem[];
-  /**
-   * Controlled value
-   */
   value?: string;
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string;
-  /**
-   * Change handler
-   */
   onChange?: (value: string) => void;
-  /**
-   * Placeholder text
-   */
   placeholder?: string;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
-  /**
-   * Render in portal
-   */
   portal?: boolean;
 }
 

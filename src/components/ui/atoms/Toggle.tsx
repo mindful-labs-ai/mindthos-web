@@ -5,31 +5,12 @@ import { cn } from '@/lib/cn';
 export type ToggleSize = 'sm' | 'md' | 'lg' | 'free';
 
 export interface ToggleProps
-  extends Omit<React.ComponentPropsWithoutRef<'button'>, 'size' | 'type'> {
-  /**
-   * Checked state
-   */
+  extends Omit<React.ComponentPropsWithoutRef<'button'>, 'size' | 'type' | 'onChange'> {
   checked?: boolean;
-  /**
-   * Default checked state (uncontrolled)
-   */
   defaultChecked?: boolean;
-  /**
-   * Change handler
-   */
   onChange?: (checked: boolean) => void;
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: ToggleSize;
-  /**
-   * Name for form submission
-   */
   name?: string;
-  /**
-   * Value for form submission
-   */
   value?: string;
 }
 

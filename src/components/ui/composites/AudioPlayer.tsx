@@ -3,33 +3,12 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface AudioPlayerProps {
-  /**
-   * Audio source URL
-   */
   src: string;
-  /**
-   * Audio title
-   */
   title?: string;
-  /**
-   * Show timecode
-   */
   timecode?: boolean;
-  /**
-   * Play handler
-   */
   onPlay?: () => void;
-  /**
-   * Pause handler
-   */
   onPause?: () => void;
-  /**
-   * Seek handler
-   */
   onSeek?: (time: number) => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

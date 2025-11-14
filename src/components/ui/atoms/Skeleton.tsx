@@ -5,22 +5,9 @@ import { cn } from '@/lib/cn';
 export type SkeletonVariant = 'text' | 'circle' | 'rectangle';
 
 export interface SkeletonProps {
-  /**
-   * Variant type
-   * @default 'text'
-   */
   variant?: SkeletonVariant;
-  /**
-   * Width (CSS value or 'full')
-   */
   width?: string | number;
-  /**
-   * Height (CSS value)
-   */
   height?: string | number;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 

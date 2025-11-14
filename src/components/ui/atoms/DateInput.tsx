@@ -6,10 +6,6 @@ export type DateInputSize = 'sm' | 'md' | 'lg' | 'free';
 
 export interface DateInputProps
   extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size' | 'type'> {
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: DateInputSize;
 }
 

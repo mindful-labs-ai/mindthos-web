@@ -3,29 +3,11 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ChatBubbleProps {
-  /**
-   * Avatar element
-   */
   avatar?: React.ReactNode;
-  /**
-   * Author name
-   */
   author?: string;
-  /**
-   * Timestamp or time element
-   */
   time?: React.ReactNode;
-  /**
-   * Is this message from the current user
-   */
   mine?: boolean;
-  /**
-   * Message content
-   */
   children: React.ReactNode;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
