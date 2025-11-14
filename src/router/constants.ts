@@ -6,6 +6,10 @@ export const ROUTES = {
   AUTH: '/auth',
   EMAIL_VERIFICATION: '/auth/verify-email',
   TERMS: '/terms',
+  CLIENTS: '/clients',
+  HISTORY: '/history',
+  TEMPLATE: '/template',
+  SETTINGS: '/settings',
   ERROR_TEST: '/error-test',
   NOT_FOUND: '*',
 } as const;

@@ -8,6 +8,9 @@ import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
 import HomePage from '@/feature/home/page/HomePage';
+import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
+import { SettingsPage } from '@/feature/settings/page/SettingsPage';
+import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -44,10 +47,21 @@ export const router = createBrowserRouter([
             element: <HomePage />,
           },
           {
-            path: '/clients',
+            path: ROUTES.CLIENTS,
             element: <ClientListPage />,
           },
-          // TODO: 다른 메인 페이지들 (상담 기록, 템플릿 등)
+          {
+            path: ROUTES.HISTORY,
+            element: <SessionHistoryPage />,
+          },
+          {
+            path: ROUTES.TEMPLATE,
+            element: <TemplateListPage />,
+          },
+          {
+            path: ROUTES.SETTINGS,
+            element: <SettingsPage />,
+          }
         ],
       },
       {
