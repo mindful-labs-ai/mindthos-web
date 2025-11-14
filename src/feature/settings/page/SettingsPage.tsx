@@ -1,20 +1,31 @@
 import React from 'react';
 
 import { Mail, MapPin, User } from 'lucide-react';
+import { Link, createSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
 import { UsageProgressCard } from '@/feature/settings/components/UsageProgressCard';
 import { mockSettingsData } from '@/feature/settings/data/mockData';
+import { ROUTES, TERMS_TYPES } from '@/router/constants';
+import { authService } from '@/services/auth/authService';
 import { getPlanLabel } from '@/shared/utils/plan';
+import { useAuthStore } from '@/stores/authStore';
 
 export const SettingsPage: React.FC = () => {
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+
   const [settings] = React.useState(mockSettingsData);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [deleteError, setDeleteError] = React.useState('');
 
   const handleEditInfo = () => {
     // TODO: Implement edit info functionality
@@ -30,6 +41,47 @@ export const SettingsPage: React.FC = () => {
 
   const handleGuide = () => {
     // TODO: Implement guide navigation
+  };
+
+  const termsTo = {
+    pathname: ROUTES.TERMS,
+    search: `?${createSearchParams({ type: TERMS_TYPES.SERVICE })}`,
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    setIsDeleteModalOpen(true);
+    setDeleteError('');
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!user?.email) {
+      setDeleteError('사용자 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    setIsDeleting(true);
+    setDeleteError('');
+
+    try {
+      await authService.deleteAccount(user.email);
+      await logout();
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : '계정 탈퇴에 실패했습니다. 다시 시도해주세요.'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -139,9 +191,48 @@ export const SettingsPage: React.FC = () => {
         />
       </div>
 
+      <div className="border-t border-border px-8 py-6">
+        <div className="flex items-center justify-center gap-4 text-sm">
+          <Link
+            to={termsTo}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg"
+          >
+            서비스 약관
+          </Link>
+          <span className="text-border">|</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleLogout}
+            className="text-muted transition-colors hover:text-fg"
+          >
+            로그아웃
+          </Button>
+          <span className="text-border">|</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={handleDeleteAccount}
+            className="text-fg-muted transition-colors hover:text-danger"
+          >
+            계정 탈퇴
+          </Button>
+        </div>
+      </div>
+
       <PlanUpgradeModal
         open={isUpgradeModalOpen}
         onOpenChange={setIsUpgradeModalOpen}
+      />
+
+      <DeleteAccountModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        onConfirm={handleConfirmDelete}
+        isDeleting={isDeleting}
+        error={deleteError}
       />
     </div>
   );
