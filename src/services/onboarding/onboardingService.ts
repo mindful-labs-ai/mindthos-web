@@ -5,6 +5,8 @@ import type {
   OnboardingStatusResponse,
   OnboardingSaveRequest,
   OnboardingSaveResponse,
+  OnboardingCompleteRequest,
+  OnboardingCompleteResponse,
 } from './types';
 
 export const onboardingService = {
@@ -18,6 +20,15 @@ export const onboardingService = {
   async save(payload: OnboardingSaveRequest): Promise<OnboardingSaveResponse> {
     return await callEdgeFunction<OnboardingSaveResponse>(
       ONBOARDING_ENDPOINTS.SAVE,
+      payload
+    );
+  },
+
+  async complete(
+    payload: OnboardingCompleteRequest
+  ): Promise<OnboardingCompleteResponse> {
+    return await callEdgeFunction<OnboardingCompleteResponse>(
+      ONBOARDING_ENDPOINTS.COMPLETE,
       payload
     );
   },

@@ -17,11 +17,16 @@ interface OnboardingStoreState {
   isLoading: boolean;
 }
 
+interface SaveInfoPayload {
+  name: string;
+  phone_number?: string;
+  organization?: string;
+}
+
 interface OnboardingActions {
   checkOnboarding: (email: string) => Promise<void>;
-  saveName: (email: string, name: string) => Promise<void>;
-  savePhone: (email: string, phoneNumber: string) => Promise<void>;
-  nextStep: (email: string) => Promise<void>;
+  saveInfo: (email: string, payload: SaveInfoPayload) => Promise<void>;
+  nextStep: () => void;
   complete: (email: string) => Promise<void>;
   close: () => void;
   clear: () => void;
@@ -33,7 +38,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
   devtools(
     (set, get) => ({
       isOpen: false,
-      currentStep: OnboardingStep.NAME,
+      currentStep: OnboardingStep.INFO,
       status: null,
       isChecked: false,
       isLoading: false,
@@ -76,18 +81,17 @@ export const useOnboardingStore = create<OnboardingStore>()(
         }
       },
 
-      saveName: async (email: string, name: string) => {
+      saveInfo: async (email: string, payload: SaveInfoPayload) => {
         const response = await onboardingService.save({
           email,
-          step: OnboardingStep.NAME,
-          name,
+          ...payload,
         });
 
-        const updatedStep = (response.step + 1) as OnboardingStepType;
+        const nextStepValue = (response.step + 1) as OnboardingStepType;
 
         set(
           {
-            currentStep: updatedStep,
+            currentStep: nextStepValue,
             status: {
               step: response.step,
               state: response.state,
@@ -96,51 +100,17 @@ export const useOnboardingStore = create<OnboardingStore>()(
             },
           },
           false,
-          'saveName'
+          'saveInfo'
         );
       },
 
-      savePhone: async (email: string, phoneNumber: string) => {
-        const response = await onboardingService.save({
-          email,
-          step: OnboardingStep.PHONE,
-          phone_number: phoneNumber,
-        });
-
-        const updatedStep = (response.step + 1) as OnboardingStepType;
-
-        set(
-          {
-            currentStep: updatedStep,
-            status: {
-              step: response.step,
-              state: response.state,
-              shouldShowOnboarding:
-                response.state !== OnboardingState.COMPLETED,
-            },
-          },
-          false,
-          'savePhone'
-        );
-      },
-
-      nextStep: async (email: string) => {
+      nextStep: () => {
         const { currentStep } = get();
-
-        const response = await onboardingService.save({
-          email,
-          step: (currentStep + 1) as OnboardingStepType,
-        });
+        const nextStepValue = (currentStep + 1) as OnboardingStepType;
 
         set(
           {
-            currentStep: response.step,
-            status: {
-              step: response.step,
-              state: response.state,
-              shouldShowOnboarding:
-                response.state !== OnboardingState.COMPLETED,
-            },
+            currentStep: nextStepValue,
           },
           false,
           'nextStep'
@@ -148,10 +118,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
       },
 
       complete: async (email: string) => {
-        const response = await onboardingService.save({
-          email,
-          step: OnboardingStep.GUIDE_2,
-        });
+        const response = await onboardingService.complete({ email });
 
         set(
           {
@@ -176,7 +143,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
         set(
           {
             isOpen: false,
-            currentStep: OnboardingStep.NAME,
+            currentStep: OnboardingStep.INFO,
             status: null,
             isChecked: false,
             isLoading: false,
