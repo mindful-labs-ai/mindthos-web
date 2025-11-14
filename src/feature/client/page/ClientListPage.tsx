@@ -489,10 +489,7 @@ export const ClientListPage: React.FC = () => {
       </div>
 
       {/* Add Client Modal */}
-      <AddClientModal
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-      />
+      <AddClientModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
     </>
   );
 };

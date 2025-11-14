@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
+import { formatPrice } from '@/shared/utils/format';
 
 export interface PlanCardProps {
   name: string;
@@ -30,10 +31,6 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   isYearly = false,
   onSelect,
 }) => {
-  const formatPrice = (price: number) => {
-    return price.toLocaleString('ko-KR');
-  };
-
   return (
     <Card className="h-full text-left">
       <Card.Body className="flex h-full flex-col justify-between space-y-6 p-6">

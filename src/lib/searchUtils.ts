@@ -1,9 +1,5 @@
 /**
- * 검색 관련 유틸리티 함수
- */
-
-/**
- * 한글 초성 목록
+ * 검색 유틸리티 - 한글 초성 매칭 지원
  */
 const KOREAN_INITIALS = [
   'ㄱ',
@@ -27,9 +23,6 @@ const KOREAN_INITIALS = [
   'ㅎ',
 ];
 
-/**
- * 한글 초성 추출
- */
 export const getKoreanInitial = (char: string): string => {
   const code = char.charCodeAt(0) - 44032;
   if (code < 0 || code > 11171) return char;
@@ -37,9 +30,6 @@ export const getKoreanInitial = (char: string): string => {
   return KOREAN_INITIALS[initialIndex];
 };
 
-/**
- * 문자열의 초성 배열 반환
- */
 export const getInitials = (str: string): string => {
   return str
     .split('')
@@ -56,16 +46,8 @@ export const getInitials = (str: string): string => {
 };
 
 /**
- * 초성 검색 매칭 여부 확인
- *
- * @param text - 검색 대상 텍스트
- * @param query - 검색어
- * @returns 매칭 여부
- *
- * @example
- * matchesInitialSearch('김성곤', 'ㄱㅅㄱ') // true
- * matchesInitialSearch('김성곤', 'ㄱㅅ') // true
- * matchesInitialSearch('김성곤', 'ㄴ') // false
+ * 초성 검색 매칭 확인
+ * @example matchesInitialSearch('김경민', 'ㄱㄱㅁ') // true
  */
 export const matchesInitialSearch = (text: string, query: string): boolean => {
   const textInitials = getInitials(text);
@@ -85,11 +67,7 @@ export const matchesInitialSearch = (text: string, query: string): boolean => {
 };
 
 /**
- * 검색 점수 계산 (가중치 기반)
- *
- * @param text - 검색 대상 텍스트
- * @param query - 검색어
- * @returns 검색 점수 (높을수록 관련성 높음)
+ * 검색 점수 계산 - 정확도에 따른 가중치 부여
  */
 export const calculateSearchScore = (text: string, query: string): number => {
   const textLower = text.toLowerCase();
@@ -125,14 +103,7 @@ export const calculateSearchScore = (text: string, query: string): number => {
 };
 
 /**
- * 검색어 하이라이트를 위한 텍스트 분할
- *
- * @param text - 원본 텍스트
- * @param query - 검색어
- * @returns 매칭 부분과 일반 부분으로 분할된 배열
- *
- * @example
- * highlightMatches('김성곤', '성') // [{ text: '김', highlight: false }, { text: '성', highlight: true }, { text: '곤', highlight: false }]
+ * 하이라이트용 텍스트 분할
  */
 export const highlightMatches = (
   text: string,

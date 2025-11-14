@@ -8,24 +8,9 @@ export type TextAreaVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface TextAreaProps
   extends Omit<React.ComponentPropsWithoutRef<'textarea'>, 'size'> {
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: TextAreaSize;
-  /**
-   * Tone variant
-   * @default 'neutral'
-   */
   tone?: TextAreaTone;
-  /**
-   * Visual variant
-   * @default 'outline'
-   */
   variant?: TextAreaVariant;
-  /**
-   * Error state
-   */
   error?: boolean;
 }
 
@@ -44,20 +29,11 @@ const variantStyles: Record<TextAreaVariant, string> = {
 };
 
 /**
- * TextArea component
- *
- * Multi-line text input with size and variant options.
- * Supports error states and accessibility features.
- *
- * **A11y**: Proper label/id linkage, aria-describedby for error/help, aria-invalid when error.
- * **Keyboard**: Standard textarea behavior, resize vertical by default.
+ * TextArea - 다줄 텍스트 입력
+ * size, variant, error 상태 지원
  *
  * @example
- * ```tsx
  * <TextArea placeholder="Enter description" rows={4} />
- * <TextArea size="sm" error aria-describedby="error-msg" />
- * <TextArea size="free" className="h-32" />
- * ```
  */
 export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
   (

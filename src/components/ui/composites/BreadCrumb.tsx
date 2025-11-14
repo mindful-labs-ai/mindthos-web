@@ -5,37 +5,15 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 
 export interface BreadCrumbItem {
-  /**
-   * Display label
-   */
   label: string;
-  /**
-   * Link href (if item is a link)
-   */
   href?: string;
-  /**
-   * Icon element
-   */
   icon?: React.ReactNode;
 }
 
 export interface BreadCrumbProps {
-  /**
-   * Breadcrumb items
-   */
   items: BreadCrumbItem[];
-  /**
-   * Custom separator
-   * @default '/'
-   */
   separator?: React.ReactNode;
-  /**
-   * Click handler for items
-   */
   onItemClick?: (item: BreadCrumbItem, index: number) => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -56,23 +34,11 @@ const ChevronRightIcon = () => (
 );
 
 /**
- * BreadCrumb component
- *
- * Navigation breadcrumbs for hierarchical navigation.
- *
- * **A11y**: nav with aria-label, ol list structure, aria-current for last item.
- * **Keyboard**: Standard link navigation.
+ * BreadCrumb - 계층형 네비게이션 표시
+ * 현재 페이지 위치를 시각적으로 표현
  *
  * @example
- * ```tsx
- * <BreadCrumb
- *   items={[
- *     { label: 'Home', href: '/' },
- *     { label: 'Products', href: '/products' },
- *     { label: 'Item' }
- *   ]}
- * />
- * ```
+ * <BreadCrumb items={[{ label: 'Home', href: '/' }, { label: 'Page' }]} />
  */
 export const BreadCrumb: React.FC<BreadCrumbProps> = ({
   items,
@@ -105,7 +71,7 @@ export const BreadCrumb: React.FC<BreadCrumbProps> = ({
                   onClick={(e) => handleClick(e, item, index)}
                   className={cn(
                     'flex items-center gap-1.5 transition-colors duration-200',
-                    'text-fg-muted hover:text-fg cursor-pointer'
+                    'cursor-pointer text-fg-muted hover:text-fg'
                   )}
                 >
                   {item.icon && (

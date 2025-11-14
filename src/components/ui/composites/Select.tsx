@@ -9,58 +9,22 @@ export interface SelectItem {
 }
 
 export interface SelectProps {
-  /**
-   * Select items
-   */
   items: SelectItem[];
-  /**
-   * Multiple selection mode
-   * @default false
-   */
   multiple?: boolean;
-  /**
-   * Controlled value (string or string[])
-   */
   value?: string | string[];
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string | string[];
-  /**
-   * Change handler
-   */
   onChange?: (value: string | string[]) => void;
-  /**
-   * Placeholder text
-   */
   placeholder?: string;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * Select component
- *
- * Enhanced select with single or multiple selection support.
- *
- * **A11y**: aria-multiselectable, aria-expanded, keyboard navigation.
- * **Keyboard**: Enter/Space to open, ↑↓ to navigate, Enter to select.
+ * Select - 향상된 선택 컴포넌트
+ * single/multiple 선택 모드, 키보드 네비게이션
  *
  * @example
- * ```tsx
- * <Select
- *   items={[{ value: '1', label: 'Option 1' }]}
- *   value={selected}
- *   onChange={setSelected}
- * />
- * <Select multiple items={items} value={multipleSelected} />
- * ```
+ * <Select items={[{ value: '1', label: 'Option 1' }]} onChange={setSelected} />
  */
 export const Select: React.FC<SelectProps> = ({
   items,

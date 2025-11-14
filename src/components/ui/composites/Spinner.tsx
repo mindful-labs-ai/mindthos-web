@@ -5,18 +5,8 @@ import { cn } from '@/lib/cn';
 export type SpinnerSize = 'sm' | 'md' | 'lg';
 
 export interface SpinnerProps {
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: SpinnerSize;
-  /**
-   * Accessible label
-   */
   ariaLabel?: string;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -27,17 +17,11 @@ const sizeStyles: Record<SpinnerSize, string> = {
 };
 
 /**
- * Spinner component
- *
- * Loading spinner with size variants.
- *
- * **A11y**: aria-busy and sr-only label.
+ * Spinner - 로딩 스피너
+ * size 옵션, 접근성 레이블 지원
  *
  * @example
- * ```tsx
- * <Spinner />
- * <Spinner size="sm" ariaLabel="Loading content" />
- * ```
+ * <Spinner size="md" />
  */
 export const Spinner: React.FC<SpinnerProps> = ({
   size = 'md',

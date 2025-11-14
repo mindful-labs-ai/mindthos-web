@@ -14,48 +14,12 @@ export type ButtonTone =
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
-  /**
-   * Size variant of the button
-   * - `sm`: text-sm px-3 h-8 rounded-sm
-   * - `md`: text-sm px-4 h-10 rounded-md
-   * - `lg`: text-base px-5 h-12 rounded-lg
-   * - `free`: minimal baseline; control via className
-   * @default 'md'
-   */
   size?: ButtonSize;
-  /**
-   * Tone variant of the button
-   * - `primary`: primary color scheme
-   * - `secondary`: secondary/gray color scheme
-   * - `accent`: accent color scheme
-   * - `neutral`: neutral color scheme
-   * @default 'neutral'
-   */
   tone?: ButtonTone;
-  /**
-   * Visual variant of the button
-   * - `solid`: filled background
-   * - `outline`: bordered with transparent background
-   * - `ghost`: transparent with hover effect
-   * - `soft`: light background with tone color
-   * @default 'solid'
-   */
   variant?: ButtonVariant;
-  /**
-   * Loading state - shows spinner and disables interaction
-   */
   loading?: boolean;
-  /**
-   * Icon to display before children
-   */
   icon?: React.ReactNode;
-  /**
-   * Icon to display after children
-   */
   iconRight?: React.ReactNode;
-  /**
-   * Render as child element (using Radix Slot)
-   */
   asChild?: boolean;
 }
 
@@ -104,28 +68,12 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
 };
 
 /**
- * Button component
- *
- * A versatile button component with multiple size, tone, and variant options.
- * Supports loading state, icons, and full className override.
- *
- * **A11y**: Uses `type="button"` by default, `aria-busy` when loading, proper disabled state, focus-visible ring.
- * **Keyboard**: Responds to Enter and Space keys.
+ * Button - 다양한 스타일과 상태를 지원하는 버튼
+ * size, tone, variant 조합으로 다양한 디자인 구현
+ * loading 상태, icon 지원
  *
  * @example
- * ```tsx
- * <Button size="md" tone="primary" variant="solid">
- *   Click me
- * </Button>
- *
- * <Button loading icon={<Icon />}>
- *   Loading...
- * </Button>
- *
- * <Button size="free" className="w-full py-6">
- *   Custom size via className
- * </Button>
- * ```
+ * <Button tone="primary" variant="solid" loading>제출</Button>
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (

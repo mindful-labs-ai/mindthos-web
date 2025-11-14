@@ -3,60 +3,22 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ModalProps {
-  /**
-   * Open state
-   */
   open: boolean;
-  /**
-   * Change handler
-   */
   onOpenChange: (open: boolean) => void;
-  /**
-   * Modal title
-   */
   title?: React.ReactNode;
-  /**
-   * Modal description
-   */
   description?: React.ReactNode;
-  /**
-   * Initial focus ref
-   */
   initialFocusRef?: React.RefObject<HTMLElement>;
-  /**
-   * Close on overlay click
-   * @default true
-   */
   closeOnOverlay?: boolean;
-  /**
-   * Content
-   */
   children: React.ReactNode;
-  /**
-   * Additional className for the content
-   */
   className?: string;
 }
 
 /**
- * Modal (Dialog) component
- *
- * Accessible modal dialog with focus trap and backdrop.
- *
- * **A11y**: role="dialog" aria-modal, focus trap, Esc to close, focus return.
- * **Keyboard**: Esc to close, Tab traps focus within modal.
+ * Modal - 접근 가능한 다이얼로그
+ * 포커스 트랩, 백드롭 클릭 종료, ESC 키 지원
  *
  * @example
- * ```tsx
- * <Modal
- *   open={isOpen}
- *   onOpenChange={setIsOpen}
- *   title="Confirm Action"
- *   description="Are you sure you want to proceed?"
- * >
- *   <div>Modal content here</div>
- * </Modal>
- * ```
+ * <Modal open={isOpen} onOpenChange={setIsOpen} title="Title">Content</Modal>
  */
 export const Modal: React.FC<ModalProps> = ({
   open,

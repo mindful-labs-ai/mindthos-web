@@ -25,16 +25,10 @@ interface ToastContextValue {
 const ToastContext = React.createContext<ToastContextValue | null>(null);
 
 /**
- * ToastProvider component
- *
- * Provides toast notification context.
+ * ToastProvider - 토스트 알림 컨텍스트 제공
  *
  * @example
- * ```tsx
- * <ToastProvider>
- *   <App />
- * </ToastProvider>
- * ```
+ * <ToastProvider><App /></ToastProvider>
  */
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -145,23 +139,11 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onClose }) => {
 };
 
 /**
- * useToast hook
- *
- * Hook to show toast notifications.
- *
- * **A11y**: aria-live polite, pause on hover, close button labeled.
+ * useToast - 토스트 알림 표시 훅
  *
  * @example
- * ```tsx
  * const { toast } = useToast();
- *
- * toast({
- *   title: 'Success',
- *   description: 'Your changes have been saved.',
- *   action: { label: 'Undo', onClick: () => {} },
- *   duration: 5000,
- * });
- * ```
+ * toast({ title: 'Success', description: 'Saved' });
  */
 export const useToast = (): ToastContextValue => {
   const context = React.useContext(ToastContext);

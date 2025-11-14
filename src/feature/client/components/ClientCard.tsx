@@ -11,9 +11,6 @@ interface ClientCardProps {
   client: Client;
   onClick?: (client: Client) => void;
   onMenuClick?: (client: Client) => void;
-  /**
-   * 검색어 (하이라이트용)
-   */
   searchQuery?: string;
 }
 

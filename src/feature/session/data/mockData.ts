@@ -188,7 +188,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: 'SOAP 노트',
     template_id: 'template-soap',
-    summary: 'S: 직장 상사와의 관계 문제\nO: 의견 표현 시 무시당하는 느낌\nA: 자존감 저하\nP: 의사소통 기술 훈련',
+    summary:
+      'S: 직장 상사와의 관계 문제\nO: 의견 표현 시 무시당하는 느낌\nA: 자존감 저하\nP: 의사소통 기술 훈련',
     created_at: '2024-02-15T15:00:00',
   },
   {
@@ -197,7 +198,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: '마음토스 상담 노트',
     template_id: 'template-mindthos',
-    summary: '내담자는 직장에서의 스트레스를 호소함. 특히 상사와의 관계에서 자신의 의견이 무시당한다고 느끼고 있음.',
+    summary:
+      '내담자는 직장에서의 스트레스를 호소함. 특히 상사와의 관계에서 자신의 의견이 무시당한다고 느끼고 있음.',
     created_at: '2024-02-15T15:10:00',
   },
   {
@@ -206,7 +208,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: 'SOAP 노트',
     template_id: 'template-soap',
-    summary: 'S: 이혼 후 심리적 어려움\nO: 우울감, 무기력\nA: 적응장애 가능성\nP: 심리 지지 및 감정 표현 훈련',
+    summary:
+      'S: 이혼 후 심리적 어려움\nO: 우울감, 무기력\nA: 적응장애 가능성\nP: 심리 지지 및 감정 표현 훈련',
     created_at: '2024-02-14T10:30:00',
   },
   {
@@ -215,7 +218,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: '마음토스 상담 노트',
     template_id: 'template-mindthos',
-    summary: '감사 일기 실천을 통해 긍정적인 변화를 경험하고 있음. 작은 것에도 감사함을 느끼게 됨.',
+    summary:
+      '감사 일기 실천을 통해 긍정적인 변화를 경험하고 있음. 작은 것에도 감사함을 느끼게 됨.',
     created_at: '2024-02-13T15:30:00',
   },
   {
@@ -224,7 +228,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: 'SOAP 노트',
     template_id: 'template-soap',
-    summary: 'S: 부부 간 대화 단절\nO: 서로 피곤해서 짜증만 남\nA: 의사소통 패턴 개선 필요\nP: 부부 대화법 교육',
+    summary:
+      'S: 부부 간 대화 단절\nO: 서로 피곤해서 짜증만 남\nA: 의사소통 패턴 개선 필요\nP: 부부 대화법 교육',
     created_at: '2024-02-12T17:00:00',
   },
   {
@@ -242,7 +247,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: 'SOAP 노트',
     template_id: 'template-soap',
-    summary: 'S: 불안장애 증상\nO: 지속적인 걱정\nA: 불안장애 의심\nP: 인지행동치료 시작',
+    summary:
+      'S: 불안장애 증상\nO: 지속적인 걱정\nA: 불안장애 의심\nP: 인지행동치료 시작',
     created_at: '2024-02-11T11:30:00',
   },
   {
@@ -251,7 +257,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: '마음토스 상담 노트',
     template_id: 'template-mindthos',
-    summary: '8회기 완료. 우울증 증상 많이 개선됨. 긍정적인 변화를 스스로 인식하고 있음.',
+    summary:
+      '8회기 완료. 우울증 증상 많이 개선됨. 긍정적인 변화를 스스로 인식하고 있음.',
     created_at: '2024-02-10T14:30:00',
   },
   {
@@ -278,7 +285,8 @@ export const mockCounselNotes: CounselNote[] = [
     user_id: 'counselor-1',
     title: 'SOAP 노트',
     template_id: 'template-soap',
-    summary: 'S: 진로 고민\nO: 퇴사 후 방향성 상실\nA: 진로 불안\nP: 진로 탐색 및 자기이해',
+    summary:
+      'S: 진로 고민\nO: 퇴사 후 방향성 상실\nA: 진로 불안\nP: 진로 탐색 및 자기이해',
     created_at: '2024-02-01T09:30:00',
   },
   {

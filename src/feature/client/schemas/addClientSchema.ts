@@ -4,17 +4,11 @@ import { z } from 'zod';
  * 클라이언트 추가 폼 스키마
  */
 export const addClientSchema = z.object({
-  /**
-   * 이름 (필수)
-   */
   name: z
     .string()
     .min(1, '이름을 입력해주세요')
     .max(12, '이름은 최대 12자까지 입력 가능합니다'),
 
-  /**
-   * 휴대폰 번호 (선택)
-   */
   phone_number: z
     .string()
     .refine(
@@ -23,16 +17,12 @@ export const addClientSchema = z.object({
         return /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(val);
       },
       {
-        message:
-          '올바른 휴대폰 번호 형식을 입력해주세요 (예: 010-1234-5678)',
+        message: '올바른 휴대폰 번호 형식을 입력해주세요 (예: 010-1234-5678)',
       }
     )
     .optional()
     .default(''),
 
-  /**
-   * 이메일 주소 (선택)
-   */
   email: z
     .string()
     .refine(
@@ -47,27 +37,18 @@ export const addClientSchema = z.object({
     .optional()
     .default(''),
 
-  /**
-   * 상담 주제 (memo에 저장)
-   */
   memo: z
     .string()
     .max(200, '상담 주제는 최대 200자까지 입력 가능합니다')
     .optional()
     .default(''),
 
-  /**
-   * 회기 수
-   */
   counsel_number: z
     .number()
     .int('정수를 입력해주세요')
     .min(0, '0 이상의 숫자를 입력해주세요')
     .default(0),
 
-  /**
-   * 내담자 구성 (group_id 관련)
-   */
   group_members: z.string().optional().default(''),
 });
 

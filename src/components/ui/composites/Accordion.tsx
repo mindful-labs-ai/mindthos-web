@@ -10,53 +10,20 @@ export interface AccordionItem {
 }
 
 export interface AccordionProps {
-  /**
-   * Type of accordion
-   * - `single`: only one item can be open at a time
-   * - `multiple`: multiple items can be open
-   */
   type: 'single' | 'multiple';
-  /**
-   * Accordion items
-   */
   items: AccordionItem[];
-  /**
-   * Controlled value (string for single, string[] for multiple)
-   */
   value?: string | string[];
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string | string[];
-  /**
-   * Change handler
-   */
   onValueChange?: (value: string | string[]) => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * Accordion component
- *
- * Collapsible sections with single or multiple expansion modes.
- *
- * **A11y**: button with aria-expanded controls content region.
- * **Keyboard**: Enter/Space to toggle, arrow keys optional.
+ * Accordion - 접을 수 있는 섹션
+ * single/multiple 확장 모드 지원
  *
  * @example
- * ```tsx
- * <Accordion
- *   type="single"
- *   items={[
- *     { value: '1', header: 'Section 1', content: 'Content 1' },
- *     { value: '2', header: 'Section 2', content: 'Content 2' },
- *   ]}
- *   defaultValue="1"
- * />
- * ```
+ * <Accordion type="single" items={[{ value: '1', header: 'Title', content: '...' }]} />
  */
 export const Accordion: React.FC<AccordionProps> = ({
   type,

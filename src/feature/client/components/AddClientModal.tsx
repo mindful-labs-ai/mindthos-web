@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { X } from 'lucide-react';
-
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { Title } from '@/components/ui/atoms/Title';
@@ -13,18 +11,16 @@ import {
 } from '@/feature/client/schemas/addClientSchema';
 
 interface AddClientModalProps {
-  /**
-   * 모달 열림 상태
-   */
   open: boolean;
-  /**
-   * 모달 열림 상태 변경 핸들러
-   */
   onOpenChange: (open: boolean) => void;
 }
 
 /**
- * AddClientModal - 새로운 클라이언트 등록 모달
+ * AddClientModal - 새 클라이언트 등록 모달
+ * 폼 검증, 전화번호 자동 포맷팅 지원
+ *
+ * @example
+ * <AddClientModal open={isOpen} onOpenChange={setIsOpen} />
  */
 export const AddClientModal: React.FC<AddClientModalProps> = ({
   open,

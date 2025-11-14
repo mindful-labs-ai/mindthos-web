@@ -4,6 +4,8 @@ import { Upload, UserPlus, FileSearch } from 'lucide-react';
 
 import { Title } from '@/components/ui';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { formatKoreanDate } from '@/shared/utils/date';
+import { extractUsernameFromEmail } from '@/shared/utils/user';
 import { useAuthStore } from '@/stores/authStore';
 
 import { ActionCard } from '../components/ActionCard';
@@ -14,60 +16,61 @@ const HomePage = () => {
   const user = useAuthStore((state) => state.user);
   const [showBanner, setShowBanner] = React.useState(true);
 
-  // 현재 날짜를 한국어로 포맷
-  const getFormattedDate = () => {
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-    const weekday = weekdays[now.getDay()];
-    return `${month}월 ${day}일 ${weekday}요일`;
+  const handleGuideClick = () => {
+    // TODO: Navigate to guide page
   };
 
-  // 사용자 이름 추출 (이메일에서 @ 앞부분 사용)
-  const getUserName = () => {
-    if (!user?.email) return '사용자';
-    return user.email.split('@')[0];
+  const handleUploadClick = () => {
+    // TODO: Implement upload functionality
   };
 
-  console.log(user);
+  const handleAddCustomerClick = () => {
+    // TODO: Implement add customer functionality
+  };
+
+  const handleViewAllRecordsClick = () => {
+    // TODO: Navigate to all records page
+  };
+
+  const handleSessionClick = (_sessionId: string) => {
+    // TODO: Navigate to session detail page
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl px-12 py-6 text-left lg:px-16 lg:py-10">
-      {/* Welcome Banner */}
       {showBanner && (
         <WelcomeBanner
           title="마음토스 시작하기"
           description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
           buttonText="더 알아보기"
-          onButtonClick={() => console.log('배너 경로 클릭')}
+          onButtonClick={handleGuideClick}
           onClose={() => setShowBanner(false)}
         />
       )}
 
-      {/* Date and Greeting */}
-      <GreetingSection userName={getUserName()} date={getFormattedDate()} />
+      <GreetingSection
+        userName={extractUsernameFromEmail(user?.email)}
+        date={formatKoreanDate()}
+      />
 
-      {/* Action Cards */}
       <div className="mb-8 flex flex-row gap-4">
         <ActionCard
           icon={<Upload size={24} className="text-primary-500" />}
           title="녹음 파일 업로드하기"
-          onClick={() => console.log('Upload')}
+          onClick={handleUploadClick}
         />
         <ActionCard
           icon={<UserPlus size={24} className="text-red-500" />}
           title="고객 추가하기"
-          onClick={() => console.log('Add customer')}
+          onClick={handleAddCustomerClick}
         />
         <ActionCard
           icon={<FileSearch size={24} className="text-yellow-500" />}
           title="상담 기록 전체보기"
-          onClick={() => console.log('View all records')}
+          onClick={handleViewAllRecordsClick}
         />
       </div>
 
-      {/* Recent Sessions */}
       <div>
         <div className="mb-4 flex items-center justify-between">
           <Title as="h2" className="text-xl font-semibold">
@@ -79,14 +82,14 @@ const HomePage = () => {
           <SessionCard
             title="김경민 1회기"
             content="상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다."
-            date={getFormattedDate()}
-            onClick={() => console.log('김경민 1회기 클릭')}
+            date={formatKoreanDate()}
+            onClick={() => handleSessionClick('session-1')}
           />
           <SessionCard
             title="김성곤 2회기"
             content="상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다."
-            date={getFormattedDate()}
-            onClick={() => console.log('김성곤 2회기 클릭')}
+            date={formatKoreanDate()}
+            onClick={() => handleSessionClick('session-2')}
           />
         </div>
       </div>

@@ -4,25 +4,15 @@ import { cn } from '@/lib/cn';
 
 export interface VisuallyHiddenProps
   extends React.HTMLAttributes<HTMLSpanElement> {
-  /**
-   * Content to hide visually but keep accessible to screen readers
-   */
   children: React.ReactNode;
 }
 
 /**
- * VisuallyHidden component
- *
- * Hides content visually while keeping it accessible to screen readers.
- * Useful for providing additional context to assistive technologies.
+ * VisuallyHidden - 시각적으로 숨기되 스크린 리더에는 표시
+ * 접근성 개선을 위한 컴포넌트
  *
  * @example
- * ```tsx
- * <button>
- *   <Icon />
- *   <VisuallyHidden>Close dialog</VisuallyHidden>
- * </button>
- * ```
+ * <button><Icon /><VisuallyHidden>Close</VisuallyHidden></button>
  */
 export const VisuallyHidden = React.forwardRef<
   HTMLSpanElement,

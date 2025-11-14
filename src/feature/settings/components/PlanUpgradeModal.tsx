@@ -9,6 +9,10 @@ import {
   yearPlusPlan,
   yearProPlan,
 } from '@/feature/settings/data/mockData';
+import {
+  calculateDiscountRate,
+  calculateMonthlyPrice,
+} from '@/shared/utils/plan';
 
 import { PlanCard } from './PlanCard';
 
@@ -35,52 +39,51 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       alert('플랜을 선택해주세요.');
       return;
     }
-    console.log('플랜 업그레이드:', selectedPlan);
-    // TODO: 실제 결제 플로우 구현
   };
 
-  const plans =
-    period === 'monthly'
-      ? [
-          {
-            name: '플러스',
-            ...plusPlan,
-            originalPrice: plusPlan.price * 12,
-            discountedPrice: plusPlan.price,
-            discountRate: 0,
-          },
-          {
-            name: '프로',
-            ...proPlan,
-            originalPrice: proPlan.price * 12,
-            discountedPrice: proPlan.price,
-            discountRate: 0,
-          },
-        ]
-      : [
-          {
-            name: '플러스',
-            ...yearPlusPlan,
-            originalPrice: plusPlan.price * 12,
-            discountedPrice: Math.floor(yearPlusPlan.price / 12),
-            discountRate: Math.round(
-              ((plusPlan.price * 12 - yearPlusPlan.price) /
-                (plusPlan.price * 12)) *
-                100
-            ),
-          },
-          {
-            name: '프로',
-            ...yearProPlan,
-            originalPrice: proPlan.price * 12,
-            discountedPrice: Math.floor(yearProPlan.price / 12),
-            discountRate: Math.round(
-              ((proPlan.price * 12 - yearProPlan.price) /
-                (proPlan.price * 12)) *
-                100
-            ),
-          },
-        ];
+  const plans = React.useMemo(
+    () =>
+      period === 'monthly'
+        ? [
+            {
+              name: '플러스',
+              ...plusPlan,
+              originalPrice: plusPlan.price * 12,
+              discountedPrice: plusPlan.price,
+              discountRate: 0,
+            },
+            {
+              name: '프로',
+              ...proPlan,
+              originalPrice: proPlan.price * 12,
+              discountedPrice: proPlan.price,
+              discountRate: 0,
+            },
+          ]
+        : [
+            {
+              name: '플러스',
+              ...yearPlusPlan,
+              originalPrice: plusPlan.price * 12,
+              discountedPrice: calculateMonthlyPrice(yearPlusPlan.price),
+              discountRate: calculateDiscountRate(
+                plusPlan.price,
+                yearPlusPlan.price
+              ),
+            },
+            {
+              name: '프로',
+              ...yearProPlan,
+              originalPrice: proPlan.price * 12,
+              discountedPrice: calculateMonthlyPrice(yearProPlan.price),
+              discountRate: calculateDiscountRate(
+                proPlan.price,
+                yearProPlan.price
+              ),
+            },
+          ],
+    [period]
+  );
 
   return (
     <Modal
@@ -90,7 +93,6 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       className="max-w-5xl"
     >
       <div className="mx-24 mb-16 mt-8 flex flex-col items-center space-y-6">
-        {/* Period Tabs */}
         <div className="flex w-fit justify-center gap-2 rounded-lg bg-surface-contrast p-2">
           <button
             onClick={() => setPeriod('monthly')}

@@ -8,32 +8,11 @@ export type InputVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface InputProps
   extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size'> {
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: InputSize;
-  /**
-   * Tone variant
-   * @default 'neutral'
-   */
   tone?: InputTone;
-  /**
-   * Visual variant
-   * @default 'outline'
-   */
   variant?: InputVariant;
-  /**
-   * Error state
-   */
   error?: boolean;
-  /**
-   * Prefix element (icon or text)
-   */
   prefix?: React.ReactNode;
-  /**
-   * Suffix element (icon or text)
-   */
   suffix?: React.ReactNode;
 }
 
@@ -52,21 +31,11 @@ const variantStyles: Record<InputVariant, string> = {
 };
 
 /**
- * Input component
- *
- * Flexible text input with multiple variants, sizes, and optional prefix/suffix.
- * Supports error states and accessibility features.
- *
- * **A11y**: Proper label/id linkage, aria-describedby for error/help text, aria-invalid when error.
- * **Keyboard**: Standard input keyboard behavior.
+ * Input - 텍스트 입력 컴포넌트
+ * prefix/suffix, error 상태 지원
  *
  * @example
- * ```tsx
- * <Input placeholder="Enter your name" />
- * <Input size="sm" prefix={<SearchIcon />} />
- * <Input error aria-describedby="error-msg" />
- * <Input size="free" className="w-full py-6" />
- * ```
+ * <Input placeholder="Enter name" prefix={<Icon />} />
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (

@@ -10,32 +10,11 @@ export type CheckBoxVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface CheckBoxProps
   extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size' | 'type'> {
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: CheckBoxSize;
-  /**
-   * Tone variant
-   * @default 'primary'
-   */
   tone?: CheckBoxTone;
-  /**
-   * Visual variant
-   * @default 'solid'
-   */
   variant?: CheckBoxVariant;
-  /**
-   * Indeterminate state (shows dash instead of checkmark)
-   */
   indeterminate?: boolean;
-  /**
-   * Label text
-   */
   label?: React.ReactNode;
-  /**
-   * Description text
-   */
   description?: React.ReactNode;
 }
 
@@ -54,20 +33,11 @@ const iconSizeMap: Record<CheckBoxSize, number> = {
 };
 
 /**
- * CheckBox component
- *
- * Accessible checkbox with optional label and description.
- * Supports indeterminate state and multiple visual variants.
- *
- * **A11y**: Native input with proper label association, aria-checked="mixed" when indeterminate, Space toggles.
- * **Keyboard**: Space to toggle.
+ * CheckBox - 체크박스 컴포넌트
+ * 라벨, 설명, indeterminate 상태 지원
  *
  * @example
- * ```tsx
  * <CheckBox label="Accept terms" />
- * <CheckBox indeterminate label="Select all" />
- * <CheckBox size="sm" tone="accent" label="Subscribe" description="Get weekly updates" />
- * ```
  */
 export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
   (

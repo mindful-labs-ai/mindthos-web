@@ -5,14 +5,7 @@ import { cn } from '@/lib/cn';
 export type TitleAs = 'h1' | 'h2' | 'h3' | 'h4';
 
 export interface TitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
-  /**
-   * Semantic heading level
-   * @default 'h2'
-   */
   as?: TitleAs;
-  /**
-   * Content
-   */
   children: React.ReactNode;
 }
 
@@ -24,17 +17,11 @@ const headingStyles: Record<TitleAs, string> = {
 };
 
 /**
- * Title component
- *
- * Semantic heading component with consistent typography.
- *
- * **A11y**: Proper heading hierarchy semantics.
+ * Title - 시맨틱 헤딩 컴포넌트
+ * 일관된 타이포그래피 제공
  *
  * @example
- * ```tsx
  * <Title as="h1">Page Title</Title>
- * <Title as="h3" className="text-primary">Section Title</Title>
- * ```
  */
 export const Title = React.forwardRef<HTMLHeadingElement, TitleProps>(
   ({ as: Component = 'h2', className, children, ...props }, ref) => {

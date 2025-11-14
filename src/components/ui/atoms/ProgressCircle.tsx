@@ -3,51 +3,21 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ProgressCircleProps {
-  /**
-   * Progress value (0-100)
-   */
   value: number;
-  /**
-   * Accessible label
-   */
   label?: string;
-  /**
-   * Indeterminate state (loading animation)
-   */
   indeterminate?: boolean;
-  /**
-   * Size in pixels
-   * @default 48
-   */
   size?: number;
-  /**
-   * Stroke width in pixels
-   * @default 4
-   */
   strokeWidth?: number;
-  /**
-   * Show percentage value in center
-   * @default true
-   */
   showValue?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * ProgressCircle component
- *
- * Circular progress indicator with determinate and indeterminate modes.
- *
- * **A11y**: role="progressbar" with aria-valuenow/min/max.
+ * ProgressCircle - 원형 진행률 표시기
+ * 확정/불확정 모드 지원, 퍼센트 표시 옵션
  *
  * @example
- * ```tsx
  * <ProgressCircle value={75} label="Processing" />
- * <ProgressCircle indeterminate size={32} />
- * ```
  */
 export const ProgressCircle = React.forwardRef<
   HTMLDivElement,

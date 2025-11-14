@@ -6,12 +6,12 @@ import { Button } from '@/components/ui';
 import { ROUTES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { useAuthStore } from '@/stores/authStore';
+import { useThemeStore } from '@/stores/themeStore';
 
 import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
-  const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -21,10 +21,8 @@ function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
 
-  const toggleDarkMode = () => {
-    document.documentElement.classList.toggle('dark');
-    setIsDark(!isDark);
-  };
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
   const handleLoadingDemo = () => {
     setIsLoading(true);
@@ -83,8 +81,8 @@ function App() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={toggleDarkMode}>
-              {isDark ? '☀️ Light' : '🌙 Dark'}
+            <Button variant="outline" size="sm" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
             </Button>
             {isAuthenticated ? (
               <>

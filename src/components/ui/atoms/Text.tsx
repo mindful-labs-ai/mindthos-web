@@ -5,38 +5,18 @@ import { cn } from '@/lib/cn';
 export type TextAs = 'p' | 'span' | 'div';
 
 export interface TextProps extends React.HTMLAttributes<HTMLElement> {
-  /**
-   * Semantic element to render as
-   * @default 'p'
-   */
   as?: TextAs;
-  /**
-   * Muted text style
-   */
   muted?: boolean;
-  /**
-   * Truncate text with ellipsis
-   */
   truncate?: boolean;
-  /**
-   * Content
-   */
   children: React.ReactNode;
 }
 
 /**
- * Text component
- *
- * General purpose text component with utility variants.
- *
- * **A11y**: Semantic element selection.
+ * Text - 범용 텍스트 컴포넌트
+ * muted, truncate 옵션 지원
  *
  * @example
- * ```tsx
- * <Text>Regular paragraph text</Text>
- * <Text as="span" muted>Muted inline text</Text>
- * <Text truncate className="max-w-xs">Very long text that will be truncated...</Text>
- * ```
+ * <Text muted>Muted text</Text>
  */
 export const Text = React.forwardRef<HTMLElement, TextProps>(
   (

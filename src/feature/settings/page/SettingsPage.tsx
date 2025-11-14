@@ -10,17 +10,18 @@ import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
 import { UsageProgressCard } from '@/feature/settings/components/UsageProgressCard';
 import { mockSettingsData } from '@/feature/settings/data/mockData';
+import { getPlanLabel } from '@/shared/utils/plan';
 
 export const SettingsPage: React.FC = () => {
   const [settings] = React.useState(mockSettingsData);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
 
   const handleEditInfo = () => {
-    console.log('정보 수정 클릭');
+    // TODO: Implement edit info functionality
   };
 
   const handleTokenLog = () => {
-    console.log('토큰 사용 내역 클릭');
+    // TODO: Implement token log functionality
   };
 
   const handleUpgradePlan = () => {
@@ -28,20 +29,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleGuide = () => {
-    console.log('더 알아보기 클릭');
-  };
-
-  const getPlanLabel = (planType: string) => {
-    switch (planType) {
-      case 'FREE':
-        return '프리 플랜';
-      case 'PRO':
-        return '프로 플랜';
-      case 'PLUS':
-        return '엔터프라이즈 플랜';
-      default:
-        return planType;
-    }
+    // TODO: Implement guide navigation
   };
 
   return (

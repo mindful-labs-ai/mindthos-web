@@ -11,47 +11,19 @@ export interface SidebarItem {
 }
 
 export interface SidebarProps {
-  /**
-   * Sidebar items
-   */
   items: SidebarItem[];
-  /**
-   * Collapsible state
-   */
   collapsible?: boolean;
-  /**
-   * Select handler
-   */
   onSelect?: (value: string) => void;
-  /**
-   * Active/current value
-   */
   activeValue?: string;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * Sidebar component
- *
- * Navigation sidebar with keyboard roving focus.
- *
- * **A11y**: nav element, aria-current for active item, keyboard roving focus.
- * **Keyboard**: ↑↓ to navigate, Enter to select.
+ * Sidebar - 네비게이션 사이드바
+ * 키보드 네비게이션 (↑↓), 활성 항목 표시
  *
  * @example
- * ```tsx
- * <Sidebar
- *   items={[
- *     { icon: <HomeIcon />, label: 'Home', value: 'home' },
- *     { icon: <SettingsIcon />, label: 'Settings', value: 'settings' },
- *   ]}
- *   activeValue="home"
- *   onSelect={(value) => console.log(value)}
- * />
- * ```
+ * <Sidebar items={[{ icon: <Icon />, label: 'Home', value: 'home' }]} />
  */
 export const Sidebar: React.FC<SidebarProps> = ({
   items,

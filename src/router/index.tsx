@@ -21,13 +21,8 @@ import SideTabLayout from './layouts/SideTabLayout';
 
 /**
  * 애플리케이션 라우터 설정
- *
- * 구조:
- * - 루트 레이아웃에서 공통 에러 핸들링
- * - 중첩 라우트로 하위 페이지 구성
- * - 경로는 constants.ts에서 중앙 관리
- * - PublicOnlyRoute: 비로그인 사용자만 접근 (로그인 페이지 등)
- * - ProtectedRoute: 로그인한 사용자만 접근 (대시보드 등)
+ * ProtectedRoute와 PublicOnlyRoute로 인증 기반 접근 제어
+ * 경로는 constants.ts에서 중앙 관리
  */
 export const router = createBrowserRouter([
   {
@@ -61,7 +56,7 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.SETTINGS,
             element: <SettingsPage />,
-          }
+          },
         ],
       },
       {

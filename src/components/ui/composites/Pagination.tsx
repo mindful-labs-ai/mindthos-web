@@ -3,35 +3,12 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface PaginationProps {
-  /**
-   * Current page (1-indexed)
-   */
   currentPage: number;
-  /**
-   * Total number of pages
-   */
   totalPages: number;
-  /**
-   * Page change handler
-   */
   onPageChange: (page: number) => void;
-  /**
-   * Number of page buttons to show around current page
-   * @default 1
-   */
   siblingCount?: number;
-  /**
-   * Show first/last buttons
-   * @default true
-   */
   showFirstLast?: boolean;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -105,21 +82,11 @@ const range = (start: number, end: number): number[] => {
 };
 
 /**
- * Pagination component
- *
- * Page navigation with previous/next and numbered pages.
- *
- * **A11y**: nav element with aria-label, button roles, aria-current for current page.
- * **Keyboard**: Tab to navigate, Enter/Space to activate.
+ * Pagination - 페이지 네비게이션
+ * 이전/다음, 번호 버튼, ellipsis 지원
  *
  * @example
- * ```tsx
- * <Pagination
- *   currentPage={5}
- *   totalPages={10}
- *   onPageChange={(page) => console.log(page)}
- * />
- * ```
+ * <Pagination currentPage={5} totalPages={10} onPageChange={setPage} />
  */
 export const Pagination: React.FC<PaginationProps> = ({
   currentPage,
