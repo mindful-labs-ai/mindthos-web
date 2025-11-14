@@ -9,15 +9,12 @@ export interface ListProps {
 }
 
 /**
- * List component
- *
- * Simple list component with minimal styling.
+ * List - 리스트 컴포넌트
+ * ordered prop으로 순서 있는/없는 리스트 전환
+ * 최소한의 스타일 적용
  *
  * @example
- * ```tsx
- * <List items={['Item 1', 'Item 2', 'Item 3']} />
- * <List ordered items={['First', 'Second', 'Third']} />
- * ```
+ * <List ordered items={['첫 번째', '두 번째', '세 번째']} />
  */
 export const List: React.FC<ListProps> = ({
   items,

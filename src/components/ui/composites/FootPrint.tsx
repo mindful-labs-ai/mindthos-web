@@ -14,20 +14,12 @@ export interface FootPrintProps {
 }
 
 /**
- * FootPrint component
- *
- * Small meta line for displaying created/time/author info.
- * Pure presentational component.
+ * FootPrint - 메타 정보 표시 컴포넌트
+ * 작성자, 생성 시간 등 메타 정보 한 줄로 표시
+ * icon, label, value 조합으로 구성
  *
  * @example
- * ```tsx
- * <FootPrint
- *   items={[
- *     { icon: <UserIcon />, label: 'Author', value: 'John Doe' },
- *     { icon: <ClockIcon />, label: 'Created', value: '2 hours ago' },
- *   ]}
- * />
- * ```
+ * <FootPrint items={[{ icon: <UserIcon />, label: '작성자', value: '홍길동' }]} />
  */
 export const FootPrint: React.FC<FootPrintProps> = ({ items, className }) => {
   return (

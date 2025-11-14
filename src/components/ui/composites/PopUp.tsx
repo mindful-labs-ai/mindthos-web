@@ -21,20 +21,12 @@ const placementStyles: Record<PopUpPlacement, string> = {
 };
 
 /**
- * PopUp (Popover/Hovercard) component
- *
- * Popover component with trigger and content.
- *
- * **A11y**: aria-controls, Esc to close, focus return.
- * **Keyboard**: Esc to close.
+ * PopUp - 팝오버 컴포넌트
+ * trigger 클릭 시 content 표시
+ * Esc 키로 닫기, 외부 클릭 감지
  *
  * @example
- * ```tsx
- * <PopUp
- *   trigger={<button>Click me</button>}
- *   content={<div>Popup content</div>}
- * />
- * ```
+ * <PopUp trigger={<button>열기</button>} content={<div>내용</div>} placement="bottom" />
  */
 export const PopUp: React.FC<PopUpProps> = ({
   trigger,

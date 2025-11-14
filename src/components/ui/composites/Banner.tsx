@@ -46,21 +46,12 @@ const toneStyles: Record<
 };
 
 /**
- * Banner component
- *
- * Announcement banner with tone variants and optional action.
+ * Banner - 공지 배너
+ * tone별 스타일, 선택적 액션 버튼
+ * dismissible 옵션 지원
  *
  * @example
- * ```tsx
- * <Banner
- *   tone="info"
- *   title="New feature available"
- *   description="Check out our latest updates"
- *   action={{ label: 'Learn more', onClick: () => {} }}
- *   dismissible
- *   onDismiss={() => {}}
- * />
- * ```
+ * <Banner title="공지" action={{label:'더보기',onClick:...}} dismissible />
  */
 export const Banner: React.FC<BannerProps> = ({
   title,

@@ -29,18 +29,12 @@ const getRelativeTime = (date: Date): string => {
 };
 
 /**
- * TimeStamp component
- *
- * Displays a timestamp with optional relative formatting.
- *
- * **A11y**: Uses `<time>` element with dateTime attribute.
+ * TimeStamp - 타임스탬프 표시 컴포넌트
+ * 절대/상대 시간 형식 지원
+ * time 요소로 접근성 준수
  *
  * @example
- * ```tsx
  * <TimeStamp value={new Date()} relative />
- * <TimeStamp value="2024-01-15T10:30:00Z" />
- * <TimeStamp value={Date.now()} relative />
- * ```
  */
 export const TimeStamp: React.FC<TimeStampProps> = ({
   value,

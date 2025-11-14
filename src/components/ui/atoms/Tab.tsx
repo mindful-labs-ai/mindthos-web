@@ -27,24 +27,12 @@ const sizeStyles: Record<TabSize, string> = {
 };
 
 /**
- * Tab component
- *
- * Accessible tabs with keyboard navigation.
- * Supports controlled and uncontrolled modes.
- *
- * **A11y**: role="tablist" with proper tab/tabpanel association, aria-selected, arrow key navigation, Home/End.
- * **Keyboard**: Arrow keys to navigate, Home/End to jump to first/last, Enter/Space to select.
+ * Tab - 탭 네비게이션 컴포넌트
+ * controlled/uncontrolled 모드 지원
+ * role="tablist"로 접근성 준수, 화살표 키 네비게이션
  *
  * @example
- * ```tsx
- * <Tab
- *   items={[
- *     { value: 'tab1', label: 'Tab 1' },
- *     { value: 'tab2', label: 'Tab 2', disabled: true },
- *   ]}
- *   defaultValue="tab1"
- * />
- * ```
+ * <Tab items={[{value:'tab1',label:'탭1'}]} defaultValue="tab1" />
  */
 export const Tab: React.FC<TabProps> = ({
   items,

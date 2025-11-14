@@ -17,22 +17,12 @@ export interface SnackBarProps {
 }
 
 /**
- * SnackBar component
- *
- * Bottom announcement/notification bar.
- *
- * **A11y**: aria-live assertive for critical messages, otherwise polite.
- * **Keyboard**: Esc to dismiss.
+ * SnackBar - 하단 알림 바 컴포넌트
+ * 화면 하단에서 일시적으로 메시지 표시
+ * 액션 버튼 지원, 자동 닫기 타이머
  *
  * @example
- * ```tsx
- * <SnackBar
- *   open={isOpen}
- *   message="File saved successfully"
- *   action={{ label: 'Undo', onClick: () => {} }}
- *   onOpenChange={setIsOpen}
- * />
- * ```
+ * <SnackBar open={isOpen} message="저장되었습니다" action={{ label: '취소', onClick: undo }} onOpenChange={setIsOpen} />
  */
 export const SnackBar: React.FC<SnackBarProps> = ({
   open,

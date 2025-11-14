@@ -12,16 +12,12 @@ export interface SkeletonProps {
 }
 
 /**
- * Skeleton component
- *
- * Loading placeholder with pulse animation.
+ * Skeleton - 로딩 플레이스홀더
+ * pulse 애니메이션 지원
+ * text/circle/rectangle 변형 제공
  *
  * @example
- * ```tsx
  * <Skeleton variant="text" width="200px" />
- * <Skeleton variant="circle" width={40} height={40} />
- * <Skeleton variant="rectangle" width="100%" height={200} />
- * ```
  */
 export const Skeleton: React.FC<SkeletonProps> = ({
   variant = 'text',

@@ -28,18 +28,12 @@ const toneStyles: Record<ChipTone, string> = {
 };
 
 /**
- * Chip component
- *
- * Small pill-shaped label with optional close button.
- *
- * **A11y**: Close button has aria-label.
+ * Chip - 작은 알약 모양 라벨
+ * 선택적 닫기 버튼 지원
+ * aria-label로 접근성 준수
  *
  * @example
- * ```tsx
- * <Chip label="Tag" />
- * <Chip label="React" tone="primary" onClose={() => {}} />
- * <Chip label="Small" size="sm" tone="accent" />
- * ```
+ * <Chip label="태그" onClose={() => {}} />
  */
 export const Chip: React.FC<ChipProps> = ({
   label,

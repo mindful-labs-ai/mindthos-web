@@ -20,24 +20,12 @@ export interface DropdownProps {
 }
 
 /**
- * Dropdown (Select) component
- *
- * Accessible dropdown select with keyboard navigation and typeahead.
- *
- * **A11y**: button+listbox pattern, typeahead search, Esc to close, focus return.
- * **Keyboard**: ↑↓ to navigate, Enter to select, Esc to close, typeahead search.
+ * Dropdown - 드롭다운 선택 컴포넌트
+ * 키보드 네비게이션, 타이핑 검색 지원
+ * button+listbox 패턴으로 접근성 준수
  *
  * @example
- * ```tsx
- * <Dropdown
- *   items={[
- *     { value: '1', label: 'Option 1' },
- *     { value: '2', label: 'Option 2', disabled: true },
- *   ]}
- *   placeholder="Select option"
- *   onChange={(value) => console.log(value)}
- * />
- * ```
+ * <Dropdown items={[{ value: '1', label: '옵션1' }]} onChange={...} />
  */
 export const Dropdown: React.FC<DropdownProps> = ({
   items,

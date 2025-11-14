@@ -28,24 +28,12 @@ const defaultFilter = (
 };
 
 /**
- * Combobox component
- *
- * Searchable select with autocomplete and filtering.
- *
- * **A11y**: role="combobox", aria-autocomplete, aria-controls.
- * **Keyboard**: Type to search, ↑↓ to navigate, Enter to select.
+ * Combobox - 검색 가능한 선택 컴포넌트
+ * 자동완성 및 필터링 지원
+ * role="combobox"로 접근성 준수
  *
  * @example
- * ```tsx
- * <Combobox
- *   items={[
- *     { value: '1', label: 'React' },
- *     { value: '2', label: 'Vue' },
- *   ]}
- *   value={selected}
- *   onChange={setSelected}
- * />
- * ```
+ * <Combobox items={[{value:'1',label:'React'}]} value={val} onChange={...} />
  */
 export const Combobox: React.FC<ComboboxProps> = ({
   items,

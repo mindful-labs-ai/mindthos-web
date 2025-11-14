@@ -20,18 +20,12 @@ const underlineStyles: Record<string, string> = {
 };
 
 /**
- * HyperLink component
- *
- * Accessible link component with external link support.
- *
- * **A11y**: External links add rel="noopener noreferrer" and visually hidden text.
+ * HyperLink - 하이퍼링크 컴포넌트
+ * external 옵션으로 외부 링크 지원
+ * rel="noopener noreferrer" 자동 적용
  *
  * @example
- * ```tsx
- * <HyperLink href="/about">About</HyperLink>
- * <HyperLink href="https://example.com" external>External</HyperLink>
- * <HyperLink href="/docs" underline="hover">Docs</HyperLink>
- * ```
+ * <HyperLink href="/about" underline="hover">소개</HyperLink>
  */
 export const HyperLink = React.forwardRef<HTMLAnchorElement, HyperLinkProps>(
   (

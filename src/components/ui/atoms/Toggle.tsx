@@ -41,20 +41,12 @@ const sizeStyles: Record<
 };
 
 /**
- * Toggle (Switch) component
- *
- * An accessible switch/toggle component following the switch pattern.
- * Can be controlled or uncontrolled.
- *
- * **A11y**: role="switch" with aria-checked, Space/Enter toggles, focus ring.
- * **Keyboard**: Space and Enter to toggle.
+ * Toggle - 스위치 토글 컴포넌트
+ * controlled/uncontrolled 모드 지원
+ * role="switch"로 접근성 준수, Space/Enter 키 동작
  *
  * @example
- * ```tsx
  * <Toggle checked={enabled} onChange={setEnabled} />
- * <Toggle defaultChecked size="sm" />
- * <Toggle size="free" className="custom-size" />
- * ```
  */
 export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
   (
