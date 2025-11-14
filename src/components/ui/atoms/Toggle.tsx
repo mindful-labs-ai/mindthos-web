@@ -5,7 +5,10 @@ import { cn } from '@/lib/cn';
 export type ToggleSize = 'sm' | 'md' | 'lg' | 'free';
 
 export interface ToggleProps
-  extends Omit<React.ComponentPropsWithoutRef<'button'>, 'size' | 'type' | 'onChange'> {
+  extends Omit<
+    React.ComponentPropsWithoutRef<'button'>,
+    'size' | 'type' | 'onChange'
+  > {
   checked?: boolean;
   defaultChecked?: boolean;
   onChange?: (checked: boolean) => void;

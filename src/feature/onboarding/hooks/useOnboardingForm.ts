@@ -107,10 +107,7 @@ export function useOnboardingForm(userEmail: string) {
       const prefix = phoneNumbers.slice(0, 3);
       const prefix2 = phoneNumbers.slice(0, 2);
 
-      if (
-        !validPrefixes.includes(prefix) &&
-        !validPrefixes.includes(prefix2)
-      ) {
+      if (!validPrefixes.includes(prefix) && !validPrefixes.includes(prefix2)) {
         setError('올바른 전화번호 형식이 아닙니다.');
         return;
       }
