@@ -3,12 +3,12 @@ import React from 'react';
 import { Upload, UserPlus, FileSearch } from 'lucide-react';
 
 import { Title } from '@/components/ui';
+import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useAuthStore } from '@/stores/authStore';
 
 import { ActionCard } from '../components/ActionCard';
 import { GreetingSection } from '../components/GreetingSection';
 import { SessionCard } from '../components/SessionCard';
-import { WelcomeBanner } from '../components/WelcomeBanner';
 
 const HomePage = () => {
   const user = useAuthStore((state) => state.user);
@@ -35,7 +35,15 @@ const HomePage = () => {
   return (
     <div className="mx-auto w-full max-w-6xl px-12 py-6 text-left lg:px-16 lg:py-10">
       {/* Welcome Banner */}
-      {showBanner && <WelcomeBanner onClose={() => setShowBanner(false)} />}
+      {showBanner && (
+        <WelcomeBanner
+          title="마음토스 시작하기"
+          description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
+          buttonText="더 알아보기"
+          onButtonClick={() => console.log('배너 경로 클릭')}
+          onClose={() => setShowBanner(false)}
+        />
+      )}
 
       {/* Date and Greeting */}
       <GreetingSection userName={getUserName()} date={getFormattedDate()} />
