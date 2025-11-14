@@ -13,11 +13,11 @@ import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
 
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { PublicOnlyRoute } from './components/PublicOnlyRoute';
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';
 import SideTabLayout from './layouts/SideTabLayout';
+import { ProtectedRoute } from './protecter/ProtectedRoute';
+import { PublicOnlyRoute } from './protecter/PublicOnlyRoute';
 
 /**
  * 애플리케이션 라우터 설정

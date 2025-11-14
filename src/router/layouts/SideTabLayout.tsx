@@ -3,8 +3,8 @@ import React from 'react';
 import { Layers } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 
-import { Header } from '@/feature/home/components/Header';
-import { SideTab } from '@/feature/home/components/SideTab';
+import { Header } from '@/router/layouts/Header';
+import { SideTab } from '@/router/layouts/SideTab';
 
 const MainFlowLayout = () => {
   const [isSideTabOpen, setIsSideTabOpen] = React.useState(true);
