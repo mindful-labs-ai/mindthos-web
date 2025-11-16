@@ -13,43 +13,14 @@ export interface RadioOption {
 }
 
 export interface RadioGroupProps {
-  /**
-   * Radio options
-   */
   options: RadioOption[];
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: RadioSize;
-  /**
-   * Orientation
-   * @default 'vertical'
-   */
   orientation?: RadioOrientation;
-  /**
-   * Name attribute for radio group
-   */
   name?: string;
-  /**
-   * Selected value (controlled)
-   */
   value?: string;
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string;
-  /**
-   * Change handler
-   */
   onChange?: (value: string) => void;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -63,24 +34,11 @@ const sizeStyles: Record<
 };
 
 /**
- * RadioGroup component
- *
- * Radio button group for single selection from multiple options.
- *
- * **A11y**: role="radiogroup", aria-labelledby, keyboard navigation (arrow keys).
- * **Keyboard**: ↑↓/←→ to navigate, Space to select.
+ * RadioGroup - 라디오 버튼 그룹
+ * 단일 선택, 키보드 네비게이션 (화살표 키)
  *
  * @example
- * ```tsx
- * <RadioGroup
- *   options={[
- *     { value: '1', label: 'Option 1' },
- *     { value: '2', label: 'Option 2' },
- *   ]}
- *   value={selectedValue}
- *   onChange={setSelectedValue}
- * />
- * ```
+ * <RadioGroup options={[{ value: '1', label: 'Option 1' }]} onChange={setValue} />
  */
 export const RadioGroup: React.FC<RadioGroupProps> = ({
   options,

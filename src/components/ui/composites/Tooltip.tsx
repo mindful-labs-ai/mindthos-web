@@ -5,31 +5,11 @@ import { cn } from '@/lib/cn';
 export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right';
 
 export interface TooltipProps {
-  /**
-   * Trigger element
-   */
   children: React.ReactElement;
-  /**
-   * Tooltip content
-   */
   content: React.ReactNode;
-  /**
-   * Placement
-   * @default 'top'
-   */
   placement?: TooltipPlacement;
-  /**
-   * Delay before showing (ms)
-   * @default 200
-   */
   delay?: number;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * Additional className for tooltip content
-   */
   className?: string;
 }
 
@@ -41,19 +21,11 @@ const placementStyles: Record<TooltipPlacement, string> = {
 };
 
 /**
- * Tooltip component
- *
- * Displays informational tooltip on hover/focus.
- *
- * **A11y**: aria-describedby, role="tooltip", keyboard accessible.
- * **Keyboard**: Focus trigger to show tooltip, Esc to hide.
+ * Tooltip - 호버/포커스 시 정보 표시
+ * placement, delay 커스터마이징 가능
  *
  * @example
- * ```tsx
- * <Tooltip content="This is a tooltip">
- *   <button>Hover me</button>
- * </Tooltip>
- * ```
+ * <Tooltip content="Info"><button>Hover</button></Tooltip>
  */
 export const Tooltip: React.FC<TooltipProps> = ({
   children,

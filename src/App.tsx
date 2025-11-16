@@ -1,31 +1,120 @@
 import { useState } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import { Button } from '@/components/ui';
+import { ROUTES } from '@/router/constants';
+import { authService } from '@/services/auth/authService';
+import { useAuthStore } from '@/stores/authStore';
+import { useThemeStore } from '@/stores/themeStore';
 
 import './App.css';
 
 function App() {
   const [count, setCount] = useState(0);
-  const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const toggleDarkMode = () => {
-    document.documentElement.classList.toggle('dark');
-    setIsDark(!isDark);
-  };
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
   const handleLoadingDemo = () => {
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 2000);
   };
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      navigate(ROUTES.AUTH);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.email) return;
+
+    const confirmed = window.confirm(
+      '정말로 계정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며, 모든 데이터가 영구적으로 삭제됩니다.'
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await authService.deleteAccount(user.email);
+      await logout();
+      alert('계정이 성공적으로 삭제되었습니다.');
+      navigate(ROUTES.AUTH);
+    } catch (error) {
+      console.error('Account deletion failed:', error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : '계정 삭제 중 오류가 발생했습니다.'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-bg text-fg transition-colors">
       <div className="mx-auto max-w-4xl p-8">
-        <div className="mb-4 flex justify-end">
-          <Button variant="outline" size="sm" onClick={toggleDarkMode}>
-            {isDark ? '☀️ Light' : '🌙 Dark'}
-          </Button>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            {isAuthenticated && user && (
+              <div className="text-sm">
+                <span className="text-muted">로그인됨: </span>
+                <span className="font-medium text-black">{user.email}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut || isDeleting}
+                >
+                  {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting || isLoggingOut}
+                  className="border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                >
+                  {isDeleting ? '삭제 중...' : '회원탈퇴'}
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="solid"
+                tone="primary"
+                size="sm"
+                onClick={() => navigate(ROUTES.AUTH)}
+              >
+                로그인
+              </Button>
+            )}
+          </div>
         </div>
 
         <h1 className="mb-8 text-center text-4xl font-bold">Mindthos V2</h1>

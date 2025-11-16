@@ -10,31 +10,11 @@ export interface Step {
 }
 
 export interface StepperProps {
-  /**
-   * Steps array
-   */
   steps: Step[];
-  /**
-   * Current active step (0-indexed)
-   */
   currentStep: number;
-  /**
-   * Orientation
-   * @default 'horizontal'
-   */
   orientation?: StepperOrientation;
-  /**
-   * Allow clicking on steps
-   * @default false
-   */
   clickable?: boolean;
-  /**
-   * Step click handler
-   */
   onStepClick?: (step: number) => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -55,24 +35,11 @@ const CheckIcon = () => (
 );
 
 /**
- * Stepper component
- *
- * Multi-step process indicator.
- *
- * **A11y**: nav with aria-label, aria-current for current step.
- * **Keyboard**: Tab to navigate, Enter/Space to activate if clickable.
+ * Stepper - 다단계 프로세스 표시기
+ * horizontal/vertical 방향, 클릭 가능 옵션
  *
  * @example
- * ```tsx
- * <Stepper
- *   steps={[
- *     { label: 'Personal Info', description: 'Basic details' },
- *     { label: 'Address', description: 'Shipping info' },
- *     { label: 'Payment', description: 'Payment method' },
- *   ]}
- *   currentStep={1}
- * />
- * ```
+ * <Stepper steps={[{ label: 'Step 1' }, { label: 'Step 2' }]} currentStep={0} />
  */
 export const Stepper: React.FC<StepperProps> = ({
   steps,

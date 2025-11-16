@@ -6,7 +6,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: 'var(--color-bg)',
+        bg: {
+          DEFAULT: 'var(--color-bg)',
+          subtle: 'var(--color-bg-subtle)',
+          whisper: 'var(--color-bg-whisper)',
+        },
         fg: {
           DEFAULT: 'var(--color-fg)',
           muted: 'var(--color-fg-muted)',
@@ -15,6 +19,7 @@ export default {
         surface: {
           DEFAULT: 'var(--color-surface)',
           contrast: 'var(--color-surface-contrast)',
+          strong: 'var(--color-surface-strong)',
         },
         border: 'var(--color-border)',
         ring: 'var(--color-ring)',

@@ -5,31 +5,17 @@ import { cn } from '@/lib/cn';
 export type CardAs = 'section' | 'article' | 'div';
 
 export interface CardProps extends React.HTMLAttributes<HTMLElement> {
-  /**
-   * Semantic element
-   * @default 'div'
-   */
   as?: CardAs;
 }
 
 export type CardSubComponentProps = React.HTMLAttributes<HTMLDivElement>;
 
 /**
- * Card component
- *
- * Container component with optional header, body, and footer slots.
- * Baseline style only; customize via className.
- *
- * **A11y**: Optional aria-labelledby if header has an id.
+ * Card - 컨테이너 컴포넌트
+ * Header, Body, Footer 슬롯 지원
  *
  * @example
- * ```tsx
- * <Card>
- *   <Card.Header>Title</Card.Header>
- *   <Card.Body>Content</Card.Body>
- *   <Card.Footer>Actions</Card.Footer>
- * </Card>
- * ```
+ * <Card><Card.Header>Title</Card.Header><Card.Body>Content</Card.Body></Card>
  */
 const CardRoot = React.forwardRef<HTMLElement, CardProps>(
   ({ as: Component = 'div', className, children, ...props }, ref) => {

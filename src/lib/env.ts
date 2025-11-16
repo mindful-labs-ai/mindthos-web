@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Environment variable schema
- * Add your required environment variables here
+ * 환경 변수 스키마 및 검증
  */
 const envSchema = z.object({
   // App configuration
@@ -20,10 +19,6 @@ const envSchema = z.object({
   PROD: z.boolean(),
 });
 
-/**
- * Validates environment variables at startup
- * Throws helpful errors if required variables are missing
- */
 function validateEnv() {
   try {
     return envSchema.parse(import.meta.env);
@@ -46,13 +41,5 @@ function validateEnv() {
   }
 }
 
-/**
- * Validated and type-safe environment variables
- * Usage: import { env } from '@/lib/env'
- */
 export const env = validateEnv();
-
-/**
- * Type for environment variables
- */
 export type Env = z.infer<typeof envSchema>;
