@@ -54,8 +54,11 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          <Text className="text-sm text-fg">
-            {client.group_id ? '동반 상담' : '개인 상담'}
+          {/** TODO : 클라이언트에 연결된 세션 갯수 표시해주기 */}
+          <Text className="text-sm text-fg">총 n개의 상담</Text>
+          <Text className="text-sm font-medium text-fg-muted">|</Text>
+          <Text className="text-sm font-medium text-fg-muted">
+            {client.counsel_theme}
           </Text>
           <Text className="text-sm font-medium text-fg-muted">|</Text>
           <Text className="text-sm font-medium text-fg-muted">

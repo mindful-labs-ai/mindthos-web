@@ -1,12 +1,10 @@
-/**
- * 클라이언트 관련 타입
- */
 export interface Client {
   id: string;
-  group_id: number | null;
   counselor_id: string;
   name: string;
   phone_number: string;
+  email: string | null;
+  counsel_theme: string | null;
   counsel_number: number;
   memo: string | null;
   pin: boolean;
