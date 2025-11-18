@@ -19,9 +19,23 @@ import { useAuthStore } from '@/stores/authStore';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
+  const userName = useAuthStore((state) => state.userName);
+  const organization = useAuthStore((state) => state.organization);
   const logout = useAuthStore((state) => state.logout);
 
-  const [settings] = React.useState(mockSettingsData);
+  // TODO : 해당 UI에 출력할 데이터 view로 캐싱
+  const settings = React.useMemo(
+    () => ({
+      ...mockSettingsData,
+      counselor: {
+        ...mockSettingsData.counselor,
+        name: userName || mockSettingsData.counselor.name,
+        email: user?.email || mockSettingsData.counselor.email,
+        organization: organization || mockSettingsData.counselor.organization,
+      },
+    }),
+    [user?.email, userName, organization]
+  );
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
