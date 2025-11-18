@@ -1,266 +1,392 @@
 # Entity Relationship Diagram (ERD)
 
-> **Note**: FK 제약조건은 제거, 논리적 관계는 애플리케이션 레벨에서 관리합니다.
->
-> 자세한 관계는 https://dbdiagram.io/d/6911771c6735e11170fec563 에서 확인 가능
+> Mindthos 데이터베이스의 엔티티 관계도입니다.
+> 테이블 간 관계와 데이터 흐름을 시각화합니다.
 
-## 테이블 관계도
+## Mermaid ERD
 
+```mermaid
+erDiagram
+    USERS ||--o{ CLIENTS : "counsels"
+    USERS ||--o{ SESSIONS : "conducts"
+    USERS ||--o{ ONBOARDING : "has"
+    USERS ||--o{ PROGRESS_NOTES : "writes"
+    USERS ||--o{ TRANSCRIBES : "creates"
+    USERS ||--o{ TEMPLATE_PIN : "pins"
+    USERS ||--o{ SUBSCRIBE : "subscribes"
+    USERS ||--o{ CARD : "owns"
+    USERS ||--o{ PAYMENTS : "makes"
+    USERS ||--o{ USAGE : "tracks"
+    USERS ||--o{ CREDIT_LOG : "logs"
+
+    CLIENTS ||--o{ SESSIONS : "participates"
+
+    SESSIONS ||--o{ PROGRESS_NOTES : "documented"
+    SESSIONS ||--o{ TRANSCRIBES : "transcribed"
+    SESSIONS ||--o{ CREDIT_LOG : "session_credit"
+
+    TEMPLATES ||--o{ TEMPLATE_PIN : "pinned"
+    TEMPLATES ||--o{ PROGRESS_NOTES : "uses"
+    TEMPLATES ||--o{ USERS : "default_template"
+
+    PLANS ||--o{ SUBSCRIBE : "offers"
+    PLANS ||--o{ PAYMENTS : "billed"
+    PLANS ||--o{ USAGE : "tracks"
+
+    SUBSCRIBE ||--o{ CREDIT_LOG : "subscription_credit"
+
+    USERS {
+        bigint id PK "시퀀스"
+        varchar name "이름(12)"
+        varchar email UK "이메일(320)"
+        varchar phone_number "전화번호(15)"
+        timestamptz email_verified_at "인증시각"
+        varchar organization "소속(100)"
+        integer default_template_id FK "기본템플릿"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    CLIENTS {
+        uuid id PK "UUID"
+        bigint counselor_id FK "상담사(필수)"
+        varchar name "이름(12,필수)"
+        varchar phone_number "전화번호(15)"
+        varchar email "이메일(320)"
+        varchar counsel_theme "상담주제(100)"
+        smallint counsel_number "회기수"
+        varchar memo "메모(200)"
+        boolean pin "고정"
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    SESSIONS {
+        uuid id PK "UUID"
+        bigint user_id FK "상담사(필수)"
+        uuid client_id FK "내담자"
+        varchar title "제목(18)"
+        varchar description "설명(200)"
+        jsonb audio_meta_data "음성메타"
+        timestamptz created_at
+    }
+
+    ONBOARDING {
+        uuid id PK "UUID"
+        bigint user_id FK "사용자(UK,필수)"
+        smallint step "단계"
+        onboarding_state state "상태 ENUM"
+        timestamptz completed_at
+    }
+
+    PROGRESS_NOTES {
+        uuid id PK "UUID"
+        uuid session_id FK "세션(필수)"
+        bigint user_id FK "상담사(필수)"
+        varchar title "제목(18)"
+        integer template_id FK "템플릿"
+        text summary "요약"
+        timestamptz created_at
+    }
+
+    TRANSCRIBES {
+        uuid id PK "UUID"
+        uuid session_id FK "세션(필수)"
+        bigint user_id FK "상담사(필수)"
+        varchar title "제목(18)"
+        date counsel_date "상담일"
+        text contents "전사내용"
+        timestamptz created_at
+    }
+
+    TEMPLATES {
+        integer id PK "IDENTITY"
+        varchar title "제목(24)"
+        varchar description "설명(200)"
+        text prompt "프롬프트"
+        timestamptz created_at
+    }
+
+    TEMPLATE_PIN {
+        uuid id PK "UUID"
+        integer template_id FK "템플릿(필수)"
+        bigint user_id FK "사용자(필수)"
+    }
+
+    PLANS {
+        uuid id PK "UUID"
+        varchar type "타입(15,UK)"
+        varchar description "설명(50)"
+        integer price "가격"
+        integer audio_credit "음성크레딧"
+        integer summary_credit "요약크레딧"
+    }
+
+    SUBSCRIBE {
+        uuid id PK "UUID"
+        bigint user_id FK "사용자(필수)"
+        uuid plan_id FK "플랜(필수)"
+        text billing_key "결제키"
+        timestamptz start_at "시작시각"
+        timestamptz end_at "종료시각"
+        timestamptz last_paid_at "최근결제"
+        boolean is_canceled "취소여부"
+    }
+
+    CARD {
+        uuid id PK "UUID"
+        bigint user_id FK "사용자(필수)"
+        card_type type "카드타입 ENUM"
+        varchar company "카드사(6)"
+        varchar number "카드번호(16)"
+        timestamptz created_at
+    }
+
+    PAYMENTS {
+        uuid id PK "UUID"
+        bigint user_id FK "사용자(필수)"
+        uuid plan_id FK "플랜(필수)"
+        timestamptz expired_at "만료시각"
+        payment_status status "상태 ENUM"
+        timestamptz created_at
+    }
+
+    USAGE {
+        uuid id PK "UUID"
+        bigint user_id FK "사용자(필수)"
+        uuid plan_id FK "플랜(필수,UK)"
+        integer audio_usage "음성사용량"
+        integer summary_usage "요약사용량"
+        timestamptz reset_at "리셋시각"
+    }
+
+    CREDIT_LOG {
+        uuid id PK "UUID"
+        bigint user_id FK "사용자(필수)"
+        uuid subscribe_id FK "구독"
+        uuid session_id FK "세션"
+        varchar use_type "사용타입(8)"
+        integer use_amount "사용량"
+        varchar log_memo "메모(50)"
+        timestamptz created_at
+    }
 ```
-auth.users (1) ----< (1) users
-     |
-     | (트리거)
-     v
-users (1) ----< (1) onboarding
-  |
-  | (1:N)
-  +----< sessions
-  |
-  | (1:N)
-  +----< transcribes
-  |
-  | (1:N)
-  +----< counsel_notes
-  |
-  | (1:N)
-  +----< clients (as counselor)
-  |
-  | (N:M via template_pin)
-  +----< templates
-  |
-  | (1:N)
-  +----< subscribe
-  |
-  | (1:N)
-  +----< card
-  |
-  | (1:N)
-  +----< payments
-  |
-  | (1:N)
-  +----< usage
-  |
-  | (1:N)
-  +----< credit_log
 
-sessions (1) ----< (N) transcribes
-         (1) ----< (N) counsel_notes
-         (1) ----< (N) credit_log
+---
 
-templates (1) ----< (N) counsel_notes
-          (1) ----< (N) template_pin
+## 핵심 데이터 흐름
 
-plans (1) ----< (N) subscribe
-      (1) ----< (N) payments
-      (1) ----< (N) usage
+### 1. 사용자 등록 플로우
 
-subscribe (1) ----< (N) credit_log
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Auth
+    participant Users
+    participant Onboarding
+
+    Client->>Auth: 회원가입 (email, password)
+    Auth->>Auth: auth.users 생성
+    Auth-->>Users: 트리거: on_auth_user_created
+    Users->>Users: public.users 생성 (email 기반)
+    Users-->>Onboarding: 트리거: on_user_created_create_onboarding
+    Onboarding->>Onboarding: onboarding 레코드 생성 (step=0, state=pending)
+    Auth-->>Client: 이메일 인증 링크 발송
+```
+
+### 2. 이메일 인증 플로우
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Auth
+    participant Users
+
+    User->>Auth: 이메일 인증 링크 클릭
+    Auth->>Auth: email_confirmed_at 업데이트
+    Auth-->>Users: 트리거: sync_email_verified_at
+    Users->>Users: email_verified_at 동기화
+    Auth-->>User: 인증 완료
+```
+
+### 3. 온보딩 플로우
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Onboarding
+    participant Users
+
+    Client->>Onboarding: POST /onboarding/status
+    Onboarding-->>Client: {step: 0, state: "pending"}
+    
+    Client->>Onboarding: POST /onboarding/save
+    Note over Onboarding: name, phone_number, organization 저장
+    Onboarding->>Users: 프로필 업데이트
+    Onboarding->>Onboarding: step=0, state="in_progress"
+    Onboarding-->>Client: {step: 0, state: "in_progress"}
+    
+    Client->>Onboarding: POST /onboarding/complete
+    Onboarding->>Onboarding: step=3, state="completed"
+    Onboarding-->>Client: {step: 3, state: "completed"}
+```
+
+### 4. 내담자 등록 플로우
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant EdgeFunction
+    participant Clients
+
+    Client->>EdgeFunction: POST /clients/create
+    Note over Client: counselor_email, name, counsel_theme, memo 등
+    EdgeFunction->>EdgeFunction: counselor 조회 (email)
+    EdgeFunction->>Clients: INSERT clients
+    Note over Clients: id=UUID, counselor_id, name, counsel_theme, memo
+    Clients-->>EdgeFunction: client 생성 완료
+    EdgeFunction-->>Client: {client: {id, name}}
+```
+
+### 5. 상담 세션 생성 플로우
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Sessions
+    participant Clients
+
+    Client->>Sessions: 세션 생성
+    Note over Client: user_id, client_id, title, description
+    Sessions->>Sessions: INSERT sessions
+    Sessions-->>Client: session 생성 완료
+    
+    Client->>Sessions: 상담 진행
+    Sessions-->>Sessions: audio_meta_data 저장
 ```
 
 ---
 
-## 상세 관계 정의
+## 관계 설명
 
-### 1. Users 중심 관계
+### 1:N 관계
 
-#### users ↔ onboarding (1:1)
+| 부모 테이블 | 자식 테이블 | 관계 설명 |
+|------------|-----------|----------|
+| users | clients | 상담사 1명이 여러 내담자 관리 |
+| users | sessions | 상담사 1명이 여러 세션 진행 |
+| clients | sessions | 내담자 1명이 여러 세션 참여 |
+| sessions | progress_notes | 세션 1개에 여러 경과 기록 |
+| sessions | transcribes | 세션 1개에 여러 전사 내용 |
+| sessions | credit_log | 세션 1개에 여러 크레딧 로그 |
+| templates | template_pin | 템플릿 1개가 여러 사용자에게 고정됨 |
+| templates | progress_notes | 템플릿 1개가 여러 경과 기록에 사용됨 |
+| templates | users | 템플릿 1개가 여러 사용자의 기본 템플릿으로 설정됨 |
+| users | subscribe | 사용자 1명이 여러 구독 이력 |
+| plans | subscribe | 플랜 1개에 여러 구독자 |
+| plans | payments | 플랜 1개에 여러 결제 이력 |
+| plans | usage | 플랜 1개에 여러 사용량 기록 |
+| subscribe | credit_log | 구독 1개에 여러 크레딧 로그 |
 
-- **관계**: 한 사용자는 하나의 온보딩 레코드를 가짐
-- **연결**: `onboarding.user_id` → `users.id`
-- **제약**: `onboarding.user_id` UNIQUE
-- **비즈니스 로직**: users INSERT 시 트리거로 자동 생성
+### 애플리케이션 레벨 참조
 
-#### users ↔ sessions (1:N)
+**Foreign Key가 없는 이유:**
+- 유연성: 스키마 변경 용이
+- 성능: FK 체크 오버헤드 제거
+- 독립성: 마이크로서비스 아키텍처 대비
 
-- **관계**: 한 사용자(상담사)는 여러 세션을 생성
-- **연결**: `sessions.user_id` → `users.id`
-- **인덱스**: `idx_sessions_user_group_created_desc`
-
-#### users ↔ transcribes (1:N)
-
-- **관계**: 한 사용자는 여러 녹취록을 작성
-- **연결**: `transcribes.user_id` → `users.id`
-
-#### users ↔ counsel_notes (1:N)
-
-- **관계**: 한 사용자는 여러 상담 노트를 작성
-- **연결**: `counsel_notes.user_id` → `users.id`
-- **인덱스**: `idx_counsel_notes_user_created_desc`
-
-#### users ↔ clients (1:N)
-
-- **관계**: 한 상담사는 여러 내담자를 관리
-- **연결**: `clients.counselor_id` → `users.id`
-- **인덱스**: `idx_clients_counselor_created_desc`
-
-#### users ↔ templates (N:M via template_pin)
-
-- **관계**: 사용자와 템플릿은 즐겨찾기를 통해 다대다 관계
-- **연결**:
-  - `template_pin.user_id` → `users.id`
-  - `template_pin.template_id` → `templates.id`
-- **제약**: `template_pin(user_id, template_id)` UNIQUE
-
-#### users ↔ subscribe (1:N)
-
-- **관계**: 한 사용자는 여러 구독 이력을 가질 수 있음
-- **연결**: `subscribe.user_id` → `users.id`
-- **인덱스**: `idx_subscribe_user`
-
-#### users ↔ card (1:N)
-
-- **관계**: 한 사용자는 여러 카드를 등록
-- **연결**: `card.user_id` → `users.id`
-- **인덱스**: `idx_card_user_created_desc`
-
-#### users ↔ payments (1:N)
-
-- **관계**: 한 사용자는 여러 결제 내역을 가짐
-- **연결**: `payments.user_id` → `users.id`
-- **인덱스**: `idx_payments_user_created_desc`
-
-#### users ↔ usage (1:N)
-
-- **관계**: 한 사용자는 플랜별 사용량 레코드를 가짐
-- **연결**: `usage.user_id` → `users.id`
-- **제약**: `usage(user_id, plan_id)` UNIQUE
-
-#### users ↔ credit_log (1:N)
-
-- **관계**: 한 사용자는 여러 크레딧 사용 로그를 가짐
-- **연결**: `credit_log.user_id` → `users.id`
-- **인덱스**: `idx_credit_log_user_created_desc`
+**참조 무결성 보장 방법:**
+- Edge Function에서 조회 후 삽입
+- 존재하지 않는 ID 참조 시 404 에러 반환
+- 트랜잭션 사용 시 롤백 처리
 
 ---
 
-### 2. Sessions 중심 관계
+## 인덱스 전략
 
-#### sessions ↔ transcribes (1:N)
+### 1. 주요 조회 패턴
 
-- **관계**: 한 세션은 여러 녹취록을 가질 수 있음
-- **연결**: `transcribes.session_id` → `sessions.id`
-- **인덱스**: `idx_transcribes_session`
+**사용자별 데이터 조회:**
+```sql
+-- 내담자 목록 조회
+SELECT * FROM clients WHERE counselor_id = ? ORDER BY created_at DESC;
+-- 인덱스: idx_clients_counselor_created_desc
 
-#### sessions ↔ counsel_notes (1:N)
+-- 세션 목록 조회
+SELECT * FROM sessions WHERE user_id = ? ORDER BY created_at DESC;
+-- 인덱스: idx_sessions_user_client_created_desc
+```
 
-- **관계**: 한 세션은 여러 상담 노트를 가질 수 있음
-- **연결**: `counsel_notes.session_id` → `sessions.id`
-- **인덱스**: `idx_counsel_notes_session`
+**내담자별 세션 조회:**
+```sql
+-- 특정 내담자의 세션 조회
+SELECT * FROM sessions WHERE client_id = ? ORDER BY created_at DESC;
+-- 인덱스: idx_sessions_client_created_desc
+```
 
-#### sessions ↔ credit_log (1:N)
+### 2. 인덱스 목록
 
-- **관계**: 한 세션의 사용 로그를 기록
-- **연결**: `credit_log.session_id` → `sessions.id`
-
----
-
-### 3. Templates 중심 관계
-
-#### templates ↔ counsel_notes (1:N)
-
-- **관계**: 한 템플릿으로 여러 노트 생성 가능
-- **연결**: `counsel_notes.template_id` → `templates.id`
-- **비고**: nullable (템플릿 없이도 노트 작성 가능)
-
-#### templates ↔ template_pin (1:N)
-
-- **관계**: 한 템플릿을 여러 사용자가 즐겨찾기
-- **연결**: `template_pin.template_id` → `templates.id`
-
----
-
-### 4. Plans 중심 관계
-
-#### plans ↔ subscribe (1:N)
-
-- **관계**: 한 플랜으로 여러 구독 발생
-- **연결**: `subscribe.plan_id` → `plans.id`
-- **인덱스**: `idx_subscribe_plan`
-
-#### plans ↔ payments (1:N)
-
-- **관계**: 한 플랜으로 여러 결제 발생
-- **연결**: `payments.plan_id` → `plans.id`
-
-#### plans ↔ usage (1:N)
-
-- **관계**: 한 플랜의 사용량 기록
-- **연결**: `usage.plan_id` → `plans.id`
-- **제약**: `usage(user_id, plan_id)` UNIQUE
+| 테이블 | 인덱스명 | 컬럼 | 타입 |
+|-------|---------|------|------|
+| users | users_pkey | id | PRIMARY KEY |
+| users | users_email_key | email | UNIQUE |
+| clients | clients_pkey | id | PRIMARY KEY |
+| clients | idx_clients_counselor_created_desc | (counselor_id, created_at DESC) | INDEX |
+| sessions | sessions_pkey | id | PRIMARY KEY |
+| sessions | idx_sessions_user_client_created_desc | (user_id, client_id, created_at DESC) | INDEX |
+| sessions | idx_sessions_client_created_desc | (client_id, created_at DESC) | INDEX |
 
 ---
 
-### 5. Subscribe 중심 관계
+## ENUM 타입 정의
 
-#### subscribe ↔ credit_log (1:N)
-
-- **관계**: 구독별 크레딧 사용 로그
-- **연결**: `credit_log.subscribe_id` → `subscribe.id`
-
----
-
-## 특수 관계
-
-### auth.users ↔ public.users (1:1)
-
-- **관계**: Supabase Auth와 public 스키마 연결
-- **연결 방법**: `email` (공통 키)
-- **트리거**:
-  - `auth.users` INSERT 시 `public.users` 자동 생성
-  - `auth.users` INSERT/UPDATE 시 `email_confirmed_at` →
-    `public.users.email_verified_at` 동기화
-- **함수**:
-  - `get_user_by_email(email)`
-  - `get_current_user()` - `auth.email()` 사용
-  - `sync_email_verified_at()` - 이메일 인증 상태 동기화
-
-### public.users ↔ onboarding (자동 생성)
-
-- **트리거**: `public.users` INSERT 시 `onboarding` 자동 생성
-- **초기값**: `step=0`, `state='pending'`
-
-### 이메일 인증 동기화
-
-- **트리거**: `auth.users.email_confirmed_at` 변경 시 자동 동기화
-- **대상 컬럼**: `public.users.email_verified_at`
-- **용도**: 이메일 인증 여부를 애플리케이션 레벨에서 확인
+| ENUM 타입 | 값 | 사용 테이블 |
+|-----------|-----|------------|
+| onboarding_state | pending, in_progress, completed | onboarding |
+| payment_status | in_progress, success, failed | payments |
+| card_type | 신용, 체크 | card |
 
 ---
 
-## 관계 유형 요약
+## 주요 변경 이력
 
-| 관계                      | 타입 | 제약                      |
-| ------------------------- | ---- | ------------------------- |
-| users - onboarding        | 1:1  | user_id UNIQUE            |
-| users - sessions          | 1:N  | -                         |
-| users - transcribes       | 1:N  | -                         |
-| users - counsel_notes     | 1:N  | -                         |
-| users - clients           | 1:N  | -                         |
-| users - templates         | N:M  | via template_pin          |
-| users - subscribe         | 1:N  | -                         |
-| users - card              | 1:N  | -                         |
-| users - payments          | 1:N  | -                         |
-| users - usage             | 1:N  | (user_id, plan_id) UNIQUE |
-| users - credit_log        | 1:N  | -                         |
-| sessions - transcribes    | 1:N  | -                         |
-| sessions - counsel_notes  | 1:N  | -                         |
-| sessions - credit_log     | 1:N  | -                         |
-| templates - counsel_notes | 1:N  | nullable                  |
-| templates - template_pin  | 1:N  | -                         |
-| plans - subscribe         | 1:N  | -                         |
-| plans - payments          | 1:N  | -                         |
-| plans - usage             | 1:N  | -                         |
-| subscribe - credit_log    | 1:N  | -                         |
+### v1.7 (2025-11-18)
+- **중요 변경:** templates.id 시퀀스 → IDENTITY 변경 (타입 안정성 향상)
+- 시퀀스 관리 불필요, SQL 표준 방식 적용
 
----
+### v1.6 (2025-11-18)
+- **중요 변경:** counsel_notes → progress_notes 테이블명 변경
+- **중요 변경:** templates.id uuid → integer 변경 (운영자 관리 편의성 향상)
+- **중요 변경:** template_id 참조 컬럼 모두 integer로 변경
+- 기존 templates 데이터 삭제 및 초기화
 
-## 데이터 정합성 관리 지침
+### v1.5 (2025-11-18)
+- users.default_template_id 추가 (사용자 기본 템플릿 설정)
+- templates-users 관계 추가 (기본 템플릿)
 
-FK 제약조건이 제거되었으므로 다음을 애플리케이션 레벨에서 관리:
+### v1.4 (2025-11-18)
+- **문서 수정:** 실제 데이터베이스 스키마에 맞춰 ERD 전면 수정
+- ENUM 타입 정확히 반영 (onboarding_state, payment_status, card_type)
+- templates, plans, subscribe, card, payments, usage, credit_log 스키마 정정
+- counsel_notes.content → summary, transcribes.content → contents 수정
+- 관계도 정확히 수정 (templates-users 관계 제거 등)
 
-1. **삽입 시**: 참조하는 레코드가 존재하는지 확인
-2. **삭제 시**:
-   - 참조되는 레코드 삭제 시 의존 레코드 처리 (CASCADE 또는 RESTRICT 로직)
-   - 예: users 삭제 시 sessions, card 등 처리 전략 필요
-3. **업데이트 시**: 참조 무결성 유지
-4. **조회 최적화**: 인덱스를 활용한 JOIN 쿼리
+### v1.3 (2025-11-18)
+- clients.counsel_theme 추가
+- 상담 주제 UI 표시 개선
+
+### v1.2 (2025-11-18)
+- **중요 변경:** clients.id bigint → uuid 변경
+- **중요 변경:** clients.group_id 제거 (동반인 개념 제거)
+- sessions.group_id → sessions.client_id로 변경
+- 내담자와 세션 1:1 매핑으로 단순화
+
+### v1.1 (2025-11-14)
+- users.email_verified_at 추가 (이메일 인증 상태 추적)
+- users.organization 추가 (소속 기관)
+- clients.email 추가
+
+### v1.0 (2025-11-12)
+- 초기 ERD 설계
+- 14개 테이블 정의
+- FK 제거 정책 확립

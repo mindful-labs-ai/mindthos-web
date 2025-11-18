@@ -1,304 +1,566 @@
-# Database Schema
+# Database Schema Documentation
 
-## Tables
+> 이 문서는 Mindthos 데이터베이스의 최종 스키마를 정의합니다.
+> SDD 프로세스에서 AI가 테이블 구조와 UI의 일관성을 유지하기 위한 참조 자료로 사용됩니다.
 
-> 자세한 스키마는 https://dbdiagram.io/d/6911771c6735e11170fec563 에서 확인 가능
+## 목차
 
-### users
-
-사용자 기본 정보
-
-| Column            | Type         | Constraints        | Description                                     |
-| ----------------- | ------------ | ------------------ | ----------------------------------------------- |
-| id                | bigint       | PK, AUTO INCREMENT | 사용자 고유 ID                                  |
-| email             | varchar(320) | UNIQUE             | 이메일 주소 (auth.users 연결키)                 |
-| email_verified_at | timestamptz  |                    | 이메일 인증 완료일시 (auth.users와 자동 동기화) |
-| name              | varchar(12)  |                    | 사용자 이름                                     |
-| phone_number      | varchar(15)  |                    | 전화번호                                        |
-| created_at        | timestamptz  | NOT NULL           | 생성일시                                        |
-| updated_at        | timestamptz  | NOT NULL           | 수정일시                                        |
-
-**Indexes:**
-
-- `users_email_key` (UNIQUE): email
+1. [테이블 개요](#테이블-개요)
+2. [핵심 테이블 상세](#핵심-테이블-상세)
+3. [Edge Functions API](#edge-functions-api)
 
 ---
 
-### onboarding
+## 테이블 개요
 
-온보딩 진행 상태
+### 핵심 테이블
 
-| Column       | Type             | Constraints | Description            |
-| ------------ | ---------------- | ----------- | ---------------------- |
-| id           | uuid             | PK          | 온보딩 고유 ID         |
-| user_id      | bigint           | UNIQUE      | 사용자 ID (users.id)   |
-| step         | smallint         |             | 현재 단계 (0부터 시작) |
-| state        | onboarding_state | NOT NULL    | 진행 상태              |
-| completed_at | timestamptz      |             | 완료일시               |
-
-**Constraints:**
-
-- `onboarding_user_id_key` (UNIQUE): user_id
-
----
-
-### sessions
-
-상담 세션 정보
-
-| Column          | Type        | Constraints | Description          |
-| --------------- | ----------- | ----------- | -------------------- |
-| id              | uuid        | PK          | 세션 고유 ID         |
-| user_id         | bigint      | NOT NULL    | 상담사 ID (users.id) |
-| group_id        | bigint      |             | 그룹 ID              |
-| title           | varchar(12) |             | 세션 제목            |
-| description     | varchar(45) |             | 세션 설명            |
-| audio_meta_data | jsonb       |             | 음성 메타데이터      |
-| created_at      | timestamptz | NOT NULL    | 생성일시             |
-
-**Indexes:**
-
-- `idx_sessions_user_group_created_desc`: (user_id, group_id, created_at DESC)
-- `idx_sessions_group_created_desc`: (group_id, created_at DESC)
+| 테이블명      | 설명           | 주요 용도                  |
+| ------------- | -------------- | -------------------------- |
+| users         | 사용자 (상담사) | 인증, 프로필 관리          |
+| clients        | 내담자         | 상담 대상자 정보           |
+| sessions       | 상담 세션      | 상담 회기 관리             |
+| onboarding     | 온보딩         | 초기 설정 프로세스         |
+| templates      | 템플릿         | 상담 기록 템플릿           |
+| progress_notes | 경과 기록      | 세션별 상담 경과 요약      |
+| transcribes    | 전사 기록      | 음성 전사 내용             |
+| template_pin  | 템플릿 고정    | 사용자별 템플릿 즐겨찾기   |
+| plans         | 요금제         | 서비스 플랜 정보           |
+| subscribe     | 구독           | 사용자 구독 관리           |
+| card          | 카드           | 결제 카드 정보             |
+| payments      | 결제           | 결제 이력                  |
+| usage         | 사용량         | 크레딧 사용량 추적         |
+| credit_log    | 크레딧 로그    | 크레딧 사용 내역           |
 
 ---
 
-### transcribes
+## 핵심 테이블 상세
 
-상담 녹취록
+### 1. users (사용자)
 
-| Column       | Type        | Constraints | Description           |
-| ------------ | ----------- | ----------- | --------------------- |
-| id           | uuid        | PK          | 녹취록 고유 ID        |
-| session_id   | uuid        | NOT NULL    | 세션 ID (sessions.id) |
-| user_id      | bigint      | NOT NULL    | 작성자 ID (users.id)  |
-| title        | varchar(12) |             | 녹취록 제목           |
-| counsel_date | date        |             | 상담일자              |
-| contents     | text        |             | 녹취 내용             |
-| created_at   | timestamptz | NOT NULL    | 생성일시              |
+**설명:** 시스템 사용자 (상담사) 정보를 관리합니다. auth.users와 email로 연동됩니다.
 
-**Indexes:**
+| 컬럼                | 타입         | 제약     | 설명                           |
+| ------------------- | ------------ | -------- | ------------------------------ |
+| id                  | bigint       | PK       | 사용자 고유 ID (시퀀스)        |
+| name                | varchar(12)  |          | 이름 (최대 12자)               |
+| email               | varchar(320) | UNIQUE   | 이메일 (auth.users 연동)       |
+| phone_number        | varchar(15)  |          | 전화번호                       |
+| email_verified_at   | timestamptz  |          | 이메일 인증 시각               |
+| organization        | varchar(100) |          | 소속 기관                      |
+| default_template_id | integer      |          | 기본 템플릿 ID (templates.id 참조) |
+| created_at          | timestamptz  | NOT NULL | 생성 시각                      |
+| updated_at          | timestamptz  | NOT NULL | 수정 시각                      |
 
-- `idx_transcribes_session`: session_id
+**주요 특징:**
 
----
-
-### templates
-
-요약 템플릿
-
-| Column      | Type        | Constraints | Description    |
-| ----------- | ----------- | ----------- | -------------- |
-| id          | uuid        | PK          | 템플릿 고유 ID |
-| title       | varchar(20) |             | 템플릿 제목    |
-| description | varchar(40) |             | 템플릿 설명    |
-| prompt      | text        |             | 프롬프트 내용  |
-| created_at  | timestamptz | NOT NULL    | 생성일시       |
+- id: users_id_seq 시퀀스로 자동 생성
+- email: auth.users.email과 1:1 매핑 (트리거로 동기화)
+- email_verified_at: null = 미인증, timestamptz = 인증 완료
+- default_template_id: 사용자가 기본으로 사용할 템플릿 (선택)
 
 ---
 
-### counsel_notes
+### 2. clients (내담자)
 
-상담 요약 노트
+**설명:** 상담 대상자 정보를 관리합니다. 각 내담자는 UUID로 고유하게 식별됩니다.
 
-| Column      | Type        | Constraints | Description              |
-| ----------- | ----------- | ----------- | ------------------------ |
-| id          | uuid        | PK          | 노트 고유 ID             |
-| session_id  | uuid        | NOT NULL    | 세션 ID (sessions.id)    |
-| user_id     | bigint      | NOT NULL    | 작성자 ID (users.id)     |
-| title       | varchar(18) |             | 노트 제목                |
-| template_id | uuid        |             | 템플릿 ID (templates.id) |
-| summary     | text        |             | 요약 내용                |
-| created_at  | timestamptz | NOT NULL    | 생성일시                 |
+| 컬럼           | 타입         | 제약     | 설명                           |
+| -------------- | ------------ | -------- | ------------------------------ |
+| id             | uuid         | PK       | 내담자 고유 ID (UUID)          |
+| counselor_id   | bigint       | NOT NULL | 담당 상담사 ID (users.id 참조) |
+| name           | varchar(12)  | NOT NULL | 이름 (필수)                    |
+| phone_number   | varchar(15)  |          | 전화번호                       |
+| email          | varchar(320) |          | 이메일                         |
+| counsel_theme  | varchar(100) |          | 상담 주제                      |
+| counsel_number | smallint     |          | 회기 수                        |
+| memo           | varchar(200) |          | 메모 (동반인 정보 등)          |
+| pin            | boolean      |          | 고정 여부                      |
+| created_at     | timestamptz  | NOT NULL | 생성 시각 (default: now())     |
+| updated_at     | timestamptz  | NOT NULL | 수정 시각 (default: now())     |
 
-**Indexes:**
+**주요 특징:**
 
-- `idx_counsel_notes_session`: session_id
-- `idx_counsel_notes_user_created_desc`: (user_id, created_at DESC)
+- id: UUID 자동 생성 (gen_random_uuid())
+- memo: 동반인 정보를 텍스트로 저장
+- counsel_theme: UI에서 상담 주제 표시용
 
----
+**변경 이력:**
 
-### clients
-
-내담자 정보
-
-| Column         | Type         | Constraints | Description               |
-| -------------- | ------------ | ----------- | ------------------------- |
-| id             | bigint       | PK          | 내담자 고유 ID            |
-| group_id       | integer      |             | 그룹 ID                   |
-| counselor_id   | bigint       |             | 담당 상담사 ID (users.id) |
-| name           | varchar(12)  |             | 내담자 이름               |
-| phone_number   | varchar(15)  |             | 전화번호                  |
-| counsel_number | smallint     |             | 상담 횟수                 |
-| memo           | varchar(200) |             | 메모                      |
-| pin            | boolean      |             | 고정 여부                 |
-| created_at     | timestamptz  | NOT NULL    | 생성일시                  |
-| updated_at     | timestamptz  | NOT NULL    | 수정일시                  |
-
-**Indexes:**
-
-- `idx_clients_counselor_created_desc`: (counselor_id, created_at DESC)
-- `idx_clients_group_created_desc`: (group_id, created_at DESC)
+- ~~group_id~~ 제거됨 (동반인은 memo로 관리)
+- id bigint → uuid 변경
 
 ---
 
-### template_pin
+### 3. sessions (상담 세션)
 
-사용자별 템플릿 즐겨찾기
+**설명:** 상담 회기 정보를 관리합니다. 각 세션은 한 명의 내담자와 연결됩니다.
 
-| Column      | Type   | Constraints | Description              |
-| ----------- | ------ | ----------- | ------------------------ |
-| id          | uuid   | PK          | 즐겨찾기 고유 ID         |
-| template_id | uuid   | NOT NULL    | 템플릿 ID (templates.id) |
-| user_id     | bigint | NOT NULL    | 사용자 ID (users.id)     |
+| 컬럼            | 타입         | 제약     | 설명                        |
+| --------------- | ------------ | -------- | --------------------------- |
+| id              | uuid         | PK       | 세션 고유 ID                |
+| user_id         | bigint       | NOT NULL | 상담사 ID (users.id 참조)   |
+| client_id       | uuid         |          | 내담자 ID (clients.id 참조) |
+| title           | varchar(18)  |          | 세션 제목                   |
+| description     | varchar(200) |          | 세션 설명                   |
+| audio_meta_data | jsonb        |          | 음성 메타데이터             |
+| created_at      | timestamptz  | NOT NULL | 생성 시각                   |
 
-**Constraints:**
+**관계:**
 
-- `template_pin_user_id_template_id_key` (UNIQUE): (user_id, template_id)
+- user_id → users.id (상담사)
+- client_id → clients.id (내담자)
 
----
+**변경 이력:**
 
-### plans
-
-구독 플랜 정보
-
-| Column         | Type        | Constraints | Description    |
-| -------------- | ----------- | ----------- | -------------- |
-| id             | uuid        | PK          | 플랜 고유 ID   |
-| type           | varchar(15) | UNIQUE      | 플랜 유형 코드 |
-| description    | varchar(50) |             | 플랜 설명      |
-| price          | integer     |             | 가격 (원)      |
-| audio_credit   | integer     |             | 음성 크레딧    |
-| summary_credit | integer     |             | 요약 크레딧    |
-
-**Constraints:**
-
-- `plans_type_key` (UNIQUE): type
+- ~~group_id~~ → client_id로 변경
 
 ---
 
-### subscribe
+### 4. onboarding (온보딩)
 
-구독 정보
+**설명:** 사용자의 초기 설정 프로세스를 관리합니다.
 
-| Column       | Type        | Constraints | Description          |
-| ------------ | ----------- | ----------- | -------------------- |
-| id           | uuid        | PK          | 구독 고유 ID         |
-| user_id      | bigint      | NOT NULL    | 사용자 ID (users.id) |
-| plan_id      | uuid        | NOT NULL    | 플랜 ID (plans.id)   |
-| billing_key  | text        |             | 빌링키 (결제 토큰)   |
-| start_at     | timestamptz |             | 구독 시작일시        |
-| end_at       | timestamptz |             | 구독 종료일시        |
-| last_paid_at | timestamptz |             | 마지막 결제일시      |
-| is_canceled  | boolean     |             | 취소 여부            |
+| 컬럼         | 타입              | 제약              | 설명                           |
+| ------------ | ----------------- | ----------------- | ------------------------------ |
+| id           | uuid              | PK                | 온보딩 ID                      |
+| user_id      | bigint            | NOT NULL, UNIQUE  | 사용자 ID (users.id 참조)      |
+| step         | smallint          |                   | 현재 단계 (0-3)                |
+| state        | onboarding_state  | NOT NULL          | 상태 ENUM (pending/in_progress/completed) |
+| completed_at | timestamptz       |                   | 완료 시각                      |
 
-**Indexes:**
+**주요 특징:**
 
-- `idx_subscribe_user`: user_id
-- `idx_subscribe_plan`: plan_id
+- user_id: UNIQUE 제약으로 사용자당 1개의 온보딩 레코드만 존재
+- state: onboarding_state ENUM 타입 ('pending', 'in_progress', 'completed')
 
----
+**온보딩 플로우:**
 
-### card
-
-결제 카드 정보
-
-| Column     | Type        | Constraints | Description            |
-| ---------- | ----------- | ----------- | ---------------------- |
-| id         | uuid        | PK          | 카드 고유 ID           |
-| user_id    | bigint      | NOT NULL    | 사용자 ID (users.id)   |
-| type       | card_type   |             | 카드 유형              |
-| company    | varchar(6)  |             | 카드사                 |
-| number     | varchar(16) |             | 카드번호 (마스킹 권장) |
-| created_at | timestamptz | NOT NULL    | 등록일시               |
-
-**Indexes:**
-
-- `idx_card_user_created_desc`: (user_id, created_at DESC)
+1. Step 0: 기본 정보 저장 (name, phone_number, organization)
+   - State: pending → in_progress
+2. Step 3: 온보딩 완료
+   - State: in_progress → completed
 
 ---
 
-### payments
+### 5. templates (템플릿)
 
-결제 내역
+**설명:** 상담 기록 작성을 위한 공용 템플릿을 관리합니다.
 
-| Column     | Type           | Constraints | Description          |
-| ---------- | -------------- | ----------- | -------------------- |
-| id         | uuid           | PK          | 결제 고유 ID         |
-| user_id    | bigint         | NOT NULL    | 사용자 ID (users.id) |
-| plan_id    | uuid           | NOT NULL    | 플랜 ID (plans.id)   |
-| expired_at | timestamptz    |             | 만료일시             |
-| status     | payment_status |             | 결제 상태            |
-| created_at | timestamptz    | NOT NULL    | 결제 요청일시        |
+| 컬럼        | 타입         | 제약     | 설명                 |
+| ----------- | ------------ | -------- | -------------------- |
+| id          | integer      | PK       | 템플릿 ID (시퀀스)   |
+| title       | varchar(24)  |          | 템플릿 제목 (24자)   |
+| description | varchar(200) |          | 템플릿 설명 (200자)  |
+| prompt      | text         |          | AI 프롬프트 내용     |
+| created_at  | timestamptz  | NOT NULL | 생성 시각            |
 
-**Indexes:**
+**주요 특징:**
 
-- `idx_payments_user_created_desc`: (user_id, created_at DESC)
-
----
-
-### usage
-
-크레딧 사용량
-
-| Column        | Type        | Constraints | Description          |
-| ------------- | ----------- | ----------- | -------------------- |
-| id            | uuid        | PK          | 사용량 고유 ID       |
-| user_id       | bigint      | NOT NULL    | 사용자 ID (users.id) |
-| plan_id       | uuid        | NOT NULL    | 플랜 ID (plans.id)   |
-| audio_usage   | integer     |             | 음성 사용량          |
-| summary_usage | integer     |             | 요약 사용량          |
-| reset_at      | timestamptz |             | 리셋일시             |
-
-**Constraints:**
-
-- `usage_user_id_plan_id_key` (UNIQUE): (user_id, plan_id)
+- id: IDENTITY로 자동 생성 (GENERATED BY DEFAULT AS IDENTITY)
+- user_id 없음: 모든 사용자가 공용으로 사용하는 템플릿
+- prompt: AI 상담 기록 생성을 위한 프롬프트
 
 ---
 
-### credit_log
+### 6. progress_notes (경과 기록)
 
-크레딧 사용 로그
+**설명:** 세션별 상담 경과 기록을 관리합니다.
 
-| Column       | Type        | Constraints | Description            |
-| ------------ | ----------- | ----------- | ---------------------- |
-| id           | uuid        | PK          | 로그 고유 ID           |
-| user_id      | bigint      | NOT NULL    | 사용자 ID (users.id)   |
-| subscribe_id | uuid        |             | 구독 ID (subscribe.id) |
-| session_id   | uuid        |             | 세션 ID (sessions.id)  |
-| use_type     | varchar(8)  |             | 사용 유형              |
-| use_amount   | integer     |             | 사용량                 |
-| log_memo     | varchar(50) |             | 로그 메모              |
-| created_at   | timestamptz | NOT NULL    | 생성일시               |
+| 컬럼        | 타입         | 제약     | 설명                      |
+| ----------- | ------------ | -------- | ------------------------- |
+| id          | uuid         | PK       | 상담 기록 ID              |
+| session_id  | uuid         | NOT NULL | 세션 ID (sessions.id 참조) |
+| user_id     | bigint       | NOT NULL | 상담사 ID (users.id 참조) |
+| title       | varchar(18)  |          | 기록 제목 (18자)          |
+| template_id | integer      |          | 템플릿 ID (templates.id 참조) |
+| summary     | text         |          | 상담 요약 내용            |
+| created_at  | timestamptz  | NOT NULL | 생성 시각                 |
 
-**Indexes:**
+**주요 특징:**
 
-- `idx_credit_log_user_created_desc`: (user_id, created_at DESC)
+- summary: AI가 생성한 상담 요약 내용
+- template_id: 사용된 템플릿 (선택)
 
 ---
 
-## Custom Types (Enums)
+### 7. transcribes (전사 기록)
 
-### onboarding_state
+**설명:** 상담 세션의 음성 전사 내용을 관리합니다.
 
+| 컬럼         | 타입        | 제약     | 설명                      |
+| ------------ | ----------- | -------- | ------------------------- |
+| id           | uuid        | PK       | 전사 ID                   |
+| session_id   | uuid        | NOT NULL | 세션 ID (sessions.id 참조) |
+| user_id      | bigint      | NOT NULL | 상담사 ID (users.id 참조) |
+| title        | varchar(18) |          | 전사 제목 (18자)          |
+| counsel_date | date        |          | 상담 일자                 |
+| contents     | text        |          | 전사 내용                 |
+| created_at   | timestamptz | NOT NULL | 생성 시각                 |
+
+**주요 특징:**
+
+- contents: 음성을 텍스트로 변환한 전사 내용
+- counsel_date: 실제 상담이 진행된 날짜
+
+---
+
+### 8. template_pin (템플릿 고정)
+
+**설명:** 사용자별 템플릿 즐겨찾기 기능을 관리합니다.
+
+| 컬럼        | 타입    | 제약                        | 설명                        |
+| ----------- | ------- | --------------------------- | --------------------------- |
+| id          | uuid    | PK                          | 고정 ID                     |
+| template_id | integer | NOT NULL                    | 템플릿 ID (templates.id 참조) |
+| user_id     | bigint  | NOT NULL                    | 사용자 ID (users.id 참조)   |
+
+**주요 특징:**
+
+- UNIQUE(user_id, template_id): 동일 사용자가 같은 템플릿을 중복 고정할 수 없음
+
+---
+
+### 9. plans (요금제)
+
+**설명:** 서비스 요금제 정보를 관리합니다.
+
+| 컬럼           | 타입         | 제약     | 설명                  |
+| -------------- | ------------ | -------- | --------------------- |
+| id             | uuid         | PK       | 플랜 ID               |
+| type           | varchar(15)  | UNIQUE   | 플랜 타입 (고유)      |
+| description    | varchar(50)  |          | 플랜 설명 (50자)      |
+| price          | integer      |          | 가격                  |
+| audio_credit   | integer      |          | 음성 전사 크레딧      |
+| summary_credit | integer      |          | 요약 생성 크레딧      |
+
+**주요 특징:**
+
+- type: 플랜 타입으로 고유 식별 (예: 'basic', 'pro', 'enterprise')
+- audio_credit, summary_credit: 플랜별 제공 크레딧
+
+---
+
+### 10. subscribe (구독)
+
+**설명:** 사용자의 요금제 구독 정보를 관리합니다.
+
+| 컬럼         | 타입        | 제약     | 설명                     |
+| ------------ | ----------- | -------- | ------------------------ |
+| id           | uuid        | PK       | 구독 ID                  |
+| user_id      | bigint      | NOT NULL | 사용자 ID (users.id 참조) |
+| plan_id      | uuid        | NOT NULL | 플랜 ID (plans.id 참조)  |
+| billing_key  | text        |          | 결제 키                  |
+| start_at     | timestamptz |          | 구독 시작 시각           |
+| end_at       | timestamptz |          | 구독 종료 시각           |
+| last_paid_at | timestamptz |          | 최근 결제 시각           |
+| is_canceled  | boolean     |          | 구독 취소 여부           |
+
+---
+
+### 11. card (카드)
+
+**설명:** 사용자의 결제 카드 정보를 관리합니다.
+
+| 컬럼       | 타입        | 제약     | 설명                     |
+| ---------- | ----------- | -------- | ------------------------ |
+| id         | uuid        | PK       | 카드 ID                  |
+| user_id    | bigint      | NOT NULL | 사용자 ID (users.id 참조) |
+| type       | card_type   |          | 카드 타입 ENUM (신용/체크) |
+| company    | varchar(6)  |          | 카드사 (6자)             |
+| number     | varchar(16) |          | 카드 번호 (16자)         |
+| created_at | timestamptz | NOT NULL | 생성 시각                |
+
+**주요 특징:**
+
+- type: card_type ENUM ('신용', '체크')
+
+---
+
+### 12. payments (결제)
+
+**설명:** 결제 이력을 관리합니다.
+
+| 컬럼       | 타입            | 제약     | 설명                     |
+| ---------- | --------------- | -------- | ------------------------ |
+| id         | uuid            | PK       | 결제 ID                  |
+| user_id    | bigint          | NOT NULL | 사용자 ID (users.id 참조) |
+| plan_id    | uuid            | NOT NULL | 플랜 ID (plans.id 참조)  |
+| expired_at | timestamptz     |          | 만료 시각                |
+| status     | payment_status  |          | 결제 상태 ENUM           |
+| created_at | timestamptz     | NOT NULL | 생성 시각                |
+
+**주요 특징:**
+
+- status: payment_status ENUM ('in_progress', 'success', 'failed')
+
+---
+
+### 13. usage (사용량)
+
+**설명:** 플랜별 크레딧 사용량을 관리합니다.
+
+| 컬럼          | 타입        | 제약                     | 설명                     |
+| ------------- | ----------- | ------------------------ | ------------------------ |
+| id            | uuid        | PK                       | 사용량 ID                |
+| user_id       | bigint      | NOT NULL                 | 사용자 ID (users.id 참조) |
+| plan_id       | uuid        | NOT NULL                 | 플랜 ID (plans.id 참조)  |
+| audio_usage   | integer     |                          | 음성 크레딧 사용량       |
+| summary_usage | integer     |                          | 요약 크레딧 사용량       |
+| reset_at      | timestamptz |                          | 사용량 리셋 시각         |
+
+**주요 특징:**
+
+- UNIQUE(user_id, plan_id): 사용자별 플랜별 1개의 레코드만 존재
+
+---
+
+### 14. credit_log (크레딧 로그)
+
+**설명:** 크레딧 사용 내역을 기록합니다.
+
+| 컬럼         | 타입        | 제약     | 설명                         |
+| ------------ | ----------- | -------- | ---------------------------- |
+| id           | uuid        | PK       | 로그 ID                      |
+| user_id      | bigint      | NOT NULL | 사용자 ID (users.id 참조)     |
+| subscribe_id | uuid        |          | 구독 ID (subscribe.id 참조)  |
+| session_id   | uuid        |          | 세션 ID (sessions.id 참조)   |
+| use_type     | varchar(8)  |          | 사용 타입 (8자)              |
+| use_amount   | integer     |          | 사용량                       |
+| log_memo     | varchar(50) |          | 로그 메모 (50자)             |
+| created_at   | timestamptz | NOT NULL | 생성 시각                    |
+
+---
+
+## Edge Functions API
+
+### POST /auth/check-user-exists
+
+이메일 중복 확인 (인증된 사용자만 중복으로 간주)
+
+**Request:**
+
+```json
+{
+  "email": "user@example.com"
+}
 ```
-'pending' | 'in_progress' | 'completed'
+
+**Response (200):**
+
+```json
+{
+  "success": true,
+  "exists": false,
+  "message": "사용 가능한 이메일입니다."
+}
 ```
 
-### payment_status
+**Response (400 - 중복):**
 
-```
-'in_progress' | 'success' | 'failed'
-```
-
-### card_type
-
-```
-'신용' | '체크'
+```json
+{
+  "success": false,
+  "error": "EMAIL_ALREADY_EXISTS",
+  "message": "이미 사용 중인 이메일입니다."
+}
 ```
 
 ---
 
-## Sequences
+### POST /onboarding/status
 
-- `users_id_seq`: users.id 자동 증가
+온보딩 상태 조회
+
+**Request:**
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "step": 0,
+  "state": "in_progress"
+}
+```
+
+---
+
+### POST /onboarding/save
+
+기본 정보 저장
+
+**Request:**
+
+```json
+{
+  "email": "user@example.com",
+  "name": "홍길동",
+  "phone_number": "010-1234-5678",
+  "organization": "마인드토스"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "기본 정보가 저장되었습니다.",
+  "step": 0,
+  "state": "in_progress"
+}
+```
+
+---
+
+### POST /onboarding/complete
+
+온보딩 완료
+
+**Request:**
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "온보딩이 완료되었습니다.",
+  "step": 3,
+  "state": "completed"
+}
+```
+
+---
+
+### POST /clients/create
+
+내담자 등록
+
+**Request:**
+
+```json
+{
+  "counselor_email": "counselor@example.com",
+  "name": "홍길동",
+  "phone_number": "010-1234-5678",
+  "email": "client@example.com",
+  "counsel_theme": "친구 관계",
+  "memo": "동반인: 김철수, 이영희",
+  "counsel_number": 15
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "내담자가 등록되었습니다.",
+  "client": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "홍길동"
+  }
+}
+```
+
+**필수 필드:**
+
+- counselor_email (상담사 이메일)
+- name (내담자 이름)
+
+**선택 필드:**
+
+- phone_number
+- email
+- counsel_theme (상담 주제)
+- memo (메모, 동반인 정보 등)
+- counsel_number (회기 수)
+
+---
+
+## 제약사항 및 규칙
+
+### Foreign Key 정책
+
+- 모든 FK 제거됨: 애플리케이션 레벨에서 참조 무결성 관리
+
+### 문자열 길이 제한
+
+- name: 12자
+- phone_number: 15자
+- email: 320자
+- memo: 200자
+- counsel_theme: 100자
+
+### 동기화 규칙
+
+- auth.users ↔ public.users: email 기반 동기화
+- auth.users.email_confirmed_at → public.users.email_verified_at: 트리거로 실시간 동기화
+
+---
+
+## ENUM 타입 정의
+
+| ENUM 타입 | 값 | 사용 테이블 |
+|-----------|-----|------------|
+| onboarding_state | 'pending', 'in_progress', 'completed' | onboarding |
+| payment_status | 'in_progress', 'success', 'failed' | payments |
+| card_type | '신용', '체크' | card |
+
+---
+
+## 변경 이력
+
+### v1.7 (2025-11-18)
+
+- **중요 변경:** templates.id 시퀀스 → IDENTITY 변경 (타입 안정성 향상)
+- 시퀀스 관리 불필요, SQL 표준 방식 적용
+
+### v1.6 (2025-11-18)
+
+- **중요 변경:** counsel_notes → progress_notes 테이블명 변경
+- **중요 변경:** templates.id uuid → integer 변경 (운영자 관리 편의성 향상)
+- **중요 변경:** template_id 참조 컬럼 모두 integer로 변경
+- 기존 templates 데이터 삭제 및 초기화
+
+### v1.5 (2025-11-18)
+
+- users.default_template_id 추가 (사용자 기본 템플릿 설정)
+
+### v1.4 (2025-11-18)
+
+- **문서 수정:** 실제 데이터베이스 스키마에 맞춰 SCHEMA 전면 수정
+- ENUM 타입 정확히 반영 (onboarding_state, payment_status, card_type)
+- 전체 14개 테이블 상세 문서화 (기존 4개에서 확장)
+- templates, progress_notes, transcribes, template_pin, plans, subscribe, card, payments, usage, credit_log 추가
+- 각 테이블의 실제 컬럼 및 제약사항 정확히 반영
+
+### v1.3 (2025-11-18)
+
+- clients.counsel_theme 추가 (상담 주제)
+- Edge Functions API 문서화
+
+### v1.2 (2025-11-18)
+
+- clients.id: bigint → uuid 변경
+- clients.group_id 제거 (동반인은 memo로 관리)
+- sessions.group_id → sessions.client_id 변경
+
+### v1.1 (2025-11-14)
+
+- users.email_verified_at 추가
+- users.organization 추가
+- clients.email 추가
