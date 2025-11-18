@@ -43,7 +43,10 @@ export const templateService = {
         .order('id', { ascending: true });
 
       if (error) {
-        throw createDatabaseError(error, '템플릿 목록 조회 중 오류가 발생했습니다.');
+        throw createDatabaseError(
+          error,
+          '템플릿 목록 조회 중 오류가 발생했습니다.'
+        );
       }
 
       return {
@@ -51,7 +54,10 @@ export const templateService = {
         templates: data || [],
       };
     } catch (error) {
-      throw normalizeApiError(error, '템플릿 목록 조회 중 오류가 발생했습니다.');
+      throw normalizeApiError(
+        error,
+        '템플릿 목록 조회 중 오류가 발생했습니다.'
+      );
     }
   },
 
