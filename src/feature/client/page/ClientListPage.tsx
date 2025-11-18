@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
+import { getClientDetailRoute } from '@/router/constants';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientCard } from '../components/ClientCard';
@@ -25,9 +26,7 @@ export const ClientListPage: React.FC = () => {
   const groupedClients = useClientGrouping(filteredClients);
 
   const handleClientClick = (client: Client) => {
-    console.log('클라이언트 클릭:', client);
-    // TODO: 클라이언트 상세 페이지로 이동
-    navigate(`/clients/${client.id}`);
+    navigate(getClientDetailRoute(client.id));
   };
 
   const handleMenuClick = (client: Client) => {

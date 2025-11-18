@@ -20,3 +20,8 @@ export const TERMS_TYPES = {
 } as const;
 
 export type TermsType = (typeof TERMS_TYPES)[keyof typeof TERMS_TYPES];
+
+export const getClientDetailRoute = (clientId: string | number) =>
+  `/clients/${clientId}`;
+
+export const getTermsRoute = (type: TermsType) => `/terms?type=${type}`;

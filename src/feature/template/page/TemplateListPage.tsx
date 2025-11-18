@@ -62,7 +62,7 @@ export const TemplateListPage: React.FC = () => {
 
             <Card className="h-full bg-gradient-to-r from-green-500 to-amber-200">
               <Card.Body className="flex h-full flex-col items-center space-y-4 p-6 text-left">
-                <div className="text-left">
+                <div className="w-full text-left">
                   <Title as="h3" className="mb-2 text-lg font-bold text-white">
                     혹시 원하는 양식이 없다면?
                   </Title>

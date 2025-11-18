@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
 import { HyperLink, Title } from '@/components/ui';
+import { ROUTES } from '@/router/constants';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -56,7 +57,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             <div className="flex justify-center gap-4">
               <HyperLink
                 underline="hover"
-                href="/"
+                href={ROUTES.ROOT}
                 className="inline-block rounded-lg bg-primary-500 px-6 py-3 text-center text-base font-medium text-white hover:bg-primary-600 hover:text-white"
               >
                 홈으로 돌아가기

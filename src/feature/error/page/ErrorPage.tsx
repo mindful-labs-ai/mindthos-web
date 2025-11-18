@@ -1,6 +1,7 @@
 import { useRouteError } from 'react-router-dom';
 
 import { HyperLink, Title } from '@/components/ui';
+import { ROUTES } from '@/router/constants';
 
 const ErrorPage = () => {
   const error = useRouteError() as Error;
@@ -28,7 +29,7 @@ const ErrorPage = () => {
         <div className="flex justify-center gap-4">
           <HyperLink
             underline="hover"
-            href="/"
+            href={ROUTES.ROOT}
             className="inline-block rounded-lg bg-primary-500 px-6 py-3 text-base font-medium text-white hover:bg-primary-600 hover:text-white"
           >
             홈으로 돌아가기
