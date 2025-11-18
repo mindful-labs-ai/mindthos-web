@@ -35,14 +35,21 @@ export const useTemplateList = () => {
 
   const [templatesQuery, pinsQuery] = results;
 
-  // 템플릿 목록에 pin, is_default 정보 추가
-  const templates: TemplateListItem[] = (templatesQuery.data || []).map(
-    (template) => ({
+  const templates: TemplateListItem[] = (templatesQuery.data || [])
+    .map((template) => ({
       ...template,
       pin: pinsQuery.data?.includes(template.id) || false,
       is_default: template.id === defaultTemplateId,
-    })
-  );
+    }))
+    .sort((a, b) => {
+      if (a.is_default && !b.is_default) return -1;
+      if (!a.is_default && b.is_default) return 1;
+
+      if (a.pin && !b.pin) return -1;
+      if (!a.pin && b.pin) return 1;
+
+      return a.id - b.id;
+    });
 
   return {
     templates,
