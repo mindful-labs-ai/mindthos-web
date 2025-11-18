@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { Upload, UserPlus, FileSearch } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { ROUTES } from '@/router/constants';
 import { formatKoreanDate } from '@/shared/utils/date';
-import { extractUsernameFromEmail } from '@/shared/utils/user';
 import { useAuthStore } from '@/stores/authStore';
 
 import { ActionCard } from '../components/ActionCard';
@@ -13,7 +14,8 @@ import { GreetingSection } from '../components/GreetingSection';
 import { SessionCard } from '../components/SessionCard';
 
 const HomePage = () => {
-  const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
+  const userName = useAuthStore((state) => state.userName);
   const [showBanner, setShowBanner] = React.useState(true);
 
   const handleGuideClick = () => {
@@ -25,11 +27,11 @@ const HomePage = () => {
   };
 
   const handleAddCustomerClick = () => {
-    // TODO: Implement add customer functionality
+    navigate(ROUTES.CLIENTS);
   };
 
   const handleViewAllRecordsClick = () => {
-    // TODO: Navigate to all records page
+    navigate(ROUTES.HISTORY);
   };
 
   const handleSessionClick = (_sessionId: string) => {
@@ -48,10 +50,7 @@ const HomePage = () => {
         />
       )}
 
-      <GreetingSection
-        userName={extractUsernameFromEmail(user?.email)}
-        date={formatKoreanDate()}
-      />
+      <GreetingSection userName={userName!} date={formatKoreanDate()} />
 
       <div className="mb-8 flex flex-row gap-4">
         <ActionCard
