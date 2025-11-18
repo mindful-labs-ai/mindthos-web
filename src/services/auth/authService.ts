@@ -16,6 +16,8 @@ import {
   type ResendVerificationResponse,
   type SignUpData,
   type User,
+  type UserData,
+  type UserDbRecord,
 } from './types';
 
 export const authService = {
@@ -94,6 +96,34 @@ export const authService = {
       if (error) throw handleAuthError(error);
       return user;
     } catch {
+      return null;
+    }
+  },
+
+  async getUserDataByEmail(email: string): Promise<UserData | null> {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_user_by_email', {
+          user_email: email,
+        })
+        .single<UserDbRecord>();
+
+      if (error) {
+        console.error('getUserDataByEmail error:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: String(data.id),
+        name: data.name,
+        phoneNumber: data.phone_number,
+        defaultTemplateId: data.default_template_id,
+        organization: data.organization,
+      };
+    } catch (error) {
+      console.error('getUserDataByEmail exception:', error);
       return null;
     }
   },
