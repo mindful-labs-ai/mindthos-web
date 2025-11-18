@@ -112,7 +112,7 @@ export const Tab: React.FC<TabProps> = ({
             onClick={() => handleSelect(item.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'rounded-[var(--radius-sm)] font-medium',
+              'whitespace-nowrap rounded-[var(--radius-sm)] font-medium',
               'transition-colors duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-contrast',
               'disabled:cursor-not-allowed disabled:opacity-50',
