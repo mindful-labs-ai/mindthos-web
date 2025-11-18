@@ -35,7 +35,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       <Card.Body className="flex h-full flex-col space-y-4 p-6 text-left">
         <div className="flex items-start justify-between gap-2">
           <Title as="h3" className="line-clamp-2 flex-1 text-lg font-bold">
-            {template.name}
+            {template.title}
           </Title>
           <button
             type="button"
