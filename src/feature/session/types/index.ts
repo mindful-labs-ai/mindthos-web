@@ -5,7 +5,42 @@ export interface Session {
   title: string | null;
   description: string | null;
   audio_meta_data: Record<string, unknown> | null;
+  audio_url: string | null; // 오디오 파일 URL (ObjectURL 또는 public 경로)
   created_at: string;
+}
+
+// ============================================
+// Transcribe 관련 타입
+// ============================================
+
+// 전사 세그먼트 (화자별 발화)
+export interface TranscribeSegment {
+  id: number;
+  start: number; // 시작 시간(초)
+  end: number; // 종료 시간(초)
+  text: string; // 발화 내용
+  speaker: number; // 화자 ID
+  speaker_diarized: null | number;
+}
+
+// 화자 정보
+export interface Speaker {
+  id: number;
+  role: 'counselor' | 'client1' | 'client2' | string; // 역할
+}
+
+// 전사 결과
+export interface TranscribeResult {
+  segments: TranscribeSegment[];
+  speakers: Speaker[];
+  text: string;
+}
+
+// 전사 컨텐츠 (DB에 저장되는 JSON)
+export interface TranscribeContents {
+  audio_uuid: string;
+  status: 'processing' | 'completing' | 'completed' | 'failed';
+  result: TranscribeResult;
 }
 
 export interface Transcribe {
@@ -14,7 +49,7 @@ export interface Transcribe {
   user_id: string;
   title: string | null;
   counsel_date: string | null;
-  contents: string | null;
+  contents: TranscribeContents | null; // JSON 객체로 변경
   created_at: string;
 }
 
