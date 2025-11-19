@@ -5,25 +5,56 @@ import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { useClientList } from '@/feature/client/hooks/useClientList';
+import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
+import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
 import { ROUTES } from '@/router/constants';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
+import { useSessionStore } from '@/stores/sessionStore';
 
 import { ActionCard } from '../components/ActionCard';
 import { GreetingSection } from '../components/GreetingSection';
 import { SessionCard } from '../components/SessionCard';
 
+interface AudioFileInfo {
+  name: string;
+  size: number;
+  duration: number;
+  file: File;
+}
+
 const HomePage = () => {
   const navigate = useNavigate();
   const userName = useAuthStore((state) => state.userName);
+  const userId = useAuthStore((state) => state.userId);
   const [showBanner, setShowBanner] = React.useState(true);
+  const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
+    React.useState(false);
+
+  // 고객 목록 가져오기
+  const { clients } = useClientList();
+
+  // 세션 스토어
+  const addSession = useSessionStore((state) => state.addSession);
+  const sessions = useSessionStore((state) => state.sessions);
+  const transcribes = useSessionStore((state) => state.transcribes);
+
+  // sessions + transcribes 결합 (useMemo로 캐싱)
+  const sessionsWithTranscribes = React.useMemo(() => {
+    return sessions.map((session) => ({
+      session,
+      transcribe: transcribes[session.id] || null,
+    }));
+  }, [sessions, transcribes]);
 
   const handleGuideClick = () => {
     // TODO: Navigate to guide page
   };
 
   const handleUploadClick = () => {
-    // TODO: Implement upload functionality
+    // 바로 모달 열기 (드롭다운 없이)
+    setIsCreateSessionModalOpen(true);
   };
 
   const handleAddCustomerClick = () => {
@@ -36,6 +67,55 @@ const HomePage = () => {
 
   const handleSessionClick = (_sessionId: string) => {
     // TODO: Navigate to session detail page
+  };
+
+  const handleCreateSession = async (data: {
+    client: { id: string; name: string } | null;
+    file: AudioFileInfo;
+  }) => {
+    // 2초 딜레이로 전사 & 요약 처리 시뮬레이션
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Mock 세션 데이터 생성
+    const { session, transcribe } = createMockSessionData({
+      file: data.file,
+      clientId: data.client?.id || null,
+      userId: userId || 'default-user',
+    });
+
+    addSession(session, transcribe);
+  };
+
+  // 전사 내용을 SessionCard용 텍스트로 변환 (처음 몇 줄만)
+  const getSessionContent = (transcribe: {
+    contents: {
+      result: {
+        segments: Array<{ text: string; speaker: number }>;
+        speakers: Array<{ id: number; role: string }>;
+      };
+    } | null;
+  } | null): string => {
+    if (!transcribe?.contents?.result?.segments) {
+      return '전사 내용이 없습니다.';
+    }
+
+    const { segments, speakers } = transcribe.contents.result;
+
+    // 처음 3개 세그먼트만 표시
+    const previewSegments = segments.slice(0, 3);
+
+    return previewSegments
+      .map((seg) => {
+        const speaker = speakers.find((s) => s.id === seg.speaker);
+        const roleName =
+          speaker?.role === 'counselor'
+            ? '상담사'
+            : speaker?.role === 'client1'
+              ? '내담자'
+              : '내담자2';
+        return `${roleName} : ${seg.text}`;
+      })
+      .join(' ');
   };
 
   return (
@@ -59,12 +139,12 @@ const HomePage = () => {
           onClick={handleUploadClick}
         />
         <ActionCard
-          icon={<UserPlus size={24} className="text-red-500" />}
+          icon={<UserPlus size={24} className="text-danger" />}
           title="고객 추가하기"
           onClick={handleAddCustomerClick}
         />
         <ActionCard
-          icon={<FileSearch size={24} className="text-yellow-500" />}
+          icon={<FileSearch size={24} className="text-warn" />}
           title="상담 기록 전체보기"
           onClick={handleViewAllRecordsClick}
         />
@@ -78,20 +158,35 @@ const HomePage = () => {
         </div>
 
         <div className="space-y-4">
-          <SessionCard
-            title="김경민 1회기"
-            content="상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다."
-            date={formatKoreanDate()}
-            onClick={() => handleSessionClick('session-1')}
-          />
-          <SessionCard
-            title="김성곤 2회기"
-            content="상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다. 상담사 : 안녕하세요, 잘 지내셨나요? 내담자 : 네 잘 지냈습니다."
-            date={formatKoreanDate()}
-            onClick={() => handleSessionClick('session-2')}
-          />
+          {sessionsWithTranscribes.length > 0 ? (
+            sessionsWithTranscribes.map(({ session, transcribe }) => (
+              <SessionCard
+                key={session.id}
+                title={session.title || '제목 없음'}
+                content={getSessionContent(transcribe)}
+                date={formatKoreanDate(new Date(session.created_at))}
+                onClick={() => handleSessionClick(session.id)}
+              />
+            ))
+          ) : (
+            <div className="rounded-lg border border-surface-strong bg-surface-contrast p-8 text-center">
+              <p className="text-fg-muted">
+                아직 상담 기록이 없습니다.
+                <br />
+                녹음 파일을 업로드하여 첫 상담 기록을 만들어보세요.
+              </p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* 세션 생성 모달 */}
+      <CreateSessionModal
+        open={isCreateSessionModalOpen}
+        onOpenChange={setIsCreateSessionModalOpen}
+        clients={clients}
+        onCreateSession={handleCreateSession}
+      />
     </div>
   );
 };
