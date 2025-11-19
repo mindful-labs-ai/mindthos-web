@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
-> 이 문서는 Mindthos 데이터베이스의 최종 스키마를 정의합니다. SDD 프로세스에서
-> AI가 테이블 구조와 UI의 일관성을 유지하기 위한 참조 자료로 사용됩니다.
+> 이 문서는 Mindthos 데이터베이스의 최종 스키마를 정의합니다.
+> SDD 프로세스에서 AI가 테이블 구조와 UI의 일관성을 유지하기 위한 참조 자료로 사용됩니다.
 
 ## 목차
 
@@ -15,22 +15,22 @@
 
 ### 핵심 테이블
 
-| 테이블명       | 설명            | 주요 용도                |
-| -------------- | --------------- | ------------------------ |
-| users          | 사용자 (상담사) | 인증, 프로필 관리        |
-| clients        | 내담자          | 상담 대상자 정보         |
-| sessions       | 상담 세션       | 상담 회기 관리           |
-| onboarding     | 온보딩          | 초기 설정 프로세스       |
-| templates      | 템플릿          | 상담 기록 템플릿         |
-| progress_notes | 경과 기록       | 세션별 상담 경과 요약    |
-| transcribes    | 전사 기록       | 음성 전사 내용           |
-| template_pin   | 템플릿 고정     | 사용자별 템플릿 즐겨찾기 |
-| plans          | 요금제          | 서비스 플랜 정보         |
-| subscribe      | 구독            | 사용자 구독 관리         |
-| card           | 카드            | 결제 카드 정보           |
-| payments       | 결제            | 결제 이력                |
-| usage          | 사용량          | 크레딧 사용량 추적       |
-| credit_log     | 크레딧 로그     | 크레딧 사용 내역         |
+| 테이블명      | 설명           | 주요 용도                  |
+| ------------- | -------------- | -------------------------- |
+| users         | 사용자 (상담사) | 인증, 프로필 관리          |
+| clients        | 내담자         | 상담 대상자 정보           |
+| sessions       | 상담 세션      | 상담 회기 관리             |
+| onboarding     | 온보딩         | 초기 설정 프로세스         |
+| templates      | 템플릿         | 상담 기록 템플릿           |
+| progress_notes | 경과 기록      | 세션별 상담 경과 요약      |
+| transcribes    | 전사 기록      | 음성 전사 내용             |
+| template_pin  | 템플릿 고정    | 사용자별 템플릿 즐겨찾기   |
+| plans         | 요금제         | 서비스 플랜 정보           |
+| subscribe     | 구독           | 사용자 구독 관리           |
+| card          | 카드           | 결제 카드 정보             |
+| payments      | 결제           | 결제 이력                  |
+| usage         | 사용량         | 크레딧 사용량 추적         |
+| credit_log    | 크레딧 로그    | 크레딧 사용 내역           |
 
 ---
 
@@ -38,20 +38,19 @@
 
 ### 1. users (사용자)
 
-**설명:** 시스템 사용자 (상담사) 정보를 관리합니다. auth.users와 email로
-연동됩니다.
+**설명:** 시스템 사용자 (상담사) 정보를 관리합니다. auth.users와 email로 연동됩니다.
 
-| 컬럼                | 타입         | 제약     | 설명                               |
-| ------------------- | ------------ | -------- | ---------------------------------- |
-| id                  | bigint       | PK       | 사용자 고유 ID (시퀀스)            |
-| name                | varchar(12)  |          | 이름 (최대 12자)                   |
-| email               | varchar(320) | UNIQUE   | 이메일 (auth.users 연동)           |
-| phone_number        | varchar(15)  |          | 전화번호                           |
-| email_verified_at   | timestamptz  |          | 이메일 인증 시각                   |
-| organization        | varchar(100) |          | 소속 기관                          |
+| 컬럼                | 타입         | 제약     | 설명                           |
+| ------------------- | ------------ | -------- | ------------------------------ |
+| id                  | bigint       | PK       | 사용자 고유 ID (시퀀스)        |
+| name                | varchar(12)  |          | 이름 (최대 12자)               |
+| email               | varchar(320) | UNIQUE   | 이메일 (auth.users 연동)       |
+| phone_number        | varchar(15)  |          | 전화번호                       |
+| email_verified_at   | timestamptz  |          | 이메일 인증 시각               |
+| organization        | varchar(100) |          | 소속 기관                      |
 | default_template_id | integer      |          | 기본 템플릿 ID (templates.id 참조) |
-| created_at          | timestamptz  | NOT NULL | 생성 시각                          |
-| updated_at          | timestamptz  | NOT NULL | 수정 시각                          |
+| created_at          | timestamptz  | NOT NULL | 생성 시각                      |
+| updated_at          | timestamptz  | NOT NULL | 수정 시각                      |
 
 **주요 특징:**
 
@@ -122,13 +121,13 @@
 
 **설명:** 사용자의 초기 설정 프로세스를 관리합니다.
 
-| 컬럼         | 타입             | 제약             | 설명                                      |
-| ------------ | ---------------- | ---------------- | ----------------------------------------- |
-| id           | uuid             | PK               | 온보딩 ID                                 |
-| user_id      | bigint           | NOT NULL, UNIQUE | 사용자 ID (users.id 참조)                 |
-| step         | smallint         |                  | 현재 단계 (0-3)                           |
-| state        | onboarding_state | NOT NULL         | 상태 ENUM (pending/in_progress/completed) |
-| completed_at | timestamptz      |                  | 완료 시각                                 |
+| 컬럼         | 타입              | 제약              | 설명                           |
+| ------------ | ----------------- | ----------------- | ------------------------------ |
+| id           | uuid              | PK                | 온보딩 ID                      |
+| user_id      | bigint            | NOT NULL, UNIQUE  | 사용자 ID (users.id 참조)      |
+| step         | smallint          |                   | 현재 단계 (0-3)                |
+| state        | onboarding_state  | NOT NULL          | 상태 ENUM (pending/in_progress/completed) |
+| completed_at | timestamptz       |                   | 완료 시각                      |
 
 **주요 특징:**
 
@@ -148,13 +147,13 @@
 
 **설명:** 상담 기록 작성을 위한 공용 템플릿을 관리합니다.
 
-| 컬럼        | 타입         | 제약     | 설명                |
-| ----------- | ------------ | -------- | ------------------- |
-| id          | integer      | PK       | 템플릿 ID (시퀀스)  |
-| title       | varchar(24)  |          | 템플릿 제목 (24자)  |
-| description | varchar(200) |          | 템플릿 설명 (200자) |
-| prompt      | text         |          | AI 프롬프트 내용    |
-| created_at  | timestamptz  | NOT NULL | 생성 시각           |
+| 컬럼        | 타입         | 제약     | 설명                 |
+| ----------- | ------------ | -------- | -------------------- |
+| id          | integer      | PK       | 템플릿 ID (시퀀스)   |
+| title       | varchar(24)  |          | 템플릿 제목 (24자)   |
+| description | varchar(200) |          | 템플릿 설명 (200자)  |
+| prompt      | text         |          | AI 프롬프트 내용     |
+| created_at  | timestamptz  | NOT NULL | 생성 시각            |
 
 **주요 특징:**
 
@@ -168,15 +167,15 @@
 
 **설명:** 세션별 상담 경과 기록을 관리합니다.
 
-| 컬럼        | 타입        | 제약     | 설명                          |
-| ----------- | ----------- | -------- | ----------------------------- |
-| id          | uuid        | PK       | 상담 기록 ID                  |
-| session_id  | uuid        | NOT NULL | 세션 ID (sessions.id 참조)    |
-| user_id     | bigint      | NOT NULL | 상담사 ID (users.id 참조)     |
-| title       | varchar(18) |          | 기록 제목 (18자)              |
-| template_id | integer     |          | 템플릿 ID (templates.id 참조) |
-| summary     | text        |          | 상담 요약 내용                |
-| created_at  | timestamptz | NOT NULL | 생성 시각                     |
+| 컬럼        | 타입         | 제약     | 설명                      |
+| ----------- | ------------ | -------- | ------------------------- |
+| id          | uuid         | PK       | 상담 기록 ID              |
+| session_id  | uuid         | NOT NULL | 세션 ID (sessions.id 참조) |
+| user_id     | bigint       | NOT NULL | 상담사 ID (users.id 참조) |
+| title       | varchar(18)  |          | 기록 제목 (18자)          |
+| template_id | integer      |          | 템플릿 ID (templates.id 참조) |
+| summary     | text         |          | 상담 요약 내용            |
+| created_at  | timestamptz  | NOT NULL | 생성 시각                 |
 
 **주요 특징:**
 
@@ -189,15 +188,15 @@
 
 **설명:** 상담 세션의 음성 전사 내용을 관리합니다.
 
-| 컬럼         | 타입        | 제약     | 설명                       |
-| ------------ | ----------- | -------- | -------------------------- |
-| id           | uuid        | PK       | 전사 ID                    |
+| 컬럼         | 타입        | 제약     | 설명                      |
+| ------------ | ----------- | -------- | ------------------------- |
+| id           | uuid        | PK       | 전사 ID                   |
 | session_id   | uuid        | NOT NULL | 세션 ID (sessions.id 참조) |
-| user_id      | bigint      | NOT NULL | 상담사 ID (users.id 참조)  |
-| title        | varchar(18) |          | 전사 제목 (18자)           |
-| counsel_date | date        |          | 상담 일자                  |
-| contents     | text        |          | 전사 내용                  |
-| created_at   | timestamptz | NOT NULL | 생성 시각                  |
+| user_id      | bigint      | NOT NULL | 상담사 ID (users.id 참조) |
+| title        | varchar(18) |          | 전사 제목 (18자)          |
+| counsel_date | date        |          | 상담 일자                 |
+| contents     | text        |          | 전사 내용                 |
+| created_at   | timestamptz | NOT NULL | 생성 시각                 |
 
 **주요 특징:**
 
@@ -210,11 +209,11 @@
 
 **설명:** 사용자별 템플릿 즐겨찾기 기능을 관리합니다.
 
-| 컬럼        | 타입    | 제약     | 설명                          |
-| ----------- | ------- | -------- | ----------------------------- |
-| id          | uuid    | PK       | 고정 ID                       |
-| template_id | integer | NOT NULL | 템플릿 ID (templates.id 참조) |
-| user_id     | bigint  | NOT NULL | 사용자 ID (users.id 참조)     |
+| 컬럼        | 타입    | 제약                        | 설명                        |
+| ----------- | ------- | --------------------------- | --------------------------- |
+| id          | uuid    | PK                          | 고정 ID                     |
+| template_id | integer | NOT NULL                    | 템플릿 ID (templates.id 참조) |
+| user_id     | bigint  | NOT NULL                    | 사용자 ID (users.id 참조)   |
 
 **주요 특징:**
 
@@ -226,14 +225,14 @@
 
 **설명:** 서비스 요금제 정보를 관리합니다.
 
-| 컬럼           | 타입        | 제약   | 설명             |
-| -------------- | ----------- | ------ | ---------------- |
-| id             | uuid        | PK     | 플랜 ID          |
-| type           | varchar(15) | UNIQUE | 플랜 타입 (고유) |
-| description    | varchar(50) |        | 플랜 설명 (50자) |
-| price          | integer     |        | 가격             |
-| audio_credit   | integer     |        | 음성 전사 크레딧 |
-| summary_credit | integer     |        | 요약 생성 크레딧 |
+| 컬럼           | 타입         | 제약     | 설명                  |
+| -------------- | ------------ | -------- | --------------------- |
+| id             | uuid         | PK       | 플랜 ID               |
+| type           | varchar(15)  | UNIQUE   | 플랜 타입 (고유)      |
+| description    | varchar(50)  |          | 플랜 설명 (50자)      |
+| price          | integer      |          | 가격                  |
+| audio_credit   | integer      |          | 음성 전사 크레딧      |
+| summary_credit | integer      |          | 요약 생성 크레딧      |
 
 **주요 특징:**
 
@@ -246,16 +245,16 @@
 
 **설명:** 사용자의 요금제 구독 정보를 관리합니다.
 
-| 컬럼         | 타입        | 제약     | 설명                      |
-| ------------ | ----------- | -------- | ------------------------- |
-| id           | uuid        | PK       | 구독 ID                   |
+| 컬럼         | 타입        | 제약     | 설명                     |
+| ------------ | ----------- | -------- | ------------------------ |
+| id           | uuid        | PK       | 구독 ID                  |
 | user_id      | bigint      | NOT NULL | 사용자 ID (users.id 참조) |
-| plan_id      | uuid        | NOT NULL | 플랜 ID (plans.id 참조)   |
-| billing_key  | text        |          | 결제 키                   |
-| start_at     | timestamptz |          | 구독 시작 시각            |
-| end_at       | timestamptz |          | 구독 종료 시각            |
-| last_paid_at | timestamptz |          | 최근 결제 시각            |
-| is_canceled  | boolean     |          | 구독 취소 여부            |
+| plan_id      | uuid        | NOT NULL | 플랜 ID (plans.id 참조)  |
+| billing_key  | text        |          | 결제 키                  |
+| start_at     | timestamptz |          | 구독 시작 시각           |
+| end_at       | timestamptz |          | 구독 종료 시각           |
+| last_paid_at | timestamptz |          | 최근 결제 시각           |
+| is_canceled  | boolean     |          | 구독 취소 여부           |
 
 ---
 
@@ -263,14 +262,14 @@
 
 **설명:** 사용자의 결제 카드 정보를 관리합니다.
 
-| 컬럼       | 타입        | 제약     | 설명                       |
-| ---------- | ----------- | -------- | -------------------------- |
-| id         | uuid        | PK       | 카드 ID                    |
-| user_id    | bigint      | NOT NULL | 사용자 ID (users.id 참조)  |
+| 컬럼       | 타입        | 제약     | 설명                     |
+| ---------- | ----------- | -------- | ------------------------ |
+| id         | uuid        | PK       | 카드 ID                  |
+| user_id    | bigint      | NOT NULL | 사용자 ID (users.id 참조) |
 | type       | card_type   |          | 카드 타입 ENUM (신용/체크) |
-| company    | varchar(6)  |          | 카드사 (6자)               |
-| number     | varchar(16) |          | 카드 번호 (16자)           |
-| created_at | timestamptz | NOT NULL | 생성 시각                  |
+| company    | varchar(6)  |          | 카드사 (6자)             |
+| number     | varchar(16) |          | 카드 번호 (16자)         |
+| created_at | timestamptz | NOT NULL | 생성 시각                |
 
 **주요 특징:**
 
@@ -282,14 +281,14 @@
 
 **설명:** 결제 이력을 관리합니다.
 
-| 컬럼       | 타입           | 제약     | 설명                      |
-| ---------- | -------------- | -------- | ------------------------- |
-| id         | uuid           | PK       | 결제 ID                   |
-| user_id    | bigint         | NOT NULL | 사용자 ID (users.id 참조) |
-| plan_id    | uuid           | NOT NULL | 플랜 ID (plans.id 참조)   |
-| expired_at | timestamptz    |          | 만료 시각                 |
-| status     | payment_status |          | 결제 상태 ENUM            |
-| created_at | timestamptz    | NOT NULL | 생성 시각                 |
+| 컬럼       | 타입            | 제약     | 설명                     |
+| ---------- | --------------- | -------- | ------------------------ |
+| id         | uuid            | PK       | 결제 ID                  |
+| user_id    | bigint          | NOT NULL | 사용자 ID (users.id 참조) |
+| plan_id    | uuid            | NOT NULL | 플랜 ID (plans.id 참조)  |
+| expired_at | timestamptz     |          | 만료 시각                |
+| status     | payment_status  |          | 결제 상태 ENUM           |
+| created_at | timestamptz     | NOT NULL | 생성 시각                |
 
 **주요 특징:**
 
@@ -301,14 +300,14 @@
 
 **설명:** 플랜별 크레딧 사용량을 관리합니다.
 
-| 컬럼          | 타입        | 제약     | 설명                      |
-| ------------- | ----------- | -------- | ------------------------- |
-| id            | uuid        | PK       | 사용량 ID                 |
-| user_id       | bigint      | NOT NULL | 사용자 ID (users.id 참조) |
-| plan_id       | uuid        | NOT NULL | 플랜 ID (plans.id 참조)   |
-| audio_usage   | integer     |          | 음성 크레딧 사용량        |
-| summary_usage | integer     |          | 요약 크레딧 사용량        |
-| reset_at      | timestamptz |          | 사용량 리셋 시각          |
+| 컬럼          | 타입        | 제약                     | 설명                     |
+| ------------- | ----------- | ------------------------ | ------------------------ |
+| id            | uuid        | PK                       | 사용량 ID                |
+| user_id       | bigint      | NOT NULL                 | 사용자 ID (users.id 참조) |
+| plan_id       | uuid        | NOT NULL                 | 플랜 ID (plans.id 참조)  |
+| audio_usage   | integer     |                          | 음성 크레딧 사용량       |
+| summary_usage | integer     |                          | 요약 크레딧 사용량       |
+| reset_at      | timestamptz |                          | 사용량 리셋 시각         |
 
 **주요 특징:**
 
@@ -320,16 +319,16 @@
 
 **설명:** 크레딧 사용 내역을 기록합니다.
 
-| 컬럼         | 타입        | 제약     | 설명                        |
-| ------------ | ----------- | -------- | --------------------------- |
-| id           | uuid        | PK       | 로그 ID                     |
-| user_id      | bigint      | NOT NULL | 사용자 ID (users.id 참조)   |
-| subscribe_id | uuid        |          | 구독 ID (subscribe.id 참조) |
-| session_id   | uuid        |          | 세션 ID (sessions.id 참조)  |
-| use_type     | varchar(8)  |          | 사용 타입 (8자)             |
-| use_amount   | integer     |          | 사용량                      |
-| log_memo     | varchar(50) |          | 로그 메모 (50자)            |
-| created_at   | timestamptz | NOT NULL | 생성 시각                   |
+| 컬럼         | 타입        | 제약     | 설명                         |
+| ------------ | ----------- | -------- | ---------------------------- |
+| id           | uuid        | PK       | 로그 ID                      |
+| user_id      | bigint      | NOT NULL | 사용자 ID (users.id 참조)     |
+| subscribe_id | uuid        |          | 구독 ID (subscribe.id 참조)  |
+| session_id   | uuid        |          | 세션 ID (sessions.id 참조)   |
+| use_type     | varchar(8)  |          | 사용 타입 (8자)              |
+| use_amount   | integer     |          | 사용량                       |
+| log_memo     | varchar(50) |          | 로그 메모 (50자)             |
+| created_at   | timestamptz | NOT NULL | 생성 시각                    |
 
 ---
 
@@ -509,18 +508,17 @@
 ### 동기화 규칙
 
 - auth.users ↔ public.users: email 기반 동기화
-- auth.users.email_confirmed_at → public.users.email_verified_at: 트리거로
-  실시간 동기화
+- auth.users.email_confirmed_at → public.users.email_verified_at: 트리거로 실시간 동기화
 
 ---
 
 ## ENUM 타입 정의
 
-| ENUM 타입        | 값                                    | 사용 테이블 |
-| ---------------- | ------------------------------------- | ----------- |
-| onboarding_state | 'pending', 'in_progress', 'completed' | onboarding  |
-| payment_status   | 'in_progress', 'success', 'failed'    | payments    |
-| card_type        | '신용', '체크'                        | card        |
+| ENUM 타입 | 값 | 사용 테이블 |
+|-----------|-----|------------|
+| onboarding_state | 'pending', 'in_progress', 'completed' | onboarding |
+| payment_status | 'in_progress', 'success', 'failed' | payments |
+| card_type | '신용', '체크' | card |
 
 ---
 
@@ -547,8 +545,7 @@
 - **문서 수정:** 실제 데이터베이스 스키마에 맞춰 SCHEMA 전면 수정
 - ENUM 타입 정확히 반영 (onboarding_state, payment_status, card_type)
 - 전체 14개 테이블 상세 문서화 (기존 4개에서 확장)
-- templates, progress_notes, transcribes, template_pin, plans, subscribe, card,
-  payments, usage, credit_log 추가
+- templates, progress_notes, transcribes, template_pin, plans, subscribe, card, payments, usage, credit_log 추가
 - 각 테이블의 실제 컬럼 및 제약사항 정확히 반영
 
 ### v1.3 (2025-11-18)
