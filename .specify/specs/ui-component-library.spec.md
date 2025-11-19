@@ -10,17 +10,23 @@
 ## 1. Overview
 
 ### 1.1 Purpose
-Provide a comprehensive, production-ready UI component library built with React 19, TypeScript, and Tailwind CSS. The library emphasizes accessibility (WCAG 2.1 AA), type safety, testing, and developer experience.
+
+Provide a comprehensive, production-ready UI component library built with React
+19, TypeScript, and Tailwind CSS. The library emphasizes accessibility (WCAG 2.1
+AA), type safety, testing, and developer experience.
 
 ### 1.2 Goals
+
 - **Consistency**: Unified design language across all components
 - **Accessibility**: 100% keyboard navigable, ARIA compliant
 - **Type Safety**: Full TypeScript coverage with strict mode
 - **Test Coverage**: 80%+ unit test coverage, comprehensive E2E tests
-- **Developer Experience**: Clear documentation, Storybook examples, intuitive APIs
+- **Developer Experience**: Clear documentation, Storybook examples, intuitive
+  APIs
 - **Performance**: Optimized builds, lazy loading, minimal bundle size
 
 ### 1.3 Non-Goals
+
 - Framework-agnostic components (React only)
 - CSS-in-JS solutions (Tailwind CSS only)
 - Runtime theming API (design tokens via CSS variables)
@@ -47,24 +53,26 @@ src/components/ui/
     └── ...
 ```
 
-**Rationale**: Clear separation of concerns enables better reusability and maintainability.
+**Rationale**: Clear separation of concerns enables better reusability and
+maintainability.
 
 ### 2.2 Design Token System
 
 **Location**: `src/styles/tokens.css`
 
 **Structure**:
+
 ```css
 :root {
   /* Semantic Colors */
   --color-bg: hsl(0, 0%, 100%);
   --color-fg: hsl(222, 47%, 11%);
   --color-primary-500: hsl(222, 47%, 50%);
-  
+
   /* Typography */
   --font-family-base: 'Pretendard', 'Inter', system-ui;
   --font-size-sm: 0.875rem;
-  
+
   /* Spacing - follows Tailwind */
   /* Border Radius */
   /* Shadows */
@@ -79,6 +87,7 @@ src/components/ui/
 ```
 
 **Requirements**:
+
 - All components MUST use design tokens
 - NO hardcoded colors (e.g., `#3b82f6`)
 - Dark mode via `.dark` class scope
@@ -94,22 +103,22 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
    * Visual style variant
    */
   variant?: 'solid' | 'outline' | 'ghost' | 'soft';
-  
+
   /**
    * Color tone
    */
   tone?: 'primary' | 'secondary' | 'accent' | 'neutral';
-  
+
   /**
    * Size preset
    */
   size?: 'sm' | 'md' | 'lg' | 'free';
-  
+
   /**
    * Loading state with spinner
    */
   isLoading?: boolean;
-  
+
   /**
    * Polymorphic component support
    */
@@ -118,6 +127,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 ```
 
 **Requirements**:
+
 - JSDoc comments for all public props
 - Union types for variants (prevents typos)
 - Extends native HTML element props
@@ -134,6 +144,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 **Purpose**: Primary interaction element for user actions
 
 **Variants**:
+
 - `solid` (default): Filled background
 - `outline`: Border only
 - `ghost`: No background, hover effect
@@ -144,6 +155,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 **Sizes**: `sm` | `md` (default) | `lg` | `free`
 
 **States**:
+
 - Default
 - Hover
 - Focus (keyboard navigation)
@@ -152,10 +164,11 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 - Loading (with spinner)
 
 **API**:
+
 ```typescript
-<Button 
-  variant="solid" 
-  tone="primary" 
+<Button
+  variant="solid"
+  tone="primary"
   size="md"
   isLoading={false}
   disabled={false}
@@ -169,6 +182,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 ```
 
 **Accessibility**:
+
 - `role="button"` (when `asChild` transforms element)
 - `aria-disabled="true"` when disabled
 - `aria-busy="true"` when loading
@@ -176,6 +190,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 - Focus visible outline
 
 **Tests Required**:
+
 - ✅ Renders without crash
 - ✅ All variant combinations
 - ✅ All tone combinations
@@ -201,12 +216,14 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 **Sizes**: `sm` | `md` (default) | `lg`
 
 **Features**:
+
 - Prefix/Suffix slots (icons, text)
 - Error state styling
 - Disabled state
 - All native input types supported
 
 **API**:
+
 ```typescript
 <Input
   type="email"
@@ -225,17 +242,19 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 ```
 
 **Accessibility**:
+
 - `aria-invalid="true"` when error
 - `aria-describedby` for error messages
 - Label association (via FormField)
 - Keyboard: Standard input behavior
 
 **Validation Integration**:
+
 ```typescript
 // Pairs with FormField
-<FormField 
-  label="Email" 
-  required 
+<FormField
+  label="Email"
+  required
   error={errors.email}
 >
   <Input type="email" error={!!errors.email} />
@@ -243,6 +262,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 ```
 
 **Tests Required**:
+
 - ✅ All variants, tones, sizes
 - ✅ User can type
 - ✅ onChange called
@@ -267,6 +287,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 **Variants**: `default` | `outline`
 
 **API**:
+
 ```typescript
 <CheckBox
   checked={isChecked}
@@ -281,6 +302,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 ```
 
 **Accessibility**:
+
 - `role="checkbox"`
 - `aria-checked="true|false|mixed"`
 - `aria-describedby` for description
@@ -288,6 +310,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 - Label click toggles
 
 **Tests Required**:
+
 - ✅ Click toggles state
 - ✅ onChange receives boolean
 - ✅ Controlled mode
@@ -308,6 +331,7 @@ export interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
 **Pattern**: Controlled component (parent manages open state)
 
 **API**:
+
 ```typescript
 const [isOpen, setIsOpen] = useState(false);
 
@@ -327,6 +351,7 @@ const [isOpen, setIsOpen] = useState(false);
 ```
 
 **Behavior**:
+
 - ESC key closes modal
 - Background overlay (optional click-to-close)
 - Focus trap (Tab cycles within modal)
@@ -334,6 +359,7 @@ const [isOpen, setIsOpen] = useState(false);
 - Focus restoration (returns to trigger element)
 
 **Accessibility**:
+
 - `role="dialog"`
 - `aria-modal="true"`
 - `aria-labelledby` → title
@@ -342,12 +368,14 @@ const [isOpen, setIsOpen] = useState(false);
 - Keyboard: ESC to close, Tab/Shift+Tab to navigate
 
 **Visual Behavior**:
+
 - Fade-in animation (200ms)
 - Background overlay darkens
 - Modal centered on screen
 - Responsive: full-screen on mobile
 
 **Tests Required**:
+
 - ✅ Renders when open
 - ✅ Hidden when closed
 - ✅ ESC closes modal
@@ -368,6 +396,7 @@ const [isOpen, setIsOpen] = useState(false);
 **Modes**: `single` (default) | `multiple`
 
 **API**:
+
 ```typescript
 // Single Select
 <Select
@@ -392,6 +421,7 @@ const [isOpen, setIsOpen] = useState(false);
 ```
 
 **Behavior**:
+
 - Click/Space opens dropdown
 - Arrow keys navigate options
 - Enter selects focused option
@@ -401,6 +431,7 @@ const [isOpen, setIsOpen] = useState(false);
 - Multiple mode: checkboxes shown, count badge
 
 **Accessibility**:
+
 - `role="combobox"`
 - `aria-haspopup="listbox"`
 - `aria-expanded="true|false"`
@@ -409,12 +440,14 @@ const [isOpen, setIsOpen] = useState(false);
 - Keyboard: full navigation support
 
 **Visual States**:
+
 - Closed: Shows placeholder or selected value
 - Open: Dropdown expands below/above
 - Multiple: "X selected" badge
 - Disabled items: Muted, not selectable
 
 **Tests Required**:
+
 - ✅ Opens on click
 - ✅ Single selection works
 - ✅ Multiple selection works
@@ -434,6 +467,7 @@ const [isOpen, setIsOpen] = useState(false);
 **Pattern**: Context + Hook
 
 **Setup** (required):
+
 ```typescript
 // App root
 <ToastProvider>
@@ -442,6 +476,7 @@ const [isOpen, setIsOpen] = useState(false);
 ```
 
 **Usage**:
+
 ```typescript
 const { toast } = useToast();
 
@@ -457,6 +492,7 @@ toast({
 ```
 
 **Behavior**:
+
 - Appears in corner (top-right default)
 - Stacks multiple toasts
 - Auto-dismisses after duration
@@ -465,12 +501,14 @@ toast({
 - Animation: slide in/out
 
 **Accessibility**:
+
 - `role="status"` (polite announcement)
 - `aria-live="polite"`
 - `aria-atomic="true"`
 - Focus remains on trigger (non-modal)
 
 **Tests Required**:
+
 - ✅ Toast appears
 - ✅ Auto-dismisses after duration
 - ✅ Manual close works
@@ -485,6 +523,7 @@ toast({
 **Purpose**: Label + Input wrapper with validation
 
 **API**:
+
 ```typescript
 <FormField
   label="Email Address"
@@ -492,14 +531,15 @@ toast({
   error={errors.email}
   helperText="We'll never share your email"
 >
-  <Input 
-    type="email" 
-    error={!!errors.email} 
+  <Input
+    type="email"
+    error={!!errors.email}
   />
 </FormField>
 ```
 
 **Behavior**:
+
 - Automatically generates unique IDs
 - Connects label to input (`htmlFor`)
 - Connects error message (`aria-describedby`)
@@ -508,12 +548,14 @@ toast({
 - Required indicator (asterisk)
 
 **Accessibility**:
+
 - `<label>` with `htmlFor`
 - `aria-describedby` for helper/error
 - Error: `role="alert"`
 - Required: `aria-required="true"` on input
 
 **Visual Layout**:
+
 ```
 Label (required*)
 [Input Field]
@@ -521,6 +563,7 @@ Helper text or Error message
 ```
 
 **Tests Required**:
+
 - ✅ Label renders
 - ✅ Required indicator shows
 - ✅ Error message renders
@@ -536,6 +579,7 @@ Helper text or Error message
 ### 4.1 Unit Tests (Vitest + RTL)
 
 **Coverage Thresholds**:
+
 ```json
 {
   "lines": 80,
@@ -546,28 +590,29 @@ Helper text or Error message
 ```
 
 **Test Structure** (mandatory for all components):
+
 ```typescript
 describe('ComponentName', () => {
   // 1. Rendering
   it('renders without crashing', () => {});
-  
+
   // 2. Props
   it('applies all variants correctly', () => {});
   it('applies all sizes correctly', () => {});
   it('applies all tones correctly', () => {});
-  
+
   // 3. Interactions
   it('handles user click', async () => {});
   it('handles keyboard input', async () => {});
-  
+
   // 4. States
   it('shows disabled state', () => {});
   it('shows loading state', () => {});
   it('shows error state', () => {});
-  
+
   // 5. Ref Forwarding
   it('forwards ref correctly', () => {});
-  
+
   // 6. Accessibility
   it('has no accessibility violations', async () => {
     const { container } = render(<Component />);
@@ -580,22 +625,24 @@ describe('ComponentName', () => {
 ### 4.2 E2E Tests (Playwright)
 
 **Critical Paths**:
+
 - Form submission workflows
 - Multi-step processes (Stepper)
 - Modal interactions
 - Navigation patterns
 
 **Example**:
+
 ```typescript
 test('user can submit contact form', async ({ page }) => {
   await page.goto('/contact');
-  
+
   await page.fill('[name="name"]', 'John Doe');
   await page.fill('[name="email"]', 'john@example.com');
   await page.fill('[name="message"]', 'Hello world');
-  
+
   await page.click('button[type="submit"]');
-  
+
   await expect(page.locator('.toast')).toContainText('Message sent');
 });
 ```
@@ -603,6 +650,7 @@ test('user can submit contact form', async ({ page }) => {
 ### 4.3 Storybook Tests
 
 **Required for all components**:
+
 ```typescript
 // Button.stories.tsx
 export default {
@@ -646,6 +694,7 @@ export const WithInteraction: Story = {
 ### 5.1 Keyboard Navigation
 
 **All interactive components MUST support**:
+
 - `Tab` / `Shift+Tab`: Focus movement
 - `Enter` / `Space`: Activation
 - `Arrow Keys`: List/menu navigation
@@ -655,6 +704,7 @@ export const WithInteraction: Story = {
 ### 5.2 ARIA Attributes
 
 **Required patterns**:
+
 ```typescript
 // Button
 <button role="button" aria-disabled="true">
@@ -668,7 +718,7 @@ export const WithInteraction: Story = {
 // Tabs
 <div role="tablist">
   <button role="tab" aria-selected="true">
-  
+
 // Alert
 <div role="alert">
 
@@ -679,6 +729,7 @@ export const WithInteraction: Story = {
 ### 5.3 Focus Management
 
 **Requirements**:
+
 - Focus indicators MUST be visible
 - Focus order MUST be logical
 - Modals MUST trap focus
@@ -688,11 +739,13 @@ export const WithInteraction: Story = {
 ### 5.4 Screen Reader Support
 
 **Testing tools**:
+
 - NVDA (Windows)
 - JAWS (Windows)
 - VoiceOver (macOS/iOS)
 
 **Verification**:
+
 - All interactive elements announced
 - States communicated (checked, expanded, etc.)
 - Error messages read aloud
@@ -705,11 +758,13 @@ export const WithInteraction: Story = {
 ### 6.1 Bundle Size
 
 **Thresholds**:
+
 - Total library: < 100KB gzipped
 - Individual component: < 10KB gzipped
 - Tree-shaking: Unused components excluded
 
 **Monitoring**:
+
 ```bash
 pnpm build
 pnpm analyze-bundle
@@ -718,6 +773,7 @@ pnpm analyze-bundle
 ### 6.2 Runtime Performance
 
 **Requirements**:
+
 - Initial render: < 100ms (desktop)
 - Re-render: < 16ms (60fps)
 - Large lists: Virtual scrolling for 1000+ items
@@ -726,6 +782,7 @@ pnpm analyze-bundle
 ### 6.3 Build Performance
 
 **Targets**:
+
 - Development build: < 5 seconds
 - Production build: < 30 seconds
 - HMR: < 500ms
@@ -752,29 +809,28 @@ pnpm analyze-bundle
 **Generated via TypeScript + Storybook autodocs**
 
 **Example output**:
+
 ```markdown
 ## Button
 
 ### Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| variant | 'solid' \| 'outline' \| 'ghost' \| 'soft' | 'solid' | Visual style |
-| tone | 'primary' \| 'secondary' \| ... | 'primary' | Color tone |
-| size | 'sm' \| 'md' \| 'lg' | 'md' | Size preset |
-| isLoading | boolean | false | Show loading spinner |
+| Prop      | Type                                      | Default   | Description          |
+| --------- | ----------------------------------------- | --------- | -------------------- |
+| variant   | 'solid' \| 'outline' \| 'ghost' \| 'soft' | 'solid'   | Visual style         |
+| tone      | 'primary' \| 'secondary' \| ...           | 'primary' | Color tone           |
+| size      | 'sm' \| 'md' \| 'lg'                      | 'md'      | Size preset          |
+| isLoading | boolean                                   | false     | Show loading spinner |
 
 ### Examples
 
 #### Basic
-\`\`\`tsx
-<Button onClick={handleClick}>Click me</Button>
-\`\`\`
+
+\`\`\`tsx <Button onClick={handleClick}>Click me</Button> \`\`\`
 
 #### With Icon
-\`\`\`tsx
-<Button leftIcon={<Icon />}>Save</Button>
-\`\`\`
+
+\`\`\`tsx <Button leftIcon={<Icon />}>Save</Button> \`\`\`
 ```
 
 ---
@@ -792,26 +848,32 @@ pnpm analyze-bundle
 ### 8.2 Changelog
 
 **Format** (CHANGELOG.md):
+
 ```markdown
 ## [1.2.0] - 2025-11-16
 
 ### Added
+
 - Button: New `soft` variant
 - Select: Multiple selection mode
 
 ### Changed
+
 - Input: Improved focus styles
 
 ### Fixed
+
 - Modal: Focus trap on Safari
 
 ### Breaking Changes
+
 - Removed deprecated `Button.variant="link"`
 ```
 
 ### 8.3 Deprecation Policy
 
 **Process**:
+
 1. Mark as deprecated in TypeScript (`@deprecated`)
 2. Add console warning in development
 3. Document migration path
@@ -840,6 +902,7 @@ pnpm analyze-bundle
 ### 9.3 Pull Request
 
 **Automated checks**:
+
 - ✓ All unit tests pass
 - ✓ Coverage ≥ 80%
 - ✓ No TypeScript errors
@@ -848,6 +911,7 @@ pnpm analyze-bundle
 - ✓ E2E tests pass (if applicable)
 
 **Manual review**:
+
 - ✓ Code follows conventions
 - ✓ Tests are comprehensive
 - ✓ Accessibility verified
@@ -861,6 +925,7 @@ pnpm analyze-bundle
 ### 10.1 From Other Libraries
 
 **Material-UI → Mindthos**:
+
 ```typescript
 // Before (MUI)
 <Button variant="contained" color="primary">
@@ -874,6 +939,7 @@ pnpm analyze-bundle
 ```
 
 **Chakra UI → Mindthos**:
+
 ```typescript
 // Before (Chakra)
 <Button colorScheme="blue" size="md">
@@ -891,6 +957,7 @@ pnpm analyze-bundle
 ## 11. Future Enhancements
 
 ### 11.1 Planned Components
+
 - [ ] DataTable (sortable, filterable)
 - [ ] DatePicker (calendar UI)
 - [ ] FileUploader (drag-drop)
@@ -898,6 +965,7 @@ pnpm analyze-bundle
 - [ ] Charts (graphs, visualizations)
 
 ### 11.2 Planned Features
+
 - [ ] Theming API (runtime customization)
 - [ ] CSS-in-JS variant (styled-components)
 - [ ] React Native support
@@ -909,16 +977,19 @@ pnpm analyze-bundle
 ## Appendix A: Decision Records
 
 ### A.1 Why Tailwind CSS?
+
 - **Pros**: Utility-first, excellent DX, built-in purge, consistent spacing
 - **Cons**: Learning curve, verbose classes
 - **Decision**: Benefits outweigh drawbacks for this project
 
 ### A.2 Why Class-based Dark Mode?
+
 - **Alternatives**: CSS media query, data attributes
 - **Rationale**: User control, localStorage integration, no flash of wrong theme
 - **Decision**: `<html class="dark">` approach
 
 ### A.3 Why Radix UI Primitives?
+
 - **Alternatives**: Build from scratch, Headless UI, React Aria
 - **Rationale**: Battle-tested accessibility, unstyled, great DX
 - **Decision**: Use for complex components (Modal, Select)

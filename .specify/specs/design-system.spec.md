@@ -18,23 +18,23 @@
 ```css
 :root {
   /* Base */
-  --color-bg: hsl(0, 0%, 100%);           /* Background */
-  --color-fg: hsl(222, 47%, 11%);         /* Foreground (text) */
-  --color-border: hsl(214, 32%, 91%);     /* Border */
-  --color-muted: hsl(210, 40%, 96%);      /* Muted backgrounds */
-  
+  --color-bg: hsl(0, 0%, 100%); /* Background */
+  --color-fg: hsl(222, 47%, 11%); /* Foreground (text) */
+  --color-border: hsl(214, 32%, 91%); /* Border */
+  --color-muted: hsl(210, 40%, 96%); /* Muted backgrounds */
+
   /* Brand */
   --color-primary-50: hsl(222, 47%, 98%);
   --color-primary-100: hsl(222, 47%, 95%);
   --color-primary-200: hsl(222, 47%, 90%);
   --color-primary-300: hsl(222, 47%, 80%);
   --color-primary-400: hsl(222, 47%, 65%);
-  --color-primary-500: hsl(222, 47%, 50%);  /* Base */
+  --color-primary-500: hsl(222, 47%, 50%); /* Base */
   --color-primary-600: hsl(222, 47%, 40%);
   --color-primary-700: hsl(222, 47%, 30%);
   --color-primary-800: hsl(222, 47%, 20%);
   --color-primary-900: hsl(222, 47%, 10%);
-  
+
   /* Feedback */
   --color-success: hsl(142, 76%, 36%);
   --color-warning: hsl(38, 92%, 50%);
@@ -56,12 +56,14 @@
 **Available tones**: primary, secondary, accent, neutral
 
 **Usage rules**:
+
 - Primary: Main brand actions (CTAs, primary buttons)
 - Secondary: Supporting actions
 - Accent: Highlights, special features
 - Neutral: Low-emphasis actions
 
-**Accessibility requirement**: All text/background combinations MUST meet WCAG AA (4.5:1 contrast ratio)
+**Accessibility requirement**: All text/background combinations MUST meet WCAG
+AA (4.5:1 contrast ratio)
 
 ---
 
@@ -71,8 +73,9 @@
 
 ```css
 :root {
-  --font-family-base: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 
-                      'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  --font-family-base:
+    'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Helvetica Neue', sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 }
 ```
@@ -83,18 +86,19 @@
 
 ```css
 :root {
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
 }
 ```
 
 **Usage guidelines**:
+
 - Body text: `base` (16px)
 - Small text: `sm` (14px)
 - Captions: `xs` (12px)
@@ -118,8 +122,8 @@
 
 ```css
 :root {
-  --line-height-tight: 1.25;   /* Headings */
-  --line-height-normal: 1.5;   /* Body text */
+  --line-height-tight: 1.25; /* Headings */
+  --line-height-normal: 1.5; /* Body text */
   --line-height-relaxed: 1.75; /* Long-form content */
 }
 ```
@@ -133,22 +137,23 @@
 ```css
 :root {
   --spacing-0: 0;
-  --spacing-1: 0.25rem;   /* 4px */
-  --spacing-2: 0.5rem;    /* 8px */
-  --spacing-3: 0.75rem;   /* 12px */
-  --spacing-4: 1rem;      /* 16px */
-  --spacing-5: 1.25rem;   /* 20px */
-  --spacing-6: 1.5rem;    /* 24px */
-  --spacing-8: 2rem;      /* 32px */
-  --spacing-10: 2.5rem;   /* 40px */
-  --spacing-12: 3rem;     /* 48px */
-  --spacing-16: 4rem;     /* 64px */
-  --spacing-20: 5rem;     /* 80px */
-  --spacing-24: 6rem;     /* 96px */
+  --spacing-1: 0.25rem; /* 4px */
+  --spacing-2: 0.5rem; /* 8px */
+  --spacing-3: 0.75rem; /* 12px */
+  --spacing-4: 1rem; /* 16px */
+  --spacing-5: 1.25rem; /* 20px */
+  --spacing-6: 1.5rem; /* 24px */
+  --spacing-8: 2rem; /* 32px */
+  --spacing-10: 2.5rem; /* 40px */
+  --spacing-12: 3rem; /* 48px */
+  --spacing-16: 4rem; /* 64px */
+  --spacing-20: 5rem; /* 80px */
+  --spacing-24: 6rem; /* 96px */
 }
 ```
 
 **Component spacing rules**:
+
 - Button padding: `px-4 py-2` (medium)
 - Input padding: `px-4 py-2` (medium)
 - Card padding: `p-6` (24px)
@@ -162,16 +167,17 @@
 ```css
 :root {
   --radius-none: 0;
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.375rem;  /* 6px */
-  --radius-lg: 0.5rem;    /* 8px */
-  --radius-xl: 0.75rem;   /* 12px */
-  --radius-2xl: 1rem;     /* 16px */
-  --radius-full: 9999px;  /* Circle/pill */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-full: 9999px; /* Circle/pill */
 }
 ```
 
 **Usage**:
+
 - Buttons: `lg` (8px)
 - Inputs: `lg` (8px)
 - Cards: `xl` (12px)
@@ -186,9 +192,12 @@
 :root {
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
@@ -197,6 +206,7 @@
 **Dark mode adjustments**: Shadows should be subtler in dark mode (reduce alpha)
 
 **Usage**:
+
 - Buttons (hover): `sm`
 - Cards: `md`
 - Modals: `xl`
@@ -212,7 +222,7 @@
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Easing curves */
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
@@ -221,6 +231,7 @@
 ```
 
 **Animation principles**:
+
 - Micro-interactions: 150ms (hover, focus)
 - Component transitions: 200ms (tab switch, accordion)
 - Modal/page transitions: 300ms (enter/exit)
@@ -238,13 +249,14 @@
 type Size = 'sm' | 'md' | 'lg';
 
 const sizeMap = {
-  sm: 'px-3 py-1.5 text-sm',    // Small
-  md: 'px-4 py-2 text-base',     // Medium (default)
-  lg: 'px-5 py-2.5 text-lg',     // Large
+  sm: 'px-3 py-1.5 text-sm', // Small
+  md: 'px-4 py-2 text-base', // Medium (default)
+  lg: 'px-5 py-2.5 text-lg', // Large
 };
 ```
 
 **When to use**:
+
 - `sm`: Compact UIs, secondary actions
 - `md`: Default, most common
 - `lg`: Emphasis, primary CTAs
@@ -265,6 +277,7 @@ const toneColors = {
 ```
 
 **Semantic meaning**:
+
 - Primary: Main brand actions
 - Secondary: Alternative actions
 - Accent: Highlights, promotions
@@ -285,6 +298,7 @@ const stateClasses = {
 ```
 
 **Requirements**:
+
 - Hover: Subtle feedback (opacity, shadow)
 - Focus: Clear keyboard indicator (ring)
 - Active: Pressed state (scale, shadow)
@@ -299,17 +313,20 @@ const stateClasses = {
 **Choice**: Lucide React (fork of Feather Icons)
 
 **Rationale**:
+
 - Consistent stroke width (2px)
 - React-first (tree-shakeable)
 - Excellent TypeScript support
 - 1000+ icons
 
 **Installation**:
+
 ```bash
 pnpm add lucide-react
 ```
 
 **Usage**:
+
 ```typescript
 import { Search, ChevronDown, X } from 'lucide-react';
 
@@ -329,6 +346,7 @@ const iconSizes = {
 ```
 
 **Pairing with components**:
+
 - Button sm → icon sm (16px)
 - Button md → icon md (20px)
 - Button lg → icon lg (24px)
@@ -336,11 +354,13 @@ const iconSizes = {
 ### 3.3 Icon Colors
 
 **Inherit from parent text color**:
+
 ```typescript
 <Icon className="text-current" />
 ```
 
 **Custom colors** (sparingly):
+
 ```typescript
 <Icon className="text-primary-500" />
 ```
@@ -372,19 +392,20 @@ xl: 1280px  /* Large desktop */
 ```
 
 **Usage pattern**:
+
 ```typescript
-className="text-sm md:text-base lg:text-lg"
+className = 'text-sm md:text-base lg:text-lg';
 ```
 
 ### 4.3 Container Sizes
 
 ```typescript
 const containerSizes = {
-  sm: 'max-w-screen-sm',   /* 640px */
-  md: 'max-w-screen-md',   /* 768px */
-  lg: 'max-w-screen-lg',   /* 1024px */
-  xl: 'max-w-screen-xl',   /* 1280px */
-  '2xl': 'max-w-screen-2xl', /* 1536px */
+  sm: 'max-w-screen-sm' /* 640px */,
+  md: 'max-w-screen-md' /* 768px */,
+  lg: 'max-w-screen-lg' /* 1024px */,
+  xl: 'max-w-screen-xl' /* 1280px */,
+  '2xl': 'max-w-screen-2xl' /* 1536px */,
   full: 'max-w-full',
 };
 ```
@@ -396,45 +417,71 @@ const containerSizes = {
 ### 5.1 Entrance Animations
 
 **Fade in**:
+
 ```css
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 ```
 
 **Slide in**:
+
 ```css
 @keyframes slideIn {
-  from { transform: translateY(-10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 ```
 
 ### 5.2 Exit Animations
 
 **Fade out**:
+
 ```css
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 ```
 
 ### 5.3 Loading States
 
 **Skeleton pulse**:
+
 ```css
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 ```
 
 **Spinner rotation**:
+
 ```css
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 ```
 
@@ -445,26 +492,32 @@ const containerSizes = {
 ### 6.1 Implementation
 
 **Class-based approach**:
+
 ```html
 <html class="dark">
-  <body><!-- Dark mode active --></body>
+  <body>
+    <!-- Dark mode active -->
+  </body>
 </html>
 ```
 
 **Tailwind usage**:
+
 ```typescript
-className="bg-white dark:bg-gray-900 text-black dark:text-white"
+className = 'bg-white dark:bg-gray-900 text-black dark:text-white';
 ```
 
 ### 6.2 Color Adjustments
 
 **Principles**:
+
 - Reduce shadow intensity
 - Increase border contrast
 - Adjust color saturation (slightly muted)
 - Maintain WCAG AA contrast
 
 **Example adjustments**:
+
 ```css
 :root {
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -478,16 +531,19 @@ className="bg-white dark:bg-gray-900 text-black dark:text-white"
 ### 6.3 User Preference
 
 **Detection**:
+
 ```typescript
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 ```
 
 **Storage**:
+
 ```typescript
 localStorage.setItem('theme', 'dark');
 ```
 
 **Application**:
+
 ```typescript
 document.documentElement.classList.toggle('dark', isDark);
 ```
@@ -499,17 +555,20 @@ document.documentElement.classList.toggle('dark', isDark);
 ### 7.1 Color Contrast
 
 **Requirements**:
+
 - Normal text (16px): 4.5:1 minimum
 - Large text (24px): 3:1 minimum
 - UI components: 3:1 minimum
 
 **Tools**:
+
 - WebAIM Contrast Checker
 - Chrome DevTools (Lighthouse)
 
 ### 7.2 Focus Indicators
 
 **Default focus ring**:
+
 ```css
 :focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -518,17 +577,24 @@ document.documentElement.classList.toggle('dark', isDark);
 ```
 
 **Never remove without replacement**:
+
 ```css
 /* ❌ Never do this */
-:focus { outline: none; }
+:focus {
+  outline: none;
+}
 
 /* ✅ Provide alternative */
-:focus { outline: none; box-shadow: 0 0 0 3px var(--color-primary-200); }
+:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
 ```
 
 ### 7.3 Motion Preferences
 
 **Respect reduced motion**:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -578,6 +644,7 @@ export default {
 ### 8.2 CSS Variables Access
 
 **Direct usage in CSS**:
+
 ```css
 .button {
   background: var(--color-primary-500);
@@ -587,8 +654,9 @@ export default {
 ```
 
 **Via Tailwind utilities**:
+
 ```typescript
-className="bg-primary-500 rounded-lg transition-base"
+className = 'bg-primary-500 rounded-lg transition-base';
 ```
 
 ---
@@ -598,6 +666,7 @@ className="bg-primary-500 rounded-lg transition-base"
 ### 9.1 Figma Sync
 
 **Token structure**:
+
 - Colors → Figma Styles
 - Typography → Text Styles
 - Spacing → Auto Layout
@@ -608,11 +677,13 @@ className="bg-primary-500 rounded-lg transition-base"
 ### 9.2 Storybook
 
 **Visual regression testing**:
+
 ```bash
 pnpm storybook:test
 ```
 
 **Generates**:
+
 - Component snapshots
 - Interaction states
 - Responsive views
@@ -624,6 +695,7 @@ pnpm storybook:test
 ### 10.1 Token Updates
 
 **Process**:
+
 1. Update `tokens.css`
 2. Verify in Storybook
 3. Test light/dark modes
@@ -633,6 +705,7 @@ pnpm storybook:test
 ### 10.2 Version Control
 
 **Semantic versioning**:
+
 - MAJOR: Breaking changes (color removals, scale changes)
 - MINOR: New tokens (backward compatible)
 - PATCH: Bug fixes (contrast adjustments)

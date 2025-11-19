@@ -21,14 +21,17 @@
    /--------------\
 ```
 
-**Rationale**: Unit tests provide fast feedback and high coverage, while E2E tests validate real user scenarios.
+**Rationale**: Unit tests provide fast feedback and high coverage, while E2E
+tests validate real user scenarios.
 
 ### 1.2 Testing Principles
 
 1. **Test behavior, not implementation** - Focus on what users see and do
-2. **Write tests before code** (TDD) - Ensures testability and clear requirements
+2. **Write tests before code** (TDD) - Ensures testability and clear
+   requirements
 3. **Maintain high coverage** - 80%+ for confidence in changes
-4. **Test accessibility** - Every component must be keyboard navigable and screen reader compatible
+4. **Test accessibility** - Every component must be keyboard navigable and
+   screen reader compatible
 5. **Keep tests fast** - Unit tests < 5 minutes, E2E < 10 minutes
 
 ---
@@ -38,6 +41,7 @@
 ### 2.1 Framework: Vitest
 
 **Why Vitest?**
+
 - Native Vite integration (uses same config)
 - Fast execution (ESBuild + parallelization)
 - Jest-compatible API (easy migration)
@@ -45,6 +49,7 @@
 - TypeScript first-class support
 
 **Configuration** (`vitest.config.ts`):
+
 ```typescript
 export default defineConfig({
   test: {
@@ -74,12 +79,14 @@ export default defineConfig({
 ### 2.2 React Testing Library
 
 **Why RTL?**
+
 - Encourages testing user behavior
 - Discourages implementation details
 - Excellent accessibility utilities
 - Active community and documentation
 
 **Setup** (`src/test/setup.ts`):
+
 ```typescript
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
@@ -93,7 +100,7 @@ afterEach(() => {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -156,21 +163,21 @@ describe('ComponentName', () => {
     it('handles click events', async () => {
       const handleClick = vi.fn();
       const user = userEvent.setup();
-      
+
       render(<ComponentName onClick={handleClick}>Click me</ComponentName>);
       await user.click(screen.getByText('Click me'));
-      
+
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
 
     it('handles keyboard events', async () => {
       const handleKeyDown = vi.fn();
       const user = userEvent.setup();
-      
+
       render(<ComponentName onKeyDown={handleKeyDown} />);
       const element = screen.getByRole('button');
       await user.type(element, '{Enter}');
-      
+
       expect(handleKeyDown).toHaveBeenCalled();
     });
   });
@@ -221,7 +228,7 @@ describe('ComponentName', () => {
     it('supports keyboard navigation', async () => {
       const user = userEvent.setup();
       render(<ComponentName>Content</ComponentName>);
-      
+
       const element = screen.getByRole('button');
       await user.tab();
       expect(element).toHaveFocus();
@@ -233,6 +240,7 @@ describe('ComponentName', () => {
 ### 2.4 Coverage Requirements
 
 **Minimum thresholds** (enforced by CI):
+
 ```json
 {
   "lines": 80,
@@ -243,17 +251,20 @@ describe('ComponentName', () => {
 ```
 
 **Exclusions**:
+
 - Storybook stories (`*.stories.tsx`)
 - Test files themselves (`*.test.tsx`, `*.spec.ts`)
 - Configuration files
 - Type definitions only
 
 **How to check**:
+
 ```bash
 pnpm test:ci
 ```
 
 **View HTML report**:
+
 ```bash
 open coverage/index.html
 ```
@@ -267,12 +278,13 @@ open coverage/index.html
 **Purpose**: Test how components work together
 
 **Example**: FormField + Input + Button
+
 ```typescript
 describe('Contact Form Integration', () => {
   it('validates and submits form', async () => {
     const handleSubmit = vi.fn();
     const user = userEvent.setup();
-    
+
     render(
       <form onSubmit={handleSubmit}>
         <FormField label="Email" error={emailError}>
@@ -281,13 +293,13 @@ describe('Contact Form Integration', () => {
         <Button type="submit">Submit</Button>
       </form>
     );
-    
+
     // Fill form
     await user.type(screen.getByLabelText('Email'), 'test@example.com');
-    
+
     // Submit
     await user.click(screen.getByRole('button', { name: 'Submit' }));
-    
+
     expect(handleSubmit).toHaveBeenCalled();
   });
 });
@@ -296,23 +308,24 @@ describe('Contact Form Integration', () => {
 ### 3.2 Context Provider Tests
 
 **Example**: Toast notifications
+
 ```typescript
 describe('Toast Integration', () => {
   it('shows toast notification', async () => {
     const user = userEvent.setup();
-    
+
     render(
       <ToastProvider>
         <TestComponent />
       </ToastProvider>
     );
-    
+
     // Trigger toast
     await user.click(screen.getByText('Show Toast'));
-    
+
     // Verify toast appears
     expect(screen.getByRole('status')).toHaveTextContent('Success');
-    
+
     // Auto-dismisses after duration
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
@@ -328,6 +341,7 @@ describe('Toast Integration', () => {
 ### 4.1 Framework: Playwright
 
 **Why Playwright?**
+
 - Cross-browser testing (Chromium, Firefox, WebKit)
 - Auto-wait (no flaky tests)
 - Network interception
@@ -335,6 +349,7 @@ describe('Toast Integration', () => {
 - Parallel execution
 
 **Configuration** (`playwright.config.ts`):
+
 ```typescript
 export default defineConfig({
   testDir: './tests/e2e',
@@ -364,6 +379,7 @@ export default defineConfig({
 ### 4.2 Test Structure
 
 **Example**: User registration flow
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
@@ -378,13 +394,13 @@ test.describe('User Registration', () => {
     await page.fill('[name="email"]', 'john@example.com');
     await page.fill('[name="password"]', 'SecurePass123!');
     await page.fill('[name="confirmPassword"]', 'SecurePass123!');
-    
+
     // Accept terms
     await page.check('[name="terms"]');
-    
+
     // Submit
     await page.click('button[type="submit"]');
-    
+
     // Verify success
     await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('.toast')).toContainText('Welcome, John!');
@@ -393,10 +409,14 @@ test.describe('User Registration', () => {
   test('shows validation errors', async ({ page }) => {
     // Submit without filling
     await page.click('button[type="submit"]');
-    
+
     // Verify errors
-    await expect(page.locator('[role="alert"]')).toContainText('Name is required');
-    await expect(page.locator('[role="alert"]')).toContainText('Email is required');
+    await expect(page.locator('[role="alert"]')).toContainText(
+      'Name is required'
+    );
+    await expect(page.locator('[role="alert"]')).toContainText(
+      'Email is required'
+    );
   });
 
   test('prevents duplicate emails', async ({ page }) => {
@@ -404,7 +424,7 @@ test.describe('User Registration', () => {
     await page.fill('[name="email"]', 'existing@example.com');
     await page.fill('[name="password"]', 'SecurePass123!');
     await page.click('button[type="submit"]');
-    
+
     // Verify error message
     await expect(page.locator('.toast')).toContainText('Email already in use');
   });
@@ -414,6 +434,7 @@ test.describe('User Registration', () => {
 ### 4.3 Critical Paths
 
 **Must have E2E coverage**:
+
 1. User authentication (login, logout, register)
 2. Form submissions (contact, checkout, profile update)
 3. Navigation flows (multi-step processes)
@@ -425,6 +446,7 @@ test.describe('User Registration', () => {
 ### 4.4 Best Practices
 
 **DO**:
+
 - ✅ Use data-testid for stable selectors
 - ✅ Test user flows, not individual components
 - ✅ Use Page Object Model for reusability
@@ -432,6 +454,7 @@ test.describe('User Registration', () => {
 - ✅ Take screenshots on failure
 
 **DON'T**:
+
 - ❌ Test implementation details
 - ❌ Use brittle CSS selectors
 - ❌ Create interdependent tests
@@ -447,11 +470,13 @@ test.describe('User Registration', () => {
 **Purpose**: Catch unintended visual changes
 
 **Setup**:
+
 ```bash
 pnpm add -D chromatic
 ```
 
 **Configuration** (`.github/workflows/chromatic.yml`):
+
 ```yaml
 name: Chromatic
 on: push
@@ -468,6 +493,7 @@ jobs:
 ```
 
 **Storybook snapshot tests**:
+
 ```typescript
 // Button.stories.tsx
 export const AllVariants: Story = {
@@ -489,6 +515,7 @@ export const AllVariants: Story = {
 ### 5.2 Manual Review Process
 
 **Before PR approval**:
+
 1. Open Storybook (`pnpm storybook`)
 2. Review all stories for component
 3. Toggle dark mode
@@ -502,6 +529,7 @@ export const AllVariants: Story = {
 ### 6.1 Automated: vitest-axe
 
 **Integration with unit tests**:
+
 ```typescript
 import { axe, toHaveNoViolations } from 'vitest-axe';
 
@@ -515,6 +543,7 @@ it('has no a11y violations', async () => {
 ```
 
 **What it catches**:
+
 - Missing alt text
 - Low color contrast
 - Missing ARIA labels
@@ -522,6 +551,7 @@ it('has no a11y violations', async () => {
 - Missing form labels
 
 **What it misses**:
+
 - Keyboard navigation
 - Focus management
 - Screen reader experience
@@ -530,6 +560,7 @@ it('has no a11y violations', async () => {
 ### 6.2 Manual: Keyboard Testing
 
 **Checklist**:
+
 - [ ] Tab/Shift+Tab moves focus logically
 - [ ] Enter/Space activates buttons/links
 - [ ] Arrow keys navigate lists/menus
@@ -541,11 +572,13 @@ it('has no a11y violations', async () => {
 ### 6.3 Screen Reader Testing
 
 **Tools**:
+
 - NVDA (Windows, free)
 - JAWS (Windows, paid)
 - VoiceOver (macOS/iOS, built-in)
 
 **Test scenarios**:
+
 1. Navigate by headings (H key)
 2. Navigate by landmarks (D key)
 3. Navigate forms (F key, Tab)
@@ -560,6 +593,7 @@ it('has no a11y violations', async () => {
 ### 7.1 Lighthouse CI
 
 **Configuration** (`.lighthouserc.json`):
+
 ```json
 {
   "ci": {
@@ -581,6 +615,7 @@ it('has no a11y violations', async () => {
 ```
 
 **Run**:
+
 ```bash
 pnpm lhci autorun
 ```
@@ -595,11 +630,13 @@ pnpm analyze-bundle
 ```
 
 **Thresholds**:
+
 - Total JS: < 200KB gzipped
 - Individual chunk: < 50KB gzipped
 - CSS: < 20KB gzipped
 
 **Monitor**:
+
 ```json
 // package.json
 {
@@ -618,6 +655,7 @@ pnpm analyze-bundle
 ### 7.3 Render Performance
 
 **React DevTools Profiler**:
+
 1. Open React DevTools
 2. Go to Profiler tab
 3. Click Record
@@ -626,6 +664,7 @@ pnpm analyze-bundle
 6. Review flamegraph
 
 **Metrics**:
+
 - Initial render: < 100ms
 - Re-render: < 16ms (60fps)
 - Largest component: < 50ms
@@ -669,9 +708,9 @@ export const test = base.extend({
     await page.fill('[name="password"]', 'password');
     await page.click('button[type="submit"]');
     await page.waitForURL('/dashboard');
-    
+
     await use(page);
-    
+
     // Cleanup
     await page.click('[aria-label="Logout"]');
   },
@@ -699,42 +738,42 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
-      
+
       - uses: pnpm/action-setup@v2
         with:
           version: 9
-      
+
       - uses: actions/setup-node@v3
         with:
           node-version: 20
           cache: 'pnpm'
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Type check
         run: pnpm typecheck
-      
+
       - name: Lint
         run: pnpm lint
-      
+
       - name: Unit tests
         run: pnpm test:ci
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage/lcov.info
-      
+
       - name: Build
         run: pnpm build
-      
+
       - name: E2E tests
         run: pnpm e2e:ci
-      
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
@@ -770,12 +809,14 @@ pnpm pre-push
 **Definition**: Test that passes/fails randomly
 
 **When detected**:
+
 1. Mark as `.skip()` temporarily
 2. Create GitHub issue
 3. Debug and fix within 1 sprint
 4. If unfixable, remove test
 
 **Common causes**:
+
 - Race conditions (missing `waitFor`)
 - Timing dependencies
 - Shared state between tests
@@ -784,12 +825,14 @@ pnpm pre-push
 ### 10.2 Test Refactoring
 
 **Triggers**:
+
 - Test takes > 5 seconds
 - Repeated setup code (extract to helper)
 - Brittle selectors (use semantic queries)
 - Implementation details leaked
 
 **Best practices**:
+
 - Keep tests DRY (Don't Repeat Yourself)
 - Use descriptive test names
 - One assertion per test (when logical)
