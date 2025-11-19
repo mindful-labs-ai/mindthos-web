@@ -7,31 +7,55 @@ import { useAuthStore } from '@/stores/authStore';
 import { clientQueryKeys } from '../constants/queryKeys';
 import { addClientSchema } from '../schemas/addClientSchema';
 import { clientService } from '../services/clientService';
+import type { Client } from '../types';
 import type {
   ClientApiError,
   CreateClientRequest,
 } from '../types/clientApi.types';
 
 /**
- * 클라이언트 추가 폼 훅
+ * 클라이언트 추가/수정 폼 훅
  * TanStack Query의 useMutation을 사용하여 서버 상태 관리
  */
-export const useAddClientForm = () => {
+export const useAddClientForm = (initialData?: Client | null) => {
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = React.useState({
-    name: '',
-    phone_number: '',
-    email: '',
-    counsel_theme: '',
-    memo: '',
-    counsel_number: 0,
+    name: initialData?.name || '',
+    phone_number: initialData?.phone_number || '',
+    email: initialData?.email || '',
+    counsel_theme: initialData?.counsel_theme || '',
+    memo: initialData?.memo || '',
+    counsel_number: initialData?.counsel_number || 0,
   });
 
   const [errors, setErrors] = React.useState<
     Partial<Record<keyof typeof formData, string>>
   >({});
+
+  // initialData가 변경되면 formData 업데이트
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        phone_number: initialData.phone_number || '',
+        email: initialData.email || '',
+        counsel_theme: initialData.counsel_theme || '',
+        memo: initialData.memo || '',
+        counsel_number: initialData.counsel_number || 0,
+      });
+    } else {
+      setFormData({
+        name: '',
+        phone_number: '',
+        email: '',
+        counsel_theme: '',
+        memo: '',
+        counsel_number: 0,
+      });
+    }
+  }, [initialData]);
 
   // useMutation으로 클라이언트 생성 처리
   const mutation = useMutation({
@@ -61,12 +85,12 @@ export const useAddClientForm = () => {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      phone_number: '',
-      email: '',
-      counsel_theme: '',
-      memo: '',
-      counsel_number: 0,
+      name: initialData?.name || '',
+      phone_number: initialData?.phone_number || '',
+      email: initialData?.email || '',
+      counsel_theme: initialData?.counsel_theme || '',
+      memo: initialData?.memo || '',
+      counsel_number: initialData?.counsel_number || 0,
     });
     setErrors({});
     mutation.reset(); // mutation 상태 초기화

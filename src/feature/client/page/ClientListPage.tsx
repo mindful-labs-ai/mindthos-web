@@ -21,6 +21,9 @@ export const ClientListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { clients, isLoading, error } = useClientList();
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
+  const [selectedClient, setSelectedClient] = React.useState<Client | null>(
+    null
+  );
 
   const filteredClients = useClientSearch(clients, searchQuery);
   const groupedClients = useClientGrouping(filteredClients);
@@ -29,17 +32,21 @@ export const ClientListPage: React.FC = () => {
     navigate(getClientDetailRoute(client.id));
   };
 
-  const handleMenuClick = (client: Client) => {
-    console.log('메뉴 클릭:', client);
-    // TODO: 메뉴 팝업 표시 (수정, 삭제 등)
+  const handleAddClient = () => {
+    setSelectedClient(null);
+    setIsAddModalOpen(true);
   };
 
-  const handleAddClient = () => {
+  const handleEditClient = (client: Client) => {
+    setSelectedClient(client);
     setIsAddModalOpen(true);
   };
 
   const handleModalClose = (open: boolean) => {
     setIsAddModalOpen(open);
+    if (!open) {
+      setSelectedClient(null);
+    }
   };
 
   return (
@@ -97,7 +104,7 @@ export const ClientListPage: React.FC = () => {
                       key={client.id}
                       client={client}
                       onClick={handleClientClick}
-                      onMenuClick={handleMenuClick}
+                      onEditClick={handleEditClient}
                       searchQuery={searchQuery}
                     />
                   ))}
@@ -112,7 +119,11 @@ export const ClientListPage: React.FC = () => {
         )}
       </div>
 
-      <AddClientModal open={isAddModalOpen} onOpenChange={handleModalClose} />
+      <AddClientModal
+        open={isAddModalOpen}
+        onOpenChange={handleModalClose}
+        initialData={selectedClient}
+      />
     </>
   );
 };

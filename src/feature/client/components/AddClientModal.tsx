@@ -7,17 +7,21 @@ import { FormField } from '@/components/ui/composites/FormField';
 import { Modal } from '@/components/ui/composites/Modal';
 
 import { useAddClientForm } from '../hooks/useAddClientForm';
+import type { Client } from '../types';
 
 interface AddClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialData?: Client | null;
 }
 
 export const AddClientModal: React.FC<AddClientModalProps> = ({
   open,
   onOpenChange,
+  initialData = null,
 }) => {
-  const form = useAddClientForm();
+  const isEditMode = !!initialData;
+  const form = useAddClientForm(initialData);
 
   const handleClose = () => {
     form.resetForm();
@@ -41,7 +45,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6 py-4">
         <div className="flex items-start justify-between">
           <Title as="h2" className="px-6 text-2xl font-bold">
-            새로운 클라이언트 등록하기
+            {isEditMode ? '클라이언트 정보 수정' : '새로운 클라이언트 등록하기'}
           </Title>
         </div>
 
@@ -120,7 +124,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
 
         {form.submitError && (
           <div
-            className="bg-danger/10 mx-6 rounded-[var(--radius-md)] px-4 py-3 text-sm text-danger"
+            className="mx-6 rounded-[var(--radius-md)] bg-danger px-4 py-3 text-sm text-danger"
             role="alert"
           >
             {form.submitError}
@@ -136,7 +140,13 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
             className="w-full max-w-md"
             disabled={form.isSubmitting}
           >
-            {form.isSubmitting ? '등록 중...' : '상담 기록 만들기'}
+            {form.isSubmitting
+              ? isEditMode
+                ? '수정 중...'
+                : '등록 중...'
+              : isEditMode
+                ? '정보 수정'
+                : '상담 기록 만들기'}
           </Button>
         </div>
       </form>
