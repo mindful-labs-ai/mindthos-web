@@ -11,8 +11,7 @@ Mindthos Web is a Vite + React application. The repo is organized as follows:
 
 # Build and Test Instructions
 
-- **Setup**: 한 번 `pnpm install`을 실행하고 `.env.example`을 기반으로
-  `.env.local`을 준비합니다.
+- **Setup**: 한 번 `pnpm install`을 실행하고 `.env.local`을 준비합니다.
 - **Run**: 개발 서버는 `pnpm dev`, 프로덕션 검증은 `pnpm build && pnpm preview`.
 - **Quality**: 최소 `pnpm typecheck`와 `pnpm lint`를 돌리며 필요 시
   `pnpm lint:fix`, `pnpm format`, `pnpm format:check`로 정리합니다.
