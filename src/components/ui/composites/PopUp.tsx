@@ -80,7 +80,7 @@ export const PopUp: React.FC<PopUpProps> = ({
   }, [isOpen, setOpen]);
 
   return (
-    <div ref={containerRef} className="relative inline-block">
+    <div ref={containerRef} className="relative inline-block w-full">
       <div
         role="button"
         tabIndex={0}
