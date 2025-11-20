@@ -6,59 +6,62 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 import type { Client } from '@/feature/client/types';
 
+import type { FileInfo, UploadType } from '../types';
+import {
+  getSessionCreditInfo,
+  getSessionModalTitle,
+} from '../utils/sessionModal';
+
 import { ClientSelector } from './ClientSelector';
 import { FileUploadArea } from './FileUploadArea';
-
-interface AudioFileInfo {
-  name: string;
-  size: number;
-  duration: number;
-  file: File;
-}
 
 interface CreateSessionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  type: UploadType;
   clients: Client[];
   onCreateSession: (data: {
     client: Client | null;
-    file: AudioFileInfo;
+    file?: FileInfo;
+    directInput?: string;
   }) => Promise<void>;
 }
 
 export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   open,
   onOpenChange,
+  type,
   clients,
   onCreateSession,
 }) => {
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
     null
   );
-  const [selectedFile, setSelectedFile] = React.useState<AudioFileInfo | null>(
-    null
-  );
+  const [selectedFile, setSelectedFile] = React.useState<FileInfo | null>(null);
+  const [directInput, setDirectInput] = React.useState('');
   const [isCreating, setIsCreating] = React.useState(false);
 
   const handleClose = () => {
     if (!isCreating) {
       onOpenChange(false);
-      // Reset state
       setTimeout(() => {
         setSelectedClient(null);
         setSelectedFile(null);
+        setDirectInput('');
       }, 300);
     }
   };
 
   const handleCreateSession = async () => {
-    if (!selectedFile) return;
+    if (type !== 'direct' && !selectedFile) return;
+    if (type === 'direct' && !directInput.trim()) return;
 
     setIsCreating(true);
     try {
       await onCreateSession({
         client: selectedClient,
-        file: selectedFile,
+        file: selectedFile || undefined,
+        directInput: type === 'direct' ? directInput : undefined,
       });
       handleClose();
     } catch (error) {
@@ -68,24 +71,19 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     }
   };
 
-  const formatDuration = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}분`;
-  };
-
-  const canSubmit = selectedFile !== null && !isCreating;
+  const canSubmit =
+    (type !== 'direct' ? selectedFile !== null : directInput.trim() !== '') &&
+    !isCreating;
 
   return (
     <Modal open={open} onOpenChange={handleClose}>
       <div className="space-y-6 p-6">
-        {/* 제목 */}
         <div className="text-center">
           <Title as="h3" className="font-bold">
-            녹음 파일로 상담 기록 추가하기
+            {getSessionModalTitle(type)}
           </Title>
         </div>
 
-        {/* 고객 선택 */}
         <div className="relative">
           <ClientSelector
             clients={clients}
@@ -94,21 +92,29 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           />
         </div>
 
-        {/* 파일 업로드 */}
-        <FileUploadArea
-          selectedFile={selectedFile}
-          onFileSelect={setSelectedFile}
-        />
+        {type !== 'direct' ? (
+          <FileUploadArea
+            type={type}
+            selectedFile={selectedFile}
+            onFileSelect={setSelectedFile}
+          />
+        ) : (
+          <div className="space-y-2">
+            <textarea
+              className="focus:ring-primary/20 min-h-[200px] w-full resize-none rounded-lg border border-border bg-bg px-4 py-3 text-fg focus:border-primary focus:outline-none focus:ring-2"
+              placeholder="상담 내용을 직접 입력하세요..."
+              value={directInput}
+              onChange={(e) => setDirectInput(e.target.value)}
+            />
+          </div>
+        )}
 
-        {/* 크레딧 안내 */}
-        {selectedFile && (
+        {getSessionCreditInfo(type, selectedFile) && (
           <Text className="text-center text-muted">
-            축어록 풀기 {formatDuration(selectedFile.duration)} / AI 분석 1회가
-            차감됩니다.
+            {getSessionCreditInfo(type, selectedFile)}
           </Text>
         )}
 
-        {/* 버튼 */}
         <Button
           variant="solid"
           tone="primary"

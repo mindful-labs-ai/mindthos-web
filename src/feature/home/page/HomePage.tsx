@@ -6,9 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { Title } from '@/components/ui';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import type { Client } from '@/feature/client/types';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
+import type { FileInfo } from '@/feature/session/types';
 import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
-import { ROUTES } from '@/router/constants';
+import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
+import { ROUTES, getSessionDetailRoute } from '@/router/constants';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -16,13 +19,6 @@ import { useSessionStore } from '@/stores/sessionStore';
 import { ActionCard } from '../components/ActionCard';
 import { GreetingSection } from '../components/GreetingSection';
 import { SessionCard } from '../components/SessionCard';
-
-interface AudioFileInfo {
-  name: string;
-  size: number;
-  duration: number;
-  file: File;
-}
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -53,7 +49,7 @@ const HomePage = () => {
   };
 
   const handleUploadClick = () => {
-    // 바로 모달 열기 (드롭다운 없이)
+    // 바로 모달 열기 (오디오 파일 업로드만)
     setIsCreateSessionModalOpen(true);
   };
 
@@ -65,16 +61,19 @@ const HomePage = () => {
     navigate(ROUTES.HISTORY);
   };
 
-  const handleSessionClick = (_sessionId: string) => {
-    // TODO: Navigate to session detail page
+  const handleSessionClick = (sessionId: string) => {
+    navigate(getSessionDetailRoute(sessionId));
   };
 
   const handleCreateSession = async (data: {
-    client: { id: string; name: string } | null;
-    file: AudioFileInfo;
+    client: Client | null;
+    file?: FileInfo;
+    directInput?: string;
   }) => {
     // 2초 딜레이로 전사 & 요약 처리 시뮬레이션
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    if (!data.file) return;
 
     // Mock 세션 데이터 생성
     const { session, transcribe } = createMockSessionData({
@@ -87,14 +86,16 @@ const HomePage = () => {
   };
 
   // 전사 내용을 SessionCard용 텍스트로 변환 (처음 몇 줄만)
-  const getSessionContent = (transcribe: {
-    contents: {
-      result: {
-        segments: Array<{ text: string; speaker: number }>;
-        speakers: Array<{ id: number; role: string }>;
-      };
-    } | null;
-  } | null): string => {
+  const getSessionContent = (
+    transcribe: {
+      contents: {
+        result: {
+          segments: Array<{ text: string; speaker: number }>;
+          speakers: Array<{ id: number; role: string }>;
+        };
+      } | null;
+    } | null
+  ): string => {
     if (!transcribe?.contents?.result?.segments) {
       return '전사 내용이 없습니다.';
     }
@@ -106,14 +107,8 @@ const HomePage = () => {
 
     return previewSegments
       .map((seg) => {
-        const speaker = speakers.find((s) => s.id === seg.speaker);
-        const roleName =
-          speaker?.role === 'counselor'
-            ? '상담사'
-            : speaker?.role === 'client1'
-              ? '내담자'
-              : '내담자2';
-        return `${roleName} : ${seg.text}`;
+        const speakerName = getSpeakerDisplayName(seg.speaker, speakers);
+        return `${speakerName} : ${seg.text}`;
       })
       .join(' ');
   };
@@ -180,10 +175,11 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* 세션 생성 모달 */}
+      {/* 세션 생성 모달 - 오디오 파일만 */}
       <CreateSessionModal
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
+        type="audio"
         clients={clients}
         onCreateSession={handleCreateSession}
       />

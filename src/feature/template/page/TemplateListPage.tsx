@@ -24,7 +24,6 @@ export const TemplateListPage: React.FC = () => {
   };
 
   const handleRequestTemplate = () => {
-    console.log('템플릿 신청하기 클릭');
     // TODO: 템플릿 신청 기능 구현
   };
 

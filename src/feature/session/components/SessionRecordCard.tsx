@@ -7,26 +7,14 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import type { SessionRecord, NoteType } from '@/feature/session/types';
+import { formatKoreanDateTime } from '@/shared/utils/date';
 
 interface SessionRecordCardProps {
   record: SessionRecord;
   onClick?: (record: SessionRecord) => void;
   onMenuClick?: (record: SessionRecord) => void;
+  isActive?: boolean;
 }
-
-const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-  const weekday = weekdays[date.getDay()];
-
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-
-  return `${year}.${month}.${day}(${weekday}) ${hours}:${minutes}`;
-};
 
 const getNoteTypeLabel = (type: NoteType): string => {
   switch (type) {
@@ -43,6 +31,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   record,
   onClick,
   onMenuClick,
+  isActive = false,
 }) => {
   const handleCardClick = () => {
     onClick?.(record);
@@ -55,7 +44,11 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
   return (
     <Card
-      className="cursor-pointer transition-all hover:shadow-lg"
+      className={`cursor-pointer transition-all ${
+        isActive
+          ? 'border-l-4 border-primary bg-surface shadow-md'
+          : 'hover:shadow-lg'
+      }`}
       onClick={handleCardClick}
     >
       <Card.Body className="space-y-3 p-6">
@@ -73,13 +66,13 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </button>
         </div>
 
-        <Text className="line-clamp-2 text-left text-sm text-fg">
+        <Text truncate className="line-clamp-2 text-left text-sm text-fg">
           {record.content}
         </Text>
 
         <div className="flex items-center justify-between">
           <Text className="text-xs text-fg-muted">
-            {formatDateTime(record.created_at)}
+            {formatKoreanDateTime(record.created_at)}
           </Text>
           <div className="flex gap-2">
             {record.note_types.map((type, index) => (
