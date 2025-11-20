@@ -1,59 +1,30 @@
 import React from 'react';
 
-import {
-  FileText,
-  HelpCircle,
-  Home,
-  Layers,
-  Plus,
-  Settings,
-  Users,
-  X,
-  Upload,
-  Edit3,
-} from 'lucide-react';
+import { FileText, Plus, X, Upload, Edit3 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, ProgressCircle, Sidebar, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import type { Client } from '@/feature/client/types';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
+import type { FileInfo, UploadType } from '@/feature/session/types';
 import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
 import { mockSettingsData } from '@/feature/settings/data/mockData';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
-interface AudioFileInfo {
-  name: string;
-  size: number;
-  duration: number;
-  file: File;
-}
+import {
+  getNavValueFromPath,
+  getPathFromNavValue,
+  getMainNavItems,
+  getBottomNavItems,
+} from '../navigationConfig';
 
 interface SideTabProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// 경로와 nav value 매핑
-const pathToNavValue: Record<string, string> = {
-  '/': 'home',
-  '/clients': 'client',
-  '/history': 'history',
-  '/template': 'template',
-  '/settings': 'settings',
-  '/help': 'help',
-};
-
-// nav value와 경로 매핑
-const navValueToPath: Record<string, string> = {
-  home: '/',
-  client: '/clients',
-  history: '/history',
-  template: '/template',
-  settings: '/settings',
-  help: '/help',
-};
 
 export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
@@ -61,6 +32,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
+  const [uploadType, setUploadType] = React.useState<UploadType>('audio');
 
   // 고객 목록 가져오기
   const { clients } = useClientList();
@@ -70,52 +42,53 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const userId = useAuthStore((state) => state.userId);
 
   // 현재 경로에 따라 activeNav 자동 설정
-  const activeNav = pathToNavValue[location.pathname] || 'home';
+  const activeNav = getNavValueFromPath(location.pathname);
 
   // 메인 네비게이션 아이템
-  const mainNavItems = [
-    { icon: <Home size={18} />, label: '홈', value: 'home' },
-    { icon: <Users size={18} />, label: '클라이언트', value: 'client' },
-    { icon: <FileText size={18} />, label: '상담 기록', value: 'history' },
-    { icon: <Layers size={18} />, label: '템플릿', value: 'template' },
-  ];
+  const mainNavItems = getMainNavItems();
 
   // 하단 메뉴 아이템
-  const bottomNavItems = [
-    { icon: <Settings size={18} />, label: '설정', value: 'settings' },
-    {
-      icon: <HelpCircle size={18} />,
-      label: '도움말 및 지원',
-      value: 'help',
-    },
-  ];
+  const bottomNavItems = getBottomNavItems();
 
   const handleNavSelect = (value: string) => {
-    const path = navValueToPath[value];
+    const path = getPathFromNavValue(value);
     if (path) {
       navigate(path);
     }
   };
 
   const handleAudioUploadClick = () => {
+    setUploadType('audio');
     setIsNewRecordMenuOpen(false);
     setIsCreateSessionModalOpen(true);
   };
 
   const handlePdfUploadClick = () => {
+    setUploadType('pdf');
     setIsNewRecordMenuOpen(false);
+    setIsCreateSessionModalOpen(true);
   };
 
   const handleDirectInputClick = () => {
+    setUploadType('direct');
     setIsNewRecordMenuOpen(false);
+    setIsCreateSessionModalOpen(true);
   };
 
   const handleCreateSession = async (data: {
-    client: { id: string; name: string } | null;
-    file: AudioFileInfo;
+    client: Client | null;
+    file?: FileInfo;
+    directInput?: string;
   }) => {
     // 2초 딜레이로 전사 & 요약 처리 시뮬레이션
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    if (uploadType === 'direct') {
+      // TODO: 직접 입력 처리
+      return;
+    }
+
+    if (!data.file) return;
 
     // Mock 세션 데이터 생성
     const { session, transcribe } = createMockSessionData({
@@ -135,13 +108,17 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
     >
       {/* Logo Section */}
       <div className="flex h-14 items-center justify-between border-b border-border p-4">
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 rounded hover:opacity-80"
+        >
           <img
             src="/logo_mindthos_kr.webp"
             alt="마음토스"
             className="h-6 w-auto"
+            draggable="false"
           />
-        </div>
+        </button>
         <button
           onClick={onClose}
           className="rounded p-1 hover:bg-bg-subtle lg:hidden"
@@ -277,6 +254,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
       <CreateSessionModal
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
+        type={uploadType}
         clients={clients}
         onCreateSession={handleCreateSession}
       />

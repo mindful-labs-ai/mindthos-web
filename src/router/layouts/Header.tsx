@@ -6,19 +6,13 @@ import {
   BreadCrumb,
   type BreadCrumbItem,
 } from '@/components/ui/composites/BreadCrumb';
+import { useSessionStore } from '@/stores/sessionStore';
 
-// 경로별 표시 이름 매핑
-const routeNameMap: Record<string, string> = {
-  '/': '홈',
-  '/clients': '클라이언트',
-  '/history': '상담 기록',
-  '/template': '상담 노트 템플릿',
-  '/settings': '설정',
-  '/help': '도움말 및 지원',
-};
+import { routeNameMap } from '../navigationConfig';
 
 export const Header: React.FC = () => {
   const location = useLocation();
+  const sessions = useSessionStore((state) => state.sessions);
 
   const getBreadcrumbItems = (): BreadCrumbItem[] => {
     const pathnames = location.pathname.split('/').filter((x) => x);
@@ -31,13 +25,27 @@ export const Header: React.FC = () => {
     const items: BreadCrumbItem[] = [{ label: '홈', href: '/' }];
 
     let currentPath = '';
-    pathnames.forEach((name) => {
+    pathnames.forEach((name, index) => {
       currentPath += `/${name}`;
-      const label = routeNameMap[currentPath] || name;
-      items.push({
-        label,
-        href: currentPath,
-      });
+
+      // /history/:sessionId 경로인 경우 세션 제목 사용
+      if (
+        pathnames[index - 1] === 'history' &&
+        index === pathnames.length - 1
+      ) {
+        const session = sessions.find((s) => s.id === name);
+        const label = session?.title || '세션 상세';
+        items.push({
+          label,
+          href: currentPath,
+        });
+      } else {
+        const label = routeNameMap[currentPath] || name;
+        items.push({
+          label,
+          href: currentPath,
+        });
+      }
     });
 
     return items;
