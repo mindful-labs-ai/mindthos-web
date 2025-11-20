@@ -83,3 +83,20 @@ export interface CreateSessionRequest {
   transcribe_contents?: string;
   counsel_date?: string;
 }
+
+export type UploadType = 'audio' | 'pdf' | 'direct';
+
+export interface AudioFileInfo {
+  name: string;
+  size: number;
+  duration: number;
+  file: File;
+}
+
+export interface PdfFileInfo {
+  name: string;
+  size: number;
+  file: File;
+}
+
+export type FileInfo = AudioFileInfo | PdfFileInfo;

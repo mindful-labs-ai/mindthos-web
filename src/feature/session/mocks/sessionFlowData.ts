@@ -180,7 +180,7 @@ export const mockSessionFlowData: SessionFlowData = {
 export const getSegmentsBySpeaker = (speakerId: number) => {
   return (
     transcribeContents.result.segments?.filter(
-      (seg) => seg.speaker === speakerId,
+      (seg) => seg.speaker === speakerId
     ) || []
   );
 };

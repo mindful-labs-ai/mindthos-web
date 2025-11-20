@@ -8,6 +8,7 @@ import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
 import HomePage from '@/feature/home/page/HomePage';
+import { SessionDetailPage } from '@/feature/session/page/SessionDetailPage';
 import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
@@ -48,6 +49,12 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.HISTORY,
             element: <SessionHistoryPage />,
+            children: [
+              {
+                path: ':sessionId',
+                element: <SessionDetailPage />,
+              },
+            ],
           },
           {
             path: ROUTES.TEMPLATE,
