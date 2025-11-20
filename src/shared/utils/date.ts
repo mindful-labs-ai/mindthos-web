@@ -5,3 +5,17 @@ export const formatKoreanDate = (date: Date = new Date()): string => {
   const weekday = weekdays[date.getDay()];
   return `${month}월 ${day}일 ${weekday}요일`;
 };
+
+export const formatKoreanDateTime = (
+  date: Date | string = new Date()
+): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth() + 1;
+  const day = dateObj.getDate();
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  const weekday = weekdays[dateObj.getDay()];
+  const hours = String(dateObj.getHours()).padStart(2, '0');
+  const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+  return `${year}.${month}.${day}(${weekday}) ${hours}:${minutes}`;
+};
