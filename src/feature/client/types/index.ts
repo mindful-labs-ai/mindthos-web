@@ -6,6 +6,7 @@ export interface Client {
   email: string | null;
   counsel_theme: string | null;
   counsel_number: number;
+  counsel_done: boolean;
   memo: string | null;
   pin: boolean;
   created_at: string;
@@ -15,7 +16,6 @@ export interface Client {
 export interface CreateClientRequest {
   name: string;
   phone_number: string;
-  group_id?: number;
   memo?: string;
   pin?: boolean;
 }
@@ -23,7 +23,6 @@ export interface CreateClientRequest {
 export interface UpdateClientRequest {
   name?: string;
   phone_number?: string;
-  group_id?: number;
   memo?: string;
   pin?: boolean;
 }

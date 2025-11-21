@@ -66,25 +66,27 @@
 
 **설명:** 상담 대상자 정보를 관리합니다. 각 내담자는 UUID로 고유하게 식별됩니다.
 
-| 컬럼           | 타입         | 제약     | 설명                           |
-| -------------- | ------------ | -------- | ------------------------------ |
-| id             | uuid         | PK       | 내담자 고유 ID (UUID)          |
-| counselor_id   | bigint       | NOT NULL | 담당 상담사 ID (users.id 참조) |
-| name           | varchar(12)  | NOT NULL | 이름 (필수)                    |
-| phone_number   | varchar(15)  |          | 전화번호                       |
-| email          | varchar(320) |          | 이메일                         |
-| counsel_theme  | varchar(100) |          | 상담 주제                      |
-| counsel_number | smallint     |          | 회기 수                        |
-| memo           | varchar(200) |          | 메모 (동반인 정보 등)          |
-| pin            | boolean      |          | 고정 여부                      |
-| created_at     | timestamptz  | NOT NULL | 생성 시각 (default: now())     |
-| updated_at     | timestamptz  | NOT NULL | 수정 시각 (default: now())     |
+| 컬럼           | 타입         | 제약     | 설명                            |
+| -------------- | ------------ | -------- | ------------------------------- |
+| id             | uuid         | PK       | 내담자 고유 ID (UUID)           |
+| counselor_id   | bigint       | NOT NULL | 담당 상담사 ID (users.id 참조)  |
+| name           | varchar(12)  | NOT NULL | 이름 (필수)                     |
+| phone_number   | varchar(15)  |          | 전화번호                        |
+| email          | varchar(320) |          | 이메일                          |
+| counsel_theme  | varchar(100) |          | 상담 주제                       |
+| counsel_number | smallint     |          | 회기 수                         |
+| counsel_done   | boolean      |          | 상담 종결 여부 (default: false) |
+| memo           | varchar(200) |          | 메모 (동반인 정보 등)           |
+| pin            | boolean      |          | 고정 여부                       |
+| created_at     | timestamptz  | NOT NULL | 생성 시각 (default: now())      |
+| updated_at     | timestamptz  | NOT NULL | 수정 시각 (default: now())      |
 
 **주요 특징:**
 
 - id: UUID 자동 생성 (gen_random_uuid())
 - memo: 동반인 정보를 텍스트로 저장
 - counsel_theme: UI에서 상담 주제 표시용
+- counsel_done: 상담 종결 상태 (false: 진행 중, true: 종결)
 
 **변경 이력:**
 
@@ -525,6 +527,12 @@
 ---
 
 ## 변경 이력
+
+### v1.8 (2025-11-18)
+
+- clients.counsel_done 추가 (상담 종결 여부)
+- user 헬퍼 함수 업데이트 (email_verified_at, organization, default_template_id
+  추가)
 
 ### v1.7 (2025-11-18)
 

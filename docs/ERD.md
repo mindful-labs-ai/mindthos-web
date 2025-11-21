@@ -354,6 +354,12 @@ SELECT * FROM sessions WHERE client_id = ? ORDER BY created_at DESC;
 
 ## 주요 변경 이력
 
+### v1.8 (2025-11-18)
+
+- clients.counsel_done 추가 (상담 종결 여부)
+- user 헬퍼 함수 업데이트 (email_verified_at, organization, default_template_id
+  반환 추가)
+
 ### v1.7 (2025-11-18)
 
 - **중요 변경:** templates.id 시퀀스 → IDENTITY 변경 (타입 안정성 향상)

@@ -46,9 +46,9 @@ export interface GetClientsResponse {
     email: string | null;
     counsel_theme: string | null;
     counsel_number: number;
+    counsel_done: boolean;
     memo: string | null;
     pin: boolean;
-    group_id: number | null;
     created_at: string;
     updated_at: string;
   }>;
