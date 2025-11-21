@@ -19,3 +19,22 @@ export const formatKoreanDateTime = (
   const minutes = String(dateObj.getMinutes()).padStart(2, '0');
   return `${year}.${month}.${day}(${weekday}) ${hours}:${minutes}`;
 };
+
+export const formatDate = (date: Date | string = new Date()): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth() + 1;
+  const day = dateObj.getDate();
+  return `${year}/${month}/${day}`;
+};
+
+export const formatDuration = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(secs).padStart(2, '0')}`;
+};
