@@ -3,6 +3,7 @@ import type {
   Session,
   Transcribe,
   TranscribeContents,
+  ProgressNote,
 } from '../types';
 
 interface CreateMockSessionDataParams {
@@ -14,6 +15,7 @@ interface CreateMockSessionDataParams {
 interface MockSessionData {
   session: Session;
   transcribe: Transcribe;
+  progressNotes: ProgressNote[];
 }
 
 // UUID 간단 생성 (실제로는 서버에서 생성)
@@ -816,7 +818,7 @@ export const createMockSessionData = ({
   const session: Session = {
     id: sessionId,
     user_id: userId,
-    group_id: clientId ? parseInt(clientId, 10) : null,
+    client_id: clientId, // 내담자 ID (uuid)
     title: file.name,
     description: `${file.name} 상담 세션`,
     audio_meta_data: {
@@ -841,8 +843,55 @@ export const createMockSessionData = ({
     created_at: now,
   };
 
+  // 3. ProgressNote 생성 (상담 노트 - SOAP, 마음토스)
+  const progressNotes: ProgressNote[] = [
+    {
+      id: generateId(),
+      session_id: sessionId,
+      user_id: userId,
+      title: 'SOAP 노트',
+      template_id: 1, // SOAP 템플릿 ID
+      summary: `
+S (Subjective): 내담자는 최근 건강 상태가 좋다고 보고함. 식사와 수면이 규칙적이며, 운동도 꾸준히 하고 있음.
+
+O (Objective): 내담자의 표정이 밝고 말투가 안정적임. 비언어적 의사소통도 긍정적으로 관찰됨.
+
+A (Assessment): 내담자의 전반적인 상태가 호전되고 있음. 자기 관리 능력이 향상되었으며, 스트레스 관리 전략을 효과적으로 사용하고 있음.
+
+P (Plan): 현재의 건강한 생활 습관 유지를 격려. 다음 세션에서 장기 목표 설정에 대해 논의 예정.
+      `.trim(),
+      created_at: now,
+    },
+    {
+      id: generateId(),
+      session_id: sessionId,
+      user_id: userId,
+      title: '마음토스 상담 노트',
+      template_id: 2, // 마음토스 템플릿 ID
+      summary: `
+## 주요 주제
+- 건강 관리 및 생활 습관
+- 정서적 안정성
+- 대인관계 개선
+
+## 내담자 상태
+내담자는 최근 건강 상태가 좋아졌으며, 규칙적인 생활을 유지하고 있습니다. 식사와 수면 패턴이 안정적이고, 운동을 통해 스트레스를 관리하고 있습니다.
+
+## 상담 내용
+내담자와 건강 관리에 대해 논의했습니다. 규칙적인 식사, 충분한 수면, 꾸준한 운동이 정서적 안정에 긍정적인 영향을 미치고 있음을 확인했습니다.
+
+## 향후 계획
+- 현재의 건강한 생활 습관 유지
+- 스트레스 관리 전략 강화
+- 장기 목표 설정 및 실행 계획 수립
+      `.trim(),
+      created_at: now,
+    },
+  ];
+
   return {
     session,
     transcribe,
+    progressNotes,
   };
 };

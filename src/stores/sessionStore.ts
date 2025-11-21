@@ -1,12 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import type { Session, Transcribe } from '@/feature/session/types';
+import type {
+  Session,
+  Transcribe,
+  ProgressNote,
+} from '@/feature/session/types';
 
 interface SessionStoreState {
   sessions: Session[];
   transcribes: Record<string, Transcribe>;
-  addSession: (session: Session, transcribe: Transcribe) => void;
+  progressNotes: Record<string, ProgressNote[]>;
+  addSession: (
+    session: Session,
+    transcribe: Transcribe,
+    progressNotes?: ProgressNote[]
+  ) => void;
   getSessionById: (sessionId: string) => Session | undefined;
   getSessionWithTranscribe: (sessionId: string) => {
     session: Session;
@@ -35,13 +44,18 @@ export const useSessionStore = create<SessionStoreState>()(
     (set, get) => ({
       sessions: [],
       transcribes: {},
+      progressNotes: {},
 
-      addSession: (session, transcribe) => {
+      addSession: (session, transcribe, progressNotes = []) => {
         set((state) => ({
           sessions: [session, ...state.sessions],
           transcribes: {
             ...state.transcribes,
             [session.id]: transcribe,
+          },
+          progressNotes: {
+            ...state.progressNotes,
+            [session.id]: progressNotes,
           },
         }));
       },
@@ -134,11 +148,14 @@ export const useSessionStore = create<SessionStoreState>()(
       removeSession: (sessionId) => {
         set((state) => {
           const newTranscribes = { ...state.transcribes };
+          const newProgressNotes = { ...state.progressNotes };
           delete newTranscribes[sessionId];
+          delete newProgressNotes[sessionId];
 
           return {
             sessions: state.sessions.filter((s) => s.id !== sessionId),
             transcribes: newTranscribes,
+            progressNotes: newProgressNotes,
           };
         });
       },
@@ -147,6 +164,7 @@ export const useSessionStore = create<SessionStoreState>()(
         set({
           sessions: [],
           transcribes: {},
+          progressNotes: {},
         });
       },
     }),

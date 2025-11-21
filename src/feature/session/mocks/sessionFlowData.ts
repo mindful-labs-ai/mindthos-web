@@ -1,7 +1,7 @@
 import type {
   Session,
   Transcribe,
-  CounselNote,
+  ProgressNote,
   TranscribeContents,
 } from '../types';
 
@@ -22,7 +22,7 @@ import type {
 export const mockUploadedSession: Session = {
   id: 'session-001',
   user_id: 'counselor-1',
-  group_id: null, // 고객 선택 안함
+  client_id: null, // 고객 선택 안함
   title: 'child_counseling_session.m4a', // 업로드된 파일명
   description: '아동 상담 세션 녹음',
   audio_meta_data: {
@@ -128,12 +128,12 @@ export const mockTranscribeRecord: Transcribe = {
 // 3. Progress Note 데이터 (AI 요약 완료 후)
 // ============================================
 
-export const mockProgressNote: CounselNote = {
+export const mockProgressNote: ProgressNote = {
   id: 'note-001',
   session_id: 'session-001',
   user_id: 'counselor-1',
   title: '부부 상담 경과 기록',
-  template_id: 'template-001', // 선택한 템플릿
+  template_id: 1, // 선택한 템플릿 (integer)
   summary: `## 주호소 문제
 부부 관계에서의 의사소통 단절 및 정서적 거리감을 호소함.
 - 남편(client2)은 아내(client1)와 함께 시간을 보내고 싶어하나 아내가 문을 닫아놓은 느낌을 받음
@@ -164,7 +164,7 @@ export const mockProgressNote: CounselNote = {
 export interface SessionFlowData {
   session: Session;
   transcribe: Transcribe;
-  progressNote: CounselNote;
+  progressNote: ProgressNote;
 }
 
 export const mockSessionFlowData: SessionFlowData = {

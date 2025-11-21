@@ -4,6 +4,7 @@ import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
+import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import type { Client } from '@/feature/client/types';
 
 import type { FileInfo, UploadType } from '../types';
@@ -12,7 +13,6 @@ import {
   getSessionModalTitle,
 } from '../utils/sessionModal';
 
-import { ClientSelector } from './ClientSelector';
 import { FileUploadArea } from './FileUploadArea';
 
 interface CreateSessionModalProps {

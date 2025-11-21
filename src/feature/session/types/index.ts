@@ -1,7 +1,7 @@
 export interface Session {
   id: string;
   user_id: string;
-  group_id: number | null;
+  client_id: string | null; // 내담자 ID (clients.id 참조, uuid)
   title: string | null;
   description: string | null;
   audio_meta_data: Record<string, unknown> | null;
@@ -53,12 +53,12 @@ export interface Transcribe {
   created_at: string;
 }
 
-export interface CounselNote {
+export interface ProgressNote {
   id: string;
   session_id: string;
   user_id: string;
   title: string | null;
-  template_id: string | null;
+  template_id: number | null; // 템플릿 ID (templates.id 참조, integer)
   summary: string | null;
   created_at: string;
 }
