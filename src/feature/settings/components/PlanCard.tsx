@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { Check } from 'lucide-react';
-
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
+import { CheckIcon } from '@/shared/icons';
 import { formatPrice } from '@/shared/utils/format';
 
 export interface PlanCardProps {
@@ -46,19 +45,19 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <Check size={18} className="flex-shrink-0 text-primary" />
+              <CheckIcon size={18} className="flex-shrink-0 text-primary" />
               <Text className="text-sm">
                 축어록 풀기 월 {audioCredit.toLocaleString()}분
               </Text>
             </div>
             <div className="flex items-center gap-3">
-              <Check size={18} className="flex-shrink-0 text-primary" />
+              <CheckIcon size={18} className="flex-shrink-0 text-primary" />
               <Text className="text-sm">
                 AI 요약 월 {summaryCredit.toLocaleString()}회
               </Text>
             </div>
             <div className="flex items-center gap-3">
-              <Check size={18} className="flex-shrink-0 text-primary" />
+              <CheckIcon size={18} className="flex-shrink-0 text-primary" />
               <Text className="text-sm">모든 상담 노트 템플릿</Text>
             </div>
           </div>

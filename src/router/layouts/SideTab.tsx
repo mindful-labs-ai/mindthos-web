@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { FileText, Plus, X, Upload, Edit3 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, ProgressCircle, Sidebar, Text } from '@/components/ui';
@@ -11,6 +10,13 @@ import { CreateSessionModal } from '@/feature/session/components/CreateSessionMo
 import type { FileInfo, UploadType } from '@/feature/session/types';
 import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
 import { mockSettingsData } from '@/feature/settings/data/mockData';
+import {
+  FileTextIcon,
+  PlusIcon,
+  XIcon,
+  UploadIcon,
+  Edit3Icon,
+} from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
@@ -91,18 +97,18 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
     if (!data.file) return;
 
     // Mock 세션 데이터 생성
-    const { session, transcribe } = createMockSessionData({
+    const { session, transcribe, progressNotes } = createMockSessionData({
       file: data.file,
       clientId: data.client?.id || null,
       userId: userId || 'default-user',
     });
 
-    addSession(session, transcribe);
+    addSession(session, transcribe, progressNotes);
   };
 
   return (
     <aside
-      className={`flex h-full flex-col border-r border-border bg-bg px-3 transition-all duration-300 ${
+      className={`relative z-10 flex h-full flex-col border-r border-border bg-bg px-3 transition-all duration-300 ${
         isOpen ? 'w-64' : 'w-0'
       } overflow-hidden`}
     >
@@ -123,7 +129,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
           onClick={onClose}
           className="rounded p-1 hover:bg-bg-subtle lg:hidden"
         >
-          <X size={20} />
+          <XIcon size={20} />
         </button>
       </div>
 
@@ -132,13 +138,14 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
         <PopUp
           open={isNewRecordMenuOpen}
           onOpenChange={setIsNewRecordMenuOpen}
+          placement="bottom-right"
           trigger={
             <Button
               variant="outline"
               tone="primary"
               size="md"
               className="w-full justify-start"
-              icon={<Plus size={18} />}
+              icon={<PlusIcon size={18} />}
               onClick={() => setIsNewRecordMenuOpen(!isNewRecordMenuOpen)}
             >
               새 상담 기록
@@ -150,21 +157,21 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
                 onClick={handleAudioUploadClick}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
               >
-                <Upload size={18} className="text-primary" />
+                <UploadIcon size={18} className="text-primary" />
                 <Text>녹음 파일 업로드</Text>
               </button>
               <button
                 onClick={handlePdfUploadClick}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
               >
-                <FileText size={18} className="text-primary" />
+                <FileTextIcon size={18} className="text-primary" />
                 <Text>PDF 파일 업로드</Text>
               </button>
               <button
                 onClick={handleDirectInputClick}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
               >
-                <Edit3 size={18} className="text-primary" />
+                <Edit3Icon size={18} className="text-primary" />
                 <Text>직접 입력하기</Text>
               </button>
             </div>

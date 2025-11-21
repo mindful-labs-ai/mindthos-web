@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
@@ -8,6 +7,7 @@ import { Input } from '@/components/ui/atoms/Input';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { getClientDetailRoute } from '@/router/constants';
+import { SearchIcon } from '@/shared/icons';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientCard } from '../components/ClientCard';
@@ -26,7 +26,13 @@ export const ClientListPage: React.FC = () => {
   );
 
   const filteredClients = useClientSearch(clients, searchQuery);
-  const groupedClients = useClientGrouping(filteredClients);
+
+  // counsel_done으로 활성/종결 클라이언트 분리
+  const activeClients = filteredClients.filter((c) => !c.counsel_done);
+  const completedClients = filteredClients.filter((c) => c.counsel_done);
+
+  const groupedActiveClients = useClientGrouping(activeClients);
+  const groupedCompletedClients = useClientGrouping(completedClients);
 
   const handleClientClick = (client: Client) => {
     navigate(getClientDetailRoute(client.id));
@@ -63,7 +69,7 @@ export const ClientListPage: React.FC = () => {
               placeholder="검색하기"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              prefix={<Search size={18} />}
+              prefix={<SearchIcon size={18} />}
               className="w-80"
             />
 
@@ -88,29 +94,76 @@ export const ClientListPage: React.FC = () => {
           <div className="flex min-h-[400px] items-center justify-center">
             <Text className="text-lg text-fg-muted">로딩 중...</Text>
           </div>
-        ) : groupedClients.length > 0 ? (
-          <div className="space-y-8">
-            {groupedClients.map((group) => (
-              <div key={group.key}>
-                <div className="mb-4 border-b border-border pb-2 text-left">
+        ) : groupedActiveClients.length > 0 ||
+          groupedCompletedClients.length > 0 ? (
+          <div className="space-y-12">
+            {/* 활성 클라이언트 섹션 */}
+            {groupedActiveClients.length > 0 && (
+              <div className="space-y-8">
+                {groupedActiveClients.map((group) => (
+                  <div key={group.key}>
+                    <div className="mb-4 border-b border-border pb-2 text-left">
+                      <Title
+                        as="h2"
+                        className="text-xl font-bold text-fg-muted"
+                      >
+                        {group.key}
+                      </Title>
+                    </div>
+
+                    <div className="space-y-3">
+                      {group.clients.map((client) => (
+                        <ClientCard
+                          key={client.id}
+                          client={client}
+                          onClick={handleClientClick}
+                          onEditClick={handleEditClient}
+                          searchQuery={searchQuery}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 종결된 내담자 섹션 */}
+            {groupedCompletedClients.length > 0 && (
+              <div>
+                <div className="mb-6 text-left">
                   <Title as="h2" className="text-xl font-bold text-fg-muted">
-                    {group.key}
+                    종결된 내담자
                   </Title>
                 </div>
 
-                <div className="space-y-3">
-                  {group.clients.map((client) => (
-                    <ClientCard
-                      key={client.id}
-                      client={client}
-                      onClick={handleClientClick}
-                      onEditClick={handleEditClient}
-                      searchQuery={searchQuery}
-                    />
+                <div className="space-y-8">
+                  {groupedCompletedClients.map((group) => (
+                    <div className="opacity-40" key={group.key}>
+                      <div className="mb-4 border-b border-border pb-2 text-left">
+                        <Title
+                          as="h3"
+                          className="text-lg font-bold text-fg-muted"
+                        >
+                          {group.key}
+                        </Title>
+                      </div>
+
+                      <div className="space-y-3">
+                        {group.clients.map((client) => (
+                          <ClientCard
+                            key={client.id}
+                            client={client}
+                            onClick={handleClientClick}
+                            onEditClick={handleEditClient}
+                            searchQuery={searchQuery}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         ) : (
           <div className="flex min-h-[400px] items-center justify-center">

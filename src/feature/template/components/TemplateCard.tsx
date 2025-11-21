@@ -1,12 +1,11 @@
 import React from 'react';
 
-import { Star } from 'lucide-react';
-
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import type { TemplateListItem } from '@/feature/template/types';
+import { StarIcon } from '@/shared/icons';
 
 export interface TemplateCardProps {
   template: TemplateListItem;
@@ -43,7 +42,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
             className="flex-shrink-0 text-fg-muted transition-colors hover:text-accent"
             aria-label={template.pin ? '즐겨찾기 해제' : '즐겨찾기 추가'}
           >
-            <Star
+            <StarIcon
               size={20}
               fill={template.pin ? 'currentColor' : 'none'}
               className={template.pin ? 'text-accent' : ''}

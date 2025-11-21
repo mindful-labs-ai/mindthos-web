@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { Layers } from 'lucide-react';
 import { Outlet } from 'react-router-dom';
 
 import { Header } from '@/router/layouts/Header';
 import { SideTab } from '@/router/layouts/SideTab';
+import { LayersIcon } from '@/shared/icons';
 
 const MainFlowLayout = () => {
   const [isSideTabOpen, setIsSideTabOpen] = React.useState(true);
@@ -22,7 +22,7 @@ const MainFlowLayout = () => {
             onClick={() => setIsSideTabOpen(true)}
             className="fixed left-4 top-4 z-10 rounded-lg bg-surface p-2 shadow-lg lg:hidden"
           >
-            <Layers size={24} />
+            <LayersIcon size={24} />
           </button>
         )}
 

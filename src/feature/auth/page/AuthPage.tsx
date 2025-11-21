@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { ArrowRight } from 'lucide-react';
-
 import { Button, Text, Title } from '@/components/ui';
+import { ArrowRightIcon } from '@/shared/icons';
 
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
@@ -27,7 +26,7 @@ const AuthPage = () => {
             className="h-8 w-auto"
           />
           <Button
-            iconRight={<ArrowRight size={18} />}
+            iconRight={<ArrowRightIcon size={18} />}
             size="md"
             tone="secondary"
             variant="outline"

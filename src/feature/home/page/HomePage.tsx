@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Upload, UserPlus, FileSearch } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
@@ -12,6 +11,7 @@ import type { FileInfo } from '@/feature/session/types';
 import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
+import { UploadIcon, UserPlusIcon, FileSearchIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -76,13 +76,13 @@ const HomePage = () => {
     if (!data.file) return;
 
     // Mock 세션 데이터 생성
-    const { session, transcribe } = createMockSessionData({
+    const { session, transcribe, progressNotes } = createMockSessionData({
       file: data.file,
       clientId: data.client?.id || null,
       userId: userId || 'default-user',
     });
 
-    addSession(session, transcribe);
+    addSession(session, transcribe, progressNotes);
   };
 
   // 전사 내용을 SessionCard용 텍스트로 변환 (처음 몇 줄만)
@@ -129,17 +129,17 @@ const HomePage = () => {
 
       <div className="mb-8 flex flex-row gap-4">
         <ActionCard
-          icon={<Upload size={24} className="text-primary-500" />}
+          icon={<UploadIcon size={24} className="text-primary-500" />}
           title="녹음 파일 업로드하기"
           onClick={handleUploadClick}
         />
         <ActionCard
-          icon={<UserPlus size={24} className="text-danger" />}
+          icon={<UserPlusIcon size={24} className="text-danger" />}
           title="고객 추가하기"
           onClick={handleAddCustomerClick}
         />
         <ActionCard
-          icon={<FileSearch size={24} className="text-warn" />}
+          icon={<FileSearchIcon size={24} className="text-warn" />}
           title="상담 기록 전체보기"
           onClick={handleViewAllRecordsClick}
         />

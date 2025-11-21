@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { CloudUpload, X } from 'lucide-react';
-
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
+import { CloudUploadIcon, XIcon } from '@/shared/icons';
 import { formatDurationInTime, formatFileSize } from '@/shared/utils/format';
 
 import { getFileUploadText } from '../constants/fileUpload';
@@ -114,7 +113,7 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
         {!selectedFile ? (
           <div className="flex flex-col items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-contrast">
-              <CloudUpload className="h-6 w-6 text-fg-muted" />
+              <CloudUploadIcon className="h-6 w-6 text-fg-muted" />
             </div>
             <div className="space-y-2">
               <Text className="text-fg">{uploadText.main}</Text>
@@ -131,7 +130,7 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
               className="absolute -right-2 -top-2 rounded-full bg-surface p-1.5 shadow-md transition-colors hover:bg-surface-strong"
               aria-label="파일 제거"
             >
-              <X size={16} className="text-fg-muted" />
+              <XIcon size={16} className="text-fg-muted" />
             </button>
 
             <Text className="font-medium text-fg">{selectedFile.name}</Text>

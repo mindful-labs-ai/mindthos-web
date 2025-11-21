@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { Mail, MapPin, User } from 'lucide-react';
 import { Link, createSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
@@ -14,6 +13,7 @@ import { UsageProgressCard } from '@/feature/settings/components/UsageProgressCa
 import { mockSettingsData } from '@/feature/settings/data/mockData';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
+import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { getPlanLabel } from '@/shared/utils/plan';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -125,15 +125,15 @@ export const SettingsPage: React.FC = () => {
 
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <User size={20} className="text-fg-muted" />
+                <UserIcon size={20} className="text-fg-muted" />
                 <Text className="text-base">{settings.counselor.name}</Text>
               </div>
               <div className="flex items-center gap-3">
-                <Mail size={20} className="text-fg-muted" />
+                <MailIcon size={20} className="text-fg-muted" />
                 <Text className="text-base">{settings.counselor.email}</Text>
               </div>
               <div className="flex items-center gap-3">
-                <MapPin size={20} className="text-fg-muted" />
+                <MapPinIcon size={20} className="text-fg-muted" />
                 <Text className="text-base">
                   {settings.counselor.organization}
                 </Text>

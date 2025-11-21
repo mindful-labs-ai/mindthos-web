@@ -1,9 +1,13 @@
 import React from 'react';
 
-import { MoreVertical, LogIn, ListChecks, Trash2 } from 'lucide-react';
-
 import { Text } from '@/components/ui/atoms/Text';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import {
+  MoreVerticalIcon,
+  LogInIcon,
+  ListChecksIcon,
+  Trash2Icon,
+} from '@/shared/icons';
 
 interface ClientCardMenuProps {
   isOpen: boolean;
@@ -47,7 +51,7 @@ export const ClientCardMenu: React.FC<ClientCardMenuProps> = ({
             className="translate-x-3 rounded-lg p-1 text-fg-muted transition-colors hover:bg-surface-contrast"
             aria-label="메뉴"
           >
-            <MoreVertical size={20} />
+            <MoreVerticalIcon size={20} />
           </button>
         }
         content={
@@ -56,29 +60,29 @@ export const ClientCardMenu: React.FC<ClientCardMenuProps> = ({
               onClick={handleCloseSession}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
             >
-              <LogIn size={18} className="text-fg-muted" />
+              <LogInIcon size={18} className="text-fg-muted" />
               <Text className="text-sm">상담 종결</Text>
             </button>
             <button
               onClick={handleEditClient}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
             >
-              <ListChecks size={18} className="text-fg-muted" />
+              <ListChecksIcon size={18} className="text-fg-muted" />
               <Text className="text-sm">내담자 정보 수정</Text>
             </button>
             <button
               onClick={handleDeleteClient}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
             >
-              <Trash2 size={18} className="text-danger" />
+              <Trash2Icon size={18} className="text-danger" />
               <Text className="text-sm">삭제</Text>
             </button>
           </div>
         }
-        placement="bottom"
+        placement="bottom-left"
         open={isOpen}
         onOpenChange={onOpenChange}
-        className="p-2"
+        className="translate-y-0 p-2"
       />
     </div>
   );

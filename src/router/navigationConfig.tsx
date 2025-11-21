@@ -1,13 +1,13 @@
 import React from 'react';
 
 import {
-  FileText,
-  HelpCircle,
-  Home,
-  Layers,
-  Settings,
-  Users,
-} from 'lucide-react';
+  FileTextIcon,
+  HelpCircleIcon,
+  HomeIcon,
+  LayersIcon,
+  SettingsIcon,
+  UsersIcon,
+} from '@/shared/icons';
 
 import { ROUTES } from './constants';
 
@@ -23,37 +23,37 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     path: ROUTES.ROOT,
     label: '홈',
     value: 'home',
-    icon: <Home size={18} />,
+    icon: <HomeIcon size={18} />,
   },
   {
     path: ROUTES.CLIENTS,
     label: '클라이언트',
     value: 'client',
-    icon: <Users size={18} />,
+    icon: <UsersIcon size={18} />,
   },
   {
     path: ROUTES.HISTORY,
     label: '상담 기록',
     value: 'history',
-    icon: <FileText size={18} />,
+    icon: <FileTextIcon size={18} />,
   },
   {
     path: ROUTES.TEMPLATE,
     label: '템플릿',
     value: 'template',
-    icon: <Layers size={18} />,
+    icon: <LayersIcon size={18} />,
   },
   {
     path: ROUTES.SETTINGS,
     label: '설정',
     value: 'settings',
-    icon: <Settings size={18} />,
+    icon: <SettingsIcon size={18} />,
   },
   {
     path: '/help',
     label: '도움말 및 지원',
     value: 'help',
-    icon: <HelpCircle size={18} />,
+    icon: <HelpCircleIcon size={18} />,
   },
 ];
 
