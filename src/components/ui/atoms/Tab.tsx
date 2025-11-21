@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export type TabSize = 'sm' | 'md' | 'lg' | 'free';
+export type TabVariant = 'pill' | 'underline';
 
 export interface TabItem {
   value: string;
@@ -16,13 +17,21 @@ export interface TabProps {
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   size?: TabSize;
+  variant?: TabVariant;
   className?: string;
 }
 
-const sizeStyles: Record<TabSize, string> = {
+const pillSizeStyles: Record<TabSize, string> = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-sm',
   lg: 'px-5 py-2.5 text-base',
+  free: '',
+};
+
+const underlineSizeStyles: Record<TabSize, string> = {
+  sm: 'px-3 py-2 text-sm',
+  md: 'px-4 py-3 text-sm',
+  lg: 'px-5 py-3.5 text-base',
   free: '',
 };
 
@@ -33,6 +42,7 @@ const sizeStyles: Record<TabSize, string> = {
  *
  * @example
  * <Tab items={[{value:'tab1',label:'탭1'}]} defaultValue="tab1" />
+ * <Tab items={[{value:'tab1',label:'탭1'}]} variant="underline" />
  */
 export const Tab: React.FC<TabProps> = ({
   items,
@@ -40,6 +50,7 @@ export const Tab: React.FC<TabProps> = ({
   defaultValue,
   onValueChange,
   size = 'md',
+  variant = 'pill',
   className,
 }) => {
   const [uncontrolledValue, setUncontrolledValue] = React.useState(
@@ -47,6 +58,9 @@ export const Tab: React.FC<TabProps> = ({
   );
   const isControlled = controlledValue !== undefined;
   const selectedValue = isControlled ? controlledValue : uncontrolledValue;
+
+  const sizeStyles =
+    variant === 'underline' ? underlineSizeStyles : pillSizeStyles;
 
   const handleSelect = (value: string) => {
     if (!isControlled) {
@@ -94,7 +108,10 @@ export const Tab: React.FC<TabProps> = ({
     <div
       role="tablist"
       className={cn(
-        'inline-flex items-center gap-1 rounded-[var(--radius-md)] bg-surface-contrast p-1',
+        'inline-flex items-center',
+        variant === 'pill'
+          ? 'gap-1 rounded-[var(--radius-md)] bg-surface-contrast p-1'
+          : 'gap-1',
         className
       )}
     >
@@ -112,14 +129,24 @@ export const Tab: React.FC<TabProps> = ({
             onClick={() => handleSelect(item.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'whitespace-nowrap rounded-[var(--radius-sm)] font-medium',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-contrast',
+              'whitespace-nowrap font-medium transition-colors duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               'disabled:cursor-not-allowed disabled:opacity-50',
               sizeStyles[size],
-              isSelected
-                ? 'bg-surface text-fg shadow-sm'
-                : 'bg-transparent text-fg-muted hover:text-fg'
+              variant === 'pill'
+                ? cn(
+                    'rounded-[var(--radius-sm)]',
+                    'focus-visible:ring-offset-2 focus-visible:ring-offset-surface-contrast',
+                    isSelected
+                      ? 'bg-surface text-fg shadow-sm'
+                      : 'bg-transparent text-fg-muted hover:text-fg'
+                  )
+                : cn(
+                    'relative rounded-t-lg border border-transparent',
+                    isSelected
+                      ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface-contrast text-primary shadow-sm'
+                      : 'text-fg-muted hover:text-fg'
+                  )
             )}
           >
             {item.label}
