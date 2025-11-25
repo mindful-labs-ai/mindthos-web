@@ -1,6 +1,6 @@
 export interface Client {
   id: string;
-  counselor_id: string;
+  counselor_id: number;
   name: string;
   phone_number: string;
   email: string | null;

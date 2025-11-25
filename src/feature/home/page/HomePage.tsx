@@ -7,11 +7,11 @@ import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
+import { useCreateSession } from '@/feature/session/hooks/useCreateSession';
 import type { FileInfo } from '@/feature/session/types';
-import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
-import { UploadIcon, UserPlusIcon, FileSearchIcon } from '@/shared/icons';
+import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -24,12 +24,16 @@ const HomePage = () => {
   const navigate = useNavigate();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
+  const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const [showBanner, setShowBanner] = React.useState(true);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
 
   // 고객 목록 가져오기
   const { clients } = useClientList();
+
+  // 세션 생성 Hook
+  const { createSession, isCreating, uploadProgress } = useCreateSession();
 
   // 세션 스토어
   const addSession = useSessionStore((state) => state.addSession);
@@ -70,19 +74,63 @@ const HomePage = () => {
     file?: FileInfo;
     directInput?: string;
   }) => {
-    // 2초 딜레이로 전사 & 요약 처리 시뮬레이션
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    if (!data.file) return;
-
-    // Mock 세션 데이터 생성
-    const { session, transcribe, progressNotes } = createMockSessionData({
-      file: data.file,
-      clientId: data.client?.id || null,
-      userId: userId || 'default-user',
+    console.log('[handleCreateSession] 시작:', {
+      userId,
+      defaultTemplateId,
+      data,
     });
 
-    addSession(session, transcribe, progressNotes);
+    // 사용자 인증 확인
+    if (!userId) {
+      console.error('[handleCreateSession] 사용자 ID가 없습니다.');
+      alert('로그인 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    // userId를 number로 변환
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) {
+      console.error('[handleCreateSession] 유효하지 않은 사용자 ID:', userId);
+      alert('사용자 정보가 올바르지 않습니다. 다시 로그인해주세요.');
+      return;
+    }
+
+    // 템플릿 ID 확인 (없으면 기본값 1 사용)
+    const templateId = defaultTemplateId || 1;
+
+    try {
+      console.log('[handleCreateSession] API 호출 시작:', {
+        userId: userIdNumber,
+        clientId: data.client?.id,
+        templateId,
+      });
+
+      // 실제 API 호출
+      const response = await createSession({
+        userId: userIdNumber,
+        clientId: data.client?.id,
+        uploadType: 'audio', // HomePage에서는 오디오만 지원
+        transcribeType: 'advanced', // TODO: UI에서 선택 가능하게 변경
+        templateId: templateId,
+        file: data.file,
+        directInput: data.directInput,
+      });
+
+      console.log('[handleCreateSession] 세션 생성 성공:', response);
+
+      // TODO: 생성된 세션을 세션 스토어에 추가하거나 페이지 새로고침
+      // 백그라운드에서 처리되므로 processing_status를 주기적으로 확인해야 함
+
+      // 임시: 성공 메시지 표시
+      alert(
+        `✅ 세션이 생성되었습니다!\n\n세션 ID: ${response.session_id}\n\n백그라운드에서 STT 및 상담노트가 생성되고 있습니다.\n(처리 상태는 DB에서 확인할 수 있습니다)`
+      );
+    } catch (error) {
+      console.error('[handleCreateSession] 세션 생성 실패:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : '알 수 없는 오류';
+      alert(`❌ 세션 생성 실패\n\n${errorMessage}\n\n콘솔을 확인해주세요.`);
+    }
   };
 
   // 전사 내용을 SessionCard용 텍스트로 변환 (처음 몇 줄만)

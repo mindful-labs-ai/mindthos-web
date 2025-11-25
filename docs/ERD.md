@@ -1,7 +1,7 @@
 # Entity Relationship Diagram (ERD)
 
-> Mindthos 데이터베이스의 엔티티 관계도입니다. 테이블 간 관계와 데이터 흐름을
-> 시각화합니다.
+> Mindthos 데이터베이스의 엔티티 관계도입니다.
+> 테이블 간 관계와 데이터 흐름을 시각화합니다.
 
 ## Mermaid ERD
 
@@ -23,7 +23,6 @@ erDiagram
 
     SESSIONS ||--o{ PROGRESS_NOTES : "documented"
     SESSIONS ||--o{ TRANSCRIBES : "transcribed"
-    SESSIONS ||--o{ CREDIT_LOG : "session_credit"
 
     TEMPLATES ||--o{ TEMPLATE_PIN : "pinned"
     TEMPLATES ||--o{ PROGRESS_NOTES : "uses"
@@ -32,8 +31,6 @@ erDiagram
     PLANS ||--o{ SUBSCRIBE : "offers"
     PLANS ||--o{ PAYMENTS : "billed"
     PLANS ||--o{ USAGE : "tracks"
-
-    SUBSCRIBE ||--o{ CREDIT_LOG : "subscription_credit"
 
     USERS {
         bigint id PK "시퀀스"
@@ -55,6 +52,7 @@ erDiagram
         varchar email "이메일(320)"
         varchar counsel_theme "상담주제(100)"
         smallint counsel_number "회기수"
+        boolean counsel_done "상담종결"
         varchar memo "메모(200)"
         boolean pin "고정"
         timestamptz created_at
@@ -118,8 +116,7 @@ erDiagram
         varchar type "타입(15,UK)"
         varchar description "설명(50)"
         integer price "가격"
-        integer audio_credit "음성크레딧"
-        integer summary_credit "요약크레딧"
+        integer total_credit "총크레딧"
     }
 
     SUBSCRIBE {
@@ -155,18 +152,16 @@ erDiagram
         uuid id PK "UUID"
         bigint user_id FK "사용자(필수)"
         uuid plan_id FK "플랜(필수,UK)"
-        integer audio_usage "음성사용량"
-        integer summary_usage "요약사용량"
+        integer total_usage "총사용량"
         timestamptz reset_at "리셋시각"
     }
 
     CREDIT_LOG {
         uuid id PK "UUID"
         bigint user_id FK "사용자(필수)"
-        uuid subscribe_id FK "구독"
-        uuid session_id FK "세션"
-        varchar use_type "사용타입(8)"
+        varchar use_type "사용타입(30)"
         integer use_amount "사용량"
+        jsonb feature_metadata "기능메타데이터"
         varchar log_memo "메모(50)"
         timestamptz created_at
     }
@@ -278,7 +273,6 @@ sequenceDiagram
 | clients     | sessions       | 내담자 1명이 여러 세션 참여                       |
 | sessions    | progress_notes | 세션 1개에 여러 경과 기록                         |
 | sessions    | transcribes    | 세션 1개에 여러 전사 내용                         |
-| sessions    | credit_log     | 세션 1개에 여러 크레딧 로그                       |
 | templates   | template_pin   | 템플릿 1개가 여러 사용자에게 고정됨               |
 | templates   | progress_notes | 템플릿 1개가 여러 경과 기록에 사용됨              |
 | templates   | users          | 템플릿 1개가 여러 사용자의 기본 템플릿으로 설정됨 |
@@ -286,7 +280,7 @@ sequenceDiagram
 | plans       | subscribe      | 플랜 1개에 여러 구독자                            |
 | plans       | payments       | 플랜 1개에 여러 결제 이력                         |
 | plans       | usage          | 플랜 1개에 여러 사용량 기록                       |
-| subscribe   | credit_log     | 구독 1개에 여러 크레딧 로그                       |
+| users       | credit_log     | 사용자 1명이 여러 크레딧 로그 (session_id, subscribe_id는 feature_metadata에 포함) |
 
 ### 애플리케이션 레벨 참조
 
@@ -354,11 +348,21 @@ SELECT * FROM sessions WHERE client_id = ? ORDER BY created_at DESC;
 
 ## 주요 변경 이력
 
+### v1.9 (2025-11-18)
+
+- **중요 변경:** 통합 크레딧 시스템 도입
+- PLANS: `audio_credit`, `summary_credit` → `total_credit` 통합
+- USAGE: `audio_usage`, `summary_usage` → `total_usage` 통합
+- CREDIT_LOG: `session_id`, `subscribe_id` 제거 → `feature_metadata`로 통합
+- CREDIT_LOG: `feature_metadata` 컬럼 추가 (모든 메타데이터 JSONB 통합), `use_type` 길이 확장 (8→30)
+- CREDIT_LOG: GIN 인덱스 추가 (JSONB 검색 성능 최적화)
+- Row-level lock 기반 동시성 안전 크레딧 관리 시스템 구현
+- Credit Manager Edge Function 추가 (POST /functions/v1/credit-manager)
+
 ### v1.8 (2025-11-18)
 
 - clients.counsel_done 추가 (상담 종결 여부)
-- user 헬퍼 함수 업데이트 (email_verified_at, organization, default_template_id
-  반환 추가)
+- user 헬퍼 함수 업데이트 (email_verified_at, organization, default_template_id 반환 추가)
 
 ### v1.7 (2025-11-18)
 

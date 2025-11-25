@@ -25,6 +25,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isCloseSessionModalOpen, setIsCloseSessionModalOpen] =
     React.useState(false);
+  const [isRestartCounselingModalOpen, setIsRestartCounselingModalOpen] =
+    React.useState(false);
 
   const handleCardClick = () => {
     onClick?.(client);
@@ -40,6 +42,16 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     //TODO : 상담 종결 테이블추가하고 로직 추가하기
   };
 
+  const handleRestartCounseling = () => {
+    setIsMenuOpen(false);
+    setIsRestartCounselingModalOpen(true);
+  };
+
+  const handleConfirmRestartCounseling = () => {
+    setIsRestartCounselingModalOpen(false);
+    //TODO : 상담 재시작 로직 추가하기 (counsel_done을 false로 변경)
+  };
+
   const handleEditClient = () => {
     setIsMenuOpen(false);
     onEditClick?.(client);
@@ -52,7 +64,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   return (
     <>
       <Card
-        className="cursor-pointer transition-all hover:shadow-lg"
+        className={`cursor-pointer transition-all hover:shadow-lg ${
+          client.counsel_done ? 'opacity-50' : ''
+        }`}
         onClick={handleCardClick}
       >
         <Card.Body className="space-y-3 p-6">
@@ -68,7 +82,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             <ClientCardMenu
               isOpen={isMenuOpen}
               onOpenChange={setIsMenuOpen}
+              isCounselDone={client.counsel_done}
               onCloseSession={handleCloseSession}
+              onRestartCounseling={handleRestartCounseling}
               onEditClient={handleEditClient}
               onDeleteClient={handleDeleteClient}
             />
@@ -110,6 +126,32 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               className="w-full"
             >
               상담 종결
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={isRestartCounselingModalOpen}
+        onOpenChange={setIsRestartCounselingModalOpen}
+        title="상담 재시작"
+      >
+        <div className="space-y-4">
+          <Text className="text-base font-bold text-fg">
+            {client.name} 내담자의 상담을 재시작하시겠습니까?
+          </Text>
+          <Text className="text-sm text-fg-muted">
+            상담을 재시작하면 다시 상담 기록을 추가할 수 있어요.
+          </Text>
+          <div className="flex justify-center pt-2">
+            <Button
+              variant="solid"
+              tone="primary"
+              size="lg"
+              onClick={handleConfirmRestartCounseling}
+              className="w-full"
+            >
+              상담 재시작
             </Button>
           </div>
         </div>

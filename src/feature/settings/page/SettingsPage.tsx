@@ -7,14 +7,19 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
+import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
-import { UsageProgressCard } from '@/feature/settings/components/UsageProgressCard';
-import { mockSettingsData } from '@/feature/settings/data/mockData';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
+import {
+  calculateDaysUntilReset,
+  formatRenewalDate,
+  getPlanLabel,
+} from '@/feature/settings/utils/planUtils';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
-import { getPlanLabel } from '@/shared/utils/plan';
 import { useAuthStore } from '@/stores/authStore';
 
 export const SettingsPage: React.FC = () => {
@@ -23,19 +28,9 @@ export const SettingsPage: React.FC = () => {
   const organization = useAuthStore((state) => state.organization);
   const logout = useAuthStore((state) => state.logout);
 
-  // TODO : 해당 UI에 출력할 데이터 view로 캐싱
-  const settings = React.useMemo(
-    () => ({
-      ...mockSettingsData,
-      counselor: {
-        ...mockSettingsData.counselor,
-        name: userName || mockSettingsData.counselor.name,
-        email: user?.email || mockSettingsData.counselor.email,
-        organization: organization || mockSettingsData.counselor.organization,
-      },
-    }),
-    [user?.email, userName, organization]
-  );
+  // 크레딧 정보 가져오기
+  const { creditInfo } = useCreditInfo();
+
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -126,16 +121,18 @@ export const SettingsPage: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <UserIcon size={20} className="text-fg-muted" />
-                <Text className="text-base">{settings.counselor.name}</Text>
+                <Text className="text-base">{userName || '이름 없음'}</Text>
               </div>
               <div className="flex items-center gap-3">
                 <MailIcon size={20} className="text-fg-muted" />
-                <Text className="text-base">{settings.counselor.email}</Text>
+                <Text className="text-base">
+                  {user?.email || '이메일 없음'}
+                </Text>
               </div>
               <div className="flex items-center gap-3">
                 <MapPinIcon size={20} className="text-fg-muted" />
                 <Text className="text-base">
-                  {settings.counselor.organization}
+                  {organization || '소속 기관 없음'}
                 </Text>
               </div>
             </div>
@@ -158,40 +155,53 @@ export const SettingsPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="flex flex-col justify-start space-y-4">
-              <div className="flex items-center justify-between">
-                <Text className="text-base">
-                  <span className="font-bold text-primary">
-                    {getPlanLabel(settings.plan.type)}
-                  </span>{' '}
-                  2025.11.29 15:35 갱신 예정
-                </Text>
-              </div>
+            <div className="flex flex-col space-y-6">
+              {creditInfo && (
+                <>
+                  {creditInfo.plan.type.toLowerCase() === 'free' ? (
+                    <Text className="text-base">
+                      <span className="font-bold text-primary">
+                        {getPlanLabel(creditInfo.plan.type)}
+                      </span>{' '}
+                      이용 중
+                    </Text>
+                  ) : (
+                    <Text className="text-base">
+                      <span className="font-bold text-primary">
+                        {getPlanLabel(creditInfo.plan.type)}
+                      </span>{' '}
+                      {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
+                      예정
+                    </Text>
+                  )}
 
-              <Button
-                variant="solid"
-                tone="primary"
-                size="sm"
-                className="w-32"
-                onClick={handleUpgradePlan}
-              >
-                플랜 업그레이드
-              </Button>
-            </div>
+                  <div className="flex w-full justify-center gap-6 lg:grid-cols-2">
+                    <CreditDisplay
+                      totalCredit={creditInfo.plan.total}
+                      usedCredit={creditInfo.plan.used}
+                      planLabel={getPlanLabel(creditInfo.plan.type)}
+                      planType={creditInfo.plan.type}
+                      daysUntilReset={calculateDaysUntilReset(
+                        creditInfo.subscription.reset_at
+                      )}
+                      variant="detailed"
+                    />
+                    <CreditUsageInfo
+                      remainingCredit={creditInfo.plan.remaining}
+                    />
+                  </div>
 
-            <div className="flex">
-              <UsageProgressCard
-                title="음성 변환"
-                usage={settings.usage.voice_transcription}
-                total={settings.plan.audio_credit}
-                unit="분"
-              />
-              <UsageProgressCard
-                title="요약 생성"
-                usage={settings.usage.summary_generation}
-                total={settings.plan.summary_credit}
-                unit="회"
-              />
+                  <Button
+                    variant="solid"
+                    tone="primary"
+                    size="sm"
+                    className="w-32"
+                    onClick={handleUpgradePlan}
+                  >
+                    플랜 업그레이드
+                  </Button>
+                </>
+              )}
             </div>
           </Card.Body>
         </Card>

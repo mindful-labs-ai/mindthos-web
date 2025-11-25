@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text } from '@/components/ui';
+import { Text, Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Modal } from '@/components/ui/composites/Modal';
 import {
@@ -39,6 +39,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       alert('플랜을 선택해주세요.');
       return;
     }
+    // TODO: 플랜 업그레이드 처리
+    console.log('Upgrading to plan:', selectedPlan, 'period:', period);
   };
 
   const plans = React.useMemo(
@@ -86,67 +88,66 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   );
 
   return (
-    <Modal
-      open={open}
-      onOpenChange={onOpenChange}
-      title="마음토스 플랜 업그레이드"
-      className="max-w-5xl"
-    >
-      <div className="mx-24 mb-16 mt-8 flex flex-col items-center space-y-6">
-        <div className="flex w-fit justify-center gap-2 rounded-lg bg-surface-contrast p-2">
-          <button
+    <Modal open={open} onOpenChange={onOpenChange} className="w-5/6 max-w-full">
+      <div className="flex flex-col items-center gap-y-12">
+        <Title className="pt-4" as="h2">
+          마음토스 플랜 업그레이드
+        </Title>
+        {/* Period Toggle */}
+        <div className="flex w-fit justify-center gap-1 rounded-lg bg-surface-contrast p-1">
+          <Button
+            variant={period === 'monthly' ? 'solid' : 'ghost'}
+            tone={period === 'monthly' ? 'surface' : 'neutral'}
+            size="sm"
             onClick={() => setPeriod('monthly')}
-            className={`rounded-lg px-8 py-3 text-sm font-medium transition-colors ${
-              period === 'monthly'
-                ? 'bg-surface'
-                : 'text-fg-muted hover:bg-surface-strong'
-            }`}
+            className="min-w-[100px]"
           >
             월 구독
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={period === 'yearly' ? 'solid' : 'ghost'}
+            tone={period === 'yearly' ? 'surface' : 'neutral'}
+            size="sm"
             onClick={() => setPeriod('yearly')}
-            className={`rounded-lg px-8 py-3 text-sm font-medium transition-colors ${
-              period === 'yearly'
-                ? 'bg-surface'
-                : 'text-fg-muted hover:bg-surface-strong'
-            }`}
+            className="min-w-[100px]"
           >
             연 구독
-          </button>
+          </Button>
         </div>
 
         {/* Plan Cards */}
-        <div className="flex w-full flex-col justify-center gap-6 md:flex-row">
+        <div className="flex w-full justify-center gap-6">
           {plans.map((plan) => (
-            <PlanCard
-              key={plan.name}
-              name={plan.name}
-              description={plan.description}
-              audioCredit={plan.audio_credit}
-              summaryCredit={plan.summary_credit}
-              originalPrice={plan.originalPrice}
-              discountedPrice={plan.discountedPrice}
-              discountRate={plan.discountRate}
-              isYearly={period === 'yearly'}
-              onSelect={() => handleSelectPlan(plan.type)}
-            />
+            <div key={plan.name} className="max-w-md flex-1">
+              <PlanCard
+                name={plan.name}
+                description={plan.description}
+                audioCredit={plan.audio_credit}
+                summaryCredit={plan.summary_credit}
+                originalPrice={plan.originalPrice}
+                discountedPrice={plan.discountedPrice}
+                discountRate={plan.discountRate}
+                isYearly={period === 'yearly'}
+                isSelected={selectedPlan === plan.type}
+                onSelect={() => handleSelectPlan(plan.type)}
+              />
+            </div>
           ))}
         </div>
 
-        <Text className="text-sm text-fg">결제 약관에 동의합니다.</Text>
-
-        {/* Upgrade Button */}
-        <Button
-          variant="solid"
-          tone="primary"
-          size="lg"
-          disabled={!selectedPlan}
-          onClick={handleUpgrade}
-          className="w-full"
-        >
-          플랜 업그레이드
-        </Button>
+        <div className="flex w-full flex-col items-center gap-y-2">
+          <Text>결제 약관에 동의합니다.</Text>
+          <Button
+            variant="solid"
+            tone="primary"
+            size="lg"
+            disabled={!selectedPlan}
+            onClick={handleUpgrade}
+            className="w-full max-w-lg"
+          >
+            플랜 업그레이드
+          </Button>
+        </div>
       </div>
     </Modal>
   );

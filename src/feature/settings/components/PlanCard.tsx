@@ -16,6 +16,7 @@ export interface PlanCardProps {
   discountedPrice: number;
   discountRate: number;
   isYearly?: boolean;
+  isSelected?: boolean;
   onSelect: () => void;
 }
 
@@ -28,10 +29,17 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   discountedPrice,
   discountRate,
   isYearly = false,
+  isSelected = false,
   onSelect,
 }) => {
   return (
-    <Card className="h-full text-left">
+    <Card
+      className={`h-full text-left transition-all ${
+        isSelected
+          ? 'border-2 border-primary shadow-lg'
+          : 'hover:border-primary/50 border border-border'
+      }`}
+    >
       <Card.Body className="flex h-full flex-col justify-between space-y-6 p-6">
         <div className="space-y-6">
           <div>
@@ -95,12 +103,13 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
           <Button
             variant="solid"
-            tone="primary"
+            tone={isSelected ? 'neutral' : 'primary'}
             size="md"
             onClick={onSelect}
             className="w-full"
+            disabled={isSelected}
           >
-            시작하기
+            {isSelected ? '✓ 선택됨' : '시작하기'}
           </Button>
         </div>
       </Card.Body>

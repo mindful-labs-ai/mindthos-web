@@ -138,7 +138,7 @@ export const ClientListPage: React.FC = () => {
 
                 <div className="space-y-8">
                   {groupedCompletedClients.map((group) => (
-                    <div className="opacity-40" key={group.key}>
+                    <div key={group.key}>
                       <div className="mb-4 border-b border-border pb-2 text-left">
                         <Title
                           as="h3"

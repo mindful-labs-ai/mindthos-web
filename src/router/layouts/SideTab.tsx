@@ -2,14 +2,19 @@ import React from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Button, ProgressCircle, Sidebar, Text } from '@/components/ui';
+import { Button, Sidebar, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import type { FileInfo, UploadType } from '@/feature/session/types';
 import { createMockSessionData } from '@/feature/session/utils/createMockSessionData';
-import { mockSettingsData } from '@/feature/settings/data/mockData';
+import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
+import {
+  calculateDaysUntilReset,
+  getPlanLabel,
+} from '@/feature/settings/utils/planUtils';
 import {
   FileTextIcon,
   PlusIcon,
@@ -42,6 +47,9 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
 
   // 고객 목록 가져오기
   const { clients } = useClientList();
+
+  // 크레딧 정보 가져오기
+  const { creditInfo } = useCreditInfo();
 
   // 세션 스토어 & 인증 스토어
   const addSession = useSessionStore((state) => state.addSession);
@@ -189,64 +197,18 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
         />
       </div>
 
-      {/* TODO : usage indicator data fix */}
       <div>
-        {/* Usage Section */}
-        <div className="mx-3 mb-6 space-y-3 rounded-lg border-t border-border bg-surface-contrast px-1 py-4 text-left">
-          <Text className="px-3 text-xs font-medium text-fg-muted">
-            주이용 툴기
-          </Text>
-          <div className="flex items-center gap-2 px-3">
-            <ProgressCircle
-              value={Math.floor(
-                ((mockSettingsData.plan.audio_credit -
-                  mockSettingsData.usage.voice_transcription.credit) /
-                  mockSettingsData.plan.audio_credit) *
-                  100
-              )}
-              size={28}
-              strokeWidth={4}
-              showValue={false}
-            />
-            <div className="text-center">
-              <Text className="text-sm text-fg">
-                <span className="font-bold text-primary">
-                  {mockSettingsData.plan.audio_credit -
-                    mockSettingsData.usage.voice_transcription.credit}
-                  분 남음
-                </span>{' '}
-                / {mockSettingsData.plan.audio_credit}분
-              </Text>
-            </div>
-          </div>
-
-          <Text className="px-3 text-xs font-medium text-fg-muted">
-            요약 생성
-          </Text>
-          <div className="flex items-center gap-2 px-3">
-            <ProgressCircle
-              value={Math.floor(
-                ((mockSettingsData.plan.summary_credit -
-                  mockSettingsData.usage.summary_generation.credit) /
-                  mockSettingsData.plan.summary_credit) *
-                  100
-              )}
-              size={28}
-              strokeWidth={4}
-              showValue={false}
-            />
-            <div className="text-center">
-              <Text className="text-sm text-fg">
-                <span className="font-bold text-primary">
-                  {mockSettingsData.plan.summary_credit -
-                    mockSettingsData.usage.summary_generation.credit}
-                  회 남음
-                </span>{' '}
-                / {mockSettingsData.plan.summary_credit}회
-              </Text>
-            </div>
-          </div>
-        </div>
+        {/* Credit Display */}
+        {creditInfo && (
+          <CreditDisplay
+            totalCredit={creditInfo.plan.total}
+            usedCredit={creditInfo.plan.used}
+            planLabel={getPlanLabel(creditInfo.plan.type)}
+            planType={creditInfo.plan.type}
+            daysUntilReset={calculateDaysUntilReset(creditInfo.subscription.reset_at)}
+            variant="sidebar"
+          />
+        )}
         <div className="border-t border-border px-3 py-3">
           <Sidebar
             items={bottomNavItems}

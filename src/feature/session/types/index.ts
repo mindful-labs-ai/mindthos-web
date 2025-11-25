@@ -20,7 +20,6 @@ export interface TranscribeSegment {
   end: number; // 종료 시간(초)
   text: string; // 발화 내용
   speaker: number; // 화자 ID
-  speaker_diarized: null | number;
 }
 
 // 화자 정보
@@ -33,7 +32,6 @@ export interface Speaker {
 export interface TranscribeResult {
   segments: TranscribeSegment[];
   speakers: Speaker[];
-  text: string;
 }
 
 // 전사 컨텐츠 (DB에 저장되는 JSON)
@@ -100,3 +98,35 @@ export interface PdfFileInfo {
 }
 
 export type FileInfo = AudioFileInfo | PdfFileInfo;
+
+// ============================================
+// 세션 생성 API 타입 (Backend Integration)
+// ============================================
+
+export interface CreateSessionBackgroundRequest {
+  user_id: number;
+  client_id?: string;
+  upload_type: 'audio' | 'pdf' | 'direct';
+
+  // 오디오인 경우
+  audio_url?: string;
+  file_size_mb?: number;
+  transcribe_type?: 'basic' | 'advanced';
+  duration_seconds?: number;
+
+  // PDF/직접 입력인 경우
+  transcribed_text?: string;
+
+  // 공통
+  template_id: number;
+}
+
+export interface CreateSessionBackgroundResponse {
+  success: boolean;
+  message: string;
+  session_id: string;
+  transcribe_id?: string;
+  progress_note_id?: string;
+  total_credit_used?: number;
+  remaining_credit?: number;
+}

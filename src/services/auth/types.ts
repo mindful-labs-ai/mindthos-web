@@ -9,6 +9,7 @@ export interface UserDbRecord {
   name: string | null;
   email: string;
   phone_number: string | null;
+  email_verified_at: string | null;
   organization: string | null;
   default_template_id: number | null;
   created_at: string;
