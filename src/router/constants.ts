@@ -4,6 +4,7 @@
 export const ROUTES = {
   ROOT: '/',
   AUTH: '/auth',
+  AUTH_CALLBACK: '/auth/callback',
   EMAIL_VERIFICATION: '/auth/verify-email',
   TERMS: '/terms',
   CLIENTS: '/clients',

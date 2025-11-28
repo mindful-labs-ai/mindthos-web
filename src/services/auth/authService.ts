@@ -204,4 +204,24 @@ export const authService = {
       throw handleEdgeFunctionError(error);
     }
   },
+
+  async loginWithGoogle(): Promise<void> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
 };
