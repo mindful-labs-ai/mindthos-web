@@ -3,6 +3,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+
 import { getSessionList } from '../services/sessionService';
 import type { Session, Transcribe, ProgressNote } from '../types';
 
@@ -35,7 +36,11 @@ export function useSessionList({
       const data = query.state.data;
       const hasProcessingSessions = data?.sessions.some((s) => {
         const status = s.session.processing_status;
-        return status === 'pending' || status === 'transcribing' || status === 'generating_note';
+        return (
+          status === 'pending' ||
+          status === 'transcribing' ||
+          status === 'generating_note'
+        );
       });
 
       // 처리 중인 세션이 있으면 3초마다 폴링

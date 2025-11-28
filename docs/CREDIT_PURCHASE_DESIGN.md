@@ -5,6 +5,7 @@
 ## 📋 설계 개요
 
 ### 핵심 원칙
+
 1. **플랜 크레딧**: 구독 플랜에 포함된 기본 크레딧 (월별 리셋)
 2. **구매 크레딧**: 추가로 구매한 크레딧 (영구 또는 유효기간)
 3. **사용 우선순위**: 플랜 크레딧 우선 사용 → 구매 크레딧 사용
@@ -312,18 +313,18 @@ $$;
 // POST /functions/v1/credit-purchase
 
 interface PurchaseCreditRequest {
-  user_id: number
-  credit_amount: number    // 구매할 크레딧 (예: 100)
-  price: number            // 결제 금액 (원)
-  payment_id: string       // 결제 ID
-  expires_days?: number    // 유효기간 (일), null = 영구
+  user_id: number;
+  credit_amount: number; // 구매할 크레딧 (예: 100)
+  price: number; // 결제 금액 (원)
+  payment_id: string; // 결제 ID
+  expires_days?: number; // 유효기간 (일), null = 영구
 }
 
 interface PurchaseCreditResponse {
-  success: boolean
-  purchase_id: string
-  credit_amount: number
-  expires_at: string | null
+  success: boolean;
+  purchase_id: string;
+  credit_amount: number;
+  expires_at: string | null;
 }
 ```
 
@@ -332,12 +333,14 @@ interface PurchaseCreditResponse {
 ## 📈 장점 정리
 
 ### 비즈니스 관점
+
 - ✅ 플랜 크레딧 부족 시 추가 구매 유도 가능
 - ✅ 구매 내역 완벽 추적 (회계/정산)
 - ✅ 환불 처리 명확
 - ✅ 유효기간 설정 가능 (프로모션 크레딧 등)
 
 ### 기술 관점
+
 - ✅ 동시성 안전 (Row-level Lock)
 - ✅ 트랜잭션 보장 (플랜 + 구매 크레딧 원자적 차감)
 - ✅ 확장성 (새로운 크레딧 소스 추가 가능)

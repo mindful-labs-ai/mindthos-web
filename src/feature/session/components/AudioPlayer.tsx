@@ -118,16 +118,8 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
                 strokeWidth="2"
                 className="animate-spin"
               >
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  opacity="0.25"
-                />
-                <path
-                  d="M12 2a10 10 0 0 1 10 10"
-                  opacity="0.75"
-                />
+                <circle cx="12" cy="12" r="10" opacity="0.25" />
+                <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75" />
               </svg>
             ) : isPlaying ? (
               <svg

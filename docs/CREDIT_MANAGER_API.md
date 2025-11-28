@@ -2,7 +2,8 @@
 
 > 통합 크레딧 차감 및 관리 Edge Function
 >
-> 모든 기능(음성 전사, 요약 생성 등)에서 공통으로 사용하는 크레딧 관리 API입니다.
+> 모든 기능(음성 전사, 요약 생성 등)에서 공통으로 사용하는 크레딧 관리
+> API입니다.
 
 ## 📋 목차
 
@@ -242,17 +243,17 @@ async function deductAudioCredit(
   const creditAmount = Math.ceil(durationSeconds / 60);
 
   const response = await fetch(`${SUPABASE_URL}/functions/v1/credit-manager`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({
       user_id: userId,
       credit_amount: creditAmount,
-      use_type: "audio_transcribe",
+      use_type: 'audio_transcribe',
       feature_metadata: {
-        session_id: "optional-session-uuid", // 세션 관련 기능인 경우
+        session_id: 'optional-session-uuid', // 세션 관련 기능인 경우
         duration_seconds: durationSeconds,
         calculated_cost: creditAmount,
       },
@@ -262,7 +263,7 @@ async function deductAudioCredit(
   const result = await response.json();
 
   if (!result.success) {
-    if (result.error === "INSUFFICIENT_CREDIT") {
+    if (result.error === 'INSUFFICIENT_CREDIT') {
       throw new Error(
         `크레딧 부족: ${result.required}크레딧 필요, ${result.available}크레딧 보유`
       );
@@ -290,9 +291,9 @@ async function deductCredit(params: {
     const response = await fetch(
       `${SUPABASE_URL}/functions/v1/credit-manager`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
@@ -312,7 +313,7 @@ async function deductCredit(params: {
         case 402:
           return {
             success: false,
-            error: "INSUFFICIENT_CREDIT",
+            error: 'INSUFFICIENT_CREDIT',
             message: result.message,
             required: result.required,
             available: result.available,
@@ -320,25 +321,25 @@ async function deductCredit(params: {
         case 404:
           return {
             success: false,
-            error: "USER_PLAN_NOT_FOUND",
+            error: 'USER_PLAN_NOT_FOUND',
             message: result.message,
           };
         default:
           return {
             success: false,
-            error: result.error || "UNKNOWN_ERROR",
-            message: result.message || "알 수 없는 오류",
+            error: result.error || 'UNKNOWN_ERROR',
+            message: result.message || '알 수 없는 오류',
           };
       }
     }
 
     return result;
   } catch (error) {
-    console.error("Credit deduction error:", error);
+    console.error('Credit deduction error:', error);
     return {
       success: false,
-      error: "NETWORK_ERROR",
-      message: "네트워크 오류가 발생했습니다.",
+      error: 'NETWORK_ERROR',
+      message: '네트워크 오류가 발생했습니다.',
     };
   }
 }
@@ -348,7 +349,7 @@ async function deductCredit(params: {
 
 ```typescript
 // audio-transcribe/index.ts
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js';
 
 Deno.serve(async (req) => {
   const { audioFile, userId, sessionId } = await req.json();
@@ -359,17 +360,17 @@ Deno.serve(async (req) => {
 
   // 2. Credit Manager 호출
   const creditResponse = await fetch(
-    `${Deno.env.get("SUPABASE_URL")}/functions/v1/credit-manager`,
+    `${Deno.env.get('SUPABASE_URL')}/functions/v1/credit-manager`,
     {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
       },
       body: JSON.stringify({
         user_id: userId,
         credit_amount: creditAmount,
-        use_type: "audio_transcribe",
+        use_type: 'audio_transcribe',
         feature_metadata: {
           session_id: sessionId, // 세션 ID를 메타데이터에 포함
           duration_seconds: durationSeconds,
@@ -385,7 +386,7 @@ Deno.serve(async (req) => {
   if (!creditResult.success) {
     return new Response(JSON.stringify(creditResult), {
       status: creditResponse.status,
-      headers: { "Content-Type": "application/json" },
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 

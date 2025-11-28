@@ -52,7 +52,9 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <CheckIcon size={18} className="flex-shrink-0 text-primary" />
-              <Text className="text-sm">총 {totalCredit.toLocaleString()} 크레딧</Text>
+              <Text className="text-sm">
+                총 {totalCredit.toLocaleString()} 크레딧
+              </Text>
             </div>
             <div className="flex items-center gap-3">
               <CheckIcon size={18} className="flex-shrink-0 text-primary" />

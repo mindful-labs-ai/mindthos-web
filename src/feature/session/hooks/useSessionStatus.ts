@@ -3,7 +3,7 @@
  * - 백그라운드에서 처리 중인 세션의 상태를 폴링
  */
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -34,7 +34,7 @@ export function useSessionStatus({
 }: UseSessionStatusOptions) {
   const previousStatusRef = useRef<string | null>(null);
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['session-status', sessionId],
     queryFn: () => getSessionStatus(sessionId),
     enabled: enabled && !!sessionId,
@@ -54,24 +54,36 @@ export function useSessionStatus({
     staleTime: 0, // 폴링 중에는 항상 최신 데이터 필요
     refetchOnWindowFocus: false, // 폴링으로 충분, 윈도우 포커스 시 추가 refetch 불필요
     refetchOnMount: false, // 폴링으로 충분
-    onSuccess: (data: SessionStatusResponse) => {
-      // 기존 onSuccess 콜백 호출 (모든 폴링마다)
-      onSuccess?.(data);
-
-      // 상태가 변경되었을 때만 onComplete 호출
-      const currentStatus = data.processing_status;
-      const previousStatus = previousStatusRef.current;
-
-      if (
-        (currentStatus === 'succeeded' || currentStatus === 'failed') &&
-        previousStatus !== currentStatus
-      ) {
-        onComplete?.(data, currentStatus);
-      }
-
-      // 현재 상태 저장
-      previousStatusRef.current = currentStatus;
-    },
-    onError,
   });
+
+  // useEffect로 데이터 변경 감지
+  useEffect(() => {
+    if (!query.data) return;
+
+    // onSuccess 콜백 호출
+    onSuccess?.(query.data);
+
+    // 상태가 변경되었을 때만 onComplete 호출
+    const currentStatus = query.data.processing_status;
+    const previousStatus = previousStatusRef.current;
+
+    if (
+      (currentStatus === 'succeeded' || currentStatus === 'failed') &&
+      previousStatus !== currentStatus
+    ) {
+      onComplete?.(query.data, currentStatus);
+    }
+
+    // 현재 상태 저장
+    previousStatusRef.current = currentStatus;
+  }, [query.data, onSuccess, onComplete]);
+
+  // useEffect로 에러 처리
+  useEffect(() => {
+    if (query.error) {
+      onError?.(query.error);
+    }
+  }, [query.error, onError]);
+
+  return query;
 }

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 
+import Markdown from 'react-markdown';
+
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
-import { Card } from '@/components/ui/composites/Card';
 import { useToast } from '@/components/ui/composites/Toast';
 import { CheckIcon, CopyIcon } from '@/shared/icons';
 
@@ -102,15 +103,16 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
         </Title>
       </div>
 
-      {/* 블럭화된 섹션들 */}
-      <div className="space-y-4">
-        {sections.length > 0 ? (
-          sections.map((section, index) => (
-            <Card key={index} className="relative overflow-visible">
-              <Card.Body className="p-6">
-                {/* 섹션 헤더 */}
-                <div className="mb-4 flex items-start justify-between">
-                  <Title as="h3" className="text-base font-semibold text-fg">
+      {/* 마크다운 문서 렌더링 */}
+      {note.summary ? (
+        <div className="relative">
+          {/* 섹션별 렌더링 */}
+          <div className="space-y-6">
+            {sections.map((section, index) => (
+              <div key={index} className="group relative">
+                {/* 섹션 헤더와 복사 버튼 */}
+                <div className="mb-3 flex items-start justify-between">
+                  <Title as="h3" className="text-lg font-semibold text-fg">
                     {section.title}
                   </Title>
 
@@ -118,7 +120,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                   <button
                     type="button"
                     onClick={() => handleCopy(section.content, index)}
-                    className="group relative flex-shrink-0 rounded-lg p-2 text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
+                    className="relative flex-shrink-0 rounded-lg p-2 text-fg-muted opacity-0 transition-all hover:bg-surface-contrast hover:text-fg group-hover:opacity-100"
                     aria-label="복사"
                   >
                     {copiedIndex === index ? (
@@ -128,27 +130,79 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                     )}
 
                     {/* 툴팁 */}
-                    <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs text-bg opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs text-bg opacity-0 transition-opacity hover:opacity-100">
                       {copiedIndex === index ? '복사됨' : '복사'}
                     </span>
                   </button>
                 </div>
 
-                {/* 섹션 내용 */}
-                <Text className="whitespace-pre-wrap text-sm leading-relaxed text-fg">
-                  {section.content || '내용이 없습니다.'}
-                </Text>
-              </Card.Body>
-            </Card>
-          ))
-        ) : (
-          <Card>
-            <Card.Body className="p-6">
-              <Text className="text-center text-fg-muted">내용이 없습니다.</Text>
-            </Card.Body>
-          </Card>
-        )}
-      </div>
+                {/* 마크다운 렌더링된 내용 */}
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <Markdown
+                    components={{
+                      p: ({ children }: { children?: React.ReactNode }) => (
+                        <Text className="mb-3 leading-relaxed text-fg">
+                          {children}
+                        </Text>
+                      ),
+                      ul: ({ children }: { children?: React.ReactNode }) => (
+                        <ul className="mb-3 list-disc space-y-1 pl-6 text-fg">
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }: { children?: React.ReactNode }) => (
+                        <ol className="mb-3 list-decimal space-y-1 pl-6 text-fg">
+                          {children}
+                        </ol>
+                      ),
+                      li: ({ children }: { children?: React.ReactNode }) => (
+                        <li className="leading-relaxed">{children}</li>
+                      ),
+                      strong: ({
+                        children,
+                      }: {
+                        children?: React.ReactNode;
+                      }) => (
+                        <strong className="font-semibold text-fg">
+                          {children}
+                        </strong>
+                      ),
+                      em: ({ children }: { children?: React.ReactNode }) => (
+                        <em className="italic text-fg">{children}</em>
+                      ),
+                      blockquote: ({
+                        children,
+                      }: {
+                        children?: React.ReactNode;
+                      }) => (
+                        <blockquote className="mb-3 border-l-4 border-primary pl-4 italic text-fg-muted">
+                          {children}
+                        </blockquote>
+                      ),
+                      code: ({ children }: { children?: React.ReactNode }) => (
+                        <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
+                          {children}
+                        </code>
+                      ),
+                      pre: ({ children }: { children?: React.ReactNode }) => (
+                        <pre className="mb-3 overflow-x-auto rounded-lg bg-surface-contrast p-4">
+                          {children}
+                        </pre>
+                      ),
+                    }}
+                  >
+                    {section.content || '내용이 없습니다.'}
+                  </Markdown>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex min-h-[200px] items-center justify-center">
+          <Text className="text-center text-fg-muted">내용이 없습니다.</Text>
+        </div>
+      )}
     </div>
   );
 };

@@ -14,7 +14,10 @@ import { MoreVerticalIcon, UserCircle2Icon, Trash2Icon } from '@/shared/icons';
 import { formatKoreanDateTime } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 
-import { assignClientToSession, deleteSession } from '../services/sessionService';
+import {
+  assignClientToSession,
+  deleteSession,
+} from '../services/sessionService';
 import type { SessionRecord, NoteType } from '../types';
 
 interface SessionRecordCardProps {
@@ -61,7 +64,8 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     : `세션 ${record.session_number}회기`;
 
   const getStatusBadge = () => {
-    if (!record.processing_status || record.processing_status === 'succeeded') return null;
+    if (!record.processing_status || record.processing_status === 'succeeded')
+      return null;
 
     const statusConfig = {
       pending: { label: '대기 중', tone: 'neutral' as const },
@@ -79,7 +83,8 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     );
   };
 
-  const isClickable = !record.processing_status || record.processing_status === 'succeeded';
+  const isClickable =
+    !record.processing_status || record.processing_status === 'succeeded';
 
   const handleCardClick = (e: React.MouseEvent) => {
     // PopUp 영역 클릭 시 카드 클릭 이벤트 무시
@@ -157,8 +162,8 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       >
         <Card.Body className="space-y-3 p-6">
           <div className="flex items-start justify-between">
-            <div className="flex flex-1 items-center gap-2 min-w-0">
-              <Title as="h3" className="text-left text-lg font-bold truncate">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <Title as="h3" className="truncate text-left text-lg font-bold">
                 {displayTitle}
               </Title>
               {getStatusBadge()}
@@ -191,7 +196,10 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                           type="button"
                           className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
                         >
-                          <UserCircle2Icon size={18} className="text-fg-muted" />
+                          <UserCircle2Icon
+                            size={18}
+                            className="text-fg-muted"
+                          />
                           <Text className="text-fg">내담자 변경</Text>
                         </button>
                       }
@@ -214,7 +222,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </div>
           </div>
 
-          <Text className="line-clamp-2 text-left text-sm text-fg overflow-hidden">
+          <Text className="line-clamp-2 overflow-hidden text-left text-sm text-fg">
             {record.content}
           </Text>
 
@@ -276,14 +284,14 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             <button
               onClick={() => setIsDeleteModalOpen(false)}
               disabled={isLoading}
-              className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-surface-hover disabled:opacity-50"
+              className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors disabled:opacity-50"
             >
               취소
             </button>
             <button
               onClick={handleConfirmDelete}
               disabled={isLoading}
-              className="w-full rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-danger/90 disabled:opacity-50"
+              className="hover:bg-danger/90 w-full rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
             >
               {isLoading ? '삭제 중...' : '삭제'}
             </button>

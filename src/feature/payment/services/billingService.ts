@@ -13,29 +13,45 @@ export const billingService = {
   /**
    * 빌링키 발급 요청 (Edge Function 호출)
    */
-  async issueBillingKey(request: BillingKeyIssueRequest): Promise<BillingKeyIssueResponse> {
-    return await callEdgeFunction<BillingKeyIssueResponse>('/payment/issue-billing-key', request);
+  async issueBillingKey(
+    request: BillingKeyIssueRequest
+  ): Promise<BillingKeyIssueResponse> {
+    return await callEdgeFunction<BillingKeyIssueResponse>(
+      '/payment/issue-billing-key',
+      request
+    );
   },
 
   /**
    * 플랜 업그레이드 초기화 (payments row 생성)
    */
   async initUpgrade(request: UpgradePlanRequest): Promise<UpgradePlanResponse> {
-    return await callEdgeFunction<UpgradePlanResponse>('/payment/init-upgrade', request);
+    return await callEdgeFunction<UpgradePlanResponse>(
+      '/payment/init-upgrade',
+      request
+    );
   },
 
   /**
    * 플랜 업그레이드 완료 (빌링키 발급 + 결제 + 구독 생성)
    */
-  async completePlanUpgrade(request: CompletePlanUpgradeRequest): Promise<UpgradePlanResponse> {
-    return await callEdgeFunction<UpgradePlanResponse>('/payment/complete-upgrade', request);
+  async completePlanUpgrade(
+    request: CompletePlanUpgradeRequest
+  ): Promise<UpgradePlanResponse> {
+    return await callEdgeFunction<UpgradePlanResponse>(
+      '/payment/complete-upgrade',
+      request
+    );
   },
 
   /**
    * 기존 빌링키로 플랜 업그레이드 (카드가 이미 등록된 경우)
    */
   async upgradePlan(request: UpgradePlanRequest): Promise<UpgradePlanResponse> {
-    return await callEdgeFunction<UpgradePlanResponse>('/payment/upgrade', request);
+    return await callEdgeFunction<UpgradePlanResponse>(
+      '/payment/upgrade',
+      request
+    );
   },
 
   /**
@@ -50,7 +66,9 @@ export const billingService = {
   async getSubscription(userId: number) {
     const { data, error } = await supabase
       .from('subscribe')
-      .select('id, user_id, plan_id, start_at, end_at, last_paid_at, is_canceled')
+      .select(
+        'id, user_id, plan_id, start_at, end_at, last_paid_at, is_canceled'
+      )
       .eq('user_id', userId)
       .order('last_paid_at', { ascending: false })
       .limit(1)
@@ -88,6 +106,9 @@ export const billingService = {
    * 카드 정보 삭제 (Edge Function 호출 - 테스트용)
    */
   async deleteCard(): Promise<void> {
-    await callEdgeFunction<{ success: boolean; message: string }>('/payment/delete-card', {});
+    await callEdgeFunction<{ success: boolean; message: string }>(
+      '/payment/delete-card',
+      {}
+    );
   },
 };

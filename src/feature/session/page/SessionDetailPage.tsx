@@ -20,8 +20,8 @@ import { useTranscriptSync } from '../hooks/useTranscriptSync';
 import { createProgressNote } from '../services/progressNoteService';
 import {
   getAudioPresignedUrl,
-  updateSessionTitle,
   updateMultipleTranscriptSegments,
+  updateSessionTitle,
 } from '../services/sessionService';
 import { getSpeakerDisplayName } from '../utils/speakerUtils';
 import { getTranscriptData } from '../utils/transcriptParser';
@@ -421,7 +421,9 @@ export const SessionDetailPage: React.FC = () => {
         />
       </div>
 
-      <div className="mx-6 min-h-0 flex-1 overflow-y-auto rounded-xl border-2 border-primary-100 bg-primary-50">
+      <div
+        className={`mx-6 min-h-0 flex-1 overflow-y-auto rounded-xl border-2 ${isEditing ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
+      >
         {activeTab === 'transcript' && (
           <div className="z-10v sticky top-0 mb-4 flex items-center justify-end gap-2 px-8 py-2">
             {isEditing ? (
@@ -556,9 +558,7 @@ export const SessionDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'transcript' ? (
-          <div
-            className={`space-y-4 rounded-lg px-8 pb-6 transition-colors ${isEditing ? 'bg-primary-100' : ''}`}
-          >
+          <div className={`space-y-4 rounded-lg px-8 pb-6 transition-colors`}>
             {segments.length > 0 ? (
               segments.map((segment, index) => (
                 <TranscriptSegment

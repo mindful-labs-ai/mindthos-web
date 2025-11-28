@@ -11,6 +11,7 @@ export interface Client {
   pin: boolean;
   created_at: string;
   updated_at: string;
+  session_count?: number; // 클라이언트와 연결된 세션 개수
 }
 
 export interface CreateClientRequest {

@@ -36,7 +36,9 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
         setTemplates(response.templates);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : '템플릿 목록 조회에 실패했습니다.'
+          err instanceof Error
+            ? err.message
+            : '템플릿 목록 조회에 실패했습니다.'
         );
       } finally {
         setIsLoading(false);
@@ -81,15 +83,13 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
       {/* 헤더 */}
       <div>
         <Title as="h2">상담 노트 만들기</Title>
-        <Text className="mt-2 text-fg-muted">
-          생성할 템플릿을 선택하세요
-        </Text>
+        <Text className="mt-2 text-fg-muted">생성할 템플릿을 선택하세요</Text>
       </div>
 
       {/* 전사 텍스트 없음 경고 */}
       {!transcribedText && (
-        <div className="rounded-lg border border-warning bg-warning/10 p-4">
-          <Text className="text-sm text-warning-foreground">
+        <div className="border-warning bg-warning/10 rounded-lg border p-4">
+          <Text className="text-warning-foreground text-sm">
             전사 내용이 없어 상담 노트를 생성할 수 없습니다.
           </Text>
         </div>

@@ -21,22 +21,19 @@ interface CreateProgressNoteResponse {
 export async function createProgressNote(
   params: CreateProgressNoteParams
 ): Promise<CreateProgressNoteResponse> {
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/progress-note`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({
-        session_id: params.sessionId,
-        user_id: params.userId,
-        template_id: params.templateId,
-        transcribed_text: params.transcribedText,
-      }),
-    }
-  );
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/progress-note`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({
+      session_id: params.sessionId,
+      user_id: params.userId,
+      template_id: params.templateId,
+      transcribed_text: params.transcribedText,
+    }),
+  });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

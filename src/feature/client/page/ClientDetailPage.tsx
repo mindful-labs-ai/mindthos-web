@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { useToast } from '@/components/ui/composites/Toast';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
@@ -11,6 +12,14 @@ import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
 import { AddClientModal } from '../components/AddClientModal';
+import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
+import { CreateAnalysisModal } from '../components/CreateAnalysisModal';
+import {
+  useClientAnalyses,
+  useClientAnalysisStatus,
+  useClientTemplates,
+  useCreateClientAnalysis,
+} from '../hooks/useClientAnalysis';
 import { useClientList } from '../hooks/useClientList';
 
 type TabType = 'history' | 'analyze';
@@ -20,7 +29,12 @@ export const ClientDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = React.useState<TabType>('history');
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
+  const [pollingVersion, setPollingVersion] = React.useState<number | null>(
+    null
+  );
   const userId = useAuthStore((state) => state.userId);
+  const { toast } = useToast();
 
   // 클라이언트 목록 조회
   const { clients, isLoading: isLoadingClients } = useClientList();
@@ -29,6 +43,34 @@ export const ClientDetailPage: React.FC = () => {
   const { data: sessionsData, isLoading: isLoadingSessions } = useSessionList({
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
+  });
+
+  // 클라이언트 분석 관련 hooks
+  const { data: templates } = useClientTemplates();
+  const { data: analyses = [], isLoading: isLoadingAnalyses } =
+    useClientAnalyses(clientId || '');
+  const createAnalysisMutation = useCreateClientAnalysis();
+
+  // 폴링 상태 조회
+  useClientAnalysisStatus({
+    clientId: clientId || '',
+    version: pollingVersion || 0,
+    enabled: !!clientId && !!pollingVersion,
+    onComplete: () => {
+      toast({
+        title: '클라이언트 분석 완료',
+        description: '클라이언트 분석이 완료되었습니다.',
+        duration: 3000,
+      });
+      setPollingVersion(null);
+    },
+    onError: (error) => {
+      toast({
+        title: '분석 상태 조회 실패',
+        description: error.message,
+        duration: 3000,
+      });
+    },
   });
 
   // 현재 클라이언트 찾기
@@ -98,6 +140,47 @@ export const ClientDetailPage: React.FC = () => {
     });
   }, [clientSessions, client]);
 
+  // 클라이언트 분석 생성 핸들러
+  const handleCreateAnalysis = async (data: {
+    sessionIds: string[];
+    aiSupervisionTemplateId: number;
+    profilingTemplateId: number;
+    psychotherapyPlanTemplateId: number;
+  }) => {
+    if (!clientId) return;
+
+    try {
+      const response = await createAnalysisMutation.mutateAsync({
+        client_id: clientId,
+        session_ids: data.sessionIds,
+        ai_supervision_template_id: data.aiSupervisionTemplateId,
+        profiling_template_id: data.profilingTemplateId,
+        psychotherapy_plan_template_id: data.psychotherapyPlanTemplateId,
+      });
+
+      toast({
+        title: '분석 시작',
+        description: '백그라운드에서 클라이언트 분석을 진행하고 있습니다.',
+        duration: 3000,
+      });
+
+      // 폴링 시작
+      setPollingVersion(response.version);
+
+      // 분석 탭으로 이동
+      setActiveTab('analyze');
+    } catch (error) {
+      console.error('Failed to create analysis:', error);
+      toast({
+        title: '분석 실패',
+        description:
+          error instanceof Error ? error.message : '분석 생성에 실패했습니다.',
+        duration: 3000,
+      });
+      throw error;
+    }
+  };
+
   // 로딩 중
   if (isLoadingClients || isLoadingSessions) {
     return (
@@ -130,15 +213,10 @@ export const ClientDetailPage: React.FC = () => {
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
-              className="hover:bg-surface-hover rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
-            >
-              다른 분석 기록
-            </button>
-            <button
-              type="button"
+              onClick={() => setIsAnalysisModalOpen(true)}
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
             >
-              클라이언트 분석 가능
+              클라이언트 분석
             </button>
           </div>
         </div>
@@ -253,8 +331,11 @@ export const ClientDetailPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <div className="flex min-h-[400px] items-center justify-center px-12 py-6">
-            <p className="text-fg-muted">분석 기능 준비 중입니다.</p>
+          <div className="px-12 py-6">
+            <ClientAnalysisTab
+              analyses={analyses}
+              isLoading={isLoadingAnalyses}
+            />
           </div>
         )}
       </div>
@@ -264,6 +345,15 @@ export const ClientDetailPage: React.FC = () => {
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         initialData={client}
+      />
+
+      {/* 클라이언트 분석 모달 */}
+      <CreateAnalysisModal
+        open={isAnalysisModalOpen}
+        onOpenChange={setIsAnalysisModalOpen}
+        templates={templates}
+        sessions={clientSessions.map((s) => s.session)}
+        onCreateAnalysis={handleCreateAnalysis}
       />
     </div>
   );

@@ -71,12 +71,18 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         });
 
         if (!response.success) {
-          throw new Error(response.message || '플랜 업그레이드에 실패했습니다.');
+          throw new Error(
+            response.message || '플랜 업그레이드에 실패했습니다.'
+          );
         }
 
         // 크레딧 관련 쿼리 invalidate
-        await queryClient.invalidateQueries({ queryKey: ['creditInfo', userId] });
-        await queryClient.invalidateQueries({ queryKey: ['subscription', userId] });
+        await queryClient.invalidateQueries({
+          queryKey: ['creditInfo', userId],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['subscription', userId],
+        });
 
         toast({
           title: '플랜 업그레이드 완료',

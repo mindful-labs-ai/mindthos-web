@@ -33,8 +33,12 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   const [searchQuery, setSearchQuery] = React.useState('');
 
   // dropdown 모드일 때는 controlled, 아니면 internal state 사용
-  const isOpen = variant === 'dropdown' ? controlledOpen ?? false : internalOpen;
-  const setIsOpen = variant === 'dropdown' ? (controlledOnOpenChange ?? setInternalOpen) : setInternalOpen;
+  const isOpen =
+    variant === 'dropdown' ? (controlledOpen ?? false) : internalOpen;
+  const setIsOpen =
+    variant === 'dropdown'
+      ? (controlledOnOpenChange ?? setInternalOpen)
+      : setInternalOpen;
 
   const filteredClients = clients.filter(
     (client) =>
@@ -117,9 +121,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       <PopUp
         trigger={trigger}
         content={
-          <div className="w-[280px] space-y-2 p-3">
-            {renderClientList()}
-          </div>
+          <div className="w-[280px] space-y-2 p-3">{renderClientList()}</div>
         }
         placement={placement}
         open={isOpen}
@@ -204,7 +206,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           {/* 모든 고객 */}
           <div className="flex min-h-0 flex-1 flex-col space-y-1">
             {searchQuery === '' && (
-              <Text className="flex-shrink-0 text-xs text-muted">모든 고객</Text>
+              <Text className="flex-shrink-0 text-xs text-muted">
+                모든 고객
+              </Text>
             )}
             <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto">
               {filteredClients.length > 0 ? (

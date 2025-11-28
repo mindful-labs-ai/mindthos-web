@@ -10,11 +10,12 @@
  */
 
 import { useState } from 'react';
+
 import { useQueryClient } from '@tanstack/react-query';
-import { useS3Upload } from './useS3Upload';
-import { createSessionBackground } from '../services/sessionService';
-import { calculateTotalCredit } from '../utils/creditCalculator';
+
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
+
+import { createSessionBackground } from '../services/sessionService';
 import type {
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,
@@ -24,6 +25,9 @@ import type {
   PdfFileInfo,
 } from '../types';
 import type { S3UploadError } from '../types/s3Upload.types';
+import { calculateTotalCredit } from '../utils/creditCalculator';
+
+import { useS3Upload } from './useS3Upload';
 
 export interface CreateSessionParams {
   userId: number;
@@ -36,7 +40,9 @@ export interface CreateSessionParams {
 }
 
 export interface UseCreateSessionReturn {
-  createSession: (params: CreateSessionParams) => Promise<CreateSessionBackgroundResponse>;
+  createSession: (
+    params: CreateSessionParams
+  ) => Promise<CreateSessionBackgroundResponse>;
   isCreating: boolean;
   uploadProgress: number;
   error: Error | S3UploadError | null;
@@ -57,7 +63,12 @@ async function extractTextFromPDF(file: File): Promise<string> {
 
 export function useCreateSession(): UseCreateSessionReturn {
   const queryClient = useQueryClient();
-  const { uploadAudio, isUploading, progress, error: uploadError } = useS3Upload();
+  const {
+    uploadAudio,
+    isUploading,
+    progress,
+    error: uploadError,
+  } = useS3Upload();
   const { creditInfo } = useCreditInfo();
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<Error | S3UploadError | null>(null);
@@ -201,7 +212,10 @@ export function useCreateSession(): UseCreateSessionReturn {
 
       return response;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('세션 생성 중 오류가 발생했습니다.');
+      const error =
+        err instanceof Error
+          ? err
+          : new Error('세션 생성 중 오류가 발생했습니다.');
       setError(error);
       throw error;
     } finally {

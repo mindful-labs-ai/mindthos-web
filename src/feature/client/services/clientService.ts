@@ -16,24 +16,59 @@ import type {
 export const clientService = {
   async getClients(request: GetClientsRequest): Promise<GetClientsResponse> {
     try {
-      const { data, error } = await supabase
+      // 클라이언트 정보 조회
+      const { data: clients, error: clientsError } = await supabase
         .from('clients')
         .select('*')
         .eq('counselor_id', request.counselor_id)
         .order('created_at', { ascending: false });
 
-      if (error) {
+      if (clientsError) {
         throw {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '내담자 목록 조회 중 오류가 발생했습니다.',
+          message:
+            clientsError.message || '내담자 목록 조회 중 오류가 발생했습니다.',
         } as ClientApiError;
       }
 
+      if (!clients || clients.length === 0) {
+        return {
+          success: true,
+          clients: [],
+        };
+      }
+
+      // 각 클라이언트의 세션 개수 조회
+      const clientIds = clients.map((client) => client.id);
+      const { data: sessionCounts, error: sessionCountError } = await supabase
+        .from('sessions')
+        .select('client_id')
+        .in('client_id', clientIds);
+
+      if (sessionCountError) {
+        console.error('세션 개수 조회 실패:', sessionCountError);
+      }
+
+      // 클라이언트별 세션 개수 맵 생성
+      const sessionCountMap = new Map<string, number>();
+      if (sessionCounts) {
+        sessionCounts.forEach((session) => {
+          const count = sessionCountMap.get(session.client_id) || 0;
+          sessionCountMap.set(session.client_id, count + 1);
+        });
+      }
+
+      // 클라이언트 데이터에 세션 개수 추가
+      const clientsWithSessionCount = clients.map((client) => ({
+        ...client,
+        session_count: sessionCountMap.get(client.id) || 0,
+      }));
+
       return {
         success: true,
-        clients: data || [],
+        clients: clientsWithSessionCount,
       };
     } catch (error) {
       const apiError = error as ClientApiError;

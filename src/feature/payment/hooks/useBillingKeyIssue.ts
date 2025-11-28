@@ -5,7 +5,8 @@ import type { BillingKeyIssueRequest } from '../types';
 
 export const useBillingKeyIssue = () => {
   const mutation = useMutation({
-    mutationFn: (request: BillingKeyIssueRequest) => billingService.issueBillingKey(request),
+    mutationFn: (request: BillingKeyIssueRequest) =>
+      billingService.issueBillingKey(request),
   });
 
   return {

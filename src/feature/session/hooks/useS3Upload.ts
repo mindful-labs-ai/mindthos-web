@@ -5,11 +5,11 @@
 
 import { useState } from 'react';
 
+import { s3UploadService } from '../services/s3UploadService';
 import type {
   S3UploadError,
   UploadToS3Response,
 } from '../types/s3Upload.types';
-import { s3UploadService } from '../services/s3UploadService';
 
 interface UseS3UploadReturn {
   uploadAudio: (file: File, userId: number) => Promise<UploadToS3Response>;

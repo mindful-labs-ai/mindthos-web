@@ -81,7 +81,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
         <div className="inline-block">
           <PopUp
             trigger={
-              <div className="rounded-lg p-1 text-fg-muted hover:bg-surface-contrast cursor-pointer">
+              <div className="cursor-pointer rounded-lg p-1 text-fg-muted hover:bg-surface-contrast">
                 <FilterIcon fill="currentColor" size={18} />
               </div>
             }

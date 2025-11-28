@@ -26,7 +26,11 @@ export const CardRegistrationModal = ({
   const { toast } = useToast();
   const user = useAuthStore((state) => state.user);
   const userName = useAuthStore((state) => state.userName);
-  const { requestBillingAuth, isLoading: isSdkLoading, error: sdkError } = useTossPayments(customerKey);
+  const {
+    requestBillingAuth,
+    isLoading: isSdkLoading,
+    error: sdkError,
+  } = useTossPayments(customerKey);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // SDK 초기화 에러 표시
@@ -53,7 +57,10 @@ export const CardRegistrationModal = ({
     } catch (error) {
       toast({
         title: '카드 등록 실패',
-        description: error instanceof Error ? error.message : '카드 등록 중 오류가 발생했습니다.',
+        description:
+          error instanceof Error
+            ? error.message
+            : '카드 등록 중 오류가 발생했습니다.',
       });
     } finally {
       setIsSubmitting(false);
@@ -83,16 +90,24 @@ export const CardRegistrationModal = ({
 
         {isSdkLoading && (
           <div className="rounded-md bg-blue-50 p-4">
-            <Text className="text-sm text-blue-800">결제 시스템을 초기화하고 있습니다...</Text>
+            <Text className="text-sm text-blue-800">
+              결제 시스템을 초기화하고 있습니다...
+            </Text>
           </div>
         )}
 
         <Text className="text-sm text-gray-600">
-          카드 등록하기 버튼을 클릭하면 토스페이먼츠 페이지로 이동하여 카드 정보를 안전하게 등록할 수 있습니다.
+          카드 등록하기 버튼을 클릭하면 토스페이먼츠 페이지로 이동하여 카드
+          정보를 안전하게 등록할 수 있습니다.
         </Text>
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} disabled={isSubmitting} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex-1"
+          >
             취소
           </Button>
           <Button

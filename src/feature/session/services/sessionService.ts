@@ -131,12 +131,33 @@ export async function getSessionList(userId: number): Promise<{
   ]);
 
   // 3. 데이터 결합
-  const result = sessions.map((session) => ({
-    session,
-    transcribe: transcribes?.find((t) => t.session_id === session.id) || null,
-    progressNotes:
-      progressNotes?.filter((pn) => pn.session_id === session.id) || [],
-  }));
+  const result = sessions.map((session) => {
+    const sessionProgressNotes =
+      progressNotes?.filter((pn) => pn.session_id === session.id) || [];
+
+    // 디버깅: 각 세션의 progressNotes 확인
+    console.log(
+      '[getSessionList] Session:',
+      session.id,
+      'Title:',
+      session.title,
+      'progressNotes:',
+      sessionProgressNotes
+    );
+
+    return {
+      session,
+      transcribe: transcribes?.find((t) => t.session_id === session.id) || null,
+      progressNotes: sessionProgressNotes,
+    };
+  });
+
+  console.log(
+    '[getSessionList] Total sessions:',
+    result.length,
+    'All progress_notes from DB:',
+    progressNotes
+  );
 
   return { sessions: result };
 }

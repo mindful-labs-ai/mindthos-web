@@ -1,7 +1,7 @@
 # Database Schema Documentation
 
-> 이 문서는 Mindthos 데이터베이스의 최종 스키마를 정의합니다.
-> SDD 프로세스에서 AI가 테이블 구조와 UI의 일관성을 유지하기 위한 참조 자료로 사용됩니다.
+> 이 문서는 Mindthos 데이터베이스의 최종 스키마를 정의합니다. SDD 프로세스에서
+> AI가 테이블 구조와 UI의 일관성을 유지하기 위한 참조 자료로 사용됩니다.
 
 ## 목차
 
@@ -38,7 +38,8 @@
 
 ### 1. users (사용자)
 
-**설명:** 시스템 사용자 (상담사) 정보를 관리합니다. auth.users와 email로 연동됩니다.
+**설명:** 시스템 사용자 (상담사) 정보를 관리합니다. auth.users와 email로
+연동됩니다.
 
 | 컬럼                | 타입         | 제약     | 설명                               |
 | ------------------- | ------------ | -------- | ---------------------------------- |
@@ -65,20 +66,20 @@
 
 **설명:** 상담 대상자 정보를 관리합니다. 각 내담자는 UUID로 고유하게 식별됩니다.
 
-| 컬럼           | 타입         | 제약     | 설명                           |
-| -------------- | ------------ | -------- | ------------------------------ |
-| id             | uuid         | PK       | 내담자 고유 ID (UUID)          |
-| counselor_id   | bigint       | NOT NULL | 담당 상담사 ID (users.id 참조) |
-| name           | varchar(12)  | NOT NULL | 이름 (필수)                    |
-| phone_number   | varchar(15)  |          | 전화번호                       |
-| email          | varchar(320) |          | 이메일                         |
-| counsel_theme  | varchar(100) |          | 상담 주제                      |
-| counsel_number | smallint     |          | 회기 수                        |
-| counsel_done   | boolean      |          | 상담 종결 여부 (default: false)|
-| memo           | varchar(200) |          | 메모 (동반인 정보 등)          |
-| pin            | boolean      |          | 고정 여부                      |
-| created_at     | timestamptz  | NOT NULL | 생성 시각 (default: now())     |
-| updated_at     | timestamptz  | NOT NULL | 수정 시각 (default: now())     |
+| 컬럼           | 타입         | 제약     | 설명                            |
+| -------------- | ------------ | -------- | ------------------------------- |
+| id             | uuid         | PK       | 내담자 고유 ID (UUID)           |
+| counselor_id   | bigint       | NOT NULL | 담당 상담사 ID (users.id 참조)  |
+| name           | varchar(12)  | NOT NULL | 이름 (필수)                     |
+| phone_number   | varchar(15)  |          | 전화번호                        |
+| email          | varchar(320) |          | 이메일                          |
+| counsel_theme  | varchar(100) |          | 상담 주제                       |
+| counsel_number | smallint     |          | 회기 수                         |
+| counsel_done   | boolean      |          | 상담 종결 여부 (default: false) |
+| memo           | varchar(200) |          | 메모 (동반인 정보 등)           |
+| pin            | boolean      |          | 고정 여부                       |
+| created_at     | timestamptz  | NOT NULL | 생성 시각 (default: now())      |
+| updated_at     | timestamptz  | NOT NULL | 수정 시각 (default: now())      |
 
 **주요 특징:**
 
@@ -227,19 +228,20 @@
 
 **설명:** 서비스 요금제 정보를 관리합니다.
 
-| 컬럼         | 타입        | 제약             | 설명                                   |
-| ------------ | ----------- | ---------------- | -------------------------------------- |
-| id           | uuid        | PK               | 플랜 ID                                |
-| type         | varchar(15) | UNIQUE           | 플랜 타입 (고유)                       |
-| description  | varchar(50) |                  | 플랜 설명 (50자)                       |
-| price        | integer     |                  | 가격                                   |
-| total_credit | integer     |                  | 총 크레딧                              |
+| 컬럼         | 타입        | 제약             | 설명                                     |
+| ------------ | ----------- | ---------------- | ---------------------------------------- |
+| id           | uuid        | PK               | 플랜 ID                                  |
+| type         | varchar(15) | UNIQUE           | 플랜 타입 (고유)                         |
+| description  | varchar(50) |                  | 플랜 설명 (50자)                         |
+| price        | integer     |                  | 가격                                     |
+| total_credit | integer     |                  | 총 크레딧                                |
 | is_year      | boolean     | NOT NULL (false) | 연간 구독 여부 (false: 월간, true: 연간) |
 
 **주요 특징:**
 
 - type: 플랜 타입으로 고유 식별 (예: 'PLUS', 'PRO', 'PLUS_YEAR', 'PRO_YEAR')
-- total_credit: 플랜별 제공되는 통합 크레딧 (음성 전사, 요약 생성 등 모든 기능에 공통 사용)
+- total_credit: 플랜별 제공되는 통합 크레딧 (음성 전사, 요약 생성 등 모든 기능에
+  공통 사용)
 - is_year: 구독 주기 구분 (false: 월간 구독, true: 연간 구독)
 
 ---
@@ -334,10 +336,13 @@
 
 **주요 특징:**
 
-- use_type: 기능 타입 (예: 'audio_transcribe', 'summary_generate', 'template_ai_generate')
+- use_type: 기능 타입 (예: 'audio_transcribe', 'summary_generate',
+  'template_ai_generate')
 - feature_metadata: 기능별 상세 정보를 JSONB로 저장 (모든 메타데이터 통합 관리)
-  - 음성 전사: `{"session_id": "uuid", "duration_seconds": 185, "file_size_mb": 12.5}`
-  - 요약 생성: `{"session_id": "uuid", "text_length": 5000, "summary_type": "detailed"}`
+  - 음성 전사:
+    `{"session_id": "uuid", "duration_seconds": 185, "file_size_mb": 12.5}`
+  - 요약 생성:
+    `{"session_id": "uuid", "text_length": 5000, "summary_type": "detailed"}`
   - 템플릿 AI 생성: `{"template_count": 5, "prompt_tokens": 1500}`
   - 대시보드 분석: `{"analysis_type": "monthly_report", "data_range_days": 30}`
 - GIN 인덱스로 JSONB 검색 성능 최적화
@@ -520,7 +525,8 @@
 ### 동기화 규칙
 
 - auth.users ↔ public.users: email 기반 동기화
-- auth.users.email_confirmed_at → public.users.email_verified_at: 트리거로 실시간 동기화
+- auth.users.email_confirmed_at → public.users.email_verified_at: 트리거로
+  실시간 동기화
 
 ---
 
@@ -558,7 +564,8 @@
 ### v1.8 (2025-11-18)
 
 - clients.counsel_done 추가 (상담 종결 여부)
-- user 헬퍼 함수 업데이트 (email_verified_at, organization, default_template_id 추가)
+- user 헬퍼 함수 업데이트 (email_verified_at, organization, default_template_id
+  추가)
 
 ### v1.7 (2025-11-18)
 
@@ -581,7 +588,8 @@
 - **문서 수정:** 실제 데이터베이스 스키마에 맞춰 SCHEMA 전면 수정
 - ENUM 타입 정확히 반영 (onboarding_state, payment_status, card_type)
 - 전체 14개 테이블 상세 문서화 (기존 4개에서 확장)
-- templates, progress_notes, transcribes, template_pin, plans, subscribe, card, payments, usage, credit_log 추가
+- templates, progress_notes, transcribes, template_pin, plans, subscribe, card,
+  payments, usage, credit_log 추가
 - 각 테이블의 실제 컬럼 및 제약사항 정확히 반영
 
 ### v1.3 (2025-11-18)

@@ -1,4 +1,9 @@
-export type SessionProcessingStatus = 'pending' | 'transcribing' | 'generating_note' | 'succeeded' | 'failed';
+export type SessionProcessingStatus =
+  | 'pending'
+  | 'transcribing'
+  | 'generating_note'
+  | 'succeeded'
+  | 'failed';
 
 export interface AudioMetaData {
   duration_seconds?: number;

@@ -22,6 +22,7 @@ import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+
 import { CardInfo } from '../components/CardInfo';
 
 export const SettingsPage: React.FC = () => {

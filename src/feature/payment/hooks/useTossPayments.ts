@@ -1,5 +1,6 @@
-import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
 import { useEffect, useState } from 'react';
+
+import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
 
 import { TOSS_PAYMENTS_CONFIG } from '../config/tossPayments';
 

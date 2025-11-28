@@ -77,7 +77,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({ cardType, cardNumber }) => {
         disabled={isDeleting}
         variant="ghost"
         size="sm"
-        className="text-fg-muted hover:text-error"
+        className="hover:text-error text-fg-muted"
       >
         {isDeleting ? '삭제 중...' : '삭제'}
       </Button>

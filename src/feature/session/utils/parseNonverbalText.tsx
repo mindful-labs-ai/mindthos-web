@@ -73,31 +73,29 @@ const TAG_LABELS: Record<string, string> = {
 /**
  * 비언어 태그 유형별 스타일 (배경색 + 텍스트 색상)
  */
-const TAG_STYLES: Record<
-  string,
-  { bg: string; text: string; border: string }
-> = {
-  S: {
-    bg: 'bg-gray-100 dark:bg-gray-800',
-    text: 'text-gray-700 dark:text-gray-300',
-    border: 'border-gray-300 dark:border-gray-600',
-  }, // 침묵 - 회색
-  A: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-700 dark:text-blue-300',
-    border: 'border-blue-300 dark:border-blue-600',
-  }, // 행동 - 파란색
-  E: {
-    bg: 'bg-amber-100 dark:bg-amber-900/30',
-    text: 'text-amber-700 dark:text-amber-300',
-    border: 'border-amber-300 dark:border-amber-600',
-  }, // 감정/강조 - 주황색
-  O: {
-    bg: 'bg-purple-100 dark:bg-purple-900/30',
-    text: 'text-purple-700 dark:text-purple-300',
-    border: 'border-purple-300 dark:border-purple-600',
-  }, // 겹침 - 보라색
-};
+const TAG_STYLES: Record<string, { bg: string; text: string; border: string }> =
+  {
+    S: {
+      bg: 'bg-gray-100 dark:bg-gray-800',
+      text: 'text-gray-700 dark:text-gray-300',
+      border: 'border-gray-300 dark:border-gray-600',
+    }, // 침묵 - 회색
+    A: {
+      bg: 'bg-blue-100 dark:bg-blue-900/30',
+      text: 'text-blue-700 dark:text-blue-300',
+      border: 'border-blue-300 dark:border-blue-600',
+    }, // 행동 - 파란색
+    E: {
+      bg: 'bg-amber-100 dark:bg-amber-900/30',
+      text: 'text-amber-700 dark:text-amber-300',
+      border: 'border-amber-300 dark:border-amber-600',
+    }, // 감정/강조 - 주황색
+    O: {
+      bg: 'bg-purple-100 dark:bg-purple-900/30',
+      text: 'text-purple-700 dark:text-purple-300',
+      border: 'border-purple-300 dark:border-purple-600',
+    }, // 겹침 - 보라색
+  };
 
 /**
  * TextPart 배열을 React 엘리먼트로 렌더링
@@ -131,7 +129,7 @@ export function renderTextWithNonverbal(
     return (
       <span
         key={index}
-        className={`mx-1 inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium align-middle ${styles.bg} ${styles.text} ${styles.border}`}
+        className={`mx-1 inline-flex items-center rounded-md border px-2 py-0.5 align-middle text-xs font-medium ${styles.bg} ${styles.text} ${styles.border}`}
       >
         {label}
       </span>

@@ -37,7 +37,7 @@ const HomePage = () => {
   const { clients } = useClientList();
 
   // 세션 생성 Hook
-  const { createSession, isCreating, uploadProgress, createdSessionId } = useCreateSession();
+  const { createSession, createdSessionId } = useCreateSession();
 
   // 세션 처리 상태 폴링 Hook
   useSessionStatus({
@@ -148,7 +148,8 @@ const HomePage = () => {
       // 세션 생성 시작 알림
       toast({
         title: '상담 기록 생성 중',
-        description: '오디오를 분석하고 상담노트를 작성하고 있습니다. 잠시만 기다려주세요.',
+        description:
+          '오디오를 분석하고 상담노트를 작성하고 있습니다. 잠시만 기다려주세요.',
         duration: 5000,
       });
     } catch (error) {
@@ -230,18 +231,31 @@ const HomePage = () => {
               <p className="text-fg-muted">세션 목록을 불러오는 중...</p>
             </div>
           ) : sessionsWithTranscribes.length > 0 ? (
-            sessionsWithTranscribes.map(({ session, transcribe }) => (
-              <SessionCard
-                key={session.id}
-                title={session.title || '제목 없음'}
-                content={getSessionContent(transcribe)}
-                date={formatKoreanDate(new Date(session.created_at))}
-                processingStatus={session.processing_status}
-                progressPercentage={session.progress_percentage}
-                currentStep={session.current_step}
-                onClick={() => handleSessionClick(session.id)}
-              />
-            ))
+            sessionsWithTranscribes.map(
+              ({ session, transcribe, progressNotes }) => {
+                // 디버깅: 각 세션의 progressNotes 확인
+                console.log(
+                  '[HomePage] Session:',
+                  session.id,
+                  'progressNotes:',
+                  progressNotes
+                );
+
+                return (
+                  <SessionCard
+                    key={session.id}
+                    title={session.title || '제목 없음'}
+                    content={getSessionContent(transcribe)}
+                    date={formatKoreanDate(new Date(session.created_at))}
+                    processingStatus={session.processing_status}
+                    progressPercentage={session.progress_percentage}
+                    currentStep={session.current_step}
+                    progressNotes={progressNotes}
+                    onClick={() => handleSessionClick(session.id)}
+                  />
+                );
+              }
+            )
           ) : (
             <div className="rounded-lg border border-surface-strong bg-surface-contrast p-8 text-center">
               <p className="text-fg-muted">
