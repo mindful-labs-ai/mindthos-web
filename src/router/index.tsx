@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import App from '@/App';
+import AuthCallbackPage from '@/feature/auth/page/AuthCallbackPage';
 import AuthPage from '@/feature/auth/page/AuthPage';
 import EmailVerificationPage from '@/feature/auth/page/EmailVerificationPage';
 import { ClientDetailPage } from '@/feature/client/page/ClientDetailPage';
@@ -84,6 +85,10 @@ export const router = createBrowserRouter([
             <AuthPage />
           </PublicOnlyRoute>
         ),
+      },
+      {
+        path: ROUTES.AUTH_CALLBACK,
+        element: <AuthCallbackPage />,
       },
       {
         path: ROUTES.EMAIL_VERIFICATION,
