@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { Mail } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { ROUTES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
+import { MailIcon } from '@/shared/icons';
 
 export default function EmailVerificationPage() {
   const location = useLocation();
@@ -67,7 +67,7 @@ export default function EmailVerificationPage() {
         <div className="rounded-xl bg-white p-8 text-center shadow-sm">
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-primary-50 p-4">
-              <Mail className="h-12 w-12 text-primary-500" />
+              <MailIcon className="h-12 w-12 text-primary-500" />
             </div>
           </div>
 

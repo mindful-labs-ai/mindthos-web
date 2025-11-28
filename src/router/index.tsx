@@ -1,23 +1,28 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import App from '@/App';
+import AuthCallbackPage from '@/feature/auth/page/AuthCallbackPage';
 import AuthPage from '@/feature/auth/page/AuthPage';
 import EmailVerificationPage from '@/feature/auth/page/EmailVerificationPage';
+import { ClientDetailPage } from '@/feature/client/page/ClientDetailPage';
 import { ClientListPage } from '@/feature/client/page/ClientListPage';
 import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
 import HomePage from '@/feature/home/page/HomePage';
+import { PaymentFail } from '@/feature/payment/components/PaymentFail';
+import { PaymentSuccess } from '@/feature/payment/components/PaymentSuccess';
+import { SessionDetailPage } from '@/feature/session/page/SessionDetailPage';
 import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
 
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { PublicOnlyRoute } from './components/PublicOnlyRoute';
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';
 import SideTabLayout from './layouts/SideTabLayout';
+import { ProtectedRoute } from './protecter/ProtectedRoute';
+import { PublicOnlyRoute } from './protecter/PublicOnlyRoute';
 
 /**
  * 애플리케이션 라우터 설정
@@ -46,8 +51,18 @@ export const router = createBrowserRouter([
             element: <ClientListPage />,
           },
           {
-            path: ROUTES.HISTORY,
+            path: '/clients/:clientId',
+            element: <ClientDetailPage />,
+          },
+          {
+            path: ROUTES.SESSIONS,
             element: <SessionHistoryPage />,
+            children: [
+              {
+                path: ':sessionId',
+                element: <SessionDetailPage />,
+              },
+            ],
           },
           {
             path: ROUTES.TEMPLATE,
@@ -72,12 +87,32 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: ROUTES.AUTH_CALLBACK,
+        element: <AuthCallbackPage />,
+      },
+      {
         path: ROUTES.EMAIL_VERIFICATION,
         element: <EmailVerificationPage />,
       },
       {
         path: ROUTES.TERMS,
         element: <TermsPage />,
+      },
+      {
+        path: ROUTES.PAYMENT_SUCCESS,
+        element: (
+          <ProtectedRoute>
+            <PaymentSuccess />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PAYMENT_FAIL,
+        element: (
+          <ProtectedRoute>
+            <PaymentFail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.ERROR_TEST,

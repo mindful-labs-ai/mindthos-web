@@ -10,7 +10,8 @@ export type ButtonTone =
   | 'secondary'
   | 'accent'
   | 'neutral'
-  | 'surface';
+  | 'surface'
+  | 'danger';
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
@@ -64,6 +65,13 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
     outline: 'border-2 border-border text-fg bg-transparent hover:bg-surface',
     ghost: 'bg-transparent text-fg hover:bg-surface',
     soft: 'bg-surface-contrast text-fg hover:bg-border',
+  },
+  danger: {
+    solid: 'bg-danger text-surface hover:bg-danger/90',
+    outline:
+      'border-2 border-danger text-danger bg-transparent hover:bg-danger/10',
+    ghost: 'bg-transparent text-danger hover:bg-danger/10',
+    soft: 'bg-danger/10 text-danger hover:bg-danger/20',
   },
 };
 

@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { ArrowRight } from 'lucide-react';
-
 import { Button, Text, Title } from '@/components/ui';
+import { authService } from '@/services/auth/authService';
+import { ArrowRightIcon } from '@/shared/icons';
 
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
@@ -11,10 +11,29 @@ type FormStateType = 'signIn' | 'signUp';
 
 const AuthPage = () => {
   const [formState, setFormState] = React.useState<FormStateType>('signIn');
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const handleStateChange = () => {
     if (formState === 'signIn') setFormState('signUp');
     if (formState === 'signUp') setFormState('signIn');
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsGoogleLoading(true);
+
+    try {
+      await authService.loginWithGoogle();
+      // OAuth는 리다이렉트로 처리됨
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Google 로그인에 실패했습니다. 다시 시도해주세요.'
+      );
+      setIsGoogleLoading(false);
+    }
   };
   return (
     <div className="flex h-full w-full">
@@ -27,7 +46,7 @@ const AuthPage = () => {
             className="h-8 w-auto"
           />
           <Button
-            iconRight={<ArrowRight size={18} />}
+            iconRight={<ArrowRightIcon size={18} />}
             size="md"
             tone="secondary"
             variant="outline"
@@ -55,6 +74,12 @@ const AuthPage = () => {
 
             {/* Form Section */}
             <div className="w-full">
+              {error && (
+                <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
               {formState === 'signIn' ? (
                 <SignInForm />
               ) : formState === 'signUp' ? (
@@ -79,6 +104,8 @@ const AuthPage = () => {
                   variant="outline"
                   tone="secondary"
                   className="w-full"
+                  onClick={handleGoogleLogin}
+                  disabled={isGoogleLoading}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -104,9 +131,11 @@ const AuthPage = () => {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  {formState === 'signIn'
-                    ? 'Google로 계속하기'
-                    : 'Google로 회원가입'}
+                  {isGoogleLoading
+                    ? 'Google 로그인 중...'
+                    : formState === 'signIn'
+                      ? 'Google로 계속하기'
+                      : 'Google로 회원가입'}
                 </Button>
                 {formState === 'signUp' && (
                   <Text className="mt-2 text-center text-xs text-muted">

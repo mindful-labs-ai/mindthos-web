@@ -3,6 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export type TabSize = 'sm' | 'md' | 'lg' | 'free';
+export type TabVariant = 'pill' | 'underline';
 
 export interface TabItem {
   value: string;
@@ -11,59 +12,37 @@ export interface TabItem {
 }
 
 export interface TabProps {
-  /**
-   * Tab items
-   */
   items: TabItem[];
-  /**
-   * Controlled value
-   */
   value?: string;
-  /**
-   * Default value (uncontrolled)
-   */
   defaultValue?: string;
-  /**
-   * Change handler
-   */
   onValueChange?: (value: string) => void;
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: TabSize;
-  /**
-   * Additional className for the tab list
-   */
+  variant?: TabVariant;
   className?: string;
 }
 
-const sizeStyles: Record<TabSize, string> = {
+const pillSizeStyles: Record<TabSize, string> = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-sm',
   lg: 'px-5 py-2.5 text-base',
   free: '',
 };
 
+const underlineSizeStyles: Record<TabSize, string> = {
+  sm: 'px-3 py-2 text-sm',
+  md: 'px-4 py-3 text-sm',
+  lg: 'px-5 py-3.5 text-base',
+  free: '',
+};
+
 /**
- * Tab component
- *
- * Accessible tabs with keyboard navigation.
- * Supports controlled and uncontrolled modes.
- *
- * **A11y**: role="tablist" with proper tab/tabpanel association, aria-selected, arrow key navigation, Home/End.
- * **Keyboard**: Arrow keys to navigate, Home/End to jump to first/last, Enter/Space to select.
+ * Tab - 탭 네비게이션 컴포넌트
+ * controlled/uncontrolled 모드 지원
+ * role="tablist"로 접근성 준수, 화살표 키 네비게이션
  *
  * @example
- * ```tsx
- * <Tab
- *   items={[
- *     { value: 'tab1', label: 'Tab 1' },
- *     { value: 'tab2', label: 'Tab 2', disabled: true },
- *   ]}
- *   defaultValue="tab1"
- * />
- * ```
+ * <Tab items={[{value:'tab1',label:'탭1'}]} defaultValue="tab1" />
+ * <Tab items={[{value:'tab1',label:'탭1'}]} variant="underline" />
  */
 export const Tab: React.FC<TabProps> = ({
   items,
@@ -71,6 +50,7 @@ export const Tab: React.FC<TabProps> = ({
   defaultValue,
   onValueChange,
   size = 'md',
+  variant = 'pill',
   className,
 }) => {
   const [uncontrolledValue, setUncontrolledValue] = React.useState(
@@ -78,6 +58,9 @@ export const Tab: React.FC<TabProps> = ({
   );
   const isControlled = controlledValue !== undefined;
   const selectedValue = isControlled ? controlledValue : uncontrolledValue;
+
+  const sizeStyles =
+    variant === 'underline' ? underlineSizeStyles : pillSizeStyles;
 
   const handleSelect = (value: string) => {
     if (!isControlled) {
@@ -125,7 +108,10 @@ export const Tab: React.FC<TabProps> = ({
     <div
       role="tablist"
       className={cn(
-        'inline-flex items-center gap-1 rounded-[var(--radius-md)] bg-surface-contrast p-1',
+        'inline-flex items-center',
+        variant === 'pill'
+          ? 'gap-1 rounded-[var(--radius-md)] bg-surface-contrast p-1'
+          : 'gap-2',
         className
       )}
     >
@@ -143,14 +129,24 @@ export const Tab: React.FC<TabProps> = ({
             onClick={() => handleSelect(item.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'rounded-[var(--radius-sm)] font-medium',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface-contrast',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'whitespace-nowrap font-medium transition-colors duration-200',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'min-w-32 items-center text-center disabled:cursor-not-allowed disabled:opacity-50',
               sizeStyles[size],
-              isSelected
-                ? 'bg-surface text-fg shadow-sm'
-                : 'bg-transparent text-fg-muted hover:text-fg'
+              variant === 'pill'
+                ? cn(
+                    'rounded-[var(--radius-sm)]',
+                    'focus-visible:ring-offset-2 focus-visible:ring-offset-surface-contrast',
+                    isSelected
+                      ? 'bg-surface text-fg shadow-sm'
+                      : 'bg-transparent text-fg-muted hover:text-fg'
+                  )
+                : cn(
+                    'relative rounded-t-lg border border-transparent',
+                    isSelected
+                      ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-primary shadow-sm'
+                      : 'border-b-0 border-l-border border-r-border border-t-border text-fg-muted hover:text-fg'
+                  )
             )}
           >
             {item.label}

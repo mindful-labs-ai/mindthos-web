@@ -6,16 +6,14 @@ import { useOnboardingStore } from '@/stores/onboardingStore';
 
 import { useOnboardingForm } from '../hooks/useOnboardingForm';
 
-import { ConfirmModal } from './ConfirmModal';
 import { CompleteStep, GuideStep } from './GuideStep';
-import { NameStep } from './NameStep';
-import { PhoneStep } from './PhoneStep';
+import { InfoStep } from './InfoStep';
 import { WritingEffect } from './WritingEffect';
 
 const ONBOARDING_STEPS = [
-  { label: '이름', description: '이름 입력' },
-  { label: '연락처', description: '전화번호 입력' },
-  { label: '가이드', description: '서비스 안내' },
+  { label: '기본정보', description: '정보 입력' },
+  { label: '가이드 1', description: '서비스 안내' },
+  { label: '가이드 2', description: '상세 안내' },
   { label: '완료', description: '시작하기' },
 ];
 
@@ -30,23 +28,18 @@ export function OnboardingModal() {
 
   const renderStep = () => {
     switch (currentStep) {
-      case OnboardingStep.NAME:
+      case OnboardingStep.INFO:
         return (
-          <NameStep
-            value={form.name}
-            onChange={form.setName}
-            onSubmit={form.handleNameSubmit}
-            isSubmitting={form.isSubmitting}
-            error={form.error}
-          />
-        );
-
-      case OnboardingStep.PHONE:
-        return (
-          <PhoneStep
-            value={form.phone}
-            onChange={form.setPhone}
-            onSubmit={form.handlePhoneSubmit}
+          <InfoStep
+            name={form.name}
+            phoneNumber={form.phone}
+            selectedOrganization={form.selectedOrganization}
+            customOrganization={form.customOrganization}
+            onNameChange={form.setName}
+            onPhoneChange={form.setPhone}
+            onOrganizationSelect={form.setSelectedOrganization}
+            onCustomOrganizationChange={form.setCustomOrganization}
+            onSubmit={form.handleInfoSubmit}
             isSubmitting={form.isSubmitting}
             error={form.error}
           />
@@ -85,6 +78,37 @@ export function OnboardingModal() {
 
       case OnboardingStep.GUIDE_2:
         return (
+          <GuideStep
+            title="상세 기능 안내"
+            onNext={form.handleNext}
+            isSubmitting={form.isSubmitting}
+            error={form.error}
+          >
+            <div className="mt-4 space-y-3 text-left">
+              <div className="rounded-lg bg-surface-contrast p-4">
+                <h3 className="font-semibold text-fg">클라이언트 관리</h3>
+                <p className="mt-1 text-sm text-fg-muted">
+                  상담 고객을 등록하고 관리하세요
+                </p>
+              </div>
+              <div className="rounded-lg bg-surface-contrast p-4">
+                <h3 className="font-semibold text-fg">세션 기록</h3>
+                <p className="mt-1 text-sm text-fg-muted">
+                  상담 내용을 효과적으로 기록하세요
+                </p>
+              </div>
+              <div className="rounded-lg bg-surface-contrast p-4">
+                <h3 className="font-semibold text-fg">템플릿 활용</h3>
+                <p className="mt-1 text-sm text-fg-muted">
+                  미리 만들어진 템플릿을 활용하세요
+                </p>
+              </div>
+            </div>
+          </GuideStep>
+        );
+
+      case OnboardingStep.DONE:
+        return (
           <CompleteStep
             onComplete={form.handleComplete}
             isSubmitting={form.isSubmitting}
@@ -98,43 +122,29 @@ export function OnboardingModal() {
   };
 
   return (
-    <>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-title"
+    >
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="onboarding-title"
+        className={cn(
+          'relative w-full max-w-md',
+          'rounded-lg border-2 border-border bg-surface shadow-2xl',
+          'p-8'
+        )}
       >
-        <div
-          className={cn(
-            'relative w-full max-w-md',
-            'rounded-lg border-2 border-border bg-surface shadow-2xl',
-            'p-8'
-          )}
-        >
-          <Stepper steps={ONBOARDING_STEPS} currentStep={currentStep} />
+        <Stepper steps={ONBOARDING_STEPS} currentStep={currentStep} />
 
-          <div className="relative py-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
+        <div className="relative py-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-border" />
           </div>
-
-          {form.writingEffect ? <WritingEffect /> : renderStep()}
         </div>
-      </div>
 
-      <ConfirmModal
-        open={form.showConfirmModal}
-        onOpenChange={form.setShowConfirmModal}
-        type={form.confirmationType}
-        value={form.confirmationType === 'name' ? form.name : form.phone}
-        onConfirm={
-          form.confirmationType === 'name'
-            ? form.handleConfirmName
-            : form.handleConfirmPhone
-        }
-      />
-    </>
+        {form.writingEffect ? <WritingEffect /> : renderStep()}
+      </div>
+    </div>
   );
 }

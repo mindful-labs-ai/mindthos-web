@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { Check, Minus } from 'lucide-react';
-
 import { cn } from '@/lib/cn';
+import { CheckIcon, MinusIcon } from '@/shared/icons';
 
 export type CheckBoxSize = 'sm' | 'md' | 'lg' | 'free';
 export type CheckBoxTone = 'primary' | 'secondary' | 'accent' | 'neutral';
@@ -107,9 +106,9 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
             )}
           >
             {indeterminate ? (
-              <Minus size={iconSizeMap[size]} strokeWidth={3} />
+              <MinusIcon size={iconSizeMap[size]} strokeWidth={3} />
             ) : (
-              <Check size={iconSizeMap[size]} strokeWidth={3} />
+              <CheckIcon size={iconSizeMap[size]} strokeWidth={3} />
             )}
           </div>
         </div>
