@@ -1,12 +1,25 @@
+export type SessionProcessingStatus = 'pending' | 'transcribing' | 'generating_note' | 'succeeded' | 'failed';
+
+export interface AudioMetaData {
+  duration_seconds?: number;
+  s3_key?: string;
+  file_size_mb?: number;
+  [key: string]: unknown;
+}
+
 export interface Session {
   id: string;
   user_id: string;
   client_id: string | null; // 내담자 ID (clients.id 참조, uuid)
   title: string | null;
   description: string | null;
-  audio_meta_data: Record<string, unknown> | null;
+  audio_meta_data: AudioMetaData | null;
   audio_url: string | null; // 오디오 파일 URL (ObjectURL 또는 public 경로)
   created_at: string;
+  processing_status?: SessionProcessingStatus; // 백그라운드 처리 상태
+  progress_percentage?: number; // 진행률 (0-100%)
+  current_step?: string; // 현재 진행 단계 설명
+  error_message?: string; // 에러 메시지
 }
 
 // ============================================
@@ -38,7 +51,8 @@ export interface TranscribeResult {
 export interface TranscribeContents {
   audio_uuid: string;
   status: 'processing' | 'completing' | 'completed' | 'failed';
-  result: TranscribeResult;
+  raw_output?: string; // Gemini의 원본 응답 (파싱 전)
+  result?: TranscribeResult; // 파싱된 결과
 }
 
 export interface Transcribe {
@@ -48,6 +62,7 @@ export interface Transcribe {
   title: string | null;
   counsel_date: string | null;
   contents: TranscribeContents | null; // JSON 객체로 변경
+  stt_model: string | null; // "whisper" | "gemini-3"
   created_at: string;
 }
 
@@ -72,6 +87,7 @@ export interface SessionRecord {
   content: string;
   note_types: NoteType[];
   created_at: string;
+  processing_status?: SessionProcessingStatus;
 }
 
 export interface CreateSessionRequest {
@@ -109,7 +125,9 @@ export interface CreateSessionBackgroundRequest {
   upload_type: 'audio' | 'pdf' | 'direct';
 
   // 오디오인 경우
-  audio_url?: string;
+  audio_url?: string; // S3 다운로드용 Presigned URL (STT 처리용, 15분 유효)
+  s3_key?: string; // S3 객체 키 (영구 저장용, presigned URL 재생성에 사용)
+  filename?: string; // 원본 파일명 (세션 제목으로 사용)
   file_size_mb?: number;
   transcribe_type?: 'basic' | 'advanced';
   duration_seconds?: number;

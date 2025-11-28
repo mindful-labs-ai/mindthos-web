@@ -3,11 +3,18 @@
  * - 오디오: S3 업로드 → 백그라운드 세션 생성
  * - PDF: 텍스트 추출 → 백그라운드 세션 생성
  * - 직접 입력: 텍스트 전달 → 백그라운드 세션 생성
+ *
+ * 백그라운드 처리:
+ * - 세션 생성 요청 후 즉시 session_id 반환
+ * - 별도의 useSessionStatus hook으로 처리 상태 폴링
  */
 
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useS3Upload } from './useS3Upload';
 import { createSessionBackground } from '../services/sessionService';
+import { calculateTotalCredit } from '../utils/creditCalculator';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import type {
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,
@@ -16,6 +23,7 @@ import type {
   AudioFileInfo,
   PdfFileInfo,
 } from '../types';
+import type { S3UploadError } from '../types/s3Upload.types';
 
 export interface CreateSessionParams {
   userId: number;
@@ -31,8 +39,9 @@ export interface UseCreateSessionReturn {
   createSession: (params: CreateSessionParams) => Promise<CreateSessionBackgroundResponse>;
   isCreating: boolean;
   uploadProgress: number;
-  error: Error | null;
+  error: Error | S3UploadError | null;
   reset: () => void;
+  createdSessionId: string | null; // 생성된 세션 ID (백그라운드 처리 중)
 }
 
 /**
@@ -47,9 +56,12 @@ async function extractTextFromPDF(file: File): Promise<string> {
 }
 
 export function useCreateSession(): UseCreateSessionReturn {
+  const queryClient = useQueryClient();
   const { uploadAudio, isUploading, progress, error: uploadError } = useS3Upload();
+  const { creditInfo } = useCreditInfo();
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<Error | S3UploadError | null>(null);
+  const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
 
   const createSession = async (
     params: CreateSessionParams
@@ -72,6 +84,28 @@ export function useCreateSession(): UseCreateSessionReturn {
 
         const audioFile = params.file as AudioFileInfo;
 
+        // S3 업로드 전 크레딧 확인
+        const { totalCredit, sttCredit, noteCredit } = calculateTotalCredit({
+          uploadType: 'audio',
+          transcribeType: params.transcribeType,
+          durationSeconds: audioFile.duration,
+        });
+
+        const remainingCredit = creditInfo?.plan.remaining ?? 0;
+
+        console.log('[CreateSession] 크레딧 확인:', {
+          필요: totalCredit,
+          잔여: remainingCredit,
+          STT: sttCredit,
+          상담노트: noteCredit,
+        });
+
+        if (remainingCredit < totalCredit) {
+          throw new Error(
+            `크레딧이 부족합니다. 필요: ${totalCredit}, 잔여: ${remainingCredit}`
+          );
+        }
+
         // S3 업로드
         const uploadResult = await uploadAudio(audioFile.file, params.userId);
 
@@ -80,6 +114,8 @@ export function useCreateSession(): UseCreateSessionReturn {
           client_id: params.clientId,
           upload_type: 'audio',
           audio_url: uploadResult.audio_url,
+          s3_key: uploadResult.file_path, // S3 key 추가
+          filename: audioFile.file.name, // 파일명 추가 (세션 제목으로 사용)
           file_size_mb: uploadResult.file_size_mb,
           duration_seconds: uploadResult.duration_seconds || audioFile.duration,
           transcribe_type: params.transcribeType,
@@ -92,6 +128,24 @@ export function useCreateSession(): UseCreateSessionReturn {
         }
 
         const pdfFile = params.file as PdfFileInfo;
+
+        // 크레딧 확인
+        const { totalCredit } = calculateTotalCredit({
+          uploadType: 'pdf',
+        });
+
+        const remainingCredit = creditInfo?.plan.remaining ?? 0;
+
+        console.log('[CreateSession] 크레딧 확인:', {
+          필요: totalCredit,
+          잔여: remainingCredit,
+        });
+
+        if (remainingCredit < totalCredit) {
+          throw new Error(
+            `크레딧이 부족합니다. 필요: ${totalCredit}, 잔여: ${remainingCredit}`
+          );
+        }
 
         // PDF 텍스트 추출
         const extractedText = await extractTextFromPDF(pdfFile.file);
@@ -109,6 +163,24 @@ export function useCreateSession(): UseCreateSessionReturn {
           throw new Error('상담 내용을 입력해주세요.');
         }
 
+        // 크레딧 확인
+        const { totalCredit } = calculateTotalCredit({
+          uploadType: 'direct',
+        });
+
+        const remainingCredit = creditInfo?.plan.remaining ?? 0;
+
+        console.log('[CreateSession] 크레딧 확인:', {
+          필요: totalCredit,
+          잔여: remainingCredit,
+        });
+
+        if (remainingCredit < totalCredit) {
+          throw new Error(
+            `크레딧이 부족합니다. 필요: ${totalCredit}, 잔여: ${remainingCredit}`
+          );
+        }
+
         request = {
           user_id: params.userId,
           client_id: params.clientId,
@@ -120,6 +192,12 @@ export function useCreateSession(): UseCreateSessionReturn {
 
       // 2. 백그라운드 세션 생성 API 호출
       const response = await createSessionBackground(request);
+
+      // 3. 백그라운드 처리를 위해 세션 ID 저장
+      setCreatedSessionId(response.session_id);
+
+      // 4. 세션 목록 쿼리 즉시 invalidate (새로 생성된 세션이 목록에 바로 표시되도록)
+      queryClient.invalidateQueries({ queryKey: ['sessions', params.userId] });
 
       return response;
     } catch (err) {
@@ -133,6 +211,7 @@ export function useCreateSession(): UseCreateSessionReturn {
 
   const reset = () => {
     setError(null);
+    setCreatedSessionId(null);
   };
 
   return {
@@ -141,5 +220,6 @@ export function useCreateSession(): UseCreateSessionReturn {
     uploadProgress: progress,
     error: error || uploadError,
     reset,
+    createdSessionId,
   };
 }

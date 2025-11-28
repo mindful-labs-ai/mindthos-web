@@ -11,6 +11,7 @@ import type { Client } from '../types';
 import type {
   ClientApiError,
   CreateClientRequest,
+  UpdateClientRequest,
 } from '../types/clientApi.types';
 
 /**
@@ -57,26 +58,49 @@ export const useAddClientForm = (initialData?: Client | null) => {
     }
   }, [initialData]);
 
-  // useMutation으로 클라이언트 생성 처리
-  const mutation = useMutation({
-    mutationFn: async (requestBody: CreateClientRequest) => {
-      console.log('===== 클라이언트 등록 요청 =====');
-      console.log('Request Body:', JSON.stringify(requestBody, null, 2));
-      console.log('================================');
+  // 수정 모드 여부
+  const isEditMode = !!initialData;
 
-      return await clientService.createClient(requestBody);
+  // useMutation으로 클라이언트 생성/수정 처리
+  const mutation = useMutation({
+    mutationFn: async (
+      requestBody: CreateClientRequest | UpdateClientRequest
+    ) => {
+      if (isEditMode && initialData) {
+        console.log('===== 클라이언트 수정 요청 =====');
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+        console.log('================================');
+
+        return await clientService.updateClient(
+          requestBody as UpdateClientRequest
+        );
+      } else {
+        console.log('===== 클라이언트 등록 요청 =====');
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+        console.log('================================');
+
+        return await clientService.createClient(
+          requestBody as CreateClientRequest
+        );
+      }
     },
     onSuccess: (response) => {
-      console.log('===== 클라이언트 등록 성공 =====');
+      console.log(
+        `===== 클라이언트 ${isEditMode ? '수정' : '등록'} 성공 =====`
+      );
       console.log('메시지:', response.message);
-      console.log('등록된 클라이언트:', response.client);
+      if ('client' in response) {
+        console.log('등록된 클라이언트:', response.client);
+      }
       console.log('================================');
 
       // 클라이언트 목록 쿼리 무효화하여 자동 리페치
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
     },
     onError: (error) => {
-      console.error('===== 클라이언트 등록 실패 =====');
+      console.error(
+        `===== 클라이언트 ${isEditMode ? '수정' : '등록'} 실패 =====`
+      );
       console.error('Full Error Object:', error);
       console.error('Error JSON:', JSON.stringify(error, null, 2));
       console.error('================================');
@@ -127,7 +151,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!user?.email) {
+    if (!user?.email && !isEditMode) {
       setErrors({ name: '사용자 정보를 찾을 수 없습니다.' });
       return false;
     }
@@ -146,15 +170,36 @@ export const useAddClientForm = (initialData?: Client | null) => {
     }
 
     // 요청 본문 구성
-    const requestBody: CreateClientRequest = {
-      counselor_email: user.email,
-      name: formData.name,
-      phone_number: formData.phone_number || undefined,
-      email: formData.email || undefined,
-      counsel_theme: formData.counsel_theme || undefined,
-      memo: formData.memo || undefined,
-      counsel_number: formData.counsel_number || undefined,
-    };
+    let requestBody: CreateClientRequest | UpdateClientRequest;
+
+    if (isEditMode && initialData) {
+      // 수정 모드
+      requestBody = {
+        client_id: initialData.id,
+        name: formData.name,
+        phone_number: formData.phone_number || undefined,
+        email: formData.email || undefined,
+        counsel_theme: formData.counsel_theme || undefined,
+        memo: formData.memo || undefined,
+        counsel_number: formData.counsel_number || undefined,
+      };
+    } else {
+      // 생성 모드
+      if (!user?.email) {
+        setErrors({ name: '사용자 정보를 찾을 수 없습니다.' });
+        return false;
+      }
+
+      requestBody = {
+        counselor_email: user.email,
+        name: formData.name,
+        phone_number: formData.phone_number || undefined,
+        email: formData.email || undefined,
+        counsel_theme: formData.counsel_theme || undefined,
+        memo: formData.memo || undefined,
+        counsel_number: formData.counsel_number || undefined,
+      };
+    }
 
     // mutation 실행
     try {

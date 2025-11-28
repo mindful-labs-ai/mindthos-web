@@ -111,7 +111,7 @@ export const Tab: React.FC<TabProps> = ({
         'inline-flex items-center',
         variant === 'pill'
           ? 'gap-1 rounded-[var(--radius-md)] bg-surface-contrast p-1'
-          : 'gap-1',
+          : 'gap-2',
         className
       )}
     >
@@ -131,7 +131,7 @@ export const Tab: React.FC<TabProps> = ({
             className={cn(
               'whitespace-nowrap font-medium transition-colors duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'min-w-32 items-center text-center disabled:cursor-not-allowed disabled:opacity-50',
               sizeStyles[size],
               variant === 'pill'
                 ? cn(
@@ -144,8 +144,8 @@ export const Tab: React.FC<TabProps> = ({
                 : cn(
                     'relative rounded-t-lg border border-transparent',
                     isSelected
-                      ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface-contrast text-primary shadow-sm'
-                      : 'text-fg-muted hover:text-fg'
+                      ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-primary shadow-sm'
+                      : 'border-b-0 border-l-border border-r-border border-t-border text-fg-muted hover:text-fg'
                   )
             )}
           >

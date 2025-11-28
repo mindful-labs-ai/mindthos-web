@@ -10,7 +10,9 @@ export const getPlanLabel = (planType: string): string => {
   return PLAN_LABELS[planType.toLowerCase()] || planType;
 };
 
-export const calculateDaysUntilReset = (resetAt: string | null): number | undefined => {
+export const calculateDaysUntilReset = (
+  resetAt: string | null
+): number | undefined => {
   if (!resetAt) return undefined;
 
   const now = new Date();
@@ -28,8 +30,6 @@ export const formatRenewalDate = (endAt: string | null): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
 
-  return `${year}.${month}.${day} ${hours}:${minutes}`;
+  return `${year}.${month}.${day} 오전 11시`;
 };

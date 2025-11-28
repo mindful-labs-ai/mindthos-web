@@ -2,13 +2,17 @@ import React from 'react';
 
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
+import { PopUp } from '@/components/ui/composites/PopUp';
+import type { Client } from '@/feature/client/types';
 import { FilterIcon } from '@/shared/icons';
 import { formatDate } from '@/shared/utils/date';
 
+import { FilterMenu } from './FilterMenu';
 import { SessionSideListItem } from './SessionSideListItem';
 
 interface SessionItem {
   sessionId: string;
+  title: string;
   clientName: string;
   sessionNumber: number;
   duration?: number;
@@ -20,12 +24,27 @@ interface SessionSideListProps {
   sessions: SessionItem[];
   activeSessionId?: string;
   onSessionClick: (sessionId: string) => void;
+  // 필터 관련 props
+  sortOrder: 'newest' | 'oldest';
+  selectedClientId: string[];
+  clients: Client[];
+  sessionCounts: Record<string, number>;
+  onSortChange: (order: 'newest' | 'oldest') => void;
+  onClientChange: (clientIds: string[]) => void;
+  onFilterReset: () => void;
 }
 
 export const SessionSideList: React.FC<SessionSideListProps> = ({
   sessions,
   activeSessionId,
   onSessionClick,
+  sortOrder,
+  selectedClientId,
+  clients,
+  sessionCounts,
+  onSortChange,
+  onClientChange,
+  onFilterReset,
 }) => {
   // 날짜별로 그룹화
   const groupedSessions = React.useMemo(() => {
@@ -39,14 +58,18 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
       groups[dateKey].push(session);
     });
 
-    // 날짜 내림차순 정렬
+    // 날짜 그룹 정렬 (sortOrder에 따라)
     return Object.entries(groups)
       .map(([date, items]) => ({
         date,
         sessions: items,
       }))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [sessions]);
+      .sort((a, b) => {
+        const dateA = new Date(a.date).getTime();
+        const dateB = new Date(b.date).getTime();
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+  }, [sessions, sortOrder]);
 
   return (
     <aside className="flex h-full w-64 flex-col border-r border-border bg-bg">
@@ -55,13 +78,28 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
         <Title as="h2" className="text-base font-bold text-fg">
           상담 기록
         </Title>
-        <button
-          type="button"
-          className="rounded-lg p-1 text-fg-muted hover:bg-surface-contrast"
-          aria-label="필터"
-        >
-          <FilterIcon fill="currentColor" size={18} />
-        </button>
+        <div className="inline-block">
+          <PopUp
+            trigger={
+              <div className="rounded-lg p-1 text-fg-muted hover:bg-surface-contrast cursor-pointer">
+                <FilterIcon fill="currentColor" size={18} />
+              </div>
+            }
+            content={
+              <FilterMenu
+                sortOrder={sortOrder}
+                selectedClientIds={selectedClientId}
+                clients={clients}
+                sessionCounts={sessionCounts}
+                onSortChange={onSortChange}
+                onClientChange={onClientChange}
+                onReset={onFilterReset}
+              />
+            }
+            placement="bottom-right"
+            className="!p-4"
+          />
+        </div>
       </div>
 
       {/* 세션 리스트 */}
@@ -81,6 +119,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
                     <SessionSideListItem
                       key={session.sessionId}
                       sessionId={session.sessionId}
+                      title={session.title}
                       clientName={session.clientName}
                       sessionNumber={session.sessionNumber}
                       duration={session.duration}

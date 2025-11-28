@@ -113,7 +113,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-describedby={description ? 'modal-description' : undefined}
         className={cn(
           'relative z-10',
-          'max-h-[90vh] w-full max-w-lg overflow-auto',
+          'max-h-[90vh] w-full overflow-auto',
           'rounded-[var(--radius-lg)] border-2 border-border bg-surface shadow-xl',
           'animate-[scaleIn_0.2s_ease-out]',
           className

@@ -7,10 +7,13 @@ export const ROUTES = {
   EMAIL_VERIFICATION: '/auth/verify-email',
   TERMS: '/terms',
   CLIENTS: '/clients',
-  HISTORY: '/history',
-  SESSION_DETAIL: '/history/:sessionId',
+  CLIENT_DETAIL: '/clients/:clientId',
+  SESSIONS: '/sessions',
+  SESSION_DETAIL: '/sessions/:sessionId',
   TEMPLATE: '/template',
   SETTINGS: '/settings',
+  PAYMENT_SUCCESS: '/payment/success',
+  PAYMENT_FAIL: '/payment/fail',
   ERROR_TEST: '/error-test',
   NOT_FOUND: '*',
 } as const;
@@ -26,6 +29,6 @@ export const getClientDetailRoute = (clientId: string | number) =>
   `/clients/${clientId}`;
 
 export const getSessionDetailRoute = (sessionId: string) =>
-  `/history/${sessionId}`;
+  `/sessions/${sessionId}`;
 
 export const getTermsRoute = (type: TermsType) => `/terms?type=${type}`;

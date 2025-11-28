@@ -1,15 +1,21 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { Badge } from '@/components/ui/atoms/Badge';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
+import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
-import type { SessionRecord, NoteType } from '@/feature/session/types';
 import { MoreVerticalIcon, UserCircle2Icon, Trash2Icon } from '@/shared/icons';
 import { formatKoreanDateTime } from '@/shared/utils/date';
+import { useAuthStore } from '@/stores/authStore';
+
+import { assignClientToSession, deleteSession } from '../services/sessionService';
+import type { SessionRecord, NoteType } from '../types';
 
 interface SessionRecordCardProps {
   record: SessionRecord;
@@ -37,11 +43,15 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   onDelete,
   isActive = false,
 }) => {
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isClientSelectorPopupOpen, setIsClientSelectorPopupOpen] =
     React.useState(false);
   const [isClientSelectorFromMenuOpen, setIsClientSelectorFromMenuOpen] =
     React.useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const { clients } = useClientList();
 
@@ -50,30 +60,82 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     ? `${record.client_name} ${record.session_number}회기`
     : `세션 ${record.session_number}회기`;
 
+  const getStatusBadge = () => {
+    if (!record.processing_status || record.processing_status === 'succeeded') return null;
+
+    const statusConfig = {
+      pending: { label: '대기 중', tone: 'neutral' as const },
+      transcribing: { label: '전사 중', tone: 'primary' as const },
+      generating_note: { label: '노트 생성 중', tone: 'primary' as const },
+      failed: { label: '실패', tone: 'error' as const },
+    };
+
+    const config = statusConfig[record.processing_status];
+
+    return (
+      <Badge tone={config.tone} variant="soft" size="sm">
+        {config.label}
+      </Badge>
+    );
+  };
+
+  const isClickable = !record.processing_status || record.processing_status === 'succeeded';
+
   const handleCardClick = (e: React.MouseEvent) => {
     // PopUp 영역 클릭 시 카드 클릭 이벤트 무시
     if ((e.target as HTMLElement).closest('[data-popup-wrapper]')) {
       return;
     }
-    onClick?.(record);
+    // succeeded 상태일 때만 클릭 가능
+    if (isClickable) {
+      onClick?.(record);
+    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsMenuOpen(false);
-    onDelete?.(record);
+    setIsDeleteModalOpen(true);
   };
 
-  const handleClientSelect = (client: any) => {
+  const handleConfirmDelete = async () => {
+    setIsLoading(true);
+    try {
+      await deleteSession(record.session_id);
+
+      // 세션 목록 갱신
+      await queryClient.invalidateQueries({
+        queryKey: ['sessions', Number(userId)],
+      });
+
+      setIsDeleteModalOpen(false);
+      onDelete?.(record);
+    } catch (error) {
+      console.error('세션 삭제 실패:', error);
+      alert('세션 삭제에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClientSelect = async (client: any) => {
     if (client) {
-      // TODO: 세션에 클라이언트 할당 로직 추가
-      console.log(
-        'Assigning client:',
-        client,
-        'to session:',
-        record.session_id
-      );
-      onChangeClient?.(record);
+      setIsLoading(true);
+      try {
+        await assignClientToSession(record.session_id, client.id);
+
+        // 세션 목록 갱신
+        await queryClient.invalidateQueries({
+          queryKey: ['sessions', Number(userId)],
+        });
+
+        onChangeClient?.(record);
+      } catch (error) {
+        console.error('클라이언트 할당 실패:', error);
+        alert('클라이언트 할당에 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
     }
     // 모든 PopUp 닫기
     setIsClientSelectorFromMenuOpen(false);
@@ -84,7 +146,9 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   return (
     <>
       <Card
-        className={`cursor-pointer transition-all ${
+        className={`transition-all ${
+          isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
+        } ${
           isActive
             ? 'border-l-4 border-primary bg-surface shadow-md'
             : 'hover:shadow-lg'
@@ -93,9 +157,12 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       >
         <Card.Body className="space-y-3 p-6">
           <div className="flex items-start justify-between">
-            <Title as="h3" className="flex-1 text-left text-lg font-bold">
-              {displayTitle}
-            </Title>
+            <div className="flex flex-1 items-center gap-2 min-w-0">
+              <Title as="h3" className="text-left text-lg font-bold truncate">
+                {displayTitle}
+              </Title>
+              {getStatusBadge()}
+            </div>
             <div className="flex-shrink-0" data-popup-wrapper>
               <PopUp
                 open={isMenuOpen}
@@ -147,7 +214,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </div>
           </div>
 
-          <Text truncate className="line-clamp-2 text-left text-sm text-fg">
+          <Text className="line-clamp-2 text-left text-sm text-fg overflow-hidden">
             {record.content}
           </Text>
 
@@ -192,6 +259,37 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </div>
         </Card.Body>
       </Card>
+
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="세션 삭제"
+      >
+        <div className="space-y-4">
+          <Text className="text-base font-bold text-fg">
+            {displayTitle} 세션을 삭제하시겠습니까?
+          </Text>
+          <Text className="text-sm text-fg-muted">
+            삭제하면 세션과 관련된 모든 데이터가 영구적으로 삭제됩니다.
+          </Text>
+          <div className="flex justify-center gap-2 pt-2">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isLoading}
+              className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors hover:bg-surface-hover disabled:opacity-50"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              disabled={isLoading}
+              className="w-full rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-danger/90 disabled:opacity-50"
+            >
+              {isLoading ? '삭제 중...' : '삭제'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };

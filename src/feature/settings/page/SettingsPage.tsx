@@ -11,6 +11,7 @@ import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
+import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
   calculateDaysUntilReset,
@@ -21,6 +22,7 @@ import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+import { CardInfo } from '../components/CardInfo';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -30,6 +32,9 @@ export const SettingsPage: React.FC = () => {
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
+
+  // 카드 정보 가져오기
+  const { cardInfo } = useCardInfo();
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
@@ -166,13 +171,21 @@ export const SettingsPage: React.FC = () => {
                       이용 중
                     </Text>
                   ) : (
-                    <Text className="text-base">
-                      <span className="font-bold text-primary">
-                        {getPlanLabel(creditInfo.plan.type)}
-                      </span>{' '}
-                      {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
-                      예정
-                    </Text>
+                    <div className="space-y-2">
+                      {cardInfo && (
+                        <CardInfo
+                          cardType={cardInfo.type}
+                          cardNumber={cardInfo.number}
+                        />
+                      )}
+                      <Text className="text-left">
+                        <span className="font-bold text-primary">
+                          {getPlanLabel(creditInfo.plan.type)}
+                        </span>{' '}
+                        {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
+                        예정
+                      </Text>
+                    </div>
                   )}
 
                   <div className="flex w-full justify-center gap-6 lg:grid-cols-2">
@@ -182,7 +195,7 @@ export const SettingsPage: React.FC = () => {
                       planLabel={getPlanLabel(creditInfo.plan.type)}
                       planType={creditInfo.plan.type}
                       daysUntilReset={calculateDaysUntilReset(
-                        creditInfo.subscription.reset_at
+                        creditInfo.subscription.end_at
                       )}
                       variant="detailed"
                     />

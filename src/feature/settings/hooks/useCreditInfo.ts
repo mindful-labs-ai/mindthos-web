@@ -6,8 +6,6 @@ import { useAuthStore } from '@/stores/authStore';
 
 import { creditService, type CreditInfo } from '../services/creditService';
 
-const REFETCH_INTERVAL = 60 * 1000;
-
 export const useCreditInfo = () => {
   const userId = useAuthStore((state) => state.userId);
   const subscriptionInfo = useAuthStore((state) => state.subscriptionInfo);
@@ -27,7 +25,7 @@ export const useCreditInfo = () => {
       return await creditService.getCreditUsage(userIdNumber);
     },
     enabled: !!userIdNumber,
-    refetchInterval: REFETCH_INTERVAL,
+    // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect/Interval false
   });
 
   const creditInfo: CreditInfo | undefined = useMemo(() => {

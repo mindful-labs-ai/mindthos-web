@@ -1,11 +1,17 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { Highlight } from '@/components/common/Highlight';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Card } from '@/components/ui/composites/Card';
 import { Modal } from '@/components/ui/composites/Modal';
-import type { Client } from '@/feature/client/types';
+import { useAuthStore } from '@/stores/authStore';
+
+import { clientQueryKeys } from '../constants/queryKeys';
+import { clientService } from '../services/clientService';
+import type { Client } from '../types';
 
 import { ClientCardMenu } from './ClientCardMenu';
 
@@ -22,11 +28,15 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onEditClick,
   searchQuery = '',
 }) => {
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isCloseSessionModalOpen, setIsCloseSessionModalOpen] =
     React.useState(false);
   const [isRestartCounselingModalOpen, setIsRestartCounselingModalOpen] =
     React.useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleCardClick = () => {
     onClick?.(client);
@@ -37,9 +47,28 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     setIsCloseSessionModalOpen(true);
   };
 
-  const handleConfirmCloseSession = () => {
-    setIsCloseSessionModalOpen(false);
-    //TODO : 상담 종결 테이블추가하고 로직 추가하기
+  const handleConfirmCloseSession = async () => {
+    setIsLoading(true);
+    try {
+      await clientService.updateClient({
+        client_id: client.id,
+        counsel_done: true,
+      });
+
+      // 클라이언트 목록 갱신
+      if (userId) {
+        await queryClient.invalidateQueries({
+          queryKey: clientQueryKeys.list(userId),
+        });
+      }
+
+      setIsCloseSessionModalOpen(false);
+    } catch (error) {
+      console.error('상담 종결 실패:', error);
+      alert('상담 종결에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRestartCounseling = () => {
@@ -47,9 +76,28 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     setIsRestartCounselingModalOpen(true);
   };
 
-  const handleConfirmRestartCounseling = () => {
-    setIsRestartCounselingModalOpen(false);
-    //TODO : 상담 재시작 로직 추가하기 (counsel_done을 false로 변경)
+  const handleConfirmRestartCounseling = async () => {
+    setIsLoading(true);
+    try {
+      await clientService.updateClient({
+        client_id: client.id,
+        counsel_done: false,
+      });
+
+      // 클라이언트 목록 갱신
+      if (userId) {
+        await queryClient.invalidateQueries({
+          queryKey: clientQueryKeys.list(userId),
+        });
+      }
+
+      setIsRestartCounselingModalOpen(false);
+    } catch (error) {
+      console.error('상담 재시작 실패:', error);
+      alert('상담 재시작에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEditClient = () => {
@@ -59,6 +107,30 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 
   const handleDeleteClient = () => {
     setIsMenuOpen(false);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDeleteClient = async () => {
+    setIsLoading(true);
+    try {
+      await clientService.deleteClient({
+        client_id: client.id,
+      });
+
+      // 클라이언트 목록 갱신
+      if (userId) {
+        await queryClient.invalidateQueries({
+          queryKey: clientQueryKeys.list(userId),
+        });
+      }
+
+      setIsDeleteModalOpen(false);
+    } catch (error) {
+      console.error('클라이언트 삭제 실패:', error);
+      alert('클라이언트 삭제에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -123,9 +195,10 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               tone="primary"
               size="lg"
               onClick={handleConfirmCloseSession}
+              disabled={isLoading}
               className="w-full"
             >
-              상담 종결
+              {isLoading ? '처리 중...' : '상담 종결'}
             </Button>
           </div>
         </div>
@@ -149,9 +222,48 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               tone="primary"
               size="lg"
               onClick={handleConfirmRestartCounseling}
+              disabled={isLoading}
               className="w-full"
             >
-              상담 재시작
+              {isLoading ? '처리 중...' : '상담 재시작'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        title="클라이언트 삭제"
+      >
+        <div className="space-y-4">
+          <Text className="text-base font-bold text-fg">
+            {client.name} 클라이언트를 삭제하시겠습니까?
+          </Text>
+          <Text className="text-sm text-fg-muted">
+            삭제하면 클라이언트 정보와 관련된 모든 데이터가 영구적으로
+            삭제됩니다.
+          </Text>
+          <div className="flex justify-center gap-2 pt-2">
+            <Button
+              variant="outline"
+              tone="neutral"
+              size="lg"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isLoading}
+              className="w-full"
+            >
+              취소
+            </Button>
+            <Button
+              variant="solid"
+              tone="danger"
+              size="lg"
+              onClick={handleConfirmDeleteClient}
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? '삭제 중...' : '삭제'}
             </Button>
           </div>
         </div>

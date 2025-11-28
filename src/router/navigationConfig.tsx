@@ -32,9 +32,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     icon: <UsersIcon size={18} />,
   },
   {
-    path: ROUTES.HISTORY,
+    path: ROUTES.SESSIONS,
     label: '상담 기록',
-    value: 'history',
+    value: 'sessions',
     icon: <FileTextIcon size={18} />,
   },
   {
@@ -78,7 +78,7 @@ export const getRouteLabel = (path: string): string => {
 // 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿)
 export const getMainNavItems = () => {
   return NAVIGATION_ITEMS.filter((item) =>
-    ['home', 'client', 'history', 'template'].includes(item.value)
+    ['home', 'client', 'sessions', 'template'].includes(item.value)
   ).map((item) => ({
     icon: item.icon,
     label: item.label,

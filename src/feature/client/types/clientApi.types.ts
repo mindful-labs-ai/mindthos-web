@@ -53,3 +53,29 @@ export interface GetClientsResponse {
     updated_at: string;
   }>;
 }
+
+export interface UpdateClientRequest {
+  client_id: string;
+  name?: string;
+  phone_number?: string;
+  email?: string;
+  counsel_theme?: string;
+  memo?: string;
+  counsel_number?: number;
+  counsel_done?: boolean;
+  pin?: boolean;
+}
+
+export interface UpdateClientResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface DeleteClientRequest {
+  client_id: string;
+}
+
+export interface DeleteClientResponse {
+  success: boolean;
+  message?: string;
+}

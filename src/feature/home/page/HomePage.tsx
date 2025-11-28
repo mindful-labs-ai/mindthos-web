@@ -3,18 +3,21 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
+import { useToast } from '@/components/ui/composites/Toast';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import { useCreateSession } from '@/feature/session/hooks/useCreateSession';
-import type { FileInfo } from '@/feature/session/types';
+import { useSessionList } from '@/feature/session/hooks/useSessionList';
+import { useSessionStatus } from '@/feature/session/hooks/useSessionStatus';
+import type { FileInfo, Transcribe } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
+import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
-import { useSessionStore } from '@/stores/sessionStore';
 
 import { ActionCard } from '../components/ActionCard';
 import { GreetingSection } from '../components/GreetingSection';
@@ -22,6 +25,7 @@ import { SessionCard } from '../components/SessionCard';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
@@ -33,20 +37,43 @@ const HomePage = () => {
   const { clients } = useClientList();
 
   // 세션 생성 Hook
-  const { createSession, isCreating, uploadProgress } = useCreateSession();
+  const { createSession, isCreating, uploadProgress, createdSessionId } = useCreateSession();
 
-  // 세션 스토어
-  const addSession = useSessionStore((state) => state.addSession);
-  const sessions = useSessionStore((state) => state.sessions);
-  const transcribes = useSessionStore((state) => state.transcribes);
+  // 세션 처리 상태 폴링 Hook
+  useSessionStatus({
+    sessionId: createdSessionId || '',
+    enabled: !!createdSessionId,
+    onComplete: (data, status) => {
+      // 처리가 완료되었을 때만 호출됨 (succeeded 또는 failed)
+      if (status === 'succeeded') {
+        console.log('[세션 처리 완료]', data);
+        toast({
+          title: '상담 기록 생성 완료',
+          description: 'STT 및 상담노트가 성공적으로 생성되었습니다.',
+          action: {
+            label: '확인하기',
+            onClick: () => navigate(getSessionDetailRoute(data.session_id)),
+          },
+          duration: 10000, // 10초
+        });
+      } else if (status === 'failed') {
+        console.error('[세션 처리 실패]', data.error_message);
+        toast({
+          title: '상담 기록 생성 실패',
+          description: data.error_message || '알 수 없는 오류가 발생했습니다.',
+          duration: 8000,
+        });
+      }
+    },
+  });
 
-  // sessions + transcribes 결합 (useMemo로 캐싱)
-  const sessionsWithTranscribes = React.useMemo(() => {
-    return sessions.map((session) => ({
-      session,
-      transcribe: transcribes[session.id] || null,
-    }));
-  }, [sessions, transcribes]);
+  // 세션 목록 조회 (TanStack Query)
+  const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
+    userId: parseInt(userId || '0'),
+    enabled: !!userId,
+  });
+
+  const sessionsWithTranscribes = sessionData?.sessions || [];
 
   const handleGuideClick = () => {
     // TODO: Navigate to guide page
@@ -118,37 +145,34 @@ const HomePage = () => {
 
       console.log('[handleCreateSession] 세션 생성 성공:', response);
 
-      // TODO: 생성된 세션을 세션 스토어에 추가하거나 페이지 새로고침
-      // 백그라운드에서 처리되므로 processing_status를 주기적으로 확인해야 함
-
-      // 임시: 성공 메시지 표시
-      alert(
-        `✅ 세션이 생성되었습니다!\n\n세션 ID: ${response.session_id}\n\n백그라운드에서 STT 및 상담노트가 생성되고 있습니다.\n(처리 상태는 DB에서 확인할 수 있습니다)`
-      );
+      // 세션 생성 시작 알림
+      toast({
+        title: '상담 기록 생성 중',
+        description: '오디오를 분석하고 상담노트를 작성하고 있습니다. 잠시만 기다려주세요.',
+        duration: 5000,
+      });
     } catch (error) {
       console.error('[handleCreateSession] 세션 생성 실패:', error);
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
-      alert(`❌ 세션 생성 실패\n\n${errorMessage}\n\n콘솔을 확인해주세요.`);
+      toast({
+        title: '세션 생성 실패',
+        description: errorMessage,
+        duration: 8000,
+      });
     }
   };
 
   // 전사 내용을 SessionCard용 텍스트로 변환 (처음 몇 줄만)
-  const getSessionContent = (
-    transcribe: {
-      contents: {
-        result: {
-          segments: Array<{ text: string; speaker: number }>;
-          speakers: Array<{ id: number; role: string }>;
-        };
-      } | null;
-    } | null
-  ): string => {
-    if (!transcribe?.contents?.result?.segments) {
+  const getSessionContent = (transcribe: Transcribe | null): string => {
+    // raw_output 파싱 또는 기존 result 사용
+    const transcriptData = getTranscriptData(transcribe);
+
+    if (!transcriptData) {
       return '전사 내용이 없습니다.';
     }
 
-    const { segments, speakers } = transcribe.contents.result;
+    const { segments, speakers } = transcriptData;
 
     // 처음 3개 세그먼트만 표시
     const previewSegments = segments.slice(0, 3);
@@ -201,13 +225,20 @@ const HomePage = () => {
         </div>
 
         <div className="space-y-4">
-          {sessionsWithTranscribes.length > 0 ? (
+          {isLoadingSessions ? (
+            <div className="rounded-lg border border-surface-strong bg-surface-contrast p-8 text-center">
+              <p className="text-fg-muted">세션 목록을 불러오는 중...</p>
+            </div>
+          ) : sessionsWithTranscribes.length > 0 ? (
             sessionsWithTranscribes.map(({ session, transcribe }) => (
               <SessionCard
                 key={session.id}
                 title={session.title || '제목 없음'}
                 content={getSessionContent(transcribe)}
                 date={formatKoreanDate(new Date(session.created_at))}
+                processingStatus={session.processing_status}
+                progressPercentage={session.progress_percentage}
+                currentStep={session.current_step}
                 onClick={() => handleSessionClick(session.id)}
               />
             ))

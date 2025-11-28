@@ -4,10 +4,13 @@ import App from '@/App';
 import AuthPage from '@/feature/auth/page/AuthPage';
 import EmailVerificationPage from '@/feature/auth/page/EmailVerificationPage';
 import { ClientListPage } from '@/feature/client/page/ClientListPage';
+import { ClientDetailPage } from '@/feature/client/page/ClientDetailPage';
 import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
 import HomePage from '@/feature/home/page/HomePage';
+import { PaymentFail } from '@/feature/payment/components/PaymentFail';
+import { PaymentSuccess } from '@/feature/payment/components/PaymentSuccess';
 import { SessionDetailPage } from '@/feature/session/page/SessionDetailPage';
 import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
@@ -47,7 +50,11 @@ export const router = createBrowserRouter([
             element: <ClientListPage />,
           },
           {
-            path: ROUTES.HISTORY,
+            path: '/clients/:clientId',
+            element: <ClientDetailPage />,
+          },
+          {
+            path: ROUTES.SESSIONS,
             element: <SessionHistoryPage />,
             children: [
               {
@@ -85,6 +92,22 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.TERMS,
         element: <TermsPage />,
+      },
+      {
+        path: ROUTES.PAYMENT_SUCCESS,
+        element: (
+          <ProtectedRoute>
+            <PaymentSuccess />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.PAYMENT_FAIL,
+        element: (
+          <ProtectedRoute>
+            <PaymentFail />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.ERROR_TEST,

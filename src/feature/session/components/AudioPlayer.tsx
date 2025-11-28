@@ -10,6 +10,7 @@ interface AudioPlayerProps {
   currentTime: number;
   duration: number;
   playbackRate: number;
+  isLoading?: boolean;
   onPlayPause: () => void;
   onBackward: () => void;
   onForward: () => void;
@@ -24,6 +25,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   currentTime,
   duration,
   playbackRate,
+  isLoading = false,
   onPlayPause,
   onBackward,
   onForward,
@@ -101,11 +103,33 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
           <button
             type="button"
-            className="rounded-full bg-primary p-4 text-white shadow-lg transition-all hover:bg-primary-600 hover:shadow-xl active:scale-95"
-            aria-label={isPlaying ? '일시정지' : '재생'}
+            className="rounded-full bg-primary p-4 text-white shadow-lg transition-all hover:bg-primary-600 hover:shadow-xl active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label={isLoading ? '로딩 중' : isPlaying ? '일시정지' : '재생'}
             onClick={onPlayPause}
+            disabled={isLoading}
           >
-            {isPlaying ? (
+            {isLoading ? (
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="animate-spin"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  opacity="0.25"
+                />
+                <path
+                  d="M12 2a10 10 0 0 1 10 10"
+                  opacity="0.75"
+                />
+              </svg>
+            ) : isPlaying ? (
               <svg
                 width="24"
                 height="24"

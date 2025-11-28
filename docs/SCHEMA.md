@@ -227,18 +227,20 @@
 
 **설명:** 서비스 요금제 정보를 관리합니다.
 
-| 컬럼         | 타입        | 제약   | 설명             |
-| ------------ | ----------- | ------ | ---------------- |
-| id           | uuid        | PK     | 플랜 ID          |
-| type         | varchar(15) | UNIQUE | 플랜 타입 (고유) |
-| description  | varchar(50) |        | 플랜 설명 (50자) |
-| price        | integer     |        | 가격             |
-| total_credit | integer     |        | 총 크레딧        |
+| 컬럼         | 타입        | 제약             | 설명                                   |
+| ------------ | ----------- | ---------------- | -------------------------------------- |
+| id           | uuid        | PK               | 플랜 ID                                |
+| type         | varchar(15) | UNIQUE           | 플랜 타입 (고유)                       |
+| description  | varchar(50) |                  | 플랜 설명 (50자)                       |
+| price        | integer     |                  | 가격                                   |
+| total_credit | integer     |                  | 총 크레딧                              |
+| is_year      | boolean     | NOT NULL (false) | 연간 구독 여부 (false: 월간, true: 연간) |
 
 **주요 특징:**
 
-- type: 플랜 타입으로 고유 식별 (예: 'basic', 'pro', 'enterprise')
+- type: 플랜 타입으로 고유 식별 (예: 'PLUS', 'PRO', 'PLUS_YEAR', 'PRO_YEAR')
 - total_credit: 플랜별 제공되는 통합 크레딧 (음성 전사, 요약 생성 등 모든 기능에 공통 사용)
+- is_year: 구독 주기 구분 (false: 월간 구독, true: 연간 구독)
 
 ---
 
@@ -533,6 +535,13 @@
 ---
 
 ## 변경 이력
+
+### v1.10 (2025-11-25)
+
+- **plans 테이블:** `is_year` 컬럼 추가 (월간/연간 구독 구분)
+  - 타입: boolean NOT NULL DEFAULT false
+  - false: 월간 구독, true: 연간 구독
+  - 플랜 타입 예시: PLUS (월간), PLUS_YEAR (연간)
 
 ### v1.9 (2025-11-18)
 

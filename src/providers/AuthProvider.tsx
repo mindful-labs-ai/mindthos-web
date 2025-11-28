@@ -36,10 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           case 'SIGNED_OUT':
             clear();
             clearOnboarding();
-            toast({
-              title: '로그아웃 되었습니다',
-              duration: 3000,
-            });
+            // toast({
+            //   title: '로그아웃 되었습니다',
+            //   duration: 3000,
+            // });
             navigate(ROUTES.AUTH);
             break;
 

@@ -18,7 +18,12 @@ const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_WEBAPP_SUPABASE_ANON_KEY;
 
 // 지원하는 오디오 파일 형식
-const SUPPORTED_AUDIO_TYPES = ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/x-m4a'];
+const SUPPORTED_AUDIO_TYPES = [
+  'audio/mpeg',
+  'audio/wav',
+  'audio/mp4',
+  'audio/x-m4a',
+];
 const SUPPORTED_EXTENSIONS = ['.mp3', '.wav', '.m4a'];
 
 // 최대 파일 크기: 2GB (1시간 이상의 오디오 파일 고려)
@@ -84,18 +89,21 @@ async function getPresignedUrl(
   public_url: string;
   expires_in: number;
 }> {
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/session/upload-url`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-    body: JSON.stringify({
-      user_id: userId,
-      filename,
-      content_type: contentType,
-    }),
-  });
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/session/upload-url`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        filename,
+        content_type: contentType,
+      }),
+    }
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -141,7 +149,8 @@ export async function uploadAudioToS3(
     if (!validateFileType(file)) {
       const error: S3UploadError = {
         code: 'INVALID_FILE_TYPE',
-        message: '지원하지 않는 파일 형식입니다. MP3, WAV, M4A 파일만 업로드 가능합니다.',
+        message:
+          '지원하지 않는 파일 형식입니다. MP3, WAV, M4A 파일만 업로드 가능합니다.',
       };
       throw error;
     }
@@ -170,7 +179,12 @@ export async function uploadAudioToS3(
     // 3. Content-Type 결정 (한 번만 결정하여 일관성 유지)
     // 파일 타입이 비어있거나 신뢰할 수 없는 경우를 대비한 매핑
     const contentType = determineContentType(file);
-    console.log('[S3 Upload] Content-Type:', contentType, 'File type:', file.type);
+    console.log(
+      '[S3 Upload] Content-Type:',
+      contentType,
+      'File type:',
+      file.type
+    );
 
     // 4. 백엔드에서 Presigned URL 받기
     const { presigned_url, s3_key, public_url } = await getPresignedUrl(
@@ -194,7 +208,8 @@ export async function uploadAudioToS3(
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable && onProgress) {
           // 20% ~ 100% 범위로 매핑
-          const percentComplete = 20 + Math.round((event.loaded / event.total) * 80);
+          const percentComplete =
+            20 + Math.round((event.loaded / event.total) * 80);
           onProgress(percentComplete);
         }
       });
@@ -204,7 +219,12 @@ export async function uploadAudioToS3(
           console.log('[S3 Upload] 업로드 성공');
           resolve();
         } else {
-          console.error('[S3 Upload] 업로드 실패:', xhr.status, xhr.statusText, xhr.responseText);
+          console.error(
+            '[S3 Upload] 업로드 실패:',
+            xhr.status,
+            xhr.statusText,
+            xhr.responseText
+          );
           reject(new Error(`업로드 실패: ${xhr.status} ${xhr.statusText}`));
         }
       });

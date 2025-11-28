@@ -5,8 +5,12 @@ import type {
   ClientApiError,
   CreateClientRequest,
   CreateClientResponse,
+  DeleteClientRequest,
+  DeleteClientResponse,
   GetClientsRequest,
   GetClientsResponse,
+  UpdateClientRequest,
+  UpdateClientResponse,
 } from '../types/clientApi.types';
 
 export const clientService = {
@@ -59,6 +63,74 @@ export const clientService = {
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
         message: apiError.message || '내담자 등록 중 오류가 발생했습니다.',
+      } as ClientApiError;
+    }
+  },
+
+  async updateClient(
+    request: UpdateClientRequest
+  ): Promise<UpdateClientResponse> {
+    try {
+      const { client_id, ...updateData } = request;
+
+      const { error } = await supabase
+        .from('clients')
+        .update(updateData)
+        .eq('id', client_id);
+
+      if (error) {
+        throw {
+          status: 500,
+          success: false,
+          error: 'DATABASE_ERROR',
+          message: error.message || '내담자 정보 수정 중 오류가 발생했습니다.',
+        } as ClientApiError;
+      }
+
+      return {
+        success: true,
+        message: '내담자 정보가 수정되었습니다.',
+      };
+    } catch (error) {
+      const apiError = error as ClientApiError;
+      throw {
+        status: apiError.status || 500,
+        success: false,
+        error: apiError.error || 'UNKNOWN_ERROR',
+        message: apiError.message || '내담자 정보 수정 중 오류가 발생했습니다.',
+      } as ClientApiError;
+    }
+  },
+
+  async deleteClient(
+    request: DeleteClientRequest
+  ): Promise<DeleteClientResponse> {
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', request.client_id);
+
+      if (error) {
+        throw {
+          status: 500,
+          success: false,
+          error: 'DATABASE_ERROR',
+          message: error.message || '내담자 삭제 중 오류가 발생했습니다.',
+        } as ClientApiError;
+      }
+
+      return {
+        success: true,
+        message: '내담자가 삭제되었습니다.',
+      };
+    } catch (error) {
+      const apiError = error as ClientApiError;
+      throw {
+        status: apiError.status || 500,
+        success: false,
+        error: apiError.error || 'UNKNOWN_ERROR',
+        message: apiError.message || '내담자 삭제 중 오류가 발생했습니다.',
       } as ClientApiError;
     }
   },

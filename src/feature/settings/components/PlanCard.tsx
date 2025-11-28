@@ -10,11 +10,10 @@ import { formatPrice } from '@/shared/utils/format';
 export interface PlanCardProps {
   name: string;
   description: string;
-  audioCredit: number;
-  summaryCredit: number;
-  originalPrice: number;
-  discountedPrice: number;
-  discountRate: number;
+  totalCredit: number;
+  price: number;
+  originalPrice?: number;
+  discountRate?: number;
   isYearly?: boolean;
   isSelected?: boolean;
   onSelect: () => void;
@@ -23,11 +22,10 @@ export interface PlanCardProps {
 export const PlanCard: React.FC<PlanCardProps> = ({
   name,
   description,
-  audioCredit,
-  summaryCredit,
+  totalCredit,
+  price,
   originalPrice,
-  discountedPrice,
-  discountRate,
+  discountRate = 0,
   isYearly = false,
   isSelected = false,
   onSelect,
@@ -54,15 +52,11 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <CheckIcon size={18} className="flex-shrink-0 text-primary" />
-              <Text className="text-sm">
-                축어록 풀기 월 {audioCredit.toLocaleString()}분
-              </Text>
+              <Text className="text-sm">총 {totalCredit.toLocaleString()} 크레딧</Text>
             </div>
             <div className="flex items-center gap-3">
               <CheckIcon size={18} className="flex-shrink-0 text-primary" />
-              <Text className="text-sm">
-                AI 요약 월 {summaryCredit.toLocaleString()}회
-              </Text>
+              <Text className="text-sm">음성 전사 + AI 요약</Text>
             </div>
             <div className="flex items-center gap-3">
               <CheckIcon size={18} className="flex-shrink-0 text-primary" />
@@ -75,15 +69,15 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           <div className="flex items-end justify-between gap-3">
             <div className="flex-1">
               <div className="h-4">
-                {discountRate > 0 && (
+                {discountRate > 0 && originalPrice && (
                   <Text className="text-xs text-fg-muted line-through">
-                    연 {formatPrice(originalPrice)}원
+                    {isYearly ? '연' : '월'} {formatPrice(originalPrice)}원
                   </Text>
                 )}
               </div>
               <div className="flex items-baseline gap-1">
                 <Title as="h2" className="text-3xl font-bold">
-                  {formatPrice(discountedPrice)}원
+                  {formatPrice(price)}원
                 </Title>
                 <Text className="text-sm text-fg-muted">
                   /{isYearly ? '년' : '월'}

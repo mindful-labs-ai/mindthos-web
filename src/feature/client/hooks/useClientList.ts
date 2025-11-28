@@ -32,6 +32,7 @@ export const useClientList = () => {
       return mappedClients;
     },
     enabled: !!userId,
+    // 전역 설정 사용: staleTime 5분, refetchOnWindowFocus/Mount/Reconnect false
   });
 
   return {
