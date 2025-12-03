@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useToast } from '@/components/ui/composites/Toast';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
+import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
@@ -108,14 +109,8 @@ export const ClientDetailPage: React.FC = () => {
             .join(' ') || '전사 내용이 없습니다.';
       }
 
-      // progress notes에서 note_types 추출
-      const note_types = progressNotes
-        .map((note) => {
-          if (note.title?.includes('SOAP')) return 'SOAP';
-          if (note.title?.includes('마음토스')) return 'mindthos';
-          return null;
-        })
-        .filter((type): type is 'SOAP' | 'mindthos' => type !== null);
+      // progress notes에서 note_types 추출 (constants 사용)
+      const note_types = getNoteTypesFromProgressNotes(progressNotes);
 
       // 회기 번호 계산 (날짜순으로 정렬하여)
       const sortedSessions = [...clientSessions].sort(
@@ -313,18 +308,18 @@ export const ClientDetailPage: React.FC = () => {
                   <div>
                     <p className="mb-1 text-xs text-fg-muted">상담 주제</p>
                     <p className="text-sm text-fg">
-                      {client.counsel_theme || '부부 상담'}
+                      {client.counsel_theme || '-'}
                     </p>
                   </div>
                   <div>
                     <p className="mb-1 text-xs text-fg-muted">회기 수</p>
                     <p className="text-sm text-fg">
-                      {client.counsel_number}회기
+                      {client.counsel_number || '- '}회기
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">내담자 구성</p>
-                    <p className="text-sm text-fg">아내(고은정), 남(김고든)</p>
+                    <p className="mb-1 text-xs text-fg-muted">메모</p>
+                    <p className="text-sm text-fg">{client.memo || '-'}</p>
                   </div>
                 </div>
               </div>
