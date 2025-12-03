@@ -43,8 +43,8 @@ export function useSessionList({
         );
       });
 
-      // 처리 중인 세션이 있으면 10초마다 폴링
-      return hasProcessingSessions ? 10000 : false;
+      // 처리 중인 세션이 있으면 8초마다 폴링
+      return hasProcessingSessions ? 8000 : false;
     },
     retry: 2,
     staleTime: 1000 * 60 * 5, // 5분
