@@ -189,6 +189,9 @@ export function getTranscriptData(transcribe: Transcribe | null): {
     const speakerSet = new Set<number>();
 
     rawSegments.forEach((seg: any, index: number) => {
+      // 모든 모델에서 일관되게 index 기반 id 사용 (1부터 시작)
+      const segmentId = index + 1;
+
       if (sttModel === 'gemini-3') {
         // Gemini: 문자열 화자를 숫자로 변환
         const speakerId =
@@ -199,7 +202,7 @@ export function getTranscriptData(transcribe: Transcribe | null): {
         speakerSet.add(speakerId);
 
         processedSegments.push({
-          id: index + 1,
+          id: segmentId,
           start: null,
           end: null,
           speaker: speakerId,
@@ -211,7 +214,7 @@ export function getTranscriptData(transcribe: Transcribe | null): {
         speakerSet.add(speakerId);
 
         processedSegments.push({
-          id: seg.id || index + 1,
+          id: segmentId,
           start: seg.start || 0,
           end: seg.end || 0,
           speaker: speakerId,

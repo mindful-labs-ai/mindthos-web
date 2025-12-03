@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import { SEEK_STEP_SMALL } from '../constants/audioPlayer';
 
-import { useAudioPreload } from './useAudioPreload';
-
 interface UseAudioPlayerReturn {
   audioRef: React.RefObject<HTMLAudioElement | null>;
   isPlaying: boolean;
@@ -27,47 +25,55 @@ export const useAudioPlayer = (
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
-  // Preload audio as Blob to avoid network latency on seek
-  const { blobUrl, isLoading: isLoadingAudio } = useAudioPreload(audioUrl);
-
+  // presigned URL을 직접 사용하고 브라우저의 자동 버퍼링 활용
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !blobUrl) return;
+    if (!audio || !audioUrl) return;
 
-    audio.src = blobUrl;
-    audio.load();
-  }, [blobUrl]);
+    const handleLoadStart = () => {
+      setIsLoadingAudio(true);
+    };
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const handleLoadedMetadata = () => {
+      setIsLoadingAudio(false);
+      setDuration(audio.duration);
+    };
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleLoadedMetadata = () => setDuration(audio.duration);
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
     const handleEnded = () => setIsPlaying(false);
     const handleError = (e: Event) => {
       console.error('[useAudioPlayer] Audio error:', e);
+      setIsLoadingAudio(false);
     };
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
+    // 이벤트 리스너 등록
+    audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
 
+    // 오디오 소스 설정
+    audio.src = audioUrl;
+    audio.preload = 'auto';
+    audio.load();
+
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [blobUrl]);
+  }, [audioUrl]);
 
   const handlePlayPause = async () => {
     const audio = audioRef.current;

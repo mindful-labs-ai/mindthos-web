@@ -5,6 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
+import { Text } from '@/components/ui/atoms/Text';
+import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { useToast } from '@/components/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,6 +25,12 @@ import {
   updateMultipleTranscriptSegments,
   updateSessionTitle,
 } from '../services/sessionService';
+import type {
+  ProgressNote,
+  Session,
+  Transcribe,
+  TranscribeSegment,
+} from '../types';
 import { getSpeakerDisplayName } from '../utils/speakerUtils';
 import { getTranscriptData } from '../utils/transcriptParser';
 import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
@@ -53,6 +61,10 @@ export const SessionDetailPage: React.FC = () => {
   const [editedSegments, setEditedSegments] = React.useState<
     Record<number, string>
   >({});
+  const [isTabChangeModalOpen, setIsTabChangeModalOpen] = React.useState(false);
+  const [pendingTabValue, setPendingTabValue] = React.useState<string | null>(
+    null
+  );
 
   // 세션 상세 조회 (TanStack Query)
   const { data: sessionDetail, isLoading } = useSessionDetail({
@@ -100,7 +112,7 @@ export const SessionDetailPage: React.FC = () => {
     if (activeTab === 'create-note' || isCreatingNote) {
       items.push({
         value: 'create-note',
-        label: isCreatingNote ? '생성 중...' : '상담 노트 만들기',
+        label: isCreatingNote ? '생성 중...' : '빈 노트',
       });
     }
 
@@ -109,15 +121,37 @@ export const SessionDetailPage: React.FC = () => {
   }, [sessionProgressNotes, activeTab, isCreatingNote, transcribe?.stt_model]);
 
   // raw_output 파싱 또는 기존 result 사용
-  const transcriptData = getTranscriptData(transcribe || null);
+  // useMemo로 감싸서 transcribe.contents가 변경되면 재계산
+  const transcriptData = React.useMemo(() => {
+    return getTranscriptData(transcribe || null);
+  }, [transcribe]);
 
-  const segments = transcriptData?.segments || [];
-  const speakers = transcriptData?.speakers || [];
+  const rawSegments = React.useMemo(
+    () => transcriptData?.segments || [],
+    [transcriptData]
+  );
+  const speakers = React.useMemo(
+    () => transcriptData?.speakers || [],
+    [transcriptData]
+  );
+
+  // 편집 중인 내용을 반영한 segments (편집 중에도 UI에 즉시 반영)
+  const segments = React.useMemo(() => {
+    if (Object.keys(editedSegments).length === 0) {
+      return rawSegments;
+    }
+    return rawSegments.map((seg) => {
+      if (seg.id in editedSegments) {
+        return { ...seg, text: editedSegments[seg.id] };
+      }
+      return seg;
+    });
+  }, [rawSegments, editedSegments]);
 
   // 타임스탬프 기반 기능 활성화 여부 (gemini-3는 비활성화)
   const enableTimestampFeatures = shouldEnableTimestampFeatures(
     transcribe?.stt_model,
-    segments
+    rawSegments
   );
 
   const handleTextEdit = (segmentId: number, newText: string) => {
@@ -129,7 +163,7 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   const handleSaveAllEdits = async () => {
-    if (!transcribe?.id) {
+    if (!transcribe?.id || !sessionId) {
       toast({
         title: '오류',
         description: '전사 데이터를 찾을 수 없습니다.',
@@ -149,25 +183,97 @@ export const SessionDetailPage: React.FC = () => {
     }
 
     try {
-      // 모든 편집된 세그먼트를 일괄 업데이트
-      await updateMultipleTranscriptSegments(transcribe.id, editedSegments);
+      // Optimistic update: 캐시를 즉시 업데이트
+      queryClient.setQueryData(
+        ['session', sessionId],
+        (
+          oldData:
+            | {
+                session: Session;
+                transcribe: Transcribe | null;
+                progressNotes: ProgressNote[];
+              }
+            | undefined
+        ) => {
+          if (!oldData || !oldData.transcribe) return oldData;
 
-      // React Query 캐시 무효화하여 최신 데이터 가져오기
-      await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
-      });
+          const transcribe = oldData.transcribe;
+          const contents = transcribe.contents;
+
+          if (!contents) return oldData;
+
+          let updatedContents;
+
+          // New format: { stt_model, segments, ... }
+          if ('segments' in contents && Array.isArray(contents.segments)) {
+            const updatedSegments = contents.segments.map(
+              (seg: TranscribeSegment, index: number) => {
+                const segmentId = index + 1; // id는 1부터 시작
+                if (segmentId in editedSegments) {
+                  return { ...seg, text: editedSegments[segmentId] };
+                }
+                return seg;
+              }
+            );
+
+            updatedContents = {
+              ...contents,
+              segments: updatedSegments,
+            };
+          }
+          // Legacy format: { result: { segments, speakers } }
+          else if ('result' in contents && contents.result?.segments) {
+            const updatedSegments = contents.result.segments.map(
+              (seg: TranscribeSegment, index: number) => {
+                const segmentId = index + 1; // id는 1부터 시작
+                if (segmentId in editedSegments) {
+                  return { ...seg, text: editedSegments[segmentId] };
+                }
+                return seg;
+              }
+            );
+
+            updatedContents = {
+              ...contents,
+              result: {
+                ...contents.result,
+                segments: updatedSegments,
+              },
+            };
+          } else {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+            transcribe: {
+              ...transcribe,
+              contents: updatedContents,
+            },
+          };
+        }
+      );
+
+      // 편집 상태 초기화 (UI 즉시 반영)
+      setEditedSegments({});
+      setIsEditing(false);
+
+      // 백그라운드에서 서버 업데이트
+      await updateMultipleTranscriptSegments(transcribe.id, editedSegments);
 
       toast({
         title: '저장 완료',
         description: `${Object.keys(editedSegments).length}개의 세그먼트가 업데이트되었습니다.`,
         duration: 3000,
       });
-
-      // 편집 상태 초기화
-      setEditedSegments({});
-      setIsEditing(false);
     } catch (error) {
       console.error('전사 텍스트 업데이트 실패:', error);
+
+      // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
+      await queryClient.invalidateQueries({
+        queryKey: ['session', sessionId],
+      });
+
       toast({
         title: '저장 실패',
         description:
@@ -179,9 +285,52 @@ export const SessionDetailPage: React.FC = () => {
     }
   };
 
+  const handleEditStart = () => {
+    setIsEditing(true);
+  };
+
   const handleCancelEdit = () => {
     setEditedSegments({});
     setIsEditing(false);
+  };
+
+  // 탭 변경 핸들러
+  const handleTabChange = (value: string) => {
+    // 편집 중이고, 축어록 탭에서 다른 탭으로 변경하려는 경우
+    if (isEditing && activeTab === 'transcript') {
+      setPendingTabValue(value);
+      setIsTabChangeModalOpen(true);
+      return;
+    }
+
+    // 'add' 탭 처리
+    if (value === 'add') {
+      setActiveTab('create-note');
+      return;
+    }
+
+    setActiveTab(value);
+  };
+
+  // 탭 변경 확인
+  const handleConfirmTabChange = () => {
+    setIsEditing(false);
+    setEditedSegments({});
+    if (pendingTabValue) {
+      if (pendingTabValue === 'add') {
+        setActiveTab('create-note');
+      } else {
+        setActiveTab(pendingTabValue);
+      }
+    }
+    setIsTabChangeModalOpen(false);
+    setPendingTabValue(null);
+  };
+
+  // 탭 변경 취소
+  const handleCancelTabChange = () => {
+    setIsTabChangeModalOpen(false);
+    setPendingTabValue(null);
   };
 
   const handleCopyTranscript = async () => {
@@ -347,10 +496,16 @@ export const SessionDetailPage: React.FC = () => {
   // 로딩 완료 후 세션이 없으면 sessions 목록으로 이동
   React.useEffect(() => {
     if (!isLoading && !session && sessionId) {
+      toast({
+        title: '오류',
+        description: '세션 데이터를 찾을 수 없습니다.',
+        duration: 3000,
+      });
       navigate('/sessions');
     }
   }, [isLoading, session, sessionId, navigate]);
 
+  // 오디오 플레이어 키바인드
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -419,20 +574,14 @@ export const SessionDetailPage: React.FC = () => {
         <Tab
           items={tabItems}
           value={activeTab}
-          onValueChange={(value) => {
-            if (value === 'add') {
-              setActiveTab('create-note');
-              return;
-            }
-            setActiveTab(value);
-          }}
+          onValueChange={handleTabChange}
           size="md"
           variant="underline"
         />
       </div>
 
       <div
-        className={`mx-6 min-h-0 flex-1 overflow-y-auto rounded-xl border-2 ${isEditing ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
+        className={`mx-6 min-h-0 flex-1 overflow-y-auto rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         {activeTab === 'transcript' && (
           <div className="z-10v sticky top-0 mb-4 flex items-center justify-end gap-2 px-8 py-2">
@@ -458,7 +607,7 @@ export const SessionDetailPage: React.FC = () => {
                 <button
                   type="button"
                   className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleEditStart}
                   title="편집"
                 >
                   <svg
@@ -650,6 +799,37 @@ export const SessionDetailPage: React.FC = () => {
           onPlaybackRateChange={handlePlaybackRateChange}
         />
       </div>
+
+      {/* 탭 변경 확인 모달 */}
+      <Modal
+        open={isTabChangeModalOpen}
+        onOpenChange={setIsTabChangeModalOpen}
+        title="탭 변경 확인"
+        className="max-w-sm"
+      >
+        <div className="space-y-4">
+          <Text className="text-base text-fg">
+            편집 중인 내용이 있습니다. 저장하지 않고 탭을 변경하시겠습니까?
+          </Text>
+          <Text className="text-sm text-fg-muted">
+            변경하면 편집 중인 내용이 모두 사라집니다.
+          </Text>
+          <div className="flex justify-center gap-2 pt-2">
+            <button
+              onClick={handleCancelTabChange}
+              className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
+            >
+              취소
+            </button>
+            <button
+              onClick={handleConfirmTabChange}
+              className="hover:bg-primary/90 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -248,6 +248,44 @@ export async function updateSessionTitle(
 }
 
 /**
+ * segment id를 배열 인덱스로 변환
+ * segment id는 1부터 시작하므로 배열 접근 시 -1 필요
+ */
+function segmentIdToIndex(segmentId: number): number {
+  return segmentId - 1;
+}
+
+/**
+ * contents에서 segments 배열을 추출하고 업데이트 적용 후 새로운 contents 반환
+ */
+function updateSegmentsInContents(
+  contents: any,
+  updater: (segments: any[]) => any[]
+): any {
+  // New format: { stt_model, segments, ... }
+  if ('segments' in contents && Array.isArray(contents.segments)) {
+    const updatedSegments = updater([...contents.segments]);
+    return {
+      ...contents,
+      segments: updatedSegments,
+    };
+  }
+  // Legacy format: { result: { segments, speakers } }
+  else if ('result' in contents && contents.result?.segments) {
+    const updatedSegments = updater([...contents.result.segments]);
+    return {
+      ...contents,
+      result: {
+        ...contents.result,
+        segments: updatedSegments,
+      },
+    };
+  }
+
+  throw new Error('전사 결과가 존재하지 않습니다.');
+}
+
+/**
  * 전사 세그먼트 텍스트 업데이트 API 호출 (단일 세그먼트)
  */
 export async function updateTranscriptSegmentText(
@@ -271,28 +309,30 @@ export async function updateTranscriptSegmentText(
     );
   }
 
-  // 2. contents JSON 파싱 및 세그먼트 업데이트
   const contents = transcribe.contents;
-  if (!contents || !contents.result || !contents.result.segments) {
+  if (!contents) {
     throw new Error('전사 결과가 존재하지 않습니다.');
   }
 
-  const segments = contents.result.segments;
-  const segmentIndex = segments.findIndex(
-    (seg: TranscribeSegment) => seg.id === segmentId
-  );
+  // 2. 세그먼트 업데이트
+  const segmentIndex = segmentIdToIndex(segmentId);
+  const updatedContents = updateSegmentsInContents(contents, (segments) => {
+    if (segmentIndex < 0 || segmentIndex >= segments.length) {
+      throw new Error('해당 세그먼트를 찾을 수 없습니다.');
+    }
 
-  if (segmentIndex === -1) {
-    throw new Error('해당 세그먼트를 찾을 수 없습니다.');
-  }
+    segments[segmentIndex] = {
+      ...segments[segmentIndex],
+      text: newText,
+    };
 
-  // 세그먼트 텍스트 업데이트
-  segments[segmentIndex].text = newText;
+    return segments;
+  });
 
-  // 3. 업데이트된 contents를 DB에 저장
+  // 3. DB에 저장
   const { error: updateError } = await supabase
     .from('transcribes')
-    .update({ contents })
+    .update({ contents: updatedContents })
     .eq('id', transcribeId);
 
   if (updateError) {
@@ -323,30 +363,33 @@ export async function updateMultipleTranscriptSegments(
     );
   }
 
-  // 2. contents JSON 파싱 및 세그먼트 업데이트
   const contents = transcribe.contents;
-  if (!contents || !contents.result || !contents.result.segments) {
+  if (!contents) {
     throw new Error('전사 결과가 존재하지 않습니다.');
   }
 
-  const segments = contents.result.segments;
+  // 2. 세그먼트 일괄 업데이트
+  const updatedContents = updateSegmentsInContents(contents, (segments) => {
+    // 모든 업데이트 적용
+    for (const [segmentIdStr, newText] of Object.entries(updates)) {
+      const segmentId = parseInt(segmentIdStr, 10);
+      const segmentIndex = segmentIdToIndex(segmentId);
 
-  // 모든 업데이트 적용
-  for (const [segmentIdStr, newText] of Object.entries(updates)) {
-    const segmentId = parseInt(segmentIdStr, 10);
-    const segmentIndex = segments.findIndex(
-      (seg: TranscribeSegment) => seg.id === segmentId
-    );
-
-    if (segmentIndex !== -1) {
-      segments[segmentIndex].text = newText;
+      if (segmentIndex >= 0 && segmentIndex < segments.length) {
+        segments[segmentIndex] = {
+          ...segments[segmentIndex],
+          text: newText,
+        };
+      }
     }
-  }
 
-  // 3. 업데이트된 contents를 DB에 저장
+    return segments;
+  });
+
+  // 3. DB에 저장
   const { error: updateError } = await supabase
     .from('transcribes')
-    .update({ contents })
+    .update({ contents: updatedContents })
     .eq('id', transcribeId);
 
   if (updateError) {
