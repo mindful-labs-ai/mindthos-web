@@ -53,12 +53,13 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
   const usageItems = calculateUsage();
 
   return (
-    <div className="flex-1 space-y-4 rounded-lg bg-surface-contrast p-6">
-      <Title as="h3" className="text-base font-semibold text-fg-muted">
+    <div className="space-y-4 rounded-lg border bg-surface-contrast p-6">
+      <Title as="h4" className="font-medium text-fg-muted">
         남은 크레딧으로 사용 가능
       </Title>
-      <div className="flex justify-center gap-12 text-left">
-        <div className="flex flex-col gap-6">
+      <div className="flex gap-2 text-left">
+        <div className="flex flex-1 flex-col gap-3">
+          <Text className="text-sm font-medium text-fg-muted">음성 변환</Text>
           {usageItems.perMinutes.map((item, index) => (
             <div key={index} className="flex gap-6">
               <Text as="p" className="text-sm font-medium text-fg">
@@ -70,7 +71,10 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
             </div>
           ))}
         </div>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-1 flex-col gap-3">
+          <Text className="text-sm font-medium text-fg-muted">
+            AI 상담 노트 및 분석
+          </Text>
           {usageItems.perCounts.map((item, index) => (
             <div key={index} className="flex gap-6">
               <Text as="p" className="text-sm font-medium text-fg">

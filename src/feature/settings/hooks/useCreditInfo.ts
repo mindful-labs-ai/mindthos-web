@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 import { useQuery } from '@tanstack/react-query';
 
 import { useAuthStore } from '@/stores/authStore';
@@ -8,14 +6,23 @@ import { creditService, type CreditInfo } from '../services/creditService';
 
 export const useCreditInfo = () => {
   const userId = useAuthStore((state) => state.userId);
-  const subscriptionInfo = useAuthStore((state) => state.subscriptionInfo);
 
-  const userIdNumber = useMemo(() => {
-    if (!userId) return null;
-    const num = Number(userId);
-    return isNaN(num) ? null : num;
-  }, [userId]);
+  const userIdNumber = userId ? (isNaN(Number(userId)) ? null : Number(userId)) : null;
 
+  // 구독 정보 쿼리
+  const subscriptionQuery = useQuery({
+    queryKey: ['credit', 'subscription', userIdNumber],
+    queryFn: async () => {
+      if (!userIdNumber) {
+        throw new Error('사용자 정보를 찾을 수 없습니다.');
+      }
+      return await creditService.getSubscriptionInfo(userIdNumber);
+    },
+    enabled: !!userIdNumber,
+    // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect/Interval false
+  });
+
+  // 사용량 정보 쿼리
   const usageQuery = useQuery({
     queryKey: ['credit', 'usage', userIdNumber],
     queryFn: async () => {
@@ -28,13 +35,12 @@ export const useCreditInfo = () => {
     // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect/Interval false
   });
 
-  const creditInfo: CreditInfo | undefined = useMemo(() => {
-    if (!subscriptionInfo || !usageQuery.data) return undefined;
-
-    const { plan, subscription } = subscriptionInfo;
+  let creditInfo: CreditInfo | undefined = undefined;
+  if (subscriptionQuery.data && usageQuery.data) {
+    const { plan, subscription } = subscriptionQuery.data;
     const { total_usage } = usageQuery.data;
 
-    return {
+    creditInfo = {
       plan: {
         total: plan.total_credit,
         used: total_usage,
@@ -44,12 +50,15 @@ export const useCreditInfo = () => {
       },
       subscription,
     };
-  }, [subscriptionInfo, usageQuery.data]);
+  }
 
   return {
     creditInfo,
-    isLoading: usageQuery.isLoading,
-    error: usageQuery.error?.message ?? null,
-    refetch: usageQuery.refetch,
+    isLoading: subscriptionQuery.isLoading || usageQuery.isLoading,
+    error: subscriptionQuery.error?.message ?? usageQuery.error?.message ?? null,
+    refetch: () => {
+      subscriptionQuery.refetch();
+      usageQuery.refetch();
+    },
   };
 };

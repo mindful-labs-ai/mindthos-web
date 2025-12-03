@@ -8,8 +8,8 @@ import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
-import { Select } from '@/components/ui/composites/Select';
 import type { SelectItem } from '@/components/ui/composites/Select';
+import { Select } from '@/components/ui/composites/Select';
 import type { Session } from '@/feature/session/types';
 import { cn } from '@/lib/cn';
 
@@ -124,7 +124,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     !isCreating;
 
   return (
-    <Modal open={open} onOpenChange={handleClose}>
+    <Modal className="max-w-lg" open={open} onOpenChange={handleClose}>
       <div className="max-h-[80vh] space-y-6 overflow-y-auto p-6">
         {/* 헤더 */}
         <div className="text-center">

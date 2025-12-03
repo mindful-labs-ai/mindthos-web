@@ -25,6 +25,7 @@ import {
 } from '../services/sessionService';
 import { getSpeakerDisplayName } from '../utils/speakerUtils';
 import { getTranscriptData } from '../utils/transcriptParser';
+import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
 // 초를 [MM:SS] 형식으로 변환
 const formatTimestamp = (seconds: number): string => {
@@ -45,7 +46,6 @@ export const SessionDetailPage: React.FC = () => {
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
-  const [isLoadingAudio, setIsLoadingAudio] = React.useState(false);
   const [isCreatingNote, setIsCreatingNote] = React.useState(false);
   const [creatingTemplateId, setCreatingTemplateId] = React.useState<
     number | null
@@ -114,6 +114,12 @@ export const SessionDetailPage: React.FC = () => {
   const segments = transcriptData?.segments || [];
   const speakers = transcriptData?.speakers || [];
 
+  // 타임스탬프 기반 기능 활성화 여부 (gemini-3는 비활성화)
+  const enableTimestampFeatures = shouldEnableTimestampFeatures(
+    transcribe?.stt_model,
+    segments
+  );
+
   const handleTextEdit = (segmentId: number, newText: string) => {
     // 편집된 세그먼트를 메모리에 저장 (실제 저장은 편집 완료 버튼 클릭 시)
     setEditedSegments((prev) => ({
@@ -180,10 +186,14 @@ export const SessionDetailPage: React.FC = () => {
 
   const handleCopyTranscript = async () => {
     try {
-      // 세그먼트를 포맷팅: [타임스탬프] 발화자 : 내용
+      // 세그먼트를 포맷팅: [타임스탬프] 또는 번호. 발화자 : 내용
       const formattedText = segments
-        .map((segment) => {
-          const timestamp = formatTimestamp(segment.start);
+        .map((segment, index) => {
+          // 타임스탬프가 있으면 [MM:SS] 형식, 없으면 시퀀스 번호
+          const prefix = enableTimestampFeatures && segment.start !== null
+            ? formatTimestamp(segment.start)
+            : `${index + 1}.`;
+
           // {%X%내용%} 또는 {%X%} 형태의 비언어적 표현을 (내용) 로 변환
           // {%A%웃음%} -> (웃음), {%S%} -> (침묵), {%E%강조%} -> (강조)
           let cleanedText = segment.text.replace(
@@ -197,13 +207,13 @@ export const SessionDetailPage: React.FC = () => {
 
           // 익명화 모드일 경우 화자 정보 제외
           if (isAnonymized) {
-            return `${timestamp} ${cleanedText}`;
+            return `${prefix} ${cleanedText}`;
           } else {
             const speakerName = getSpeakerDisplayName(
               segment.speaker,
               speakers
             );
-            return `${timestamp} ${speakerName} : ${cleanedText}`;
+            return `${prefix} ${speakerName} : ${cleanedText}`;
           }
         })
         .join('\n');
@@ -302,6 +312,7 @@ export const SessionDetailPage: React.FC = () => {
     currentTime,
     duration,
     playbackRate,
+    isLoadingAudio: isLoadingAudioBlob,
     handlePlayPause,
     handleBackward,
     handleForward,
@@ -310,23 +321,21 @@ export const SessionDetailPage: React.FC = () => {
     handlePlaybackRateChange,
   } = useAudioPlayer(audioUrl);
 
-  const { currentSegmentIndex, activeSegmentRef } = useTranscriptSync(
+  const { currentSegmentIndex, activeSegmentRef } = useTranscriptSync({
     segments,
-    currentTime
-  );
+    currentTime,
+    enableSync: enableTimestampFeatures,
+  });
 
   // S3 Presigned URL 가져오기 (캐싱 없이 sessionId만 의존)
   React.useEffect(() => {
     const fetchPresignedUrl = async () => {
       if (sessionId && hasS3Key) {
         try {
-          setIsLoadingAudio(true);
           const url = await getAudioPresignedUrl(sessionId);
           setPresignedAudioUrl(url);
         } catch (error) {
           console.error('[SessionDetailPage] Presigned URL 생성 실패:', error);
-        } finally {
-          setIsLoadingAudio(false);
         }
       }
     };
@@ -562,18 +571,22 @@ export const SessionDetailPage: React.FC = () => {
             {segments.length > 0 ? (
               segments.map((segment, index) => (
                 <TranscriptSegment
-                  key={segment.id}
+                  key={`segment-${index}-${segment.id}`}
                   segment={segment}
                   speakers={speakers}
-                  isActive={index === currentSegmentIndex}
+                  isActive={enableTimestampFeatures && index === currentSegmentIndex}
                   isEditable={isEditing}
                   isAnonymized={isAnonymized}
                   sttModel={transcribe?.stt_model}
                   segmentRef={
-                    index === currentSegmentIndex ? activeSegmentRef : undefined
+                    enableTimestampFeatures && index === currentSegmentIndex
+                      ? activeSegmentRef
+                      : undefined
                   }
                   onClick={handleSeekTo}
                   onTextEdit={handleTextEdit}
+                  showTimestamp={enableTimestampFeatures}
+                  segmentIndex={index}
                 />
               ))
             ) : (
@@ -626,7 +639,7 @@ export const SessionDetailPage: React.FC = () => {
           currentTime={currentTime}
           duration={audioDuration}
           playbackRate={playbackRate}
-          isLoading={isLoadingAudio}
+          isLoading={isLoadingAudioBlob}
           onPlayPause={handlePlayPause}
           onBackward={handleBackward}
           onForward={handleForward}

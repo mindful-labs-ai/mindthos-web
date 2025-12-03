@@ -5,7 +5,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { getSessionList } from '../services/sessionService';
-import type { Session, Transcribe, ProgressNote } from '../types';
+import type { ProgressNote, Session, Transcribe } from '../types';
 
 export interface SessionWithRelations {
   session: Session;
@@ -43,8 +43,8 @@ export function useSessionList({
         );
       });
 
-      // 처리 중인 세션이 있으면 3초마다 폴링
-      return hasProcessingSessions ? 3000 : false;
+      // 처리 중인 세션이 있으면 10초마다 폴링
+      return hasProcessingSessions ? 10000 : false;
     },
     retry: 2,
     staleTime: 1000 * 60 * 5, // 5분

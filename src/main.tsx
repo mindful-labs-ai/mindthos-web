@@ -7,10 +7,10 @@ import { RouterProvider } from 'react-router-dom';
 
 import { ToastProvider } from './components/ui/composites/Toast';
 import ErrorBoundary from './feature/error/components/ErrorBoundary';
+import './lib/env';
 import { queryClient } from './lib/queryClient';
 import { ThemeProvider } from './providers/ThemeProvider';
 import { router } from './router';
-import './lib/env';
 import './styles/tailwind.css';
 import './styles/tokens.css';
 
