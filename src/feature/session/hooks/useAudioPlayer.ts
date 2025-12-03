@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { SEEK_STEP_SMALL } from '../constants/audioPlayer';
+
 import { useAudioPreload } from './useAudioPreload';
 
 interface UseAudioPlayerReturn {

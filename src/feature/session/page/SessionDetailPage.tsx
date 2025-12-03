@@ -190,9 +190,10 @@ export const SessionDetailPage: React.FC = () => {
       const formattedText = segments
         .map((segment, index) => {
           // 타임스탬프가 있으면 [MM:SS] 형식, 없으면 시퀀스 번호
-          const prefix = enableTimestampFeatures && segment.start !== null
-            ? formatTimestamp(segment.start)
-            : `${index + 1}.`;
+          const prefix =
+            enableTimestampFeatures && segment.start !== null
+              ? formatTimestamp(segment.start)
+              : `${index + 1}.`;
 
           // {%X%내용%} 또는 {%X%} 형태의 비언어적 표현을 (내용) 로 변환
           // {%A%웃음%} -> (웃음), {%S%} -> (침묵), {%E%강조%} -> (강조)
@@ -574,7 +575,9 @@ export const SessionDetailPage: React.FC = () => {
                   key={`segment-${index}-${segment.id}`}
                   segment={segment}
                   speakers={speakers}
-                  isActive={enableTimestampFeatures && index === currentSegmentIndex}
+                  isActive={
+                    enableTimestampFeatures && index === currentSegmentIndex
+                  }
                   isEditable={isEditing}
                   isAnonymized={isAnonymized}
                   sttModel={transcribe?.stt_model}

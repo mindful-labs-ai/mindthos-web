@@ -152,9 +152,7 @@ export function parseGeminiTranscriptResponse(rawOutput: string): {
 /**
  * Type guard to check if contents is TranscriptJson
  */
-function isTranscriptJson(
-  contents: any
-): contents is TranscriptJson {
+function isTranscriptJson(contents: any): contents is TranscriptJson {
   return (
     contents &&
     typeof contents === 'object' &&
@@ -209,8 +207,7 @@ export function getTranscriptData(transcribe: Transcribe | null): {
         });
       } else {
         // Whisper: 숫자 화자 사용
-        const speakerId =
-          typeof seg.speaker === 'number' ? seg.speaker : 0;
+        const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
         speakerSet.add(speakerId);
 
         processedSegments.push({

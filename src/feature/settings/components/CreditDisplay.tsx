@@ -2,6 +2,7 @@ import React from 'react';
 
 import { ProgressCircle } from '@/components/ui/atoms/ProgressCircle';
 import { Text } from '@/components/ui/atoms/Text';
+
 import { CreditPricingTooltip } from './CreditPricingTooltip';
 
 interface CreditDisplayProps {

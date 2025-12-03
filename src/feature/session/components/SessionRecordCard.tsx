@@ -50,9 +50,11 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const hasClient = record.client_id && record.client_name !== '고객 없음';
 
   // title이 있으면 그대로 사용, 없으면 기존 방식대로 fallback
-  const displayTitle = record.title || (hasClient
-    ? `${record.client_name} ${record.session_number}회기`
-    : `세션 ${record.session_number}회기`);
+  const displayTitle =
+    record.title ||
+    (hasClient
+      ? `${record.client_name} ${record.session_number}회기`
+      : `세션 ${record.session_number}회기`);
 
   const getStatusBadge = () => {
     if (!record.processing_status || record.processing_status === 'succeeded')

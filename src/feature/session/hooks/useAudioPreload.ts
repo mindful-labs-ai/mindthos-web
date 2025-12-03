@@ -10,7 +10,9 @@ interface UseAudioPreloadReturn {
  * 오디오 파일을 미리 Blob으로 다운로드하여 로컬 URL을 반환
  * 이를 통해 시간 이동 시 네트워크 요청 없이 즉시 재생 가능
  */
-export const useAudioPreload = (audioUrl: string | null): UseAudioPreloadReturn => {
+export const useAudioPreload = (
+  audioUrl: string | null
+): UseAudioPreloadReturn => {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -45,7 +47,8 @@ export const useAudioPreload = (audioUrl: string | null): UseAudioPreloadReturn 
       } catch (err) {
         if (cancelled) return;
 
-        const error = err instanceof Error ? err : new Error('Failed to load audio');
+        const error =
+          err instanceof Error ? err : new Error('Failed to load audio');
         setError(error);
         console.error('[useAudioPreload] Error loading audio:', error);
       } finally {

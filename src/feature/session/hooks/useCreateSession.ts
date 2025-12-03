@@ -121,7 +121,8 @@ export function useCreateSession(): UseCreateSessionReturn {
         const uploadResult = await uploadAudio(audioFile.file, params.userId);
 
         // transcribeType을 stt_model로 변환: 'basic' → 'whisper', 'advanced' → 'gemini-3'
-        const sttModel = params.transcribeType === 'basic' ? 'whisper' : 'gemini-3';
+        const sttModel =
+          params.transcribeType === 'basic' ? 'whisper' : 'gemini-3';
 
         request = {
           user_id: params.userId,

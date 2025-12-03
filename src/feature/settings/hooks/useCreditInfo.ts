@@ -7,7 +7,11 @@ import { creditService, type CreditInfo } from '../services/creditService';
 export const useCreditInfo = () => {
   const userId = useAuthStore((state) => state.userId);
 
-  const userIdNumber = userId ? (isNaN(Number(userId)) ? null : Number(userId)) : null;
+  const userIdNumber = userId
+    ? isNaN(Number(userId))
+      ? null
+      : Number(userId)
+    : null;
 
   // 구독 정보 쿼리
   const subscriptionQuery = useQuery({
@@ -55,7 +59,8 @@ export const useCreditInfo = () => {
   return {
     creditInfo,
     isLoading: subscriptionQuery.isLoading || usageQuery.isLoading,
-    error: subscriptionQuery.error?.message ?? usageQuery.error?.message ?? null,
+    error:
+      subscriptionQuery.error?.message ?? usageQuery.error?.message ?? null,
     refetch: () => {
       subscriptionQuery.refetch();
       usageQuery.refetch();
