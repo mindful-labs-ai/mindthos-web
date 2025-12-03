@@ -8,6 +8,7 @@ interface ClientFilterMenuProps {
   sessionCounts: Record<string, number>;
   onClientChange: (clientIds: string[]) => void;
   onBack: () => void;
+  showBackButton?: boolean; // 뒤로가기 버튼 표시 여부
 }
 
 export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
@@ -16,21 +17,20 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
   sessionCounts,
   onClientChange,
   onBack,
+  showBackButton = true,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
 
-  const filteredClients = React.useMemo(() => {
-    const safeClients = clients || [];
-    if (!searchQuery.trim()) {
-      return safeClients;
-    }
-    const query = searchQuery.toLowerCase();
-    return safeClients.filter(
-      (client) =>
-        client.name.toLowerCase().includes(query) ||
-        client.phone_number.includes(query)
-    );
-  }, [clients, searchQuery]);
+  const safeClients = clients || [];
+  const filteredClients = !searchQuery.trim()
+    ? safeClients
+    : safeClients.filter((client) => {
+        const query = searchQuery.toLowerCase();
+        return (
+          client.name.toLowerCase().includes(query) ||
+          client.phone_number.includes(query)
+        );
+      });
 
   // 체크박스 토글 핸들러
   const handleToggleClient = (clientId: string) => {
@@ -50,26 +50,28 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
     <div className="w-64 space-y-4">
       {/* 헤더 */}
       <div className="flex items-center gap-2 border-b border-border pb-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="rounded p-1 hover:bg-surface"
-          aria-label="뒤로가기"
-        >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        {showBackButton && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="rounded p-1 hover:bg-surface"
+            aria-label="뒤로가기"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+        )}
         <h3 className="text-sm font-semibold text-fg">고객 선택</h3>
       </div>
 

@@ -120,16 +120,18 @@ export function useCreateSession(): UseCreateSessionReturn {
         // S3 업로드
         const uploadResult = await uploadAudio(audioFile.file, params.userId);
 
+        // transcribeType을 stt_model로 변환: 'basic' → 'whisper', 'advanced' → 'gemini-3'
+        const sttModel =
+          params.transcribeType === 'basic' ? 'whisper' : 'gemini-3';
+
         request = {
           user_id: params.userId,
-          client_id: params.clientId,
-          upload_type: 'audio',
-          audio_url: uploadResult.audio_url,
-          s3_key: uploadResult.file_path, // S3 key 추가
-          filename: audioFile.file.name, // 파일명 추가 (세션 제목으로 사용)
+          title: audioFile.file.name, // 파일명을 세션 제목으로 사용
+          s3_key: uploadResult.file_path, // S3 key (영구 저장용)
           file_size_mb: uploadResult.file_size_mb,
           duration_seconds: uploadResult.duration_seconds || audioFile.duration,
-          transcribe_type: params.transcribeType,
+          client_id: params.clientId || null,
+          stt_model: sttModel,
           template_id: params.templateId,
         };
       } else if (params.uploadType === 'pdf') {

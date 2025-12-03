@@ -100,14 +100,14 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-contrast">
-      <div className="px-8 py-6">
-        <Title as="h1" className="text-2xl font-bold">
+    <div className="flex min-h-screen flex-col bg-surface-contrast px-16 py-[42px]">
+      <div>
+        <Title as="h1" className="text-left text-2xl font-bold">
           서비스 설정
         </Title>
       </div>
 
-      <div className="flex-1 space-y-6 px-8 py-6">
+      <div className="flex-1 space-y-6 py-[42px]">
         <Card>
           <Card.Body className="space-y-4 p-6">
             <div className="flex items-center justify-between">
@@ -146,7 +146,7 @@ export const SettingsPage: React.FC = () => {
         </Card>
 
         <Card>
-          <Card.Body className="space-y-6 p-6">
+          <Card.Body className="p-6">
             <div className="flex items-center justify-between">
               <Title as="h2" className="text-lg font-semibold text-fg-muted">
                 사용 정보
@@ -161,7 +161,7 @@ export const SettingsPage: React.FC = () => {
               </Button>
             </div>
 
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-3">
               {creditInfo && (
                 <>
                   {creditInfo.plan.type.toLowerCase() === 'free' ? (
@@ -179,34 +179,18 @@ export const SettingsPage: React.FC = () => {
                           cardNumber={cardInfo.number}
                         />
                       )}
-                      <Text className="text-left">
+                      <Text className="flex gap-3 text-left">
                         <span className="font-bold text-primary">
-                          {getPlanLabel(creditInfo.plan.type)}
-                        </span>{' '}
+                          {getPlanLabel(creditInfo.plan.type)} 플랜
+                        </span>
                         {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
                         예정
                       </Text>
                     </div>
                   )}
 
-                  <div className="flex w-full justify-center gap-6 lg:grid-cols-2">
-                    <CreditDisplay
-                      totalCredit={creditInfo.plan.total}
-                      usedCredit={creditInfo.plan.used}
-                      planLabel={getPlanLabel(creditInfo.plan.type)}
-                      planType={creditInfo.plan.type}
-                      daysUntilReset={calculateDaysUntilReset(
-                        creditInfo.subscription.end_at
-                      )}
-                      variant="detailed"
-                    />
-                    <CreditUsageInfo
-                      remainingCredit={creditInfo.plan.remaining}
-                    />
-                  </div>
-
                   <Button
-                    variant="solid"
+                    variant="outline"
                     tone="primary"
                     size="sm"
                     className="w-32"
@@ -214,6 +198,26 @@ export const SettingsPage: React.FC = () => {
                   >
                     플랜 업그레이드
                   </Button>
+
+                  <div className="flex w-full justify-center gap-6">
+                    <div className="flex flex-1 items-center justify-center">
+                      <CreditDisplay
+                        totalCredit={creditInfo.plan.total}
+                        usedCredit={creditInfo.plan.used}
+                        planLabel={getPlanLabel(creditInfo.plan.type)}
+                        planType={creditInfo.plan.type}
+                        daysUntilReset={calculateDaysUntilReset(
+                          creditInfo.subscription.end_at
+                        )}
+                        variant="detailed"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <CreditUsageInfo
+                        remainingCredit={creditInfo.plan.remaining}
+                      />
+                    </div>
+                  </div>
                 </>
               )}
             </div>

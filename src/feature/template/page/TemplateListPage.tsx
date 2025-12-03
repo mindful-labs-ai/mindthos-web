@@ -28,8 +28,8 @@ export const TemplateListPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-contrast p-12">
-      <div className="px-12 py-6 text-left">
+    <div className="flex min-h-screen flex-col bg-surface-contrast px-16 py-[42px]">
+      <div className="text-left">
         <Title as="h1" className="text-2xl font-bold">
           상담 노트 템플릿
         </Title>
@@ -48,7 +48,7 @@ export const TemplateListPage: React.FC = () => {
           <Text className="text-lg text-fg-muted">로딩 중...</Text>
         </div>
       ) : (
-        <div className="flex-1 px-8 py-6">
+        <div className="flex-1 py-6">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {templates.map((template) => (
               <TemplateCard

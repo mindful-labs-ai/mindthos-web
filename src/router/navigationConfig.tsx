@@ -76,26 +76,26 @@ export const getRouteLabel = (path: string): string => {
 };
 
 // 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿)
-export const getMainNavItems = () => {
-  return NAVIGATION_ITEMS.filter((item) =>
-    ['home', 'client', 'sessions', 'template'].includes(item.value)
-  ).map((item) => ({
-    icon: item.icon,
-    label: item.label,
-    value: item.value,
-  }));
-};
+export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
+  ['home', 'client', 'sessions', 'template'].includes(item.value)
+).map((item) => ({
+  icon: item.icon,
+  label: item.label,
+  value: item.value,
+}));
 
 // 하단 네비게이션 아이템 (설정, 도움말)
-export const getBottomNavItems = () => {
-  return NAVIGATION_ITEMS.filter((item) =>
-    ['settings', 'help'].includes(item.value)
-  ).map((item) => ({
-    icon: item.icon,
-    label: item.label,
-    value: item.value,
-  }));
-};
+export const BOTTOM_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
+  ['settings', 'help'].includes(item.value)
+).map((item) => ({
+  icon: item.icon,
+  label: item.label,
+  value: item.value,
+}));
+
+// 레거시 함수 (호환성 유지)
+export const getMainNavItems = () => MAIN_NAV_ITEMS;
+export const getBottomNavItems = () => BOTTOM_NAV_ITEMS;
 
 // 경로별 표시 이름 매핑 (Header에서 사용)
 export const routeNameMap: Record<string, string> = NAVIGATION_ITEMS.reduce(

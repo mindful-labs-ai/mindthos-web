@@ -27,7 +27,7 @@ export interface UseSessionStatusOptions {
 export function useSessionStatus({
   sessionId,
   enabled = true,
-  refetchInterval = 8000, // 기본 3초마다 폴링
+  refetchInterval = 10000, // 기본 10초마다 폴링
   onSuccess,
   onError,
   onComplete,

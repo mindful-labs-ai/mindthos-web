@@ -39,7 +39,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="max-w-2xl"
+      className="max-w-lg text-left"
       closeOnOverlay={false}
     >
       <form onSubmit={handleSubmit} className="space-y-6 py-4">
@@ -135,7 +135,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
           <Button
             type="submit"
             variant="solid"
-            tone="neutral"
+            tone="primary"
             size="lg"
             className="w-full max-w-md"
             disabled={form.isSubmitting}
@@ -146,7 +146,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
                 : '등록 중...'
               : isEditMode
                 ? '정보 수정'
-                : '상담 기록 만들기'}
+                : '클라이언트 등록'}
           </Button>
         </div>
       </form>

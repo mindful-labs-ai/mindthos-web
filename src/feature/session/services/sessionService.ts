@@ -30,24 +30,23 @@ export interface SessionStatusResponse {
   estimated_completion_time?: string;
 }
 
+const SESSION_API = import.meta.env.VITE_SESSION_API_URL;
+
 /**
  * 백그라운드 세션 생성 API 호출
+ * TODO: localhost 환경 전용 - QA/Production 환경에서는 환경변수 사용 필요
  */
 export async function createSessionBackground(
   request: CreateSessionBackgroundRequest
 ): Promise<CreateSessionBackgroundResponse> {
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/session/create-background`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify(request),
-    }
-  );
+  const response = await fetch(SESSION_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify(request),
+  });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -58,7 +57,7 @@ export async function createSessionBackground(
 
   const data: CreateSessionBackgroundResponse = await response.json();
 
-  if (!data.success) {
+  if (data.status !== 'accepted') {
     throw new Error(data.message || '세션 생성 중 오류가 발생했습니다.');
   }
 

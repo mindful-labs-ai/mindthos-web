@@ -77,12 +77,17 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         }
 
         // 크레딧 관련 쿼리 invalidate
-        await queryClient.invalidateQueries({
-          queryKey: ['creditInfo', userId],
-        });
-        await queryClient.invalidateQueries({
-          queryKey: ['subscription', userId],
-        });
+        if (userId) {
+          const userIdNumber = parseInt(userId);
+          if (!isNaN(userIdNumber)) {
+            await queryClient.invalidateQueries({
+              queryKey: ['credit', 'subscription', userIdNumber],
+            });
+            await queryClient.invalidateQueries({
+              queryKey: ['credit', 'usage', userIdNumber],
+            });
+          }
+        }
 
         toast({
           title: '플랜 업그레이드 완료',

@@ -13,6 +13,7 @@ interface FilterMenuProps {
   onSortChange: (order: 'newest' | 'oldest') => void;
   onClientChange: (clientIds: string[]) => void;
   onReset: () => void;
+  initialView?: 'main' | 'sort' | 'client'; // 초기 뷰 설정
 }
 
 type MenuView = 'main' | 'sort' | 'client';
@@ -25,22 +26,25 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
   onSortChange,
   onClientChange,
   onReset,
+  initialView = 'main',
 }) => {
-  const [currentView, setCurrentView] = React.useState<MenuView>('main');
+  const [currentView, setCurrentView] = React.useState<MenuView>(initialView);
 
   const sortLabel = sortOrder === 'newest' ? '최신순' : '오래된순';
 
   // 선택된 고객 레이블 생성
-  const clientLabel = React.useMemo(() => {
-    if (selectedClientIds.length === 0) {
-      return '모든 고객';
-    }
-    if (selectedClientIds.length === 1) {
-      const client = clients?.find((c) => c.id === selectedClientIds[0]);
-      return client ? client.name : '모든 고객';
-    }
-    return `${selectedClientIds.length}명 선택`;
-  }, [selectedClientIds, clients]);
+  let clientLabel = '모든 고객';
+  if (selectedClientIds.length === 0) {
+    clientLabel = '모든 고객';
+  } else if (selectedClientIds.length === 1) {
+    const client = clients?.find((c) => c.id === selectedClientIds[0]);
+    clientLabel = client ? client.name : '모든 고객';
+  } else {
+    clientLabel = `${selectedClientIds.length}명 선택`;
+  }
+
+  // initialView가 'main'이 아닌 경우 뒤로가기 버튼을 숨김
+  const showBackButton = initialView === 'main';
 
   // 서브메뉴로 이동
   if (currentView === 'sort') {
@@ -51,6 +55,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
           onSortChange(order);
         }}
         onBack={() => setCurrentView('main')}
+        showBackButton={showBackButton}
       />
     );
   }
@@ -65,6 +70,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
           onClientChange(clientIds);
         }}
         onBack={() => setCurrentView('main')}
+        showBackButton={showBackButton}
       />
     );
   }

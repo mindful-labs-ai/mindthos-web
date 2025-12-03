@@ -18,6 +18,8 @@ interface TranscriptSegmentProps {
   segmentRef?: React.RefObject<HTMLDivElement | null>;
   onClick: (startTime: number) => void;
   onTextEdit?: (segmentId: number, newText: string) => void;
+  showTimestamp?: boolean; // 타임스탬프 표시 여부
+  segmentIndex?: number; // 시퀀스 번호용 인덱스
 }
 
 export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
@@ -30,17 +32,23 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   segmentRef,
   onClick,
   onTextEdit,
+  showTimestamp = true,
+  segmentIndex,
 }) => {
   const [editedText, setEditedText] = React.useState(segment.text);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const { name, label, bgColor, textColor } = getSpeakerInfo(segment, speakers);
 
+  // 타임스탬프 표시 여부 결정
+  const showTimestampDisplay =
+    showTimestamp && segment.start !== null && segment.end !== null;
+
+  // 클릭 가능 여부 (타임스탬프가 있고 편집 모드가 아닐 때만)
+  const isClickable = showTimestampDisplay && !isEditable;
+
   // 비언어 표현 파싱 (gemini-3인 경우에만)
-  const textParts = React.useMemo(
-    () => parseNonverbalText(segment.text),
-    [segment.text]
-  );
+  const textParts = parseNonverbalText(segment.text);
 
   // segment.text가 변경되면 editedText도 동기화
   React.useEffect(() => {
@@ -69,15 +77,19 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   }, [editedText, isEditable]);
 
   const handleContainerClick = () => {
-    if (!isEditable) {
+    if (isClickable && segment.start !== null) {
       onClick(segment.start);
-    } else if (textareaRef.current) {
+    } else if (isEditable && textareaRef.current) {
       textareaRef.current.focus();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isEditable && (e.key === 'Enter' || e.key === ' ')) {
+    if (
+      isClickable &&
+      segment.start !== null &&
+      (e.key === 'Enter' || e.key === ' ')
+    ) {
       e.preventDefault();
       onClick(segment.start);
     }
@@ -94,12 +106,14 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   return (
     <div
       ref={segmentRef}
-      role="button"
-      tabIndex={0}
-      className={`group flex cursor-pointer gap-4 rounded-lg p-4 text-left transition-all duration-200 ${
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      className={`group flex gap-4 rounded-lg p-4 text-left transition-all duration-200 ${
+        isClickable ? 'cursor-pointer' : ''
+      } ${
         isActive
           ? 'border-l-4 border-primary bg-surface shadow-sm'
-          : 'border-l-4 border-transparent hover:border-border hover:bg-surface'
+          : `border-l-4 border-transparent ${isClickable ? 'hover:border-border hover:bg-surface' : ''}`
       }`}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
@@ -123,7 +137,9 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
               isActive ? 'text-primary' : 'text-fg-muted'
             }`}
           >
-            {formatTime(segment.start)}
+            {showTimestampDisplay && segment.start !== null
+              ? formatTime(segment.start)
+              : `#${segmentIndex !== undefined ? segmentIndex + 1 : segment.id}`}
           </span>
         </div>
         {isEditable ? (

@@ -35,7 +35,7 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
   primary: {
     solid: 'bg-primary text-surface hover:bg-primary-600',
     outline:
-      'border-2 border-primary text-primary bg-transparent hover:bg-primary/10',
+      'border-2 border-primary text-primary bg-primary-100 hover:bg-primary-200',
     ghost: 'bg-transparent text-primary hover:bg-primary/10',
     soft: 'bg-primary/10 text-primary hover:bg-primary/20',
   },

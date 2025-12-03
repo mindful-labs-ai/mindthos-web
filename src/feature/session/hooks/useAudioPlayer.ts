@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 
 import { SEEK_STEP_SMALL } from '../constants/audioPlayer';
 
+import { useAudioPreload } from './useAudioPreload';
+
 interface UseAudioPlayerReturn {
   audioRef: React.RefObject<HTMLAudioElement | null>;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
   playbackRate: number;
+  isLoadingAudio: boolean;
   handlePlayPause: () => void;
   handleBackward: () => void;
   handleForward: () => void;
@@ -25,13 +28,16 @@ export const useAudioPlayer = (
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1.0);
 
+  // Preload audio as Blob to avoid network latency on seek
+  const { blobUrl, isLoading: isLoadingAudio } = useAudioPreload(audioUrl);
+
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !audioUrl) return;
+    if (!audio || !blobUrl) return;
 
-    audio.src = audioUrl;
+    audio.src = blobUrl;
     audio.load();
-  }, [audioUrl]);
+  }, [blobUrl]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -61,7 +67,7 @@ export const useAudioPlayer = (
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
     };
-  }, [audioUrl]);
+  }, [blobUrl]);
 
   const handlePlayPause = async () => {
     const audio = audioRef.current;
@@ -132,6 +138,7 @@ export const useAudioPlayer = (
     currentTime,
     duration,
     playbackRate,
+    isLoadingAudio,
     handlePlayPause,
     handleBackward,
     handleForward,

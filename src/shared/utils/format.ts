@@ -10,9 +10,9 @@ export const formatFileSize = (bytes: number): string => {
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
 };
 
-export const formatDurationInMinutes = (seconds: number): string => {
+export const formatDurationInMinutes = (seconds: number): number => {
   const minutes = Math.floor(seconds / 60);
-  return `${minutes}분`;
+  return minutes;
 };
 
 export const formatDurationInTime = (seconds: number): string => {

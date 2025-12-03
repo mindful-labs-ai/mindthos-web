@@ -31,14 +31,26 @@ export interface Session {
 // Transcribe 관련 타입
 // ============================================
 
-// 전사 세그먼트 (화자별 발화)
-export interface TranscribeSegment {
+// Gemini-3 세그먼트 (타임스탬프 없음)
+export interface GeminiSegment {
+  id: number;
+  start: null;
+  end: null;
+  text: string;
+  speaker: number; // 변환된 숫자 ID
+}
+
+// Whisper 세그먼트 (타임스탬프 포함)
+export interface WhisperSegment {
   id: number;
   start: number; // 시작 시간(초)
   end: number; // 종료 시간(초)
-  text: string; // 발화 내용
+  text: string;
   speaker: number; // 화자 ID
 }
+
+// 전사 세그먼트 (Union type)
+export type TranscribeSegment = GeminiSegment | WhisperSegment;
 
 // 화자 정보
 export interface Speaker {
@@ -46,13 +58,24 @@ export interface Speaker {
   role: 'counselor' | 'client1' | 'client2' | string; // 역할
 }
 
+export type SttModel = 'gemini-3' | 'whisper';
+
 // 전사 결과
 export interface TranscribeResult {
   segments: TranscribeSegment[];
   speakers: Speaker[];
 }
 
-// 전사 컨텐츠 (DB에 저장되는 JSON)
+// 새로운 전사 JSON 구조 (백엔드에서 반환)
+export interface TranscriptJson {
+  language: string;
+  segments: TranscribeSegment[];
+  text: string;
+  raw_output: string;
+  stt_model: 'gemini-3' | 'whisper';
+}
+
+// 전사 컨텐츠 (DB에 저장되는 JSON) - Legacy 지원
 export interface TranscribeContents {
   audio_uuid: string;
   status: 'processing' | 'completing' | 'completed' | 'failed';
@@ -66,8 +89,8 @@ export interface Transcribe {
   user_id: string;
   title: string | null;
   counsel_date: string | null;
-  contents: TranscribeContents | null; // JSON 객체로 변경
-  stt_model: string | null; // "whisper" | "gemini-3"
+  contents: TranscriptJson | TranscribeContents | null; // 새 구조 또는 Legacy 구조
+  stt_model: SttModel | null; // "whisper" | "gemini-3"
   created_at: string;
 }
 
@@ -81,7 +104,22 @@ export interface ProgressNote {
   created_at: string;
 }
 
-export type NoteType = 'SOAP' | 'mindthos';
+export type NoteType =
+  | '마음토스 노트'
+  | 'CBT'
+  | '보웬 가족치료'
+  | '인간중심'
+  | '사티어 경험적가족치료'
+  | 'DBT'
+  | '미누친 구조적가족치료'
+  | 'MI'
+  | '슈퍼바이저'
+  | 'EAP'
+  | '아들러 심리치료'
+  | '가족센터 노트'
+  | '게슈탈트 심리치료'
+  | 'ACT'
+  | '접수면접 노트';
 
 export interface SessionRecord {
   session_id: string;
@@ -89,10 +127,13 @@ export interface SessionRecord {
   client_id: string;
   client_name: string;
   session_number: number;
+  title?: string;
   content: string;
   note_types: NoteType[];
   created_at: string;
   processing_status?: SessionProcessingStatus;
+  progress_percentage?: number;
+  current_step?: string;
 }
 
 export interface CreateSessionRequest {
@@ -126,30 +167,18 @@ export type FileInfo = AudioFileInfo | PdfFileInfo;
 
 export interface CreateSessionBackgroundRequest {
   user_id: number;
-  client_id?: string;
-  upload_type: 'audio' | 'pdf' | 'direct';
-
-  // 오디오인 경우
-  audio_url?: string; // S3 다운로드용 Presigned URL (STT 처리용, 15분 유효)
-  s3_key?: string; // S3 객체 키 (영구 저장용, presigned URL 재생성에 사용)
-  filename?: string; // 원본 파일명 (세션 제목으로 사용)
-  file_size_mb?: number;
-  transcribe_type?: 'basic' | 'advanced';
-  duration_seconds?: number;
-
-  // PDF/직접 입력인 경우
-  transcribed_text?: string;
-
-  // 공통
+  title: string;
+  s3_key: string; // S3 객체 키 (영구 저장용)
+  file_size_mb: number;
+  duration_seconds: number;
+  client_id?: string | null;
+  stt_model: 'whisper' | 'gemini-3';
   template_id: number;
 }
 
 export interface CreateSessionBackgroundResponse {
-  success: boolean;
-  message: string;
   session_id: string;
-  transcribe_id?: string;
-  progress_note_id?: string;
-  total_credit_used?: number;
-  remaining_credit?: number;
+  status: 'accepted' | 'failed';
+  stt_model: 'whisper' | 'gemini-3';
+  message: string;
 }

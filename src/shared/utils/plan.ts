@@ -13,13 +13,13 @@ export const calculateDiscountRate = (
 
 export const getPlanLabel = (planType: string): string => {
   switch (planType) {
-    case 'FREE':
+    case 'Free':
       return '프리 플랜';
-    case 'PLUS':
-    case 'PLUS_YEAR':
+    case 'Plus':
+    case 'PlusYear':
       return '플러스 플랜';
-    case 'PRO':
-    case 'PRO_YEAR':
+    case 'Pro':
+    case 'ProYear':
       return '프로 플랜';
     default:
       return planType;

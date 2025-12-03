@@ -1,9 +1,46 @@
 /**
- * Gemini STT Raw Output Parser
- * Gemini의 원본 응답을 UI에서 사용할 수 있는 구조화된 데이터로 변환
+ * Transcript Parser
+ * 새로운 TranscriptJson 구조 및 레거시 형식 모두 지원
  */
 
-import type { Speaker, TranscribeSegment } from '../types';
+import type {
+  Speaker,
+  Transcribe,
+  TranscribeSegment,
+  TranscriptJson,
+} from '../types';
+
+/**
+ * Gemini 화자 문자열을 숫자 ID로 변환
+ * @param speakerStr - "C", "P1", "P2" 등
+ * @returns 숫자 ID (C -> 0, P1 -> 1, P2 -> 2)
+ */
+function mapSpeakerStringToId(speakerStr: string): number {
+  if (speakerStr === 'C') return 0;
+
+  const match = speakerStr.match(/^P(\d+)$/);
+  if (match) {
+    return parseInt(match[1], 10);
+  }
+
+  // 예상치 못한 형식은 0으로 매핑
+  console.warn(`[Parser] Unexpected speaker format: ${speakerStr}`);
+  return 0;
+}
+
+/**
+ * 숫자 ID를 역할 문자열로 변환
+ * @param id - 화자 ID (0, 1, 2, ...)
+ * @returns 역할 문자열
+ */
+function mapSpeakerIdToRole(
+  id: number
+): 'counselor' | 'client1' | 'client2' | string {
+  if (id === 0) return 'counselor';
+  if (id === 1) return 'client1';
+  if (id === 2) return 'client2';
+  return `client${id}`;
+}
 
 /**
  * Gemini 응답 문자열의 내부 타임스탬프 파싱
@@ -113,27 +150,27 @@ export function parseGeminiTranscriptResponse(rawOutput: string): {
 }
 
 /**
- * 백엔드에서 파싱된 데이터를 우선 사용하고, 없으면 클라이언트에서 파싱 (폴백)
+ * Type guard to check if contents is TranscriptJson
+ */
+function isTranscriptJson(contents: any): contents is TranscriptJson {
+  return (
+    contents &&
+    typeof contents === 'object' &&
+    'stt_model' in contents &&
+    'segments' in contents &&
+    Array.isArray(contents.segments)
+  );
+}
+
+/**
+ * 전사 데이터를 파싱하여 segments와 speakers 반환
  *
  * 우선순위:
- * 1. 백엔드에서 파싱된 result (있으면 바로 반환)
- * 2. raw_output 클라이언트 파싱 (백엔드 파싱 실패 시)
- * 3. 레거시 데이터 처리 (contents가 문자열인 경우)
+ * 1. 새로운 TranscriptJson 구조 (stt_model 포함)
+ * 2. 레거시 TranscribeContents (result 또는 raw_output)
+ * 3. 레거시 문자열 데이터
  */
-export function getTranscriptData(
-  transcribe: {
-    contents:
-      | {
-          raw_output?: string;
-          result?: {
-            segments: TranscribeSegment[];
-            speakers: Speaker[];
-          };
-        }
-      | string
-      | null;
-  } | null
-): {
+export function getTranscriptData(transcribe: Transcribe | null): {
   segments: TranscribeSegment[];
   speakers: Speaker[];
 } | null {
@@ -141,30 +178,86 @@ export function getTranscriptData(
     return null;
   }
 
-  // 1. contents가 객체인 경우 (새로운 JSONB 형식)
-  if (typeof transcribe.contents === 'object' && transcribe.contents !== null) {
-    // 1-1. 백엔드에서 파싱된 result가 있으면 바로 반환 (최우선)
-    if (transcribe.contents.result) {
-      return transcribe.contents.result;
+  const contents = transcribe.contents;
+
+  // 1. 새로운 TranscriptJson 구조 처리
+  if (isTranscriptJson(contents)) {
+    const sttModel = contents.stt_model;
+    const rawSegments = contents.segments;
+
+    const processedSegments: TranscribeSegment[] = [];
+    const speakerSet = new Set<number>();
+
+    rawSegments.forEach((seg: any, index: number) => {
+      if (sttModel === 'gemini-3') {
+        // Gemini: 문자열 화자를 숫자로 변환
+        const speakerId =
+          typeof seg.speaker === 'string'
+            ? mapSpeakerStringToId(seg.speaker)
+            : seg.speaker || 0;
+
+        speakerSet.add(speakerId);
+
+        processedSegments.push({
+          id: index + 1,
+          start: null,
+          end: null,
+          speaker: speakerId,
+          text: seg.text || '',
+        });
+      } else {
+        // Whisper: 숫자 화자 사용
+        const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
+        speakerSet.add(speakerId);
+
+        processedSegments.push({
+          id: seg.id || index + 1,
+          start: seg.start || 0,
+          end: seg.end || 0,
+          speaker: speakerId,
+          text: seg.text || '',
+        });
+      }
+    });
+
+    // 화자 목록 생성
+    const speakers: Speaker[] = Array.from(speakerSet)
+      .sort((a, b) => a - b)
+      .map((id) => ({
+        id,
+        role: mapSpeakerIdToRole(id),
+      }));
+
+    return { segments: processedSegments, speakers };
+  }
+
+  // 2. 레거시 객체 구조 (TranscribeContents)
+  if (typeof contents === 'object' && contents !== null) {
+    // 2-1. result가 있으면 바로 반환
+    if ('result' in contents && contents.result) {
+      return contents.result;
     }
 
-    // 1-2. raw_output만 있으면 클라이언트에서 파싱 (폴백)
-    if (transcribe.contents.raw_output?.includes('%T%')) {
+    // 2-2. raw_output 파싱
+    if ('raw_output' in contents && contents.raw_output?.includes('%T%')) {
       try {
-        return parseGeminiTranscriptResponse(transcribe.contents.raw_output);
+        return parseGeminiTranscriptResponse(contents.raw_output);
       } catch (error) {
-        console.error('[Parser] 클라이언트 파싱 실패:', error);
+        console.error('[Parser] raw_output 파싱 실패:', error);
       }
     }
   }
 
-  // 2. contents가 문자열인 경우 (레거시 데이터, text 타입 시절)
-  if (typeof transcribe.contents === 'string') {
-    if (transcribe.contents.includes('%T%')) {
+  // 3. 레거시 문자열 데이터 (예상치 못한 케이스)
+  // TypeScript는 위 조건들로 인해 여기서 contents가 never 타입이지만
+  // 런타임에서는 문자열이 올 수 있으므로 체크
+  if (typeof contents === 'string') {
+    const contentsStr = contents as string;
+    if (contentsStr.includes('%T%')) {
       try {
-        return parseGeminiTranscriptResponse(transcribe.contents);
+        return parseGeminiTranscriptResponse(contentsStr);
       } catch (error) {
-        console.error('[Parser] 레거시 데이터 파싱 실패:', error);
+        console.error('[Parser] 레거시 문자열 파싱 실패:', error);
       }
     }
   }

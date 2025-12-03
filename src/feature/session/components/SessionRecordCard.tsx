@@ -10,7 +10,7 @@ import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
-import { MoreVerticalIcon, UserCircle2Icon, Trash2Icon } from '@/shared/icons';
+import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
 import { formatKoreanDateTime } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -18,7 +18,7 @@ import {
   assignClientToSession,
   deleteSession,
 } from '../services/sessionService';
-import type { SessionRecord, NoteType } from '../types';
+import type { SessionRecord } from '../types';
 
 interface SessionRecordCardProps {
   record: SessionRecord;
@@ -27,17 +27,6 @@ interface SessionRecordCardProps {
   onDelete?: (record: SessionRecord) => void;
   isActive?: boolean;
 }
-
-const getNoteTypeLabel = (type: NoteType): string => {
-  switch (type) {
-    case 'SOAP':
-      return 'SOAP';
-    case 'mindthos':
-      return '마음토스 상담 노트';
-    default:
-      return type;
-  }
-};
 
 export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   record,
@@ -59,9 +48,13 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const { clients } = useClientList();
 
   const hasClient = record.client_id && record.client_name !== '고객 없음';
-  const displayTitle = hasClient
-    ? `${record.client_name} ${record.session_number}회기`
-    : `세션 ${record.session_number}회기`;
+
+  // title이 있으면 그대로 사용, 없으면 기존 방식대로 fallback
+  const displayTitle =
+    record.title ||
+    (hasClient
+      ? `${record.client_name} ${record.session_number}회기`
+      : `세션 ${record.session_number}회기`);
 
   const getStatusBadge = () => {
     if (!record.processing_status || record.processing_status === 'succeeded')
@@ -222,6 +215,29 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </div>
           </div>
 
+          {/* 진행 중일 때 프로그레스 바 표시 */}
+          {record.processing_status &&
+            record.processing_status !== 'succeeded' &&
+            record.processing_status !== 'failed' &&
+            record.progress_percentage !== undefined && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Text className="text-xs text-fg-muted">
+                    {record.current_step || '처리 중...'}
+                  </Text>
+                  <Text className="text-xs font-medium text-primary-700">
+                    {record.progress_percentage}%
+                  </Text>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
+                  <div
+                    className="h-full bg-primary-500 transition-all duration-300 ease-out"
+                    style={{ width: `${record.progress_percentage}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
           <Text className="line-clamp-2 overflow-hidden text-left text-sm text-fg">
             {record.content}
           </Text>
@@ -260,7 +276,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             <div className="flex gap-2">
               {record.note_types.map((type, index) => (
                 <Badge key={index} tone="neutral" variant="solid" size="md">
-                  {getNoteTypeLabel(type)}
+                  {type}
                 </Badge>
               ))}
             </div>

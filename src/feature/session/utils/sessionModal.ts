@@ -1,6 +1,6 @@
 import { formatDurationInMinutes } from '@/shared/utils/format';
 
-import type { FileInfo, UploadType } from '../types';
+import type { FileInfo, SttModel, UploadType } from '../types';
 
 export const getSessionModalTitle = (type: UploadType): string => {
   switch (type) {
@@ -17,16 +17,18 @@ export const getSessionModalTitle = (type: UploadType): string => {
 
 export const getSessionCreditInfo = (
   type: UploadType,
+  sttType: SttModel,
   selectedFile: FileInfo | null
-): string | null => {
+): number | null => {
   if (!selectedFile) return null;
 
   if (type === 'audio' && 'duration' in selectedFile) {
-    return `축어록 풀기 ${formatDurationInMinutes(selectedFile.duration)} / AI 분석 1회가 차감됩니다.`;
+    const minute = formatDurationInMinutes(selectedFile.duration);
+    return (sttType === 'gemini-3' ? Math.floor(minute * 1.5) : minute) + 30;
   }
 
-  if (type === 'pdf') {
-    return '축어록 풀기 30분 / AI 분석 1회가 차감됩니다.';
+  if (type === 'pdf' || type === 'direct') {
+    return 30;
   }
 
   return null;

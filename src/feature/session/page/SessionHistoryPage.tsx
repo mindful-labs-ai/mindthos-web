@@ -4,9 +4,12 @@ import { Outlet, useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Title } from '@/components/ui/atoms/Title';
+import { PopUp } from '@/components/ui/composites/PopUp';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import { FilterMenu } from '@/feature/session/components/FilterMenu';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import { SessionSideList } from '@/feature/session/components/SessionSideList';
+import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
@@ -94,14 +97,8 @@ export const SessionHistoryPage: React.FC = () => {
               .join(' ') || '전사 내용이 없습니다.';
         }
 
-        // progress notes에서 note_types 추출
-        const note_types = progressNotes
-          .map((note) => {
-            if (note.title?.includes('SOAP')) return 'SOAP';
-            if (note.title?.includes('마음토스')) return 'mindthos';
-            return null;
-          })
-          .filter((type): type is 'SOAP' | 'mindthos' => type !== null);
+        // progress notes에서 note_types 추출 (constants 사용)
+        const note_types = getNoteTypesFromProgressNotes(progressNotes);
 
         // 해당 클라이언트의 모든 세션들을 날짜순으로 정렬하여 회기 번호 계산
         // 필터링과 관계없이 전체 세션에서 회기 번호 계산
@@ -122,6 +119,7 @@ export const SessionHistoryPage: React.FC = () => {
           client_id: session.client_id || '',
           client_name: client?.name || '고객 없음',
           session_number,
+          title: session.title || undefined,
           content,
           note_types,
           created_at: session.created_at,
@@ -217,35 +215,85 @@ export const SessionHistoryPage: React.FC = () => {
         />
       ) : (
         // 전체 카드 리스트
-        <div className="flex flex-1 flex-col bg-surface-contrast p-8 transition-all duration-300">
-          <div className="flex-shrink-0 p-6">
-            <Title as="h1" className="px-4 text-start text-2xl font-bold">
+        <div className="flex flex-1 flex-col bg-surface-contrast px-16 pt-[42px] transition-all duration-300">
+          <div className="flex-shrink-0 pb-6">
+            <Title as="h1" className="text-start text-2xl font-bold">
               상담 기록
             </Title>
 
-            <div className="mt-6 flex justify-start gap-3 px-4">
-              <Button
-                variant="solid"
-                tone="surface"
-                size="sm"
-                icon={<UserIcon size={16} />}
-                iconRight={<ChevronDownIcon size={16} />}
-              >
-                모든 고객
-              </Button>
-              <Button
-                variant="solid"
-                tone="surface"
-                size="sm"
-                icon={<SortDescIcon size={16} />}
-                iconRight={<ChevronDownIcon size={16} />}
-              >
-                최신 날짜 순
-              </Button>
+            <div className="mt-6 flex justify-start gap-3">
+              {/* 고객 필터 버튼 */}
+              <div>
+                <PopUp
+                  trigger={
+                    <Button
+                      variant="solid"
+                      tone="surface"
+                      size="sm"
+                      icon={<UserIcon size={16} />}
+                      iconRight={<ChevronDownIcon size={16} />}
+                    >
+                      {selectedClientIds.length === 0
+                        ? '모든 고객'
+                        : selectedClientIds.length === 1
+                          ? clients.find((c) => c.id === selectedClientIds[0])
+                              ?.name || '모든 고객'
+                          : `${selectedClientIds.length}명 선택`}
+                    </Button>
+                  }
+                  content={
+                    <FilterMenu
+                      sortOrder={sortOrder}
+                      selectedClientIds={selectedClientIds}
+                      clients={clients}
+                      sessionCounts={sessionCounts}
+                      onSortChange={handleSortChange}
+                      onClientChange={handleClientChange}
+                      onReset={handleFilterReset}
+                      initialView="client"
+                    />
+                  }
+                  placement="bottom"
+                  className="!p-4"
+                />
+              </div>
+
+              {/* 정렬 버튼 */}
+              <div>
+                <PopUp
+                  trigger={
+                    <Button
+                      variant="solid"
+                      tone="surface"
+                      size="sm"
+                      icon={<SortDescIcon size={16} />}
+                      iconRight={<ChevronDownIcon size={16} />}
+                    >
+                      {sortOrder === 'newest'
+                        ? '최신 날짜 순'
+                        : '오래된 날짜 순'}
+                    </Button>
+                  }
+                  content={
+                    <FilterMenu
+                      sortOrder={sortOrder}
+                      selectedClientIds={selectedClientIds}
+                      clients={clients}
+                      sessionCounts={sessionCounts}
+                      onSortChange={handleSortChange}
+                      onClientChange={handleClientChange}
+                      onReset={handleFilterReset}
+                      initialView="sort"
+                    />
+                  }
+                  placement="bottom"
+                  className="!p-4"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex-1 overflow-y-auto py-4">
             <div className="space-y-3">
               {isLoadingSessions ? (
                 <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
