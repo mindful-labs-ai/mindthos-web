@@ -2,7 +2,7 @@
  * 클라이언트 분석 관련 Hooks
  */
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -95,11 +95,11 @@ export function useCreateClientAnalysis() {
 
       return clientAnalysisService.createAnalysis({
         ...request,
-        user_id: userId,
+        user_id: Number(userId),
       });
     },
     onSuccess: (data, variables) => {
-      // 분석 히스토리 쿼리 invalidate
+      // 생성 직후 분석 목록 쿼리 invalidate
       queryClient.invalidateQueries({
         queryKey: clientAnalysisQueryKeys.analysesByClient(variables.client_id),
       });
@@ -130,17 +130,12 @@ export function useClientAnalysisStatus({
   onComplete,
 }: UseClientAnalysisStatusOptions) {
   const queryClient = useQueryClient();
-  const previousStatusRef = useRef<{
-    ai_supervision: string | null;
-    profiling: string | null;
-    psychotherapy_plan: string | null;
-  }>({
-    ai_supervision: null,
-    profiling: null,
-    psychotherapy_plan: null,
-  });
+  const previousStatusRef = useRef<string | null>(null);
 
-  return useQuery<GetClientAnalysisStatusResponse, ClientAnalysisApiError>({
+  const query = useQuery<
+    GetClientAnalysisStatusResponse,
+    ClientAnalysisApiError
+  >({
     queryKey: clientAnalysisQueryKeys.status(clientId, version),
     queryFn: () => clientAnalysisService.getAnalysisStatus(clientId, version),
     enabled: enabled && !!clientId && version > 0,
@@ -148,13 +143,13 @@ export function useClientAnalysisStatus({
       const data = query.state.data;
       if (!data) return refetchInterval;
 
-      // 3개 분석이 모두 succeeded 또는 failed 상태면 폴링 중단
-      const allCompleted = Object.values(data.analyses).every(
-        (analysis) =>
-          analysis.status === 'succeeded' || analysis.status === 'failed'
-      );
+      // AI 수퍼비전 분석이 succeeded 또는 failed 상태면 폴링 중단
+      const analysis = data.analyses.ai_supervision;
+      const isCompleted =
+        analysis &&
+        (analysis.status === 'succeeded' || analysis.status === 'failed');
 
-      if (allCompleted) {
+      if (isCompleted) {
         return false;
       }
 
@@ -165,43 +160,46 @@ export function useClientAnalysisStatus({
     staleTime: 0, // 폴링 중에는 항상 최신 데이터 필요
     refetchOnWindowFocus: false, // 폴링으로 충분
     refetchOnMount: false, // 폴링으로 충분
-    onSuccess: (data: GetClientAnalysisStatusResponse) => {
-      // 기존 onSuccess 콜백 호출 (모든 폴링마다)
-      onSuccess?.(data);
-
-      // 상태가 변경되었을 때 확인
-      const currentStatuses = {
-        ai_supervision: data.analyses.ai_supervision.status,
-        profiling: data.analyses.profiling.status,
-        psychotherapy_plan: data.analyses.psychotherapy_plan.status,
-      };
-
-      const previousStatuses = previousStatusRef.current;
-
-      // 3개 분석이 모두 완료되었고, 이전에는 완료되지 않았을 때 onComplete 호출
-      const allCompleted = Object.values(currentStatuses).every(
-        (status) => status === 'succeeded' || status === 'failed'
-      );
-
-      const wasNotCompleted = Object.values(previousStatuses).some(
-        (status) => status !== 'succeeded' && status !== 'failed'
-      );
-
-      if (
-        allCompleted &&
-        (wasNotCompleted || previousStatuses.ai_supervision === null)
-      ) {
-        // 분석 히스토리 쿼리 invalidate (최신 데이터로 갱신)
-        queryClient.invalidateQueries({
-          queryKey: clientAnalysisQueryKeys.analysesByClient(clientId),
-        });
-
-        onComplete?.(data);
-      }
-
-      // 현재 상태 저장
-      previousStatusRef.current = currentStatuses;
-    },
-    onError,
   });
+
+  // useEffect로 데이터 변경 감지
+  useEffect(() => {
+    const data = query.data;
+    if (!data) return;
+
+    // 기존 onSuccess 콜백 호출 (모든 폴링마다)
+    onSuccess?.(data);
+
+    // 상태가 변경되었을 때 확인
+    const currentStatus = data.analyses.ai_supervision.status;
+    const previousStatus = previousStatusRef.current;
+
+    // AI 수퍼비전 분석이 완료되었고, 이전에는 완료되지 않았을 때 onComplete 호출
+    const isCompleted =
+      currentStatus === 'succeeded' || currentStatus === 'failed';
+
+    const wasNotCompleted =
+      previousStatus !== 'succeeded' && previousStatus !== 'failed';
+
+    if (isCompleted && (wasNotCompleted || previousStatus === null)) {
+      // 분석 히스토리 쿼리 invalidate (최신 데이터로 갱신)
+      queryClient.invalidateQueries({
+        queryKey: clientAnalysisQueryKeys.analysesByClient(clientId),
+      });
+
+      onComplete?.(data);
+    }
+
+    // 현재 상태 저장
+    previousStatusRef.current = currentStatus;
+  }, [query.data, onSuccess, onComplete, queryClient, clientId]);
+
+  // 에러 처리
+  useEffect(() => {
+    if (query.error) {
+      onError?.(query.error);
+    }
+  }, [query.error, onError]);
+
+  return query;
 }

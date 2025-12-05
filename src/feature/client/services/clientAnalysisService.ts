@@ -115,6 +115,8 @@ export const clientAnalysisService = {
         data: { session },
       } = await supabase.auth.getSession();
 
+      console.log(clientId, '////', version);
+
       const response = await fetch(
         `${import.meta.env.VITE_EDGE_FUNCTION_BASE_URL}/client-analysis/status?client_id=${clientId}&version=${version}`,
         {
@@ -180,16 +182,12 @@ export const clientAnalysisService = {
             version: analysis.version,
             session_ids: analysis.session_ids,
             created_at: analysis.created_at,
-            analyses: {
-              ai_supervision: null,
-              profiling: null,
-              psychotherapy_plan: null,
-            },
+            ai_supervision: null,
           });
         }
 
         const versionData = versionMap.get(analysis.version)!;
-        versionData.analyses[analysis.type] = analysis;
+        versionData.ai_supervision = analysis;
       });
 
       return Array.from(versionMap.values());

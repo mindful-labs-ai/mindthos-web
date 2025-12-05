@@ -22,6 +22,7 @@ interface NoteSection {
 export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
   const { toast } = useToast();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   // summary를 섹션별로 파싱
   const parseSummary = (summary: string): NoteSection[] => {
@@ -94,13 +95,67 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
     }
   };
 
+  // 전체 내용 복사
+  const handleCopyAll = async () => {
+    if (!note.summary) return;
+
+    try {
+      await navigator.clipboard.writeText(note.summary);
+      setCopiedAll(true);
+
+      toast({
+        title: '복사 완료',
+        description: '전체 내용이 클립보드에 복사되었습니다.',
+        duration: 2000,
+      });
+
+      // 2초 후 체크 아이콘 리셋
+      setTimeout(() => {
+        setCopiedAll(false);
+      }, 2000);
+    } catch (error) {
+      console.error('복사 실패:', error);
+      toast({
+        title: '복사 실패',
+        description: '내용을 복사하는 데 실패했습니다.',
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <div className="space-y-4 text-left">
       {/* 헤더 */}
-      <div className="mb-6">
-        <Title as="h2" className="text-xl font-bold">
+      <div className="mb-6 flex items-center justify-between">
+        <Title as="h2" className="text-base font-bold text-fg-muted">
           {note.title || '상담 노트'}
         </Title>
+        <button
+          type="button"
+          onClick={handleCopyAll}
+          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
+          aria-label="전체 복사"
+        >
+          {copiedAll ? (
+            <>
+              <CheckIcon size={18} className="text-success" />
+              <span className="text-success">복사됨</span>
+            </>
+          ) : (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M13 4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5H17.966C17.8924 4.35068 17.6074 3.74354 17.155 3.272L14.871 0.913C14.3714 0.406548 13.7085 0.0933745 13 0.029V4ZM11 4V0H7C5.67441 0.00158786 4.40356 0.528882 3.46622 1.46622C2.52888 2.40356 2.00159 3.67441 2 5V15C2.00159 16.3256 2.52888 17.5964 3.46622 18.5338C4.40356 19.4711 5.67441 19.9984 7 20H13C14.3256 19.9984 15.5964 19.4711 16.5338 18.5338C17.4711 17.5964 17.9984 16.3256 18 15V7H14C13.2044 7 12.4413 6.68393 11.8787 6.12132C11.3161 5.55871 11 4.79565 11 4ZM17 24H8C7.73478 24 7.48043 23.8946 7.29289 23.7071C7.10536 23.5196 7 23.2652 7 23C7 22.7348 7.10536 22.4804 7.29289 22.2929C7.48043 22.1054 7.73478 22 8 22H17C17.7956 22 18.5587 21.6839 19.1213 21.1213C19.6839 20.5587 20 19.7956 20 19V8C20 7.73478 20.1054 7.48043 20.2929 7.29289C20.4804 7.10536 20.7348 7 21 7C21.2652 7 21.5196 7.10536 21.7071 7.29289C21.8946 7.48043 22 7.73478 22 8V19C21.9984 20.3256 21.4711 21.5964 20.5338 22.5338C19.5964 23.4711 18.3256 23.9984 17 24Z"
+                fill="#BABAC0"
+              />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* 마크다운 문서 렌더링 */}
@@ -109,7 +164,10 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
           {/* 섹션별 렌더링 */}
           <div className="space-y-6">
             {sections.map((section, index) => (
-              <div key={index} className="group relative">
+              <div
+                key={index}
+                className="group relative rounded-lg px-2 py-1 hover:bg-surface-contrast"
+              >
                 {/* 섹션 헤더와 복사 버튼 */}
                 <div className="mb-3 flex items-start justify-between">
                   <Title as="h3" className="text-lg font-semibold text-fg">
@@ -126,7 +184,18 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                     {copiedIndex === index ? (
                       <CheckIcon size={18} className="text-success" />
                     ) : (
-                      <CopyIcon size={18} />
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M13 4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5H17.966C17.8924 4.35068 17.6074 3.74354 17.155 3.272L14.871 0.913C14.3714 0.406548 13.7085 0.0933745 13 0.029V4ZM11 4V0H7C5.67441 0.00158786 4.40356 0.528882 3.46622 1.46622C2.52888 2.40356 2.00159 3.67441 2 5V15C2.00159 16.3256 2.52888 17.5964 3.46622 18.5338C4.40356 19.4711 5.67441 19.9984 7 20H13C14.3256 19.9984 15.5964 19.4711 16.5338 18.5338C17.4711 17.5964 17.9984 16.3256 18 15V7H14C13.2044 7 12.4413 6.68393 11.8787 6.12132C11.3161 5.55871 11 4.79565 11 4ZM17 24H8C7.73478 24 7.48043 23.8946 7.29289 23.7071C7.10536 23.5196 7 23.2652 7 23C7 22.7348 7.10536 22.4804 7.29289 22.2929C7.48043 22.1054 7.73478 22 8 22H17C17.7956 22 18.5587 21.6839 19.1213 21.1213C19.6839 20.5587 20 19.7956 20 19V8C20 7.73478 20.1054 7.48043 20.2929 7.29289C20.4804 7.10536 20.7348 7 21 7C21.2652 7 21.5196 7.10536 21.7071 7.29289C21.8946 7.48043 22 7.73478 22 8V19C21.9984 20.3256 21.4711 21.5964 20.5338 22.5338C19.5964 23.4711 18.3256 23.9984 17 24Z"
+                          fill="#BABAC0"
+                        />
+                      </svg>
                     )}
 
                     {/* 툴팁 */}

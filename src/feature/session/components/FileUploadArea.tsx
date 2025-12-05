@@ -91,7 +91,7 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
   const uploadText = getUploadText();
 
   return (
-    <div className="space-y-4">
+    <div className="mt-2 w-full">
       <input
         ref={fileInputRef}
         type="file"
@@ -105,9 +105,7 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={onDrop}
         className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors duration-200 ${
-          isDragging
-            ? 'border-primary bg-primary-100'
-            : 'border-surface-strong bg-surface-contrast'
+          isDragging ? 'border-primary bg-primary-100' : 'border-surface-strong'
         } ${selectedFile ? 'bg-surface' : ''} `}
       >
         {!selectedFile ? (
@@ -127,13 +125,18 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
           <div className="relative space-y-3">
             <button
               onClick={handleRemoveFile}
-              className="absolute -right-2 -top-2 rounded-full bg-surface p-1.5 shadow-md transition-colors hover:bg-surface-strong"
+              className="absolute -right-4 -top-8 p-1.5"
               aria-label="파일 제거"
             >
-              <XIcon size={16} className="text-fg-muted" />
+              <XIcon
+                size={16}
+                className="text-fg transition-colors hover:text-fg-muted"
+              />
             </button>
 
-            <Text className="font-medium text-fg">{selectedFile.name}</Text>
+            <Text className="truncate font-medium text-fg">
+              {selectedFile.name}
+            </Text>
             <Text className="text-fg-muted">
               {formatFileSize(selectedFile.size)}
             </Text>

@@ -1,16 +1,18 @@
 import React from 'react';
 
-import { formatKoreanDateTime } from '@/shared/utils/date';
+import { formatDuration, formatKoreanDateTime } from '@/shared/utils/date';
 
 interface SessionHeaderProps {
   title: string;
   createdAt: string;
+  duration: number;
   onTitleUpdate?: (newTitle: string) => Promise<void>;
 }
 
 export const SessionHeader: React.FC<SessionHeaderProps> = ({
   title,
   createdAt,
+  duration,
   onTitleUpdate,
 }) => {
   const [isEditing, setIsEditing] = React.useState(false);
@@ -122,7 +124,8 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
           )}
         </div>
         <span className="text-sm text-fg-muted">
-          {formatKoreanDateTime(new Date(createdAt))}
+          {formatKoreanDateTime(new Date(createdAt))}{' '}
+          {formatDuration(duration) || ''}
         </span>
       </div>
     </div>

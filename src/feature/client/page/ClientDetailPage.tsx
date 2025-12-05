@@ -59,8 +59,8 @@ export const ClientDetailPage: React.FC = () => {
     enabled: !!clientId && !!pollingVersion,
     onComplete: () => {
       toast({
-        title: '클라이언트 분석 완료',
-        description: '클라이언트 분석이 완료되었습니다.',
+        title: '다회기 분석 완료',
+        description: '다회기 분석이 완료되었습니다.',
         duration: 3000,
       });
       setPollingVersion(null);
@@ -139,8 +139,6 @@ export const ClientDetailPage: React.FC = () => {
   const handleCreateAnalysis = async (data: {
     sessionIds: string[];
     aiSupervisionTemplateId: number;
-    profilingTemplateId: number;
-    psychotherapyPlanTemplateId: number;
   }) => {
     if (!clientId) return;
 
@@ -149,13 +147,11 @@ export const ClientDetailPage: React.FC = () => {
         client_id: clientId,
         session_ids: data.sessionIds,
         ai_supervision_template_id: data.aiSupervisionTemplateId,
-        profiling_template_id: data.profilingTemplateId,
-        psychotherapy_plan_template_id: data.psychotherapyPlanTemplateId,
       });
 
       toast({
         title: '분석 시작',
-        description: '백그라운드에서 클라이언트 분석을 진행하고 있습니다.',
+        description: '백그라운드에서 다회기 분석을 진행하고 있습니다.',
         duration: 3000,
       });
 
@@ -205,21 +201,25 @@ export const ClientDetailPage: React.FC = () => {
               총 {sessionRecords.length}개의 상담 기록
             </span>
           </div>
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsAnalysisModalOpen(true)}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
-            >
-              클라이언트 분석
-            </button>
-          </div>
         </div>
       </div>
 
       {/* 탭 */}
       <div className="flex-shrink-0 px-12">
         <div className="flex justify-center gap-8">
+          <button
+            onClick={() => setActiveTab('analyze')}
+            className={`relative px-1 py-4 text-lg font-medium transition-colors ${
+              activeTab === 'analyze'
+                ? 'text-fg'
+                : 'text-fg-muted hover:text-fg'
+            }`}
+          >
+            다회기 분석
+            <div
+              className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
+            />
+          </button>{' '}
           <button
             onClick={() => setActiveTab('history')}
             className={`relative px-1 py-4 text-lg font-medium transition-colors ${
@@ -230,20 +230,7 @@ export const ClientDetailPage: React.FC = () => {
           >
             상담 기록 및 정보
             <div
-              className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'history' ? 'w-full' : 'w-0'}`}
-            />
-          </button>
-          <button
-            onClick={() => setActiveTab('analyze')}
-            className={`relative px-1 py-4 text-lg font-medium transition-colors ${
-              activeTab === 'analyze'
-                ? 'text-fg'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            클라이언트 분석
-            <div
-              className={`absolute bottom-2 left-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
+              className={`absolute bottom-2 left-0 h-0.5 bg-fg transition-all ${activeTab === 'history' ? 'w-full' : 'w-0'}`}
             />
           </button>
         </div>
@@ -255,10 +242,6 @@ export const ClientDetailPage: React.FC = () => {
           <div className="grid grid-cols-[1fr_400px] gap-6 px-12 py-6">
             {/* 왼쪽: 세션 목록 */}
             <div>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-base font-medium text-fg">최신 날짜 순</h2>
-              </div>
-
               {sessionRecords.length > 0 ? (
                 <div className="space-y-3">
                   {sessionRecords.map((record) => (
@@ -279,46 +262,52 @@ export const ClientDetailPage: React.FC = () => {
             </div>
 
             {/* 우측: 클라이언트 정보 */}
-            <div className="sticky top-6 h-fit pt-10">
-              <div className="rounded-lg border border-border bg-surface p-6">
+            <div className="sticky top-6 h-fit">
+              <div className="rounded-lg border border-border bg-surface p-6 text-left">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-fg">
-                    클라이언트 정보
-                  </h2>
+                  <h2 className="text-sm text-fg-muted">클라이언트 정보</h2>
                   <button
                     onClick={() => setIsEditModalOpen(true)}
-                    className="text-sm text-fg-muted transition-colors hover:text-fg"
+                    className="rounded-md border border-border px-2.5 py-0.5 text-sm text-fg-muted transition-colors hover:text-fg"
                   >
                     편집
                   </button>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">이름</p>
+                    <p className="mb-1 text-sm font-semibold text-fg">이름</p>
                     <p className="text-sm text-fg">{client.name}</p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">휴대폰 번호</p>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      휴대폰 번호
+                    </p>
                     <p className="text-sm text-fg">{client.phone_number}</p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">이메일 주소</p>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      이메일 주소
+                    </p>
                     <p className="text-sm text-fg">{client.email || '-'}</p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">상담 주제</p>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      상담 주제
+                    </p>
                     <p className="text-sm text-fg">
                       {client.counsel_theme || '-'}
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">회기 수</p>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      회기 수
+                    </p>
                     <p className="text-sm text-fg">
                       {client.counsel_number || '- '}회기
                     </p>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs text-fg-muted">메모</p>
+                    <p className="mb-1 text-sm font-semibold text-fg">메모</p>
                     <p className="text-sm text-fg">{client.memo || '-'}</p>
                   </div>
                 </div>
@@ -330,6 +319,7 @@ export const ClientDetailPage: React.FC = () => {
             <ClientAnalysisTab
               analyses={analyses}
               isLoading={isLoadingAnalyses}
+              onCreateAnalysis={() => setIsAnalysisModalOpen(true)}
             />
           </div>
         )}

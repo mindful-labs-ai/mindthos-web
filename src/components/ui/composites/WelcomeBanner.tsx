@@ -24,7 +24,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
 }) => {
   return (
     <div
-      className={`relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-amber-200 px-8 py-12 text-white shadow-lg ${className}`}
+      className={`relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-amber-200 px-8 py-12 text-white ${className}`}
     >
       {onClose && (
         <button

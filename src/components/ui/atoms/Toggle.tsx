@@ -110,7 +110,6 @@ export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
           <span
             className={cn(
               'inline-block rounded-full bg-surface transition-transform duration-200',
-              'shadow-sm',
               sizeStyles[size].thumb,
               checked ? sizeStyles[size].translate : 'translate-x-0.5'
             )}

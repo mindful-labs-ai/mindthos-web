@@ -98,6 +98,17 @@ const TAG_STYLES: Record<string, { bg: string; text: string; border: string }> =
   };
 
 /**
+ * 비언어 태그를 제거하고 순수 텍스트만 추출
+ */
+export function extractTextOnly(text: string): string {
+  const parts = parseNonverbalText(text);
+  return parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.content)
+    .join('');
+}
+
+/**
  * TextPart 배열을 React 엘리먼트로 렌더링
  */
 export function renderTextWithNonverbal(

@@ -44,7 +44,9 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const { creditInfo } = useCreditInfo();
 
   // 현재 경로에 따라 activeNav 자동 설정
-  const activeNav = getNavValueFromPath(location.pathname);
+  const activeNav: string = React.useMemo(() => {
+    return getNavValueFromPath(location.pathname);
+  }, [location.pathname]);
 
   const handleNavSelect = (value: string) => {
     const path = getPathFromNavValue(value);
@@ -74,7 +76,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   return (
     <aside
       className={`relative z-10 flex h-full flex-col border-r border-border bg-bg px-3 transition-all duration-300 ${
-        isOpen ? 'w-64' : 'w-0'
+        isOpen ? 'min-w-64' : 'w-0'
       } overflow-hidden`}
     >
       {/* Logo Section */}

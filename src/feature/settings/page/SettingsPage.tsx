@@ -10,6 +10,7 @@ import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
+import { LogoutModal } from '@/feature/settings/components/LogoutModal';
 import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
 import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
@@ -38,6 +39,7 @@ export const SettingsPage: React.FC = () => {
   const { cardInfo } = useCardInfo();
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
@@ -63,7 +65,11 @@ export const SettingsPage: React.FC = () => {
     search: `?${createSearchParams({ type: TERMS_TYPES.SERVICE })}`,
   };
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleConfirmLogout = async () => {
     try {
       await logout();
     } catch (error) {
@@ -119,6 +125,7 @@ export const SettingsPage: React.FC = () => {
                 tone="neutral"
                 size="sm"
                 onClick={handleEditInfo}
+                className="text-fg-muted"
               >
                 정보 수정
               </Button>
@@ -127,17 +134,19 @@ export const SettingsPage: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <UserIcon size={20} className="text-fg-muted" />
-                <Text className="text-base">{userName || '이름 없음'}</Text>
+                <Text className="text-lg font-semibold">
+                  {userName || '이름 없음'}
+                </Text>
               </div>
               <div className="flex items-center gap-3">
                 <MailIcon size={20} className="text-fg-muted" />
-                <Text className="text-base">
+                <Text className="text-lg font-semibold">
                   {user?.email || '이메일 없음'}
                 </Text>
               </div>
               <div className="flex items-center gap-3">
                 <MapPinIcon size={20} className="text-fg-muted" />
-                <Text className="text-base">
+                <Text className="text-lg font-semibold">
                   {organization || '소속 기관 없음'}
                 </Text>
               </div>
@@ -156,6 +165,7 @@ export const SettingsPage: React.FC = () => {
                 tone="neutral"
                 size="sm"
                 onClick={handleTokenLog}
+                className="text-fg-muted"
               >
                 토큰 사용 내역
               </Button>
@@ -247,7 +257,7 @@ export const SettingsPage: React.FC = () => {
           <Button
             size="sm"
             variant="ghost"
-            onClick={handleLogout}
+            onClick={handleLogoutClick}
             className="text-muted transition-colors hover:text-fg"
           >
             로그아웃
@@ -267,6 +277,12 @@ export const SettingsPage: React.FC = () => {
       <PlanUpgradeModal
         open={isUpgradeModalOpen}
         onOpenChange={setIsUpgradeModalOpen}
+      />
+
+      <LogoutModal
+        open={isLogoutModalOpen}
+        onOpenChange={setIsLogoutModalOpen}
+        onConfirm={handleConfirmLogout}
       />
 
       <DeleteAccountModal

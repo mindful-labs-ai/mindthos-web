@@ -4,54 +4,40 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 
-export interface DeleteAccountModalProps {
+export interface LogoutModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => Promise<void>;
-  isDeleting: boolean;
-  error: string;
 }
 
 /**
- * DeleteAccountModal - 계정 탈퇴 확인 모달
- * 계정 탈퇴 전 사용자에게 최종 확인을 받는 모달
+ * LogoutModal - 로그아웃 확인 모달
+ * 로그아웃 전 사용자에게 최종 확인을 받는 모달
  *
  * @example
- * <DeleteAccountModal
+ * <LogoutModal
  *   open={isOpen}
  *   onOpenChange={setIsOpen}
- *   onConfirm={handleDelete}
- *   isDeleting={isDeleting}
- *   error={error}
+ *   onConfirm={handleLogout}
  * />
  */
-export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
+export const LogoutModal: React.FC<LogoutModalProps> = ({
   open,
   onOpenChange,
   onConfirm,
-  isDeleting,
-  error,
 }) => {
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      title="계정 탈퇴"
-      description="정말 계정을 탈퇴하시겠습니까?"
+      title="로그아웃"
+      description="정말 로그아웃 하시겠습니까?"
       className="max-w-sm text-left"
     >
       <div className="space-y-4">
         <Text className="text-sm text-fg-muted">
-          계정을 탈퇴하면 모든 데이터가 삭제되며, 복구할 수 없습니다.
-          <br />
-          정말 탈퇴하시겠습니까?
+          로그아웃하면 다시 로그인해야 서비스를 이용할 수 있습니다.
         </Text>
-
-        {error && (
-          <p className="text-sm text-danger" role="alert">
-            {error}
-          </p>
-        )}
 
         <div className="flex gap-3">
           <Button
@@ -59,18 +45,16 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
             tone="neutral"
             className="flex-1"
             onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
           >
             취소
           </Button>
           <Button
             variant="solid"
-            tone="danger"
+            tone="primary"
             className="flex-1"
             onClick={onConfirm}
-            disabled={isDeleting}
           >
-            {isDeleting ? '탈퇴 중...' : '탈퇴하기'}
+            로그아웃
           </Button>
         </div>
       </div>

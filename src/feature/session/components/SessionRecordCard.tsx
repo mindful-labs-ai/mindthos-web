@@ -19,6 +19,7 @@ import {
   deleteSession,
 } from '../services/sessionService';
 import type { SessionRecord } from '../types';
+import { extractTextOnly } from '../utils/parseNonverbalText';
 
 interface SessionRecordCardProps {
   record: SessionRecord;
@@ -32,7 +33,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   record,
   onClick,
   onChangeClient,
-  onDelete,
   isActive = false,
 }) => {
   const queryClient = useQueryClient();
@@ -56,36 +56,63 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       ? `${record.client_name} ${record.session_number}회기`
       : `세션 ${record.session_number}회기`);
 
-  const getStatusBadge = () => {
-    if (!record.processing_status || record.processing_status === 'succeeded')
-      return null;
+  // 한글 깨짐 방지: 14자로 자르기 (완성형 한글 보존)
+  const { truncatedTitle, isTruncated } = (() => {
+    // 문자열을 정규화하여 완성형 한글 보존 (NFC: Normalization Form Canonical Composition)
+    const normalized = displayTitle.normalize('NFC');
 
-    const statusConfig = {
-      pending: { label: '대기 중', tone: 'neutral' as const },
-      transcribing: { label: '전사 중', tone: 'primary' as const },
-      generating_note: { label: '노트 생성 중', tone: 'primary' as const },
-      failed: { label: '실패', tone: 'error' as const },
-    };
+    // 문자 길이 계산
+    let charCount = 0;
+    for (const _char of normalized) {
+      charCount++;
+    }
 
-    const config = statusConfig[record.processing_status];
+    // 14자 이하면 그대로 반환
+    if (charCount <= 14) {
+      return { truncatedTitle: normalized, isTruncated: false };
+    }
 
-    return (
-      <Badge tone={config.tone} variant="soft" size="sm">
-        {config.label}
-      </Badge>
-    );
+    // 14자 초과면 14자만 추출
+    let result = '';
+    let count = 0;
+
+    for (const char of normalized) {
+      if (count >= 14) break;
+      result += char;
+      count++;
+    }
+
+    return { truncatedTitle: result, isTruncated: true };
+  })();
+
+  // ==========================================
+  // 세션 상태 분류 (3가지: 성공, 진행 중, 실패)
+  // ==========================================
+  type SessionState = 'succeeded' | 'in_progress' | 'failed';
+
+  const getSessionState = (): SessionState => {
+    if (!record.processing_status || record.processing_status === 'succeeded') {
+      return 'succeeded';
+    }
+    if (record.processing_status === 'failed') {
+      return 'failed';
+    }
+    // pending, transcribing, generating_note는 모두 진행 중
+    return 'in_progress';
   };
 
-  const isClickable =
-    !record.processing_status || record.processing_status === 'succeeded';
+  const sessionState = getSessionState();
 
+  // ==========================================
+  // 공통 핸들러 함수들
+  // ==========================================
   const handleCardClick = (e: React.MouseEvent) => {
     // PopUp 영역 클릭 시 카드 클릭 이벤트 무시
     if ((e.target as HTMLElement).closest('[data-popup-wrapper]')) {
       return;
     }
     // succeeded 상태일 때만 클릭 가능
-    if (isClickable) {
+    if (sessionState === 'succeeded') {
       onClick?.(record);
     }
   };
@@ -107,7 +134,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       });
 
       setIsDeleteModalOpen(false);
-      onDelete?.(record);
     } catch (error) {
       console.error('세션 삭제 실패:', error);
       alert('세션 삭제에 실패했습니다.');
@@ -141,85 +167,213 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     setIsMenuOpen(false);
   };
 
-  return (
-    <>
-      <Card
-        className={`transition-all ${
-          isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'
-        } ${
-          isActive
-            ? 'border-l-4 border-primary bg-surface shadow-md'
-            : 'hover:shadow-lg'
-        }`}
-        onClick={handleCardClick}
-      >
-        <Card.Body className="space-y-3 p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <Title as="h3" className="truncate text-left text-lg font-bold">
-                {displayTitle}
-              </Title>
-              {getStatusBadge()}
-            </div>
-            <div className="flex-shrink-0" data-popup-wrapper>
-              <PopUp
-                open={isMenuOpen}
-                onOpenChange={setIsMenuOpen}
-                placement="bottom-left"
-                trigger={
-                  <button
-                    type="button"
-                    className="rounded-lg p-1 text-fg-muted hover:bg-surface-contrast"
-                    aria-label="더보기 메뉴"
-                  >
-                    <MoreVerticalIcon size={20} />
-                  </button>
-                }
-                content={
-                  <div
-                    className="space-y-1"
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    role="presentation"
-                  >
-                    <ClientSelector
-                      variant="dropdown"
-                      trigger={
-                        <button
-                          type="button"
-                          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
-                        >
-                          <UserCircle2Icon
-                            size={18}
-                            className="text-fg-muted"
-                          />
-                          <Text className="text-fg">내담자 변경</Text>
-                        </button>
-                      }
-                      open={isClientSelectorFromMenuOpen}
-                      onOpenChange={setIsClientSelectorFromMenuOpen}
-                      placement="bottom-left"
-                      clients={clients}
-                      onSelect={handleClientSelect}
-                    />
-                    <button
-                      onClick={handleDelete}
-                      className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
-                    >
-                      <Trash2Icon size={18} className="text-fg-muted" />
-                      <Text className="text-fg">상담 기록 삭제</Text>
-                    </button>
-                  </div>
-                }
-              />
-            </div>
+  // ==========================================
+  // 공통 컴포넌트들
+  // ==========================================
+  const renderCardMenu = () => (
+    <div className="flex-shrink-0" data-popup-wrapper>
+      <PopUp
+        open={isMenuOpen}
+        onOpenChange={setIsMenuOpen}
+        placement="bottom-left"
+        trigger={
+          <button
+            type="button"
+            className="rounded-lg p-1 text-fg-muted hover:bg-surface-contrast"
+            aria-label="더보기 메뉴"
+          >
+            <MoreVerticalIcon size={20} />
+          </button>
+        }
+        content={
+          <div
+            className="space-y-1"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <ClientSelector
+              variant="dropdown"
+              trigger={
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+                >
+                  <UserCircle2Icon size={18} className="text-fg-muted" />
+                  <Text className="text-fg">내담자 변경</Text>
+                </button>
+              }
+              open={isClientSelectorFromMenuOpen}
+              onOpenChange={setIsClientSelectorFromMenuOpen}
+              placement="bottom-left"
+              clients={clients}
+              onSelect={handleClientSelect}
+            />
+            <button
+              onClick={handleDelete}
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+            >
+              <Trash2Icon size={18} className="text-fg-muted" />
+              <Text className="text-fg">상담 기록 삭제</Text>
+            </button>
           </div>
+        }
+      />
+    </div>
+  );
 
-          {/* 진행 중일 때 프로그레스 바 표시 */}
-          {record.processing_status &&
-            record.processing_status !== 'succeeded' &&
-            record.processing_status !== 'failed' &&
-            record.progress_percentage !== undefined && (
+  const renderDeleteModal = () => (
+    <Modal
+      open={isDeleteModalOpen}
+      onOpenChange={setIsDeleteModalOpen}
+      title="세션 삭제"
+      className="max-w-sm"
+    >
+      <div className="space-y-4">
+        <Text className="text-base font-bold text-fg">
+          {displayTitle} 세션을 삭제하시겠습니까?
+        </Text>
+        <Text className="text-sm text-fg-muted">
+          삭제하면 세션과 관련된 모든 데이터가 영구적으로 삭제됩니다.
+        </Text>
+        <div className="flex justify-center gap-2 pt-2">
+          <button
+            onClick={() => setIsDeleteModalOpen(false)}
+            disabled={isLoading}
+            className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors disabled:opacity-50"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleConfirmDelete}
+            disabled={isLoading}
+            className="hover:bg-danger/90 w-full rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
+          >
+            {isLoading ? '삭제 중...' : '삭제'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+
+  const renderClientInfo = () => (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex gap-2" data-popup-wrapper>
+        {hasClient ? (
+          <Text className="font-semibold" as="span">
+            {record.client_name}
+          </Text>
+        ) : (
+          <ClientSelector
+            variant="dropdown"
+            trigger={
+              <Badge
+                tone="error"
+                variant="soft"
+                size="md"
+                className="cursor-pointer border border-danger transition-all hover:bg-red-300"
+              >
+                고객 미정
+              </Badge>
+            }
+            open={isClientSelectorPopupOpen}
+            onOpenChange={setIsClientSelectorPopupOpen}
+            placement="bottom-left"
+            clients={clients}
+            onSelect={handleClientSelect}
+          />
+        )}
+      </div>
+      <div className="flex gap-2">
+        {record.note_types.map((type, index) => (
+          <Badge key={index} tone="neutral" variant="solid" size="md">
+            {type}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ==========================================
+  // 1. 성공 상태 카드 (클릭 가능, 일반 표시)
+  // ==========================================
+  if (sessionState === 'succeeded') {
+    return (
+      <>
+        <Card
+          className="cursor-pointer bg-surface transition-all"
+          onClick={handleCardClick}
+        >
+          <Card.Body className="space-y-3 p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <Title as="h3" className="truncate text-left text-lg font-bold">
+                  {truncatedTitle + (isTruncated ? '...' : '')}
+                </Title>
+              </div>
+              {renderCardMenu()}
+            </div>
+
+            <Text className="line-clamp-2 overflow-hidden text-left text-sm text-fg">
+              {extractTextOnly(record.content)}
+            </Text>
+
+            <div className="flex items-center justify-between gap-3">
+              <Text className="text-xs text-fg-muted">
+                {formatKoreanDateTime(record.created_at)}
+              </Text>
+            </div>
+
+            {renderClientInfo()}
+          </Card.Body>
+        </Card>
+
+        {renderDeleteModal()}
+      </>
+    );
+  }
+
+  // ==========================================
+  // 2. 진행 중 상태 카드 (클릭 불가, 프로그레스 바)
+  // ==========================================
+  if (sessionState === 'in_progress') {
+    const getProgressLabel = () => {
+      const statusConfig = {
+        pending: '대기 중',
+        transcribing: '전사 중',
+        generating_note: '노트 생성 중',
+      };
+      return (
+        statusConfig[
+          record.processing_status as
+            | 'pending'
+            | 'transcribing'
+            | 'generating_note'
+        ] || '처리 중'
+      );
+    };
+
+    return (
+      <>
+        <Card className="cursor-not-allowed opacity-75 transition-all">
+          <Card.Body className="space-y-3 p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <Title
+                  as="h3"
+                  className="truncate text-left text-lg font-bold text-fg-muted"
+                >
+                  {truncatedTitle + (isTruncated ? '...' : '')}
+                </Title>
+                <Badge tone="primary" variant="soft" size="sm">
+                  {getProgressLabel()}
+                </Badge>
+              </div>
+              {renderCardMenu()}
+            </div>
+
+            {/* 프로그레스 바 */}
+            {record.progress_percentage !== undefined && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Text className="text-xs text-fg-muted">
@@ -232,14 +386,57 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
                   <div
                     className="h-full bg-primary-500 transition-all duration-300 ease-out"
-                    style={{ width: `${record.progress_percentage}%` }}
+                    style={{
+                      width: `${record.progress_percentage}%`,
+                      background:
+                        'linear-gradient(90deg, var(--color-primary-500) 30%, var(--color-primary-100) 50%, var(--color-primary-500) 90%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'progress-flow 2.5s linear infinite',
+                    }}
                   />
                 </div>
               </div>
             )}
 
-          <Text className="line-clamp-2 overflow-hidden text-left text-sm text-fg">
-            {record.content}
+            <div className="flex items-center justify-between gap-3">
+              <Text className="text-xs text-fg-muted">
+                {formatKoreanDateTime(record.created_at)}
+              </Text>
+            </div>
+
+            {renderClientInfo()}
+          </Card.Body>
+        </Card>
+
+        {renderDeleteModal()}
+      </>
+    );
+  }
+
+  // ==========================================
+  // 3. 실패 상태 카드 (클릭 불가, 에러 표시)
+  // ==========================================
+  return (
+    <>
+      <Card className="cursor-not-allowed opacity-75 transition-all">
+        <Card.Body className="space-y-3 p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <Title
+                as="h3"
+                className="truncate text-left text-lg font-bold text-fg-muted"
+              >
+                {truncatedTitle + (isTruncated ? '...' : '')}
+              </Title>
+              <Badge tone="error" variant="soft" size="sm">
+                실패
+              </Badge>
+            </div>
+            {renderCardMenu()}
+          </div>
+
+          <Text className="line-clamp-2 overflow-hidden text-left text-sm">
+            생성에 실패한 세션입니다.
           </Text>
 
           <div className="flex items-center justify-between gap-3">
@@ -248,72 +445,11 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </Text>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex gap-2" data-popup-wrapper>
-              <ClientSelector
-                variant="dropdown"
-                trigger={
-                  !hasClient ? (
-                    <Badge
-                      tone="error"
-                      variant="soft"
-                      size="md"
-                      className="hover:bg-danger/20 cursor-pointer border border-danger transition-all"
-                    >
-                      고객 미정
-                    </Badge>
-                  ) : (
-                    <div style={{ display: 'none' }} />
-                  )
-                }
-                open={isClientSelectorPopupOpen}
-                onOpenChange={setIsClientSelectorPopupOpen}
-                placement="bottom-left"
-                clients={clients}
-                onSelect={handleClientSelect}
-              />
-            </div>
-            <div className="flex gap-2">
-              {record.note_types.map((type, index) => (
-                <Badge key={index} tone="neutral" variant="solid" size="md">
-                  {type}
-                </Badge>
-              ))}
-            </div>
-          </div>
+          {renderClientInfo()}
         </Card.Body>
       </Card>
 
-      <Modal
-        open={isDeleteModalOpen}
-        onOpenChange={setIsDeleteModalOpen}
-        title="세션 삭제"
-      >
-        <div className="space-y-4">
-          <Text className="text-base font-bold text-fg">
-            {displayTitle} 세션을 삭제하시겠습니까?
-          </Text>
-          <Text className="text-sm text-fg-muted">
-            삭제하면 세션과 관련된 모든 데이터가 영구적으로 삭제됩니다.
-          </Text>
-          <div className="flex justify-center gap-2 pt-2">
-            <button
-              onClick={() => setIsDeleteModalOpen(false)}
-              disabled={isLoading}
-              className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors disabled:opacity-50"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleConfirmDelete}
-              disabled={isLoading}
-              className="hover:bg-danger/90 w-full rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
-            >
-              {isLoading ? '삭제 중...' : '삭제'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      {renderDeleteModal()}
     </>
   );
 };

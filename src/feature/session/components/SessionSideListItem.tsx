@@ -8,8 +8,6 @@ import { formatDuration } from '@/shared/utils/date';
 interface SessionSideListItemProps {
   sessionId: string;
   title: string;
-  clientName: string;
-  sessionNumber: number;
   duration?: number;
   hasAudio: boolean;
   isActive?: boolean;
@@ -19,8 +17,6 @@ interface SessionSideListItemProps {
 export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
   sessionId,
   title,
-  clientName,
-  sessionNumber,
   duration,
   hasAudio,
   isActive = false,
@@ -29,19 +25,16 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
   return (
     <button
       onClick={() => onClick(sessionId)}
-      className={`w-full rounded-lg px-3 py-3 text-left transition-colors ${
+      className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${
         isActive
-          ? 'bg-primary/10 border-l-2 border-primary'
+          ? 'bg-surface-contrast hover:bg-surface-strong'
           : 'hover:bg-surface-contrast'
       }`}
     >
-      <div className="space-y-1">
+      <div className="">
         <Title as="h4" className="text-sm font-semibold text-fg">
           {title}
         </Title>
-        <Text className="text-xs text-fg-muted">
-          {clientName} · {sessionNumber}회기
-        </Text>
         <div className="flex items-center justify-between gap-2">
           <Text className="text-xs text-fg-muted">
             {duration ? formatDuration(duration) : '시간 정보 없음'}

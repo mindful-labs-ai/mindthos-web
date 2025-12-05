@@ -79,13 +79,13 @@ export const ClientListPage: React.FC = () => {
               size="md"
               onClick={handleAddClient}
             >
-              고객 추가하기
+              클라이언트 추가하기
             </Button>
           </div>
         </div>
 
         {error && (
-          <div className="bg-danger/10 mb-4 rounded-[var(--radius-md)] px-4 py-3 text-sm text-danger">
+          <div className="mb-4 rounded-[var(--radius-md)] bg-danger px-4 py-3 text-sm text-danger">
             {error}
           </div>
         )}

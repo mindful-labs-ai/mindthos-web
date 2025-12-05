@@ -42,11 +42,7 @@ export interface ClientAnalysisVersion {
   version: number;
   session_ids: string[];
   created_at: string;
-  analyses: {
-    ai_supervision: ClientAnalysis | null;
-    profiling: ClientAnalysis | null;
-    psychotherapy_plan: ClientAnalysis | null;
-  };
+  ai_supervision: ClientAnalysis | null;
 }
 
 // 템플릿 그룹 (타입별)

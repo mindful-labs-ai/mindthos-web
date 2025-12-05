@@ -129,34 +129,39 @@ export const SessionHistoryPage: React.FC = () => {
     );
   }, [filteredAndSortedSessions, clients, sessionsWithData]);
 
-  // 간소화된 세션 리스트용 데이터
+  // 간소화된 세션 리스트용 데이터 (실패한 세션 자동 필터링)
   const sessionListData = React.useMemo(() => {
-    return filteredAndSortedSessions.map(({ session }) => {
-      const client = clients.find((c) => c.id === session.client_id);
-      const audioDuration = session.audio_meta_data?.duration_seconds;
+    return filteredAndSortedSessions
+      .filter(({ session }) => {
+        // 실패한 세션 자동 필터링
+        return session.processing_status !== 'failed';
+      })
+      .map(({ session }) => {
+        const client = clients.find((c) => c.id === session.client_id);
+        const audioDuration = session.audio_meta_data?.duration_seconds;
 
-      // 해당 클라이언트의 모든 세션들을 날짜순으로 정렬하여 회기 번호 계산
-      // 필터링과 관계없이 전체 세션에서 회기 번호 계산
-      const allClientSessions = sessionsWithData
-        .filter((s) => s.session.client_id === session.client_id)
-        .map((s) => s.session)
-        .sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-      const sessionNumber =
-        allClientSessions.findIndex((s) => s.id === session.id) + 1;
+        // 해당 클라이언트의 모든 세션들을 날짜순으로 정렬하여 회기 번호 계산
+        // 필터링과 관계없이 전체 세션에서 회기 번호 계산
+        const allClientSessions = sessionsWithData
+          .filter((s) => s.session.client_id === session.client_id)
+          .map((s) => s.session)
+          .sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        const sessionNumber =
+          allClientSessions.findIndex((s) => s.id === session.id) + 1;
 
-      return {
-        sessionId: session.id,
-        title: session.title || '제목 없음',
-        clientName: client?.name || '고객 없음',
-        sessionNumber,
-        duration: audioDuration,
-        hasAudio: !!session.audio_url,
-        createdAt: session.created_at,
-      };
-    });
+        return {
+          sessionId: session.id,
+          title: session.title || '제목 없음',
+          clientName: client?.name || '고객 없음',
+          sessionNumber,
+          duration: audioDuration,
+          hasAudio: !!session.audio_url,
+          createdAt: session.created_at,
+        };
+      });
   }, [filteredAndSortedSessions, clients, sessionsWithData]);
 
   const handleCardClick = (record: SessionRecord) => {
@@ -198,9 +203,8 @@ export const SessionHistoryPage: React.FC = () => {
 
   return (
     <div className="flex h-full bg-surface-contrast">
-      {/* 왼쪽: 세션 목록 - sessionId 유무에 따라 다른 UI */}
-      {sessionId ? (
-        // 간소화된 세션 리스트
+      {/* 왼쪽: 세션 목록 - 항상 렌더링 (언마운트 방지) */}
+      {sessionId && (
         <SessionSideList
           sessions={sessionListData}
           activeSessionId={sessionId}
@@ -213,7 +217,10 @@ export const SessionHistoryPage: React.FC = () => {
           onClientChange={handleClientChange}
           onFilterReset={handleFilterReset}
         />
-      ) : (
+      )}
+
+      {/* 메인 컨텐츠 영역 */}
+      {!sessionId ? (
         // 전체 카드 리스트
         <div className="flex flex-1 flex-col bg-surface-contrast px-16 pt-[42px] transition-all duration-300">
           <div className="flex-shrink-0 pb-6">
@@ -326,17 +333,9 @@ export const SessionHistoryPage: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* 오른쪽: 선택된 세션 상세 - sessionId가 있을 때만 렌더링 */}
-      {sessionId && (
-        <div
-          key={sessionId}
-          className="flex-1"
-          style={{
-            animation: 'slideInFromRight 300ms ease-out',
-          }}
-        >
+      ) : (
+        // 오른쪽: 선택된 세션 상세
+        <div className="flex-1">
           <Outlet />
         </div>
       )}

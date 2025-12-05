@@ -59,7 +59,17 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
 
 // 경로에서 nav value 찾기
 export const getNavValueFromPath = (path: string): string => {
-  const item = NAVIGATION_ITEMS.find((item) => item.path === path);
+  let item = NAVIGATION_ITEMS.find((item) => item.path === path);
+
+  if (!item) {
+    item = NAVIGATION_ITEMS.find((navItem) => {
+      if (navItem.path === '/') {
+        return path === '/';
+      }
+      return path.startsWith(navItem.path);
+    });
+  }
+
   return item?.value || 'home';
 };
 

@@ -157,13 +157,18 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   // 플랜 이름 정리 (PLUS -> 플러스, PRO -> 프로)
   const getPlanName = (type: string) => {
     const baseType = type.replace('_YEAR', '');
-    if (baseType === 'PLUS') return '플러스';
-    if (baseType === 'PRO') return '프로';
+    if (baseType === 'Starter') return '스타터';
+    if (baseType === 'Plus') return '플러스';
+    if (baseType === 'Pro') return '프로';
     return baseType;
   };
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} className="w-5/6 max-w-full">
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      className="mx-12 w-5/6 max-w-full"
+    >
       <div className="flex flex-col items-center gap-y-12">
         <Title className="pt-4" as="h2">
           마음토스 플랜 업그레이드
@@ -200,7 +205,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             <Text className="text-fg-muted">사용 가능한 플랜이 없습니다.</Text>
           </div>
         ) : (
-          <div className="flex w-full justify-center gap-6">
+          <div className="flex justify-center gap-6 overflow-auto">
             {currentPlans.map((plan) => {
               const isYearly = plan.is_year;
               const discountInfo = isYearly
@@ -227,7 +232,9 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         )}
 
         <div className="flex w-full flex-col items-center gap-y-2">
-          <Text>결제 약관에 동의합니다.</Text>
+          <Text className="text-sm text-fg">
+            <span className="underline">결제 약관</span>에 동의합니다.
+          </Text>
           <Button
             variant="solid"
             tone="primary"

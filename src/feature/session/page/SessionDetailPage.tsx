@@ -3,12 +3,14 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Title } from '@/components/ui';
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { useToast } from '@/components/ui/composites/Toast';
+import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { useAuthStore } from '@/stores/authStore';
 
 import { AudioPlayer } from '../components/AudioPlayer';
@@ -55,7 +57,7 @@ export const SessionDetailPage: React.FC = () => {
     string | null
   >(null);
   const [isCreatingNote, setIsCreatingNote] = React.useState(false);
-  const [creatingTemplateId, setCreatingTemplateId] = React.useState<
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState<
     number | null
   >(null);
   const [editedSegments, setEditedSegments] = React.useState<
@@ -75,6 +77,9 @@ export const SessionDetailPage: React.FC = () => {
   const session = sessionDetail?.session;
   const transcribe = sessionDetail?.transcribe;
   const sessionProgressNotes = sessionDetail?.progressNotes || [];
+
+  // 템플릿 목록 조회
+  const { templates } = useTemplateList();
 
   // 탭 아이템 동적 생성
   const tabItems: TabItem[] = React.useMemo(() => {
@@ -110,15 +115,23 @@ export const SessionDetailPage: React.FC = () => {
 
     // 상담 노트 생성 중이거나 create-note 탭이 활성화된 경우 임시 탭 추가
     if (activeTab === 'create-note' || isCreatingNote) {
+      // 생성 중일 때 선택된 템플릿의 타이틀 표시
+      let label = '빈 노트';
+      if (isCreatingNote && selectedTemplateId) {
+        const selectedTemplate = templates.find(
+          (t) => t.id === selectedTemplateId
+        );
+        label = selectedTemplate ? `${selectedTemplate.title} 생성 중...` : '생성 중...';
+      }
       items.push({
         value: 'create-note',
-        label: isCreatingNote ? '생성 중...' : '빈 노트',
+        label,
       });
     }
 
     items.push({ value: 'add', label: '+' });
     return items;
-  }, [sessionProgressNotes, activeTab, isCreatingNote, transcribe?.stt_model]);
+  }, [sessionProgressNotes, activeTab, isCreatingNote, transcribe?.stt_model, selectedTemplateId, templates]);
 
   // raw_output 파싱 또는 기존 result 사용
   // useMemo로 감싸서 transcribe.contents가 변경되면 재계산
@@ -390,18 +403,32 @@ export const SessionDetailPage: React.FC = () => {
     try {
       await updateSessionTitle(sessionId, newTitle);
 
-      // 성공 시 세션 상세 정보 다시 조회
-      await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
-      });
+      const userIdString = useAuthStore.getState().userId;
+      const userId = userIdString ? Number(userIdString) : null;
+
+      // 성공 시 세션 상세 정보 및 세션 목록 다시 조회
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['session', sessionId],
+        }),
+        // 세션 목록도 invalidate하여 SessionRecordCard와 SessionSideList 업데이트
+        userId &&
+          queryClient.invalidateQueries({
+            queryKey: ['sessions', userId],
+          }),
+      ]);
     } catch (error) {
       console.error('세션 제목 업데이트 실패:', error);
       throw error;
     }
   };
 
-  const handleCreateStart = async (templateId: number) => {
-    if (!sessionId || !transcribe?.contents) return;
+  const handleTemplateSelect = (templateId: number | null) => {
+    setSelectedTemplateId(templateId);
+  };
+
+  const handleCreateProgressNote = async () => {
+    if (!sessionId || !transcribe?.contents || !selectedTemplateId) return;
 
     const userIdString = useAuthStore.getState().userId;
     if (!userIdString) {
@@ -427,12 +454,11 @@ export const SessionDetailPage: React.FC = () => {
 
     try {
       setIsCreatingNote(true);
-      setCreatingTemplateId(templateId);
 
       const response = await createProgressNote({
         sessionId,
         userId,
-        templateId,
+        templateId: selectedTemplateId,
         transcribedText: rawOutput,
       });
 
@@ -443,12 +469,14 @@ export const SessionDetailPage: React.FC = () => {
 
       // 새로 생성된 상담 노트 탭으로 이동
       setActiveTab(response.progress_note_id);
+
+      // 선택 상태 초기화
+      setSelectedTemplateId(null);
     } catch (error) {
       console.error('상담 노트 생성 실패:', error);
       // TODO: 에러 토스트 표시
     } finally {
       setIsCreatingNote(false);
-      setCreatingTemplateId(null);
     }
   };
 
@@ -566,6 +594,7 @@ export const SessionDetailPage: React.FC = () => {
         <SessionHeader
           title={session.title || '제목 없음'}
           createdAt={session.created_at}
+          duration={session.audio_meta_data?.duration_seconds || 0}
           onTitleUpdate={handleTitleUpdate}
         />
       </div>
@@ -575,149 +604,142 @@ export const SessionDetailPage: React.FC = () => {
           items={tabItems}
           value={activeTab}
           onValueChange={handleTabChange}
-          size="md"
+          size="sm"
           variant="underline"
         />
       </div>
 
       <div
-        className={`mx-6 min-h-0 flex-1 overflow-y-auto rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
+        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         {activeTab === 'transcript' && (
-          <div className="z-10v sticky top-0 mb-4 flex items-center justify-end gap-2 px-8 py-2">
-            {isEditing ? (
-              <>
-                <button
-                  type="button"
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
-                  onClick={handleSaveAllEdits}
-                >
-                  편집 완료
-                </button>
-                <button
-                  type="button"
-                  className="hover:bg-surface-hover rounded-lg bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
-                  onClick={handleCancelEdit}
-                >
-                  취소
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
-                  onClick={handleEditStart}
-                  title="편집"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+          <div className="absolute inset-x-0 top-0 z-10 flex justify-end">
+            <div className="mb-4 flex items-center gap-2 overflow-hidden py-2">
+              {isEditing ? (
+                <>
+                  <button
+                    type="button"
+                    className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+                    onClick={handleSaveAllEdits}
                   >
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
-                  onClick={handleCopyTranscript}
-                  title="복사"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    편집 완료
+                  </button>
+                  <button
+                    type="button"
+                    className="hover:bg-surface-hover rounded-lg bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
+                    onClick={handleCancelEdit}
                   >
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                </button>
-                <div className="inline-block">
-                  <PopUp
-                    open={isMenuOpen}
-                    onOpenChange={setIsMenuOpen}
-                    placement="bottom-left"
-                    trigger={
-                      <button
-                        type="button"
-                        className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
-                        title="메뉴"
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="12" cy="12" r="1" />
-                          <circle cx="12" cy="5" r="1" />
-                          <circle cx="12" cy="19" r="1" />
-                        </svg>
-                      </button>
-                    }
-                    content={
-                      <div className="w-[200px] space-y-1">
+                    취소
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                    onClick={handleEditStart}
+                    title="편집"
+                  >
+                    편집
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                    onClick={handleCopyTranscript}
+                    title="복사"
+                  >
+                    <svg
+                      width="20"
+                      height="24"
+                      viewBox="0 0 20 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M11 4C11 4.26522 11.1054 4.51957 11.2929 4.70711C11.4804 4.89464 11.7348 5 12 5H15.966C15.8924 4.35068 15.6074 3.74354 15.155 3.272L12.871 0.913C12.3714 0.406548 11.7085 0.0933745 11 0.029V4ZM9 4V0H5C3.67441 0.00158786 2.40356 0.528882 1.46622 1.46622C0.528882 2.40356 0.00158786 3.67441 0 5V15C0.00158786 16.3256 0.528882 17.5964 1.46622 18.5338C2.40356 19.4711 3.67441 19.9984 5 20H11C12.3256 19.9984 13.5964 19.4711 14.5338 18.5338C15.4711 17.5964 15.9984 16.3256 16 15V7H12C11.2044 7 10.4413 6.68393 9.87868 6.12132C9.31607 5.55871 9 4.79565 9 4ZM15 24H6C5.73478 24 5.48043 23.8946 5.29289 23.7071C5.10536 23.5196 5 23.2652 5 23C5 22.7348 5.10536 22.4804 5.29289 22.2929C5.48043 22.1054 5.73478 22 6 22H15C15.7956 22 16.5587 21.6839 17.1213 21.1213C17.6839 20.5587 18 19.7956 18 19V8C18 7.73478 18.1054 7.48043 18.2929 7.29289C18.4804 7.10536 18.7348 7 19 7C19.2652 7 19.5196 7.10536 19.7071 7.29289C19.8946 7.48043 20 7.73478 20 8V19C19.9984 20.3256 19.4711 21.5964 18.5338 22.5338C17.5964 23.4711 16.3256 23.9984 15 24Z"
+                        fill="#BABAC0"
+                      />
+                    </svg>
+                  </button>
+                  <div className="inline-block">
+                    <PopUp
+                      open={isMenuOpen}
+                      onOpenChange={setIsMenuOpen}
+                      placement="bottom-left"
+                      trigger={
                         <button
-                          onClick={() => {
-                            setIsAnonymized(!isAnonymized);
-                            setIsMenuOpen(false);
-                          }}
-                          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                          type="button"
+                          className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                          title="메뉴"
                         >
                           <svg
-                            width="18"
-                            height="18"
+                            width="20"
+                            height="20"
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="text-fg-muted"
                           >
-                            {isAnonymized ? (
-                              <>
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                <circle cx="12" cy="12" r="3" />
-                              </>
-                            ) : (
-                              <>
-                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                <line x1="1" y1="1" x2="23" y2="23" />
-                              </>
-                            )}
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="12" cy="5" r="1" />
+                            <circle cx="12" cy="19" r="1" />
                           </svg>
-                          <span className="text-sm text-fg">
-                            {isAnonymized ? '익명화 해제' : '축어록 익명화'}
-                          </span>
                         </button>
-                      </div>
-                    }
-                  />
-                </div>
-              </>
-            )}
+                      }
+                      content={
+                        <div className="w-[200px] space-y-1">
+                          <button
+                            onClick={() => {
+                              setIsAnonymized(!isAnonymized);
+                              setIsMenuOpen(false);
+                            }}
+                            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-fg-muted"
+                            >
+                              {isAnonymized ? (
+                                <>
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </>
+                              ) : (
+                                <>
+                                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                  <line x1="1" y1="1" x2="23" y2="23" />
+                                </>
+                              )}
+                            </svg>
+                            <span className="text-sm text-fg">
+                              {isAnonymized
+                                ? '참석자 가리기 해제'
+                                : '참석자 가리기'}
+                            </span>
+                          </button>
+                        </div>
+                      }
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
 
         {activeTab === 'transcript' ? (
-          <div className={`space-y-4 rounded-lg px-8 pb-6 transition-colors`}>
+          <div
+            className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
+          >
             {segments.length > 0 ? (
               segments.map((segment, index) => (
                 <TranscriptSegment
@@ -748,26 +770,65 @@ export const SessionDetailPage: React.FC = () => {
             )}
           </div>
         ) : activeTab === 'create-note' ? (
-          <div className="px-8 py-6">
-            <CreateProgressNoteView
-              sessionId={sessionId || ''}
-              transcribedText={
-                transcribe?.contents &&
-                typeof transcribe.contents === 'object' &&
-                transcribe.contents !== null
-                  ? transcribe.contents.raw_output || null
-                  : null
-              }
-              usedTemplateIds={sessionProgressNotes
-                .map((note) => note.template_id)
-                .filter((id): id is number => id !== null && id !== undefined)}
-              isCreating={isCreatingNote}
-              creatingTemplateId={creatingTemplateId}
-              onCreateStart={handleCreateStart}
-            />
+          <div className="flex h-full flex-col">
+            {/* 우측 상단 생성 버튼 */}
+            <div className="flex items-center justify-between px-8 py-4">
+              <div>
+                <Title as="h2" className="text-base text-fg-muted">
+                  상담 노트 템플릿
+                </Title>
+              </div>
+              <button
+                onClick={handleCreateProgressNote}
+                disabled={!selectedTemplateId || isCreatingNote}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  !selectedTemplateId || isCreatingNote
+                    ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
+                    : 'bg-primary text-white hover:bg-primary-600'
+                }`}
+              >
+                {isCreatingNote ? (
+                  <span className="flex items-center gap-2">
+                    <svg
+                      className="h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <circle cx="12" cy="12" r="10" opacity="0.25" />
+                      <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75" />
+                    </svg>
+                    생성 중...
+                  </span>
+                ) : (
+                  '상담 노트 생성하기'
+                )}
+              </button>
+            </div>
+            {/* CreateProgressNoteView */}
+            <div className="flex-1 overflow-y-auto px-8 py-6">
+              <CreateProgressNoteView
+                sessionId={sessionId || ''}
+                transcribedText={
+                  transcribe?.contents &&
+                  typeof transcribe.contents === 'object' &&
+                  transcribe.contents !== null
+                    ? transcribe.contents.raw_output || null
+                    : null
+                }
+                usedTemplateIds={sessionProgressNotes
+                  .map((note) => note.template_id)
+                  .filter(
+                    (id): id is number => id !== null && id !== undefined
+                  )}
+                selectedTemplateId={selectedTemplateId}
+                onTemplateSelect={handleTemplateSelect}
+              />
+            </div>
           </div>
         ) : (
-          <div className="px-8 py-6">
+          <div className="h-full overflow-y-auto px-8 py-6">
             {(() => {
               const selectedNote = sessionProgressNotes.find(
                 (note) => note.id === activeTab
@@ -784,21 +845,23 @@ export const SessionDetailPage: React.FC = () => {
         )}
       </div>
 
-      <div className="flex-shrink-0">
-        <AudioPlayer
-          audioRef={audioRef}
-          isPlaying={isPlaying}
-          currentTime={currentTime}
-          duration={audioDuration}
-          playbackRate={playbackRate}
-          isLoading={isLoadingAudioBlob}
-          onPlayPause={handlePlayPause}
-          onBackward={handleBackward}
-          onForward={handleForward}
-          onProgressClick={handleProgressClick}
-          onPlaybackRateChange={handlePlaybackRateChange}
-        />
-      </div>
+      {activeTab === 'transcript' && (
+        <div className="flex-shrink-0">
+          <AudioPlayer
+            audioRef={audioRef}
+            isPlaying={isPlaying}
+            currentTime={currentTime}
+            duration={audioDuration}
+            playbackRate={playbackRate}
+            isLoading={isLoadingAudioBlob}
+            onPlayPause={handlePlayPause}
+            onBackward={handleBackward}
+            onForward={handleForward}
+            onProgressClick={handleProgressClick}
+            onPlaybackRateChange={handlePlaybackRateChange}
+          />
+        </div>
+      )}
 
       {/* 탭 변경 확인 모달 */}
       <Modal

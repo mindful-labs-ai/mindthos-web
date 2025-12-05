@@ -20,7 +20,7 @@ const MainFlowLayout = () => {
         {!isSideTabOpen && (
           <button
             onClick={() => setIsSideTabOpen(true)}
-            className="fixed left-4 top-4 z-10 rounded-lg bg-surface p-2 shadow-lg lg:hidden"
+            className="fixed left-4 top-4 z-10 rounded-lg bg-surface p-2 lg:hidden"
           >
             <LayersIcon size={24} />
           </button>

@@ -186,7 +186,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
           className={cn(
             'absolute z-50 mt-1 w-full',
             'max-h-60 overflow-auto',
-            'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
+            'rounded-[var(--radius-md)] border-2 border-border bg-surface',
             'py-1'
           )}
         >

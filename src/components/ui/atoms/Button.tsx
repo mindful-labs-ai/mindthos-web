@@ -36,8 +36,8 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
     solid: 'bg-primary text-surface hover:bg-primary-600',
     outline:
       'border-2 border-primary text-primary bg-primary-100 hover:bg-primary-200',
-    ghost: 'bg-transparent text-primary hover:bg-primary/10',
-    soft: 'bg-primary/10 text-primary hover:bg-primary/20',
+    ghost: 'bg-transparent text-primary hover:bg-primary-100',
+    soft: 'bg-primary-100 text-primary hover:bg-primary-200',
   },
   secondary: {
     solid: 'bg-secondary text-surface hover:bg-secondary-600',
@@ -114,7 +114,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           'inline-flex items-center justify-center gap-2 font-medium',
           'transition-colors duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'disabled:cursor-not-allowed disabled:bg-surface-contrast disabled:text-fg-muted',
           sizeStyles[size],
           toneVariantStyles[tone][variant],
           className

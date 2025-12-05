@@ -112,19 +112,19 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
         isClickable ? 'cursor-pointer' : ''
       } ${
         isActive
-          ? 'border-l-4 border-primary bg-surface shadow-sm'
-          : `border-l-4 border-transparent ${isClickable ? 'hover:border-border hover:bg-surface' : ''}`
+          ? 'scale-105 bg-surface-contrast'
+          : `${isClickable ? 'hover:border-border hover:bg-surface-contrast' : ''}`
       }`}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
     >
       {!isAnonymized && (
         <div
-          className={`relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full transition-transform ${bgColor} ${
+          className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-transform ${bgColor} ${
             isActive ? 'scale-110' : 'group-hover:scale-105'
           }`}
         >
-          <span className={`text-sm font-medium ${textColor}`}>{label}</span>
+          <span className={`text-base font-medium ${textColor}`}>{label}</span>
         </div>
       )}
       <div className="flex-1">
@@ -132,11 +132,7 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
           {!isAnonymized && (
             <span className="text-sm font-semibold text-fg">{name}</span>
           )}
-          <span
-            className={`text-xs transition-colors ${
-              isActive ? 'text-primary' : 'text-fg-muted'
-            }`}
-          >
+          <span className="text-xs text-fg-muted transition-colors">
             {showTimestampDisplay && segment.start !== null
               ? formatTime(segment.start)
               : `#${segmentIndex !== undefined ? segmentIndex + 1 : segment.id}`}

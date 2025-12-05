@@ -41,8 +41,10 @@ export const useYearlyPlans = () => {
 export const usePlansByPeriod = () => {
   const { data: allPlans, isLoading, error } = usePlans();
 
-  const monthlyPlans = allPlans?.filter((plan) => !plan.is_year) ?? [];
-  const yearlyPlans = allPlans?.filter((plan) => plan.is_year) ?? [];
+  const monthlyPlans =
+    allPlans?.filter((plan) => !plan.is_year && plan.type !== 'Free') ?? [];
+  const yearlyPlans =
+    allPlans?.filter((plan) => plan.is_year && plan.type !== 'Free') ?? [];
 
   return {
     monthlyPlans,

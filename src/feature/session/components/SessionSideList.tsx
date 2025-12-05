@@ -74,15 +74,15 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
   return (
     <aside className="flex h-full w-64 flex-col border-r border-border bg-bg">
       {/* 헤더 */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <Title as="h2" className="text-base font-bold text-fg">
+      <div className="flex items-center justify-between px-4 py-3">
+        <Title as="h2" className="text-sm font-medium text-fg">
           상담 기록
         </Title>
         <div className="inline-block">
           <PopUp
             trigger={
               <div className="cursor-pointer rounded-lg p-1 text-fg-muted hover:bg-surface-contrast">
-                <FilterIcon fill="currentColor" size={18} />
+                <FilterIcon size={18} />
               </div>
             }
             content={
@@ -103,7 +103,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
       </div>
 
       {/* 세션 리스트 */}
-      <div className="flex-1 overflow-y-auto px-2 py-3">
+      <div className="flex-1 overflow-y-auto px-4 py-2">
         {groupedSessions.length > 0 ? (
           <div className="space-y-6">
             {groupedSessions.map((group) => (
@@ -114,14 +114,12 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
                 </Text>
 
                 {/* 세션 아이템들 */}
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {group.sessions.map((session) => (
                     <SessionSideListItem
                       key={session.sessionId}
                       sessionId={session.sessionId}
                       title={session.title}
-                      clientName={session.clientName}
-                      sessionNumber={session.sessionNumber}
                       duration={session.duration}
                       hasAudio={session.hasAudio}
                       isActive={session.sessionId === activeSessionId}

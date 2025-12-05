@@ -155,6 +155,7 @@ export const Select: React.FC<SelectProps> = ({
         )}
       >
         <span className={cn(!selectedValue && 'text-fg-muted')}>
+          {console.log(getDisplayValue())}
           {getDisplayValue()}
         </span>
         <svg

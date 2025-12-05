@@ -137,7 +137,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
   // default 모드
   return (
-    <div className="space-y-2">
+    <div className="relative space-y-2">
       {!selectedClient ? (
         <Button
           variant="outline"
@@ -146,12 +146,14 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           className="flex w-full items-center justify-center gap-2"
         >
           <UserIcon size={16} />
-          <Text>고객 선택 안함</Text>
+          <Text className="text-sm">고객 선택 안함</Text>
         </Button>
       ) : (
-        <div className="bg-primary/5 flex items-center gap-2 rounded-lg border border-primary p-3">
+        <div className="flex h-10 w-full items-center gap-2 rounded-lg border border-primary px-3">
           <UserIcon size={16} className="text-primary" />
-          <Text className="flex-1 font-medium">{selectedClient.name}</Text>
+          <Text className="flex-1 text-sm font-medium">
+            {selectedClient.name}
+          </Text>
           <button
             onClick={handleClearSelection}
             className="rounded p-1 hover:bg-surface"
@@ -162,7 +164,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       )}
 
       {isOpen && (
-        <div className="absolute z-10 mt-2 w-full max-w-sm space-y-4 rounded-lg border border-surface-strong bg-surface p-4 shadow-lg">
+        <div className="absolute left-1/2 z-10 mt-2 w-[384px] -translate-x-1/2 space-y-4 rounded-lg border border-surface-strong bg-surface p-4 shadow-lg">
           {/* 검색 */}
           <div className="relative flex-shrink-0">
             <SearchIcon

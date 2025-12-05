@@ -3,6 +3,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { Highlight } from '@/components/common/Highlight';
+import { Badge } from '@/components/ui/atoms/Badge';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Card } from '@/components/ui/composites/Card';
@@ -37,6 +38,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+
+  // 다회기 분석 가능 여부 체크 (세션 2개 이상)
+  const canAnalyze = (client.session_count ?? 0) >= 2;
 
   const handleCardClick = () => {
     onClick?.(client);
@@ -136,12 +140,12 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   return (
     <>
       <Card
-        className={`cursor-pointer transition-all hover:shadow-lg ${
+        className={`cursor-pointer transition-all ${
           client.counsel_done ? 'opacity-50' : ''
         }`}
         onClick={handleCardClick}
       >
-        <Card.Body className="space-y-3 p-6">
+        <Card.Body className="space-y-1 p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1 text-left">
               <Text className="mb-1 text-lg font-bold">
@@ -162,18 +166,25 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             />
           </div>
 
-          <div className="flex items-center gap-2">
-            <Text className="text-sm text-fg">
-              총 {client.session_count ?? 0}개의 상담
-            </Text>
-            <Text className="text-sm font-medium text-fg-muted">|</Text>
-            <Text className="text-sm font-medium text-fg-muted">
-              {client.counsel_theme}
-            </Text>
-            <Text className="text-sm font-medium text-fg-muted">|</Text>
-            <Text className="text-sm font-medium text-fg-muted">
-              {client.counsel_number}회기
-            </Text>
+          <div className="flex justify-between">
+            <div className="flex items-end gap-2">
+              <Text className="text-sm text-fg">
+                총 {client.session_count ?? 0}개의 상담
+              </Text>
+              <Text className="text-sm font-medium text-fg-muted">|</Text>
+              <Text className="text-sm font-medium text-fg-muted">
+                {client.counsel_theme}
+              </Text>
+              <Text className="text-sm font-medium text-fg-muted">|</Text>
+              <Text className="text-sm font-medium text-fg-muted">
+                {client.counsel_number}회기
+              </Text>
+            </div>
+            {canAnalyze && (
+              <Badge tone="primary" variant="outline" size="md">
+                클라이언트 분석 가능
+              </Badge>
+            )}
           </div>
         </Card.Body>
       </Card>

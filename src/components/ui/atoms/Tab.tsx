@@ -29,9 +29,9 @@ const pillSizeStyles: Record<TabSize, string> = {
 };
 
 const underlineSizeStyles: Record<TabSize, string> = {
-  sm: 'px-3 py-2 text-sm',
-  md: 'px-4 py-3 text-sm',
-  lg: 'px-5 py-3.5 text-base',
+  sm: 'px-3 py-2 pt-1 text-sm',
+  md: 'px-4 py-3 pt-2 text-sm',
+  lg: 'px-5 py-4 pt-3 text-base',
   free: '',
 };
 
@@ -108,9 +108,14 @@ export const Tab: React.FC<TabProps> = ({
     <div
       role="tablist"
       className={cn(
-        'inline-flex items-center',
+        'inline-flex max-w-[512px] items-center overflow-x-auto',
+        'scrollbar-thin scrollbar-track-surface scrollbar-thumb-surface-strong hover:scrollbar-thumb-border',
+        '[&::-webkit-scrollbar-track]:bg-surface',
+        '[&::-webkit-scrollbar-thumb]:bg-surface-strong',
+        '[&::-webkit-scrollbar-thumb]:rounded-full',
+        '[&::-webkit-scrollbar-thumb:hover]:bg-border',
         variant === 'pill'
-          ? 'gap-1 rounded-[var(--radius-md)] bg-surface-contrast p-1'
+          ? 'gap-1 rounded-[var(--radius-md)] bg-surface-strong p-1'
           : 'gap-2',
         className
       )}
@@ -129,14 +134,14 @@ export const Tab: React.FC<TabProps> = ({
             onClick={() => handleSelect(item.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'whitespace-nowrap font-medium transition-colors duration-200',
+              'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-              'min-w-32 items-center text-center disabled:cursor-not-allowed disabled:opacity-50',
+              'min-w-20 items-center text-center disabled:cursor-not-allowed disabled:opacity-50',
               sizeStyles[size],
               variant === 'pill'
                 ? cn(
                     'rounded-[var(--radius-sm)]',
-                    'focus-visible:ring-offset-2 focus-visible:ring-offset-surface-contrast',
+                    'focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
                     isSelected
                       ? 'bg-surface text-fg shadow-sm'
                       : 'bg-transparent text-fg-muted hover:text-fg'
