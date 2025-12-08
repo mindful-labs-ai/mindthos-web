@@ -215,6 +215,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
             onChange={(value) => setAiSupervisionTemplateId(value as string)}
             placeholder="이론 감지(자동)"
             disabled={aiSupervisionItems.length === 0}
+            maxDropdownHeight={120}
           />
         </div>
 

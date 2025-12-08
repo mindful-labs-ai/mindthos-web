@@ -368,6 +368,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               value={String(selectedVersion)}
               onChange={(value) => setSelectedVersion(Number(value))}
               placeholder="버전 선택"
+              maxDropdownHeight={200}
             />
           </div>
         )}
