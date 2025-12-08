@@ -14,7 +14,7 @@ export interface AudioMetaData {
 
 export interface Session {
   id: string;
-  user_id: string;
+  user_id: number;
   client_id: string | null; // 내담자 ID (clients.id 참조, uuid)
   title: string | null;
   description: string | null;
@@ -86,7 +86,7 @@ export interface TranscribeContents {
 export interface Transcribe {
   id: string;
   session_id: string;
-  user_id: string;
+  user_id: number;
   title: string | null;
   counsel_date: string | null;
   contents: TranscriptJson | TranscribeContents | null; // 새 구조 또는 Legacy 구조
@@ -97,7 +97,7 @@ export interface Transcribe {
 export interface ProgressNote {
   id: string;
   session_id: string;
-  user_id: string;
+  user_id: number;
   title: string | null;
   template_id: number | null; // 템플릿 ID (templates.id 참조, integer)
   summary: string | null;
@@ -134,6 +134,7 @@ export interface SessionRecord {
   processing_status?: SessionProcessingStatus;
   progress_percentage?: number;
   current_step?: string;
+  error_message?: string;
 }
 
 export interface CreateSessionRequest {
