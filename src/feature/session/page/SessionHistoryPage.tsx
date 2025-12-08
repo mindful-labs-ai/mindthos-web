@@ -147,7 +147,8 @@ export const SessionHistoryPage: React.FC = () => {
           .map((s) => s.session)
           .sort(
             (a, b) =>
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
           );
         const sessionNumber =
           allClientSessions.findIndex((s) => s.id === session.id) + 1;
@@ -318,7 +319,6 @@ export const SessionHistoryPage: React.FC = () => {
                     onClick={handleCardClick}
                     onChangeClient={handleChangeClient}
                     onDelete={handleDeleteSession}
-                    isActive={record.session_id === sessionId}
                   />
                 ))
               ) : (
