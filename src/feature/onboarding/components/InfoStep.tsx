@@ -6,12 +6,11 @@ import { Select, type SelectItem } from '@/components/ui/composites/Select';
 
 const ORGANIZATION_OPTIONS: SelectItem[] = [
   { value: '', label: '선택해주세요' },
-  { value: '심리상담센터', label: '심리상담센터' },
+  { value: '민간상담센터', label: '민간상담센터' },
+  { value: '공공기관', label: '공공기관' },
+  { value: '초,중,고등학교', label: '초,중,고등학교' },
   { value: '대학상담센터', label: '대학상담센터' },
-  { value: '병원', label: '병원' },
-  { value: '학교', label: '학교' },
-  { value: '기업', label: '기업' },
-  { value: '개인상담소', label: '개인상담소' },
+  { value: '프리랜서', label: '프리랜서' },
   { value: '기타', label: '기타 (직접입력)' },
 ];
 
