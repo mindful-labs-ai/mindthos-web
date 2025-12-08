@@ -127,7 +127,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
                 <UploadIcon size={18} className="text-primary" />
                 <Text>녹음 파일 업로드</Text>
               </button>
-              <button
+              {/* <button
                 onClick={handlePdfUploadClick}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
               >
@@ -140,7 +140,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
               >
                 <Edit3Icon size={18} className="text-primary" />
                 <Text>직접 입력하기</Text>
-              </button>
+              </button> */}
             </div>
           }
         />
