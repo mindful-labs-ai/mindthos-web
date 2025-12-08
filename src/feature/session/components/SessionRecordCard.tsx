@@ -26,14 +26,12 @@ interface SessionRecordCardProps {
   onClick?: (record: SessionRecord) => void;
   onChangeClient?: (record: SessionRecord) => void;
   onDelete?: (record: SessionRecord) => void;
-  isActive?: boolean;
 }
 
 export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   record,
   onClick,
   onChangeClient,
-  isActive = false,
 }) => {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
@@ -438,6 +436,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           <Text className="line-clamp-2 overflow-hidden text-left text-sm">
             생성에 실패한 세션입니다.
           </Text>
+          <Text className="text-xs text-fg-muted">{record.error_message}</Text>
 
           <div className="flex items-center justify-between gap-3">
             <Text className="text-xs text-fg-muted">

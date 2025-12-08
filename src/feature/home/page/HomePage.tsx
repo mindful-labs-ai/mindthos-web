@@ -164,6 +164,7 @@ const HomePage = () => {
                 processing_status: session.processing_status,
                 progress_percentage: session.progress_percentage,
                 current_step: session.current_step,
+                error_message: session.error_message,
               };
 
               return (
