@@ -21,6 +21,7 @@ export interface PopUpProps {
   onOpenChange?: (open: boolean) => void;
   placement?: PopUpPlacement;
   className?: string;
+  triggerClassName?: string; // trigger wrapper 커스텀 className
 }
 
 /**
@@ -42,6 +43,7 @@ export const PopUp: React.FC<PopUpProps> = ({
   onOpenChange,
   placement = 'bottom',
   className,
+  triggerClassName,
 }) => {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
@@ -148,23 +150,31 @@ export const PopUp: React.FC<PopUpProps> = ({
         !triggerRef.current.contains(e.target as Node) &&
         !contentRef.current.contains(e.target as Node)
       ) {
+        // 외부 클릭 시 이벤트 전파 중단 (외부 요소의 이벤트 실행 방지)
+        e.preventDefault();
+        e.stopPropagation();
         setOpen(false);
       }
     };
 
     if (isOpen) {
       document.addEventListener('keydown', handleKeyDown);
-      document.addEventListener('mousedown', handleClickOutside);
+      // capture phase에서 먼저 감지하여 외부 클릭 이벤트 차단
+      document.addEventListener('mousedown', handleClickOutside, true);
+
       return () => {
         document.removeEventListener('keydown', handleKeyDown);
-        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('mousedown', handleClickOutside, true);
       };
     }
   }, [isOpen, setOpen]);
 
   return (
     <>
-      <div ref={triggerRef} className="relative inline-block w-full">
+      <div
+        ref={triggerRef}
+        className={cn('relative inline-block', triggerClassName || '')}
+      >
         <div
           role="button"
           tabIndex={0}
@@ -185,24 +195,30 @@ export const PopUp: React.FC<PopUpProps> = ({
       {isOpen &&
         createPortal(
           <div
-            ref={contentRef}
-            id={contentId}
-            role="dialog"
-            style={{
-              position: 'fixed',
-              top: `${position.top}px`,
-              left: `${position.left}px`,
-              zIndex: 9999,
-            }}
-            className={cn(
-              'min-w-[200px] max-w-xs',
-              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
-              'p-4',
-              'animate-[fadeIn_0.15s_ease-out]',
-              className
-            )}
+            role="presentation"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
-            {content}
+            <div
+              ref={contentRef}
+              id={contentId}
+              role="dialog"
+              style={{
+                position: 'fixed',
+                top: `${position.top}px`,
+                left: `${position.left}px`,
+                zIndex: 9999,
+              }}
+              className={cn(
+                'min-w-[200px] max-w-xs',
+                'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
+                'p-4',
+                'animate-[fadeIn_0.15s_ease-out]',
+                className
+              )}
+            >
+              {content}
+            </div>
           </div>,
           document.body
         )}
