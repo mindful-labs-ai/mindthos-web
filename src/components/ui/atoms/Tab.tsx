@@ -108,12 +108,7 @@ export const Tab: React.FC<TabProps> = ({
     <div
       role="tablist"
       className={cn(
-        'inline-flex max-w-[512px] items-center overflow-x-auto',
-        'scrollbar-thin scrollbar-track-surface scrollbar-thumb-surface-strong hover:scrollbar-thumb-border',
-        '[&::-webkit-scrollbar-track]:bg-surface',
-        '[&::-webkit-scrollbar-thumb]:bg-surface-strong',
-        '[&::-webkit-scrollbar-thumb]:rounded-full',
-        '[&::-webkit-scrollbar-thumb:hover]:bg-border',
+        'inline-flex max-w-[512px] items-center overflow-x-auto scrollbar-hide',
         variant === 'pill'
           ? 'gap-1 rounded-[var(--radius-md)] bg-surface-strong p-1'
           : 'gap-2',
