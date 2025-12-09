@@ -8,6 +8,7 @@ import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
@@ -26,15 +27,18 @@ interface SessionRecordCardProps {
   onClick?: (record: SessionRecord) => void;
   onChangeClient?: (record: SessionRecord) => void;
   onDelete?: (record: SessionRecord) => void;
+  isReadOnly?: boolean;
 }
 
 export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   record,
   onClick,
   onChangeClient,
+  isReadOnly = false,
 }) => {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
+  const { toast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isClientSelectorPopupOpen, setIsClientSelectorPopupOpen] =
     React.useState(false);
@@ -52,7 +56,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     record.title ||
     (hasClient
       ? `${record.client_name} ${record.session_number}회기`
-      : `세션 ${record.session_number}회기`);
+      : `상담 ${record.session_number}회기`);
 
   // 한글 깨짐 방지: 14자로 자르기 (완성형 한글 보존)
   const { truncatedTitle, isTruncated } = (() => {
@@ -104,6 +108,14 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   // ==========================================
   // 공통 핸들러 함수들
   // ==========================================
+  const showReadOnlyToast = () => {
+    toast({
+      title: '읽기 전용',
+      description: '더미 데이터에서는 이 기능을 사용할 수 없습니다.',
+      duration: 2500,
+    });
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     // PopUp 영역 클릭 시 카드 클릭 이벤트 무시
     if ((e.target as HTMLElement).closest('[data-popup-wrapper]')) {
@@ -116,12 +128,20 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   };
 
   const handleDelete = (e: React.MouseEvent) => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     e.stopPropagation();
     setIsMenuOpen(false);
     setIsDeleteModalOpen(true);
   };
 
   const handleConfirmDelete = async () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsLoading(true);
     try {
       await deleteSession(record.session_id);
@@ -134,13 +154,21 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       setIsDeleteModalOpen(false);
     } catch (error) {
       console.error('세션 삭제 실패:', error);
-      alert('세션 삭제에 실패했습니다.');
+      toast({
+        title: '상담기록 삭제 실패',
+        description: '상담기록 삭제에 실패하였습니다. 다시 시도해주세요.',
+        duration: 2500,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClientSelect = async (client: any) => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     if (client) {
       setIsLoading(true);
       try {
@@ -172,7 +200,13 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     <div className="flex-shrink-0" data-popup-wrapper>
       <PopUp
         open={isMenuOpen}
-        onOpenChange={setIsMenuOpen}
+        onOpenChange={(open) => {
+          if (isReadOnly && open) {
+            showReadOnlyToast();
+            return;
+          }
+          setIsMenuOpen(open);
+        }}
         placement="bottom-left"
         trigger={
           <button
@@ -224,15 +258,15 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     <Modal
       open={isDeleteModalOpen}
       onOpenChange={setIsDeleteModalOpen}
-      title="세션 삭제"
+      title="상담기록 삭제"
       className="max-w-sm"
     >
       <div className="space-y-4">
         <Text className="text-base font-bold text-fg">
-          {displayTitle} 세션을 삭제하시겠습니까?
+          상담기록 {displayTitle}을 삭제하시겠습니까?
         </Text>
         <Text className="text-sm text-fg-muted">
-          삭제하면 세션과 관련된 모든 데이터가 영구적으로 삭제됩니다.
+          해당 상담기록 데이터가 영구히 삭제됩니다.
         </Text>
         <div className="flex justify-center gap-2 pt-2">
           <button
@@ -275,7 +309,13 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
               </Badge>
             }
             open={isClientSelectorPopupOpen}
-            onOpenChange={setIsClientSelectorPopupOpen}
+            onOpenChange={(open) => {
+              if (isReadOnly && open) {
+                showReadOnlyToast();
+                return;
+              }
+              setIsClientSelectorPopupOpen(open);
+            }}
             placement="bottom-left"
             clients={clients}
             onSelect={handleClientSelect}
@@ -434,9 +474,8 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </div>
 
           <Text className="line-clamp-2 overflow-hidden text-left text-sm">
-            생성에 실패한 세션입니다.
+            상담 기록 생성에 실패했습니다.
           </Text>
-          <Text className="text-xs text-fg-muted">{record.error_message}</Text>
 
           <div className="flex items-center justify-between gap-3">
             <Text className="text-xs text-fg-muted">

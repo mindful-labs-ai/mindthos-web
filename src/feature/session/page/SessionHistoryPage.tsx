@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 
+import { Badge } from '@/components/ui/atoms/Badge';
 import { Button } from '@/components/ui/atoms/Button';
 import { Title } from '@/components/ui/atoms/Title';
 import { PopUp } from '@/components/ui/composites/PopUp';
@@ -9,6 +10,10 @@ import { useClientList } from '@/feature/client/hooks/useClientList';
 import { FilterMenu } from '@/feature/session/components/FilterMenu';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import { SessionSideList } from '@/feature/session/components/SessionSideList';
+import {
+  dummyClient,
+  dummySessionRelations,
+} from '@/feature/session/constants/dummySessions';
 import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
@@ -22,7 +27,7 @@ export const SessionHistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
   const userId = useAuthStore((state) => state.userId);
-  const { clients } = useClientList();
+  const { clients, isLoading: isLoadingClients } = useClientList();
 
   // 필터 상태
   const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>(
@@ -38,7 +43,17 @@ export const SessionHistoryPage: React.FC = () => {
     enabled: !!userId,
   });
 
-  const sessionsWithData = sessionData?.sessions || [];
+  const sessionsFromQuery = sessionData?.sessions || [];
+  const isDummyFlow =
+    !isLoadingSessions &&
+    !isLoadingClients &&
+    sessionsFromQuery.length === 0 &&
+    clients.length === 0;
+
+  const sessionsWithData = isDummyFlow
+    ? dummySessionRelations
+    : sessionsFromQuery;
+  const effectiveClients = isDummyFlow ? [dummyClient] : clients;
 
   // 필터링 및 정렬된 세션 데이터
   const filteredAndSortedSessions = React.useMemo(() => {
@@ -76,7 +91,7 @@ export const SessionHistoryPage: React.FC = () => {
   const records: SessionRecord[] = React.useMemo(() => {
     return filteredAndSortedSessions.map(
       ({ session, transcribe, progressNotes }) => {
-        const client = clients.find((c) => c.id === session.client_id);
+        const client = effectiveClients.find((c) => c.id === session.client_id);
 
         // raw_output 파싱 또는 기존 result 사용
         const transcriptData = getTranscriptData(transcribe);
@@ -127,7 +142,7 @@ export const SessionHistoryPage: React.FC = () => {
         };
       }
     );
-  }, [filteredAndSortedSessions, clients, sessionsWithData]);
+  }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
 
   // 간소화된 세션 리스트용 데이터 (실패한 세션 자동 필터링)
   const sessionListData = React.useMemo(() => {
@@ -137,7 +152,7 @@ export const SessionHistoryPage: React.FC = () => {
         return session.processing_status !== 'failed';
       })
       .map(({ session }) => {
-        const client = clients.find((c) => c.id === session.client_id);
+        const client = effectiveClients.find((c) => c.id === session.client_id);
         const audioDuration = session.audio_meta_data?.duration_seconds;
 
         // 해당 클라이언트의 모든 세션들을 날짜순으로 정렬하여 회기 번호 계산
@@ -163,7 +178,7 @@ export const SessionHistoryPage: React.FC = () => {
           createdAt: session.created_at,
         };
       });
-  }, [filteredAndSortedSessions, clients, sessionsWithData]);
+  }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
 
   const handleCardClick = (record: SessionRecord) => {
     navigate(getSessionDetailRoute(record.session_id));
@@ -212,7 +227,7 @@ export const SessionHistoryPage: React.FC = () => {
           onSessionClick={handleSessionClick}
           sortOrder={sortOrder}
           selectedClientId={selectedClientIds}
-          clients={clients}
+          clients={effectiveClients}
           sessionCounts={sessionCounts}
           onSortChange={handleSortChange}
           onClientChange={handleClientChange}
@@ -225,9 +240,16 @@ export const SessionHistoryPage: React.FC = () => {
         // 전체 카드 리스트
         <div className="flex flex-1 flex-col bg-surface-contrast px-16 pt-[42px] transition-all duration-300">
           <div className="flex-shrink-0 pb-6">
-            <Title as="h1" className="text-start text-2xl font-bold">
-              상담 기록
-            </Title>
+            <div className="flex items-center gap-2">
+              <Title as="h1" className="text-start text-2xl font-bold">
+                상담 기록
+              </Title>
+              {isDummyFlow && (
+                <Badge tone="warning" variant="soft" size="sm">
+                  더미 데이터
+                </Badge>
+              )}
+            </div>
 
             <div className="mt-6 flex justify-start gap-3">
               {/* 고객 필터 버튼 */}
@@ -244,8 +266,9 @@ export const SessionHistoryPage: React.FC = () => {
                       {selectedClientIds.length === 0
                         ? '모든 고객'
                         : selectedClientIds.length === 1
-                          ? clients.find((c) => c.id === selectedClientIds[0])
-                              ?.name || '모든 고객'
+                          ? effectiveClients.find(
+                              (c) => c.id === selectedClientIds[0]
+                            )?.name || '모든 고객'
                           : `${selectedClientIds.length}명 선택`}
                     </Button>
                   }
@@ -253,7 +276,7 @@ export const SessionHistoryPage: React.FC = () => {
                     <FilterMenu
                       sortOrder={sortOrder}
                       selectedClientIds={selectedClientIds}
-                      clients={clients}
+                      clients={effectiveClients}
                       sessionCounts={sessionCounts}
                       onSortChange={handleSortChange}
                       onClientChange={handleClientChange}
@@ -286,7 +309,7 @@ export const SessionHistoryPage: React.FC = () => {
                     <FilterMenu
                       sortOrder={sortOrder}
                       selectedClientIds={selectedClientIds}
-                      clients={clients}
+                      clients={effectiveClients}
                       sessionCounts={sessionCounts}
                       onSortChange={handleSortChange}
                       onClientChange={handleClientChange}
@@ -307,7 +330,7 @@ export const SessionHistoryPage: React.FC = () => {
                 <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
                   <div className="text-center">
                     <p className="text-sm text-fg-muted">
-                      세션 목록을 불러오는 중...
+                      상담기록 목록을 불러오는 중...
                     </p>
                   </div>
                 </div>
@@ -316,6 +339,7 @@ export const SessionHistoryPage: React.FC = () => {
                   <SessionRecordCard
                     key={record.session_id}
                     record={record}
+                    isReadOnly={isDummyFlow}
                     onClick={handleCardClick}
                     onChangeClient={handleChangeClient}
                     onDelete={handleDeleteSession}
@@ -339,19 +363,6 @@ export const SessionHistoryPage: React.FC = () => {
           <Outlet />
         </div>
       )}
-
-      <style>{`
-        @keyframes slideInFromRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 };
