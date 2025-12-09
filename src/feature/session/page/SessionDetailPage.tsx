@@ -21,9 +21,10 @@ import { ProgressNoteView } from '../components/ProgressNoteView';
 import { SessionHeader } from '../components/SessionHeader';
 import { TranscriptSegment } from '../components/TranscriptSegment';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useProgressNotePolling } from '../hooks/useProgressNotePolling';
 import { useSessionDetail } from '../hooks/useSessionDetail';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
-import { createProgressNote } from '../services/progressNoteService';
+import { addProgressNote } from '../services/progressNoteService';
 import {
   getAudioPresignedUrl,
   updateMultipleTranscriptSegments,
@@ -60,7 +61,6 @@ export const SessionDetailPage: React.FC = () => {
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
-  const [isCreatingNote, setIsCreatingNote] = React.useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<
     number | null
   >(null);
@@ -72,6 +72,11 @@ export const SessionDetailPage: React.FC = () => {
     null
   );
   const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
+  const [pollingProgressNoteId, setPollingProgressNoteId] = React.useState<
+    string | null
+  >(null);
+  const [isCreateNoteRequesting, setIsCreateNoteRequesting] =
+    React.useState(false);
 
   // 세션 상세 조회 (TanStack Query)
   const { data: sessionDetail, isLoading } = useSessionDetail({
@@ -86,8 +91,77 @@ export const SessionDetailPage: React.FC = () => {
   const transcribe = sessionDetail?.transcribe;
   const sessionProgressNotes = sessionDetail?.progressNotes || [];
 
+  const processingProgressNote = React.useMemo(
+    () =>
+      sessionProgressNotes.find(
+        (note) =>
+          note.processing_status === 'pending' ||
+          note.processing_status === 'in_progress'
+      ) || null,
+    [sessionProgressNotes]
+  );
+
+  // 상담노트 폴링
+  const {
+    data: pollingNote,
+    isFetching: isPollingNote,
+    isLoading: isPollingNoteLoading,
+  } = useProgressNotePolling({
+    sessionId: sessionId || '',
+    progressNoteId: pollingProgressNoteId,
+    enabled: !!pollingProgressNoteId,
+    onComplete: (note) => {
+      console.log('상담노트 생성 완료:', note);
+      setPollingProgressNoteId(null);
+      setSelectedTemplateId(null); // 생성 완료 시 초기화
+
+      // 로딩 창(create-note 탭)을 보고 있었다면 완성된 노트로 이동
+      if (activeTab === 'create-note') {
+        setActiveTab(note.id);
+      }
+
+      toast({
+        title: '상담노트 생성 완료',
+        description: '상담노트가 성공적으로 생성되었습니다.',
+        duration: 3000,
+      });
+    },
+    onError: (error) => {
+      console.error('상담노트 생성 실패:', error);
+      setPollingProgressNoteId(null);
+      setSelectedTemplateId(null); // 생성 실패 시에도 초기화
+      toast({
+        title: '상담노트 생성 실패',
+        description: error.message,
+        duration: 5000,
+      });
+    },
+  });
+
   // 템플릿 목록 조회
   const { templates } = useTemplateList();
+
+  React.useEffect(() => {
+    if (!pollingProgressNoteId && processingProgressNote) {
+      setPollingProgressNoteId(processingProgressNote.id);
+    }
+  }, [pollingProgressNoteId, processingProgressNote]);
+
+  const isProgressNoteProcessing = React.useMemo(() => {
+    const status =
+      pollingNote?.processing_status || processingProgressNote?.processing_status;
+
+    if (pollingProgressNoteId && !status) {
+      // 생성 요청 직후 첫 폴링 응답 이전까지 처리중으로 간주
+      return true;
+    }
+
+    return status === 'pending' || status === 'in_progress';
+  }, [
+    pollingNote?.processing_status,
+    pollingProgressNoteId,
+    processingProgressNote?.processing_status,
+  ]);
 
   // 탭 아이템 동적 생성
   const tabItems: TabItem[] = React.useMemo(() => {
@@ -122,17 +196,29 @@ export const SessionDetailPage: React.FC = () => {
     ];
 
     // 상담 노트 생성 중이거나 create-note 탭이 활성화된 경우 임시 탭 추가
-    if (activeTab === 'create-note' || isCreatingNote) {
-      // 생성 중일 때 선택된 템플릿의 타이틀 표시
+    if (activeTab === 'create-note' || isProgressNoteProcessing) {
       let label = '빈 노트';
-      if (isCreatingNote && selectedTemplateId) {
+
+      if (isProgressNoteProcessing) {
+        const templateId =
+          pollingNote?.template_id ||
+          processingProgressNote?.template_id ||
+          selectedTemplateId;
+
+        if (templateId) {
+          const template = templates.find((t) => t.id === templateId);
+          label = template ? `${template.title} 생성 중...` : '생성 중...';
+        } else {
+          label = '생성 중...';
+        }
+      } else if (selectedTemplateId) {
+        // 템플릿 선택 상태: 선택된 템플릿 제목 표시
         const selectedTemplate = templates.find(
           (t) => t.id === selectedTemplateId
         );
-        label = selectedTemplate
-          ? `${selectedTemplate.title} 생성 중...`
-          : '생성 중...';
+        label = selectedTemplate ? selectedTemplate.title : '빈 노트';
       }
+
       items.push({
         value: 'create-note',
         label,
@@ -144,9 +230,11 @@ export const SessionDetailPage: React.FC = () => {
   }, [
     sessionProgressNotes,
     activeTab,
-    isCreatingNote,
+    isProgressNoteProcessing,
     transcribe?.stt_model,
     selectedTemplateId,
+    pollingNote?.template_id,
+    processingProgressNote?.template_id,
     templates,
   ]);
 
@@ -633,6 +721,14 @@ export const SessionDetailPage: React.FC = () => {
       return;
     }
     if (!sessionId || !transcribe?.contents || !selectedTemplateId) return;
+    if (
+      isCreateNoteRequesting ||
+      isProgressNoteProcessing ||
+      isPollingNote ||
+      isPollingNoteLoading
+    ) {
+      return;
+    }
 
     const userIdString = useAuthStore.getState().userId;
     if (!userIdString) {
@@ -646,41 +742,36 @@ export const SessionDetailPage: React.FC = () => {
       return;
     }
 
-    const rawOutput =
-      typeof transcribe.contents === 'object' && transcribe.contents !== null
-        ? transcribe.contents.raw_output
-        : null;
-
-    if (!rawOutput) {
-      console.error('전사 내용(raw_output)이 없습니다.');
-      return;
-    }
-
     try {
-      setIsCreatingNote(true);
-
-      const response = await createProgressNote({
+      setIsCreateNoteRequesting(true);
+      // 백그라운드로 상담노트 추가
+      const response = await addProgressNote({
         sessionId,
         userId,
         templateId: selectedTemplateId,
-        transcribedText: rawOutput,
       });
 
-      // 성공 시 세션 상세 정보 다시 조회
-      await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
+      // 폴링 시작
+      setPollingProgressNoteId(response.progress_note_id);
+
+      toast({
+        title: '상담노트 생성 시작',
+        description: '백그라운드에서 상담노트를 생성하고 있습니다.',
+        duration: 3000,
       });
-
-      // 새로 생성된 상담 노트 탭으로 이동
-      setActiveTab(response.progress_note_id);
-
-      // 선택 상태 초기화
-      setSelectedTemplateId(null);
     } catch (error) {
       console.error('상담 노트 생성 실패:', error);
-      // TODO: 에러 토스트 표시
+
+      const errorMessage =
+        error instanceof Error ? error.message : '상담 노트 생성에 실패했습니다.';
+
+      toast({
+        title: '상담노트 생성 실패',
+        description: errorMessage,
+        duration: 5000,
+      });
     } finally {
-      setIsCreatingNote(false);
+      setIsCreateNoteRequesting(false);
     }
   };
 
@@ -993,61 +1084,76 @@ export const SessionDetailPage: React.FC = () => {
           </div>
         ) : activeTab === 'create-note' ? (
           <div className="flex h-full flex-col">
-            {/* 우측 상단 생성 버튼 */}
-            <div className="flex items-center justify-between px-8 py-4">
-              <div>
-                <Title as="h2" className="text-base text-fg-muted">
-                  상담 노트 템플릿
-                </Title>
+            {isProgressNoteProcessing || isPollingNote || isPollingNoteLoading ? (
+              // 생성 중 로딩 UI
+              <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
+                <div className="text-center">
+                  <Title as="h2" className="text-lg font-medium text-fg">
+                    상담노트 생성 중...
+                  </Title>
+                  <p className="mt-2 text-sm text-fg-muted">
+                    백그라운드에서 상담노트를 생성하고 있습니다.
+                    <br />
+                    잠시만 기다려주세요.
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={handleCreateProgressNote}
-                disabled={isReadOnly || !selectedTemplateId || isCreatingNote}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                  isReadOnly || !selectedTemplateId || isCreatingNote
-                    ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
-                    : 'bg-primary text-white hover:bg-primary-600'
-                }`}
-              >
-                {isCreatingNote ? (
-                  <span className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <circle cx="12" cy="12" r="10" opacity="0.25" />
-                      <path d="M12 2a10 10 0 0 1 10 10" opacity="0.75" />
-                    </svg>
-                    생성 중...
-                  </span>
-                ) : (
-                  '상담 노트 생성하기'
-                )}
-              </button>
-            </div>
-            {/* CreateProgressNoteView */}
-            <div className="flex-1 overflow-y-auto px-8 py-6">
-              <CreateProgressNoteView
-                sessionId={sessionId || ''}
-                transcribedText={
-                  transcribe?.contents &&
-                  typeof transcribe.contents === 'object' &&
-                  transcribe.contents !== null
-                    ? transcribe.contents.raw_output || null
-                    : null
-                }
-                usedTemplateIds={sessionProgressNotes
-                  .map((note) => note.template_id)
-                  .filter(
-                    (id): id is number => id !== null && id !== undefined
-                  )}
-                selectedTemplateId={selectedTemplateId}
-                onTemplateSelect={handleTemplateSelect}
-              />
-            </div>
+            ) : (
+              <>
+                {/* 우측 상단 생성 버튼 */}
+                <div className="flex items-center justify-between px-8 py-4">
+                  <div>
+                    <Title as="h2" className="text-base text-fg-muted">
+                      상담 노트 템플릿
+                    </Title>
+                  </div>
+                  <button
+                    onClick={handleCreateProgressNote}
+                    disabled={
+                      isReadOnly ||
+                      !selectedTemplateId ||
+                      isCreateNoteRequesting ||
+                      isProgressNoteProcessing ||
+                      isPollingNote ||
+                      isPollingNoteLoading
+                    }
+                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                      isReadOnly ||
+                      !selectedTemplateId ||
+                      isCreateNoteRequesting ||
+                      isProgressNoteProcessing ||
+                      isPollingNote ||
+                      isPollingNoteLoading
+                        ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
+                        : 'bg-primary text-white hover:bg-primary-600'
+                    }`}
+                  >
+                    상담 노트 생성하기
+                  </button>
+                </div>
+                {/* CreateProgressNoteView */}
+                <div className="flex-1 overflow-y-auto px-8 py-6">
+                  <CreateProgressNoteView
+                    sessionId={sessionId || ''}
+                    transcribedText={
+                      transcribe?.contents &&
+                      typeof transcribe.contents === 'object' &&
+                      transcribe.contents !== null
+                        ? transcribe.contents.raw_output || null
+                        : null
+                    }
+                    usedTemplateIds={sessionProgressNotes
+                      .map((note) => note.template_id)
+                      .filter(
+                        (id): id is number => id !== null && id !== undefined
+                      )}
+                    selectedTemplateId={selectedTemplateId}
+                    onTemplateSelect={handleTemplateSelect}
+                  />
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="h-full overflow-y-auto px-8 py-6">

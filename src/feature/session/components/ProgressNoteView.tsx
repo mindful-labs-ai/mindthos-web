@@ -24,6 +24,12 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
 
+  // 진행 중 또는 대기 중 상태 확인
+  const isProcessing =
+    note.processing_status === 'pending' ||
+    note.processing_status === 'in_progress';
+  const isFailed = note.processing_status === 'failed';
+
   // summary를 섹션별로 파싱
   const parseSummary = (summary: string): NoteSection[] => {
     const sections: NoteSection[] = [];
@@ -122,6 +128,74 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
       });
     }
   };
+
+  // 진행 중 상태 UI
+  if (isProcessing) {
+    return (
+      <div className="space-y-4 text-left">
+        {/* 헤더 */}
+        <div className="mb-6 flex items-center justify-between">
+          <Title as="h2" className="text-base font-bold text-fg-muted">
+            {note.title || '상담 노트'}
+          </Title>
+        </div>
+
+        {/* 진행 중 상태 표시 */}
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
+          <div className="text-center">
+            <Text className="text-lg font-medium text-fg">
+              상담노트 생성 중...
+            </Text>
+            <Text className="mt-2 text-sm text-fg-muted">
+              {note.processing_status === 'pending'
+                ? '대기 중입니다. 잠시만 기다려주세요.'
+                : 'AI가 상담 내용을 분석하고 있습니다.'}
+            </Text>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 실패 상태 UI
+  if (isFailed) {
+    return (
+      <div className="space-y-4 text-left">
+        {/* 헤더 */}
+        <div className="mb-6 flex items-center justify-between">
+          <Title as="h2" className="text-base font-bold text-fg-muted">
+            {note.title || '상담 노트'}
+          </Title>
+        </div>
+
+        {/* 실패 상태 표시 */}
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="text-danger"
+          >
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+              fill="currentColor"
+            />
+          </svg>
+          <div className="text-center">
+            <Text className="text-lg font-medium text-danger">
+              상담노트 생성 실패
+            </Text>
+            <Text className="mt-2 text-sm text-fg-muted">
+              {note.error_message || '상담노트 생성 중 오류가 발생했습니다.'}
+            </Text>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 text-left">

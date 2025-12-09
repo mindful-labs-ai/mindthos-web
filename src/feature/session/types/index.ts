@@ -96,6 +96,8 @@ export interface Transcribe {
   created_at: string;
 }
 
+export type ProgressNoteStatus = 'pending' | 'in_progress' | 'succeeded' | 'failed';
+
 export interface ProgressNote {
   id: string;
   session_id: string;
@@ -103,6 +105,8 @@ export interface ProgressNote {
   title: string | null;
   template_id: number | null; // 템플릿 ID (templates.id 참조, integer)
   summary: string | null;
+  processing_status: ProgressNoteStatus;
+  error_message: string | null;
   created_at: string;
 }
 
