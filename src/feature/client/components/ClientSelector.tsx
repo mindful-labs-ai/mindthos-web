@@ -42,7 +42,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
   const filteredClients = clients.filter(
     (client) =>
-      client.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      client.name?.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !client.counsel_done
   );
 

@@ -21,11 +21,11 @@ export const useClientSearch = (clients: Client[], searchQuery: string) => {
       .filter(
         (client) =>
           matchesInitialSearch(client.name, query) ||
-          client.phone_number.includes(query)
+          client.phone_number?.includes(query)
       )
       .map((client) => {
         const nameScore = calculateSearchScore(client.name, query);
-        const phoneScore = client.phone_number.includes(query) ? 10 : 0;
+        const phoneScore = client.phone_number?.includes(query) ? 10 : 0;
 
         return {
           client,
