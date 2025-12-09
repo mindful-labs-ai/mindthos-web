@@ -12,9 +12,7 @@ export interface SpeakerInfo {
  * @param id - speaker ID
  * @returns Tailwind 색상 클래스
  */
-const getColorFromId = (
-  id: number
-): { bgColor: string; textColor: string } => {
+const getColorFromId = (id: number): { bgColor: string; textColor: string } => {
   // 다양한 색상 팔레트 (Tailwind의 100/600 shade 사용)
   const colors = [
     { bg: 'bg-purple-100', text: 'text-purple-600' },

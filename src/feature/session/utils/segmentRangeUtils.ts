@@ -22,7 +22,9 @@ export const calculateAffectedSegments = (
   range: SpeakerRangeOption,
   allSegments: TranscribeSegment[]
 ): number[] => {
-  const currentIndex = allSegments.findIndex((seg) => seg.id === currentSegmentId);
+  const currentIndex = allSegments.findIndex(
+    (seg) => seg.id === currentSegmentId
+  );
 
   if (currentIndex === -1) {
     return [];

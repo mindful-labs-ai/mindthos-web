@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
+import { dummyClient } from '@/feature/session/constants/dummySessions';
 import { getClientDetailRoute } from '@/router/constants';
 import { SearchIcon } from '@/shared/icons';
 
@@ -14,7 +15,6 @@ import { ClientCard } from '../components/ClientCard';
 import { useClientGrouping } from '../hooks/useClientGrouping';
 import { useClientList } from '../hooks/useClientList';
 import { useClientSearch } from '../hooks/useClientSearch';
-import { dummyClient } from '@/feature/session/constants/dummySessions';
 import type { Client } from '../types';
 
 export const ClientListPage: React.FC = () => {
@@ -155,15 +155,15 @@ export const ClientListPage: React.FC = () => {
 
                       <div className="space-y-3">
                         {group.clients.map((client) => (
-                        <ClientCard
-                          key={client.id}
-                          client={client}
-                          onClick={handleClientClick}
-                          onEditClick={handleEditClient}
-                          isReadOnly={isDummyFlow}
-                          searchQuery={searchQuery}
-                        />
-                      ))}
+                          <ClientCard
+                            key={client.id}
+                            client={client}
+                            onClick={handleClientClick}
+                            onEditClick={handleEditClient}
+                            isReadOnly={isDummyFlow}
+                            searchQuery={searchQuery}
+                          />
+                        ))}
                       </div>
                     </div>
                   ))}

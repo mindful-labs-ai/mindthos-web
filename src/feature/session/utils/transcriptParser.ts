@@ -83,20 +83,22 @@ export function getTranscriptData(transcribe: Transcribe | null): {
 
     // 화자 목록 생성
     // contents.speakers가 있으면 사용 (customName 보존), 없으면 자동 생성
-    const speakers: Speaker[] = contents.speakers || (() => {
-      const speakerSet = new Set<number>();
-      rawSegments.forEach((seg) => {
-        const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
-        speakerSet.add(speakerId);
-      });
+    const speakers: Speaker[] =
+      contents.speakers ||
+      (() => {
+        const speakerSet = new Set<number>();
+        rawSegments.forEach((seg) => {
+          const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
+          speakerSet.add(speakerId);
+        });
 
-      return Array.from(speakerSet)
-        .sort((a, b) => a - b)
-        .map((id) => ({
-          id,
-          role: mapSpeakerIdToRole(id),
-        }));
-    })();
+        return Array.from(speakerSet)
+          .sort((a, b) => a - b)
+          .map((id) => ({
+            id,
+            role: mapSpeakerIdToRole(id),
+          }));
+      })();
 
     return { segments: processedSegments, speakers };
   }

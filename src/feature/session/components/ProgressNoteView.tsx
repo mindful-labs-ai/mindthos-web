@@ -5,7 +5,7 @@ import Markdown from 'react-markdown';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { useToast } from '@/components/ui/composites/Toast';
-import { CheckIcon, CopyIcon } from '@/shared/icons';
+import { CheckIcon } from '@/shared/icons';
 
 import type { ProgressNote } from '../types';
 
