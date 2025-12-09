@@ -3,10 +3,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
+import { Badge } from '@/components/ui/atoms/Badge';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
+import {
+  dummyClient,
+  dummySessionRelations,
+} from '@/feature/session/constants/dummySessions';
 import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord, Transcribe } from '@/feature/session/types';
@@ -34,13 +39,22 @@ const HomePage = () => {
     enabled: !!userId,
   });
 
-  const sessionsWithTranscribes = sessionData?.sessions || [];
+  const { clients, isLoading: isLoadingClients } = useClientList();
+
+  const sessionsFromQuery = sessionData?.sessions || [];
+  const isDummyFlow =
+    !isLoadingSessions &&
+    !isLoadingClients &&
+    sessionsFromQuery.length === 0 &&
+    clients.length === 0;
+
+  const sessionsWithTranscribes = isDummyFlow
+    ? dummySessionRelations
+    : sessionsFromQuery;
+  const effectiveClients = isDummyFlow ? [dummyClient] : clients;
 
   // 최근 5개 세션만 표시
   const recentSessions = sessionsWithTranscribes.slice(0, 5);
-
-  // 클라이언트 목록 조회
-  const { clients } = useClientList();
 
   const handleGuideClick = () => {
     // TODO: Navigate to guide page
@@ -131,20 +145,29 @@ const HomePage = () => {
 
       <div>
         <div className="mb-4 flex items-center justify-between">
-          <Title as="h2" className="text-xl font-semibold">
-            지난 상담 기록
-          </Title>
+          <div className="flex items-center gap-2">
+            <Title as="h2" className="text-xl font-semibold">
+              지난 상담 기록
+            </Title>
+            {isDummyFlow && (
+              <Badge tone="warning" variant="soft" size="sm">
+                더미 데이터
+              </Badge>
+            )}
+          </div>
         </div>
 
         <div className="space-y-4">
           {isLoadingSessions ? (
             <div className="rounded-lg border border-surface-strong bg-surface-contrast p-8 text-center">
-              <p className="text-fg-muted">세션 목록을 불러오는 중...</p>
+              <p className="text-fg-muted">상담기록 목록을 불러오는 중...</p>
             </div>
           ) : recentSessions.length > 0 ? (
             recentSessions.map(({ session, transcribe, progressNotes }) => {
               // 클라이언트 정보 찾기
-              const client = clients.find((c) => c.id === session.client_id);
+              const client = effectiveClients.find(
+                (c) => c.id === session.client_id
+              );
               const clientName = client?.name || '고객 없음';
 
               // SessionRecord 형식으로 변환
@@ -171,6 +194,7 @@ const HomePage = () => {
                 <SessionRecordCard
                   key={session.id}
                   record={sessionRecord}
+                  isReadOnly={isDummyFlow}
                   onClick={handleSessionClick}
                 />
               );

@@ -1,3 +1,4 @@
+import { Title } from '@/components/ui';
 import { Stepper } from '@/components/ui/composites/Stepper';
 import { cn } from '@/lib/cn';
 import { OnboardingStep } from '@/services/onboarding/types';
@@ -12,8 +13,9 @@ import { WritingEffect } from './WritingEffect';
 
 const ONBOARDING_STEPS = [
   { label: '기본정보', description: '정보 입력' },
-  { label: '가이드 1', description: '서비스 안내' },
-  { label: '가이드 2', description: '상세 안내' },
+  { label: '축어록', description: '축어록 안내' },
+  { label: '상담노트', description: '상담노트 안내' },
+  { label: 'AI 수퍼비전', description: '수퍼비전 안내' },
   { label: '완료', description: '시작하기' },
 ];
 
@@ -45,64 +47,81 @@ export function OnboardingModal() {
           />
         );
 
-      case OnboardingStep.GUIDE_1:
+      case OnboardingStep.TRANSCRIBE:
         return (
           <GuideStep
-            title="서비스 이용 방법"
+            title="클릭 한 번으로 축어록을 생성해보세요."
             onNext={form.handleNext}
             isSubmitting={form.isSubmitting}
             error={form.error}
           >
-            <div className="mt-4 space-y-3 text-left">
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">1. 메인 페이지</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  원하는 기능을 선택하세요
-                </p>
+            <div className="mt-4 space-y-3">
+              <div className="flex h-[214px] items-center justify-center rounded-md bg-surface-contrast p-4">
+                <Title as="h2" className="text-4xl font-semibold text-red-500">
+                  UI 영상
+                </Title>
               </div>
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">2. 정보 입력</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  필요한 정보를 입력하세요
-                </p>
-              </div>
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">3. 결과 확인</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  결과를 확인하고 활용하세요
-                </p>
-              </div>
+              <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
+                상담 노트가 필요한 경우에는 일반축어록을, 수퍼바이저에게 제출할
+                고퀄리티 축어록이 필요한 경우에는 고급 축어록을 사용해보세요.
+              </p>
             </div>
           </GuideStep>
         );
 
-      case OnboardingStep.GUIDE_2:
+      case OnboardingStep.PROGRESS_NOTE:
         return (
           <GuideStep
-            title="상세 기능 안내"
+            title={
+              <>
+                다양한 사례개념화 노트와
+                <br />각 기관별 제출 양식까지 한 번에
+              </>
+            }
             onNext={form.handleNext}
             isSubmitting={form.isSubmitting}
             error={form.error}
           >
-            <div className="mt-4 space-y-3 text-left">
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">클라이언트 관리</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  상담 고객을 등록하고 관리하세요
-                </p>
+            <div className="mt-4 space-y-3">
+              <div className="flex h-[214px] items-center justify-center rounded-md bg-surface-contrast p-4">
+                <Title as="h2" className="text-4xl font-semibold text-red-500">
+                  UI 영상
+                </Title>
               </div>
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">세션 기록</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  상담 내용을 효과적으로 기록하세요
-                </p>
+              <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
+                양식에 맞는 노트 작성은 모두 마음토스에게 맡겨주세요. 선생님이
+                더욱 내담자에게 집중할 수 있도록, 시간이 걸리는 일은 저희가
+                해결해드려요.
+              </p>
+            </div>
+          </GuideStep>
+        );
+
+      case OnboardingStep.AI_SUPERVISION:
+        return (
+          <GuideStep
+            title={
+              <>
+                다음 회기 준비가 어렵다면,
+                <br />
+                클라이언트 다회기 AI 수퍼비전을 받아보세요
+              </>
+            }
+            onNext={form.handleNext}
+            isSubmitting={form.isSubmitting}
+            error={form.error}
+          >
+            <div className="mt-4 space-y-3">
+              <div className="flex h-[214px] items-center justify-center rounded-md bg-surface-contrast p-4">
+                <Title as="h2" className="text-4xl font-semibold text-red-500">
+                  UI 영상
+                </Title>
               </div>
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">템플릿 활용</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  미리 만들어진 템플릿을 활용하세요
-                </p>
-              </div>
+              <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
+                지금까지 진행된 회기의 축어록 내용을 AI가 분석하고 선생님에게 꼭
+                필요한 수퍼비전을 작성해드려요. 이제 마음토스와 함께 더 나은
+                상담을 함께 준비해보세요.
+              </p>
             </div>
           </GuideStep>
         );
@@ -137,11 +156,7 @@ export function OnboardingModal() {
       >
         <Stepper steps={ONBOARDING_STEPS} currentStep={currentStep} />
 
-        <div className="relative py-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
-        </div>
+        <div className="relative py-3"></div>
 
         {form.writingEffect ? <WritingEffect /> : renderStep()}
       </div>

@@ -1,9 +1,11 @@
 import React from 'react';
 
+import { Button } from '@/components/ui';
 import { ProgressCircle } from '@/components/ui/atoms/ProgressCircle';
 import { Text } from '@/components/ui/atoms/Text';
 
 import { CreditPricingTooltip } from './CreditPricingTooltip';
+import { PlanUpgradeModal } from './PlanUpgradeModal';
 
 interface CreditDisplayProps {
   totalCredit: number;
@@ -26,6 +28,8 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
   const percentage =
     totalCredit > 0 ? Math.floor((remaining / totalCredit) * 100) : 0;
   const isFree = planType.toLowerCase() === 'free';
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] =
+    React.useState<boolean>(false);
 
   if (variant === 'detailed') {
     return (
@@ -80,7 +84,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
 
   // sidebar variant
   return (
-    <div className="mx-3 mb-6 space-y-3 rounded-lg border-t border-border bg-surface-contrast px-1 py-4 text-left">
+    <div className="mx-3 mb-6 flex flex-col gap-y-2 rounded-lg border-t border-border bg-surface-contrast px-1 pb-2 pt-3 text-left">
       <Text className="relative px-3 text-xs font-medium text-fg-muted">
         마음토스 크레딧
         <button className="absolute right-3 top-0">
@@ -151,12 +155,30 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
         </div>
       </div>
 
-      <Text className="px-3 text-center text-xs text-fg-muted">
-        {isFree
-          ? '유료 플랜으로 전환하세요'
-          : daysUntilReset !== undefined &&
-            `${planLabel} 이용 중, 초기화까지 ${daysUntilReset}일`}
-      </Text>
+      <div className="flex flex-col items-center justify-center gap-2">
+        <Text className="px-3 text-center text-xs font-medium text-fg-muted">
+          {isFree
+            ? '유료 플랜으로 전환하세요'
+            : daysUntilReset !== undefined &&
+              `${planLabel} 이용 중, 초기화까지 ${daysUntilReset}일`}
+        </Text>
+        {isFree && (
+          <Button
+            size="free"
+            variant="outline"
+            tone="primary"
+            className="w-full rounded-md px-1 py-0.5 text-xs"
+            onClick={() => setIsUpgradeModalOpen(true)}
+          >
+            업그레이드
+          </Button>
+        )}
+      </div>
+
+      <PlanUpgradeModal
+        open={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+      />
     </div>
   );
 };

@@ -144,7 +144,7 @@ export function useOnboardingForm(userEmail: string) {
   const handleNext = async () => {
     setIsSubmitting(true);
     try {
-      await nextStep(userEmail);
+      await nextStep();
     } catch (err) {
       setError(err instanceof Error ? err.message : '다음 단계로 이동 실패');
     } finally {

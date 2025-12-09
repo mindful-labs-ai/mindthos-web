@@ -50,7 +50,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
           </button>
         </div>
 
-        <Text className="line-clamp-3 flex-1 text-left text-sm text-fg">
+        <Text className="flex-1 overflow-y-auto text-left text-sm text-fg">
           {template.description}
         </Text>
 

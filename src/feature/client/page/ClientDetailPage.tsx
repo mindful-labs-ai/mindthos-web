@@ -2,8 +2,13 @@ import React from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Badge } from '@/components/ui/atoms/Badge';
 import { useToast } from '@/components/ui/composites/Toast';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
+import {
+  dummyClient,
+  dummySessionRelations,
+} from '@/feature/session/constants/dummySessions';
 import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
@@ -34,6 +39,7 @@ export const ClientDetailPage: React.FC = () => {
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(
     null
   );
+  const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
   const userId = useAuthStore((state) => state.userId);
   const { toast } = useToast();
 
@@ -45,6 +51,12 @@ export const ClientDetailPage: React.FC = () => {
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
   });
+  const isDummyFlow =
+    !isLoadingClients &&
+    !isLoadingSessions &&
+    !clients.length &&
+    sessionsData?.sessions.length === 0;
+  const isReadOnly = isDummyFlow;
 
   // 클라이언트 분석 관련 hooks
   const { data: templates } = useClientTemplates();
@@ -74,19 +86,37 @@ export const ClientDetailPage: React.FC = () => {
     },
   });
 
+  React.useEffect(() => {
+    if (isReadOnly && clientId && !hasShownDummyToast) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 기능이 비활성화됩니다.',
+        duration: 3000,
+      });
+      setHasShownDummyToast(true);
+    }
+  }, [isReadOnly, clientId, hasShownDummyToast, toast]);
+
   // 현재 클라이언트 찾기
   const client = React.useMemo(() => {
-    if (!clients || !clientId) return null;
-    return clients.find((c) => c.id === clientId);
-  }, [clients, clientId]);
+    if (!clientId) return null;
+    if (isDummyFlow) return dummyClient;
+    return clients.find((c) => c.id === clientId) || null;
+  }, [clients, clientId, isDummyFlow]);
 
   // 해당 클라이언트의 세션 필터링
   const clientSessions = React.useMemo(() => {
-    if (!sessionsData?.sessions || !clientId) return [];
+    if (!clientId) return [];
+    if (isDummyFlow) {
+      return dummySessionRelations.filter(
+        (s) => s.session.client_id === clientId
+      );
+    }
+    if (!sessionsData?.sessions) return [];
     return sessionsData.sessions.filter(
       (s) => s.session.client_id === clientId
     );
-  }, [sessionsData, clientId]);
+  }, [clientId, isDummyFlow, sessionsData]);
 
   // SessionRecord 형식으로 변환
   const sessionRecords: SessionRecord[] = React.useMemo(() => {
@@ -140,6 +170,14 @@ export const ClientDetailPage: React.FC = () => {
     sessionIds: string[];
     aiSupervisionTemplateId: number;
   }) => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 분석을 생성할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
     if (!clientId) return;
 
     try {
@@ -200,6 +238,11 @@ export const ClientDetailPage: React.FC = () => {
             <span className="text-xl font-semibold text-fg-muted">
               총 {sessionRecords.length}개의 상담 기록
             </span>
+            {isDummyFlow && (
+              <Badge tone="warning" variant="soft" size="sm">
+                더미 데이터
+              </Badge>
+            )}
           </div>
         </div>
       </div>
@@ -248,6 +291,7 @@ export const ClientDetailPage: React.FC = () => {
                     <SessionRecordCard
                       key={record.session_id}
                       record={record}
+                      isReadOnly={isReadOnly}
                       onClick={(record) =>
                         navigate(getSessionDetailRoute(record.session_id))
                       }
@@ -267,7 +311,18 @@ export const ClientDetailPage: React.FC = () => {
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm text-fg-muted">클라이언트 정보</h2>
                   <button
-                    onClick={() => setIsEditModalOpen(true)}
+                    onClick={() => {
+                      if (isReadOnly) {
+                        toast({
+                          title: '읽기 전용',
+                          description:
+                            '더미 데이터에서는 클라이언트를 수정할 수 없습니다.',
+                          duration: 3000,
+                        });
+                        return;
+                      }
+                      setIsEditModalOpen(true);
+                    }}
                     className="rounded-md border border-border px-2.5 py-0.5 text-sm text-fg-muted transition-colors hover:text-fg"
                   >
                     편집
@@ -319,7 +374,17 @@ export const ClientDetailPage: React.FC = () => {
             <ClientAnalysisTab
               analyses={analyses}
               isLoading={isLoadingAnalyses}
-              onCreateAnalysis={() => setIsAnalysisModalOpen(true)}
+              onCreateAnalysis={() => {
+                if (isReadOnly) {
+                  toast({
+                    title: '읽기 전용',
+                    description: '더미 데이터에서는 분석을 생성할 수 없습니다.',
+                    duration: 3000,
+                  });
+                  return;
+                }
+                setIsAnalysisModalOpen(true);
+              }}
             />
           </div>
         )}
@@ -328,7 +393,17 @@ export const ClientDetailPage: React.FC = () => {
       {/* 클라이언트 수정 모달 */}
       <AddClientModal
         open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
+        onOpenChange={(open) => {
+          if (isReadOnly && open) {
+            toast({
+              title: '읽기 전용',
+              description: '더미 데이터에서는 클라이언트를 수정할 수 없습니다.',
+              duration: 3000,
+            });
+            return;
+          }
+          setIsEditModalOpen(open);
+        }}
         initialData={client}
       />
 

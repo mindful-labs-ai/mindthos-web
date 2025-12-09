@@ -9,9 +9,10 @@ export type OnboardingStateType =
 
 export const OnboardingStep = {
   INFO: 0,
-  GUIDE_1: 1,
-  GUIDE_2: 2,
-  DONE: 3,
+  TRANSCRIBE: 1,
+  PROGRESS_NOTE: 2,
+  AI_SUPERVISION: 3,
+  DONE: 4,
 } as const;
 
 export type OnboardingStepType =

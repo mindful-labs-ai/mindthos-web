@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Card } from '@/components/ui/composites/Card';
 import { Modal } from '@/components/ui/composites/Modal';
+import { useToast } from '@/components/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 
 import { clientQueryKeys } from '../constants/queryKeys';
@@ -20,6 +21,7 @@ interface ClientCardProps {
   client: Client;
   onClick?: (client: Client) => void;
   onEditClick?: (client: Client) => void;
+  isReadOnly?: boolean;
   searchQuery?: string;
 }
 
@@ -27,10 +29,12 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   client,
   onClick,
   onEditClick,
+  isReadOnly = false,
   searchQuery = '',
 }) => {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
+  const { toast } = useToast();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isCloseSessionModalOpen, setIsCloseSessionModalOpen] =
     React.useState(false);
@@ -46,12 +50,28 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     onClick?.(client);
   };
 
+  const showReadOnlyToast = () => {
+    toast({
+      title: '읽기 전용',
+      description: '더미 데이터에서는 이 기능을 사용할 수 없습니다.',
+      duration: 2500,
+    });
+  };
+
   const handleCloseSession = () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsMenuOpen(false);
     setIsCloseSessionModalOpen(true);
   };
 
   const handleConfirmCloseSession = async () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsLoading(true);
     try {
       await clientService.updateClient({
@@ -69,18 +89,30 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       setIsCloseSessionModalOpen(false);
     } catch (error) {
       console.error('상담 종결 실패:', error);
-      alert('상담 종결에 실패했습니다.');
+      toast({
+        title: '실패',
+        description: '상담 종결에 실패했습니다.',
+        duration: 2500,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleRestartCounseling = () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsMenuOpen(false);
     setIsRestartCounselingModalOpen(true);
   };
 
   const handleConfirmRestartCounseling = async () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsLoading(true);
     try {
       await clientService.updateClient({
@@ -98,23 +130,39 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       setIsRestartCounselingModalOpen(false);
     } catch (error) {
       console.error('상담 재시작 실패:', error);
-      alert('상담 재시작에 실패했습니다.');
+      toast({
+        title: '실패',
+        description: '상담 재시작에 실패했습니다.',
+        duration: 2500,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleEditClient = () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsMenuOpen(false);
     onEditClick?.(client);
   };
 
   const handleDeleteClient = () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsMenuOpen(false);
     setIsDeleteModalOpen(true);
   };
 
   const handleConfirmDeleteClient = async () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
     setIsLoading(true);
     try {
       await clientService.deleteClient({
@@ -131,7 +179,11 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       setIsDeleteModalOpen(false);
     } catch (error) {
       console.error('클라이언트 삭제 실패:', error);
-      alert('클라이언트 삭제에 실패했습니다.');
+      toast({
+        title: '실패',
+        description: '클라이언트 삭제에 실패했습니다.',
+        duration: 2500,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +209,13 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             </div>
             <ClientCardMenu
               isOpen={isMenuOpen}
-              onOpenChange={setIsMenuOpen}
+              onOpenChange={(open) => {
+                if (isReadOnly && open) {
+                  showReadOnlyToast();
+                  return;
+                }
+                setIsMenuOpen(open);
+              }}
               isCounselDone={client.counsel_done}
               onCloseSession={handleCloseSession}
               onRestartCounseling={handleRestartCounseling}
@@ -193,6 +251,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         open={isCloseSessionModalOpen}
         onOpenChange={setIsCloseSessionModalOpen}
         title="상담 종결"
+        className="max-w-sm"
       >
         <div className="space-y-4">
           <Text className="text-base font-bold text-fg">
@@ -220,6 +279,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         open={isRestartCounselingModalOpen}
         onOpenChange={setIsRestartCounselingModalOpen}
         title="상담 재시작"
+        className="max-w-sm"
       >
         <div className="space-y-4">
           <Text className="text-base font-bold text-fg">
@@ -247,6 +307,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         open={isDeleteModalOpen}
         onOpenChange={setIsDeleteModalOpen}
         title="클라이언트 삭제"
+        className="max-w-sm"
       >
         <div className="space-y-4">
           <Text className="text-base font-bold text-fg">

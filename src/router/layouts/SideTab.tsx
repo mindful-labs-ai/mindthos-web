@@ -13,8 +13,8 @@ import {
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
 import {
-  Edit3Icon,
-  FileTextIcon,
+  // Edit3Icon,
+  // FileTextIcon,
   PlusIcon,
   UploadIcon,
   XIcon,
@@ -61,17 +61,17 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
     setIsCreateSessionModalOpen(true);
   };
 
-  const handlePdfUploadClick = () => {
-    setUploadType('pdf');
-    setIsNewRecordMenuOpen(false);
-    setIsCreateSessionModalOpen(true);
-  };
+  // const handlePdfUploadClick = () => {
+  //   setUploadType('pdf');
+  //   setIsNewRecordMenuOpen(false);
+  //   setIsCreateSessionModalOpen(true);
+  // };
 
-  const handleDirectInputClick = () => {
-    setUploadType('direct');
-    setIsNewRecordMenuOpen(false);
-    setIsCreateSessionModalOpen(true);
-  };
+  // const handleDirectInputClick = () => {
+  //   setUploadType('direct');
+  //   setIsNewRecordMenuOpen(false);
+  //   setIsCreateSessionModalOpen(true);
+  // };
 
   return (
     <aside
@@ -143,6 +143,7 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
               </button> */}
             </div>
           }
+          triggerClassName="w-full"
         />
       </div>
 

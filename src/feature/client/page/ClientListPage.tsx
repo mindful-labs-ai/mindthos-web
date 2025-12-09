@@ -14,6 +14,7 @@ import { ClientCard } from '../components/ClientCard';
 import { useClientGrouping } from '../hooks/useClientGrouping';
 import { useClientList } from '../hooks/useClientList';
 import { useClientSearch } from '../hooks/useClientSearch';
+import { dummyClient } from '@/feature/session/constants/dummySessions';
 import type { Client } from '../types';
 
 export const ClientListPage: React.FC = () => {
@@ -25,7 +26,10 @@ export const ClientListPage: React.FC = () => {
     null
   );
 
-  const filteredClients = useClientSearch(clients, searchQuery);
+  const isDummyFlow = !isLoading && !error && clients.length === 0;
+  const effectiveClients = isDummyFlow ? [dummyClient] : clients;
+
+  const filteredClients = useClientSearch(effectiveClients, searchQuery);
 
   // counsel_done으로 활성/종결 클라이언트 분리
   const activeClients = filteredClients.filter((c) => !c.counsel_done);
@@ -118,6 +122,7 @@ export const ClientListPage: React.FC = () => {
                           client={client}
                           onClick={handleClientClick}
                           onEditClick={handleEditClient}
+                          isReadOnly={isDummyFlow}
                           searchQuery={searchQuery}
                         />
                       ))}
@@ -150,14 +155,15 @@ export const ClientListPage: React.FC = () => {
 
                       <div className="space-y-3">
                         {group.clients.map((client) => (
-                          <ClientCard
-                            key={client.id}
-                            client={client}
-                            onClick={handleClientClick}
-                            onEditClick={handleEditClient}
-                            searchQuery={searchQuery}
-                          />
-                        ))}
+                        <ClientCard
+                          key={client.id}
+                          client={client}
+                          onClick={handleClientClick}
+                          onEditClick={handleEditClient}
+                          isReadOnly={isDummyFlow}
+                          searchQuery={searchQuery}
+                        />
+                      ))}
                       </div>
                     </div>
                   ))}

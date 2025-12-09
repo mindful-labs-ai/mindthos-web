@@ -134,9 +134,9 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
           {availableSessions.length === 0 ? (
             <div className="flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface">
               <Text className="text-center text-fg-muted">
-                분석 가능한 세션이 없습니다.
+                분석 가능한 상담기록이 없습니다.
                 <br />
-                완료된 세션이 필요합니다.
+                완료된 상담기록이 필요합니다.
               </Text>
             </div>
           ) : (
@@ -183,7 +183,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
                       {/* 세션 정보 */}
                       <div className="pr-8">
                         <div className="mb-1 font-medium text-fg">
-                          {session.title || '제목 없는 세션'}
+                          {session.title || '제목 없는 기록'}
                         </div>
                         <div className="text-xs text-fg-muted">
                           {new Date(session.created_at).toLocaleDateString(
