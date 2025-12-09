@@ -6,24 +6,27 @@
 /**
  * 상담노트 생성 크레딧 (고정값)
  */
-export const PROGRESS_NOTE_CREDIT = 20;
+export const PROGRESS_NOTE_CREDIT = 10;
 
 /**
  * STT 크레딧 계산
- * - 일반 축어록 (basic): 1분당 1 크레딧
- * - 고급 축어록 (advanced): 1분당 1.5 크레딧 (반내림 처리)
+ * - 최소 30분 기준: 1~30분은 30 크레딧 (basic) 또는 45 크레딧 (advanced)
+ * - 31분부터: 1분당 1 크레딧 (basic) 또는 1분당 1.5 크레딧 (advanced) 추가
  */
 export function calculateSTTCredit(
   durationSeconds: number,
   transcribeType: 'basic' | 'advanced'
 ): number {
   const durationMinutes = Math.ceil(durationSeconds / 60);
+  const MIN_MINUTES = 30;
 
   if (transcribeType === 'basic') {
-    return durationMinutes * 1;
+    // basic: 최소 30 크레딧, 31분부터 1분당 1 크레딧
+    return Math.max(durationMinutes, MIN_MINUTES);
   } else {
-    // advanced: 1분당 1.5 크레딧, 반내림
-    return Math.floor(durationMinutes * 1.5);
+    // advanced: 최소 45 크레딧 (30분 * 1.5), 31분부터 1분당 1.5 크레딧 (반내림)
+    const minCredit = Math.floor(MIN_MINUTES * 1.5);
+    return Math.max(Math.floor(durationMinutes * 1.5), minCredit);
   }
 }
 

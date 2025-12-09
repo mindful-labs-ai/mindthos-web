@@ -7,20 +7,20 @@ import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
+import { SnackBar } from '@/components/ui/composites/SnackBar';
 import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
+import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
 import { useCreateSession } from '../hooks/useCreateSession';
 import { useSessionStatus } from '../hooks/useSessionStatus';
 import type { FileInfo, SttModel, UploadType } from '../types';
-import {
-  getSessionCreditInfo,
-  getSessionModalTitle,
-} from '../utils/sessionModal';
+import { calculateTotalCredit } from '../utils/creditCalculator';
+import { getSessionModalTitle } from '../utils/sessionModal';
 
 import { FileUploadArea } from './FileUploadArea';
 import SttModelSelector from './SttModelSelector';
@@ -56,6 +56,21 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   const [directInput, setDirectInput] = React.useState('');
   const [sttModel, setSttModel] = React.useState<SttModel>('gemini-3');
   const [isCreating, setIsCreating] = React.useState(false);
+
+  // Error SnackBar state
+  const [errorSnackBar, setErrorSnackBar] = React.useState<{
+    open: boolean;
+    message: string;
+    isCreditError: boolean;
+  }>({
+    open: false,
+    message: '',
+    isCreditError: false,
+  });
+
+  // Plan upgrade modal state
+  const [isPlanUpgradeModalOpen, setIsPlanUpgradeModalOpen] =
+    React.useState(false);
 
   // 세션 처리 상태 폴링
   useSessionStatus({
@@ -197,10 +212,15 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       console.error('[handleCreateSession] 세션 생성 실패:', error);
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
-      toast({
-        title: '세션 생성 실패',
-        description: errorMessage,
-        duration: 8000,
+
+      // 크레딧 부족 에러 확인
+      const isCreditError = errorMessage.includes('크레딧이 부족합니다');
+
+      // SnackBar로 에러 표시
+      setErrorSnackBar({
+        open: true,
+        message: errorMessage,
+        isCreditError,
       });
     } finally {
       setIsCreating(false);
@@ -212,13 +232,14 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     !isCreating;
 
   return (
-    <Modal className="max-w-lg" open={open} onOpenChange={handleClose}>
-      <div className="flex flex-col justify-center gap-6 p-6">
-        <div className="text-center">
-          <Title as="h3" className="font-bold">
-            {getSessionModalTitle(type)}
-          </Title>
-        </div>
+    <>
+      <Modal className="max-w-lg" open={open} onOpenChange={handleClose}>
+        <div className="flex flex-col justify-center gap-6 p-6">
+          <div className="text-center">
+            <Title as="h3" className="font-bold">
+              {getSessionModalTitle(type)}
+            </Title>
+          </div>
 
         <div className="flex flex-col items-center justify-center">
           <ClientSelector
@@ -251,11 +272,31 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         )}
 
         <div className="space-y-2">
-          {getSessionCreditInfo(type, sttModel, selectedFile) && (
-            <div className="flex justify-center">
-              <div className="flex w-fit items-center justify-center gap-2 rounded-lg bg-primary-100 px-2">
-                <Text className="flex items-center gap-1 text-center text-primary-600">
-                  {getSessionCreditInfo(type, sttModel, selectedFile)}
+          {(() => {
+            if (!selectedFile) return null;
+
+            let creditInfo = null;
+
+            if (type === 'audio' && 'duration' in selectedFile) {
+              const transcribeType = sttModel === 'gemini-3' ? 'advanced' : 'basic';
+              creditInfo = calculateTotalCredit({
+                uploadType: 'audio',
+                transcribeType,
+                durationSeconds: selectedFile.duration,
+              });
+            } else if (type === 'pdf' || type === 'direct') {
+              creditInfo = calculateTotalCredit({
+                uploadType: 'pdf',
+              });
+            }
+
+            if (!creditInfo) return null;
+
+            return (
+              <div className="flex justify-center">
+                <div className="flex w-fit items-center justify-center gap-2 rounded-lg bg-primary-100 px-2">
+                  <Text className="flex items-center gap-1 text-center text-primary-600">
+                    {creditInfo.totalCredit}
                   <svg
                     width="14"
                     height="14"
@@ -279,7 +320,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                 <Text className="text-center text-primary-600">사용</Text>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           <Button
             variant="solid"
@@ -294,5 +336,30 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         </div>
       </div>
     </Modal>
+
+      <SnackBar
+        open={errorSnackBar.open}
+        message={errorSnackBar.message}
+        onOpenChange={(open) =>
+          setErrorSnackBar((prev) => ({ ...prev, open }))
+        }
+        action={
+          errorSnackBar.isCreditError
+            ? {
+                label: '플랜 업그레이드',
+                onClick: () => {
+                  setIsPlanUpgradeModalOpen(true);
+                },
+              }
+            : undefined
+        }
+        duration={8000}
+      />
+
+      <PlanUpgradeModal
+        open={isPlanUpgradeModalOpen}
+        onOpenChange={setIsPlanUpgradeModalOpen}
+      />
+    </>
   );
 };
