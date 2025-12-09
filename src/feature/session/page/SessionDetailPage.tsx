@@ -4,12 +4,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
+import { Badge } from '@/components/ui/atoms/Badge';
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { useToast } from '@/components/ui/composites/Toast';
+import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -26,10 +28,12 @@ import {
   getAudioPresignedUrl,
   updateMultipleTranscriptSegments,
   updateSessionTitle,
+  updateTranscriptSegments,
 } from '../services/sessionService';
 import type {
   ProgressNote,
   Session,
+  Speaker,
   Transcribe,
   TranscribeSegment,
 } from '../types';
@@ -67,12 +71,16 @@ export const SessionDetailPage: React.FC = () => {
   const [pendingTabValue, setPendingTabValue] = React.useState<string | null>(
     null
   );
+  const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
 
   // 세션 상세 조회 (TanStack Query)
   const { data: sessionDetail, isLoading } = useSessionDetail({
     sessionId: sessionId || '',
     enabled: !!sessionId,
   });
+
+  const isDummySession = isDummySessionId(sessionId || '');
+  const isReadOnly = isDummySession;
 
   const session = sessionDetail?.session;
   const transcribe = sessionDetail?.transcribe;
@@ -121,7 +129,9 @@ export const SessionDetailPage: React.FC = () => {
         const selectedTemplate = templates.find(
           (t) => t.id === selectedTemplateId
         );
-        label = selectedTemplate ? `${selectedTemplate.title} 생성 중...` : '생성 중...';
+        label = selectedTemplate
+          ? `${selectedTemplate.title} 생성 중...`
+          : '생성 중...';
       }
       items.push({
         value: 'create-note',
@@ -131,7 +141,14 @@ export const SessionDetailPage: React.FC = () => {
 
     items.push({ value: 'add', label: '+' });
     return items;
-  }, [sessionProgressNotes, activeTab, isCreatingNote, transcribe?.stt_model, selectedTemplateId, templates]);
+  }, [
+    sessionProgressNotes,
+    activeTab,
+    isCreatingNote,
+    transcribe?.stt_model,
+    selectedTemplateId,
+    templates,
+  ]);
 
   // raw_output 파싱 또는 기존 result 사용
   // useMemo로 감싸서 transcribe.contents가 변경되면 재계산
@@ -168,6 +185,7 @@ export const SessionDetailPage: React.FC = () => {
   );
 
   const handleTextEdit = (segmentId: number, newText: string) => {
+    if (isReadOnly) return;
     // 편집된 세그먼트를 메모리에 저장 (실제 저장은 편집 완료 버튼 클릭 시)
     setEditedSegments((prev) => ({
       ...prev,
@@ -176,6 +194,14 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   const handleSaveAllEdits = async () => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 편집할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
     if (!transcribe?.id || !sessionId) {
       toast({
         title: '오류',
@@ -299,12 +325,166 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   const handleEditStart = () => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 편집할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
     setEditedSegments({});
     setIsEditing(false);
+  };
+
+  const handleSpeakerChange = async (updates: {
+    speakerChanges: Record<number, number>;
+    speakerDefinitions: Speaker[];
+  }) => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 편집할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
+    console.log(
+      '🔄 [SessionDetailPage] handleSpeakerChange called with:',
+      updates
+    );
+
+    if (!transcribe?.id || !sessionId) {
+      console.error(
+        '❌ [SessionDetailPage] Missing transcribe.id or sessionId'
+      );
+      toast({
+        title: '오류',
+        description: '전사 데이터를 찾을 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    console.log('🔄 [SessionDetailPage] transcribe.id:', transcribe.id);
+
+    try {
+      // Optimistic update: 캐시를 즉시 업데이트
+      console.log('🔄 [SessionDetailPage] Starting optimistic update...');
+      queryClient.setQueryData(
+        ['session', sessionId],
+        (
+          oldData:
+            | {
+                session: Session;
+                transcribe: Transcribe | null;
+                progressNotes: ProgressNote[];
+              }
+            | undefined
+        ) => {
+          if (!oldData || !oldData.transcribe) return oldData;
+
+          const transcribe = oldData.transcribe;
+          const contents = transcribe.contents;
+
+          if (!contents) return oldData;
+
+          // 세그먼트의 speaker 업데이트
+          let updatedContents;
+
+          if ('segments' in contents && Array.isArray(contents.segments)) {
+            // New format
+            const updatedSegments = contents.segments.map(
+              (seg: TranscribeSegment) => {
+                if (updates.speakerChanges[seg.id]) {
+                  return { ...seg, speaker: updates.speakerChanges[seg.id] };
+                }
+                return seg;
+              }
+            );
+
+            updatedContents = {
+              ...contents,
+              segments: updatedSegments,
+              speakers: updates.speakerDefinitions,
+            };
+          } else if ('result' in contents && contents.result?.segments) {
+            // Legacy format
+            const updatedSegments = contents.result.segments.map(
+              (seg: TranscribeSegment) => {
+                if (updates.speakerChanges[seg.id]) {
+                  return { ...seg, speaker: updates.speakerChanges[seg.id] };
+                }
+                return seg;
+              }
+            );
+
+            updatedContents = {
+              ...contents,
+              result: {
+                ...contents.result,
+                segments: updatedSegments,
+                speakers: updates.speakerDefinitions,
+              },
+            };
+          } else {
+            return oldData;
+          }
+
+          return {
+            ...oldData,
+            transcribe: {
+              ...transcribe,
+              contents: updatedContents,
+            },
+          };
+        }
+      );
+
+      console.log('✅ [SessionDetailPage] Optimistic update completed');
+
+      // 백그라운드에서 서버 업데이트
+      console.log(
+        '🔄 [SessionDetailPage] Calling updateTranscriptSegments API...'
+      );
+      await updateTranscriptSegments(transcribe.id, {
+        speakerUpdates: updates.speakerChanges,
+        speakerDefinitions: updates.speakerDefinitions,
+      });
+
+      console.log('✅ [SessionDetailPage] API call completed');
+
+      // API 성공 후 캐시 무효화하여 DB의 최신 데이터 가져오기
+      console.log('🔄 [SessionDetailPage] Invalidating cache...');
+      await queryClient.invalidateQueries({
+        queryKey: ['session', sessionId],
+      });
+      console.log('✅ [SessionDetailPage] Cache invalidated');
+
+      toast({
+        title: '화자 변경 완료',
+        description: `${Object.keys(updates.speakerChanges).length}개의 세그먼트가 업데이트되었습니다.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('❌ [SessionDetailPage] 화자 변경 실패:', error);
+
+      // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
+      await queryClient.invalidateQueries({
+        queryKey: ['session', sessionId],
+      });
+
+      toast({
+        title: '화자 변경 실패',
+        description:
+          error instanceof Error ? error.message : '화자 변경에 실패했습니다.',
+        duration: 3000,
+      });
+    }
   };
 
   // 탭 변경 핸들러
@@ -347,6 +527,14 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   const handleCopyTranscript = async () => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 복사 기능이 비활성화됩니다.',
+        duration: 3000,
+      });
+      return;
+    }
     try {
       // 세그먼트를 포맷팅: [타임스탬프] 또는 번호. 발화자 : 내용
       const formattedText = segments
@@ -398,6 +586,14 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   const handleTitleUpdate = async (newTitle: string) => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 제목을 수정할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
     if (!sessionId) return;
 
     try {
@@ -428,6 +624,14 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   const handleCreateProgressNote = async () => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 상담 노트를 생성할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
     if (!sessionId || !transcribe?.contents || !selectedTemplateId) return;
 
     const userIdString = useAuthStore.getState().userId;
@@ -521,12 +725,23 @@ export const SessionDetailPage: React.FC = () => {
     fetchPresignedUrl();
   }, [sessionId, hasS3Key]);
 
+  React.useEffect(() => {
+    if (isReadOnly && session && !hasShownDummyToast) {
+      toast({
+        title: '읽기 전용',
+        description: '더미 데이터에서는 편집 기능이 비활성화됩니다.',
+        duration: 3000,
+      });
+      setHasShownDummyToast(true);
+    }
+  }, [isReadOnly, session, hasShownDummyToast, toast]);
+
   // 로딩 완료 후 세션이 없으면 sessions 목록으로 이동
   React.useEffect(() => {
     if (!isLoading && !session && sessionId) {
       toast({
         title: '오류',
-        description: '세션 데이터를 찾을 수 없습니다.',
+        description: '상담 데이터를 찾을 수 없습니다.',
         duration: 3000,
       });
       navigate('/sessions');
@@ -570,7 +785,7 @@ export const SessionDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center bg-surface-contrast">
-        <p className="text-fg-muted">세션을 불러오는 중...</p>
+        <p className="text-fg-muted">상담기록을 불러오는 중...</p>
       </div>
     );
   }
@@ -578,7 +793,7 @@ export const SessionDetailPage: React.FC = () => {
   if (!session) {
     return (
       <div className="flex h-full items-center justify-center bg-surface-contrast">
-        <p className="text-fg-muted">세션을 찾을 수 없습니다.</p>
+        <p className="text-fg-muted">상담기록을 찾을 수 없습니다.</p>
       </div>
     );
   }
@@ -595,7 +810,7 @@ export const SessionDetailPage: React.FC = () => {
           title={session.title || '제목 없음'}
           createdAt={session.created_at}
           duration={session.audio_meta_data?.duration_seconds || 0}
-          onTitleUpdate={handleTitleUpdate}
+          onTitleUpdate={isReadOnly ? undefined : handleTitleUpdate}
         />
       </div>
 
@@ -613,9 +828,13 @@ export const SessionDetailPage: React.FC = () => {
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         {activeTab === 'transcript' && (
-          <div className="absolute inset-x-0 top-0 z-10 flex justify-end">
-            <div className="mb-4 flex items-center gap-2 overflow-hidden py-2">
-              {isEditing ? (
+          <div className="absolute inset-x-0 top-0 z-10 flex select-none justify-end">
+            <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
+              {isReadOnly ? (
+                <Badge tone="warning" variant="soft" size="sm">
+                  더미 데이터 - 읽기 전용
+                </Badge>
+              ) : isEditing ? (
                 <>
                   <button
                     type="button"
@@ -749,7 +968,7 @@ export const SessionDetailPage: React.FC = () => {
                   isActive={
                     enableTimestampFeatures && index === currentSegmentIndex
                   }
-                  isEditable={isEditing}
+                  isEditable={isEditing && !isReadOnly}
                   isAnonymized={isAnonymized}
                   sttModel={transcribe?.stt_model}
                   segmentRef={
@@ -758,9 +977,12 @@ export const SessionDetailPage: React.FC = () => {
                       : undefined
                   }
                   onClick={handleSeekTo}
-                  onTextEdit={handleTextEdit}
+                  onTextEdit={isReadOnly ? undefined : handleTextEdit}
                   showTimestamp={enableTimestampFeatures}
                   segmentIndex={index}
+                  allSegments={segments}
+                  clientId={session?.client_id || null}
+                  onSpeakerChange={isReadOnly ? undefined : handleSpeakerChange}
                 />
               ))
             ) : (
@@ -780,9 +1002,9 @@ export const SessionDetailPage: React.FC = () => {
               </div>
               <button
                 onClick={handleCreateProgressNote}
-                disabled={!selectedTemplateId || isCreatingNote}
+                disabled={isReadOnly || !selectedTemplateId || isCreatingNote}
                 className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                  !selectedTemplateId || isCreatingNote
+                  isReadOnly || !selectedTemplateId || isCreatingNote
                     ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
                     : 'bg-primary text-white hover:bg-primary-600'
                 }`}

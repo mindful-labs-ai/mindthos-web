@@ -11,8 +11,8 @@ import type {
   ProgressNote,
   Session,
   SessionProcessingStatus,
+  Speaker,
   Transcribe,
-  TranscribeSegment,
 } from '../types';
 
 const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL;
@@ -390,6 +390,97 @@ export async function updateMultipleTranscriptSegments(
   const { error: updateError } = await supabase
     .from('transcribes')
     .update({ contents: updatedContents })
+    .eq('id', transcribeId);
+
+  if (updateError) {
+    throw new Error(`전사 세그먼트 업데이트 실패: ${updateError.message}`);
+  }
+}
+
+/**
+ * 전사 세그먼트 업데이트 Payload
+ */
+export interface TranscriptUpdatePayload {
+  textUpdates?: Record<number, string>; // segmentId -> newText
+  speakerUpdates?: Record<number, number>; // segmentId -> newSpeakerId
+  speakerDefinitions?: Speaker[]; // 업데이트된 speakers 배열
+}
+
+/**
+ * 전사 세그먼트 종합 업데이트 API 호출 (text + speaker)
+ * text, speaker, speakerDefinitions를 동시에 업데이트할 수 있습니다.
+ */
+export async function updateTranscriptSegments(
+  transcribeId: string,
+  updates: TranscriptUpdatePayload
+): Promise<void> {
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // 1. 현재 transcribe 데이터 조회
+  const { data: transcribe, error: fetchError } = await supabase
+    .from('transcribes')
+    .select('contents')
+    .eq('id', transcribeId)
+    .single();
+
+  if (fetchError || !transcribe) {
+    throw new Error(
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+    );
+  }
+
+  const contents = transcribe.contents;
+  if (!contents) {
+    throw new Error('전사 결과가 존재하지 않습니다.');
+  }
+
+  // 2. 세그먼트 업데이트 적용 (text + speaker)
+  const updatedContents = updateSegmentsInContents(contents, (segments) => {
+    return segments.map((seg) => {
+      const segmentId = seg.id;
+      const updated = { ...seg };
+
+      // text 업데이트
+      if (updates.textUpdates && segmentId in updates.textUpdates) {
+        updated.text = updates.textUpdates[segmentId];
+      }
+
+      // speaker 업데이트
+      if (updates.speakerUpdates && segmentId in updates.speakerUpdates) {
+        updated.speaker = updates.speakerUpdates[segmentId];
+      }
+
+      return updated;
+    });
+  });
+
+  // 3. speakers 배열 업데이트
+  let finalContents = updatedContents;
+  if (updates.speakerDefinitions) {
+    if ('result' in updatedContents && updatedContents.result) {
+      // Legacy format: { result: { segments, speakers } }
+      finalContents = {
+        ...updatedContents,
+        result: {
+          ...updatedContents.result,
+          speakers: updates.speakerDefinitions,
+        },
+      };
+    } else {
+      // New format: { stt_model, segments, speakers, ... }
+      // speakers 키가 없어도 추가
+      finalContents = {
+        ...updatedContents,
+        speakers: updates.speakerDefinitions,
+      };
+    }
+  }
+
+  // 4. DB에 저장
+  const { error: updateError } = await supabase
+    .from('transcribes')
+    .update({ contents: finalContents })
     .eq('id', transcribeId);
 
   if (updateError) {

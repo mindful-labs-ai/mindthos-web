@@ -56,6 +56,7 @@ export type TranscribeSegment = GeminiSegment | WhisperSegment;
 export interface Speaker {
   id: number;
   role: 'counselor' | 'client1' | 'client2' | string; // 역할
+  customName?: string; // 커스텀 표시 이름
 }
 
 export type SttModel = 'gemini-3' | 'whisper';
@@ -73,6 +74,7 @@ export interface TranscriptJson {
   text: string;
   raw_output: string;
   stt_model: 'gemini-3' | 'whisper';
+  speakers?: Speaker[]; // 화자 정보 (customName 포함)
 }
 
 // 전사 컨텐츠 (DB에 저장되는 JSON) - Legacy 지원

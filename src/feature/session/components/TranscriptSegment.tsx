@@ -8,6 +8,8 @@ import {
   renderTextWithNonverbal,
 } from '../utils/parseNonverbalText';
 
+import { SpeakerEditPopup } from './SpeakerEditPopup';
+
 interface TranscriptSegmentProps {
   segment: TranscribeSegment;
   speakers: Speaker[];
@@ -20,6 +22,12 @@ interface TranscriptSegmentProps {
   onTextEdit?: (segmentId: number, newText: string) => void;
   showTimestamp?: boolean; // 타임스탬프 표시 여부
   segmentIndex?: number; // 시퀀스 번호용 인덱스
+  allSegments?: TranscribeSegment[]; // speaker 편집용 전체 세그먼트
+  clientId?: string | null; // session의 client_id
+  onSpeakerChange?: (updates: {
+    speakerChanges: Record<number, number>;
+    speakerDefinitions: Speaker[];
+  }) => Promise<void>;
 }
 
 export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
@@ -34,8 +42,12 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   onTextEdit,
   showTimestamp = true,
   segmentIndex,
+  allSegments = [],
+  clientId,
+  onSpeakerChange,
 }) => {
   const [editedText, setEditedText] = React.useState(segment.text);
+  const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const { name, label, bgColor, textColor } = getSpeakerInfo(segment, speakers);
@@ -103,6 +115,19 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
     }
   };
 
+  const handleSpeakerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSpeakerPopupOpen(true);
+  };
+
+  const handleSpeakerKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsSpeakerPopupOpen(true);
+    }
+  };
+
   return (
     <div
       ref={segmentRef}
@@ -119,17 +144,61 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
       onKeyDown={handleKeyDown}
     >
       {!isAnonymized && (
-        <div
-          className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-transform ${bgColor} ${
-            isActive ? 'scale-110' : 'group-hover:scale-105'
-          }`}
-        >
-          <span className={`text-base font-medium ${textColor}`}>{label}</span>
-        </div>
+        <>
+          {onSpeakerChange ? (
+            <SpeakerEditPopup
+              open={isSpeakerPopupOpen}
+              onOpenChange={setIsSpeakerPopupOpen}
+              segment={segment}
+              speakers={speakers}
+              allSegments={allSegments}
+              clientId={clientId || null}
+              triggerElement={
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleSpeakerClick}
+                  onKeyDown={handleSpeakerKeyDown}
+                  aria-label="화자 편집"
+                  className={`relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-all ${bgColor} ${
+                    isActive ? 'scale-105' : 'group-hover:scale-105'
+                  }`}
+                >
+                  <span className={`text-base font-medium ${textColor}`}>
+                    {label}
+                  </span>
+                </div>
+              }
+              onApply={onSpeakerChange}
+            />
+          ) : (
+            <div
+              className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-transform ${bgColor} ${
+                isActive ? 'scale-105' : 'group-hover:scale-105'
+              }`}
+            >
+              <span className={`text-base font-medium ${textColor}`}>
+                {label}
+              </span>
+            </div>
+          )}
+        </>
       )}
       <div className="flex-1">
         <div className="mb-2 flex items-center gap-2">
-          {!isAnonymized && (
+          {!isAnonymized && onSpeakerChange && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={handleSpeakerClick}
+              onKeyDown={handleSpeakerKeyDown}
+              aria-label="화자 편집"
+              className="cursor-pointer text-sm font-semibold text-fg hover:underline"
+            >
+              {name}
+            </span>
+          )}
+          {!isAnonymized && !onSpeakerChange && (
             <span className="text-sm font-semibold text-fg">{name}</span>
           )}
           <span className="text-xs text-fg-muted transition-colors">
