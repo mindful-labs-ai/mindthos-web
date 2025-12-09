@@ -30,7 +30,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   };
 
   return (
-    <Card className="h-64">
+    <Card className="h-48">
       <Card.Body className="flex h-full flex-col space-y-4 p-6 text-left">
         <div className="flex items-start justify-between gap-2">
           <Title as="h3" className="line-clamp-2 flex-1 text-lg font-bold">
@@ -54,14 +54,20 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
           {template.description}
         </Text>
 
-        <Button
-          tone={template.is_default ? 'primary' : 'neutral'}
-          size="sm"
-          onClick={handleDefaultClick}
-          className="w-1/2"
-        >
-          {template.is_default ? '기본 노트로 설정함' : '기본 노트로 변경하기'}
-        </Button>
+        {template.is_default ? (
+          <div className="inline-flex h-8 w-fit select-none items-center justify-center rounded-[var(--radius-sm)] bg-primary px-3 text-sm font-medium text-surface">
+            기본 노트로 설정함
+          </div>
+        ) : (
+          <Button
+            tone={template.is_default ? 'primary' : 'neutral'}
+            size="sm"
+            onClick={handleDefaultClick}
+            className="w-fit"
+          >
+            기본 노트로 변경하기
+          </Button>
+        )}
       </Card.Body>
     </Card>
   );
