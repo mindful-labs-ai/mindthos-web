@@ -96,7 +96,11 @@ export interface Transcribe {
   created_at: string;
 }
 
-export type ProgressNoteStatus = 'pending' | 'in_progress' | 'succeeded' | 'failed';
+export type ProgressNoteStatus =
+  | 'pending'
+  | 'in_progress'
+  | 'succeeded'
+  | 'failed';
 
 export interface ProgressNote {
   id: string;

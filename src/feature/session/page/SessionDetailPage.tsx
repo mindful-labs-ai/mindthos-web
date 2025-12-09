@@ -149,7 +149,8 @@ export const SessionDetailPage: React.FC = () => {
 
   const isProgressNoteProcessing = React.useMemo(() => {
     const status =
-      pollingNote?.processing_status || processingProgressNote?.processing_status;
+      pollingNote?.processing_status ||
+      processingProgressNote?.processing_status;
 
     if (pollingProgressNoteId && !status) {
       // 생성 요청 직후 첫 폴링 응답 이전까지 처리중으로 간주
@@ -763,7 +764,9 @@ export const SessionDetailPage: React.FC = () => {
       console.error('상담 노트 생성 실패:', error);
 
       const errorMessage =
-        error instanceof Error ? error.message : '상담 노트 생성에 실패했습니다.';
+        error instanceof Error
+          ? error.message
+          : '상담 노트 생성에 실패했습니다.';
 
       toast({
         title: '상담노트 생성 실패',
@@ -1084,7 +1087,9 @@ export const SessionDetailPage: React.FC = () => {
           </div>
         ) : activeTab === 'create-note' ? (
           <div className="flex h-full flex-col">
-            {isProgressNoteProcessing || isPollingNote || isPollingNoteLoading ? (
+            {isProgressNoteProcessing ||
+            isPollingNote ||
+            isPollingNoteLoading ? (
               // 생성 중 로딩 UI
               <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
