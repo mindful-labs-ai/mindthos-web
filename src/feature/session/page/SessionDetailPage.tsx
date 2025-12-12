@@ -313,7 +313,7 @@ export const SessionDetailPage: React.FC = () => {
     try {
       // Optimistic update: 캐시를 즉시 업데이트
       queryClient.setQueryData(
-        ['session', sessionId],
+        ['session', sessionId, false], // 수정 가능 = 더미 아님
         (
           oldData:
             | {
@@ -335,10 +335,10 @@ export const SessionDetailPage: React.FC = () => {
           // New format: { stt_model, segments, ... }
           if ('segments' in contents && Array.isArray(contents.segments)) {
             const updatedSegments = contents.segments.map(
-              (seg: TranscribeSegment, index: number) => {
-                const segmentId = index + 1; // id는 1부터 시작
-                if (segmentId in editedSegments) {
-                  return { ...seg, text: editedSegments[segmentId] };
+              (seg: TranscribeSegment) => {
+                // seg.id를 직접 사용 (index + 1이 아님)
+                if (seg.id in editedSegments) {
+                  return { ...seg, text: editedSegments[seg.id] };
                 }
                 return seg;
               }
@@ -352,10 +352,10 @@ export const SessionDetailPage: React.FC = () => {
           // Legacy format: { result: { segments, speakers } }
           else if ('result' in contents && contents.result?.segments) {
             const updatedSegments = contents.result.segments.map(
-              (seg: TranscribeSegment, index: number) => {
-                const segmentId = index + 1; // id는 1부터 시작
-                if (segmentId in editedSegments) {
-                  return { ...seg, text: editedSegments[segmentId] };
+              (seg: TranscribeSegment) => {
+                // seg.id를 직접 사용 (index + 1이 아님)
+                if (seg.id in editedSegments) {
+                  return { ...seg, text: editedSegments[seg.id] };
                 }
                 return seg;
               }
@@ -399,7 +399,7 @@ export const SessionDetailPage: React.FC = () => {
 
       // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
       await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
+        queryKey: ['session', sessionId, false],
       });
 
       toast({
@@ -465,7 +465,7 @@ export const SessionDetailPage: React.FC = () => {
       // Optimistic update: 캐시를 즉시 업데이트
       console.log('🔄 [SessionDetailPage] Starting optimistic update...');
       queryClient.setQueryData(
-        ['session', sessionId],
+        ['session', sessionId, false], // 수정 가능 = 더미 아님
         (
           oldData:
             | {
@@ -564,7 +564,7 @@ export const SessionDetailPage: React.FC = () => {
 
       // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
       await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
+        queryKey: ['session', sessionId, false],
       });
 
       toast({
@@ -694,7 +694,7 @@ export const SessionDetailPage: React.FC = () => {
       // 성공 시 세션 상세 정보 및 세션 목록 다시 조회
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ['session', sessionId],
+          queryKey: ['session', sessionId, false],
         }),
         // 세션 목록도 invalidate하여 SessionRecordCard와 SessionSideList 업데이트
         userId &&
