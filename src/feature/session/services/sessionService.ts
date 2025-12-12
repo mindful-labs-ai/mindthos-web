@@ -30,20 +30,17 @@ export interface SessionStatusResponse {
   estimated_completion_time?: string;
 }
 
-const SESSION_API = import.meta.env.VITE_SESSION_API_URL;
-
 /**
  * 백그라운드 세션 생성 API 호출
- * TODO: localhost 환경 전용 - QA/Production 환경에서는 환경변수 사용 필요
+ * Vercel API 라우트를 통해 CORS 문제 없이 호출
  */
 export async function createSessionBackground(
   request: CreateSessionBackgroundRequest
 ): Promise<CreateSessionBackgroundResponse> {
-  const response = await fetch(SESSION_API, {
+  const response = await fetch('/api/session/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify(request),
   });
@@ -248,11 +245,15 @@ export async function updateSessionTitle(
 }
 
 /**
- * segment id를 배열 인덱스로 변환
- * segment id는 1부터 시작하므로 배열 접근 시 -1 필요
+ * segment id로 배열에서 세그먼트 찾기
+ * segment.id를 직접 비교하여 올바른 세그먼트를 찾습니다
  */
-function segmentIdToIndex(segmentId: number): number {
-  return segmentId - 1;
+function findSegmentIndexById(segments: any[], segmentId: number): number {
+  const index = segments.findIndex((seg) => seg.id === segmentId);
+  if (index === -1) {
+    throw new Error(`세그먼트 ID ${segmentId}를 찾을 수 없습니다.`);
+  }
+  return index;
 }
 
 /**
@@ -314,12 +315,9 @@ export async function updateTranscriptSegmentText(
     throw new Error('전사 결과가 존재하지 않습니다.');
   }
 
-  // 2. 세그먼트 업데이트
-  const segmentIndex = segmentIdToIndex(segmentId);
+  // 2. 세그먼트 업데이트 - segment.id로 직접 찾기
   const updatedContents = updateSegmentsInContents(contents, (segments) => {
-    if (segmentIndex < 0 || segmentIndex >= segments.length) {
-      throw new Error('해당 세그먼트를 찾을 수 없습니다.');
-    }
+    const segmentIndex = findSegmentIndexById(segments, segmentId);
 
     segments[segmentIndex] = {
       ...segments[segmentIndex],
@@ -368,18 +366,21 @@ export async function updateMultipleTranscriptSegments(
     throw new Error('전사 결과가 존재하지 않습니다.');
   }
 
-  // 2. 세그먼트 일괄 업데이트
+  // 2. 세그먼트 일괄 업데이트 - segment.id로 직접 찾기
   const updatedContents = updateSegmentsInContents(contents, (segments) => {
     // 모든 업데이트 적용
     for (const [segmentIdStr, newText] of Object.entries(updates)) {
       const segmentId = parseInt(segmentIdStr, 10);
-      const segmentIndex = segmentIdToIndex(segmentId);
 
-      if (segmentIndex >= 0 && segmentIndex < segments.length) {
+      try {
+        const segmentIndex = findSegmentIndexById(segments, segmentId);
         segments[segmentIndex] = {
           ...segments[segmentIndex],
           text: newText,
         };
+      } catch (error) {
+        // 세그먼트를 찾을 수 없으면 스킵
+        console.warn(`세그먼트 ID ${segmentId}를 찾을 수 없습니다.`, error);
       }
     }
 
