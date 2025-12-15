@@ -132,10 +132,17 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                   </div>
                 }
               >
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={0}
                   onClick={(e) => e.stopPropagation()}
-                  className="ml-1 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors hover:bg-surface-strong hover:text-fg"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.stopPropagation();
+                    }
+                  }}
+                  aria-label="프리미엄 모델 정보"
+                  className="ml-1 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors hover:bg-surface-strong hover:text-fg"
                 >
                   <svg
                     width="12"
@@ -149,7 +156,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       fill="currentColor"
                     />
                   </svg>
-                </button>
+                </span>
               </Tooltip>
             </div>
             <Text className="text-xs text-fg-muted">
