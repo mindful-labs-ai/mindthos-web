@@ -59,6 +59,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
   // 현재 플랜 정보
   const currentPlanType = creditInfo?.plan?.type;
+  const currentPlanId = monthlyPlans.find(p => p.type === currentPlanType)?.id;
   const currentPlanPrice = monthlyPlans.find(p => p.type === currentPlanType)?.price || 0;
   const currentPlanCredit = creditInfo?.plan?.total || 0;
 
