@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -9,10 +9,16 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { useTossPayments } from '@/feature/payment/hooks/useTossPayments';
 import { billingService } from '@/feature/payment/services/billingService';
 import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { usePlansByPeriod } from '@/feature/settings/hooks/usePlans';
 import { useAuthStore } from '@/stores/authStore';
 
+import { DowngradeConfirmModal } from './DowngradeConfirmModal';
 import { PlanCard } from './PlanCard';
+import {
+  UpgradeConfirmModal,
+  type UpgradePreviewData,
+} from './UpgradeConfirmModal';
 
 export interface PlanUpgradeModalProps {
   open: boolean;
@@ -31,6 +37,16 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   );
   const [isUpgrading, setIsUpgrading] = React.useState(false);
 
+  // 업그레이드/다운그레이드 모달 상태
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [downgradeModalOpen, setDowngradeModalOpen] = useState(false);
+  const [upgradePreview, setUpgradePreview] = useState<UpgradePreviewData | null>(null);
+  const [selectedNewPlan, setSelectedNewPlan] = useState<{
+    type: string;
+    price: number;
+    totalCredit: number;
+  } | null>(null);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const user = useAuthStore((state) => state.user);
@@ -39,6 +55,12 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   const { monthlyPlans, yearlyPlans, isLoading } = usePlansByPeriod();
   const { requestBillingAuth } = useTossPayments(user?.id || '');
   const { cardInfo } = useCardInfo();
+  const { creditInfo } = useCreditInfo();
+
+  // 현재 플랜 정보
+  const currentPlanType = creditInfo?.plan?.type;
+  const currentPlanPrice = monthlyPlans.find(p => p.type === currentPlanType)?.price || 0;
+  const currentPlanCredit = creditInfo?.plan?.total || 0;
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
@@ -48,7 +70,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     if (!selectedPlanId) {
       toast({
         title: '플랜 선택 필요',
-        description: '업그레이드할 플랜을 선택해주세요.',
+        description: '변경할 플랜을 선택해주세요.',
       });
       return;
     }
@@ -61,73 +83,125 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       return;
     }
 
+    // 선택한 플랜 정보 조회
+    const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(p => p.id === selectedPlanId);
+    if (!selectedPlan) {
+      toast({
+        title: '플랜 정보 오류',
+        description: '선택한 플랜 정보를 찾을 수 없습니다.',
+      });
+      return;
+    }
+
+    // 현재 플랜과 비교하여 업그레이드/다운그레이드 판단
+    const isUpgradeAction = selectedPlan.price > currentPlanPrice;
+
     try {
       setIsUpgrading(true);
 
-      // 카드가 이미 등록되어 있으면 바로 결제
-      if (cardInfo) {
-        const response = await billingService.upgradePlan({
-          planId: selectedPlanId,
-        });
-
-        if (!response.success) {
-          throw new Error(
-            response.message || '플랜 업그레이드에 실패했습니다.'
-          );
-        }
-
-        // 크레딧 관련 쿼리 invalidate
-        if (userId) {
-          const userIdNumber = parseInt(userId);
-          if (!isNaN(userIdNumber)) {
-            await queryClient.invalidateQueries({
-              queryKey: ['credit', 'subscription', userIdNumber],
-            });
-            await queryClient.invalidateQueries({
-              queryKey: ['credit', 'usage', userIdNumber],
-            });
-          }
-        }
-
-        toast({
-          title: '플랜 업그레이드 완료',
-          description: '플랜이 성공적으로 업그레이드되었습니다.',
-        });
-
-        onOpenChange(false);
+      if (isUpgradeAction) {
+        // 업그레이드: 미리보기 조회 후 확인 모달 표시
+        const preview = await billingService.previewUpgrade(selectedPlanId);
+        setUpgradePreview(preview);
+        setUpgradeModalOpen(true);
         setIsUpgrading(false);
-        return;
+      } else {
+        // 다운그레이드: 확인 모달 표시
+        setSelectedNewPlan({
+          type: getPlanName(selectedPlan.type),
+          price: selectedPlan.price,
+          totalCredit: selectedPlan.total_credit,
+        });
+        setDowngradeModalOpen(true);
+        setIsUpgrading(false);
       }
-
-      // 카드가 없으면 카드 등록 플로우 진행
-      // 1. init-upgrade 호출하여 payments 임시 row 생성 (5분 유효)
-      const initResponse = await billingService.initUpgrade({
-        planId: selectedPlanId,
-      });
-
-      if (!initResponse.success) {
-        throw new Error(
-          initResponse.message || '플랜 업그레이드 초기화에 실패했습니다.'
-        );
-      }
-
-      // 2. Toss SDK로 카드 등록 리다이렉트 (planId를 successUrl에 포함)
-      await requestBillingAuth({
-        customerName: userName,
-        customerEmail: user.email,
-        planId: selectedPlanId,
-      });
-
-      // requestBillingAuth는 Toss로 리다이렉트하므로 이후 코드는 실행되지 않음
     } catch (error) {
       setIsUpgrading(false);
       toast({
-        title: '플랜 업그레이드 실패',
+        title: '플랜 변경 실패',
         description:
           error instanceof Error
             ? error.message
-            : '플랜 업그레이드 중 오류가 발생했습니다.',
+            : '플랜 변경 중 오류가 발생했습니다.',
       });
+    }
+  };
+
+  // 업그레이드 확정 (결제)
+  const handleConfirmUpgrade = async () => {
+    if (!selectedPlanId || !cardInfo) {
+      // 카드가 없으면 카드 등록 플로우
+      if (!cardInfo && selectedPlanId && userName && user?.email) {
+        const initResponse = await billingService.initUpgrade({
+          planId: selectedPlanId,
+        });
+
+        if (!initResponse.success) {
+          throw new Error(
+            initResponse.message || '플랜 업그레이드 초기화에 실패했습니다.'
+          );
+        }
+
+        await requestBillingAuth({
+          customerName: userName,
+          customerEmail: user.email,
+          planId: selectedPlanId,
+        });
+        return;
+      }
+      throw new Error('결제 정보가 없습니다.');
+    }
+
+    const response = await billingService.changePlan(selectedPlanId);
+
+    if (response.type === 'upgrade') {
+      // 크레딧 관련 쿼리 invalidate
+      if (userId) {
+        const userIdNumber = parseInt(userId);
+        if (!isNaN(userIdNumber)) {
+          await queryClient.invalidateQueries({
+            queryKey: ['credit', 'subscription', userIdNumber],
+          });
+          await queryClient.invalidateQueries({
+            queryKey: ['credit', 'usage', userIdNumber],
+          });
+        }
+      }
+
+      toast({
+        title: '플랜 업그레이드 완료',
+        description: '플랜이 성공적으로 업그레이드되었습니다.',
+      });
+
+      onOpenChange(false);
+    }
+  };
+
+  // 다운그레이드 확정
+  const handleConfirmDowngrade = async () => {
+    if (!selectedPlanId) {
+      throw new Error('플랜 정보가 없습니다.');
+    }
+
+    const response = await billingService.changePlan(selectedPlanId);
+
+    if (response.type === 'downgrade') {
+      toast({
+        title: '플랜 다운그레이드 예약',
+        description: '구독 종료 후 새 플랜이 적용됩니다.',
+      });
+
+      // 크레딧 관련 쿼리 invalidate
+      if (userId) {
+        const userIdNumber = parseInt(userId);
+        if (!isNaN(userIdNumber)) {
+          await queryClient.invalidateQueries({
+            queryKey: ['credit', 'subscription', userIdNumber],
+          });
+        }
+      }
+
+      onOpenChange(false);
     }
   };
 
@@ -239,14 +313,38 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             variant="solid"
             tone="primary"
             size="lg"
-            disabled={!selectedPlanId || isLoading || isUpgrading}
+            disabled={!selectedPlanId || isLoading || isUpgrading || selectedPlanId === currentPlanId}
             onClick={handleUpgrade}
             className="w-full max-w-lg"
           >
-            {isUpgrading ? '결제 준비 중...' : '플랜 업그레이드'}
+            {isUpgrading ? '처리 중...' : '플랜 변경'}
           </Button>
         </div>
       </div>
+
+      {/* 업그레이드 확인 모달 */}
+      <UpgradeConfirmModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        previewData={upgradePreview}
+        onConfirm={handleConfirmUpgrade}
+      />
+
+      {/* 다운그레이드 확인 모달 */}
+      {selectedNewPlan && (
+        <DowngradeConfirmModal
+          open={downgradeModalOpen}
+          onOpenChange={setDowngradeModalOpen}
+          currentPlan={{
+            type: currentPlanType || 'Free',
+            price: currentPlanPrice,
+            totalCredit: currentPlanCredit,
+          }}
+          newPlan={selectedNewPlan}
+          effectiveAt={creditInfo?.subscription?.end_at || null}
+          onConfirm={handleConfirmDowngrade}
+        />
+      )}
     </Modal>
   );
 };
