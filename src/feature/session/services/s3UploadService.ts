@@ -37,7 +37,7 @@ function validateFileType(file: File): boolean {
   const fileExtension = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
   return (
     SUPPORTED_AUDIO_TYPES.includes(file.type) ||
-    (fileExtension && SUPPORTED_EXTENSIONS.includes(fileExtension))
+    (fileExtension !== undefined && SUPPORTED_EXTENSIONS.includes(fileExtension))
   );
 }
 
