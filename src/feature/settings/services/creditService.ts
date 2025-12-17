@@ -11,7 +11,7 @@ export interface SubscriptionInfo {
     start_at: string | null;
     end_at: string | null;
     reset_at: string | null;
-    is_canceled: boolean;
+    scheduled_plan_id: string | null;
   };
 }
 
@@ -31,7 +31,7 @@ export interface CreditInfo {
     start_at: string | null;
     end_at: string | null;
     reset_at: string | null;
-    is_canceled: boolean;
+    scheduled_plan_id: string | null;
   };
 }
 
@@ -39,7 +39,7 @@ export const creditService = {
   async getSubscriptionInfo(userId: number): Promise<SubscriptionInfo> {
     const { data: subscribeData, error: subscribeError } = await supabase
       .from('subscribe')
-      .select('plan_id, start_at, end_at, is_canceled')
+      .select('plan_id, start_at, end_at, scheduled_plan_id')
       .eq('user_id', userId)
       .order('start_at', { ascending: false })
       .limit(1)
@@ -89,7 +89,7 @@ export const creditService = {
         start_at: subscribeData.start_at,
         end_at: subscribeData.end_at,
         reset_at: usageData?.reset_at ?? null,
-        is_canceled: subscribeData.is_canceled,
+        scheduled_plan_id: subscribeData.scheduled_plan_id,
       },
     };
   },
