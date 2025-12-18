@@ -71,7 +71,7 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
     outline:
       'border-2 border-danger text-danger bg-transparent hover:bg-danger/10',
     ghost: 'bg-transparent text-danger hover:bg-danger/10',
-    soft: 'bg-danger/10 text-danger hover:bg-danger/20',
+    soft: 'bg-red-300 text-danger hover:bg-red-400',
   },
 };
 

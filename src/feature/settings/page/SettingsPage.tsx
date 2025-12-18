@@ -1,17 +1,20 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, createSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
+import { useToast } from '@/components/ui/composites/Toast';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { billingService } from '@/feature/payment/services/billingService';
+import { CancelSubscriptionModal } from '@/feature/settings/components/CancelSubscriptionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { LogoutModal } from '@/feature/settings/components/LogoutModal';
-import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
 import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
@@ -25,6 +28,7 @@ import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 
 import { CardInfo } from '../components/CardInfo';
+import { PlanChangeModal } from '../components/PlanChangeModal';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -39,14 +43,47 @@ export const SettingsPage: React.FC = () => {
   const { cardInfo } = useCardInfo();
 
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
+  // const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
+
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const userId = useAuthStore((state) => state.userId);
+
+  // 현재 플랜이 유료인지 확인
+  const isPaidPlan =
+    creditInfo && creditInfo.plan.type.toLowerCase() !== 'free';
+  // 해지 예약 여부 확인
+  const hasCancellationScheduled =
+    creditInfo?.subscription?.scheduled_plan_id != null;
 
   const handleEditInfo = () => {
     // TODO: Implement edit info functionality
   };
+
+  // const handleOpenCardRegistration = () => {
+  //   if (!user?.id) {
+  //     toast({
+  //       title: '사용자 정보 오류',
+  //       description: '다시 로그인 후 시도해주세요.',
+  //     });
+  //     return;
+  //   }
+  //   setIsCardModalOpen(true);
+  // };
+
+  // const handleCardRegistrationClose = () => {
+  //   setIsCardModalOpen(false);
+  // };
+
+  // const handleCardRegistrationSuccess = async () => {
+  //   await queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
+  //   setIsCardModalOpen(false);
+  // };
 
   const handleTokenLog = () => {
     // TODO: Implement token log functionality
@@ -54,6 +91,56 @@ export const SettingsPage: React.FC = () => {
 
   const handleUpgradePlan = () => {
     setIsUpgradeModalOpen(true);
+  };
+
+  const handleCancelSubscription = () => {
+    setIsCancelModalOpen(true);
+  };
+
+  const handleConfirmCancelSubscription = async () => {
+    await billingService.cancelSubscription();
+
+    // 구독 정보 다시 조회
+    if (userId) {
+      const userIdNumber = parseInt(userId);
+      if (!isNaN(userIdNumber)) {
+        await queryClient.invalidateQueries({
+          queryKey: ['credit', 'subscription', userIdNumber],
+        });
+      }
+    }
+
+    toast({
+      title: '구독 해지 예약',
+      description: '구독 종료 후 무료 플랜으로 전환됩니다.',
+    });
+  };
+
+  const handleUndoCancellation = async () => {
+    try {
+      await billingService.undoCancellation();
+
+      // 구독 정보 다시 조회
+      if (userId) {
+        const userIdNumber = parseInt(userId);
+        if (!isNaN(userIdNumber)) {
+          await queryClient.invalidateQueries({
+            queryKey: ['credit', 'subscription', userIdNumber],
+          });
+        }
+      }
+
+      toast({
+        title: '해지 예약 취소',
+        description: '구독이 계속 유지됩니다.',
+      });
+    } catch (error) {
+      toast({
+        title: '해지 예약 취소 실패',
+        description:
+          error instanceof Error ? error.message : '다시 시도해주세요.',
+      });
+    }
   };
 
   const handleGuide = () => {
@@ -154,6 +241,11 @@ export const SettingsPage: React.FC = () => {
           </Card.Body>
         </Card>
 
+        <CardInfo
+          cardType={cardInfo?.type}
+          // cardNumber={cardInfo?.number}
+        />
+
         <Card>
           <Card.Body className="p-6">
             <div className="flex items-center justify-between">
@@ -175,7 +267,7 @@ export const SettingsPage: React.FC = () => {
               {creditInfo && (
                 <>
                   {creditInfo.plan.type.toLowerCase() === 'free' ? (
-                    <Text className="text-base">
+                    <Text className="text-left text-base">
                       <span className="font-bold text-primary">
                         {getPlanLabel(creditInfo.plan.type)}
                       </span>{' '}
@@ -183,31 +275,57 @@ export const SettingsPage: React.FC = () => {
                     </Text>
                   ) : (
                     <div className="space-y-2">
-                      {cardInfo && (
-                        <CardInfo
-                          cardType={cardInfo.type}
-                          cardNumber={cardInfo.number}
-                        />
-                      )}
-                      <Text className="flex gap-3 text-left">
+                      <Text className="flex gap-3 text-left font-semibold">
                         <span className="font-bold text-primary">
-                          {getPlanLabel(creditInfo.plan.type)} 플랜
+                          {getPlanLabel(creditInfo.plan.type)}
                         </span>
-                        {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
-                        예정
+                        {hasCancellationScheduled ? (
+                          <span className="text-danger">
+                            {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
+                            해지 예정
+                          </span>
+                        ) : (
+                          <>
+                            {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
+                            갱신 예정
+                          </>
+                        )}
                       </Text>
                     </div>
                   )}
 
-                  <Button
-                    variant="outline"
-                    tone="primary"
-                    size="sm"
-                    className="w-32"
-                    onClick={handleUpgradePlan}
-                  >
-                    플랜 업그레이드
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      tone="primary"
+                      size="sm"
+                      className="w-32"
+                      onClick={handleUpgradePlan}
+                    >
+                      {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
+                    </Button>
+                    {isPaidPlan && !hasCancellationScheduled && (
+                      <Button
+                        variant="ghost"
+                        tone="neutral"
+                        size="sm"
+                        onClick={handleCancelSubscription}
+                        className="text-fg-muted hover:text-danger"
+                      >
+                        구독 해지
+                      </Button>
+                    )}
+                    {hasCancellationScheduled && (
+                      <Button
+                        variant="outline"
+                        tone="neutral"
+                        size="sm"
+                        onClick={handleUndoCancellation}
+                      >
+                        해지 예약 취소
+                      </Button>
+                    )}
+                  </div>
 
                   <div className="flex w-full justify-center gap-6">
                     <div className="flex flex-1 items-center justify-center">
@@ -274,10 +392,21 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      <PlanUpgradeModal
+      <PlanChangeModal
         open={isUpgradeModalOpen}
         onOpenChange={setIsUpgradeModalOpen}
       />
+
+      {creditInfo && isPaidPlan && (
+        <CancelSubscriptionModal
+          open={isCancelModalOpen}
+          onOpenChange={setIsCancelModalOpen}
+          currentPlanType={creditInfo.plan.type}
+          currentPlanCredit={creditInfo.plan.total}
+          effectiveAt={creditInfo.subscription.end_at}
+          onConfirm={handleConfirmCancelSubscription}
+        />
+      )}
 
       <LogoutModal
         open={isLogoutModalOpen}
@@ -292,6 +421,13 @@ export const SettingsPage: React.FC = () => {
         isDeleting={isDeleting}
         error={deleteError}
       />
+      {/* 
+      <CardRegistrationModal
+        isOpen={isCardModalOpen}
+        onClose={handleCardRegistrationClose}
+        customerKey={user?.id ? String(user.id) : ''}
+        onSuccess={handleCardRegistrationSuccess}
+      /> */}
     </div>
   );
 };

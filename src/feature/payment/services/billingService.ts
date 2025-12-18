@@ -56,21 +56,21 @@ export const billingService = {
 
   /**
    * 사용자의 최신 구독 정보 조회
-   * subscribe 테이블은 1:N 관계로 히스토리를 관리하므로 last_paid_at 기준 최신 레코드 조회
+   * subscribe 테이블은 1:N 관계로 히스토리를 관리하므로 start_at 기준 최신 레코드 조회
    * - 새로운 구독/재결제 시마다 새 row 추가
-   * - last_paid_at: 실질적인 결제일(생성일)
-   * - start_at: 최초 구독 시작일 (재결제 시 다음 결제일 계산 기준)
+   * - start_at: 구독 시작일 (기준 정렬 컬럼)
    * - end_at: 구독 만료일
+   * - scheduled_plan_id: 예약된 플랜 변경 (다운그레이드/해지)
    * - billing_key는 card 테이블에서 관리됨
    */
   async getSubscription(userId: number) {
     const { data, error } = await supabase
       .from('subscribe')
       .select(
-        'id, user_id, plan_id, start_at, end_at, last_paid_at, is_canceled'
+        'id, user_id, plan_id, start_at, end_at, last_paid_at, scheduled_plan_id'
       )
       .eq('user_id', userId)
-      .order('last_paid_at', { ascending: false })
+      .order('start_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -110,5 +110,51 @@ export const billingService = {
       '/payment/delete-card',
       {}
     );
+  },
+
+  /**
+   * 업그레이드 미리보기 (할인 금액 계산)
+   */
+  async previewUpgrade(planId: string): Promise<{
+    currentPlan: { id: string; type: string; price: number; totalCredit: number };
+    newPlan: { id: string; type: string; price: number; totalCredit: number };
+    remainingCredit: number;
+    discount: number;
+    finalAmount: number;
+  }> {
+    return await callEdgeFunction('/payment/preview-upgrade', { planId });
+  },
+
+  /**
+   * 플랜 변경 (업그레이드/다운그레이드)
+   * - 업그레이드: 즉시 적용 + 할인
+   * - 다운그레이드: 구독 종료 후 적용
+   */
+  async changePlan(planId: string): Promise<{
+    type: 'upgrade' | 'downgrade';
+    newPlan: string;
+    discount?: number;
+    finalAmount?: number;
+    appliedAt?: string;
+    effectiveAt?: string | null;
+  }> {
+    return await callEdgeFunction('/payment/change-plan', { planId });
+  },
+
+  /**
+   * 구독 해지 (구독 종료 후 FREE 전환)
+   */
+  async cancelSubscription(): Promise<{
+    canceledPlan: string;
+    effectiveAt: string | null;
+  }> {
+    return await callEdgeFunction('/payment/cancel', {});
+  },
+
+  /**
+   * 구독 해지 취소 (예약된 다운그레이드/해지 취소)
+   */
+  async undoCancellation(): Promise<void> {
+    await callEdgeFunction('/payment/cancel-undo', {});
   },
 };

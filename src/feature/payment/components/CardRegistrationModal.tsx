@@ -68,7 +68,11 @@ export const CardRegistrationModal = ({
   };
 
   return (
-    <Modal open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Modal
+      open={isOpen}
+      className="max-w-xl"
+      onOpenChange={(open) => !open && onClose()}
+    >
       <div className="flex flex-col gap-6 p-6">
         <div>
           <Text className="text-xl font-semibold">카드 등록</Text>
