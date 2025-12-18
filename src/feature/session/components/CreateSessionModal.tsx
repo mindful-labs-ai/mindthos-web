@@ -12,7 +12,7 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
-import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
+import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -69,7 +69,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   });
 
   // Plan upgrade modal state
-  const [isPlanUpgradeModalOpen, setIsPlanUpgradeModalOpen] =
+  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] =
     React.useState(false);
 
   // 세션 처리 상태 폴링
@@ -347,7 +347,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
             ? {
                 label: '플랜 업그레이드',
                 onClick: () => {
-                  setIsPlanUpgradeModalOpen(true);
+                  setIsPlanChangeModalOpen(true);
                 },
               }
             : undefined
@@ -355,9 +355,9 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         duration={8000}
       />
 
-      <PlanUpgradeModal
-        open={isPlanUpgradeModalOpen}
-        onOpenChange={setIsPlanUpgradeModalOpen}
+      <PlanChangeModal
+        open={isPlanChangeModalOpen}
+        onOpenChange={setIsPlanChangeModalOpen}
       />
     </>
   );

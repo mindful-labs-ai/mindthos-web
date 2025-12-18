@@ -16,12 +16,13 @@ export interface PlanCardProps {
   discountRate?: number;
   isYearly?: boolean;
   isSelected?: boolean;
+  isCurrent?: boolean;
   onSelect: () => void;
 }
 
-type PlanKey = '스타터' | '플러스' | '프로';
+export type PlanKey = '스타터' | '플러스' | '프로';
 
-const planFeature = {
+export const planFeature = {
   스타터: {
     0: { text: '일반 및 고급 축어록', style: null, sub: null },
     1: { text: '상담노트 일부 양식 사용 가능', style: null, sub: null },
@@ -68,23 +69,27 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   discountRate = 0,
   isYearly = false,
   isSelected = false,
+  isCurrent = false,
   onSelect,
 }) => {
   const features = planFeature[name as PlanKey];
 
   if (!features) return null;
 
+  // 현재 이용 중인 플랜 스타일
+  const getBorderClass = () => {
+    if (isCurrent) return 'border-2 border-surface-strong';
+    if (isSelected) return 'border-2 border-primary';
+    return 'border border-border hover:border-primary-100';
+  };
+
   return (
     <Card
-      className={`h-full w-72 text-left transition-all ${
-        isSelected
-          ? 'border-2 border-primary'
-          : 'border border-border hover:border-primary-100'
-      }`}
+      className={`h-full w-72 select-none text-left transition-all ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'} ${getBorderClass()}`}
     >
       <Card.Body className="flex h-full flex-col justify-between space-y-6 p-6">
         <div
-          className="cursor-pointer space-y-6"
+          className={`space-y-6 ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           onClick={onSelect}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -129,14 +134,6 @@ export const PlanCard: React.FC<PlanCardProps> = ({
                 </div>
               </div>
             ))}
-            {/* <div className="flex items-center gap-3">
-              <CheckIcon size={18} className="flex-shrink-0 text-primary" />
-              <Text className="text-sm">음성 전사 + AI 요약</Text>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckIcon size={18} className="flex-shrink-0 text-primary" />
-              <Text className="text-sm">모든 상담 노트 템플릿</Text>
-            </div> */}
           </div>
         </div>
 
@@ -161,7 +158,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             </div>
             <div className="flex h-[40px] w-[72px] flex-shrink-0 items-center justify-center">
               {discountRate > 0 && (
-                <div className="bg-primary/10 rounded-full border-2 border-primary px-3 py-1.5">
+                <div className="rounded-full border-2 border-primary bg-primary-100 px-3 py-1.5">
                   <Text className="text-sm font-bold text-primary">
                     {discountRate}%
                   </Text>
@@ -175,9 +172,20 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             tone="primary"
             size="md"
             onClick={onSelect}
-            className={`w-full bg-transparent ${name === '플러스' ? 'border-none bg-gradient-to-r from-green-500 via-lime-400 to-amber-200 text-surface' : 'bg-transparent'}`}
+            disabled={isCurrent}
+            className={`w-full bg-transparent ${
+              isCurrent
+                ? 'cursor-not-allowed border-surface bg-surface-contrast text-fg-muted'
+                : name === '플러스'
+                  ? 'border-none bg-gradient-to-r from-green-500 via-lime-400 to-amber-200 text-surface'
+                  : 'bg-transparent'
+            }`}
           >
-            {isSelected ? '✓ 선택됨' : '시작하기'}
+            {isCurrent
+              ? '이용 중인 플랜'
+              : isSelected
+                ? '✓ 선택됨'
+                : '시작하기'}
           </Button>
         </div>
       </Card.Body>

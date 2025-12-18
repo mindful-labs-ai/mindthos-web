@@ -8,23 +8,30 @@ import { billingService } from '@/feature/payment/services/billingService';
 import { useAuthStore } from '@/stores/authStore';
 
 interface CardInfoProps {
-  cardType: string; // '신용' 또는 '체크'
-  cardNumber: string; // 마지막 4자리
+  cardType?: string | null; // '신용' 또는 '체크'
+  cardNumber?: string | null; // 전체 혹은 마지막 4자리
+  onAdd?: () => void;
 }
 
 /**
  * 카드 번호를 0000-00** 형태로 포맷
  */
-const formatCardNumber = (cardNumber: string): string => {
+const formatCardNumber = (cardNumber?: string | null): string => {
+  if (!cardNumber) return '';
   const startFour = cardNumber.slice(0, 4);
   const lastFour = cardNumber.slice(-4);
   return `${startFour}-****-****-${lastFour}`;
 };
 
-export const CardInfo: React.FC<CardInfoProps> = ({ cardType, cardNumber }) => {
+export const CardInfo: React.FC<CardInfoProps> = ({
+  cardType,
+  cardNumber,
+  // onAdd,
+}) => {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isRegistered = !!cardType && !!cardNumber;
 
   const deleteCardMutation = useMutation({
     mutationFn: async () => {
@@ -51,7 +58,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({ cardType, cardNumber }) => {
 
   return (
     <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-surface p-3">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-1 items-center gap-3">
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-md">
           <svg
             className="h-6 w-6 text-primary"
@@ -66,21 +73,48 @@ export const CardInfo: React.FC<CardInfoProps> = ({ cardType, cardNumber }) => {
           </svg>
         </div>
         <div className="flex flex-col">
-          <Text className="text-sm font-medium text-fg">{cardType}카드</Text>
-          <Text className="text-xs text-fg-muted">
-            {formatCardNumber(cardNumber)}
-          </Text>
+          {isRegistered ? (
+            <>
+              <Text className="text-left text-sm font-medium text-fg">
+                {cardType}카드
+              </Text>
+              <Text className="text-xs text-fg-muted">
+                {formatCardNumber(cardNumber)}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text className="text-left text-sm font-medium text-fg">
+                등록된 카드가 없습니다.
+              </Text>
+              <Text className="text-xs text-fg-muted">
+                첫 결제 시 카드 등록이 함께 진행됩니다.
+              </Text>
+            </>
+          )}
         </div>
       </div>
-      <Button
-        onClick={handleDeleteCard}
-        disabled={isDeleting}
-        variant="ghost"
-        size="sm"
-        className="hover:text-error text-fg-muted"
-      >
-        {isDeleting ? '삭제 중...' : '삭제'}
-      </Button>
+      {isRegistered ? (
+        <Button
+          onClick={handleDeleteCard}
+          disabled={isDeleting}
+          variant="ghost"
+          size="sm"
+          className="hover:text-error text-fg-muted"
+        >
+          {isDeleting ? '삭제 중...' : '삭제'}
+        </Button>
+      ) : (
+        // <Button
+        //   onClick={onAdd}
+        //   variant="outline"
+        //   size="sm"
+        //   className="whitespace-nowrap"
+        // >
+        //   카드 등록
+        // </Button>
+        <></>
+      )}
     </div>
   );
 };

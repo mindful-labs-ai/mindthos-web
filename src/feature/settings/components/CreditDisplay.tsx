@@ -5,7 +5,7 @@ import { ProgressCircle } from '@/components/ui/atoms/ProgressCircle';
 import { Text } from '@/components/ui/atoms/Text';
 
 import { CreditPricingTooltip } from './CreditPricingTooltip';
-import { PlanUpgradeModal } from './PlanUpgradeModal';
+import { PlanChangeModal } from './PlanChangeModal';
 
 interface CreditDisplayProps {
   totalCredit: number;
@@ -175,7 +175,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
         )}
       </div>
 
-      <PlanUpgradeModal
+      <PlanChangeModal
         open={isUpgradeModalOpen}
         onOpenChange={setIsUpgradeModalOpen}
       />

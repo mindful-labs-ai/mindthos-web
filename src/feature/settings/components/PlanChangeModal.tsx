@@ -14,20 +14,21 @@ import { usePlansByPeriod } from '@/feature/settings/hooks/usePlans';
 import { useAuthStore } from '@/stores/authStore';
 
 import { DowngradeConfirmModal } from './DowngradeConfirmModal';
+import { PaymentResultModal } from './PaymentResultModal';
 import { PlanCard } from './PlanCard';
 import {
   UpgradeConfirmModal,
   type UpgradePreviewData,
 } from './UpgradeConfirmModal';
 
-export interface PlanUpgradeModalProps {
+export interface PlanChangeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 type PlanPeriod = 'monthly' | 'yearly';
 
-export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
+export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   open,
   onOpenChange,
 }) => {
@@ -40,11 +41,21 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
   // 업그레이드/다운그레이드 모달 상태
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [downgradeModalOpen, setDowngradeModalOpen] = useState(false);
-  const [upgradePreview, setUpgradePreview] = useState<UpgradePreviewData | null>(null);
+  const [upgradePreview, setUpgradePreview] =
+    useState<UpgradePreviewData | null>(null);
   const [selectedNewPlan, setSelectedNewPlan] = useState<{
     type: string;
     price: number;
     totalCredit: number;
+  } | null>(null);
+  const [paymentResultOpen, setPaymentResultOpen] = useState(false);
+  const [paymentResult, setPaymentResult] = useState<{
+    status: 'success' | 'failure';
+    planName?: string;
+    period?: { start: string; end: string };
+    cardInfo?: { type?: string | null; number?: string };
+    amount?: number;
+    reason?: string;
   } | null>(null);
 
   const queryClient = useQueryClient();
@@ -59,8 +70,11 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
 
   // 현재 플랜 정보
   const currentPlanType = creditInfo?.plan?.type;
-  const currentPlanId = monthlyPlans.find(p => p.type === currentPlanType)?.id;
-  const currentPlanPrice = monthlyPlans.find(p => p.type === currentPlanType)?.price || 0;
+  const currentPlanId = monthlyPlans.find(
+    (p) => p.type === currentPlanType
+  )?.id;
+  const currentPlanPrice =
+    monthlyPlans.find((p) => p.type === currentPlanType)?.price || 0;
   const currentPlanCredit = creditInfo?.plan?.total || 0;
 
   const handleSelectPlan = (planId: string) => {
@@ -85,7 +99,9 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     }
 
     // 선택한 플랜 정보 조회
-    const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(p => p.id === selectedPlanId);
+    const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
+      (p) => p.id === selectedPlanId
+    );
     if (!selectedPlan) {
       toast({
         title: '플랜 정보 오류',
@@ -153,9 +169,18 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
       throw new Error('결제 정보가 없습니다.');
     }
 
-    const response = await billingService.changePlan(selectedPlanId);
+    const period = calculatePeriod();
+    const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
+      (p) => p.id === selectedPlanId
+    );
 
-    if (response.type === 'upgrade') {
+    try {
+      const response = await billingService.changePlan(selectedPlanId);
+
+      if (response.type !== 'upgrade') {
+        throw new Error('업그레이드에 실패했습니다. 다시 시도해주세요.');
+      }
+
       // 크레딧 관련 쿼리 invalidate
       if (userId) {
         const userIdNumber = parseInt(userId);
@@ -169,12 +194,32 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         }
       }
 
-      toast({
-        title: '플랜 업그레이드 완료',
-        description: '플랜이 성공적으로 업그레이드되었습니다.',
+      setPaymentResult({
+        status: 'success',
+        planName: getPlanName(response.newPlan || selectedPlan?.type || ''),
+        period,
+        cardInfo: {
+          type: cardInfo.type ?? cardInfo.company,
+          number: cardInfo.number,
+        },
+        amount: response.finalAmount ?? upgradePreview?.finalAmount,
       });
-
-      onOpenChange(false);
+      setPaymentResultOpen(true);
+    } catch (error) {
+      setPaymentResult({
+        status: 'failure',
+        planName: selectedPlan ? getPlanName(selectedPlan.type) : undefined,
+        period,
+        cardInfo: cardInfo
+          ? { type: cardInfo.type ?? cardInfo.company, number: cardInfo.number }
+          : undefined,
+        amount: upgradePreview?.finalAmount ?? selectedPlan?.price,
+        reason:
+          error instanceof Error
+            ? error.message
+            : '결제에 실패했습니다. 다시 시도해주세요.',
+      });
+      setPaymentResultOpen(true);
     }
   };
 
@@ -238,13 +283,39 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
     return baseType;
   };
 
+  const formatDateFromDate = (date: Date) =>
+    date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+  const calculatePeriod = () => {
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 1);
+    endDate.setDate(endDate.getDate() - 1);
+
+    return {
+      start: formatDateFromDate(startDate),
+      end: formatDateFromDate(endDate),
+    };
+  };
+
+  const handleClosePaymentResult = () => {
+    setPaymentResultOpen(false);
+    if (paymentResult?.status === 'success') {
+      onOpenChange(false);
+    }
+  };
+
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="mx-12 w-5/6 max-w-full"
+      className="mx-12 flex h-fit max-w-fit items-center justify-center"
     >
-      <div className="flex flex-col items-center gap-y-12">
+      <div className="flex flex-col items-stretch gap-y-12 p-6">
         <Title className="pt-4" as="h2">
           마음토스 플랜 업그레이드
         </Title>
@@ -252,7 +323,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         {/* <div className="flex justify-center gap-1 rounded-lg bg-surface-contrast p-1">
           <Button
             variant={period === 'monthly' ? 'solid' : 'ghost'}
-            tone={period === 'monthly' ? 'surface' : 'neutral'}
+            tone={period === 'monthly' ? 'surface' : 'neutral's}
             size="sm"
             onClick={() => setPeriod('monthly')}
             className="min-w-[100px]"
@@ -286,6 +357,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
               const discountInfo = isYearly
                 ? getDiscountInfo(plan)
                 : { originalPrice: undefined, discountRate: 0 };
+              const isCurrent = plan.id === currentPlanId;
 
               return (
                 <div key={plan.id} className="max-w-md flex-1">
@@ -298,7 +370,8 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
                     discountRate={discountInfo.discountRate}
                     isYearly={isYearly}
                     isSelected={selectedPlanId === plan.id}
-                    onSelect={() => handleSelectPlan(plan.id)}
+                    isCurrent={isCurrent}
+                    onSelect={() => !isCurrent && handleSelectPlan(plan.id)}
                   />
                 </div>
               );
@@ -306,7 +379,7 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
           </div>
         )}
 
-        <div className="flex w-full flex-col items-center gap-y-2">
+        <div className="flex flex-col items-center gap-y-2">
           <Text className="text-sm text-fg">
             <span className="underline">결제 약관</span>에 동의합니다.
           </Text>
@@ -314,11 +387,28 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
             variant="solid"
             tone="primary"
             size="lg"
-            disabled={!selectedPlanId || isLoading || isUpgrading || selectedPlanId === currentPlanId}
+            disabled={
+              !selectedPlanId ||
+              isLoading ||
+              isUpgrading ||
+              selectedPlanId === currentPlanId
+            }
             onClick={handleUpgrade}
             className="w-full max-w-lg"
           >
-            {isUpgrading ? '처리 중...' : '플랜 변경'}
+            {isUpgrading
+              ? '처리 중...'
+              : selectedPlanId
+                ? (() => {
+                    const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
+                      (p) => p.id === selectedPlanId
+                    );
+                    if (!selectedPlan) return '플랜 변경';
+                    return selectedPlan.price > currentPlanPrice
+                      ? '플랜 업그레이드'
+                      : '플랜 다운그레이드';
+                  })()
+                : '플랜 변경'}
           </Button>
         </div>
       </div>
@@ -328,6 +418,11 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         open={upgradeModalOpen}
         onOpenChange={setUpgradeModalOpen}
         previewData={upgradePreview}
+        cardInfo={
+          cardInfo
+            ? { type: cardInfo.type, number: cardInfo.number }
+            : undefined
+        }
         onConfirm={handleConfirmUpgrade}
       />
 
@@ -336,14 +431,26 @@ export const PlanUpgradeModal: React.FC<PlanUpgradeModalProps> = ({
         <DowngradeConfirmModal
           open={downgradeModalOpen}
           onOpenChange={setDowngradeModalOpen}
-          currentPlan={{
-            type: currentPlanType || 'Free',
-            price: currentPlanPrice,
-            totalCredit: currentPlanCredit,
-          }}
-          newPlan={selectedNewPlan}
+          currentPlanType={currentPlanType || 'Free'}
+          currentPlanCredit={currentPlanCredit}
+          newPlanType={selectedNewPlan.type}
+          newPlanCredit={selectedNewPlan.totalCredit}
           effectiveAt={creditInfo?.subscription?.end_at || null}
           onConfirm={handleConfirmDowngrade}
+        />
+      )}
+
+      {/* 결제 결과 모달 */}
+      {paymentResult && (
+        <PaymentResultModal
+          open={paymentResultOpen}
+          status={paymentResult.status}
+          planName={paymentResult.planName}
+          period={paymentResult.period}
+          cardInfo={paymentResult.cardInfo}
+          amount={paymentResult.amount}
+          reason={paymentResult.reason}
+          onClose={handleClosePaymentResult}
         />
       )}
     </Modal>

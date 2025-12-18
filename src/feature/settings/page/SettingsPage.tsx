@@ -15,7 +15,6 @@ import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { LogoutModal } from '@/feature/settings/components/LogoutModal';
-import { PlanUpgradeModal } from '@/feature/settings/components/PlanUpgradeModal';
 import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
@@ -29,6 +28,7 @@ import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 
 import { CardInfo } from '../components/CardInfo';
+import { PlanChangeModal } from '../components/PlanChangeModal';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -48,19 +48,42 @@ export const SettingsPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
+  // const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const userId = useAuthStore((state) => state.userId);
 
   // 현재 플랜이 유료인지 확인
-  const isPaidPlan = creditInfo && creditInfo.plan.type.toLowerCase() !== 'free';
+  const isPaidPlan =
+    creditInfo && creditInfo.plan.type.toLowerCase() !== 'free';
   // 해지 예약 여부 확인
-  const hasCancellationScheduled = creditInfo?.subscription?.scheduled_plan_id != null;
+  const hasCancellationScheduled =
+    creditInfo?.subscription?.scheduled_plan_id != null;
 
   const handleEditInfo = () => {
     // TODO: Implement edit info functionality
   };
+
+  // const handleOpenCardRegistration = () => {
+  //   if (!user?.id) {
+  //     toast({
+  //       title: '사용자 정보 오류',
+  //       description: '다시 로그인 후 시도해주세요.',
+  //     });
+  //     return;
+  //   }
+  //   setIsCardModalOpen(true);
+  // };
+
+  // const handleCardRegistrationClose = () => {
+  //   setIsCardModalOpen(false);
+  // };
+
+  // const handleCardRegistrationSuccess = async () => {
+  //   await queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
+  //   setIsCardModalOpen(false);
+  // };
 
   const handleTokenLog = () => {
     // TODO: Implement token log functionality
@@ -115,9 +138,7 @@ export const SettingsPage: React.FC = () => {
       toast({
         title: '해지 예약 취소 실패',
         description:
-          error instanceof Error
-            ? error.message
-            : '다시 시도해주세요.',
+          error instanceof Error ? error.message : '다시 시도해주세요.',
       });
     }
   };
@@ -220,6 +241,11 @@ export const SettingsPage: React.FC = () => {
           </Card.Body>
         </Card>
 
+        <CardInfo
+          cardType={cardInfo?.type}
+          // cardNumber={cardInfo?.number}
+        />
+
         <Card>
           <Card.Body className="p-6">
             <div className="flex items-center justify-between">
@@ -241,7 +267,7 @@ export const SettingsPage: React.FC = () => {
               {creditInfo && (
                 <>
                   {creditInfo.plan.type.toLowerCase() === 'free' ? (
-                    <Text className="text-base">
+                    <Text className="text-left text-base">
                       <span className="font-bold text-primary">
                         {getPlanLabel(creditInfo.plan.type)}
                       </span>{' '}
@@ -249,15 +275,9 @@ export const SettingsPage: React.FC = () => {
                     </Text>
                   ) : (
                     <div className="space-y-2">
-                      {cardInfo && (
-                        <CardInfo
-                          cardType={cardInfo.type}
-                          cardNumber={cardInfo.number}
-                        />
-                      )}
-                      <Text className="flex gap-3 text-left">
+                      <Text className="flex gap-3 text-left font-semibold">
                         <span className="font-bold text-primary">
-                          {getPlanLabel(creditInfo.plan.type)} 플랜
+                          {getPlanLabel(creditInfo.plan.type)}
                         </span>
                         {hasCancellationScheduled ? (
                           <span className="text-danger">
@@ -282,7 +302,7 @@ export const SettingsPage: React.FC = () => {
                       className="w-32"
                       onClick={handleUpgradePlan}
                     >
-                      플랜 변경
+                      {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
                     </Button>
                     {isPaidPlan && !hasCancellationScheduled && (
                       <Button
@@ -372,7 +392,7 @@ export const SettingsPage: React.FC = () => {
         </div>
       </div>
 
-      <PlanUpgradeModal
+      <PlanChangeModal
         open={isUpgradeModalOpen}
         onOpenChange={setIsUpgradeModalOpen}
       />
@@ -381,11 +401,8 @@ export const SettingsPage: React.FC = () => {
         <CancelSubscriptionModal
           open={isCancelModalOpen}
           onOpenChange={setIsCancelModalOpen}
-          currentPlan={{
-            type: creditInfo.plan.type,
-            price: 0, // 가격은 플랜 조회에서 가져와야 하지만 현재 구조에서는 없음
-            totalCredit: creditInfo.plan.total,
-          }}
+          currentPlanType={creditInfo.plan.type}
+          currentPlanCredit={creditInfo.plan.total}
           effectiveAt={creditInfo.subscription.end_at}
           onConfirm={handleConfirmCancelSubscription}
         />
@@ -404,6 +421,13 @@ export const SettingsPage: React.FC = () => {
         isDeleting={isDeleting}
         error={deleteError}
       />
+      {/* 
+      <CardRegistrationModal
+        isOpen={isCardModalOpen}
+        onClose={handleCardRegistrationClose}
+        customerKey={user?.id ? String(user.id) : ''}
+        onSuccess={handleCardRegistrationSuccess}
+      /> */}
     </div>
   );
 };
