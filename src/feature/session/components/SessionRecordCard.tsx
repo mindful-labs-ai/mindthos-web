@@ -111,7 +111,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const showReadOnlyToast = () => {
     toast({
       title: '읽기 전용',
-      description: '더미 데이터에서는 이 기능을 사용할 수 없습니다.',
+      description: '예시에서는 이 기능을 사용할 수 없습니다.',
       duration: 2500,
     });
   };
@@ -323,11 +323,16 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
         )}
       </div>
       <div className="flex gap-2">
-        {record.note_types.map((type, index) => (
-          <Badge key={index} tone="neutral" variant="solid" size="md">
-            {type}
-          </Badge>
-        ))}
+        {record.note_types
+          .map((type, index) => (
+            <Badge key={index} tone="neutral" variant="solid" size="md">
+              {type}
+            </Badge>
+          ))
+          .slice(0, 4)}
+        {record.note_types
+          .map(() => <Badge>+{record.note_types.length - 4}</Badge>)
+          .slice(4, 5)}
       </div>
     </div>
   );

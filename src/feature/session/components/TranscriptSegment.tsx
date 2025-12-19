@@ -137,7 +137,7 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
         isClickable ? 'cursor-pointer' : ''
       } ${
         isActive
-          ? 'scale-105 bg-surface-contrast'
+          ? 'bg-surface-contrast'
           : `${isClickable ? 'hover:border-border hover:bg-surface-contrast' : ''}`
       }`}
       onClick={handleContainerClick}

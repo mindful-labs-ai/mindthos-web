@@ -113,7 +113,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
 
           <button
             type="button"
-            className="rounded-full p-2.5 text-fg transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full p-2.5 text-fg transition-transform active:scale-75 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={isLoading ? '로딩 중' : isPlaying ? '일시정지' : '재생'}
             onClick={onPlayPause}
             disabled={isLoading}

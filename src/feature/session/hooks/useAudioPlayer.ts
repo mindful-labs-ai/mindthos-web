@@ -15,6 +15,7 @@ interface UseAudioPlayerReturn {
   handleProgressClick: (e: React.MouseEvent<HTMLDivElement>) => void;
   handleSeekTo: (time: number) => void;
   handlePlaybackRateChange: (rate: number) => void;
+  handleTimeUpdate: (time: number) => void;
 }
 
 export const useAudioPlayer = (
@@ -109,6 +110,8 @@ export const useAudioPlayer = (
     const audio = audioRef.current;
     if (!audio) return;
 
+    if (isLoadingAudio) return;
+
     const progressBar = e.currentTarget;
     const rect = progressBar.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -151,5 +154,6 @@ export const useAudioPlayer = (
     handleProgressClick,
     handleSeekTo,
     handlePlaybackRateChange,
+    handleTimeUpdate: setCurrentTime,
   };
 };
