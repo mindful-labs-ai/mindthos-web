@@ -10,9 +10,12 @@ import { supabase } from '@/lib/supabase';
 
 import type { ProgressNote, ProgressNoteStatus } from '../types';
 
+import { sessionDetailQueryKey } from './useSessionDetail';
+
 export interface UseProgressNotePollingOptions {
   sessionId: string;
   progressNoteId: string | null;
+  isDummySession?: boolean;
   enabled?: boolean;
   refetchInterval?: number | false;
   onComplete?: (note: ProgressNote) => void;
@@ -25,6 +28,7 @@ export interface UseProgressNotePollingOptions {
 export function useProgressNotePolling({
   sessionId,
   progressNoteId,
+  isDummySession = false,
   enabled = true,
   refetchInterval = 3000, // 기본 3초마다 폴링
   onComplete,
@@ -32,6 +36,7 @@ export function useProgressNotePolling({
 }: UseProgressNotePollingOptions) {
   const queryClient = useQueryClient();
   const previousStatusRef = useRef<ProgressNoteStatus | null>(null);
+  const sessionQueryKey = sessionDetailQueryKey(sessionId, isDummySession);
 
   const query = useQuery<ProgressNote | null, Error>({
     queryKey: ['progress-note-status', progressNoteId],
@@ -91,7 +96,7 @@ export function useProgressNotePolling({
     if (isCompleted && (wasNotCompleted || previousStatus === null)) {
       // 세션 상세 쿼리 invalidate (최신 데이터로 갱신)
       queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
+        queryKey: sessionQueryKey,
       });
 
       if (currentStatus === 'succeeded') {
@@ -105,7 +110,7 @@ export function useProgressNotePolling({
 
     // 현재 상태 저장
     previousStatusRef.current = currentStatus;
-  }, [query.data, onComplete, onError, queryClient, sessionId]);
+  }, [query.data, onComplete, onError, queryClient, sessionQueryKey]);
 
   // 에러 처리
   useEffect(() => {

@@ -12,21 +12,27 @@ export interface UseSessionDetailOptions {
   enabled?: boolean;
 }
 
+export const sessionDetailQueryKey = (
+  sessionId: string,
+  isDummySession: boolean
+) => ['session', sessionId, isDummySession] as const;
+
 export function useSessionDetail({
   sessionId,
   enabled = true,
 }: UseSessionDetailOptions) {
   const dummySessionDetail = getDummySessionDetail(sessionId);
+  const isDummySession = !!dummySessionDetail;
 
   return useQuery({
-    queryKey: ['session', sessionId, !!dummySessionDetail],
+    queryKey: sessionDetailQueryKey(sessionId, isDummySession),
     queryFn: () =>
-      dummySessionDetail
+      isDummySession
         ? Promise.resolve(dummySessionDetail)
         : getSessionDetail(sessionId),
     enabled: enabled && !!sessionId,
     retry: 2,
-    staleTime: dummySessionDetail ? Infinity : undefined,
+    staleTime: isDummySession ? Infinity : undefined,
     // 전역 설정 사용: staleTime 5분, refetchOnWindowFocus/Mount/Reconnect false
   });
 }
