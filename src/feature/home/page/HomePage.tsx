@@ -151,7 +151,7 @@ const HomePage = () => {
             </Title>
             {isDummyFlow && (
               <Badge tone="warning" variant="soft" size="sm">
-                더미 데이터
+                예시
               </Badge>
             )}
           </div>
@@ -209,6 +209,19 @@ const HomePage = () => {
             </div>
           )}
         </div>
+
+        {/* 세션이 5개보다 많으면 더보기 버튼 표시 */}
+        {sessionsWithTranscribes.length > 5 && (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={handleViewAllRecordsClick}
+              className="w-full rounded-lg border-2 border-border bg-surface px-6 py-2.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+            >
+              더보기
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 세션 생성 모달 - 오디오 파일만 */}
