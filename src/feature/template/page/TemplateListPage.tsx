@@ -24,7 +24,10 @@ export const TemplateListPage: React.FC = () => {
   };
 
   const handleRequestTemplate = () => {
-    // TODO: 템플릿 신청 기능 구현
+    const url = 'https://forms.gle/SSUsQNo7rh8ty4HY7';
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
