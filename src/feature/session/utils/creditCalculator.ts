@@ -6,7 +6,7 @@
 /**
  * 상담노트 생성 크레딧 (고정값)
  */
-export const PROGRESS_NOTE_CREDIT = 10;
+export const PROGRESS_NOTE_CREDIT = 0;
 
 /**
  * STT 크레딧 계산

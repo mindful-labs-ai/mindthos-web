@@ -166,7 +166,7 @@ export function useCreateSession(): UseCreateSessionReturn {
         request = {
           user_id: params.userId,
           client_id: params.clientId,
-          upload_type: 'pdf',
+          // upload_type: 'pdf',
           transcribed_text: extractedText,
           template_id: params.templateId,
         };

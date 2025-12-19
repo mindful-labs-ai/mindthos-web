@@ -246,7 +246,7 @@ export const SessionHistoryPage: React.FC = () => {
               </Title>
               {isDummyFlow && (
                 <Badge tone="warning" variant="soft" size="sm">
-                  더미 데이터
+                  예시
                 </Badge>
               )}
             </div>
