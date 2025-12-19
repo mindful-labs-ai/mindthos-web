@@ -37,7 +37,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     []
   );
   const [aiSupervisionTemplateId, setAiSupervisionTemplateId] =
-    React.useState<string>('');
+    React.useState<string>('1');
   const [isCreating, setIsCreating] = React.useState(false);
   const [selectAll, setSelectAll] = React.useState(false);
 
@@ -52,7 +52,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
       onOpenChange(false);
       setTimeout(() => {
         setSelectedSessionIds([]);
-        setAiSupervisionTemplateId('');
+        setAiSupervisionTemplateId('1');
         setSelectAll(false);
       }, 300);
     }
@@ -105,6 +105,10 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     selectedSessionIds.length > 0 &&
     aiSupervisionTemplateId !== '' &&
     !isCreating;
+
+  React.useEffect(() => {
+    setAiSupervisionTemplateId('1');
+  }, [templates]);
 
   return (
     <Modal className="max-w-lg" open={open} onOpenChange={handleClose}>
@@ -222,8 +226,8 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
         {/* 크레딧 정보 */}
         <div>
           <div className="flex items-center justify-center gap-2 rounded-lg py-3">
-            <div className="flex items-center gap-1">
-              <span className="text-lg font-bold text-success">92</span>
+            <div className="flex items-center gap-1 rounded-full bg-primary-200 px-2 py-0.5">
+              <span className="text-lg font-bold text-success">50</span>
               <div className="flex h-5 w-5 items-center justify-center rounded-full bg-success text-xs font-bold text-white">
                 C
               </div>

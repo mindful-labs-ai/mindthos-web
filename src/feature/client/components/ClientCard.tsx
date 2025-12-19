@@ -53,7 +53,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   const showReadOnlyToast = () => {
     toast({
       title: '읽기 전용',
-      description: '더미 데이터에서는 이 기능을 사용할 수 없습니다.',
+      description: '예시에서는 이 기능을 사용할 수 없습니다.',
       duration: 2500,
     });
   };

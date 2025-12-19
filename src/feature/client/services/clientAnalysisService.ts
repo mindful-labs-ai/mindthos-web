@@ -3,6 +3,7 @@
  */
 
 import { supabase } from '@/lib/supabase';
+import { EDGE_FUNCTION_BASE_URL } from '@/services/auth/constants';
 import { callEdgeFunction } from '@/shared/utils/edgeFunctionClient';
 
 import type {
@@ -115,18 +116,29 @@ export const clientAnalysisService = {
         data: { session },
       } = await supabase.auth.getSession();
 
-      console.log(clientId, '////', version);
-
       const response = await fetch(
-        `${import.meta.env.VITE_EDGE_FUNCTION_BASE_URL}/client-analysis/status?client_id=${clientId}&version=${version}`,
+        `${EDGE_FUNCTION_BASE_URL}/client-analysis/status?client_id=${clientId}&version=${version}`,
         {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_WEBAPP_SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
           },
+          // 캐시 방지 - 폴링 시 항상 최신 데이터 필요
+          cache: 'no-store',
         }
       );
+
+      // 304 Not Modified는 캐시된 응답이므로 body가 없음
+      // 폴링 상황에서는 발생하지 않아야 하지만, 발생 시 에러 처리
+      if (response.status === 304) {
+        throw {
+          status: 304,
+          success: false,
+          error: 'NOT_MODIFIED',
+          message: '데이터가 변경되지 않았습니다. 다시 시도해주세요.',
+        } as ClientAnalysisApiError;
+      }
 
       const data = await response.json();
 

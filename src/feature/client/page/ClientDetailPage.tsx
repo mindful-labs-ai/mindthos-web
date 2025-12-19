@@ -90,7 +90,7 @@ export const ClientDetailPage: React.FC = () => {
     if (isReadOnly && clientId && !hasShownDummyToast) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 기능이 비활성화됩니다.',
+        description: '예시에서는 기능이 비활성화됩니다.',
         duration: 3000,
       });
       setHasShownDummyToast(true);
@@ -173,7 +173,7 @@ export const ClientDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 분석을 생성할 수 없습니다.',
+        description: '예시에서는 분석을 생성할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -189,7 +189,7 @@ export const ClientDetailPage: React.FC = () => {
 
       toast({
         title: '분석 시작',
-        description: '백그라운드에서 다회기 분석을 진행하고 있습니다.',
+        description: '다회기 분석을 진행하고 있습니다.',
         duration: 3000,
       });
 
@@ -240,7 +240,7 @@ export const ClientDetailPage: React.FC = () => {
             </span>
             {isDummyFlow && (
               <Badge tone="warning" variant="soft" size="sm">
-                더미 데이터
+                예시
               </Badge>
             )}
           </div>
@@ -316,7 +316,7 @@ export const ClientDetailPage: React.FC = () => {
                         toast({
                           title: '읽기 전용',
                           description:
-                            '더미 데이터에서는 클라이언트를 수정할 수 없습니다.',
+                            '예시에서는 클라이언트를 수정할 수 없습니다.',
                           duration: 3000,
                         });
                         return;
@@ -378,7 +378,7 @@ export const ClientDetailPage: React.FC = () => {
                 if (isReadOnly) {
                   toast({
                     title: '읽기 전용',
-                    description: '더미 데이터에서는 분석을 생성할 수 없습니다.',
+                    description: '예시에서는 분석을 생성할 수 없습니다.',
                     duration: 3000,
                   });
                   return;
@@ -397,7 +397,7 @@ export const ClientDetailPage: React.FC = () => {
           if (isReadOnly && open) {
             toast({
               title: '읽기 전용',
-              description: '더미 데이터에서는 클라이언트를 수정할 수 없습니다.',
+              description: '예시에서는 클라이언트를 수정할 수 없습니다.',
               duration: 3000,
             });
             return;
