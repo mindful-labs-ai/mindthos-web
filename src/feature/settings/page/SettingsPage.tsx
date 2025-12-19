@@ -243,7 +243,8 @@ export const SettingsPage: React.FC = () => {
 
         <CardInfo
           cardType={cardInfo?.type}
-          // cardNumber={cardInfo?.number}
+          cardNumber={cardInfo?.number}
+          company={cardInfo?.company}
         />
 
         <Card>
