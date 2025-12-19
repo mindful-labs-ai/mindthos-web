@@ -1,7 +1,7 @@
 export const FILE_UPLOAD_LIMITS = {
   AUDIO: {
-    MAX_SIZE_MB: 500,
-    FORMATS: ['MP3', 'WAV'],
+    MAX_SIZE_MB: 300,
+    FORMATS: ['MP3', 'WAV', 'M4A'],
   },
   PDF: {
     MAX_SIZE_MB: 100,
