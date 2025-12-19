@@ -335,29 +335,19 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                         </pre>
                       ),
                       // 테이블 관련 컴포넌트
-                      table: ({
-                        children,
-                      }: {
-                        children?: React.ReactNode;
-                      }) => (
+                      table: ({ children }: { children?: React.ReactNode }) => (
                         <div className="mb-4 overflow-x-auto rounded-lg border border-border">
                           <table className="min-w-full divide-y divide-border text-sm">
                             {children}
                           </table>
                         </div>
                       ),
-                      thead: ({
-                        children,
-                      }: {
-                        children?: React.ReactNode;
-                      }) => (
-                        <thead className="bg-surface-contrast">{children}</thead>
+                      thead: ({ children }: { children?: React.ReactNode }) => (
+                        <thead className="bg-surface-contrast">
+                          {children}
+                        </thead>
                       ),
-                      tbody: ({
-                        children,
-                      }: {
-                        children?: React.ReactNode;
-                      }) => (
+                      tbody: ({ children }: { children?: React.ReactNode }) => (
                         <tbody className="divide-y divide-border bg-surface">
                           {children}
                         </tbody>

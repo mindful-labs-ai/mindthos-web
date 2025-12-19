@@ -90,8 +90,8 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
 
       {/* 잃게 되는 혜택 */}
       {lostFeatures.length > 0 && (
-        <div className="rounded-lg border border-warning bg-warning/5 p-4">
-          <Text className="mb-3 font-semibold text-warning">
+        <div className="border-warning bg-warning/5 rounded-lg border p-4">
+          <Text className="text-warning mb-3 font-semibold">
             잃게 되는 혜택
           </Text>
           <div className="space-y-2">
@@ -118,7 +118,9 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
       {/* 유지되는 혜택 */}
       {newFeatures.length > 0 && (
         <div className="rounded-lg border border-border bg-bg-subtle p-4">
-          <Text className="mb-3 font-semibold text-fg-muted">유지되는 혜택</Text>
+          <Text className="mb-3 font-semibold text-fg-muted">
+            유지되는 혜택
+          </Text>
           <div className="space-y-2">
             {newFeatures.map((feature, idx) => (
               <div key={idx} className="flex items-center gap-2">

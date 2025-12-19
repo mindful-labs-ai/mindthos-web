@@ -116,7 +116,12 @@ export const billingService = {
    * 업그레이드 미리보기 (할인 금액 계산)
    */
   async previewUpgrade(planId: string): Promise<{
-    currentPlan: { id: string; type: string; price: number; totalCredit: number };
+    currentPlan: {
+      id: string;
+      type: string;
+      price: number;
+      totalCredit: number;
+    };
     newPlan: { id: string; type: string; price: number; totalCredit: number };
     remainingCredit: number;
     discount: number;

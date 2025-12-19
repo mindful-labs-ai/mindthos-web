@@ -29,7 +29,10 @@ const formatCardNumber = (number?: string) => {
   return number.replace(/(.{4})(?=.)/g, '$1-');
 };
 
-const getCardDisplay = (cardInfo?: { type?: string | null; number?: string }) => {
+const getCardDisplay = (cardInfo?: {
+  type?: string | null;
+  number?: string;
+}) => {
   if (!cardInfo) return '등록된 카드가 없습니다';
   const prefix = cardInfo.type ?? '등록 카드';
   return `${prefix} ${formatCardNumber(cardInfo.number)}`;
