@@ -20,6 +20,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
 import { CreateAnalysisModal } from '../components/CreateAnalysisModal';
+import { dummyClientAnalysisVersions } from '../constants/dummyClientAnalysis';
 import {
   useClientAnalyses,
   useClientAnalysisStatus,
@@ -63,6 +64,9 @@ export const ClientDetailPage: React.FC = () => {
   const { data: analyses = [], isLoading: isLoadingAnalyses } =
     useClientAnalyses(clientId || '');
   const createAnalysisMutation = useCreateClientAnalysis();
+
+  // 더미 플로우일 때는 더미 분석 데이터 사용
+  const displayAnalyses = isDummyFlow ? dummyClientAnalysisVersions : analyses;
 
   // 폴링 상태 조회
   useClientAnalysisStatus({
@@ -372,8 +376,8 @@ export const ClientDetailPage: React.FC = () => {
         ) : (
           <div className="px-12 py-6">
             <ClientAnalysisTab
-              analyses={analyses}
-              isLoading={isLoadingAnalyses}
+              analyses={displayAnalyses}
+              isLoading={isLoadingAnalyses && !isDummyFlow}
               onCreateAnalysis={() => {
                 if (isReadOnly) {
                   toast({
