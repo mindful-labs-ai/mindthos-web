@@ -384,7 +384,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       const statusConfig = {
         pending: '대기 중',
         transcribing: '전사 중',
-        generating_note: '노트 생성 중',
+        generating_note: '노트 작성 중',
       };
       return (
         statusConfig[
@@ -479,7 +479,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </div>
 
           <Text className="line-clamp-2 overflow-hidden text-left text-sm">
-            상담 기록 생성에 실패했습니다.
+            상담 기록 작성에 실패했습니다.
           </Text>
 
           <div className="flex items-center justify-between gap-3">

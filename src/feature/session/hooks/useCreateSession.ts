@@ -217,7 +217,7 @@ export function useCreateSession(): UseCreateSessionReturn {
       const error =
         err instanceof Error
           ? err
-          : new Error('상담기록 생성 중 오류가 발생했습니다.');
+          : new Error('상담기록 작성 중 오류가 발생했습니다.');
       setError(error);
       throw error;
     } finally {

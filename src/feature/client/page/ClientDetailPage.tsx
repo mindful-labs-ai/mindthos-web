@@ -173,7 +173,7 @@ export const ClientDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 분석을 생성할 수 없습니다.',
+        description: '예시에서는 분석을 작성할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -203,7 +203,7 @@ export const ClientDetailPage: React.FC = () => {
       toast({
         title: '분석 실패',
         description:
-          error instanceof Error ? error.message : '분석 생성에 실패했습니다.',
+          error instanceof Error ? error.message : '분석 작성에 실패했습니다.',
         duration: 3000,
       });
       throw error;
@@ -378,7 +378,7 @@ export const ClientDetailPage: React.FC = () => {
                 if (isReadOnly) {
                   toast({
                     title: '읽기 전용',
-                    description: '예시에서는 분석을 생성할 수 없습니다.',
+                    description: '예시에서는 분석을 작성할 수 없습니다.',
                     duration: 3000,
                   });
                   return;

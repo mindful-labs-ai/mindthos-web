@@ -50,7 +50,7 @@ export function OnboardingModal() {
       case OnboardingStep.TRANSCRIBE:
         return (
           <GuideStep
-            title="클릭 한 번으로 축어록을 생성해보세요."
+            title="클릭 한 번으로 축어록을 작성해보세요."
             onNext={form.handleNext}
             isSubmitting={form.isSubmitting}
             error={form.error}

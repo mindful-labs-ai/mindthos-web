@@ -146,7 +146,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
           <div className="text-center">
             <Text className="text-lg font-medium text-fg">
-              상담노트 생성 중...
+              상담노트 작성 중...
             </Text>
             <Text className="mt-2 text-sm text-fg-muted">
               {note.processing_status === 'pending'
@@ -187,10 +187,10 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
           </svg>
           <div className="text-center">
             <Text className="text-lg font-medium text-danger">
-              상담노트 생성 실패
+              상담노트 작성 실패
             </Text>
             <Text className="mt-2 text-sm text-fg-muted">
-              {note.error_message || '상담노트 생성 중 오류가 발생했습니다.'}
+              {note.error_message || '상담노트 작성 중 오류가 발생했습니다.'}
             </Text>
           </div>
         </div>

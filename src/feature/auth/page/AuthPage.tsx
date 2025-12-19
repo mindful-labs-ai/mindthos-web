@@ -177,7 +177,7 @@ const AuthPage = () => {
               상담에 집중하세요, 분석과 정리는 AI가 합니다.
             </Title>
             <Text as="p" className="text-base text-muted">
-              대화 기록과 상담 노트를 자동 생성하고
+              대화 기록과 상담 노트를 자동 작성하고
               <br />
               감정 흐름과 말의 구조를 정량적으로 분석해 드립니다.
             </Text>

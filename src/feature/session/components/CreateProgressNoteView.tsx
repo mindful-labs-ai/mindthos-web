@@ -92,7 +92,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
       {!transcribedText && (
         <div className="border-warning rounded-lg border p-4">
           <Text className="text-warning-foreground text-sm">
-            전사 내용이 없어 상담 노트를 생성할 수 없습니다.
+            전사 내용이 없어 상담 노트를 작성할 수 없습니다.
           </Text>
         </div>
       )}

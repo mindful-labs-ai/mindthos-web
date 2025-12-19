@@ -96,8 +96,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         }
 
         toast({
-          title: '상담 기록 생성 완료',
-          description: 'STT 및 상담노트가 성공적으로 생성되었습니다.',
+          title: '상담 기록 작성 완료',
+          description: 'STT 및 상담노트가 성공적으로 작성되었습니다.',
           action: {
             label: '확인하기',
             onClick: () => navigate(getSessionDetailRoute(data.session_id)),
@@ -107,7 +107,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       } else if (status === 'failed') {
         console.error('[세션 처리 실패]', data.error_message);
         toast({
-          title: '상담 기록 생성 실패',
+          title: '상담 기록 작성 실패',
           description: data.error_message || '알 수 없는 오류가 발생했습니다.',
           duration: 8000,
         });
@@ -184,7 +184,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       }
 
       // 실제 API 호출
-      const response = await createSession({
+      await createSession({
         userId: userIdNumber,
         clientId: selectedClient?.id,
         uploadType: type,
@@ -194,14 +194,12 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         directInput: type === 'direct' ? directInput : undefined,
       });
 
-      console.log('[handleCreateSession] 세션 생성 성공:', response);
-
       // 세션 생성 시작 알림
       const uploadTypeLabel =
         type === 'audio' ? '오디오' : type === 'pdf' ? 'PDF' : '텍스트';
 
       toast({
-        title: '상담 기록 생성 중',
+        title: '상담 기록 작성 중',
         description: `${uploadTypeLabel}를 분석하고 상담노트를 작성하고 있습니다. 잠시만 기다려주세요.`,
         duration: 5000,
       });
@@ -209,7 +207,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       // 모달 닫기
       handleClose();
     } catch (error) {
-      console.error('[handleCreateSession] 세션 생성 실패:', error);
+      console.error('[handleCreateSession] 세션 작성 실패:', error);
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
 

@@ -50,14 +50,14 @@ export async function createProgressNote(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(
-      errorData.message || `상담 노트 생성 실패: ${response.statusText}`
+      errorData.message || `상담 노트 작성 실패: ${response.statusText}`
     );
   }
 
   const data: CreateProgressNoteResponse = await response.json();
 
   if (!data.success) {
-    throw new Error(data.message || '상담 노트 생성 중 오류가 발생했습니다.');
+    throw new Error(data.message || '상담 노트 작성 중 오류가 발생했습니다.');
   }
 
   return data;

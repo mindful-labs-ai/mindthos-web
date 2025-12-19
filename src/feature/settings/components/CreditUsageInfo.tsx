@@ -39,7 +39,7 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
       ],
       perCounts: [
         {
-          label: '상담 노트 생성',
+          label: '상담 노트 작성',
           amount: `${sessionNotes.toLocaleString()}회`,
         },
         {

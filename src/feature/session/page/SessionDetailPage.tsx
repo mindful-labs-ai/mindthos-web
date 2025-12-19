@@ -121,8 +121,6 @@ export const SessionDetailPage: React.FC = () => {
     // requestingTabs에 항목이 있으면 폴링 강제 활성화 (새 노트 감지용)
     hasExternalProcessing: Object.keys(requestingTabs).length > 0,
     onNoteComplete: (note) => {
-      console.log('상담노트 생성 완료:', note);
-
       // 해당 노트의 생성 탭이 있었다면 제거
       setCreatingTabs((prev) => {
         const updated = { ...prev };
@@ -162,13 +160,13 @@ export const SessionDetailPage: React.FC = () => {
       }
 
       toast({
-        title: '상담노트 생성 완료',
-        description: '상담노트가 성공적으로 생성되었습니다.',
+        title: '상담노트 작성 완료',
+        description: '상담노트가 성공적으로 작성되었습니다.',
         duration: 3000,
       });
     },
     onNoteError: (note, error) => {
-      console.error('상담노트 생성 실패:', error);
+      console.error('상담노트 작성 실패:', error);
 
       // 해당 노트의 생성 탭이 있었다면 제거
       setCreatingTabs((prev) => {
@@ -193,7 +191,7 @@ export const SessionDetailPage: React.FC = () => {
       });
 
       toast({
-        title: '상담노트 생성 실패',
+        title: '상담노트 작성 실패',
         description: error.message,
         duration: 5000,
       });
@@ -326,7 +324,7 @@ export const SessionDetailPage: React.FC = () => {
         const template = templates.find((t) => t.id === note.template_id);
         items.push({
           value: `create-note-${note.id}`,
-          label: template ? `${template.title} 생성 중...` : '생성 중...',
+          label: template ? `${template.title} 작성 중...` : '작성 중...',
         });
       });
 
@@ -339,7 +337,7 @@ export const SessionDetailPage: React.FC = () => {
       const template = templates.find((t) => t.id === info.templateId);
       items.push({
         value: tabId,
-        label: template ? `${template.title} 생성 중...` : '생성 중...',
+        label: template ? `${template.title} 작성 중...` : '작성 중...',
       });
     });
 
@@ -868,7 +866,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 상담 노트를 생성할 수 없습니다.',
+        description: '예시에서는 상담 노트를 작성할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -926,12 +924,12 @@ export const SessionDetailPage: React.FC = () => {
       }));
 
       toast({
-        title: '상담노트 생성 시작',
-        description: '상담노트를 생성하고 있습니다.',
+        title: '상담노트 작성 시작',
+        description: '상담노트를 작성하고 있습니다.',
         duration: 3000,
       });
     } catch (error) {
-      console.error('상담 노트 생성 실패:', error);
+      console.error('상담 노트 작성 실패:', error);
 
       // 실패 시 requestingTabs에서 제거하고 다시 creatingTabs로 복원
       setRequestingTabs((prev) => {
@@ -949,10 +947,10 @@ export const SessionDetailPage: React.FC = () => {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : '상담 노트 생성에 실패했습니다.';
+          : '상담 노트 작성에 실패했습니다.';
 
       toast({
-        title: '상담노트 생성 실패',
+        title: '상담노트 작성 실패',
         description: errorMessage,
         duration: 5000,
       });
@@ -1349,10 +1347,10 @@ export const SessionDetailPage: React.FC = () => {
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
                 <div className="text-center">
                   <Title as="h2" className="text-lg font-medium text-fg">
-                    상담노트 생성 중...
+                    상담노트 작성 중...
                   </Title>
                   <p className="mt-2 text-sm text-fg-muted">
-                    상담노트를 생성하고 있습니다.
+                    상담노트를 작성하고 있습니다.
                     <br />
                     잠시만 기다려주세요.
                   </p>
@@ -1377,7 +1375,7 @@ export const SessionDetailPage: React.FC = () => {
                         : 'bg-primary text-white hover:bg-primary-600'
                     }`}
                   >
-                    상담 노트 생성하기
+                    상담 노트 작성하기
                   </button>
                 </div>
                 {/* CreateProgressNoteView */}

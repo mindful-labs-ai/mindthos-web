@@ -32,9 +32,9 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
               일반 축어록
             </Text>
             <Text className="text-xs text-fg-muted">
-              일반 수준 정확도로
+              1:1 개인 상담 추천
               <br />
-              축어록을 제작
+              빠른 작성 속도와 준수한 정확도
             </Text>
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -118,13 +118,24 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       고급 축어록
                     </Text>
                     <div className="flex aspect-video items-center justify-center rounded-lg bg-gray-200 text-6xl font-bold text-red-600">
-                      UI
+                      <img
+                        src="/example_image/advanced_STT_image.png"
+                        alt="고급 축어록 툴팁"
+                        className="object-contain"
+                      />
                     </div>
                     <Text className="text-xs leading-relaxed text-fg-muted">
-                      일반 축어록보다 높은 정확도로 축어록을 작성합니다.
+                      <p className="font-semibold">숨소리까지 기록:</p> 침묵,
+                      한숨, 웃음, 울음 등 상담의 맥락을 결정짓는 비언어적 표현을
+                      놓치지 않습니다.
                       <br />
-                      침묵, 격앙된 목소리 등 비언어적인 내담자의 반응도 AI가
-                      인식하고 기록할 수 있습니다.
+                      <p className="font-semibold">완벽한 화자 분리:</p>{' '}
+                      목소리가 겹치기 쉬운 3인 이상 부부·가족 상담에서도 누가
+                      말했는지 정확하게 구분합니다.
+                      <br />
+                      <p className="font-semibold">제출용 품질:</p> 오탈자가
+                      거의 없어 슈퍼비전이나 사례 연구 보고서 작성 시 수정
+                      시간을 획기적으로 줄여줍니다.
                     </Text>
                     <Text className="text-xs leading-relaxed text-fg-muted">
                       수퍼비전 등 양질의 축어록 작성이 필요할 때 적합합니다.
@@ -160,9 +171,9 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
               </Tooltip>
             </div>
             <Text className="text-xs text-fg-muted">
-              감정 반응을 포함한 높은
+              부부·가족 상담의 화자 분리와
               <br />
-              정확도로 축어록을 제작
+              비언어 표현까지 초정밀 기록
             </Text>
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-1">

@@ -120,7 +120,7 @@ export function useSessionProgressNotesPolling({
           } else if (currentStatus === 'failed') {
             onNoteError?.(
               note,
-              new Error(note.error_message || '상담노트 생성에 실패했습니다.')
+              new Error(note.error_message || '상담노트 작성에 실패했습니다.')
             );
           }
         }
