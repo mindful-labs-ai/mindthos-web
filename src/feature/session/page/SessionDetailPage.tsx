@@ -14,6 +14,7 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { useAuthStore } from '@/stores/authStore';
+import { useSessionStore } from '@/stores/sessionStore';
 
 import { AudioPlayer } from '../components/AudioPlayer';
 import { CreateProgressNoteView } from '../components/CreateProgressNoteView';
@@ -21,8 +22,11 @@ import { ProgressNoteView } from '../components/ProgressNoteView';
 import { SessionHeader } from '../components/SessionHeader';
 import { TranscriptSegment } from '../components/TranscriptSegment';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
-import { useProgressNotePolling } from '../hooks/useProgressNotePolling';
-import { useSessionDetail } from '../hooks/useSessionDetail';
+import {
+  sessionDetailQueryKey,
+  useSessionDetail,
+} from '../hooks/useSessionDetail';
+import { useSessionProgressNotesPolling } from '../hooks/useSessionProgressNotesPolling';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
 import { addProgressNote } from '../services/progressNoteService';
 import {
@@ -61,9 +65,6 @@ export const SessionDetailPage: React.FC = () => {
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
-  const [selectedTemplateId, setSelectedTemplateId] = React.useState<
-    number | null
-  >(null);
   const [editedSegments, setEditedSegments] = React.useState<
     Record<number, string>
   >({});
@@ -72,11 +73,22 @@ export const SessionDetailPage: React.FC = () => {
     null
   );
   const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
-  const [pollingProgressNoteId, setPollingProgressNoteId] = React.useState<
-    string | null
-  >(null);
-  const [isCreateNoteRequesting, setIsCreateNoteRequesting] =
-    React.useState(false);
+  // 사용자가 오디오 재생/세그먼트 클릭 등 상호작용을 했는지 여부
+  const [hasUserInteracted, setHasUserInteracted] = React.useState(false);
+  // 탭 내부 스크롤 컨테이너 ref
+  const contentScrollRef = React.useRef<HTMLDivElement>(null);
+
+  // 새 상담노트 생성 탭 상태 (템플릿 선택 중인 탭)
+  // key: 탭 ID, value: 선택된 템플릿 ID (null이면 선택 안됨)
+  const [creatingTabs, setCreatingTabs] = React.useState<
+    Record<string, number | null>
+  >({});
+
+  // API 요청 중인 탭들 (중복 클릭 방지 + 대기 UI 표시)
+  // key: 탭 ID, value: { templateId, progressNoteId (응답 후 설정) }
+  const [requestingTabs, setRequestingTabs] = React.useState<
+    Record<string, { templateId: number; progressNoteId: string | null }>
+  >({});
 
   // 세션 상세 조회 (TanStack Query)
   const { data: sessionDetail, isLoading } = useSessionDetail({
@@ -86,37 +98,66 @@ export const SessionDetailPage: React.FC = () => {
 
   const isDummySession = isDummySessionId(sessionId || '');
   const isReadOnly = isDummySession;
+  const sessionQueryKey = React.useMemo(
+    () => sessionDetailQueryKey(sessionId || '', isDummySession),
+    [sessionId, isDummySession]
+  );
 
   const session = sessionDetail?.session;
   const transcribe = sessionDetail?.transcribe;
-  const sessionProgressNotes = sessionDetail?.progressNotes || [];
-
-  const processingProgressNote = React.useMemo(
-    () =>
-      sessionProgressNotes.find(
-        (note) =>
-          note.processing_status === 'pending' ||
-          note.processing_status === 'in_progress'
-      ) || null,
-    [sessionProgressNotes]
+  const sessionProgressNotes = React.useMemo(
+    () => sessionDetail?.progressNotes || [],
+    [sessionDetail?.progressNotes]
   );
 
-  // 상담노트 폴링
-  const {
-    data: pollingNote,
-    isFetching: isPollingNote,
-    isLoading: isPollingNoteLoading,
-  } = useProgressNotePolling({
-    sessionId: sessionId || '',
-    progressNoteId: pollingProgressNoteId,
-    enabled: !!pollingProgressNoteId,
-    onComplete: (note) => {
-      console.log('상담노트 생성 완료:', note);
-      setPollingProgressNoteId(null);
-      setSelectedTemplateId(null); // 생성 완료 시 초기화
+  // 템플릿 목록 조회
+  const { templates } = useTemplateList();
 
-      // 로딩 창(create-note 탭)을 보고 있었다면 완성된 노트로 이동
-      if (activeTab === 'create-note') {
+  // 세션의 전체 상담노트 폴링 (처리 중인 노트가 있을 때만)
+  const { processingNoteIds } = useSessionProgressNotesPolling({
+    sessionId: sessionId || '',
+    isDummySession,
+    enabled: !isReadOnly && !!sessionId,
+    // requestingTabs에 항목이 있으면 폴링 강제 활성화 (새 노트 감지용)
+    hasExternalProcessing: Object.keys(requestingTabs).length > 0,
+    onNoteComplete: (note) => {
+      console.log('상담노트 생성 완료:', note);
+
+      // 해당 노트의 생성 탭이 있었다면 제거
+      setCreatingTabs((prev) => {
+        const updated = { ...prev };
+        const tabId = `create-note-${note.id}`;
+        if (tabId in updated) {
+          delete updated[tabId];
+        }
+        return updated;
+      });
+
+      // requestingTabs에서 해당 노트를 찾아 제거하고 탭 전환
+      setRequestingTabs((prev) => {
+        const updated = { ...prev };
+        let matchedTabId: string | null = null;
+
+        // progressNoteId가 일치하는 탭 찾기
+        for (const [tabId, info] of Object.entries(updated)) {
+          if (info.progressNoteId === note.id) {
+            matchedTabId = tabId;
+            delete updated[tabId];
+            break;
+          }
+        }
+
+        // 해당 탭을 보고 있었다면 완성된 노트로 이동
+        if (matchedTabId && activeTab === matchedTabId) {
+          // setState 내부에서 다른 setState 호출은 권장되지 않으므로 setTimeout 사용
+          setTimeout(() => setActiveTab(note.id), 0);
+        }
+
+        return updated;
+      });
+
+      // 해당 노트의 생성 탭을 보고 있었다면 완성된 노트로 이동 (기존 로직 유지)
+      if (activeTab === `create-note-${note.id}`) {
         setActiveTab(note.id);
       }
 
@@ -126,10 +167,31 @@ export const SessionDetailPage: React.FC = () => {
         duration: 3000,
       });
     },
-    onError: (error) => {
+    onNoteError: (note, error) => {
       console.error('상담노트 생성 실패:', error);
-      setPollingProgressNoteId(null);
-      setSelectedTemplateId(null); // 생성 실패 시에도 초기화
+
+      // 해당 노트의 생성 탭이 있었다면 제거
+      setCreatingTabs((prev) => {
+        const updated = { ...prev };
+        const tabId = `create-note-${note.id}`;
+        if (tabId in updated) {
+          delete updated[tabId];
+        }
+        return updated;
+      });
+
+      // requestingTabs에서 해당 노트를 찾아 제거
+      setRequestingTabs((prev) => {
+        const updated = { ...prev };
+        for (const [tabId, info] of Object.entries(updated)) {
+          if (info.progressNoteId === note.id) {
+            delete updated[tabId];
+            break;
+          }
+        }
+        return updated;
+      });
+
       toast({
         title: '상담노트 생성 실패',
         description: error.message,
@@ -138,30 +200,80 @@ export const SessionDetailPage: React.FC = () => {
     },
   });
 
-  // 템플릿 목록 조회
-  const { templates } = useTemplateList();
-
+  // DB 폴링에서 노트가 감지되면 requestingTabs에서 제거하고 탭 전환
   React.useEffect(() => {
-    if (!pollingProgressNoteId && processingProgressNote) {
-      setPollingProgressNoteId(processingProgressNote.id);
+    if (!sessionProgressNotes.length) return;
+
+    // 현재 sessionProgressNotes의 모든 노트 ID
+    const noteIdsInDb = new Set(sessionProgressNotes.map((n) => n.id));
+
+    setRequestingTabs((prev) => {
+      const updated = { ...prev };
+      let hasChanges = false;
+
+      for (const [tabId, info] of Object.entries(updated)) {
+        // progressNoteId가 있고 DB에서 감지된 경우 제거
+        if (info.progressNoteId && noteIdsInDb.has(info.progressNoteId)) {
+          // 해당 탭을 보고 있었다면 DB 기반 탭으로 전환
+          if (activeTab === tabId) {
+            const dbNote = sessionProgressNotes.find(
+              (n) => n.id === info.progressNoteId
+            );
+            if (dbNote) {
+              // 처리 중이면 create-note- 탭으로, 완료면 노트 탭으로
+              const isProcessing =
+                dbNote.processing_status === 'pending' ||
+                dbNote.processing_status === 'in_progress';
+              const newTabId = isProcessing
+                ? `create-note-${dbNote.id}`
+                : dbNote.id;
+              setTimeout(() => setActiveTab(newTabId), 0);
+            }
+          }
+          delete updated[tabId];
+          hasChanges = true;
+        }
+      }
+
+      return hasChanges ? updated : prev;
+    });
+  }, [sessionProgressNotes, activeTab]);
+
+  // 현재 활성 탭의 생성 정보
+  const activeCreatingTab = React.useMemo(() => {
+    // API 요청 중인 탭 확인 (클릭 직후 ~ DB 반영 전)
+    if (activeTab in requestingTabs) {
+      return {
+        tabId: activeTab,
+        templateId: requestingTabs[activeTab].templateId,
+        isProcessing: true,
+      };
     }
-  }, [pollingProgressNoteId, processingProgressNote]);
-
-  const isProgressNoteProcessing = React.useMemo(() => {
-    const status =
-      pollingNote?.processing_status ||
-      processingProgressNote?.processing_status;
-
-    if (pollingProgressNoteId && !status) {
-      // 생성 요청 직후 첫 폴링 응답 이전까지 처리중으로 간주
-      return true;
+    // 템플릿 선택 중인 탭 확인
+    if (activeTab.startsWith('create-note-') && activeTab in creatingTabs) {
+      return {
+        tabId: activeTab,
+        templateId: creatingTabs[activeTab],
+        isProcessing: false,
+      };
     }
-
-    return status === 'pending' || status === 'in_progress';
+    // DB에서 처리 중인 노트인지 확인
+    const noteId = activeTab.replace('create-note-', '');
+    if (processingNoteIds.has(noteId)) {
+      const note = sessionProgressNotes.find((n) => n.id === noteId);
+      return {
+        tabId: activeTab,
+        templateId: note?.template_id || null,
+        isProcessing: true,
+      };
+    }
+    return null;
   }, [
-    pollingNote?.processing_status,
-    pollingProgressNoteId,
-    processingProgressNote?.processing_status,
+    activeTab,
+    creatingTabs,
+    requestingTabs,
+    processingNoteIds,
+    sessionProgressNotes,
   ]);
 
   // 탭 아이템 동적 생성
@@ -190,52 +302,70 @@ export const SessionDetailPage: React.FC = () => {
 
     const items: TabItem[] = [
       { value: 'transcript', label: transcriptLabel },
-      ...sessionProgressNotes.map((note) => ({
-        value: note.id,
-        label: note.title || '상담 노트',
-      })),
+      // 완료된 상담노트
+      ...sessionProgressNotes
+        .filter(
+          (note) =>
+            note.processing_status === 'succeeded' ||
+            note.processing_status === 'failed'
+        )
+        .map((note) => ({
+          value: note.id,
+          label: note.title || '상담 노트',
+        })),
     ];
 
-    // 상담 노트 생성 중이거나 create-note 탭이 활성화된 경우 임시 탭 추가
-    if (activeTab === 'create-note' || isProgressNoteProcessing) {
-      let label = '빈 노트';
-
-      if (isProgressNoteProcessing) {
-        const templateId =
-          pollingNote?.template_id ||
-          processingProgressNote?.template_id ||
-          selectedTemplateId;
-
-        if (templateId) {
-          const template = templates.find((t) => t.id === templateId);
-          label = template ? `${template.title} 생성 중...` : '생성 중...';
-        } else {
-          label = '생성 중...';
-        }
-      } else if (selectedTemplateId) {
-        // 템플릿 선택 상태: 선택된 템플릿 제목 표시
-        const selectedTemplate = templates.find(
-          (t) => t.id === selectedTemplateId
-        );
-        label = selectedTemplate ? selectedTemplate.title : '빈 노트';
-      }
-
-      items.push({
-        value: 'create-note',
-        label,
+    // 처리 중인 상담노트 탭 (DB에서 가져온 processing 상태)
+    sessionProgressNotes
+      .filter(
+        (note) =>
+          note.processing_status === 'pending' ||
+          note.processing_status === 'in_progress'
+      )
+      .forEach((note) => {
+        const template = templates.find((t) => t.id === note.template_id);
+        items.push({
+          value: `create-note-${note.id}`,
+          label: template ? `${template.title} 생성 중...` : '생성 중...',
+        });
       });
+
+    // API 요청 중인 탭 (DB에 아직 반영 안 된 상태)
+    Object.entries(requestingTabs).forEach(([tabId, info]) => {
+      // 이미 DB에 반영된 노트는 위에서 처리됨
+      if (info.progressNoteId && processingNoteIds.has(info.progressNoteId)) {
+        return;
+      }
+      const template = templates.find((t) => t.id === info.templateId);
+      items.push({
+        value: tabId,
+        label: template ? `${template.title} 생성 중...` : '생성 중...',
+      });
+    });
+
+    // 템플릿 선택 중인 탭 (아직 API 호출 전)
+    Object.entries(creatingTabs).forEach(([tabId, templateId]) => {
+      let label = '빈 노트';
+      if (templateId) {
+        const template = templates.find((t) => t.id === templateId);
+        label = template ? template.title : '빈 노트';
+      }
+      items.push({ value: tabId, label });
+    });
+
+    // 템플릿 선택 중인 탭이 없으면 + 버튼 표시
+    const hasSelectingTab = Object.keys(creatingTabs).length > 0;
+    if (!hasSelectingTab) {
+      items.push({ value: 'add', label: '+' });
     }
 
-    items.push({ value: 'add', label: '+' });
     return items;
   }, [
     sessionProgressNotes,
-    activeTab,
-    isProgressNoteProcessing,
+    creatingTabs,
+    requestingTabs,
+    processingNoteIds,
     transcribe?.stt_model,
-    selectedTemplateId,
-    pollingNote?.template_id,
-    processingProgressNote?.template_id,
     templates,
   ]);
 
@@ -286,7 +416,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 편집할 수 없습니다.',
+        description: '예시에서는 편집할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -313,7 +443,7 @@ export const SessionDetailPage: React.FC = () => {
     try {
       // Optimistic update: 캐시를 즉시 업데이트
       queryClient.setQueryData(
-        ['session', sessionId, false], // 수정 가능 = 더미 아님
+        sessionQueryKey, // 수정 가능 = 더미 아님
         (
           oldData:
             | {
@@ -399,7 +529,7 @@ export const SessionDetailPage: React.FC = () => {
 
       // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
       await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId, false],
+        queryKey: sessionQueryKey,
       });
 
       toast({
@@ -417,7 +547,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 편집할 수 없습니다.',
+        description: '예시에서는 편집할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -437,7 +567,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 편집할 수 없습니다.',
+        description: '예시에서는 편집할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -465,7 +595,7 @@ export const SessionDetailPage: React.FC = () => {
       // Optimistic update: 캐시를 즉시 업데이트
       console.log('🔄 [SessionDetailPage] Starting optimistic update...');
       queryClient.setQueryData(
-        ['session', sessionId, false], // 수정 가능 = 더미 아님
+        sessionQueryKey, // 수정 가능 = 더미 아님
         (
           oldData:
             | {
@@ -550,7 +680,7 @@ export const SessionDetailPage: React.FC = () => {
       // API 성공 후 캐시 무효화하여 DB의 최신 데이터 가져오기
       console.log('🔄 [SessionDetailPage] Invalidating cache...');
       await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId],
+        queryKey: sessionQueryKey,
       });
       console.log('✅ [SessionDetailPage] Cache invalidated');
 
@@ -564,7 +694,7 @@ export const SessionDetailPage: React.FC = () => {
 
       // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
       await queryClient.invalidateQueries({
-        queryKey: ['session', sessionId, false],
+        queryKey: sessionQueryKey,
       });
 
       toast({
@@ -585,13 +715,22 @@ export const SessionDetailPage: React.FC = () => {
       return;
     }
 
-    // 'add' 탭 처리
+    // 'add' 탭 처리 - 새로운 생성 탭 추가
     if (value === 'add') {
-      setActiveTab('create-note');
+      const newTabId = `create-note-${Date.now()}`;
+      setCreatingTabs((prev) => ({
+        ...prev,
+        [newTabId]: null,
+      }));
+      setActiveTab(newTabId);
+      // 스크롤 초기화
+      contentScrollRef.current?.scrollTo({ top: 0 });
       return;
     }
 
     setActiveTab(value);
+    // 스크롤 초기화
+    contentScrollRef.current?.scrollTo({ top: 0 });
   };
 
   // 탭 변경 확인
@@ -600,10 +739,17 @@ export const SessionDetailPage: React.FC = () => {
     setEditedSegments({});
     if (pendingTabValue) {
       if (pendingTabValue === 'add') {
-        setActiveTab('create-note');
+        const newTabId = `create-note-${Date.now()}`;
+        setCreatingTabs((prev) => ({
+          ...prev,
+          [newTabId]: null,
+        }));
+        setActiveTab(newTabId);
       } else {
         setActiveTab(pendingTabValue);
       }
+      // 스크롤 초기화
+      contentScrollRef.current?.scrollTo({ top: 0 });
     }
     setIsTabChangeModalOpen(false);
     setPendingTabValue(null);
@@ -619,7 +765,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 복사 기능이 비활성화됩니다.',
+        description: '예시에서는 복사 기능이 비활성화됩니다.',
         duration: 3000,
       });
       return;
@@ -678,7 +824,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 제목을 수정할 수 없습니다.',
+        description: '예시에서는 제목을 수정할 수 없습니다.',
         duration: 3000,
       });
       return;
@@ -694,7 +840,7 @@ export const SessionDetailPage: React.FC = () => {
       // 성공 시 세션 상세 정보 및 세션 목록 다시 조회
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ['session', sessionId, false],
+          queryKey: sessionQueryKey,
         }),
         // 세션 목록도 invalidate하여 SessionRecordCard와 SessionSideList 업데이트
         userId &&
@@ -708,28 +854,34 @@ export const SessionDetailPage: React.FC = () => {
     }
   };
 
+  // 현재 활성 생성 탭의 템플릿 선택 핸들러
   const handleTemplateSelect = (templateId: number | null) => {
-    setSelectedTemplateId(templateId);
+    if (!activeTab.startsWith('create-note-')) return;
+    if (!(activeTab in creatingTabs)) return; // 템플릿 선택 탭만 처리
+    setCreatingTabs((prev) => ({
+      ...prev,
+      [activeTab]: templateId,
+    }));
   };
 
   const handleCreateProgressNote = async () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 상담 노트를 생성할 수 없습니다.',
+        description: '예시에서는 상담 노트를 생성할 수 없습니다.',
         duration: 3000,
       });
       return;
     }
-    if (!sessionId || !transcribe?.contents || !selectedTemplateId) return;
-    if (
-      isCreateNoteRequesting ||
-      isProgressNoteProcessing ||
-      isPollingNote ||
-      isPollingNoteLoading
-    ) {
-      return;
-    }
+
+    // 현재 활성 탭이 템플릿 선택 중인 탭인지 확인
+    if (!(activeTab in creatingTabs)) return;
+
+    // 이미 요청 중인 탭이면 무시 (중복 클릭 방지)
+    if (activeTab in requestingTabs) return;
+
+    const templateId = creatingTabs[activeTab];
+    if (!sessionId || !transcribe?.contents || !templateId) return;
 
     const userIdString = useAuthStore.getState().userId;
     if (!userIdString) {
@@ -743,25 +895,56 @@ export const SessionDetailPage: React.FC = () => {
       return;
     }
 
+    // 1. 즉시 creatingTabs에서 제거하고 requestingTabs에 추가 (대기 UI 표시)
+    const currentTabId = activeTab;
+    setCreatingTabs((prev) => {
+      const updated = { ...prev };
+      delete updated[currentTabId];
+      return updated;
+    });
+    setRequestingTabs((prev) => ({
+      ...prev,
+      [currentTabId]: { templateId, progressNoteId: null },
+    }));
+
     try {
-      setIsCreateNoteRequesting(true);
       // 백그라운드로 상담노트 추가
       const response = await addProgressNote({
         sessionId,
         userId,
-        templateId: selectedTemplateId,
+        templateId,
       });
 
-      // 폴링 시작
-      setPollingProgressNoteId(response.progress_note_id);
+      // 2. API 응답 후 progressNoteId 업데이트 (탭은 유지)
+      // DB 폴링에서 해당 노트를 감지하면 requestingTabs에서 자동 제거됨
+      setRequestingTabs((prev) => ({
+        ...prev,
+        [currentTabId]: {
+          templateId,
+          progressNoteId: response.progress_note_id,
+        },
+      }));
 
       toast({
         title: '상담노트 생성 시작',
-        description: '백그라운드에서 상담노트를 생성하고 있습니다.',
+        description: '상담노트를 생성하고 있습니다.',
         duration: 3000,
       });
     } catch (error) {
       console.error('상담 노트 생성 실패:', error);
+
+      // 실패 시 requestingTabs에서 제거하고 다시 creatingTabs로 복원
+      setRequestingTabs((prev) => {
+        const updated = { ...prev };
+        delete updated[currentTabId];
+        return updated;
+      });
+      setCreatingTabs((prev) => ({
+        ...prev,
+        [currentTabId]: templateId,
+      }));
+      // 원래 탭으로 돌아가기
+      setActiveTab(currentTabId);
 
       const errorMessage =
         error instanceof Error
@@ -773,8 +956,6 @@ export const SessionDetailPage: React.FC = () => {
         description: errorMessage,
         duration: 5000,
       });
-    } finally {
-      setIsCreateNoteRequesting(false);
     }
   };
 
@@ -795,12 +976,14 @@ export const SessionDetailPage: React.FC = () => {
     handleProgressClick,
     handleSeekTo,
     handlePlaybackRateChange,
+    handleTimeUpdate,
   } = useAudioPlayer(audioUrl);
 
   const { currentSegmentIndex, activeSegmentRef } = useTranscriptSync({
     segments,
     currentTime,
     enableSync: enableTimestampFeatures,
+    hasUserInteracted,
   });
 
   // S3 Presigned URL 가져오기 (캐싱 없이 sessionId만 의존)
@@ -823,7 +1006,7 @@ export const SessionDetailPage: React.FC = () => {
     if (isReadOnly && session && !hasShownDummyToast) {
       toast({
         title: '읽기 전용',
-        description: '더미 데이터에서는 편집 기능이 비활성화됩니다.',
+        description: '예시에서는 편집 기능이 비활성화됩니다.',
         duration: 3000,
       });
       setHasShownDummyToast(true);
@@ -842,6 +1025,21 @@ export const SessionDetailPage: React.FC = () => {
     }
   }, [isLoading, session, sessionId, navigate]);
 
+  // 오디오 재생/일시정지 시 상호작용 상태 활성화
+  const handlePlayPauseWithInteraction = React.useCallback(() => {
+    setHasUserInteracted(true);
+    handlePlayPause();
+  }, [handlePlayPause]);
+
+  // 세그먼트 클릭 시 상호작용 상태 활성화
+  const handleSeekToWithInteraction = React.useCallback(
+    (time: number) => {
+      setHasUserInteracted(true);
+      handleSeekTo(time);
+    },
+    [handleSeekTo]
+  );
+
   // 오디오 플레이어 키바인드
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -857,14 +1055,16 @@ export const SessionDetailPage: React.FC = () => {
       switch (e.code) {
         case 'Space':
           e.preventDefault();
-          handlePlayPause();
+          handlePlayPauseWithInteraction();
           break;
         case 'ArrowLeft':
           e.preventDefault();
+          setHasUserInteracted(true);
           handleBackward();
           break;
         case 'ArrowRight':
           e.preventDefault();
+          setHasUserInteracted(true);
           handleForward();
           break;
         default:
@@ -874,7 +1074,15 @@ export const SessionDetailPage: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handlePlayPause, handleBackward, handleForward]);
+  }, [handlePlayPauseWithInteraction, handleBackward, handleForward]);
+
+  // 세션 이동 시 상태 초기화
+  React.useEffect(() => {
+    setActiveTab('transcript');
+    handleTimeUpdate(0);
+    handlePlayPause();
+    setHasUserInteracted(false);
+  }, [sessionId]);
 
   if (isLoading) {
     return (
@@ -895,7 +1103,7 @@ export const SessionDetailPage: React.FC = () => {
   const audioDuration = audioMetadata?.duration_seconds || duration || 0;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-surface-contrast">
+    <div className="mx-auto flex h-full max-w-[calc(100vw-535px)] flex-col overflow-hidden bg-surface-contrast">
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} preload="metadata" />
 
@@ -908,12 +1116,14 @@ export const SessionDetailPage: React.FC = () => {
         />
       </div>
 
-      <div className="flex flex-shrink-0 justify-start px-12 pt-2">
+      <div className="flex flex-shrink-0 select-none justify-start px-6 pt-2">
         <Tab
           items={tabItems}
           value={activeTab}
           onValueChange={handleTabChange}
           size="sm"
+          fullWidth
+          className="px-8"
           variant="underline"
         />
       </div>
@@ -922,11 +1132,11 @@ export const SessionDetailPage: React.FC = () => {
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         {activeTab === 'transcript' && (
-          <div className="absolute inset-x-0 top-0 z-10 flex select-none justify-end">
+          <div className="absolute inset-x-0 right-4 top-0 z-10 flex select-none justify-end bg-gradient-to-t from-transparent to-slate-50">
             <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
               {isReadOnly ? (
                 <Badge tone="warning" variant="soft" size="sm">
-                  더미 데이터 - 읽기 전용
+                  예시 - 읽기 전용
                 </Badge>
               ) : isEditing ? (
                 <>
@@ -1039,6 +1249,50 @@ export const SessionDetailPage: React.FC = () => {
                                 : '참석자 가리기'}
                             </span>
                           </button>
+                          {/* 자동 스크롤 토글 (타임스탬프 기능이 활성화된 경우에만 표시) */}
+                          {enableTimestampFeatures && (
+                            <button
+                              onClick={() => {
+                                const store = useSessionStore.getState();
+                                store.setAutoScrollEnabled(
+                                  !store.autoScrollEnabled
+                                );
+                                setIsMenuOpen(false);
+                              }}
+                              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                            >
+                              <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-fg-muted"
+                              >
+                                {useSessionStore.getState()
+                                  .autoScrollEnabled ? (
+                                  <>
+                                    <path d="M12 5v14" />
+                                    <path d="M19 12l-7 7-7-7" />
+                                  </>
+                                ) : (
+                                  <>
+                                    <path d="M12 5v14" />
+                                    <path d="M19 12l-7 7-7-7" />
+                                    <line x1="4" y1="4" x2="20" y2="20" />
+                                  </>
+                                )}
+                              </svg>
+                              <span className="text-sm text-fg">
+                                {useSessionStore.getState().autoScrollEnabled
+                                  ? '자동 스크롤 끄기'
+                                  : '자동 스크롤 켜기'}
+                              </span>
+                            </button>
+                          )}
                         </div>
                       }
                     />
@@ -1051,6 +1305,7 @@ export const SessionDetailPage: React.FC = () => {
 
         {activeTab === 'transcript' ? (
           <div
+            ref={contentScrollRef}
             className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
           >
             {segments.length > 0 ? (
@@ -1070,7 +1325,7 @@ export const SessionDetailPage: React.FC = () => {
                       ? activeSegmentRef
                       : undefined
                   }
-                  onClick={handleSeekTo}
+                  onClick={handleSeekToWithInteraction}
                   onTextEdit={isReadOnly ? undefined : handleTextEdit}
                   showTimestamp={enableTimestampFeatures}
                   segmentIndex={index}
@@ -1085,12 +1340,11 @@ export const SessionDetailPage: React.FC = () => {
               </div>
             )}
           </div>
-        ) : activeTab === 'create-note' ? (
+        ) : activeTab.startsWith('create-note-') ||
+          activeTab in requestingTabs ? (
           <div className="flex h-full flex-col">
-            {isProgressNoteProcessing ||
-            isPollingNote ||
-            isPollingNoteLoading ? (
-              // 생성 중 로딩 UI
+            {activeCreatingTab?.isProcessing ? (
+              // 생성 중 로딩 UI (DB에서 처리 중인 노트)
               <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
                 <div className="text-center">
@@ -1098,13 +1352,14 @@ export const SessionDetailPage: React.FC = () => {
                     상담노트 생성 중...
                   </Title>
                   <p className="mt-2 text-sm text-fg-muted">
-                    백그라운드에서 상담노트를 생성하고 있습니다.
+                    상담노트를 생성하고 있습니다.
                     <br />
                     잠시만 기다려주세요.
                   </p>
                 </div>
               </div>
-            ) : (
+            ) : activeTab in creatingTabs ? (
+              // 템플릿 선택 UI
               <>
                 {/* 우측 상단 생성 버튼 */}
                 <div className="flex items-center justify-between px-8 py-4">
@@ -1115,21 +1370,9 @@ export const SessionDetailPage: React.FC = () => {
                   </div>
                   <button
                     onClick={handleCreateProgressNote}
-                    disabled={
-                      isReadOnly ||
-                      !selectedTemplateId ||
-                      isCreateNoteRequesting ||
-                      isProgressNoteProcessing ||
-                      isPollingNote ||
-                      isPollingNoteLoading
-                    }
+                    disabled={isReadOnly || !creatingTabs[activeTab]}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                      isReadOnly ||
-                      !selectedTemplateId ||
-                      isCreateNoteRequesting ||
-                      isProgressNoteProcessing ||
-                      isPollingNote ||
-                      isPollingNoteLoading
+                      isReadOnly || !creatingTabs[activeTab]
                         ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
                         : 'bg-primary text-white hover:bg-primary-600'
                     }`}
@@ -1138,7 +1381,10 @@ export const SessionDetailPage: React.FC = () => {
                   </button>
                 </div>
                 {/* CreateProgressNoteView */}
-                <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div
+                  ref={contentScrollRef}
+                  className="flex-1 overflow-y-auto px-8 py-6"
+                >
                   <CreateProgressNoteView
                     sessionId={sessionId || ''}
                     transcribedText={
@@ -1153,15 +1399,23 @@ export const SessionDetailPage: React.FC = () => {
                       .filter(
                         (id): id is number => id !== null && id !== undefined
                       )}
-                    selectedTemplateId={selectedTemplateId}
+                    selectedTemplateId={creatingTabs[activeTab] || null}
                     onTemplateSelect={handleTemplateSelect}
                   />
                 </div>
               </>
+            ) : (
+              // 알 수 없는 상태
+              <div className="flex h-full items-center justify-center">
+                <p className="text-fg-muted">잠시 기다려주세요...</p>
+              </div>
             )}
           </div>
         ) : (
-          <div className="h-full overflow-y-auto px-8 py-6">
+          <div
+            ref={contentScrollRef}
+            className="h-full overflow-y-auto px-8 py-6"
+          >
             {(() => {
               const selectedNote = sessionProgressNotes.find(
                 (note) => note.id === activeTab
@@ -1179,7 +1433,7 @@ export const SessionDetailPage: React.FC = () => {
       </div>
 
       {activeTab === 'transcript' && (
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 select-none">
           <AudioPlayer
             audioRef={audioRef}
             isPlaying={isPlaying}
@@ -1187,7 +1441,7 @@ export const SessionDetailPage: React.FC = () => {
             duration={audioDuration}
             playbackRate={playbackRate}
             isLoading={isLoadingAudioBlob}
-            onPlayPause={handlePlayPause}
+            onPlayPause={handlePlayPauseWithInteraction}
             onBackward={handleBackward}
             onForward={handleForward}
             onProgressClick={handleProgressClick}
