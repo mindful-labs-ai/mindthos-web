@@ -11,6 +11,9 @@ interface SessionStoreState {
   sessions: Session[];
   transcribes: Record<string, Transcribe>;
   progressNotes: Record<string, ProgressNote[]>;
+  // 타임라인-세그먼트 자동 스크롤 활성화 여부
+  autoScrollEnabled: boolean;
+  setAutoScrollEnabled: (enabled: boolean) => void;
   addSession: (
     session: Session,
     transcribe: Transcribe,
@@ -45,6 +48,11 @@ export const useSessionStore = create<SessionStoreState>()(
       sessions: [],
       transcribes: {},
       progressNotes: {},
+      autoScrollEnabled: true, // 기본값: 활성화
+
+      setAutoScrollEnabled: (enabled) => {
+        set({ autoScrollEnabled: enabled });
+      },
 
       addSession: (session, transcribe, progressNotes = []) => {
         set((state) => ({
