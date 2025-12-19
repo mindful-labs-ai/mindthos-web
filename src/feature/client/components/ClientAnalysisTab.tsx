@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
@@ -11,6 +12,7 @@ import { Select } from '@/components/ui/composites/Select';
 import { useToast } from '@/components/ui/composites/Toast';
 import { CheckIcon } from '@/shared/icons';
 
+import { useClientTemplates } from '../hooks/useClientAnalysis';
 import type {
   ClientAnalysis,
   ClientAnalysisVersion,
@@ -28,6 +30,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   onCreateAnalysis,
 }) => {
   const { toast } = useToast();
+  const { data: templates } = useClientTemplates();
   const [selectedVersion, setSelectedVersion] = useState<number>(
     analyses[0]?.version || 0
   );
@@ -37,24 +40,47 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   // 선택된 버전의 분석 데이터
   const currentAnalysis = analyses.find((a) => a.version === selectedVersion);
 
+  // 템플릿 이름 조회 헬퍼
+  const getTemplateName = (templateId: number | undefined): string => {
+    if (!templateId || !templates) return 'AI 수퍼비전';
+    const allTemplates = [
+      ...(templates.ai_supervision || []),
+      ...(templates.profiling || []),
+      ...(templates.psychotherapy_plan || []),
+    ];
+    const template = allTemplates.find((t) => t.id === templateId);
+    return template?.name || 'AI 수퍼비전';
+  };
+
+  // 날짜 포맷 헬퍼
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   // 버전 선택 아이템
-  const versionItems: SelectItem[] = analyses.map((analysis) => ({
-    value: String(analysis.version),
-    label: (
-      <div className="flex flex-col">
-        <span className="font-medium">
-          {new Date(analysis.created_at).toLocaleDateString('ko-KR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </span>
-        <span className="text-xs text-fg-muted">
-          버전 {analysis.version} / {analysis.session_ids.length}개 회기
-        </span>
-      </div>
-    ),
-  }));
+  const versionItems: SelectItem[] = analyses.map((analysis) => {
+    const templateName = getTemplateName(analysis.ai_supervision?.template_id);
+    const dateStr = formatDate(analysis.created_at);
+
+    return {
+      value: String(analysis.version),
+      // 드롭다운에는 템플릿 이름과 회기 수 표시
+      label: (
+        <div className="flex flex-col">
+          <span className="font-medium">{dateStr}</span>
+          <span className="text-xs text-fg-muted">
+            {templateName} / {analysis.session_ids.length}개 회기
+          </span>
+        </div>
+      ),
+      // 디스플레이에는 날짜만 표시
+      displayLabel: dateStr,
+    };
+  });
 
   // 클립보드 복사
   const handleCopy = async (content: string) => {
@@ -152,6 +178,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           {/* 마크다운 렌더링 */}
           <div className="prose prose-sm dark:prose-invert max-w-none text-start">
             <Markdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({ children }: any) => (
                   <Title
@@ -215,6 +242,33 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                   <pre className="mb-4 overflow-x-auto rounded-lg bg-surface-contrast p-4">
                     {children}
                   </pre>
+                ),
+                // 테이블 관련 컴포넌트
+                table: ({ children }: any) => (
+                  <div className="mb-4 overflow-x-auto rounded-lg border border-border">
+                    <table className="min-w-full divide-y divide-border text-sm">
+                      {children}
+                    </table>
+                  </div>
+                ),
+                thead: ({ children }: any) => (
+                  <thead className="bg-surface-contrast">{children}</thead>
+                ),
+                tbody: ({ children }: any) => (
+                  <tbody className="divide-y divide-border bg-surface">
+                    {children}
+                  </tbody>
+                ),
+                tr: ({ children }: any) => (
+                  <tr className="hover:bg-surface-contrast/50">{children}</tr>
+                ),
+                th: ({ children }: any) => (
+                  <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }: any) => (
+                  <td className="px-4 py-3 text-fg">{children}</td>
                 ),
               }}
             >

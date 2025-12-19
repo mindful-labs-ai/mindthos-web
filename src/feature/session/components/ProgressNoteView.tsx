@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
@@ -282,6 +283,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                 {/* 마크다운 렌더링된 내용 */}
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <Markdown
+                    remarkPlugins={[remarkGfm]}
                     components={{
                       p: ({ children }: { children?: React.ReactNode }) => (
                         <Text className="mb-3 leading-relaxed text-fg">
@@ -331,6 +333,47 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                         <pre className="mb-3 overflow-x-auto rounded-lg bg-surface-contrast p-4">
                           {children}
                         </pre>
+                      ),
+                      // 테이블 관련 컴포넌트
+                      table: ({
+                        children,
+                      }: {
+                        children?: React.ReactNode;
+                      }) => (
+                        <div className="mb-4 overflow-x-auto rounded-lg border border-border">
+                          <table className="min-w-full divide-y divide-border text-sm">
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({
+                        children,
+                      }: {
+                        children?: React.ReactNode;
+                      }) => (
+                        <thead className="bg-surface-contrast">{children}</thead>
+                      ),
+                      tbody: ({
+                        children,
+                      }: {
+                        children?: React.ReactNode;
+                      }) => (
+                        <tbody className="divide-y divide-border bg-surface">
+                          {children}
+                        </tbody>
+                      ),
+                      tr: ({ children }: { children?: React.ReactNode }) => (
+                        <tr className="hover:bg-surface-contrast/50">
+                          {children}
+                        </tr>
+                      ),
+                      th: ({ children }: { children?: React.ReactNode }) => (
+                        <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }: { children?: React.ReactNode }) => (
+                        <td className="px-4 py-3 text-fg">{children}</td>
                       ),
                     }}
                   >
