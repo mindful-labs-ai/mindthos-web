@@ -7,6 +7,8 @@ import { cn } from '@/lib/cn';
 export interface SelectItem {
   value: string;
   label: React.ReactNode;
+  /** 선택된 값을 표시할 때 사용할 문자열 (label이 JSX인 경우 필수) */
+  displayLabel?: string;
   disabled?: boolean;
 }
 
@@ -83,7 +85,9 @@ export const Select: React.FC<SelectProps> = ({
       return `${selectedValue.length} selected`;
     }
     const selected = items.find((item) => item.value === selectedValue);
-    return selected ? String(selected.label) : placeholder;
+    if (!selected) return placeholder;
+    // displayLabel이 있으면 사용, 없으면 label을 문자열로 변환
+    return selected.displayLabel ?? String(selected.label);
   };
 
   const isSelected = (itemValue: string): boolean => {
