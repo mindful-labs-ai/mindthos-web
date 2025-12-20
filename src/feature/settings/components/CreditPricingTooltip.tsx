@@ -32,7 +32,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
               <Text className="text-xs text-fg">일반 축어록</Text>
               <div>
                 <Text className="text-xs font-semibold text-fg">
-                  30분 까지 - 30크레딧(기본료)
+                  30분 까지 - 30크레딧 (고정)
                 </Text>
                 <Text className="text-xs font-semibold text-fg">
                   30분 초과 - 분당 1크레딧
@@ -43,7 +43,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
               <Text className="text-xs text-fg">고급 축어록</Text>
               <div>
                 <Text className="text-xs font-semibold text-fg">
-                  30분 까지 - 45크레딧(기본료)
+                  30분 까지 - 45크레딧 (고정)
                 </Text>
                 <Text className="text-xs font-semibold text-fg">
                   30분 초과 - 분당 1.5크레딧
@@ -71,7 +71,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
         </div>
 
         <div>
-          <Text>*기본 상담 노트는 음성 변환 기본료에 포함됩니다.</Text>
+          <Text>*기본 상담 노트는 음성 변환과 함께 무료 제공됩니다.</Text>
         </div>
       </div>
 

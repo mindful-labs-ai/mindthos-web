@@ -194,6 +194,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         }
       }
 
+      // TODO: [Mixpanel] 플랜 업그레이드 성공 - track('plan_upgrade_success', { new_plan: response.newPlan, amount: response.finalAmount })
       setPaymentResult({
         status: 'success',
         planName: getPlanName(response.newPlan || selectedPlan?.type || ''),
@@ -206,6 +207,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       });
       setPaymentResultOpen(true);
     } catch (error) {
+      // TODO: [Mixpanel] 플랜 업그레이드 실패 - track('plan_upgrade_failed', { target_plan: selectedPlan?.type, error: error.message })
       setPaymentResult({
         status: 'failure',
         planName: selectedPlan ? getPlanName(selectedPlan.type) : undefined,
@@ -232,6 +234,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     const response = await billingService.changePlan(selectedPlanId);
 
     if (response.type === 'downgrade') {
+      // TODO: [Mixpanel] 플랜 다운그레이드 예약 - track('plan_downgrade_scheduled', { new_plan: selectedPlanId })
       toast({
         title: '플랜 다운그레이드 예약',
         description: '구독 종료 후 새 플랜이 적용됩니다.',

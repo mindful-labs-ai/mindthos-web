@@ -24,9 +24,11 @@ const SignInForm = () => {
 
     try {
       await login(email, password);
+      // TODO: [Mixpanel] 이메일 로그인 성공 - track('login_success', { method: 'email' })
       // 로그인 성공 시 홈으로 리다이렉트
       navigate(ROUTES.ROOT);
     } catch (err) {
+      // TODO: [Mixpanel] 이메일 로그인 실패 - track('login_failed', { method: 'email', error: err.message })
       setError(
         err instanceof Error
           ? err.message

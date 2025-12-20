@@ -191,6 +191,7 @@ export const ClientDetailPage: React.FC = () => {
         ai_supervision_template_id: data.aiSupervisionTemplateId,
       });
 
+      // TODO: [Mixpanel] 다회기 분석 시작 - track('client_analysis_create', { client_id: clientId, session_count: data.sessionIds.length })
       toast({
         title: '분석 시작',
         description: '다회기 분석을 진행하고 있습니다.',
@@ -203,6 +204,7 @@ export const ClientDetailPage: React.FC = () => {
       // 분석 탭으로 이동
       setActiveTab('analyze');
     } catch (error) {
+      // TODO: [Mixpanel] 다회기 분석 실패 - track('client_analysis_failed', { client_id: clientId, error: error.message })
       console.error('Failed to create analysis:', error);
       toast({
         title: '분석 실패',

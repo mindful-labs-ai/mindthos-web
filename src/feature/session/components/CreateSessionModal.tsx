@@ -16,6 +16,7 @@ import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
+import { isFileSizeExceeded } from '../constants/fileUpload';
 import { useCreateSession } from '../hooks/useCreateSession';
 import { useSessionStatus } from '../hooks/useSessionStatus';
 import type { FileInfo, SttModel, UploadType } from '../types';
@@ -56,6 +57,12 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   const [directInput, setDirectInput] = React.useState('');
   const [sttModel, setSttModel] = React.useState<SttModel>('gemini-3');
   const [isCreating, setIsCreating] = React.useState(false);
+
+  // 파일 크기 초과 여부 계산
+  const fileSizeExceeded =
+    selectedFile && type !== 'direct'
+      ? isFileSizeExceeded(selectedFile.size, type as 'audio' | 'pdf')
+      : false;
 
   // Error SnackBar state
   const [errorSnackBar, setErrorSnackBar] = React.useState<{
@@ -129,6 +136,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   const handleCreateSession = async () => {
     if (type !== 'direct' && !selectedFile) return;
     if (type === 'direct' && !directInput.trim()) return;
+    if (fileSizeExceeded) return;
 
     console.log('[handleCreateSession] 시작:', {
       userId,
@@ -194,6 +202,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         directInput: type === 'direct' ? directInput : undefined,
       });
 
+      // TODO: [Mixpanel] 세션 생성 성공 - track('session_create_success', { upload_type: type, transcribe_type: transcribeType, has_client: !!selectedClient })
+
       // 세션 생성 시작 알림
       const uploadTypeLabel =
         type === 'audio' ? '오디오' : type === 'pdf' ? 'PDF' : '텍스트';
@@ -207,6 +217,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       // 모달 닫기
       handleClose();
     } catch (error) {
+      // TODO: [Mixpanel] 세션 생성 실패 - track('session_create_failed', { upload_type: type, error: error.message })
       console.error('[handleCreateSession] 세션 작성 실패:', error);
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
@@ -227,7 +238,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
 
   const canSubmit =
     (type !== 'direct' ? selectedFile !== null : directInput.trim() !== '') &&
-    !isCreating;
+    !isCreating &&
+    !fileSizeExceeded;
 
   return (
     <>
@@ -330,7 +342,11 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
               disabled={!canSubmit}
               className="w-full"
             >
-              {isCreating ? '파일 업로드 중...' : '상담 기록 만들기'}
+              {isCreating
+                ? '파일 업로드 중...'
+                : fileSizeExceeded
+                  ? '파일 크기 초과'
+                  : '상담 기록 만들기'}
             </Button>
           </div>
         </div>

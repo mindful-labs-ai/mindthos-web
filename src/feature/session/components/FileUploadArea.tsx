@@ -106,7 +106,7 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
         onDrop={onDrop}
         className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors duration-200 ${
           isDragging ? 'border-primary bg-primary-100' : 'border-surface-strong'
-        } ${selectedFile ? 'bg-surface' : ''} `}
+        } ${selectedFile ? 'bg-surface' : ''}`}
       >
         {!selectedFile ? (
           <div className="flex flex-col items-center gap-4">

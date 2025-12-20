@@ -24,9 +24,11 @@ const AuthPage = () => {
     setIsGoogleLoading(true);
 
     try {
+      // TODO: [Mixpanel] Google 로그인 시도 - track('login_attempt', { method: 'google' })
       await authService.loginWithGoogle();
-      // OAuth는 리다이렉트로 처리됨
+      // OAuth는 리다이렉트로 처리됨 (성공 트래킹은 OAuth 콜백에서 처리)
     } catch (err) {
+      // TODO: [Mixpanel] Google 로그인 실패 - track('login_failed', { method: 'google', error: err.message })
       setError(
         err instanceof Error
           ? err.message

@@ -85,6 +85,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
       }
     },
     onSuccess: (response) => {
+      // TODO: [Mixpanel] 클라이언트 등록/수정 성공 - track(isEditMode ? 'client_update_success' : 'client_create_success', { client_id: response.client?.id })
       console.log(
         `===== 클라이언트 ${isEditMode ? '수정' : '등록'} 성공 =====`
       );
@@ -98,6 +99,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
     },
     onError: (error) => {
+      // TODO: [Mixpanel] 클라이언트 등록/수정 실패 - track(isEditMode ? 'client_update_failed' : 'client_create_failed', { error: error.message })
       console.error(
         `===== 클라이언트 ${isEditMode ? '수정' : '등록'} 실패 =====`
       );

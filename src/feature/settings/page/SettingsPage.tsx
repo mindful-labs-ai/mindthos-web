@@ -98,6 +98,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleConfirmCancelSubscription = async () => {
+    // TODO: [Mixpanel] 구독 해지 - track('subscription_cancel', { plan_type: creditInfo?.plan?.type })
     await billingService.cancelSubscription();
 
     // 구독 정보 다시 조회
@@ -158,6 +159,7 @@ export const SettingsPage: React.FC = () => {
 
   const handleConfirmLogout = async () => {
     try {
+      // TODO: [Mixpanel] 로그아웃 - track('logout')
       await logout();
     } catch (error) {
       console.error('Logout failed:', error);
@@ -179,6 +181,7 @@ export const SettingsPage: React.FC = () => {
     setDeleteError('');
 
     try {
+      // TODO: [Mixpanel] 계정 탈퇴 - track('account_delete')
       await authService.deleteAccount(user.email);
       await logout();
     } catch (error) {
