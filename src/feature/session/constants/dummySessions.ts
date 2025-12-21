@@ -2145,6 +2145,8 @@ export const dummyProgressNote: ProgressNote[] = [
     template_id: 1,
     summary: summaryContent1,
     created_at: '2025-12-08 05:04:37.824526+00',
+    processing_status: 'succeeded',
+    error_message: null,
   },
   {
     id: 'dummy_progress_note_2',
@@ -2154,6 +2156,8 @@ export const dummyProgressNote: ProgressNote[] = [
     template_id: 1,
     summary: summaryContent2,
     created_at: '2025-12-10 05:40:17.959886+00',
+    processing_status: 'succeeded',
+    error_message: null,
   },
   {
     id: 'dummy_progress_note_3',
@@ -2163,6 +2167,8 @@ export const dummyProgressNote: ProgressNote[] = [
     template_id: 1,
     summary: summaryContent3,
     created_at: '2025-12-11 05:40:17.959886+00',
+    processing_status: 'succeeded',
+    error_message: null,
   },
 ];
 

@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useLocation } from 'react-router-dom';
 
+import { Button } from '@/components/ui';
 import {
   BreadCrumb,
   type BreadCrumbItem,
@@ -75,8 +76,11 @@ export const Header: React.FC = () => {
   const breadcrumbItems = getBreadcrumbItems();
 
   return (
-    <header className="sticky top-0 flex h-14 items-center border-b border-border bg-bg px-6 py-4 lg:px-8">
+    <header className="sticky top-0 flex h-14 items-center justify-between border-b border-border bg-bg px-6 py-4 lg:px-8">
       <BreadCrumb items={breadcrumbItems} />
+      <Button variant="outline" className="w-fit">
+        구버전으로 바로가기
+      </Button>
     </header>
   );
 };

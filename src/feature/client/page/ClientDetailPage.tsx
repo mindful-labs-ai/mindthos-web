@@ -14,6 +14,7 @@ import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
+import { trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -191,7 +192,10 @@ export const ClientDetailPage: React.FC = () => {
         ai_supervision_template_id: data.aiSupervisionTemplateId,
       });
 
-      // TODO: [Mixpanel] 다회기 분석 시작 - track('client_analysis_create', { client_id: clientId, session_count: data.sessionIds.length })
+      trackEvent('client_analysis_create', {
+        client_id: clientId,
+        session_count: data.sessionIds.length,
+      });
       toast({
         title: '분석 시작',
         description: '다회기 분석을 진행하고 있습니다.',
@@ -204,7 +208,14 @@ export const ClientDetailPage: React.FC = () => {
       // 분석 탭으로 이동
       setActiveTab('analyze');
     } catch (error) {
-      // TODO: [Mixpanel] 다회기 분석 실패 - track('client_analysis_failed', { client_id: clientId, error: error.message })
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      trackEvent('client_analysis_failed', {
+        client_id: clientId,
+        error: errorMessage,
+      });
+
       console.error('Failed to create analysis:', error);
       toast({
         title: '분석 실패',

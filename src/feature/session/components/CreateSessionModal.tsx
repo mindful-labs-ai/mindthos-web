@@ -13,6 +13,7 @@ import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
+import { trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -202,7 +203,12 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         directInput: type === 'direct' ? directInput : undefined,
       });
 
-      // TODO: [Mixpanel] 세션 생성 성공 - track('session_create_success', { upload_type: type, transcribe_type: transcribeType, has_client: !!selectedClient })
+      // 세션 생성 성공 트래킹
+      trackEvent('session_create_success', {
+        upload_type: type,
+        transcribe_type: transcribeType,
+        has_client: !!selectedClient,
+      });
 
       // 세션 생성 시작 알림
       const uploadTypeLabel =
@@ -217,10 +223,15 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       // 모달 닫기
       handleClose();
     } catch (error) {
-      // TODO: [Mixpanel] 세션 생성 실패 - track('session_create_failed', { upload_type: type, error: error.message })
-      console.error('[handleCreateSession] 세션 작성 실패:', error);
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
+
+      trackEvent('session_create_failed', {
+        upload_type: type,
+        error: errorMessage,
+      });
+
+      console.error('[handleCreateSession] 세션 작성 실패:', error);
 
       // 크레딧 부족 에러 확인
       const isCreditError = errorMessage.includes('크레딧이 부족합니다');

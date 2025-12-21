@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { FormField } from '@/components/ui/composites/FormField';
+import { trackEvent } from '@/lib/mixpanel';
 import { ROUTES } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -24,11 +25,14 @@ const SignInForm = () => {
 
     try {
       await login(email, password);
-      // TODO: [Mixpanel] 이메일 로그인 성공 - track('login_success', { method: 'email' })
+      trackEvent('login_success', { method: 'email' });
       // 로그인 성공 시 홈으로 리다이렉트
       navigate(ROUTES.ROOT);
     } catch (err) {
-      // TODO: [Mixpanel] 이메일 로그인 실패 - track('login_failed', { method: 'email', error: err.message })
+      trackEvent('login_failed', {
+        method: 'email',
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
       setError(
         err instanceof Error
           ? err.message

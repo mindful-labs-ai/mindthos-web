@@ -128,6 +128,27 @@ export const authService = {
     }
   },
 
+  async updateUser(
+    userId: string,
+    data: { name?: string; organization?: string }
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: data.name,
+          organization: data.organization,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', parseInt(userId));
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
   async getSession() {
     try {
       const {

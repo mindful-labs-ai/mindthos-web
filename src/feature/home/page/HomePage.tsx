@@ -57,7 +57,11 @@ const HomePage = () => {
   const recentSessions = sessionsWithTranscribes.slice(0, 5);
 
   const handleGuideClick = () => {
-    // TODO: Navigate to guide page
+    window.open(
+      'https://rare-puppy-06f.notion.site/v2-2cfdd162832d801bae95f67269c062c7?source=copy_link',
+      '_blank',
+      'noopener,noreferrer'
+    );
   };
 
   const handleUploadClick = () => {

@@ -15,6 +15,7 @@ import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { LogoutModal } from '@/feature/settings/components/LogoutModal';
+import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
@@ -22,6 +23,7 @@ import {
   formatRenewalDate,
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
+import { trackEvent } from '@/lib/mixpanel';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
@@ -46,6 +48,7 @@ export const SettingsPage: React.FC = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isEditInfoModalOpen, setIsEditInfoModalOpen] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
   // const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
@@ -61,8 +64,11 @@ export const SettingsPage: React.FC = () => {
   const hasCancellationScheduled =
     creditInfo?.subscription?.scheduled_plan_id != null;
 
+  // OAuth 로그인 여부 확인 (이메일 로그인이 아닌 경우)
+  const isOAuthUser = user?.app_metadata?.provider !== 'email';
+
   const handleEditInfo = () => {
-    // TODO: Implement edit info functionality
+    setIsEditInfoModalOpen(true);
   };
 
   // const handleOpenCardRegistration = () => {
@@ -85,9 +91,9 @@ export const SettingsPage: React.FC = () => {
   //   setIsCardModalOpen(false);
   // };
 
-  const handleTokenLog = () => {
-    // TODO: Implement token log functionality
-  };
+  // const handleTokenLog = () => {
+  //   // TODO: Implement token log functionality
+  // };
 
   const handleUpgradePlan = () => {
     setIsUpgradeModalOpen(true);
@@ -98,7 +104,9 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleConfirmCancelSubscription = async () => {
-    // TODO: [Mixpanel] 구독 해지 - track('subscription_cancel', { plan_type: creditInfo?.plan?.type })
+    trackEvent('subscription_cancel', {
+      plan_type: creditInfo?.plan?.type,
+    });
     await billingService.cancelSubscription();
 
     // 구독 정보 다시 조회
@@ -145,7 +153,11 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleGuide = () => {
-    // TODO: Implement guide navigation
+    window.open(
+      'https://rare-puppy-06f.notion.site/v2-2cfdd162832d801bae95f67269c062c7?source=copy_link',
+      '_blank',
+      'noopener,noreferrer'
+    );
   };
 
   const termsTo = {
@@ -159,7 +171,7 @@ export const SettingsPage: React.FC = () => {
 
   const handleConfirmLogout = async () => {
     try {
-      // TODO: [Mixpanel] 로그아웃 - track('logout')
+      trackEvent('logout');
       await logout();
     } catch (error) {
       console.error('Logout failed:', error);
@@ -181,7 +193,7 @@ export const SettingsPage: React.FC = () => {
     setDeleteError('');
 
     try {
-      // TODO: [Mixpanel] 계정 탈퇴 - track('account_delete')
+      trackEvent('account_delete');
       await authService.deleteAccount(user.email);
       await logout();
     } catch (error) {
@@ -256,7 +268,7 @@ export const SettingsPage: React.FC = () => {
               <Title as="h2" className="text-lg font-semibold text-fg-muted">
                 사용 정보
               </Title>
-              <Button
+              {/* <Button
                 variant="outline"
                 tone="neutral"
                 size="sm"
@@ -264,7 +276,7 @@ export const SettingsPage: React.FC = () => {
                 className="text-fg-muted"
               >
                 토큰 사용 내역
-              </Button>
+              </Button> */}
             </div>
 
             <div className="flex flex-col space-y-3">
@@ -384,17 +396,26 @@ export const SettingsPage: React.FC = () => {
           >
             로그아웃
           </Button>
-          <span className="text-border">|</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleDeleteAccount}
-            className="text-fg-muted transition-colors hover:text-danger"
-          >
-            계정 탈퇴
-          </Button>
+          {!isOAuthUser && (
+            <>
+              <span className="text-border">|</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleDeleteAccount}
+                className="text-fg-muted transition-colors hover:text-danger"
+              >
+                계정 탈퇴
+              </Button>
+            </>
+          )}
         </div>
       </div>
+
+      <UserEditModal
+        open={isEditInfoModalOpen}
+        onOpenChange={setIsEditInfoModalOpen}
+      />
 
       <PlanChangeModal
         open={isUpgradeModalOpen}

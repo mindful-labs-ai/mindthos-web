@@ -34,6 +34,7 @@ interface AuthActions {
   _setUser: (user: User | null, userData?: UserData | null) => void;
   _setLoading: (isLoading: boolean) => void;
   setDefaultTemplateId: (templateId: number | null) => void;
+  updateUser: (data: { name?: string; organization?: string }) => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -70,6 +71,30 @@ export const useAuthStore = create<AuthStore>()(
 
       setDefaultTemplateId: (templateId) =>
         set({ defaultTemplateId: templateId }, false, 'setDefaultTemplateId'),
+
+      updateUser: async (data) => {
+        const { userId } = get();
+        if (!userId) return;
+
+        await authService.updateUser(userId, data);
+
+        set(
+          (state) => ({
+            userName: data.name ?? state.userName,
+            organization: data.organization ?? state.organization,
+          }),
+          false,
+          'updateUser'
+        );
+
+        // Update React Query cache if user data was fetched
+        const user = get().user;
+        if (user?.email) {
+          queryClient.invalidateQueries({
+            queryKey: ['user', 'data', user.email],
+          });
+        }
+      },
 
       clear: () =>
         set(

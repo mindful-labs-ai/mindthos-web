@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Button, Text, Title } from '@/components/ui';
+import { trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/services/auth/authService';
 import { ArrowRightIcon } from '@/shared/icons';
 
@@ -24,11 +25,14 @@ const AuthPage = () => {
     setIsGoogleLoading(true);
 
     try {
-      // TODO: [Mixpanel] Google 로그인 시도 - track('login_attempt', { method: 'google' })
+      trackEvent('login_attempt', { method: 'google' });
       await authService.loginWithGoogle();
       // OAuth는 리다이렉트로 처리됨 (성공 트래킹은 OAuth 콜백에서 처리)
     } catch (err) {
-      // TODO: [Mixpanel] Google 로그인 실패 - track('login_failed', { method: 'google', error: err.message })
+      trackEvent('login_failed', {
+        method: 'google',
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
       setError(
         err instanceof Error
           ? err.message

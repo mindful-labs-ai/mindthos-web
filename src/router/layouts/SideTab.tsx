@@ -49,6 +49,15 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   }, [location.pathname]);
 
   const handleNavSelect = (value: string) => {
+    if (value === 'help') {
+      window.open(
+        'https://rare-puppy-06f.notion.site/v2-2cfdd162832d801bae95f67269c062c7?source=copy_link',
+        '_blank',
+        'noopener,noreferrer'
+      );
+      return;
+    }
+
     const path = getPathFromNavValue(value);
     if (path) {
       navigate(path);

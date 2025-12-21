@@ -12,11 +12,11 @@ import { InfoStep } from './InfoStep';
 import { WritingEffect } from './WritingEffect';
 
 const ONBOARDING_STEPS = [
-  { label: '기본정보', description: '정보 입력' },
-  { label: '축어록', description: '축어록 안내' },
-  { label: '상담노트', description: '상담노트 안내' },
-  { label: 'AI 수퍼비전', description: '수퍼비전 안내' },
-  { label: '완료', description: '시작하기' },
+  { label: '기본정보' },
+  { label: '축어록' },
+  { label: '상담노트' },
+  { label: '수퍼비전' },
+  { label: '완료' },
 ];
 
 export function OnboardingModal() {
