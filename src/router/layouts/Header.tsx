@@ -78,8 +78,18 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 flex h-14 items-center justify-between border-b border-border bg-bg px-6 py-4 lg:px-8">
       <BreadCrumb items={breadcrumbItems} />
-      <Button variant="outline" className="w-fit">
-        구버전으로 바로가기
+      <Button
+        variant="outline"
+        className="w-fit"
+        onClick={() =>
+          window.open(
+            'https://legacy.mindthos.com/',
+            '_blank',
+            'noopener,noreferrer'
+          )
+        }
+      >
+        구버전 기록 열람하기
       </Button>
     </header>
   );
