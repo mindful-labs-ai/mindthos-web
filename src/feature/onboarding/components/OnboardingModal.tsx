@@ -1,4 +1,3 @@
-import { Title } from '@/components/ui';
 import { Stepper } from '@/components/ui/composites/Stepper';
 import { cn } from '@/lib/cn';
 import { OnboardingStep } from '@/services/onboarding/types';
@@ -56,10 +55,15 @@ export function OnboardingModal() {
             error={form.error}
           >
             <div className="mt-4 space-y-3">
-              <div className="flex h-[214px] items-center justify-center rounded-md bg-surface-contrast p-4">
-                <Title as="h2" className="text-4xl font-semibold text-red-500">
-                  UI 영상
-                </Title>
+              <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
+                <video
+                  src="/1-고급축어록.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
               </div>
               <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
                 상담 노트가 필요한 경우에는 일반축어록을, 수퍼바이저에게 제출할
@@ -83,10 +87,15 @@ export function OnboardingModal() {
             error={form.error}
           >
             <div className="mt-4 space-y-3">
-              <div className="flex h-[214px] items-center justify-center rounded-md bg-surface-contrast p-4">
-                <Title as="h2" className="text-4xl font-semibold text-red-500">
-                  UI 영상
-                </Title>
+              <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
+                <video
+                  src="/2-이론감지상담노트.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
               </div>
               <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
                 양식에 맞는 노트 작성은 모두 마음토스에게 맡겨주세요. 선생님이
@@ -112,10 +121,15 @@ export function OnboardingModal() {
             error={form.error}
           >
             <div className="mt-4 space-y-3">
-              <div className="flex h-[214px] items-center justify-center rounded-md bg-surface-contrast p-4">
-                <Title as="h2" className="text-4xl font-semibold text-red-500">
-                  UI 영상
-                </Title>
+              <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
+                <video
+                  src="/3-ai수퍼비전.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
               </div>
               <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
                 지금까지 진행된 회기의 축어록 내용을 AI가 분석하고 선생님에게 꼭

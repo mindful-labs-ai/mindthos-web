@@ -69,12 +69,12 @@ const AuthPage = () => {
                 as="h1"
                 className="mb-4 text-3xl font-medium leading-normal"
               >
-                상담에 딱 맞는 AI 노트,
+                늘 곁에있는 AI 슈퍼바이저,
                 <br />
                 <span className="font-semibold text-primary-500">마음토스</span>
               </Title>
               <Text className="text-sm text-muted">
-                대화를 기록하고 과학적인 분석으로 상담의 퀄리티를 높이세요.
+                상담사의 시간을 되찾고 성장을 돕습니다.
               </Text>
             </div>
 
@@ -174,18 +174,20 @@ const AuthPage = () => {
       <div className="hidden flex-1 items-center bg-bg-subtle lg:flex">
         <div className="mx-auto flex w-full max-w-xl flex-col gap-y-8 p-8">
           <img
-            src="/auth-page-image.webp"
+            src="/auth-page-image.png"
             alt="Mindthos 플랫폼 미리보기"
             className="object-contain"
           />
           <div className="flex flex-col gap-y-3">
             <Title as="h2" className="text-xl">
-              상담에 집중하세요, 분석과 정리는 AI가 합니다.
+              상담사에게 꼭 필요한 기능을 만나보세요.
             </Title>
             <Text as="p" className="text-base text-muted">
-              대화 기록과 상담 노트를 자동 작성하고
+              막막했던 사례 개념화부터 번거로운 행정 업무까지.
               <br />
-              감정 흐름과 말의 구조를 정량적으로 분석해 드립니다.
+              마음토스는 상담사가 온전히 내담자와 자신의 성장에
+              <br />
+              집중할 수 있도록 돕는 임상 전문 AI 도구입니다.
             </Text>
           </div>
         </div>
