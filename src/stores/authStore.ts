@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import { identifyUser, resetMixpanel } from '@/lib/mixpanel';
 import { queryClient } from '@/lib/queryClient';
 import { authService } from '@/services/auth/authService';
 import type { User, UserData } from '@/services/auth/types';
@@ -52,7 +53,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isInitialized: false,
 
-      _setUser: (user, userData = null) =>
+      _setUser: (user, userData = null) => {
         set(
           {
             user,
@@ -66,7 +67,16 @@ export const useAuthStore = create<AuthStore>()(
           },
           false,
           'setUser'
-        ),
+        );
+
+        if (user?.id) {
+          identifyUser(user.id, {
+            email: user.email,
+            name: userData?.name,
+            organization: userData?.organization,
+          });
+        }
+      },
       _setLoading: (isLoading) => set({ isLoading }, false, 'setLoading'),
 
       setDefaultTemplateId: (templateId) =>
@@ -96,7 +106,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      clear: () =>
+      clear: () => {
         set(
           {
             user: null,
@@ -110,7 +120,9 @@ export const useAuthStore = create<AuthStore>()(
           },
           false,
           'clear'
-        ),
+        );
+        resetMixpanel();
+      },
 
       login: async (email, password) => {
         await authService.login({ email, password });
