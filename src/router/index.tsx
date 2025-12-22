@@ -1,6 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
 
-import App from '@/App';
 import AuthCallbackPage from '@/feature/auth/page/AuthCallbackPage';
 import AuthPage from '@/feature/auth/page/AuthPage';
 import EmailVerificationPage from '@/feature/auth/page/EmailVerificationPage';
@@ -73,10 +72,6 @@ export const router = createBrowserRouter([
             element: <SettingsPage />,
           },
         ],
-      },
-      {
-        path: '/demo',
-        element: <App />,
       },
       {
         path: ROUTES.AUTH,
