@@ -2,9 +2,12 @@ import { type AuthChangeEvent, type Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 
-import { callEdgeFunction } from '../../shared/utils/edgeFunctionClient';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '../../shared/utils/edgeFunctionClient';
 
-import { EDGE_FUNCTION_ENDPOINTS, ERROR_MESSAGES } from './constants';
+import { ERROR_MESSAGES } from './constants';
 import { handleAuthError, handleEdgeFunctionError } from './errorHandlers';
 import {
   AuthError,
@@ -196,7 +199,7 @@ export const authService = {
   async checkUserExists(email: string): Promise<CheckUserExistsResponse> {
     try {
       return await callEdgeFunction<CheckUserExistsResponse>(
-        EDGE_FUNCTION_ENDPOINTS.CHECK_USER_EXISTS,
+        EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_USER_EXISTS,
         { email }
       );
     } catch (error) {
@@ -207,7 +210,7 @@ export const authService = {
   async deleteAccount(email: string): Promise<AccountDeleteResponse> {
     try {
       return await callEdgeFunction<AccountDeleteResponse>(
-        EDGE_FUNCTION_ENDPOINTS.ACCOUNT_DELETE,
+        EDGE_FUNCTION_ENDPOINTS.AUTH.ACCOUNT_DELETE,
         { email }
       );
     } catch (error) {
@@ -218,7 +221,7 @@ export const authService = {
   async resendVerification(email: string): Promise<ResendVerificationResponse> {
     try {
       return await callEdgeFunction<ResendVerificationResponse>(
-        EDGE_FUNCTION_ENDPOINTS.RESEND_VERIFICATION,
+        EDGE_FUNCTION_ENDPOINTS.AUTH.RESEND_VERIFICATION,
         { email }
       );
     } catch (error) {

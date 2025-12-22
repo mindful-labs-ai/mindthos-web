@@ -1,9 +1,8 @@
-/**
- * Session 생성 API Service
- * Backend: /functions/v1/session/create-background
- */
-
 import { supabase } from '@/lib/supabase';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/utils/edgeFunctionClient';
 
 import type {
   CreateSessionBackgroundRequest,
@@ -67,27 +66,22 @@ export async function createSessionBackground(
 export async function getSessionStatus(
   sessionId: string
 ): Promise<SessionStatusResponse> {
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/session/status/${sessionId}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-    }
-  );
+  try {
+    const data = await callEdgeFunction<SessionStatusResponse>(
+      EDGE_FUNCTION_ENDPOINTS.SESSION.STATUS(sessionId),
+      null,
+      {
+        method: 'GET',
+      }
+    );
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    return data;
+  } catch (error: unknown) {
+    const err = error as { message?: string; statusText?: string };
     throw new Error(
-      errorData.message || `세션 상태 확인 실패: ${response.statusText}`
+      err.message || `세션 상태 확인 실패: ${err.statusText || ''}`
     );
   }
-
-  const data: SessionStatusResponse = await response.json();
-
-  return data;
 }
 
 /**
@@ -182,32 +176,26 @@ export async function getSessionDetail(sessionId: string): Promise<{
  * 오디오 Presigned URL 생성 API 호출
  */
 export async function getAudioPresignedUrl(sessionId: string): Promise<string> {
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/session/presigned-url`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ session_id: sessionId }),
-    }
-  );
+  try {
+    const data = await callEdgeFunction<{
+      success: boolean;
+      presigned_url: string;
+      message?: string;
+    }>(EDGE_FUNCTION_ENDPOINTS.SESSION.PRESIGNED_URL, {
+      session_id: sessionId,
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
+    if (!data.success || !data.presigned_url) {
+      throw new Error(data.message || 'Presigned URL을 가져올 수 없습니다.');
+    }
+
+    return data.presigned_url;
+  } catch (error: unknown) {
+    const err = error as { message?: string; statusText?: string };
     throw new Error(
-      errorData.message || `Presigned URL 생성 실패: ${response.statusText}`
+      err.message || `Presigned URL 생성 실패: ${err.statusText || ''}`
     );
   }
-
-  const data = await response.json();
-
-  if (!data.success || !data.presigned_url) {
-    throw new Error(data.message || 'Presigned URL을 가져올 수 없습니다.');
-  }
-
-  return data.presigned_url;
 }
 
 /**

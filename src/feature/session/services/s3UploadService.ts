@@ -7,15 +7,16 @@
  * - 프론트엔드는 제한된 시간의 업로드 권한을 가진 Presigned URL만 사용
  */
 
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/utils/edgeFunctionClient';
+
 import type {
   S3UploadError,
   UploadToS3Request,
   UploadToS3Response,
 } from '../types/s3Upload.types';
-
-// Supabase Edge Function URL
-const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_WEBAPP_SUPABASE_ANON_KEY;
 
 // 지원하는 오디오 파일 형식
 const SUPPORTED_AUDIO_TYPES = [
@@ -90,29 +91,23 @@ async function getPresignedUrl(
   public_url: string;
   expires_in: number;
 }> {
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/session/upload-url`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        filename,
-        content_type: contentType,
-      }),
-    }
-  );
+  try {
+    const data = await callEdgeFunction<{
+      presigned_url: string;
+      s3_key: string;
+      public_url: string;
+      expires_in: number;
+    }>(EDGE_FUNCTION_ENDPOINTS.SESSION.UPLOAD_URL, {
+      user_id: userId,
+      filename,
+      content_type: contentType,
+    });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Presigned URL 생성 실패');
+    return data;
+  } catch (error: unknown) {
+    const err = error as { message?: string };
+    throw new Error(err.message || 'Presigned URL 생성 실패');
   }
-
-  const data = await response.json();
-  return data;
 }
 
 /**

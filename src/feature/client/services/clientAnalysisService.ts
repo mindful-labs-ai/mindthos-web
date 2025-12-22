@@ -3,8 +3,10 @@
  */
 
 import { supabase } from '@/lib/supabase';
-import { EDGE_FUNCTION_BASE_URL } from '@/services/auth/constants';
-import { callEdgeFunction } from '@/shared/utils/edgeFunctionClient';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/utils/edgeFunctionClient';
 
 import type {
   ClientAnalysis,
@@ -99,7 +101,7 @@ export const clientAnalysisService = {
     request: CreateClientAnalysisRequest
   ): Promise<CreateClientAnalysisResponse> {
     return await callEdgeFunction<CreateClientAnalysisResponse>(
-      '/client-analysis',
+      EDGE_FUNCTION_ENDPOINTS.CLIENT_ANALYSIS.CREATE,
       request
     );
   },
@@ -112,46 +114,15 @@ export const clientAnalysisService = {
     version: number
   ): Promise<GetClientAnalysisStatusResponse> {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      const response = await fetch(
-        `${EDGE_FUNCTION_BASE_URL}/client-analysis/status?client_id=${clientId}&version=${version}`,
+      const response = await callEdgeFunction<GetClientAnalysisStatusResponse>(
+        EDGE_FUNCTION_ENDPOINTS.CLIENT_ANALYSIS.STATUS(clientId, version),
+        null,
         {
           method: 'GET',
-          headers: {
-            Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_WEBAPP_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          // 캐시 방지 - 폴링 시 항상 최신 데이터 필요
-          cache: 'no-store',
         }
       );
 
-      // 304 Not Modified는 캐시된 응답이므로 body가 없음
-      // 폴링 상황에서는 발생하지 않아야 하지만, 발생 시 에러 처리
-      if (response.status === 304) {
-        throw {
-          status: 304,
-          success: false,
-          error: 'NOT_MODIFIED',
-          message: '데이터가 변경되지 않았습니다. 다시 시도해주세요.',
-        } as ClientAnalysisApiError;
-      }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw {
-          status: response.status,
-          success: false,
-          error: data.error || 'STATUS_ERROR',
-          message: data.message || '상태 조회 중 오류가 발생했습니다.',
-        } as ClientAnalysisApiError;
-      }
-
-      return data as GetClientAnalysisStatusResponse;
+      return response;
     } catch (error) {
       const apiError = error as ClientAnalysisApiError;
       throw {
