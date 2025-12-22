@@ -54,7 +54,11 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     status: 'success' | 'failure';
     planName?: string;
     period?: { start: string; end: string };
-    cardInfo?: { type?: string | null; number?: string };
+    cardInfo?: {
+      type?: string | null;
+      number?: string;
+      company?: string | null;
+    };
     amount?: number;
     reason?: string;
   } | null>(null);
@@ -206,8 +210,9 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         planName: getPlanName(response.newPlan || selectedPlan?.type || ''),
         period,
         cardInfo: {
-          type: cardInfo.type ?? cardInfo.company,
+          type: cardInfo.type,
           number: cardInfo.number,
+          company: cardInfo.company,
         },
         amount: response.finalAmount ?? upgradePreview?.finalAmount,
       });
@@ -226,7 +231,11 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         planName: selectedPlan ? getPlanName(selectedPlan.type) : undefined,
         period,
         cardInfo: cardInfo
-          ? { type: cardInfo.type ?? cardInfo.company, number: cardInfo.number }
+          ? {
+              type: cardInfo.type,
+              number: cardInfo.number,
+              company: cardInfo.company,
+            }
           : undefined,
         amount: upgradePreview?.finalAmount ?? selectedPlan?.price,
         reason:
@@ -398,7 +407,15 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
 
         <div className="flex flex-col items-center gap-y-2">
           <Text className="text-sm text-fg">
-            <span className="underline">결제 약관</span>에 동의합니다.
+            <a
+              href="/terms?type=service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline transition-colors hover:text-primary-600"
+            >
+              결제 약관
+            </a>
+            에 동의합니다.
           </Text>
           <Button
             variant="solid"
@@ -437,7 +454,11 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         previewData={upgradePreview}
         cardInfo={
           cardInfo
-            ? { type: cardInfo.type, number: cardInfo.number }
+            ? {
+                type: cardInfo.type,
+                number: cardInfo.number,
+                company: cardInfo.company,
+              }
             : undefined
         }
         onConfirm={handleConfirmUpgrade}

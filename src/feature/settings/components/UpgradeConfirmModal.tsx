@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
+import { getCardBrandName } from '@/feature/payment/constants/card';
 import { formatPrice } from '@/shared/utils/format';
 
 export interface UpgradePreviewData {
@@ -15,6 +16,7 @@ export interface UpgradePreviewData {
   cardInfo?: {
     type: string;
     number: string;
+    company: string | null;
   };
 }
 
@@ -25,6 +27,7 @@ export interface UpgradeConfirmModalProps {
   cardInfo?: {
     type: string;
     number: string;
+    company: string | null;
   };
   onConfirm: () => Promise<void>;
   onChangeCard?: () => void;
@@ -190,7 +193,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
               <div>
                 <Text className="text-sm text-fg-muted">결제 카드</Text>
                 <Text className="font-medium">
-                  {displayCardInfo.type}{' '}
+                  {getCardBrandName(displayCardInfo.company) || ''}{' '}
                   {formatCardNumber(displayCardInfo.number)}
                 </Text>
               </div>
@@ -211,7 +214,15 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         {/* 약관 동의 및 결제 버튼 */}
         <div className="flex flex-col items-center gap-4">
           <Text className="text-sm text-fg-muted">
-            <span className="underline">결제 약관</span>에 동의합니다.
+            <a
+              href="/terms?type=service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline transition-colors hover:text-primary-600"
+            >
+              결제 약관
+            </a>
+            에 동의합니다.
           </Text>
           <Button
             variant="solid"

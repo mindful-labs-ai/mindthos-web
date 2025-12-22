@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
+import { getCardBrandName } from '@/feature/payment/constants/card';
 import { CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { formatPrice } from '@/shared/utils/format';
 
@@ -17,6 +18,7 @@ export interface PaymentResultModalProps {
   cardInfo?: {
     type?: string | null;
     number?: string;
+    company?: string | null;
   };
   amount?: number;
   reason?: string;
@@ -32,9 +34,11 @@ const formatCardNumber = (number?: string) => {
 const getCardDisplay = (cardInfo?: {
   type?: string | null;
   number?: string;
+  company?: string | null;
 }) => {
   if (!cardInfo) return '등록된 카드가 없습니다';
-  const prefix = cardInfo.type ?? '등록 카드';
+  const brandName = getCardBrandName(cardInfo.company);
+  const prefix = brandName || cardInfo.type || '등록 카드';
   return `${prefix} ${formatCardNumber(cardInfo.number)}`;
 };
 

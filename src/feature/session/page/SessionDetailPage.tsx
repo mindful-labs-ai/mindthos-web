@@ -519,7 +519,7 @@ export const SessionDetailPage: React.FC = () => {
 
       toast({
         title: '저장 완료',
-        description: `${Object.keys(editedSegments).length}개의 세그먼트가 업데이트되었습니다.`,
+        description: '축어록이 수정되었습니다.',
         duration: 3000,
       });
     } catch (error) {
@@ -684,7 +684,7 @@ export const SessionDetailPage: React.FC = () => {
 
       toast({
         title: '화자 변경 완료',
-        description: `${Object.keys(updates.speakerChanges).length}개의 세그먼트가 업데이트되었습니다.`,
+        description: '축어록이 수정되었습니다.',
         duration: 3000,
       });
     } catch (error) {

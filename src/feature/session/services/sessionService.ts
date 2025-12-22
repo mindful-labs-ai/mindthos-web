@@ -251,7 +251,7 @@ export async function updateSessionTitle(
 function findSegmentIndexById(segments: any[], segmentId: number): number {
   const index = segments.findIndex((seg) => seg.id === segmentId);
   if (index === -1) {
-    throw new Error(`세그먼트 ID ${segmentId}를 찾을 수 없습니다.`);
+    throw new Error(`선택한 대화를 찾을 수 없습니다.`);
   }
   return index;
 }
@@ -334,7 +334,7 @@ export async function updateTranscriptSegmentText(
     .eq('id', transcribeId);
 
   if (updateError) {
-    throw new Error(`전사 세그먼트 업데이트 실패: ${updateError.message}`);
+    throw new Error(`대화 업데이트 실패: ${updateError.message}`);
   }
 }
 
@@ -380,7 +380,7 @@ export async function updateMultipleTranscriptSegments(
         };
       } catch (error) {
         // 세그먼트를 찾을 수 없으면 스킵
-        console.warn(`세그먼트 ID ${segmentId}를 찾을 수 없습니다.`, error);
+        console.warn(`선택한 대화를 찾을 수 없습니다.`, error);
       }
     }
 
@@ -394,7 +394,7 @@ export async function updateMultipleTranscriptSegments(
     .eq('id', transcribeId);
 
   if (updateError) {
-    throw new Error(`전사 세그먼트 업데이트 실패: ${updateError.message}`);
+    throw new Error(`대화 업데이트 실패: ${updateError.message}`);
   }
 }
 
@@ -485,7 +485,7 @@ export async function updateTranscriptSegments(
     .eq('id', transcribeId);
 
   if (updateError) {
-    throw new Error(`전사 세그먼트 업데이트 실패: ${updateError.message}`);
+    throw new Error(`대화 업데이트 실패: ${updateError.message}`);
   }
 }
 

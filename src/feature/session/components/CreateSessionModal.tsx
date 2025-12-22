@@ -105,7 +105,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
 
         toast({
           title: '상담 기록 작성 완료',
-          description: 'STT 및 상담노트가 성공적으로 작성되었습니다.',
+          description: '축어록 및 상담노트가 성공적으로 작성되었습니다.',
           action: {
             label: '확인하기',
             onClick: () => navigate(getSessionDetailRoute(data.session_id)),

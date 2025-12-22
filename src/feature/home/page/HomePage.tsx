@@ -137,7 +137,7 @@ const HomePage = () => {
         />
         <ActionCard
           icon={<UserPlusIcon size={24} className="text-danger" />}
-          title="고객 추가하기"
+          title="클라이언트 추가하기"
           onClick={handleAddCustomerClick}
         />
         <ActionCard

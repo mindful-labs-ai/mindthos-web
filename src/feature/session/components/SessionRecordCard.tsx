@@ -382,7 +382,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   if (sessionState === 'in_progress') {
     const getProgressLabel = () => {
       const statusConfig = {
-        pending: '대기 중',
+        pending: '작업중',
         transcribing: '전사 중',
         generating_note: '노트 작성 중',
       };
