@@ -3,38 +3,13 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface FileDropProps {
-  /**
-   * Accepted file types (e.g., 'image/*', '.pdf', 'image/png,image/jpeg')
-   */
   accept?: string;
-  /**
-   * Allow multiple files
-   * @default false
-   */
   multiple?: boolean;
-  /**
-   * Max file size in bytes
-   */
   maxSize?: number;
-  /**
-   * Disabled state
-   */
   disabled?: boolean;
-  /**
-   * File selection handler
-   */
   onFilesSelected?: (files: File[]) => void;
-  /**
-   * Error handler
-   */
   onError?: (error: string) => void;
-  /**
-   * Custom content
-   */
   children?: React.ReactNode;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -55,23 +30,12 @@ const UploadIcon = () => (
 );
 
 /**
- * FileDrop component
- *
- * Drag-and-drop file upload area with file type and size validation.
- *
- * **A11y**: Button with proper role, keyboard accessible, aria-label for screen readers.
- * **Keyboard**: Click to open file picker, Enter/Space to activate.
+ * FileDrop - 파일 드래그앤드롭 업로드 컴포넌트
+ * 파일 타입 및 크기 검증 지원
+ * 드래그 상태 시각적 피드백, 키보드 접근성 지원
  *
  * @example
- * ```tsx
- * <FileDrop
- *   accept="image/*"
- *   multiple
- *   maxSize={5 * 1024 * 1024}
- *   onFilesSelected={(files) => console.log(files)}
- *   onError={(error) => console.error(error)}
- * />
- * ```
+ * <FileDrop accept="image/*" multiple maxSize={5 * 1024 * 1024} onFilesSelected={handleFiles} />
  */
 export const FileDrop: React.FC<FileDropProps> = ({
   accept,

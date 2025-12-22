@@ -1,36 +1,11 @@
 /**
  * 검색 유틸리티 - 한글 초성 매칭 지원
  */
-const KOREAN_INITIALS = [
-  'ㄱ',
-  'ㄲ',
-  'ㄴ',
-  'ㄷ',
-  'ㄸ',
-  'ㄹ',
-  'ㅁ',
-  'ㅂ',
-  'ㅃ',
-  'ㅅ',
-  'ㅆ',
-  'ㅇ',
-  'ㅈ',
-  'ㅉ',
-  'ㅊ',
-  'ㅋ',
-  'ㅌ',
-  'ㅍ',
-  'ㅎ',
-];
-
-export const getKoreanInitial = (char: string): string => {
-  const code = char.charCodeAt(0) - 44032;
-  if (code < 0 || code > 11171) return char;
-  const initialIndex = Math.floor(code / 588);
-  return KOREAN_INITIALS[initialIndex];
-};
+import { getKoreanInitial } from './koreanUtils';
 
 export const getInitials = (str: string): string => {
+  if (!str) return '';
+
   return str
     .split('')
     .map((char) => {
@@ -50,6 +25,8 @@ export const getInitials = (str: string): string => {
  * @example matchesInitialSearch('김경민', 'ㄱㄱㅁ') // true
  */
 export const matchesInitialSearch = (text: string, query: string): boolean => {
+  if (!text || !query) return false;
+
   const textInitials = getInitials(text);
   const queryLower = query.toLowerCase();
 
@@ -70,6 +47,8 @@ export const matchesInitialSearch = (text: string, query: string): boolean => {
  * 검색 점수 계산 - 정확도에 따른 가중치 부여
  */
 export const calculateSearchScore = (text: string, query: string): number => {
+  if (!text || !query) return 0;
+
   const textLower = text.toLowerCase();
   const queryLower = query.toLowerCase();
 
@@ -109,6 +88,11 @@ export const highlightMatches = (
   text: string,
   query: string
 ): { text: string; highlight: boolean }[] => {
+  // text가 null/undefined인 경우 빈 배열 반환
+  if (!text) {
+    return [];
+  }
+
   if (!query.trim()) {
     return [{ text, highlight: false }];
   }

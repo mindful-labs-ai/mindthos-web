@@ -6,36 +6,12 @@ export type RemainFormat = 'full' | 'short' | 'minimal';
 export type RemainTone = 'neutral' | 'warn' | 'danger';
 
 export interface RemainProps {
-  /**
-   * Target end time (Date, string, or number)
-   */
   endTime: Date | string | number;
-  /**
-   * Display format
-   * @default 'full'
-   */
   format?: RemainFormat;
-  /**
-   * Tone variant (changes based on urgency)
-   * @default 'neutral'
-   */
   tone?: RemainTone;
-  /**
-   * Auto-update interval in milliseconds
-   * @default 1000
-   */
   updateInterval?: number;
-  /**
-   * Callback when countdown ends
-   */
   onEnd?: () => void;
-  /**
-   * Show icon
-   */
   icon?: React.ReactNode;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -105,22 +81,12 @@ const getAutoTone = (milliseconds: number): RemainTone => {
 };
 
 /**
- * Remain component
- *
- * Countdown timer showing remaining time until a target date/time.
- * Automatically updates and supports multiple display formats.
- *
- * **A11y**: Uses `<time>` element with dateTime attribute, aria-live for updates.
+ * Remain - 카운트다운 타이머 컴포넌트
+ * 목표 시간까지 남은 시간 실시간 표시
+ * full/short/minimal 포맷 지원, 자동 색상 변경
  *
  * @example
- * ```tsx
- * <Remain endTime={new Date(Date.now() + 60000)} />
- * <Remain
- *   endTime="2024-12-31T23:59:59Z"
- *   format="short"
- *   onEnd={() => console.log('Countdown ended!')}
- * />
- * ```
+ * <Remain endTime={new Date(Date.now() + 60000)} format="short" onEnd={handleEnd} />
  */
 export const Remain: React.FC<RemainProps> = ({
   endTime,

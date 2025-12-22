@@ -10,7 +10,8 @@ export type ButtonTone =
   | 'secondary'
   | 'accent'
   | 'neutral'
-  | 'surface';
+  | 'surface'
+  | 'danger';
 export type ButtonVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
@@ -34,9 +35,9 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
   primary: {
     solid: 'bg-primary text-surface hover:bg-primary-600',
     outline:
-      'border-2 border-primary text-primary bg-transparent hover:bg-primary/10',
-    ghost: 'bg-transparent text-primary hover:bg-primary/10',
-    soft: 'bg-primary/10 text-primary hover:bg-primary/20',
+      'border-2 border-primary text-primary bg-primary-100 hover:bg-primary-200',
+    ghost: 'bg-transparent text-primary hover:bg-primary-100',
+    soft: 'bg-primary-100 text-primary hover:bg-primary-200',
   },
   secondary: {
     solid: 'bg-secondary text-surface hover:bg-secondary-600',
@@ -64,6 +65,13 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
     outline: 'border-2 border-border text-fg bg-transparent hover:bg-surface',
     ghost: 'bg-transparent text-fg hover:bg-surface',
     soft: 'bg-surface-contrast text-fg hover:bg-border',
+  },
+  danger: {
+    solid: 'bg-danger text-surface hover:bg-danger/90',
+    outline:
+      'border-2 border-danger text-danger bg-transparent hover:bg-danger/10',
+    ghost: 'bg-transparent text-danger hover:bg-danger/10',
+    soft: 'bg-red-300 text-danger hover:bg-red-400',
   },
 };
 
@@ -106,7 +114,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           'inline-flex items-center justify-center gap-2 font-medium',
           'transition-colors duration-200',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'disabled:cursor-not-allowed disabled:bg-surface-contrast disabled:text-fg-muted',
           sizeStyles[size],
           toneVariantStyles[tone][variant],
           className

@@ -11,6 +11,31 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* TODO: z-index 체계 정리 (CSS/UI 리팩터링 시)
+   *
+   * 현재 문제:
+   * - z-index가 여러 컴포넌트에 산발적으로 정의되어 있음
+   * - stacking context 충돌로 인해 PopUp이 Portal 방식으로 구현됨
+   * - Header(sticky, z-10), SideTab(z-10) 등이 동일한 레벨 사용
+   *
+   * 권장 구조:
+   * --z-base: 0;           // 일반 콘텐츠
+   * --z-sidebar: 10;       // 사이드바
+   * --z-header: 20;        // 헤더 (sticky)
+   * --z-dropdown: 100;     // 드롭다운
+   * --z-sticky: 200;       // Sticky 요소
+   * --z-overlay: 500;      // 오버레이 배경
+   * --z-modal: 1000;       // 모달
+   * --z-popover: 1100;     // 팝오버 (Portal 대체 가능)
+   * --z-tooltip: 1200;     // 툴팁
+   * --z-toast: 1300;       // 토스트 알림
+   *
+   * 참고 파일:
+   * - src/components/ui/composites/PopUp.tsx (현재 Portal 사용)
+   * - src/router/layouts/SideTab.tsx (z-10)
+   * - src/router/layouts/Header.tsx (sticky z-10)
+   */
 }
 
 a {

@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 
-import { AuthProvider } from '@/components/providers/AuthInitializer';
 import { OnboardingModal } from '@/feature/onboarding/components/OnboardingModal';
+import { AuthProvider } from '@/providers/AuthProvider';
 
 /**
  * 애플리케이션의 루트 레이아웃

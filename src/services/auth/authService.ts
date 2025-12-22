@@ -2,8 +2,9 @@ import { type AuthChangeEvent, type Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 
+import { callEdgeFunction } from '../../shared/utils/edgeFunctionClient';
+
 import { EDGE_FUNCTION_ENDPOINTS, ERROR_MESSAGES } from './constants';
-import { callEdgeFunction } from './edgeFunctionClient';
 import { handleAuthError, handleEdgeFunctionError } from './errorHandlers';
 import {
   AuthError,
@@ -15,6 +16,8 @@ import {
   type ResendVerificationResponse,
   type SignUpData,
   type User,
+  type UserData,
+  type UserDbRecord,
 } from './types';
 
 export const authService = {
@@ -97,6 +100,55 @@ export const authService = {
     }
   },
 
+  async getUserDataByEmail(email: string): Promise<UserData | null> {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_user_by_email', {
+          user_email: email,
+        })
+        .single<UserDbRecord>();
+
+      if (error) {
+        console.error('getUserDataByEmail error:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: String(data.id),
+        name: data.name,
+        phoneNumber: data.phone_number,
+        defaultTemplateId: data.default_template_id,
+        organization: data.organization,
+      };
+    } catch (error) {
+      console.error('getUserDataByEmail exception:', error);
+      return null;
+    }
+  },
+
+  async updateUser(
+    userId: string,
+    data: { name?: string; organization?: string }
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: data.name,
+          organization: data.organization,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', parseInt(userId));
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
   async getSession() {
     try {
       const {
@@ -171,6 +223,26 @@ export const authService = {
       );
     } catch (error) {
       throw handleEdgeFunctionError(error);
+    }
+  },
+
+  async loginWithGoogle(): Promise<void> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
     }
   },
 };

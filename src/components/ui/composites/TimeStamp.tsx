@@ -3,22 +3,9 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface TimeStampProps {
-  /**
-   * Date value (Date, string, or number)
-   */
   value: Date | string | number;
-  /**
-   * Format string (simple implementation)
-   * @default undefined (shows ISO string)
-   */
   format?: string;
-  /**
-   * Show relative time (e.g., "2 hours ago")
-   */
   relative?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -42,18 +29,12 @@ const getRelativeTime = (date: Date): string => {
 };
 
 /**
- * TimeStamp component
- *
- * Displays a timestamp with optional relative formatting.
- *
- * **A11y**: Uses `<time>` element with dateTime attribute.
+ * TimeStamp - 타임스탬프 표시 컴포넌트
+ * 절대/상대 시간 형식 지원
+ * time 요소로 접근성 준수
  *
  * @example
- * ```tsx
  * <TimeStamp value={new Date()} relative />
- * <TimeStamp value="2024-01-15T10:30:00Z" />
- * <TimeStamp value={Date.now()} relative />
- * ```
  */
 export const TimeStamp: React.FC<TimeStampProps> = ({
   value,

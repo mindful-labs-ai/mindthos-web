@@ -1,9 +1,28 @@
-/**
- * 인증 서비스 타입 정의
- */
-import type { User } from '@supabase/supabase-js';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-export type { User };
+export interface User extends SupabaseUser {
+  db_id?: string;
+}
+
+export interface UserDbRecord {
+  id: number;
+  name: string | null;
+  email: string;
+  phone_number: string | null;
+  email_verified_at: string | null;
+  organization: string | null;
+  default_template_id: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserData {
+  id: string;
+  name: string | null;
+  phoneNumber: string | null;
+  organization: string | null;
+  defaultTemplateId: number | null;
+}
 
 export interface LoginCredentials {
   email: string;
