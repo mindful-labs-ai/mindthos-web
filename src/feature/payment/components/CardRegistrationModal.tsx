@@ -21,8 +21,6 @@ export const CardRegistrationModal = ({
   customerKey,
   onSuccess,
 }: CardRegistrationModalProps) => {
-  console.log('[CardRegistrationModal] Rendered', { isOpen, customerKey });
-
   const { toast } = useToast();
   const user = useAuthStore((state) => state.user);
   const userName = useAuthStore((state) => state.userName);
@@ -32,11 +30,6 @@ export const CardRegistrationModal = ({
     error: sdkError,
   } = useTossPayments(customerKey);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // SDK 초기화 에러 표시
-  if (sdkError) {
-    console.error('[CardRegistrationModal] SDK Error:', sdkError);
-  }
 
   const handleSubmit = async () => {
     if (!userName || !user?.email) {

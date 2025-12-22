@@ -57,7 +57,7 @@ export interface UseCreateSessionReturn {
 async function extractTextFromPDF(file: File): Promise<string> {
   // 현재는 임시 구현
   // 실제로는 pdf.js나 다른 라이브러리를 사용해야 함
-  console.warn('PDF 텍스트 추출은 아직 구현되지 않았습니다.');
+
   return `[PDF 파일: ${file.name}]\n\n여기에 추출된 텍스트가 들어갑니다.`;
 }
 
@@ -96,20 +96,13 @@ export function useCreateSession(): UseCreateSessionReturn {
         const audioFile = params.file as AudioFileInfo;
 
         // S3 업로드 전 크레딧 확인
-        const { totalCredit, sttCredit, noteCredit } = calculateTotalCredit({
+        const { totalCredit } = calculateTotalCredit({
           uploadType: 'audio',
           transcribeType: params.transcribeType,
           durationSeconds: audioFile.duration,
         });
 
         const remainingCredit = creditInfo?.plan.remaining ?? 0;
-
-        console.log('[CreateSession] 크레딧 확인:', {
-          필요: totalCredit,
-          잔여: remainingCredit,
-          STT: sttCredit,
-          상담노트: noteCredit,
-        });
 
         if (remainingCredit < totalCredit) {
           throw new Error(
@@ -149,11 +142,6 @@ export function useCreateSession(): UseCreateSessionReturn {
 
         const remainingCredit = creditInfo?.plan.remaining ?? 0;
 
-        console.log('[CreateSession] 크레딧 확인:', {
-          필요: totalCredit,
-          잔여: remainingCredit,
-        });
-
         if (remainingCredit < totalCredit) {
           throw new Error(
             `크레딧이 부족합니다. 필요: ${totalCredit}, 잔여: ${remainingCredit}`
@@ -182,11 +170,6 @@ export function useCreateSession(): UseCreateSessionReturn {
         });
 
         const remainingCredit = creditInfo?.plan.remaining ?? 0;
-
-        console.log('[CreateSession] 크레딧 확인:', {
-          필요: totalCredit,
-          잔여: remainingCredit,
-        });
 
         if (remainingCredit < totalCredit) {
           throw new Error(

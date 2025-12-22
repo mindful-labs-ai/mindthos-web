@@ -12,10 +12,6 @@ export const useTossPayments = (customerKey: string) => {
   useEffect(() => {
     async function initPayment() {
       try {
-        console.log('[useTossPayments] Initializing...', {
-          customerKey,
-          clientKey: TOSS_PAYMENTS_CONFIG.clientKey,
-        });
         setIsLoading(true);
 
         if (!TOSS_PAYMENTS_CONFIG.clientKey) {
@@ -27,9 +23,7 @@ export const useTossPayments = (customerKey: string) => {
         );
         const paymentInstance = tossPayments.payment({ customerKey });
         setPayment(paymentInstance);
-        console.log('[useTossPayments] Initialized successfully');
       } catch (err) {
-        console.error('[useTossPayments] Initialization failed:', err);
         setError(
           err instanceof Error
             ? err

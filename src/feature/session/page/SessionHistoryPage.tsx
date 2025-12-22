@@ -191,7 +191,7 @@ export const SessionHistoryPage: React.FC = () => {
   const handleDeleteSession = (record: SessionRecord) => {
     if (confirm('정말로 이 상담 기록을 삭제하시겠습니까?')) {
       // TODO: DB 삭제 API 호출 필요
-      console.log('세션 삭제:', record.session_id);
+
       // 현재 선택된 세션이 삭제되는 경우 목록 페이지로 이동
       if (sessionId === record.session_id) {
         navigate('/sessions');

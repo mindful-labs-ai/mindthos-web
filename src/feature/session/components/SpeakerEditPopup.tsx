@@ -87,11 +87,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         allSegments
       );
 
-      console.log(
-        '🔍 [Speaker Edit] Affected segment IDs:',
-        affectedSegmentIds
-      );
-
       // 2. 대상 speaker 이름 결정
       let targetName: string;
       let targetSpeakerId: number | undefined;
@@ -113,10 +108,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         targetName = '';
       }
 
-      console.log('🔍 [Speaker Edit] Selection type:', selectionType);
-      console.log('🔍 [Speaker Edit] Target name:', targetName);
-      console.log('🔍 [Speaker Edit] Current speakers:', speakers);
-
       // 3. speaker ID 찾기 또는 생성
       let updatedSpeakers: Speaker[];
       let finalSpeakerId: number;
@@ -126,10 +117,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         // existing_ 선택으로 이미 ID가 결정된 경우
         finalSpeakerId = targetSpeakerId;
         updatedSpeakers = speakers;
-        console.log(
-          '🔍 [Speaker Edit] Reusing existing speaker ID:',
-          finalSpeakerId
-        );
       } else {
         // client 또는 custom 선택 시
         const existingSpeaker = speakers.find(
@@ -140,10 +127,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
           // 이미 존재하는 customName이면 해당 speaker ID 재사용
           finalSpeakerId = existingSpeaker.id;
           updatedSpeakers = speakers;
-          console.log(
-            '🔍 [Speaker Edit] Reusing existing speaker ID:',
-            finalSpeakerId
-          );
         } else {
           // 새로운 speaker 생성
           const maxId = Math.max(...speakers.map((s) => s.id), 0);
@@ -156,11 +139,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
               customName: targetName,
             },
           ];
-          console.log(
-            '🔍 [Speaker Edit] Created new speaker ID:',
-            finalSpeakerId
-          );
-          console.log('🔍 [Speaker Edit] Updated speakers:', updatedSpeakers);
         }
       }
 
@@ -169,9 +147,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       affectedSegmentIds.forEach((id) => {
         speakerChanges[id] = finalSpeakerId;
       });
-
-      console.log('🔍 [Speaker Edit] Speaker changes:', speakerChanges);
-      console.log('🔍 [Speaker Edit] Speaker definitions:', updatedSpeakers);
 
       // 5. 업데이트 후 미사용 speaker cleanup
       // 임시로 업데이트된 세그먼트 계산
@@ -188,24 +163,11 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         updatedSegments
       );
 
-      console.log(
-        '🔍 [Speaker Edit] Before cleanup:',
-        updatedSpeakers.length,
-        'speakers'
-      );
-      console.log(
-        '🔍 [Speaker Edit] After cleanup:',
-        cleanedSpeakers.length,
-        'speakers'
-      );
-
       // 6. 업데이트 적용 (cleaned speakers 사용)
       await onApply({
         speakerChanges,
         speakerDefinitions: cleanedSpeakers,
       });
-
-      console.log('✅ [Speaker Edit] Apply completed successfully');
 
       // 7. 성공 시 PopUp 닫기
       onOpenChange(false);
@@ -214,8 +176,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       setCustomName('');
       setRange('single');
       setSelectionType('client');
-    } catch (error) {
-      console.error('❌ [Speaker Edit] Failed:', error);
+    } catch {
       // 에러는 부모 컴포넌트에서 처리 (toast 표시)
     } finally {
       setIsApplying(false);

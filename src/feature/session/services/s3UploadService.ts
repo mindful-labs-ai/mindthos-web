@@ -168,8 +168,7 @@ export async function uploadAudioToS3(
     let duration_seconds: number | undefined;
     try {
       duration_seconds = await extractAudioDuration(file);
-    } catch (error) {
-      console.warn('오디오 길이 추출 실패:', error);
+    } catch {
       // 길이 추출 실패는 치명적이지 않으므로 계속 진행
     }
 
@@ -180,12 +179,6 @@ export async function uploadAudioToS3(
     // 3. Content-Type 결정 (한 번만 결정하여 일관성 유지)
     // 파일 타입이 비어있거나 신뢰할 수 없는 경우를 대비한 매핑
     const contentType = determineContentType(file);
-    console.log(
-      '[S3 Upload] Content-Type:',
-      contentType,
-      'File type:',
-      file.type
-    );
 
     // 4. 백엔드에서 Presigned URL 받기
     const { presigned_url, s3_key, public_url } = await getPresignedUrl(
@@ -193,8 +186,6 @@ export async function uploadAudioToS3(
       file.name,
       contentType
     );
-
-    console.log('[S3 Upload] Presigned URL received, key:', s3_key);
 
     if (onProgress) {
       onProgress(20); // Presigned URL 받음, 업로드 시작
@@ -217,25 +208,16 @@ export async function uploadAudioToS3(
 
       xhr.addEventListener('load', () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          console.log('[S3 Upload] 업로드 성공');
           resolve();
         } else {
-          console.error(
-            '[S3 Upload] 업로드 실패:',
-            xhr.status,
-            xhr.statusText,
-            xhr.responseText
-          );
           reject(new Error(`업로드 실패: ${xhr.status} ${xhr.statusText}`));
         }
       });
 
       xhr.addEventListener('error', () => {
-        console.error('[S3 Upload] 네트워크 오류');
         reject(new Error('네트워크 오류가 발생했습니다.'));
       });
 
-      console.log('[S3 Upload] PUT 요청 시작, Content-Type:', contentType);
       xhr.open('PUT', presigned_url);
       xhr.setRequestHeader('Content-Type', contentType);
       xhr.send(file);

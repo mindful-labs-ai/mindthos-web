@@ -131,29 +131,12 @@ export async function getSessionList(userId: number): Promise<{
     const sessionProgressNotes =
       progressNotes?.filter((pn) => pn.session_id === session.id) || [];
 
-    // 디버깅: 각 세션의 progressNotes 확인
-    console.log(
-      '[getSessionList] Session:',
-      session.id,
-      'Title:',
-      session.title,
-      'progressNotes:',
-      sessionProgressNotes
-    );
-
     return {
       session,
       transcribe: transcribes?.find((t) => t.session_id === session.id) || null,
       progressNotes: sessionProgressNotes,
     };
   });
-
-  console.log(
-    '[getSessionList] Total sessions:',
-    result.length,
-    'All progress_notes from DB:',
-    progressNotes
-  );
 
   return { sessions: result };
 }
@@ -378,9 +361,8 @@ export async function updateMultipleTranscriptSegments(
           ...segments[segmentIndex],
           text: newText,
         };
-      } catch (error) {
+      } catch {
         // 세그먼트를 찾을 수 없으면 스킵
-        console.warn(`선택한 대화를 찾을 수 없습니다.`, error);
       }
     }
 

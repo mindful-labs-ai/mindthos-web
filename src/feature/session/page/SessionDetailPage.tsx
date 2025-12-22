@@ -166,8 +166,6 @@ export const SessionDetailPage: React.FC = () => {
       });
     },
     onNoteError: (note, error) => {
-      console.error('상담노트 작성 실패:', error);
-
       // 해당 노트의 생성 탭이 있었다면 제거
       setCreatingTabs((prev) => {
         const updated = { ...prev };
@@ -523,8 +521,6 @@ export const SessionDetailPage: React.FC = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('전사 텍스트 업데이트 실패:', error);
-
       // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
       await queryClient.invalidateQueries({
         queryKey: sessionQueryKey,
@@ -570,15 +566,8 @@ export const SessionDetailPage: React.FC = () => {
       });
       return;
     }
-    console.log(
-      '🔄 [SessionDetailPage] handleSpeakerChange called with:',
-      updates
-    );
 
     if (!transcribe?.id || !sessionId) {
-      console.error(
-        '❌ [SessionDetailPage] Missing transcribe.id or sessionId'
-      );
       toast({
         title: '오류',
         description: '전사 데이터를 찾을 수 없습니다.',
@@ -587,11 +576,8 @@ export const SessionDetailPage: React.FC = () => {
       return;
     }
 
-    console.log('🔄 [SessionDetailPage] transcribe.id:', transcribe.id);
-
     try {
       // Optimistic update: 캐시를 즉시 업데이트
-      console.log('🔄 [SessionDetailPage] Starting optimistic update...');
       queryClient.setQueryData(
         sessionQueryKey, // 수정 가능 = 더미 아님
         (
@@ -662,25 +648,18 @@ export const SessionDetailPage: React.FC = () => {
         }
       );
 
-      console.log('✅ [SessionDetailPage] Optimistic update completed');
-
       // 백그라운드에서 서버 업데이트
-      console.log(
-        '🔄 [SessionDetailPage] Calling updateTranscriptSegments API...'
-      );
+
       await updateTranscriptSegments(transcribe.id, {
         speakerUpdates: updates.speakerChanges,
         speakerDefinitions: updates.speakerDefinitions,
       });
 
-      console.log('✅ [SessionDetailPage] API call completed');
-
       // API 성공 후 캐시 무효화하여 DB의 최신 데이터 가져오기
-      console.log('🔄 [SessionDetailPage] Invalidating cache...');
+
       await queryClient.invalidateQueries({
         queryKey: sessionQueryKey,
       });
-      console.log('✅ [SessionDetailPage] Cache invalidated');
 
       toast({
         title: '화자 변경 완료',
@@ -688,8 +667,6 @@ export const SessionDetailPage: React.FC = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('❌ [SessionDetailPage] 화자 변경 실패:', error);
-
       // 실패 시 캐시 무효화하여 서버 데이터로 되돌림
       await queryClient.invalidateQueries({
         queryKey: sessionQueryKey,
@@ -808,8 +785,7 @@ export const SessionDetailPage: React.FC = () => {
         description: '축어록이 클립보드에 복사되었습니다.',
         duration: 3000,
       });
-    } catch (error) {
-      console.error('클립보드 복사 실패:', error);
+    } catch {
       toast({
         title: '복사 실패',
         description: '클립보드에 복사할 수 없습니다.',
@@ -829,27 +805,22 @@ export const SessionDetailPage: React.FC = () => {
     }
     if (!sessionId) return;
 
-    try {
-      await updateSessionTitle(sessionId, newTitle);
+    await updateSessionTitle(sessionId, newTitle);
 
-      const userIdString = useAuthStore.getState().userId;
-      const userId = userIdString ? Number(userIdString) : null;
+    const userIdString = useAuthStore.getState().userId;
+    const userId = userIdString ? Number(userIdString) : null;
 
-      // 성공 시 세션 상세 정보 및 세션 목록 다시 조회
-      await Promise.all([
+    // 성공 시 세션 상세 정보 및 세션 목록 다시 조회
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: sessionQueryKey,
+      }),
+      // 세션 목록도 invalidate하여 SessionRecordCard와 SessionSideList 업데이트
+      userId &&
         queryClient.invalidateQueries({
-          queryKey: sessionQueryKey,
+          queryKey: ['sessions', userId],
         }),
-        // 세션 목록도 invalidate하여 SessionRecordCard와 SessionSideList 업데이트
-        userId &&
-          queryClient.invalidateQueries({
-            queryKey: ['sessions', userId],
-          }),
-      ]);
-    } catch (error) {
-      console.error('세션 제목 업데이트 실패:', error);
-      throw error;
-    }
+    ]);
   };
 
   // 현재 활성 생성 탭의 템플릿 선택 핸들러
@@ -883,13 +854,11 @@ export const SessionDetailPage: React.FC = () => {
 
     const userIdString = useAuthStore.getState().userId;
     if (!userIdString) {
-      console.error('인증되지 않은 사용자입니다.');
       return;
     }
 
     const userId = Number(userIdString);
     if (isNaN(userId)) {
-      console.error('유효하지 않은 사용자 ID입니다.');
       return;
     }
 
@@ -929,8 +898,6 @@ export const SessionDetailPage: React.FC = () => {
         duration: 3000,
       });
     } catch (error) {
-      console.error('상담 노트 작성 실패:', error);
-
       // 실패 시 requestingTabs에서 제거하고 다시 creatingTabs로 복원
       setRequestingTabs((prev) => {
         const updated = { ...prev };
@@ -992,7 +959,7 @@ export const SessionDetailPage: React.FC = () => {
           const url = await getAudioPresignedUrl(sessionId);
           setPresignedAudioUrl(url);
         } catch (error) {
-          console.error('[SessionDetailPage] Presigned URL 생성 실패:', error);
+          console.error('음성 파일을 불러오는 대에 실패했습니다.:', error);
         }
       }
     };

@@ -28,9 +28,8 @@ interface UseS3UploadReturn {
  * const handleUpload = async () => {
  *   try {
  *     const result = await uploadAudio(file, userId);
- *     console.log('업로드 완료:', result.audio_url);
  *   } catch (err) {
- *     console.error('업로드 실패:', err);
+ *     // handle error
  *   }
  * };
  */

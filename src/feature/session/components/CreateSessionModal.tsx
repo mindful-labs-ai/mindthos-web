@@ -86,8 +86,6 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     enabled: !!createdSessionId,
     onComplete: (data, status) => {
       if (status === 'succeeded') {
-        console.log('[세션 처리 완료]', data);
-
         // 특정 세션만 refetch (전체 세션 목록이 아닌)
         queryClient.invalidateQueries({
           queryKey: ['session', 'detail', data.session_id],
@@ -113,7 +111,6 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           duration: 10000,
         });
       } else if (status === 'failed') {
-        console.error('[세션 처리 실패]', data.error_message);
         toast({
           title: '상담 기록 작성 실패',
           description: data.error_message || '알 수 없는 오류가 발생했습니다.',
@@ -139,16 +136,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     if (type === 'direct' && !directInput.trim()) return;
     if (fileSizeExceeded) return;
 
-    console.log('[handleCreateSession] 시작:', {
-      userId,
-      defaultTemplateId,
-      type,
-      selectedClient,
-    });
-
     // 사용자 인증 확인
     if (!userId) {
-      console.error('[handleCreateSession] 사용자 ID가 없습니다.');
       toast({
         title: '오류',
         description:
@@ -161,7 +150,6 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     // userId를 number로 변환
     const userIdNumber = parseInt(userId);
     if (isNaN(userIdNumber)) {
-      console.error('[handleCreateSession] 유효하지 않은 사용자 ID:', userId);
       toast({
         title: '오류',
         description: '사용자 정보가 올바르지 않습니다. 다시 로그인해주세요.',
@@ -175,13 +163,6 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
 
     setIsCreating(true);
     try {
-      console.log('[handleCreateSession] API 호출 시작:', {
-        userId: userIdNumber,
-        clientId: selectedClient?.id,
-        uploadType: type,
-        templateId,
-      });
-
       // uploadType에 따른 분기 처리
       let transcribeType: 'basic' | 'advanced' | undefined;
 
@@ -230,8 +211,6 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         upload_type: type,
         error: errorMessage,
       });
-
-      console.error('[handleCreateSession] 세션 작성 실패:', error);
 
       // 크레딧 부족 에러 확인
       const isCreditError = errorMessage.includes('크레딧이 부족합니다');

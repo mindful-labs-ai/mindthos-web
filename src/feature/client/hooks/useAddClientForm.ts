@@ -69,18 +69,10 @@ export const useAddClientForm = (initialData?: Client | null) => {
       requestBody: CreateClientRequest | UpdateClientRequest
     ) => {
       if (isEditMode && initialData) {
-        console.log('===== 클라이언트 수정 요청 =====');
-        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
-        console.log('================================');
-
         return await clientService.updateClient(
           requestBody as UpdateClientRequest
         );
       } else {
-        console.log('===== 클라이언트 등록 요청 =====');
-        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
-        console.log('================================');
-
         return await clientService.createClient(
           requestBody as CreateClientRequest
         );
@@ -97,15 +89,6 @@ export const useAddClientForm = (initialData?: Client | null) => {
 
       trackEvent(eventName, { client_id: clientId });
 
-      console.log(
-        `===== 클라이언트 ${isEditMode ? '수정' : '등록'} 성공 =====`
-      );
-      console.log('메시지:', response.message);
-      if ('client' in response) {
-        console.log('등록된 클라이언트:', response.client);
-      }
-      console.log('================================');
-
       // 클라이언트 목록 쿼리 무효화하여 자동 리페치
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
     },
@@ -117,13 +100,6 @@ export const useAddClientForm = (initialData?: Client | null) => {
         error instanceof Error ? error.message : 'Unknown error';
 
       trackEvent(eventName, { error: errorMessage });
-
-      console.error(
-        `===== 클라이언트 ${isEditMode ? '수정' : '등록'} 실패 =====`
-      );
-      console.error('Full Error Object:', error);
-      console.error('Error JSON:', JSON.stringify(error, null, 2));
-      console.error('================================');
     },
   });
 
