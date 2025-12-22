@@ -1,5 +1,8 @@
 import { supabase } from '@/lib/supabase';
-import { callEdgeFunction } from '@/shared/utils/edgeFunctionClient';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/utils/edgeFunctionClient';
 
 import type {
   BillingKeyIssueRequest,
@@ -17,7 +20,7 @@ export const billingService = {
     request: BillingKeyIssueRequest
   ): Promise<BillingKeyIssueResponse> {
     return await callEdgeFunction<BillingKeyIssueResponse>(
-      '/payment/issue-billing-key',
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.ISSUE_BILLING_KEY,
       request
     );
   },
@@ -27,7 +30,7 @@ export const billingService = {
    */
   async initUpgrade(request: UpgradePlanRequest): Promise<UpgradePlanResponse> {
     return await callEdgeFunction<UpgradePlanResponse>(
-      '/payment/init-upgrade',
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.INIT_UPGRADE,
       request
     );
   },
@@ -39,7 +42,7 @@ export const billingService = {
     request: CompletePlanUpgradeRequest
   ): Promise<UpgradePlanResponse> {
     return await callEdgeFunction<UpgradePlanResponse>(
-      '/payment/complete-upgrade',
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.COMPLETE_UPGRADE,
       request
     );
   },
@@ -49,7 +52,7 @@ export const billingService = {
    */
   async upgradePlan(request: UpgradePlanRequest): Promise<UpgradePlanResponse> {
     return await callEdgeFunction<UpgradePlanResponse>(
-      '/payment/upgrade',
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.UPGRADE,
       request
     );
   },
@@ -107,7 +110,7 @@ export const billingService = {
    */
   async deleteCard(): Promise<void> {
     await callEdgeFunction<{ success: boolean; message: string }>(
-      '/payment/delete-card',
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.DELETE_CARD,
       {}
     );
   },
@@ -127,7 +130,10 @@ export const billingService = {
     discount: number;
     finalAmount: number;
   }> {
-    return await callEdgeFunction('/payment/preview-upgrade', { planId });
+    return await callEdgeFunction(
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.PREVIEW_UPGRADE,
+      { planId }
+    );
   },
 
   /**
@@ -143,7 +149,9 @@ export const billingService = {
     appliedAt?: string;
     effectiveAt?: string | null;
   }> {
-    return await callEdgeFunction('/payment/change-plan', { planId });
+    return await callEdgeFunction(EDGE_FUNCTION_ENDPOINTS.PAYMENT.CHANGE_PLAN, {
+      planId,
+    });
   },
 
   /**
@@ -153,13 +161,13 @@ export const billingService = {
     canceledPlan: string;
     effectiveAt: string | null;
   }> {
-    return await callEdgeFunction('/payment/cancel', {});
+    return await callEdgeFunction(EDGE_FUNCTION_ENDPOINTS.PAYMENT.CANCEL, {});
   },
 
   /**
    * 구독 해지 취소 (예약된 다운그레이드/해지 취소)
    */
   async undoCancellation(): Promise<void> {
-    await callEdgeFunction('/payment/cancel-undo', {});
+    await callEdgeFunction(EDGE_FUNCTION_ENDPOINTS.PAYMENT.CANCEL_UNDO, {});
   },
 };

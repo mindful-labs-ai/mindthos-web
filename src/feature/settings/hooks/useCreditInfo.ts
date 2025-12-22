@@ -23,7 +23,11 @@ export const useCreditInfo = () => {
       return await creditService.getSubscriptionInfo(userIdNumber);
     },
     enabled: !!userIdNumber,
-    // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect/Interval false
+    staleTime: 5000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchInterval: 5000,
   });
 
   // 사용량 정보 쿼리
@@ -36,7 +40,11 @@ export const useCreditInfo = () => {
       return await creditService.getCreditUsage(userIdNumber);
     },
     enabled: !!userIdNumber,
-    // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect/Interval false
+    staleTime: 5000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
+    refetchInterval: 5000,
   });
 
   let creditInfo: CreditInfo | undefined = undefined;
