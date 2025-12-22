@@ -7,43 +7,43 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 세션 관련
   SESSION: {
     STATUS: (sessionId: string) => `session/status/${sessionId}`,
-    PRESIGNED_URL: 'dev/session/presigned-url',
-    UPLOAD_URL: 'dev/session/upload-url',
+    PRESIGNED_URL: 'session/presigned-url',
+    UPLOAD_URL: 'session/upload-url',
   },
   // 상담노트 관련
   PROGRESS_NOTE: {
-    CREATE: 'dev/progress-note',
-    ADD: 'dev/add-progress-note',
+    CREATE: 'progress-note',
+    ADD: 'add-progress-note',
   },
   // 내담자 관련
   CLIENT: {
-    CREATE: 'dev/client/create',
-    UPDATE: 'dev/client',
-    DELETE: 'dev/client',
+    CREATE: 'client/create',
+    UPDATE: 'client',
+    DELETE: 'client',
   },
   // 내담자 분석 관련
   CLIENT_ANALYSIS: {
-    CREATE: 'dev/client-analysis',
+    CREATE: 'client-analysis',
     STATUS: (clientId: string, version: number) =>
-      `dev/client-analysis/status?client_id=${clientId}&version=${version}`,
+      `client-analysis/status?client_id=${clientId}&version=${version}`,
   },
   // 결제 및 구독 관련
   PAYMENT: {
-    ISSUE_BILLING_KEY: 'dev/payment/issue-billing-key',
-    INIT_UPGRADE: 'dev/payment/init-upgrade',
-    COMPLETE_UPGRADE: 'dev/payment/complete-upgrade',
-    UPGRADE: 'dev/payment/upgrade',
-    DELETE_CARD: 'dev/payment/delete-card',
-    PREVIEW_UPGRADE: 'dev/payment/preview-upgrade',
-    CHANGE_PLAN: 'dev/payment/change-plan',
-    CANCEL: 'dev/payment/cancel',
-    CANCEL_UNDO: 'dev/payment/cancel-undo',
+    ISSUE_BILLING_KEY: 'payment/issue-billing-key',
+    INIT_UPGRADE: 'payment/init-upgrade',
+    COMPLETE_UPGRADE: 'payment/complete-upgrade',
+    UPGRADE: 'payment/upgrade',
+    DELETE_CARD: 'payment/delete-card',
+    PREVIEW_UPGRADE: 'payment/preview-upgrade',
+    CHANGE_PLAN: 'payment/change-plan',
+    CANCEL: 'payment/cancel',
+    CANCEL_UNDO: 'payment/cancel-undo',
   },
   // 인증 관련 (백엔드 전용 API)
   AUTH: {
-    CHECK_USER_EXISTS: 'dev/auth/check-user-exists',
-    ACCOUNT_DELETE: 'dev/auth/account-delete',
-    RESEND_VERIFICATION: 'dev/auth/resend-verification',
+    CHECK_USER_EXISTS: 'auth/check-user-exists',
+    ACCOUNT_DELETE: 'auth/account-delete',
+    RESEND_VERIFICATION: 'auth/resend-verification',
   },
 } as const;
 
