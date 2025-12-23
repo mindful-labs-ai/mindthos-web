@@ -13,6 +13,7 @@ import { billingService } from '@/feature/payment/services/billingService';
 import { CancelSubscriptionModal } from '@/feature/settings/components/CancelSubscriptionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
+import { CreditUsageModal } from '@/feature/settings/components/CreditUsageModal';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { LogoutModal } from '@/feature/settings/components/LogoutModal';
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
@@ -49,6 +50,8 @@ export const SettingsPage: React.FC = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isEditInfoModalOpen, setIsEditInfoModalOpen] = React.useState(false);
+  const [isCreditUsageModalOpen, setIsCreditUsageModalOpen] =
+    React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
   // const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
@@ -91,9 +94,9 @@ export const SettingsPage: React.FC = () => {
   //   setIsCardModalOpen(false);
   // };
 
-  // const handleTokenLog = () => {
-  //   // TODO: Implement token log functionality
-  // };
+  const handleCreditUsageLog = () => {
+    setIsCreditUsageModalOpen(true);
+  };
 
   const handleUpgradePlan = () => {
     setIsUpgradeModalOpen(true);
@@ -268,15 +271,15 @@ export const SettingsPage: React.FC = () => {
               <Title as="h2" className="text-lg font-semibold text-fg-muted">
                 사용 정보
               </Title>
-              {/* <Button
+              <Button
                 variant="outline"
                 tone="neutral"
                 size="sm"
-                onClick={handleTokenLog}
+                onClick={handleCreditUsageLog}
                 className="text-fg-muted"
               >
-                토큰 사용 내역
-              </Button> */}
+                크레딧 사용 내역
+              </Button>
             </div>
 
             <div className="flex flex-col space-y-3">
@@ -453,6 +456,10 @@ export const SettingsPage: React.FC = () => {
         customerKey={user?.id ? String(user.id) : ''}
         onSuccess={handleCardRegistrationSuccess}
       /> */}
+      <CreditUsageModal
+        open={isCreditUsageModalOpen}
+        onOpenChange={setIsCreditUsageModalOpen}
+      />
     </div>
   );
 };

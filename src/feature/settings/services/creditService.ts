@@ -19,6 +19,16 @@ export interface CreditUsage {
   total_usage: number;
 }
 
+export interface CreditLog {
+  id: string;
+  user_id: number;
+  use_type: string;
+  use_amount: number;
+  log_memo: string | null;
+  created_at: string;
+  feature_metadata: Record<string, unknown> | null;
+}
+
 export interface CreditInfo {
   plan: {
     total: number;
@@ -112,5 +122,27 @@ export const creditService = {
     return {
       total_usage: data.total_usage ?? 0,
     };
+  },
+
+  async getCreditLogs(
+    userId: number,
+    page: number = 0,
+    pageSize: number = 20
+  ): Promise<CreditLog[]> {
+    const from = page * pageSize;
+    const to = from + pageSize - 1;
+
+    const { data, error } = await supabase
+      .from('credit_log')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (error) {
+      throw new Error(`크레딧 로그 조회 실패: ${error.message}`);
+    }
+
+    return data || [];
   },
 };
