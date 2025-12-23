@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/atoms/Input';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { dummyClient } from '@/feature/session/constants/dummySessions';
+import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import { getClientDetailRoute } from '@/router/constants';
 import { SearchIcon } from '@/shared/icons';
+import { useAuthStore } from '@/stores/authStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientCard } from '../components/ClientCard';
@@ -21,12 +23,23 @@ export const ClientListPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = React.useState('');
   const { clients, isLoading, error } = useClientList();
+  const userId = useAuthStore((state) => state.userId);
+  const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
+    userId: parseInt(userId || '0'),
+    enabled: !!userId,
+  });
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
     null
   );
 
-  const isDummyFlow = !isLoading && !error && clients.length === 0;
+  const sessionsFromQuery = sessionData?.sessions || [];
+
+  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때만 표시
+  // 세션이든 클라이언트든 하나라도 실제 데이터가 있으면 더미를 숨김
+  const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
+  const isDummyFlow =
+    !isLoading && !isLoadingSessions && !error && !hasAnyRealData;
   const effectiveClients = isDummyFlow ? [dummyClient] : clients;
 
   const filteredClients = useClientSearch(effectiveClients, searchQuery);
