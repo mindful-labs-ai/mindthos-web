@@ -1097,7 +1097,7 @@ export const SessionDetailPage: React.FC = () => {
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         {activeTab === 'transcript' && (
-          <div className="absolute inset-x-0 right-4 top-0 z-10 flex select-none justify-end bg-gradient-to-t from-transparent to-slate-50">
+          <div className="absolute inset-x-0 right-4 top-0 flex select-none justify-end bg-gradient-to-t from-transparent to-slate-50">
             <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
               {isReadOnly ? (
                 <Badge tone="warning" variant="soft" size="sm">
