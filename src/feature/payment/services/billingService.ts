@@ -26,6 +26,18 @@ export const billingService = {
   },
 
   /**
+   * 카드 등록 요청 (단순 빌링키 발급 및 저장)
+   */
+  async registerCard(
+    request: BillingKeyIssueRequest
+  ): Promise<BillingKeyIssueResponse> {
+    return await callEdgeFunction<BillingKeyIssueResponse>(
+      EDGE_FUNCTION_ENDPOINTS.PAYMENT.REGISTER_CARD,
+      request
+    );
+  },
+
+  /**
    * 플랜 업그레이드 초기화 (payments row 생성)
    */
   async initUpgrade(request: UpgradePlanRequest): Promise<UpgradePlanResponse> {

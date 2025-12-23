@@ -9,6 +9,7 @@ import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import { useToast } from '@/components/ui/composites/Toast';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
+import { CardRegistrationModal } from '@/feature/payment/components/CardRegistrationModal';
 import { billingService } from '@/feature/payment/services/billingService';
 import { CancelSubscriptionModal } from '@/feature/settings/components/CancelSubscriptionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
@@ -54,7 +55,7 @@ export const SettingsPage: React.FC = () => {
     React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
-  // const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
+  const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -74,25 +75,25 @@ export const SettingsPage: React.FC = () => {
     setIsEditInfoModalOpen(true);
   };
 
-  // const handleOpenCardRegistration = () => {
-  //   if (!user?.id) {
-  //     toast({
-  //       title: '사용자 정보 오류',
-  //       description: '다시 로그인 후 시도해주세요.',
-  //     });
-  //     return;
-  //   }
-  //   setIsCardModalOpen(true);
-  // };
+  const handleOpenCardRegistration = () => {
+    if (!user?.id) {
+      toast({
+        title: '사용자 정보 오류',
+        description: '다시 로그인 후 시도해주세요.',
+      });
+      return;
+    }
+    setIsCardModalOpen(true);
+  };
 
-  // const handleCardRegistrationClose = () => {
-  //   setIsCardModalOpen(false);
-  // };
+  const handleCardRegistrationClose = () => {
+    setIsCardModalOpen(false);
+  };
 
-  // const handleCardRegistrationSuccess = async () => {
-  //   await queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
-  //   setIsCardModalOpen(false);
-  // };
+  const handleCardRegistrationSuccess = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
+    setIsCardModalOpen(false);
+  };
 
   const handleCreditUsageLog = () => {
     setIsCreditUsageModalOpen(true);
@@ -263,6 +264,7 @@ export const SettingsPage: React.FC = () => {
           cardType={cardInfo?.type}
           cardNumber={cardInfo?.number}
           company={cardInfo?.company}
+          onAdd={handleOpenCardRegistration}
         />
 
         <Card>
@@ -449,13 +451,13 @@ export const SettingsPage: React.FC = () => {
         isDeleting={isDeleting}
         error={deleteError}
       />
-      {/* 
+
       <CardRegistrationModal
         isOpen={isCardModalOpen}
         onClose={handleCardRegistrationClose}
         customerKey={user?.id ? String(user.id) : ''}
         onSuccess={handleCardRegistrationSuccess}
-      /> */}
+      />
       <CreditUsageModal
         open={isCreditUsageModalOpen}
         onOpenChange={setIsCreditUsageModalOpen}

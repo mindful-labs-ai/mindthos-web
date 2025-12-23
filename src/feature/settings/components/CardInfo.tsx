@@ -31,7 +31,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
   cardType,
   cardNumber,
   company,
-  // onAdd,
+  onAdd,
 }) => {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
@@ -132,15 +132,14 @@ export const CardInfo: React.FC<CardInfoProps> = ({
           {isDeleting ? '삭제 중...' : '삭제'}
         </Button>
       ) : (
-        // <Button
-        //   onClick={onAdd}
-        //   variant="outline"
-        //   size="sm"
-        //   className="whitespace-nowrap"
-        // >
-        //   카드 등록
-        // </Button>
-        <></>
+        <Button
+          onClick={onAdd}
+          variant="outline"
+          size="sm"
+          className="whitespace-nowrap"
+        >
+          카드 등록
+        </Button>
       )}
 
       {/* 카드 삭제 확인 모달 */}

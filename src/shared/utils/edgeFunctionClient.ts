@@ -30,6 +30,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 결제 및 구독 관련
   PAYMENT: {
     ISSUE_BILLING_KEY: 'payment/issue-billing-key',
+    REGISTER_CARD: 'payment/register-card',
     INIT_UPGRADE: 'payment/init-upgrade',
     COMPLETE_UPGRADE: 'payment/complete-upgrade',
     UPGRADE: 'payment/upgrade',
