@@ -178,7 +178,7 @@ const AuthPage = () => {
             alt="Mindthos 플랫폼 미리보기"
             className="object-contain"
           />
-          <div className="flex flex-col gap-y-3">
+          <div className="flex flex-col gap-y-3 text-center">
             <Title as="h2" className="text-xl">
               상담사에게 꼭 필요한 기능을 만나보세요.
             </Title>

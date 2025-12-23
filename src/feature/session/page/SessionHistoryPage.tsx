@@ -44,11 +44,12 @@ export const SessionHistoryPage: React.FC = () => {
   });
 
   const sessionsFromQuery = sessionData?.sessions || [];
+
+  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때만 표시
+  // 세션이든 클라이언트든 하나라도 실제 데이터가 있으면 더미를 숨김
+  const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
   const isDummyFlow =
-    !isLoadingSessions &&
-    !isLoadingClients &&
-    sessionsFromQuery.length === 0 &&
-    clients.length === 0;
+    !isLoadingSessions && !isLoadingClients && !hasAnyRealData;
 
   const sessionsWithData = isDummyFlow
     ? dummySessionRelations
@@ -144,12 +145,12 @@ export const SessionHistoryPage: React.FC = () => {
     );
   }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
 
-  // 간소화된 세션 리스트용 데이터 (실패한 세션 자동 필터링)
+  // 간소화된 세션 리스트용 데이터 (사이드탭에서는 성공한 세션만 표시)
   const sessionListData = React.useMemo(() => {
     return filteredAndSortedSessions
       .filter(({ session }) => {
-        // 실패한 세션 자동 필터링
-        return session.processing_status !== 'failed';
+        // 사이드탭에서는 succeeded 상태인 세션만 표시
+        return session.processing_status === 'succeeded';
       })
       .map(({ session }) => {
         const client = effectiveClients.find((c) => c.id === session.client_id);
