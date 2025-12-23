@@ -2,8 +2,12 @@ import { type AuthChangeEvent, type Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 
-import { EDGE_FUNCTION_ENDPOINTS, ERROR_MESSAGES } from './constants';
-import { callEdgeFunction } from './edgeFunctionClient';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '../../shared/utils/edgeFunctionClient';
+
+import { ERROR_MESSAGES } from './constants';
 import { handleAuthError, handleEdgeFunctionError } from './errorHandlers';
 import {
   AuthError,
@@ -15,6 +19,8 @@ import {
   type ResendVerificationResponse,
   type SignUpData,
   type User,
+  type UserData,
+  type UserDbRecord,
 } from './types';
 
 export const authService = {
@@ -97,6 +103,55 @@ export const authService = {
     }
   },
 
+  async getUserDataByEmail(email: string): Promise<UserData | null> {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_user_by_email', {
+          user_email: email,
+        })
+        .single<UserDbRecord>();
+
+      if (error) {
+        console.error('getUserDataByEmail error:', error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return {
+        id: String(data.id),
+        name: data.name,
+        phoneNumber: data.phone_number,
+        defaultTemplateId: data.default_template_id,
+        organization: data.organization,
+      };
+    } catch (error) {
+      console.error('getUserDataByEmail exception:', error);
+      return null;
+    }
+  },
+
+  async updateUser(
+    userId: string,
+    data: { name?: string; organization?: string }
+  ): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: data.name,
+          organization: data.organization,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', parseInt(userId));
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
   async getSession() {
     try {
       const {
@@ -144,7 +199,7 @@ export const authService = {
   async checkUserExists(email: string): Promise<CheckUserExistsResponse> {
     try {
       return await callEdgeFunction<CheckUserExistsResponse>(
-        EDGE_FUNCTION_ENDPOINTS.CHECK_USER_EXISTS,
+        EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_USER_EXISTS,
         { email }
       );
     } catch (error) {
@@ -155,7 +210,7 @@ export const authService = {
   async deleteAccount(email: string): Promise<AccountDeleteResponse> {
     try {
       return await callEdgeFunction<AccountDeleteResponse>(
-        EDGE_FUNCTION_ENDPOINTS.ACCOUNT_DELETE,
+        EDGE_FUNCTION_ENDPOINTS.AUTH.ACCOUNT_DELETE,
         { email }
       );
     } catch (error) {
@@ -166,11 +221,31 @@ export const authService = {
   async resendVerification(email: string): Promise<ResendVerificationResponse> {
     try {
       return await callEdgeFunction<ResendVerificationResponse>(
-        EDGE_FUNCTION_ENDPOINTS.RESEND_VERIFICATION,
+        EDGE_FUNCTION_ENDPOINTS.AUTH.RESEND_VERIFICATION,
         { email }
       );
     } catch (error) {
       throw handleEdgeFunctionError(error);
+    }
+  },
+
+  async loginWithGoogle(): Promise<void> {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
     }
   },
 };
