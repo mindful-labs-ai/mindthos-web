@@ -75,7 +75,8 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
       const { formats, maxSize } = getFileUploadText('audio');
       return {
         main: '오디오 파일을 여기에 끌어다 놓으세요',
-        sub: `${formats} 모두 (최대 ${maxSize})`,
+        sub: `(최대 ${maxSize})`,
+        formats: `${formats}`,
       };
     }
     if (type === 'pdf') {
