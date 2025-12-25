@@ -12,6 +12,7 @@ import {
   EDGE_FUNCTION_ENDPOINTS,
 } from '@/shared/utils/edgeFunctionClient';
 
+import { FILE_UPLOAD_LIMITS } from '../constants/fileUpload';
 import type {
   S3UploadError,
   UploadToS3Request,
@@ -24,11 +25,14 @@ const SUPPORTED_AUDIO_TYPES = [
   'audio/wav',
   'audio/mp4',
   'audio/x-m4a',
+  'audio/aac',
 ];
-const SUPPORTED_EXTENSIONS = ['.mp3', '.wav', '.m4a'];
+const SUPPORTED_EXTENSIONS = FILE_UPLOAD_LIMITS.AUDIO.FORMATS.map((ext) =>
+  ext.startsWith('.') ? ext.toLowerCase() : `.${ext.toLowerCase()}`
+);
 
-// 최대 파일 크기: 2GB (1시간 이상의 오디오 파일 고려)
-const MAX_FILE_SIZE_MB = 2048; // 2GB
+// 최대 파일 크기 (constants/fileUpload.ts의 설정을 따름)
+const MAX_FILE_SIZE_MB = FILE_UPLOAD_LIMITS.AUDIO.MAX_SIZE_MB;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 /**
