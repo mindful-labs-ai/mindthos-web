@@ -28,17 +28,17 @@ const sizeStyles: Record<BadgeSize, string> = {
 const toneVariantStyles: Record<BadgeTone, Record<BadgeVariant, string>> = {
   primary: {
     solid: 'bg-primary text-surface',
-    soft: 'bg-primary/10 text-primary',
-    outline: 'border border-primary text-primary bg-transparent',
+    soft: 'bg-primary-100 text-primary',
+    outline: 'border border-primary bg-primary-100 text-primary',
   },
   secondary: {
     solid: 'bg-secondary text-surface',
-    soft: 'bg-secondary/10 text-secondary',
+    soft: 'bg-secondary text-fg',
     outline: 'border border-secondary text-secondary bg-transparent',
   },
   accent: {
     solid: 'bg-accent text-surface',
-    soft: 'bg-accent/10 text-accent',
+    soft: 'bg-accent text-accent',
     outline: 'border border-accent text-accent bg-transparent',
   },
   neutral: {

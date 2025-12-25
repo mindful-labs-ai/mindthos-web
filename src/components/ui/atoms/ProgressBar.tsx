@@ -3,36 +3,19 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ProgressBarProps {
-  /**
-   * Progress value (0-100)
-   */
   value: number;
-  /**
-   * Accessible label
-   */
   label?: string;
-  /**
-   * Indeterminate state (loading animation)
-   */
   indeterminate?: boolean;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * ProgressBar component
- *
- * Linear progress indicator with determinate and indeterminate modes.
- *
- * **A11y**: role="progressbar" with aria-valuenow/min/max.
+ * ProgressBar - 선형 진행 표시기
+ * determinate/indeterminate 모드 지원
+ * role="progressbar"로 접근성 준수
  *
  * @example
- * ```tsx
- * <ProgressBar value={50} label="Upload progress" />
- * <ProgressBar indeterminate label="Loading..." />
- * ```
+ * <ProgressBar value={50} label="업로드" />
  */
 export const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
   ({ value, label, indeterminate = false, className }, ref) => {

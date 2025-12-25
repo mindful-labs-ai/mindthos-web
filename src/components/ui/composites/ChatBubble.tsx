@@ -3,48 +3,21 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ChatBubbleProps {
-  /**
-   * Avatar element
-   */
   avatar?: React.ReactNode;
-  /**
-   * Author name
-   */
   author?: string;
-  /**
-   * Timestamp or time element
-   */
   time?: React.ReactNode;
-  /**
-   * Is this message from the current user
-   */
   mine?: boolean;
-  /**
-   * Message content
-   */
   children: React.ReactNode;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * ChatBubble component
- *
- * Message bubble for chat interfaces.
- * Left/right alignment based on `mine` prop.
+ * ChatBubble - 채팅 말풍선 컴포넌트
+ * mine prop으로 좌/우 정렬 자동 처리
+ * avatar, author, time 선택적 표시
  *
  * @example
- * ```tsx
- * <ChatBubble author="John" time="2:30 PM">
- *   Hello world!
- * </ChatBubble>
- *
- * <ChatBubble mine author="You" time="2:31 PM">
- *   Hi there!
- * </ChatBubble>
- * ```
+ * <ChatBubble mine author="You" time="2:30 PM">안녕하세요!</ChatBubble>
  */
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
   avatar,

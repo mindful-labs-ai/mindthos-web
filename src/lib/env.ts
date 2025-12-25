@@ -13,6 +13,13 @@ const envSchema = z.object({
   // Feature flags (add as needed)
   // VITE_ENABLE_ANALYTICS: z.string().transform((val) => val === 'true'),
 
+  // Supabase
+  VITE_SUPABASE_URL: z.string().optional(),
+  VITE_SUPABASE_ANON_KEY: z.string().optional(),
+
+  // Analytics
+  VITE_MIXPANEL_TOKEN: z.string().optional(),
+
   // Development mode detection
   DEV: z.boolean(),
   MODE: z.enum(['development', 'production', 'test']),
@@ -24,9 +31,9 @@ function validateEnv() {
     return envSchema.parse(import.meta.env);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const missingVars = error.errors.map((err) => {
-        const path = err.path.join('.');
-        return `  - ${path}: ${err.message}`;
+      const missingVars = error.issues.map((issue) => {
+        const path = issue.path.join('.');
+        return `  - ${path}: ${issue.message}`;
       });
 
       console.error('❌ Environment validation failed:');

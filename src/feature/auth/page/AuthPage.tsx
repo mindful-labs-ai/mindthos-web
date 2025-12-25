@@ -1,8 +1,9 @@
 import React from 'react';
 
-import { ArrowRight } from 'lucide-react';
-
 import { Button, Text, Title } from '@/components/ui';
+import { trackEvent } from '@/lib/mixpanel';
+import { authService } from '@/services/auth/authService';
+import { ArrowRightIcon } from '@/shared/icons';
 
 import SignInForm from '../components/SignInForm';
 import SignUpForm from '../components/SignUpForm';
@@ -11,10 +12,34 @@ type FormStateType = 'signIn' | 'signUp';
 
 const AuthPage = () => {
   const [formState, setFormState] = React.useState<FormStateType>('signIn');
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const handleStateChange = () => {
     if (formState === 'signIn') setFormState('signUp');
     if (formState === 'signUp') setFormState('signIn');
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsGoogleLoading(true);
+
+    try {
+      trackEvent('login_attempt', { method: 'google' });
+      await authService.loginWithGoogle();
+      // OAuth는 리다이렉트로 처리됨 (성공 트래킹은 OAuth 콜백에서 처리)
+    } catch (err) {
+      trackEvent('login_failed', {
+        method: 'google',
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Google 로그인에 실패했습니다. 다시 시도해주세요.'
+      );
+      setIsGoogleLoading(false);
+    }
   };
   return (
     <div className="flex h-full w-full">
@@ -27,7 +52,7 @@ const AuthPage = () => {
             className="h-8 w-auto"
           />
           <Button
-            iconRight={<ArrowRight size={18} />}
+            iconRight={<ArrowRightIcon size={18} />}
             size="md"
             tone="secondary"
             variant="outline"
@@ -44,17 +69,23 @@ const AuthPage = () => {
                 as="h1"
                 className="mb-4 text-3xl font-medium leading-normal"
               >
-                상담에 딱 맞는 AI 노트,
+                늘 곁에있는 AI 슈퍼바이저,
                 <br />
                 <span className="font-semibold text-primary-500">마음토스</span>
               </Title>
               <Text className="text-sm text-muted">
-                대화를 기록하고 과학적인 분석으로 상담의 퀄리티를 높이세요.
+                상담사의 시간을 되찾고 성장을 돕습니다.
               </Text>
             </div>
 
             {/* Form Section */}
             <div className="w-full">
+              {error && (
+                <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600">
+                  {error}
+                </div>
+              )}
+
               {formState === 'signIn' ? (
                 <SignInForm />
               ) : formState === 'signUp' ? (
@@ -79,6 +110,8 @@ const AuthPage = () => {
                   variant="outline"
                   tone="secondary"
                   className="w-full"
+                  onClick={handleGoogleLogin}
+                  disabled={isGoogleLoading}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -104,9 +137,11 @@ const AuthPage = () => {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  {formState === 'signIn'
-                    ? 'Google로 계속하기'
-                    : 'Google로 회원가입'}
+                  {isGoogleLoading
+                    ? 'Google 로그인 중...'
+                    : formState === 'signIn'
+                      ? 'Google로 계속하기'
+                      : 'Google로 회원가입'}
                 </Button>
                 {formState === 'signUp' && (
                   <Text className="mt-2 text-center text-xs text-muted">
@@ -139,18 +174,20 @@ const AuthPage = () => {
       <div className="hidden flex-1 items-center bg-bg-subtle lg:flex">
         <div className="mx-auto flex w-full max-w-xl flex-col gap-y-8 p-8">
           <img
-            src="/auth-page-image.webp"
+            src="/auth-page-image.png"
             alt="Mindthos 플랫폼 미리보기"
             className="object-contain"
           />
-          <div className="flex flex-col gap-y-3">
+          <div className="flex flex-col gap-y-3 text-center">
             <Title as="h2" className="text-xl">
-              상담에 집중하세요, 분석과 정리는 AI가 합니다.
+              상담사에게 꼭 필요한 기능을 만나보세요.
             </Title>
             <Text as="p" className="text-base text-muted">
-              대화 기록과 상담 노트를 자동 생성하고
+              막막했던 사례 개념화부터 번거로운 행정 업무까지.
               <br />
-              감정 흐름과 말의 구조를 정량적으로 분석해 드립니다.
+              마음토스는 상담사가 온전히 내담자와 자신의 성장에
+              <br />
+              집중할 수 있도록 돕는 임상 전문 AI 도구입니다.
             </Text>
           </div>
         </div>

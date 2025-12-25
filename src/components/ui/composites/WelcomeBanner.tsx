@@ -1,10 +1,9 @@
 import React from 'react';
 
-import { X } from 'lucide-react';
-
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
+import { XIcon } from '@/shared/icons';
 
 export interface WelcomeBannerProps {
   title: string;
@@ -25,7 +24,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
 }) => {
   return (
     <div
-      className={`relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-primary-500 to-primary-300 px-8 py-12 text-white shadow-lg ${className}`}
+      className={`relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-green-500 to-amber-200 px-8 py-12 text-white ${className}`}
     >
       {onClose && (
         <button
@@ -33,7 +32,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
           className="absolute right-6 top-4 rounded-full p-1 hover:bg-white/20"
           aria-label="배너 닫기"
         >
-          <X size={20} />
+          <XIcon size={20} />
         </button>
       )}
       <div className="flex flex-col gap-y-4">

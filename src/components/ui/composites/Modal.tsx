@@ -113,15 +113,16 @@ export const Modal: React.FC<ModalProps> = ({
         aria-describedby={description ? 'modal-description' : undefined}
         className={cn(
           'relative z-10',
-          'max-h-[90vh] w-full max-w-lg overflow-auto',
+          'max-h-[90vh] w-full overflow-auto',
           'rounded-[var(--radius-lg)] border-2 border-border bg-surface shadow-xl',
           'animate-[scaleIn_0.2s_ease-out]',
+          'px-6 py-4',
           className
         )}
       >
         {/* Header */}
         {(title || description) && (
-          <div className="border-b border-border px-6 py-4">
+          <>
             {title && (
               <h2 id="modal-title" className="text-xl font-semibold text-fg">
                 {title}
@@ -132,11 +133,12 @@ export const Modal: React.FC<ModalProps> = ({
                 {description}
               </p>
             )}
-          </div>
+            <div className="mb-3 border-b border-border pt-3" />
+          </>
         )}
 
         {/* Body */}
-        <div className="px-6 py-4">{children}</div>
+        {children}
 
         {/* Close button */}
         <button

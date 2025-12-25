@@ -67,7 +67,7 @@ export const ProgressCircle = React.forwardRef<
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-border"
+            className="text-primary-200"
           />
           {/* Progress circle */}
           <circle
@@ -79,8 +79,8 @@ export const ProgressCircle = React.forwardRef<
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={indeterminate ? circumference * 0.75 : offset}
-            strokeLinecap="round"
-            className="text-primary transition-all duration-300"
+            strokeLinecap="butt"
+            className="text-primary-400 transition-all duration-300"
             style={{
               transform: 'rotate(-90deg)',
               transformOrigin: '50% 50%',

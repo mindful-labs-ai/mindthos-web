@@ -1,7 +1,8 @@
+import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 
 interface GuideStepProps {
-  title: string;
+  title: React.ReactNode;
   onNext: () => void;
   isSubmitting: boolean;
   error: string;
@@ -16,11 +17,15 @@ export function GuideStep({
   children,
 }: GuideStepProps) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 break-keep">
       <div className="text-center">
-        <h2 id="onboarding-title" className="text-2xl font-bold text-fg">
+        <Title
+          as="h2"
+          id="onboarding-title"
+          className="text-left text-xl font-bold text-fg"
+        >
           {title}
-        </h2>
+        </Title>
         {children}
       </div>
 

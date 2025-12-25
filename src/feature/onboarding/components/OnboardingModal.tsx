@@ -6,17 +6,16 @@ import { useOnboardingStore } from '@/stores/onboardingStore';
 
 import { useOnboardingForm } from '../hooks/useOnboardingForm';
 
-import { ConfirmModal } from './ConfirmModal';
 import { CompleteStep, GuideStep } from './GuideStep';
-import { NameStep } from './NameStep';
-import { PhoneStep } from './PhoneStep';
+import { InfoStep } from './InfoStep';
 import { WritingEffect } from './WritingEffect';
 
 const ONBOARDING_STEPS = [
-  { label: '이름', description: '이름 입력' },
-  { label: '연락처', description: '전화번호 입력' },
-  { label: '가이드', description: '서비스 안내' },
-  { label: '완료', description: '시작하기' },
+  { label: '기본정보' },
+  { label: '축어록' },
+  { label: '상담노트' },
+  { label: '수퍼비전' },
+  { label: '완료' },
 ];
 
 export function OnboardingModal() {
@@ -30,60 +29,118 @@ export function OnboardingModal() {
 
   const renderStep = () => {
     switch (currentStep) {
-      case OnboardingStep.NAME:
+      case OnboardingStep.INFO:
         return (
-          <NameStep
-            value={form.name}
-            onChange={form.setName}
-            onSubmit={form.handleNameSubmit}
+          <InfoStep
+            name={form.name}
+            phoneNumber={form.phone}
+            selectedOrganization={form.selectedOrganization}
+            customOrganization={form.customOrganization}
+            onNameChange={form.setName}
+            onPhoneChange={form.setPhone}
+            onOrganizationSelect={form.setSelectedOrganization}
+            onCustomOrganizationChange={form.setCustomOrganization}
+            onSubmit={form.handleInfoSubmit}
             isSubmitting={form.isSubmitting}
             error={form.error}
           />
         );
 
-      case OnboardingStep.PHONE:
-        return (
-          <PhoneStep
-            value={form.phone}
-            onChange={form.setPhone}
-            onSubmit={form.handlePhoneSubmit}
-            isSubmitting={form.isSubmitting}
-            error={form.error}
-          />
-        );
-
-      case OnboardingStep.GUIDE_1:
+      case OnboardingStep.TRANSCRIBE:
         return (
           <GuideStep
-            title="서비스 이용 방법"
+            title="클릭 한 번으로 축어록을 작성해보세요."
             onNext={form.handleNext}
             isSubmitting={form.isSubmitting}
             error={form.error}
           >
-            <div className="mt-4 space-y-3 text-left">
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">1. 메인 페이지</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  원하는 기능을 선택하세요
-                </p>
+            <div className="mt-4 space-y-3">
+              <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
+                <video
+                  src="/1-고급축어록.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
               </div>
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">2. 정보 입력</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  필요한 정보를 입력하세요
-                </p>
-              </div>
-              <div className="rounded-lg bg-surface-contrast p-4">
-                <h3 className="font-semibold text-fg">3. 결과 확인</h3>
-                <p className="mt-1 text-sm text-fg-muted">
-                  결과를 확인하고 활용하세요
-                </p>
-              </div>
+              <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
+                상담 노트가 필요한 경우에는 일반축어록을, 수퍼바이저에게 제출할
+                고퀄리티 축어록이 필요한 경우에는 고급 축어록을 사용해보세요.
+              </p>
             </div>
           </GuideStep>
         );
 
-      case OnboardingStep.GUIDE_2:
+      case OnboardingStep.PROGRESS_NOTE:
+        return (
+          <GuideStep
+            title={
+              <>
+                다양한 사례개념화 노트와
+                <br />각 기관별 제출 양식까지 한 번에
+              </>
+            }
+            onNext={form.handleNext}
+            isSubmitting={form.isSubmitting}
+            error={form.error}
+          >
+            <div className="mt-4 space-y-3">
+              <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
+                <video
+                  src="/2-이론감지상담노트.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
+                양식에 맞는 노트 작성은 모두 마음토스에게 맡겨주세요. 선생님이
+                더욱 내담자에게 집중할 수 있도록, 시간이 걸리는 일은 저희가
+                해결해드려요.
+              </p>
+            </div>
+          </GuideStep>
+        );
+
+      case OnboardingStep.AI_SUPERVISION:
+        return (
+          <GuideStep
+            title={
+              <>
+                다음 회기 준비가 어렵다면,
+                <br />
+                클라이언트 다회기 AI 수퍼비전을 받아보세요
+              </>
+            }
+            onNext={form.handleNext}
+            isSubmitting={form.isSubmitting}
+            error={form.error}
+          >
+            <div className="mt-4 space-y-3">
+              <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
+                <video
+                  src="/3-ai수퍼비전.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <p className="mt-1 text-wrap text-left text-sm text-fg-muted">
+                지금까지 진행된 회기의 축어록 내용을 AI가 분석하고 선생님에게 꼭
+                필요한 수퍼비전을 작성해드려요. 이제 마음토스와 함께 더 나은
+                상담을 함께 준비해보세요.
+              </p>
+            </div>
+          </GuideStep>
+        );
+
+      case OnboardingStep.DONE:
         return (
           <CompleteStep
             onComplete={form.handleComplete}
@@ -98,43 +155,25 @@ export function OnboardingModal() {
   };
 
   return (
-    <>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="onboarding-title"
+    >
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="onboarding-title"
+        className={cn(
+          'relative w-full max-w-md',
+          'rounded-lg border-2 border-border bg-surface shadow-2xl',
+          'p-8'
+        )}
       >
-        <div
-          className={cn(
-            'relative w-full max-w-md',
-            'rounded-lg border-2 border-border bg-surface shadow-2xl',
-            'p-8'
-          )}
-        >
-          <Stepper steps={ONBOARDING_STEPS} currentStep={currentStep} />
+        <Stepper steps={ONBOARDING_STEPS} currentStep={currentStep} />
 
-          <div className="relative py-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-          </div>
+        <div className="relative py-3"></div>
 
-          {form.writingEffect ? <WritingEffect /> : renderStep()}
-        </div>
+        {form.writingEffect ? <WritingEffect /> : renderStep()}
       </div>
-
-      <ConfirmModal
-        open={form.showConfirmModal}
-        onOpenChange={form.setShowConfirmModal}
-        type={form.confirmationType}
-        value={form.confirmationType === 'name' ? form.name : form.phone}
-        onConfirm={
-          form.confirmationType === 'name'
-            ? form.handleConfirmName
-            : form.handleConfirmPhone
-        }
-      />
-    </>
+    </div>
   );
 }
