@@ -99,22 +99,26 @@ export const billingService = {
   /**
    * 사용자의 카드 정보 조회
    */
-  async getCard(userId: number) {
-    const { data, error } = await supabase
-      .from('card')
-      .select('id, user_id, type, company, number, created_at')
-      .eq('user_id', userId)
-      .single();
+  async getCard(_userId: number) {
+    try {
+      const response = await callEdgeFunction<{
+        success: boolean;
+        card: {
+          type: string;
+          company: string;
+          number: string;
+          createdAt: string;
+        } | null;
+      }>(EDGE_FUNCTION_ENDPOINTS.PAYMENT.GET_CARD, null, { method: 'GET' });
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows returned
-        return null;
+      if (response.success) {
+        return response.card;
       }
-      throw new Error(`카드 정보 조회 실패: ${error.message}`);
+      return null;
+    } catch (error) {
+      console.error('카드 정보 조회 실패:', error);
+      return null;
     }
-
-    return data;
   },
 
   /**

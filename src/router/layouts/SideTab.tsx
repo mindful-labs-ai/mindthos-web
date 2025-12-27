@@ -95,9 +95,9 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
           className="flex items-center gap-2 rounded hover:opacity-80"
         >
           <img
-            src="/logo_mindthos_kr.webp"
+            src="/title_mindthos_logo.png"
             alt="마음토스"
-            className="h-6 w-auto"
+            className="h-6 w-auto antialiased"
             draggable="false"
           />
         </button>
