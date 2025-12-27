@@ -39,6 +39,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     CHANGE_PLAN: 'payment/change-plan',
     CANCEL: 'payment/cancel',
     CANCEL_UNDO: 'payment/cancel-undo',
+    GET_CARD: 'payment/get-card',
   },
   // 인증 관련 (백엔드 전용 API)
   AUTH: {
