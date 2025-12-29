@@ -1,7 +1,7 @@
 /**
  * 카드사 코드 → 브랜드명 매핑
  */
-export const CARD_COMPANY_MAP: Record<string, string> = {
+export const CARD_COMPANY_CODE_MAP: Record<string, string> = {
   '3K': '기업비씨',
   '46': '광주',
   '71': '롯데',
@@ -38,5 +38,5 @@ export const CARD_COMPANY_MAP: Record<string, string> = {
  */
 export const getCardBrandName = (companyCode?: string | null): string => {
   if (!companyCode) return '';
-  return CARD_COMPANY_MAP[companyCode] || '';
+  return CARD_COMPANY_CODE_MAP[companyCode] || '';
 };
