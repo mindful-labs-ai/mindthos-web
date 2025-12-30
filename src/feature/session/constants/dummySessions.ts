@@ -8,7 +8,7 @@ import summaryContent3 from './dummyProgressNote3.md?raw';
 
 export const dummyClient: Client = {
   id: 'dummy_client_1',
-  counselor_id: 0,
+  counselor_id: '0',
   name: '홍길동',
   phone_number: '010-1234-4843',
   email: 'kildong.hong@gmail.com',
