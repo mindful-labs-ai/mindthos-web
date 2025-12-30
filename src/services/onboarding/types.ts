@@ -15,13 +15,13 @@ export const OnboardingStep = {
   DONE: 4,
 } as const;
 
-export type OnboardingStepType =
-  (typeof OnboardingStep)[keyof typeof OnboardingStep];
+export type OnboardingStepType = number;
 
 export interface OnboardingStatus {
   step: OnboardingStepType;
   state: OnboardingStateType;
   shouldShowOnboarding: boolean;
+  started_at?: string | null;
 }
 
 export interface OnboardingStatusResponse {
@@ -53,4 +53,43 @@ export interface OnboardingCompleteResponse {
   message: string;
   step: OnboardingStepType;
   state: OnboardingStateType;
+}
+
+export interface OnboardingNextRequest {
+  email: string;
+  currentState: OnboardingStateType;
+  currentStep: OnboardingStepType;
+}
+
+export interface OnboardingNextResponse {
+  success: boolean;
+  message: string;
+  onboarding: {
+    state: OnboardingStateType;
+    step: OnboardingStepType;
+  };
+}
+
+export interface OnboardingStartRequest {
+  email: string;
+}
+
+export interface OnboardingStartResponse {
+  success: boolean;
+  message: string;
+  startedAt: string;
+}
+
+export interface OnboardingSuccessRequest {
+  email: string;
+}
+
+export interface OnboardingSuccessResponse {
+  success: boolean;
+  message: string;
+  completedAt: string;
+  reward: {
+    planType: string;
+    freeUntil: string;
+  };
 }
