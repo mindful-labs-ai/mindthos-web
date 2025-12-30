@@ -13,13 +13,11 @@ import { useAuthStore } from '@/stores/authStore';
 interface UserEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
 }
 
 export const UserEditModal: React.FC<UserEditModalProps> = ({
   open,
   onOpenChange,
-  onSuccess,
 }) => {
   const { userName, organization, updateUser } = useAuthStore();
   const { toast } = useToast();
@@ -64,7 +62,6 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         title: '정보 수정 완료',
         description: '사용자 정보가 성공적으로 수정되었습니다.',
       });
-      onSuccess?.();
       onOpenChange(false);
     },
     onError: (error) => {

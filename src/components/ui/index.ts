@@ -115,6 +115,3 @@ export type {
 
 export { AudioPlayer } from './composites/AudioPlayer';
 export type { AudioPlayerProps } from './composites/AudioPlayer';
-
-export { Spotlight } from './composites/Spotlight';
-export type { SpotlightProps } from './composites/Spotlight';

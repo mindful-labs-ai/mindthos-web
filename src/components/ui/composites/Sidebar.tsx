@@ -87,7 +87,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         return (
           <Component
             key={item.value || item.href || index}
-            data-value={item.value || item.href}
             href={item.href}
             type={item.href ? undefined : 'button'}
             disabled={item.disabled}

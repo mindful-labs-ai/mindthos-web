@@ -1,10 +1,6 @@
 export const ONBOARDING_ENDPOINTS = {
   STATUS: '/onboarding/status',
-  CHECK: '/onboarding/check',
-  START: '/onboarding/start',
   SAVE: '/onboarding/save',
-  NEXT: '/onboarding/next',
-  SUCCESS: '/onboarding/success',
   COMPLETE: '/onboarding/complete',
 } as const;
 

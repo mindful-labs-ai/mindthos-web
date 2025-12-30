@@ -34,7 +34,6 @@
     "lucide-react": "^0.553.0",
     "mixpanel-browser": "^2.72.0",
     "react": "^19.1.1",
-    "react-confetti": "^6.4.0",
     "react-dom": "^19.1.1",
     "react-intersection-observer": "^10.0.0",
     "react-markdown": "^10.1.0",

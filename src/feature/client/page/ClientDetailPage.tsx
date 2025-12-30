@@ -3,10 +3,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
-import { AnalysisTabTooltip } from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -20,7 +17,6 @@ import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
@@ -49,14 +45,6 @@ export const ClientDetailPage: React.FC = () => {
   const userId = useAuthStore((state) => state.userId);
   const { toast } = useToast();
 
-  // 현재 퀘스트 레벨 가져오기
-  const { currentLevel } = useQuestStore();
-  // 튜토리얼 훅
-  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
-    useTutorial({
-      currentLevel,
-    });
-
   // 클라이언트 목록 조회
   const { clients, isLoading: isLoadingClients } = useClientList();
 
@@ -65,14 +53,11 @@ export const ClientDetailPage: React.FC = () => {
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
   });
-  // 더미 데이터 노출 조건: 실제 데이터가 없거나 튜토리얼이 활성 상태일 때
-  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
   const isDummyFlow =
-    (!isLoadingClients &&
-      !isLoadingSessions &&
-      !clients.length &&
-      sessionsData?.sessions.length === 0) ||
-    isTutorialActive;
+    !isLoadingClients &&
+    !isLoadingSessions &&
+    !clients.length &&
+    sessionsData?.sessions.length === 0;
   const isReadOnly = isDummyFlow;
 
   // 클라이언트 분석 관련 hooks
@@ -105,7 +90,7 @@ export const ClientDetailPage: React.FC = () => {
       });
     },
   });
-  console.log(currentLevel);
+
   React.useEffect(() => {
     if (isReadOnly && clientId && !hasShownDummyToast) {
       toast({
@@ -282,35 +267,19 @@ export const ClientDetailPage: React.FC = () => {
       {/* 탭 */}
       <div className="flex-shrink-0 px-12">
         <div className="flex justify-center gap-8">
-          <Spotlight
-            isActive={checkIsTutorialActive(3, 2)}
-            tooltip={<AnalysisTabTooltip />}
-            tooltipPosition="bottom"
-            onClose={() => endTutorial()}
-            className="h-full"
+          <button
+            onClick={() => setActiveTab('analyze')}
+            className={`relative px-1 py-4 text-lg font-medium transition-colors ${
+              activeTab === 'analyze'
+                ? 'text-fg'
+                : 'text-fg-muted hover:text-fg'
+            }`}
           >
-            <button
-              onClick={() => {
-                if (checkIsTutorialActive(3, 2)) {
-                  handleTutorialAction(() => setActiveTab('analyze'), 3, {
-                    targetLevel: 2,
-                  });
-                } else {
-                  setActiveTab('analyze');
-                }
-              }}
-              className={`relative px-1 py-4 text-lg font-medium transition-colors ${
-                activeTab === 'analyze'
-                  ? 'text-fg'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              다회기 분석
-              <div
-                className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
-              />
-            </button>
-          </Spotlight>
+            다회기 분석
+            <div
+              className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
+            />
+          </button>{' '}
           <button
             onClick={() => setActiveTab('history')}
             className={`relative px-1 py-4 text-lg font-medium transition-colors ${
@@ -328,99 +297,97 @@ export const ClientDetailPage: React.FC = () => {
       </div>
 
       {/* 컨텐츠 */}
-      <div className="min-h-0 flex-1">
+      <div className="flex-1 overflow-y-auto">
         {activeTab === 'history' ? (
-          <div className="h-full overflow-y-auto">
-            <div className="grid grid-cols-[1fr_400px] gap-6 px-12 py-6">
-              {/* 왼쪽: 세션 목록 */}
-              <div>
-                {sessionRecords.length > 0 ? (
-                  <div className="space-y-3">
-                    {sessionRecords.map((record) => (
-                      <SessionRecordCard
-                        key={record.session_id}
-                        record={record}
-                        isReadOnly={isReadOnly}
-                        onClick={(record) =>
-                          navigate(getSessionDetailRoute(record.session_id))
-                        }
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-border bg-surface">
-                    <p className="text-fg-muted">상담 기록이 없습니다.</p>
-                  </div>
-                )}
-              </div>
+          <div className="grid grid-cols-[1fr_400px] gap-6 px-12 py-6">
+            {/* 왼쪽: 세션 목록 */}
+            <div>
+              {sessionRecords.length > 0 ? (
+                <div className="space-y-3">
+                  {sessionRecords.map((record) => (
+                    <SessionRecordCard
+                      key={record.session_id}
+                      record={record}
+                      isReadOnly={isReadOnly}
+                      onClick={(record) =>
+                        navigate(getSessionDetailRoute(record.session_id))
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-border bg-surface">
+                  <p className="text-fg-muted">상담 기록이 없습니다.</p>
+                </div>
+              )}
+            </div>
 
-              {/* 우측: 클라이언트 정보 */}
-              <div className="sticky top-0 h-fit">
-                <div className="rounded-lg border border-border bg-surface p-6 text-left">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm text-fg-muted">클라이언트 정보</h2>
-                    <button
-                      onClick={() => {
-                        if (isReadOnly) {
-                          toast({
-                            title: '읽기 전용',
-                            description:
-                              '예시에서는 클라이언트를 수정할 수 없습니다.',
-                            duration: 3000,
-                          });
-                          return;
-                        }
-                        setIsEditModalOpen(true);
-                      }}
-                      className="rounded-md border border-border px-2.5 py-0.5 text-sm text-fg-muted transition-colors hover:text-fg"
-                    >
-                      편집
-                    </button>
+            {/* 우측: 클라이언트 정보 */}
+            <div className="sticky top-6 h-fit">
+              <div className="rounded-lg border border-border bg-surface p-6 text-left">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-sm text-fg-muted">클라이언트 정보</h2>
+                  <button
+                    onClick={() => {
+                      if (isReadOnly) {
+                        toast({
+                          title: '읽기 전용',
+                          description:
+                            '예시에서는 클라이언트를 수정할 수 없습니다.',
+                          duration: 3000,
+                        });
+                        return;
+                      }
+                      setIsEditModalOpen(true);
+                    }}
+                    className="rounded-md border border-border px-2.5 py-0.5 text-sm text-fg-muted transition-colors hover:text-fg"
+                  >
+                    편집
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-fg">이름</p>
+                    <p className="text-sm text-fg">{client.name}</p>
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="mb-1 text-sm font-semibold text-fg">이름</p>
-                      <p className="text-sm text-fg">{client.name}</p>
-                    </div>
-                    <div>
-                      <p className="mb-1 text-sm font-semibold text-fg">
-                        휴대폰 번호
-                      </p>
-                      <p className="text-sm text-fg">{client.phone_number}</p>
-                    </div>
-                    <div>
-                      <p className="mb-1 text-sm font-semibold text-fg">
-                        이메일 주소
-                      </p>
-                      <p className="text-sm text-fg">{client.email || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="mb-1 text-sm font-semibold text-fg">
-                        상담 주제
-                      </p>
-                      <p className="text-sm text-fg">
-                        {client.counsel_theme || '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="mb-1 text-sm font-semibold text-fg">
-                        회기 수
-                      </p>
-                      <p className="text-sm text-fg">
-                        {client.counsel_number || '- '}회기
-                      </p>
-                    </div>
-                    <div>
-                      <p className="mb-1 text-sm font-semibold text-fg">메모</p>
-                      <p className="text-sm text-fg">{client.memo || '-'}</p>
-                    </div>
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      휴대폰 번호
+                    </p>
+                    <p className="text-sm text-fg">{client.phone_number}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      이메일 주소
+                    </p>
+                    <p className="text-sm text-fg">{client.email || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      상담 주제
+                    </p>
+                    <p className="text-sm text-fg">
+                      {client.counsel_theme || '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-fg">
+                      회기 수
+                    </p>
+                    <p className="text-sm text-fg">
+                      {client.counsel_number || '- '}회기
+                    </p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-sm font-semibold text-fg">메모</p>
+                    <p className="text-sm text-fg">{client.memo || '-'}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex h-full flex-col overflow-hidden px-12 py-6">
+          <div className="px-12 py-6">
             <ClientAnalysisTab
               analyses={displayAnalyses}
               isLoading={isLoadingAnalyses && !isDummyFlow}

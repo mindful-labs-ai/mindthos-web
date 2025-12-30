@@ -6,15 +6,11 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
-import { ClientClickTooltip } from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { dummyClient } from '@/feature/session/constants/dummySessions';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import { getClientDetailRoute } from '@/router/constants';
 import { SearchIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientCard } from '../components/ClientCard';
@@ -36,22 +32,14 @@ export const ClientListPage: React.FC = () => {
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
     null
   );
-  // 현재 퀘스트 레벨 가져오기
-  const { currentLevel } = useQuestStore();
-  // 튜토리얼 훅
-  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
-    useTutorial({
-      currentLevel,
-    });
 
   const sessionsFromQuery = sessionData?.sessions || [];
 
-  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때 표시하거나, 튜토리얼이 활성 상태일 때 표시
-  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
+  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때만 표시
+  // 세션이든 클라이언트든 하나라도 실제 데이터가 있으면 더미를 숨김
   const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
   const isDummyFlow =
-    ((!isLoading && !isLoadingSessions && !error) || isTutorialActive) &&
-    (!hasAnyRealData || isTutorialActive);
+    !isLoading && !isLoadingSessions && !error && !hasAnyRealData;
   const effectiveClients = isDummyFlow ? [dummyClient] : clients;
 
   const filteredClients = useClientSearch(effectiveClients, searchQuery);
@@ -64,13 +52,7 @@ export const ClientListPage: React.FC = () => {
   const groupedCompletedClients = useClientGrouping(completedClients);
 
   const handleClientClick = (client: Client) => {
-    if (checkIsTutorialActive(2, 2) && client.id === dummyClient.id) {
-      handleTutorialAction(() => navigate(getClientDetailRoute(client.id)), 2, {
-        targetLevel: 2,
-      });
-    } else {
-      navigate(getClientDetailRoute(client.id));
-    }
+    navigate(getClientDetailRoute(client.id));
   };
 
   const handleAddClient = () => {
@@ -131,23 +113,54 @@ export const ClientListPage: React.FC = () => {
           </div>
         ) : groupedActiveClients.length > 0 ||
           groupedCompletedClients.length > 0 ? (
-          <Spotlight
-            isActive={checkIsTutorialActive(2, 2)}
-            tooltip={<ClientClickTooltip />}
-            tooltipPosition="bottom"
-            selector={`[data-client-id="${dummyClient.id}"]`}
-            onClose={() => endTutorial()}
-          >
-            <div className="space-y-12">
-              {/* 활성 클라이언트 섹션 */}
-              {groupedActiveClients.length > 0 && (
+          <div className="space-y-12">
+            {/* 활성 클라이언트 섹션 */}
+            {groupedActiveClients.length > 0 && (
+              <div className="space-y-8">
+                {groupedActiveClients.map((group) => (
+                  <div key={group.key}>
+                    <div className="mb-4 border-b border-border pb-2 text-left">
+                      <Title
+                        as="h2"
+                        className="text-xl font-bold text-fg-muted"
+                      >
+                        {group.key}
+                      </Title>
+                    </div>
+
+                    <div className="space-y-3">
+                      {group.clients.map((client) => (
+                        <ClientCard
+                          key={client.id}
+                          client={client}
+                          onClick={handleClientClick}
+                          onEditClick={handleEditClient}
+                          isReadOnly={isDummyFlow}
+                          searchQuery={searchQuery}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 종결된 내담자 섹션 */}
+            {groupedCompletedClients.length > 0 && (
+              <div>
+                <div className="mb-6 text-left">
+                  <Title as="h2" className="text-xl font-bold text-fg-muted">
+                    종결된 내담자
+                  </Title>
+                </div>
+
                 <div className="space-y-8">
-                  {groupedActiveClients.map((group) => (
+                  {groupedCompletedClients.map((group) => (
                     <div key={group.key}>
                       <div className="mb-4 border-b border-border pb-2 text-left">
                         <Title
-                          as="h2"
-                          className="text-xl font-bold text-fg-muted"
+                          as="h3"
+                          className="text-lg font-bold text-fg-muted"
                         >
                           {group.key}
                         </Title>
@@ -168,48 +181,9 @@ export const ClientListPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              )}
-
-              {/* 종결된 내담자 섹션 */}
-              {groupedCompletedClients.length > 0 && (
-                <div>
-                  <div className="mb-6 text-left">
-                    <Title as="h2" className="text-xl font-bold text-fg-muted">
-                      종결된 내담자
-                    </Title>
-                  </div>
-
-                  <div className="space-y-8">
-                    {groupedCompletedClients.map((group) => (
-                      <div key={group.key}>
-                        <div className="mb-4 border-b border-border pb-2 text-left">
-                          <Title
-                            as="h3"
-                            className="text-lg font-bold text-fg-muted"
-                          >
-                            {group.key}
-                          </Title>
-                        </div>
-
-                        <div className="space-y-3">
-                          {group.clients.map((client) => (
-                            <ClientCard
-                              key={client.id}
-                              client={client}
-                              onClick={handleClientClick}
-                              onEditClick={handleEditClient}
-                              isReadOnly={isDummyFlow}
-                              searchQuery={searchQuery}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Spotlight>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex min-h-[400px] items-center justify-center">
             <Text className="text-lg text-fg-muted">검색 결과 없음</Text>

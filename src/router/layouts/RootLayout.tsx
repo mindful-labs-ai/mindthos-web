@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 
-import { GlobalSpotlight } from '@/components/ui/composites/Spotlight';
+import { OnboardingModal } from '@/feature/onboarding/components/OnboardingModal';
 import { AuthProvider } from '@/providers/AuthProvider';
 
 /**
@@ -8,10 +8,16 @@ import { AuthProvider } from '@/providers/AuthProvider';
  * 모든 페이지에 공통으로 적용되는 레이아웃
  */
 const RootLayout = () => {
+  const location = useLocation();
+
+  const shouldShowOnboarding =
+    !location.pathname.startsWith('/auth/verify-email') &&
+    !location.pathname.startsWith('/auth');
+
   return (
     <AuthProvider>
       <Outlet />
-      <GlobalSpotlight />
+      {shouldShowOnboarding && <OnboardingModal />}
     </AuthProvider>
   );
 };
