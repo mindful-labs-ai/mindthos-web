@@ -71,6 +71,8 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
   rounded = 'md',
 }) => {
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [positionAdjust, setPositionAdjust] = useState({ x: 0, y: 0 });
 
   const borderRadius = useMemo(() => {
     if (typeof rounded === 'number') return `${rounded}px`;
@@ -170,7 +172,50 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
     return styles;
   }, [rect, tooltipPosition, padding]);
 
+  // 화면 경계 보정 로직
+  useLayoutEffect(() => {
+    if (rect && tooltipRef.current) {
+      // 툴팁 위치를 다시 계산하기 위해 다음 프레임에서 확인
+      const timeoutId = setTimeout(() => {
+        if (!tooltipRef.current) return;
+        const tRect = tooltipRef.current.getBoundingClientRect();
+        const vWidth = window.innerWidth;
+        const vHeight = window.innerHeight;
+        const margin = 16;
+
+        let dx = 0;
+        let dy = 0;
+
+        if (tRect.left < margin) {
+          dx = margin - tRect.left;
+        } else if (tRect.right > vWidth - margin) {
+          dx = vWidth - margin - tRect.right;
+        }
+
+        if (tRect.top < margin) {
+          dy = margin - tRect.top;
+        } else if (tRect.bottom > vHeight - margin) {
+          dy = vHeight - margin - tRect.bottom;
+        }
+
+        if (dx !== 0 || dy !== 0) {
+          setPositionAdjust({ x: dx, y: dy });
+        } else {
+          setPositionAdjust({ x: 0, y: 0 });
+        }
+      }, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [rect, tooltipStyles]);
+
   if (!rect) return null;
+
+  const finalTooltipStyles: React.CSSProperties = {
+    ...tooltipStyles,
+    transform: tooltipStyles.transform
+      ? `${tooltipStyles.transform} translate(${positionAdjust.x}px, ${positionAdjust.y}px)`
+      : `translate(${positionAdjust.x}px, ${positionAdjust.y}px)`,
+  };
 
   return createPortal(
     <div className="animate-in fade-in pointer-events-none fixed inset-0 z-[1000] overflow-hidden duration-300">
@@ -240,13 +285,14 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
       {/* Tooltip */}
       {tooltip && (
         <div
-          style={tooltipStyles}
+          ref={tooltipRef}
+          style={finalTooltipStyles}
           className={cn(
             'animate-in fade-in zoom-in relative min-w-48 max-w-xs rounded-xl border border-border bg-surface p-4 shadow-2xl duration-300',
             className
           )}
         >
-          <div className="pr-4 text-sm leading-relaxed text-fg">{tooltip}</div>
+          <div className="text-sm leading-relaxed text-fg">{tooltip}</div>
           <div
             className={cn(
               'absolute h-3 w-3 rotate-45 border-border bg-surface',
@@ -259,6 +305,16 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
               tooltipPosition === 'right' &&
                 'left-[-6px] top-1/2 -translate-y-1/2 border-b border-l'
             )}
+            style={{
+              left:
+                tooltipPosition === 'top' || tooltipPosition === 'bottom'
+                  ? `calc(50% - ${positionAdjust.x}px)`
+                  : undefined,
+              top:
+                tooltipPosition === 'left' || tooltipPosition === 'right'
+                  ? `calc(50% - ${positionAdjust.y}px)`
+                  : undefined,
+            }}
           />
         </div>
       )}
