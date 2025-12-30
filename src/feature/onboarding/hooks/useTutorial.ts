@@ -10,15 +10,14 @@ interface UseTutorialOptions {
 
 export function useTutorial({ currentLevel }: UseTutorialOptions) {
   const navigate = useNavigate();
-  const {
-    isTutorialActive,
-    tutorialStep,
-    nextTutorialStep,
-    setTutorialActive,
-    resetTutorial,
-    setShowConfetti,
-    completeNextStep,
-  } = useQuestStore();
+
+  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
+  const tutorialStep = useQuestStore((state) => state.tutorialStep);
+  const nextTutorialStep = useQuestStore((state) => state.nextTutorialStep);
+  const setTutorialActive = useQuestStore((state) => state.setTutorialActive);
+  const resetTutorial = useQuestStore((state) => state.resetTutorial);
+  const setShowConfetti = useQuestStore((state) => state.setShowConfetti);
+  const completeNextStep = useQuestStore((state) => state.completeNextStep);
 
   /**
    * 해당 단계의 튜토리얼이 활성화되어야 하는지 확인하는 함수
@@ -26,6 +25,7 @@ export function useTutorial({ currentLevel }: UseTutorialOptions) {
   const checkIsTutorialActive = useCallback(
     (step: number, targetLevel?: number) => {
       const levelToCheck = targetLevel ?? currentLevel;
+      // store의 currentLevel을 직접 구독하지 않고 getState로 확인 (불필요한 리렌더링 방지)
       const storeLevel = useQuestStore.getState().currentLevel;
 
       return (
