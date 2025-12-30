@@ -8,6 +8,7 @@ import { Confetti } from '@/components/ui/composites/Confetti';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
@@ -19,6 +20,7 @@ import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord, Transcribe } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
+import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
@@ -39,13 +41,18 @@ const HomePage = () => {
 
   const {
     currentLevel,
-    isLoading,
     isChecked,
     shouldShowOnboarding,
     startedAt,
     showConfetti,
     setShowConfetti,
   } = useQuestStore();
+
+  const { completeNextStep } = useTutorial({
+    currentLevel,
+  });
+
+  const [isEditInfoModalOpen, setIsEditInfoModalOpen] = React.useState(false);
 
   // 세션 목록 조회 (TanStack Query)
   const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
@@ -154,35 +161,27 @@ const HomePage = () => {
         duration={8000}
         onComplete={() => setShowConfetti(false)}
       />
-      {isLoading ? (
-        <WelcomeBanner
-          title="마음토스 시작하기"
-          description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
-          buttonText="더 알아보기"
-          onButtonClick={handleGuideClick}
-          onClose={() => setIsWelcomeBannerVisible(false)}
-        />
-      ) : (
-        isChecked && (
-          <>
-            {shouldShowOnboarding ? (
-              <QuestStep
-                completedStepCount={completedCount}
-                remainingDays={remainingDays}
+      {isChecked && (
+        <>
+          {shouldShowOnboarding ? (
+            <QuestStep
+              completedStepCount={completedCount}
+              remainingDays={remainingDays}
+              onOpenCreateSession={handleUploadClick}
+              onOpenUserEdit={() => setIsEditInfoModalOpen(true)}
+            />
+          ) : (
+            isWelcomeBannerVisible && (
+              <WelcomeBanner
+                title="마음토스 시작하기"
+                description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
+                buttonText="더 알아보기"
+                onButtonClick={handleGuideClick}
+                onClose={() => setIsWelcomeBannerVisible(false)}
               />
-            ) : (
-              isWelcomeBannerVisible && (
-                <WelcomeBanner
-                  title="마음토스 시작하기"
-                  description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
-                  buttonText="더 알아보기"
-                  onButtonClick={handleGuideClick}
-                  onClose={() => setIsWelcomeBannerVisible(false)}
-                />
-              )
-            )}
-          </>
-        )
+            )
+          )}
+        </>
       )}
 
       <GreetingSection userName={userName!} date={formatKoreanDate()} />
@@ -291,6 +290,19 @@ const HomePage = () => {
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
         type="audio"
+      />
+
+      {/* 정보 수정 모달 */}
+      <UserEditModal
+        open={isEditInfoModalOpen}
+        onOpenChange={setIsEditInfoModalOpen}
+        onSuccess={async () => {
+          // 레벨 5 (내 정보 입력하기 단계) 진행 중이라면 완료 처리
+          if (currentLevel === 5 && userId) {
+            await completeNextStep(useAuthStore.getState().user?.email || '');
+            setShowConfetti(true);
+          }
+        }}
       />
     </div>
   );

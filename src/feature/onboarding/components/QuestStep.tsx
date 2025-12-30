@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui';
@@ -10,6 +11,8 @@ interface QuestStepProps {
   completedStepCount?: number;
   remainingDays?: number;
   onAction?: (questId: number) => void;
+  onOpenCreateSession?: () => void;
+  onOpenUserEdit?: () => void;
 }
 
 const QUESTS = [
@@ -20,25 +23,34 @@ const QUESTS = [
 ];
 
 export const QuestStep = ({
-  completedStepCount = 1,
   remainingDays = 7,
+  onOpenCreateSession,
+  onOpenUserEdit,
 }: QuestStepProps) => {
-  const email = useAuthStore((state) => state.user?.email);
-  const { getReward } = useQuestStore();
+  const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
+  const email = user?.email;
+  const userId = user?.id;
+  const { currentLevel, getReward, isLoading } = useQuestStore();
   const { startTutorial, nextTutorialStep, endTutorial } = useTutorial({
-    currentLevel: completedStepCount + 1,
+    currentLevel,
   });
-
   // 전체 단계 수
   const totalSteps = QUESTS.length;
+  // 실제 완료된 퀘스트 수 계산 (레벨 매핑에 따름)
+  let activeCompletedCount = 0;
+  if (currentLevel >= 2) activeCompletedCount++;
+  if (currentLevel >= 3) activeCompletedCount++;
+  if (currentLevel >= 5) activeCompletedCount++;
+  if (currentLevel >= 6) activeCompletedCount++;
+
   // 모든 미션이 완료되었는지 여부
-  const isAllCompleted = completedStepCount === totalSteps;
+  const isAllCompleted = activeCompletedCount === totalSteps;
 
   // 마일스톤 진행률 계산 (선 그래프용)
-  // 예: 1단계 완료 -> 0% (선 없음), 2단계 완료 -> 33% (1-2 연결), 4단계 완료 -> 100%
   const progressPercentage =
-    completedStepCount > 0
-      ? ((completedStepCount - 1) / (totalSteps - 1)) * 100
+    activeCompletedCount > 0
+      ? ((activeCompletedCount - 1) / (totalSteps - 1)) * 100
       : 0;
 
   return (
@@ -50,7 +62,7 @@ export const QuestStep = ({
               신규 가입자 미션 이벤트
             </h3>
             <span className="text-sm text-fg-muted">
-              {completedStepCount}/{totalSteps} 완료
+              {activeCompletedCount}/{totalSteps} 완료
             </span>
           </div>
           <div className="flex-1 px-6">
@@ -67,19 +79,64 @@ export const QuestStep = ({
               />
 
               {/* 스텝 아이템들 */}
-              <div className="relative z-10 flex justify-between gap-6 px-2">
-                {QUESTS.map((quest, index) => {
-                  const stepNumber = index + 1;
-                  // 해당 단계가 완료되었는지 (현재 단계보다 이전이거나 같으면 X -> 카운트 기준)
-                  // completedStepCount가 1이면, 1단계(index 0)만 완료된 상태.
-                  const isCompleted = stepNumber <= completedStepCount;
-                  // 현재 진행해야 할 단계인지
-                  const isCurrent = stepNumber === completedStepCount + 1;
-                  // 아직 열리지 않은 단계인지 (현재 단계보다 미래)
-                  const isLocked = stepNumber > completedStepCount + 1;
+              <div className="relative flex justify-between gap-6 px-2">
+                {QUESTS.map((quest) => {
+                  /* 
+                    퀘스트 상태 매핑 로직 (getQuestLevel 참고)
+                    Quest 1: 상담기록 (Level 1~2) -> Level 2 이상이면 완료
+                    Quest 2: 다회기 (Level 2~3) -> Level 3 이상이면 완료
+                    Quest 3: 새 기록 (Level 3~5) -> Level 5 이상이면 완료 (4는 진행중)
+                    Quest 4: 내 정보 (Level 5~7) -> Level 7 이상이면 완료 (6은 진행중)
+                  */
+                  const getQuestStatus = () => {
+                    if (quest.id === 1) {
+                      return {
+                        isCompleted: currentLevel >= 2,
+                        isInProgress: currentLevel === 1,
+                        isAlreadyStarted: false,
+                        isLocked: false,
+                      };
+                    }
+                    if (quest.id === 2) {
+                      return {
+                        isCompleted: currentLevel >= 3,
+                        isInProgress: currentLevel === 2,
+                        isAlreadyStarted: false,
+                        isLocked: currentLevel < 2,
+                      };
+                    }
+                    if (quest.id === 3) {
+                      return {
+                        isCompleted: currentLevel >= 5,
+                        isInProgress: currentLevel === 3 || currentLevel === 4,
+                        isAlreadyStarted: currentLevel === 4, // 레벨 4는 이미 생성 모달 진입 상태
+                        isLocked: currentLevel < 3,
+                      };
+                    }
+                    if (quest.id === 4) {
+                      return {
+                        isCompleted: currentLevel >= 6,
+                        isInProgress: currentLevel === 5,
+                        isAlreadyStarted: false,
+                        isLocked: currentLevel < 5,
+                      };
+                    }
+                    return {
+                      isCompleted: false,
+                      isInProgress: false,
+                      isAlreadyStarted: false,
+                      isLocked: true,
+                    };
+                  };
 
-                  // 모든 미션 완료 시 처리: 모두 완료 상태로 표시
-                  const isFinalState = isAllCompleted;
+                  const {
+                    isCompleted,
+                    isInProgress,
+                    isAlreadyStarted,
+                    isLocked,
+                  } = getQuestStatus();
+
+                  // 모든 미션 완료 상태 예외 처리
 
                   return (
                     <div
@@ -90,7 +147,7 @@ export const QuestStep = ({
                       <div
                         className={cn(
                           'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-300',
-                          isCompleted || isFinalState
+                          isCompleted
                             ? 'border-primary bg-primary text-white' // 완료됨
                             : 'border-surface-strong bg-surface text-fg-muted' // 미완료
                         )}
@@ -106,37 +163,46 @@ export const QuestStep = ({
                       {/* 액션 버튼 */}
                       <div className="w-full px-1">
                         <Button
-                          variant={
-                            isCurrent && !isFinalState ? 'solid' : 'ghost'
-                          }
-                          tone={
-                            isCurrent && !isFinalState ? 'primary' : 'neutral'
-                          }
-                          disabled={isCompleted || isLocked || isFinalState}
+                          variant={isInProgress ? 'solid' : 'ghost'}
+                          tone={isInProgress ? 'primary' : 'neutral'}
+                          disabled={!isInProgress || isLoading} // 진행 중이어도 로딩 중이면 비활성화
                           className={cn(
                             'h-9 w-full text-xs shadow-none',
                             // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
-                            (isCompleted || isLocked || isFinalState) &&
+                            !isInProgress &&
                               'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast'
                           )}
                           onClick={() => {
-                            if (isLocked || isCompleted || isFinalState) return;
+                            if (!isInProgress) return;
 
-                            // 튜토리얼 액션 래퍼 사용
-                            // Step 0에서 버튼 클릭 -> 튜토리얼 시작 및 Step 1로 이동
-                            if (quest.id) {
-                              endTutorial();
-                              startTutorial();
-                              nextTutorialStep();
+                            // 이미 시작된 상태(진행 중)라면 바로 해당 기능 실행
+                            if (isAlreadyStarted) {
+                              if (quest.id === 3) {
+                                onOpenCreateSession?.();
+                              } else if (quest.id === 4) {
+                                onOpenUserEdit?.();
+                              }
                               return;
                             }
+                            // 튜토리얼 액션이 필요 없는 단순 미션 처리 (Quest 4 등)
+                            if (quest.id === 4) {
+                              onOpenUserEdit?.();
+                              return;
+                            }
+
+                            // 튜토리얼 액션 래퍼 사용
+                            endTutorial();
+                            startTutorial();
+                            nextTutorialStep();
                           }}
                         >
-                          {isCompleted || isFinalState
+                          {isCompleted
                             ? '미션 완료!'
-                            : isLocked
-                              ? '이전 단계 후 오픈'
-                              : '미션 진행하기'}
+                            : isAlreadyStarted
+                              ? '미션 진행 중'
+                              : isLocked
+                                ? '이전 단계 후 오픈'
+                                : '미션 진행하기'}
                         </Button>
                       </div>
                     </div>
@@ -166,12 +232,25 @@ export const QuestStep = ({
             className="w-full"
             tone="primary"
             variant="solid"
-            disabled={!isAllCompleted}
-            onClick={() => {
-              if (email) getReward(email);
+            disabled={!isAllCompleted || isLoading || currentLevel >= 7}
+            onClick={async () => {
+              if (email) {
+                await getReward(email);
+                // 크레딧 정보 갱신
+                if (userId) {
+                  await Promise.all([
+                    queryClient.invalidateQueries({
+                      queryKey: ['credit', 'subscription', Number(userId)],
+                    }),
+                    queryClient.invalidateQueries({
+                      queryKey: ['credit', 'usage', Number(userId)],
+                    }),
+                  ]);
+                }
+              }
             }}
           >
-            이벤트 보상 받기
+            {currentLevel >= 7 ? '보상 받기 완료!' : '이벤트 보상 받기'}
           </Button>
         </div>
       </div>

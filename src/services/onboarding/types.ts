@@ -21,7 +21,7 @@ export interface OnboardingStatus {
   step: OnboardingStepType;
   state: OnboardingStateType;
   shouldShowOnboarding: boolean;
-  started_at?: string | null;
+  startedAt?: string | null;
 }
 
 export interface OnboardingStatusResponse {

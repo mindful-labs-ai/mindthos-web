@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import { onboardingService } from '@/services/onboarding/onboardingService';
 import {
@@ -113,181 +113,198 @@ export type QuestStore = QuestStoreState & QuestActions;
 
 export const useQuestStore = create<QuestStore>()(
   devtools(
-    (set, get) => ({
-      currentLevel: 0,
-      startedAt: null,
-      isLoading: false,
-      isChecked: false,
-      isTutorialActive: false,
-      tutorialStep: 0,
-      shouldShowOnboarding: false,
-      spotlightConfig: null,
-      showConfetti: false,
+    persist(
+      (set, get) => ({
+        currentLevel: 0,
+        startedAt: null,
+        isLoading: false,
+        isChecked: false,
+        isTutorialActive: false,
+        tutorialStep: 0,
+        shouldShowOnboarding: false,
+        spotlightConfig: null,
+        showConfetti: false,
 
-      initializeQuest: async (email: string) => {
-        if (get().isChecked) return;
+        initializeQuest: async (email: string) => {
+          const { isChecked, currentLevel } = get();
 
-        set({ isLoading: true }, false, 'quest/init_start');
+          if (!isChecked && currentLevel === 0) {
+            set({ isLoading: true }, false, 'quest/init_start');
+          }
 
-        try {
-          // 1. 현재 상태 체크
-          let response = await onboardingService.check(email);
-          let level = getQuestLevel(
-            response.onboarding.state,
-            response.onboarding.step
-          );
-
-          // 2. 미시작 상태(Level 0)라면 자동으로 start 호출
-          if (level === 0) {
-            await onboardingService.start({ email });
-            // 시작 후 최신 상태 다시 조회
-            response = await onboardingService.check(email);
-            level = getQuestLevel(
+          try {
+            // 1. 현재 상태 체크
+            let response = await onboardingService.check(email);
+            let level = getQuestLevel(
               response.onboarding.state,
               response.onboarding.step
             );
+
+            // 2. 미시작 상태(Level 0)라면 자동으로 start 호출
+            if (level === 0) {
+              await onboardingService.start({ email });
+              // 시작 후 최신 상태 다시 조회
+              response = await onboardingService.check(email);
+              level = getQuestLevel(
+                response.onboarding.state,
+                response.onboarding.step
+              );
+            }
+
+            set(
+              {
+                currentLevel: level,
+                startedAt: response.onboarding.startedAt,
+                isChecked: true,
+                isLoading: false,
+                shouldShowOnboarding: response.onboarding.shouldShowOnboarding,
+              },
+              false,
+              'quest/init_success'
+            );
+          } catch (error) {
+            console.error('Quest initialization failed:', error);
+            set(
+              { isLoading: false, isChecked: true },
+              false,
+              'quest/init_error'
+            );
           }
+        },
 
+        completeNextStep: async (email: string) => {
+          const { currentLevel, isLoading } = get();
+          if (isLoading) return;
+
+          set({ isLoading: true }, false, 'quest/next_start');
+
+          try {
+            // 서버로 다음 단계 요청을 보낼 때 필요한 현재 상태 매핑
+            const currentState =
+              currentLevel >= 6
+                ? OnboardingState.COMPLETED
+                : OnboardingState.IN_PROGRESS;
+            // 서버의 step은 대략 level - 1 관례를 따르거나,
+            // 정확한 로직은 백엔드 구현에 따르지만 여기서는 현재 레벨의 서버 기준 step을 보냅니다.
+            const currentStepMapping: Record<number, number> = {
+              1: 0,
+              2: 1,
+              3: 2,
+              4: 3,
+              5: 4,
+              6: 5,
+              7: 6,
+            };
+
+            const response = await onboardingService.next({
+              email,
+              currentState: currentState,
+              currentStep: currentStepMapping[currentLevel] ?? 0,
+            });
+
+            const nextLevel = getQuestLevel(
+              response.onboarding.state,
+              response.onboarding.step
+            );
+
+            set(
+              {
+                currentLevel: nextLevel,
+                isLoading: false,
+              },
+              false,
+              'quest/next_success'
+            );
+          } catch (error) {
+            console.error('Moving to next quest step failed:', error);
+            set({ isLoading: false }, false, 'quest/next_error');
+          }
+        },
+
+        getReward: async (email: string) => {
+          set({ isLoading: true }, false, 'quest/reward_start');
+
+          try {
+            await onboardingService.success({ email });
+
+            // 보상 수령 후 상태 갱신을 위해 initializeQuest 재호출 혹은 직접 레벨 7로 설정
+            const response = await onboardingService.check(email);
+            const level = getQuestLevel(
+              response.onboarding.state,
+              response.onboarding.step
+            );
+
+            set(
+              {
+                currentLevel: level,
+                isLoading: false,
+              },
+              false,
+              'quest/reward_success'
+            );
+          } catch (error) {
+            console.error('Getting reward failed:', error);
+            set({ isLoading: false }, false, 'quest/reward_error');
+          }
+        },
+
+        setTutorialActive: (active: boolean) => {
+          set({ isTutorialActive: active }, false, 'quest/set_tutorial_active');
+        },
+
+        nextTutorialStep: () => {
+          set(
+            (state) => ({ tutorialStep: state.tutorialStep + 1 }),
+            false,
+            'quest/next_tutorial_step'
+          );
+        },
+
+        setSpotlightConfig: (config) => {
+          set({ spotlightConfig: config }, false, 'quest/set_spotlight_config');
+        },
+
+        clearSpotlight: () => {
+          set({ spotlightConfig: null }, false, 'quest/clear_spotlight');
+        },
+
+        resetTutorial: () => {
+          set(
+            { isTutorialActive: false, tutorialStep: 0, spotlightConfig: null },
+            false,
+            'quest/reset_tutorial'
+          );
+        },
+
+        setShowConfetti: (show: boolean) => {
+          set({ showConfetti: show }, false, 'quest/set_show_confetti');
+        },
+
+        clear: () =>
           set(
             {
-              currentLevel: level,
-              startedAt: response.onboarding.started_at,
-              isChecked: true,
+              currentLevel: 0,
+              startedAt: null,
               isLoading: false,
-              shouldShowOnboarding: response.onboarding.shouldShowOnboarding,
+              isChecked: false,
+              isTutorialActive: false,
+              tutorialStep: 0,
+              shouldShowOnboarding: false,
             },
             false,
-            'quest/init_success'
-          );
-        } catch (error) {
-          console.error('Quest initialization failed:', error);
-          set({ isLoading: false, isChecked: true }, false, 'quest/init_error');
-        }
-      },
-
-      completeNextStep: async (email: string) => {
-        const { currentLevel, isLoading } = get();
-        if (isLoading) return;
-
-        set({ isLoading: true }, false, 'quest/next_start');
-
-        try {
-          // 서버로 다음 단계 요청을 보낼 때 필요한 현재 상태 매핑
-          const currentState =
-            currentLevel >= 6
-              ? OnboardingState.COMPLETED
-              : OnboardingState.IN_PROGRESS;
-          // 서버의 step은 대략 level - 1 관례를 따르거나,
-          // 정확한 로직은 백엔드 구현에 따르지만 여기서는 현재 레벨의 서버 기준 step을 보냅니다.
-          const currentStepMapping: Record<number, number> = {
-            1: 0,
-            2: 1,
-            3: 2,
-            4: 3,
-            5: 4,
-            6: 5,
-            7: 6,
-          };
-
-          const response = await onboardingService.next({
-            email,
-            currentState: currentState,
-            currentStep: currentStepMapping[currentLevel] ?? 0,
-          });
-
-          const nextLevel = getQuestLevel(
-            response.onboarding.state,
-            response.onboarding.step
-          );
-
-          set(
-            {
-              currentLevel: nextLevel,
-              isLoading: false,
-            },
-            false,
-            'quest/next_success'
-          );
-        } catch (error) {
-          console.error('Moving to next quest step failed:', error);
-          set({ isLoading: false }, false, 'quest/next_error');
-        }
-      },
-
-      getReward: async (email: string) => {
-        set({ isLoading: true }, false, 'quest/reward_start');
-
-        try {
-          await onboardingService.success({ email });
-
-          // 보상 수령 후 상태 갱신을 위해 initializeQuest 재호출 혹은 직접 레벨 7로 설정
-          const response = await onboardingService.check(email);
-          const level = getQuestLevel(
-            response.onboarding.state,
-            response.onboarding.step
-          );
-
-          set(
-            {
-              currentLevel: level,
-              isLoading: false,
-            },
-            false,
-            'quest/reward_success'
-          );
-        } catch (error) {
-          console.error('Getting reward failed:', error);
-          set({ isLoading: false }, false, 'quest/reward_error');
-        }
-      },
-
-      setTutorialActive: (active: boolean) => {
-        set({ isTutorialActive: active }, false, 'quest/set_tutorial_active');
-      },
-
-      nextTutorialStep: () => {
-        set(
-          (state) => ({ tutorialStep: state.tutorialStep + 1 }),
-          false,
-          'quest/next_tutorial_step'
-        );
-      },
-
-      setSpotlightConfig: (config) => {
-        set({ spotlightConfig: config }, false, 'quest/set_spotlight_config');
-      },
-
-      clearSpotlight: () => {
-        set({ spotlightConfig: null }, false, 'quest/clear_spotlight');
-      },
-
-      resetTutorial: () => {
-        set(
-          { isTutorialActive: false, tutorialStep: 0, spotlightConfig: null },
-          false,
-          'quest/reset_tutorial'
-        );
-      },
-
-      setShowConfetti: (show: boolean) => {
-        set({ showConfetti: show }, false, 'quest/set_show_confetti');
-      },
-
-      clear: () =>
-        set(
-          {
-            currentLevel: 0,
-            startedAt: null,
-            isLoading: false,
-            isChecked: false,
-            isTutorialActive: false,
-            tutorialStep: 0,
-            shouldShowOnboarding: false,
-          },
-          false,
-          'quest/clear'
-        ),
-    }),
+            'quest/clear'
+          ),
+      }),
+      {
+        name: 'mindthos-quest-storage',
+        storage: createJSONStorage(() => localStorage),
+        partialize: (state) => ({
+          currentLevel: state.currentLevel,
+          startedAt: state.startedAt,
+          shouldShowOnboarding: state.shouldShowOnboarding,
+        }),
+      }
+    ),
     { name: 'QuestStore' }
   )
 );
