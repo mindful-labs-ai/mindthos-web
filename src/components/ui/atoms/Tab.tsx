@@ -166,6 +166,7 @@ export const Tab: React.FC<TabProps> = ({
           return (
             <button
               key={item.value}
+              data-value={item.value}
               role="tab"
               type="button"
               aria-selected={isSelected}

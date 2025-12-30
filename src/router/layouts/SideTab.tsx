@@ -4,6 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, Sidebar, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import type { UploadType } from '@/feature/session/types';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
@@ -42,6 +44,11 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
+  // 튜토리얼 훅 (Level 1 기준)
+  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
+    useTutorial({
+      currentLevel: 1,
+    });
 
   // 현재 경로에 따라 activeNav 자동 설정
   const activeNav: string = React.useMemo(() => {
@@ -60,7 +67,12 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
 
     const path = getPathFromNavValue(value);
     if (path) {
-      navigate(path);
+      if (value === 'sessions' && checkIsTutorialActive(1)) {
+        // 튜토리얼 중이면 다음 단계로 진행하면서 이동
+        handleTutorialAction(() => navigate(path), 1);
+      } else {
+        navigate(path);
+      }
     }
   };
 
@@ -156,14 +168,23 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
         />
       </div>
 
-      {/* Main Navigation using Sidebar component */}
+      {/* Main Navigation - Integrated with Spotlight Selector */}
       <div className="flex-1 overflow-y-auto px-3">
-        <Sidebar
-          items={MAIN_NAV_ITEMS}
-          activeValue={activeNav}
-          onSelect={handleNavSelect}
-          className="min-w-0 border-none bg-transparent p-0"
-        />
+        <Spotlight
+          isActive={checkIsTutorialActive(1)}
+          onClose={() => endTutorial()}
+          tooltip="상담 기록 탭을 눌러 예시를 확인해보세요!"
+          tooltipPosition="right"
+          selector='[data-value="sessions"]'
+          className="w-full"
+        >
+          <Sidebar
+            items={MAIN_NAV_ITEMS}
+            activeValue={activeNav}
+            onSelect={handleNavSelect}
+            className="min-w-0 border-none bg-transparent py-2"
+          />
+        </Spotlight>
       </div>
 
       <div>

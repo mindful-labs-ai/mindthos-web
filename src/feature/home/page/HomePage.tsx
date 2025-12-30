@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
+import { Confetti } from '@/components/ui/composites/Confetti';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import { QuestStep } from '@/feature/onboarding/components/QuestStep';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
@@ -21,6 +23,7 @@ import { ROUTES, getSessionDetailRoute } from '@/router/constants';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { ActionCard } from '../components/ActionCard';
 import { GreetingSection } from '../components/GreetingSection';
@@ -29,9 +32,20 @@ const HomePage = () => {
   const navigate = useNavigate();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
-  const [showBanner, setShowBanner] = React.useState(true);
+  const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
+    React.useState(true);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
+
+  const {
+    currentLevel,
+    isLoading,
+    isChecked,
+    shouldShowOnboarding,
+    startedAt,
+    showConfetti,
+    setShowConfetti,
+  } = useQuestStore();
 
   // 세션 목록 조회 (TanStack Query)
   const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
@@ -115,16 +129,60 @@ const HomePage = () => {
     return allClientSessions.findIndex((s) => s.id === sessionId) + 1;
   };
 
+  // 퀘스트 단계 계산
+  const completedCount = currentLevel > 0 ? currentLevel - 1 : 0;
+
+  // 남은 기간 계산
+  const calculateRemainingDays = (start: string | null) => {
+    if (!start) return 7;
+    const startDate = new Date(start);
+    const now = new Date();
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 7);
+    const diff = endDate.getTime() - now.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+  const remainingDays = calculateRemainingDays(startedAt);
+
   return (
     <div className="mx-auto w-full p-16 text-left">
-      {showBanner && (
+      <Confetti
+        active={showConfetti}
+        numberOfPieces={150}
+        gravity={0.3}
+        friction={0.97}
+        duration={8000}
+        onComplete={() => setShowConfetti(false)}
+      />
+      {isLoading ? (
         <WelcomeBanner
           title="마음토스 시작하기"
           description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
           buttonText="더 알아보기"
           onButtonClick={handleGuideClick}
-          onClose={() => setShowBanner(false)}
+          onClose={() => setIsWelcomeBannerVisible(false)}
         />
+      ) : (
+        isChecked && (
+          <>
+            {shouldShowOnboarding ? (
+              <QuestStep
+                completedStepCount={completedCount}
+                remainingDays={remainingDays}
+              />
+            ) : (
+              isWelcomeBannerVisible && (
+                <WelcomeBanner
+                  title="마음토스 시작하기"
+                  description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
+                  buttonText="더 알아보기"
+                  onButtonClick={handleGuideClick}
+                  onClose={() => setIsWelcomeBannerVisible(false)}
+                />
+              )
+            )}
+          </>
+        )
       )}
 
       <GreetingSection userName={userName!} date={formatKoreanDate()} />

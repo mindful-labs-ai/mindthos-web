@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { useInView } from 'react-intersection-observer';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
@@ -10,7 +11,9 @@ import { Tab } from '@/components/ui/atoms/Tab';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { useAuthStore } from '@/stores/authStore';
@@ -58,10 +61,113 @@ export const SessionDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const {
+    checkIsTutorialActive,
+    handleTutorialAction,
+    nextTutorialStep,
+    tutorialStep,
+    setShowConfetti,
+    completeNextStep,
+    endTutorial,
+  } = useTutorial({
+    currentLevel: 1,
+  });
+  const user = useAuthStore((state) => state.user);
+
   const [activeTab, setActiveTab] = React.useState<string>('transcript');
   const [isEditing, setIsEditing] = React.useState(false);
   const [isAnonymized, setIsAnonymized] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+  // 4단계(축어록) 스크롤 감지
+  const { ref: transcriptEndRef, inView: isTranscriptEnd } = useInView({
+    threshold: 1.0,
+  });
+
+  // 7단계(상담노트) 스크롤 감지
+  const { ref: noteEndRef, inView: isNoteEnd } = useInView({
+    threshold: 1.0,
+  });
+
+  // 탭이 바뀌면 스크롤을 최상단으로 초기화
+
+  // 탭이 바뀌면 스크롤을 최상단으로 초기화
+  React.useEffect(() => {
+    if (contentScrollRef.current) {
+      contentScrollRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
+
+  // 스크롤 감지 시 4, 7단계 클리어
+  React.useEffect(() => {
+    if (isTranscriptEnd && checkIsTutorialActive(4)) {
+      nextTutorialStep();
+    }
+  }, [isTranscriptEnd, nextTutorialStep, checkIsTutorialActive]);
+
+  React.useEffect(() => {
+    if (isNoteEnd && checkIsTutorialActive(7) && activeTab !== 'transcript') {
+      nextTutorialStep();
+    }
+  }, [isNoteEnd, nextTutorialStep, checkIsTutorialActive, activeTab]);
+
+  const missionTooltip = React.useMemo(() => {
+    if (checkIsTutorialActive(4)) return '상담 내용을 끝까지 읽어보세요!';
+    if (checkIsTutorialActive(5)) {
+      return (
+        <div className="flex flex-col gap-3">
+          <p>미션 성공! 상담 내용을 모두 확인했습니다.</p>
+          <button
+            onClick={() => nextTutorialStep()}
+            className="rounded-lg bg-primary py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+          >
+            다음 단계로 넘어가기
+          </button>
+        </div>
+      );
+    }
+    if (checkIsTutorialActive(7)) return '상담 노트를 끝까지 읽어보세요!';
+    if (checkIsTutorialActive(8)) {
+      return (
+        <div className="flex flex-col gap-3">
+          <p>미션 성공! 상담 노트를 모두 확인했습니다.</p>
+          <button
+            onClick={() => nextTutorialStep()}
+            className="rounded-lg bg-primary py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+          >
+            다음 단계로 넘어가기
+          </button>
+        </div>
+      );
+    }
+    if (checkIsTutorialActive(10)) {
+      return (
+        <div className="flex flex-col gap-3">
+          <p>🎉 축하합니다! 상담의 모든 과정을 확인하셨습니다.</p>
+          <button
+            onClick={async () => {
+              if (user?.email) {
+                await completeNextStep(user.email);
+              }
+              setShowConfetti(true);
+              endTutorial();
+            }}
+            className="rounded-lg bg-primary py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+          >
+            튜토리얼 완료하기
+          </button>
+        </div>
+      );
+    }
+    return '';
+  }, [
+    checkIsTutorialActive,
+    nextTutorialStep,
+    endTutorial,
+    completeNextStep,
+    setShowConfetti,
+    user?.email,
+  ]);
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
@@ -682,31 +788,41 @@ export const SessionDetailPage: React.FC = () => {
   };
 
   // 탭 변경 핸들러
-  const handleTabChange = (value: string) => {
-    // 편집 중이고, 축어록 탭에서 다른 탭으로 변경하려는 경우
-    if (isEditing && activeTab === 'transcript') {
-      setPendingTabValue(value);
-      setIsTabChangeModalOpen(true);
-      return;
-    }
+  const handleTabChange = React.useCallback(
+    (value: string) => {
+      // 편집 중이고, 축어록 탭에서 다른 탭으로 변경하려는 경우
+      if (isEditing && activeTab === 'transcript') {
+        setPendingTabValue(value);
+        setIsTabChangeModalOpen(true);
+        return;
+      }
 
-    // 'add' 탭 처리 - 새로운 생성 탭 추가
-    if (value === 'add') {
-      const newTabId = `create-note-${Date.now()}`;
-      setCreatingTabs((prev) => ({
-        ...prev,
-        [newTabId]: null,
-      }));
-      setActiveTab(newTabId);
-      // 스크롤 초기화
-      contentScrollRef.current?.scrollTo({ top: 0 });
-      return;
-    }
+      // 'add' 탭 처리 - 새로운 생성 탭 추가
+      if (value === 'add') {
+        const newTabId = `create-note-${Date.now()}`;
+        setCreatingTabs((prev) => ({
+          ...prev,
+          [newTabId]: null,
+        }));
+        setActiveTab(newTabId);
+        // 스크롤 초기화
+        contentScrollRef.current?.scrollTo({ top: 0 });
+        return;
+      }
 
-    setActiveTab(value);
-    // 스크롤 초기화
-    contentScrollRef.current?.scrollTo({ top: 0 });
-  };
+      setActiveTab(value);
+      // 스크롤 초기화 (즉시 강제 리셋)
+      if (contentScrollRef.current) {
+        contentScrollRef.current.scrollTop = 0;
+      }
+
+      // 튜토리얼 9단계: 상담 노트 생성 탭 클릭 시 다음 단계로
+      if (value === 'add' && checkIsTutorialActive(9)) {
+        nextTutorialStep();
+      }
+    },
+    [activeTab, isEditing, checkIsTutorialActive, nextTutorialStep]
+  );
 
   // 탭 변경 확인
   const handleConfirmTabChange = () => {
@@ -723,8 +839,10 @@ export const SessionDetailPage: React.FC = () => {
       } else {
         setActiveTab(pendingTabValue);
       }
-      // 스크롤 초기화
-      contentScrollRef.current?.scrollTo({ top: 0 });
+      // 스크롤 초기화 (즉시 강제 리셋)
+      if (contentScrollRef.current) {
+        contentScrollRef.current.scrollTop = 0;
+      }
     }
     setIsTabChangeModalOpen(false);
     setPendingTabValue(null);
@@ -1082,17 +1200,59 @@ export const SessionDetailPage: React.FC = () => {
       </div>
 
       <div className="flex flex-shrink-0 select-none justify-start px-6 pt-2">
-        <Tab
-          items={tabItems}
-          value={activeTab}
-          onValueChange={handleTabChange}
-          size="sm"
-          fullWidth
-          className="px-8"
-          variant="underline"
-        />
+        <Spotlight
+          isActive={
+            checkIsTutorialActive(3) ||
+            checkIsTutorialActive(6) ||
+            checkIsTutorialActive(9)
+          }
+          tooltip={
+            checkIsTutorialActive(3)
+              ? '축어록 탭을 클릭하여 상담 내용을 확인해 보세요!'
+              : checkIsTutorialActive(6)
+                ? '상담 결과를 요약한 노트를 클릭해 보세요!'
+                : '상담 노트를 새로 작성해 보세요!'
+          }
+          tooltipPosition="bottom"
+          selector={
+            checkIsTutorialActive(9)
+              ? '[data-value="add"]'
+              : checkIsTutorialActive(6)
+                ? '[data-value^="dummy_progress_note"]'
+                : '[data-value="transcript"]'
+          }
+          onClose={() => endTutorial()}
+        >
+          <Tab
+            items={tabItems}
+            value={activeTab}
+            onValueChange={(val) => {
+              if (
+                checkIsTutorialActive(3) ||
+                checkIsTutorialActive(6) ||
+                checkIsTutorialActive(9)
+              ) {
+                handleTutorialAction(
+                  () => handleTabChange(val),
+                  checkIsTutorialActive(3)
+                    ? 3
+                    : checkIsTutorialActive(6)
+                      ? 6
+                      : 9
+                );
+              } else {
+                handleTabChange(val);
+              }
+            }}
+            size="sm"
+            fullWidth
+            className="px-8"
+            variant="underline"
+          />
+        </Spotlight>
       </div>
 
+      {/* 탭 콘텐츠 */}
       <div
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
@@ -1268,133 +1428,167 @@ export const SessionDetailPage: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'transcript' ? (
-          <div
-            ref={contentScrollRef}
-            className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
-          >
-            {segments.length > 0 ? (
-              segments.map((segment, index) => (
-                <TranscriptSegment
-                  key={`segment-${index}-${segment.id}`}
-                  segment={segment}
-                  speakers={speakers}
-                  isActive={
-                    enableTimestampFeatures && index === currentSegmentIndex
-                  }
-                  isEditable={isEditing && !isReadOnly}
-                  isAnonymized={isAnonymized}
-                  sttModel={transcribe?.stt_model}
-                  segmentRef={
-                    enableTimestampFeatures && index === currentSegmentIndex
-                      ? activeSegmentRef
-                      : undefined
-                  }
-                  onClick={handleSeekToWithInteraction}
-                  onTextEdit={isReadOnly ? undefined : handleTextEdit}
-                  showTimestamp={enableTimestampFeatures}
-                  segmentIndex={index}
-                  allSegments={segments}
-                  clientId={session?.client_id || null}
-                  onSpeakerChange={isReadOnly ? undefined : handleSpeakerChange}
-                />
-              ))
-            ) : (
-              <div className="flex min-h-[400px] items-center justify-center">
-                <p className="text-fg-muted">전사 내용이 없습니다.</p>
-              </div>
-            )}
-          </div>
-        ) : activeTab.startsWith('create-note-') ||
-          activeTab in requestingTabs ? (
-          <div className="flex h-full flex-col">
-            {activeCreatingTab?.isProcessing ? (
-              // 생성 중 로딩 UI (DB에서 처리 중인 노트)
-              <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
-                <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
-                <div className="text-center">
-                  <Title as="h2" className="text-lg font-medium text-fg">
-                    상담노트 작성 중...
-                  </Title>
-                  <p className="mt-2 text-sm text-fg-muted">
-                    상담노트를 작성하고 있습니다.
-                    <br />
-                    잠시만 기다려주세요.
-                  </p>
-                </div>
-              </div>
-            ) : activeTab in creatingTabs ? (
-              // 템플릿 선택 UI
-              <>
-                {/* 우측 상단 생성 버튼 */}
-                <div className="flex items-center justify-between px-8 py-4">
-                  <div>
-                    <Title as="h2" className="text-base text-fg-muted">
-                      상담 노트 템플릿
-                    </Title>
-                  </div>
-                  <button
-                    onClick={handleCreateProgressNote}
-                    disabled={isReadOnly || !creatingTabs[activeTab]}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                      isReadOnly || !creatingTabs[activeTab]
-                        ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
-                        : 'bg-primary text-white hover:bg-primary-600'
-                    }`}
-                  >
-                    상담 노트 작성하기
-                  </button>
-                </div>
-                {/* CreateProgressNoteView */}
-                <div
-                  ref={contentScrollRef}
-                  className="flex-1 overflow-y-auto px-8 py-6"
-                >
-                  <CreateProgressNoteView
-                    sessionId={sessionId || ''}
-                    transcribedText={
-                      transcribe?.contents &&
-                      typeof transcribe.contents === 'object' &&
-                      transcribe.contents !== null
-                        ? transcribe.contents.raw_output || null
-                        : null
-                    }
-                    usedTemplateIds={sessionProgressNotes
-                      .map((note) => note.template_id)
-                      .filter(
-                        (id): id is number => id !== null && id !== undefined
-                      )}
-                    selectedTemplateId={creatingTabs[activeTab] || null}
-                    onTemplateSelect={handleTemplateSelect}
+        {/* 탭 콘텐츠 Spotlight: 4단계(스크롤), 5단계(완료 버튼) */}
+        <Spotlight
+          isActive={
+            checkIsTutorialActive(4) ||
+            checkIsTutorialActive(5) ||
+            checkIsTutorialActive(7) ||
+            checkIsTutorialActive(8) ||
+            checkIsTutorialActive(10)
+          }
+          tooltip={missionTooltip}
+          tooltipPosition="left"
+          onClose={() => endTutorial()}
+        >
+          {activeTab === 'transcript' ? (
+            <div
+              key="transcript-container"
+              ref={contentScrollRef}
+              className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
+            >
+              {segments.length > 0 ? (
+                <>
+                  {segments.map((segment, index) => (
+                    <TranscriptSegment
+                      key={`segment-${index}-${segment.id}`}
+                      segment={segment}
+                      speakers={speakers}
+                      isActive={
+                        enableTimestampFeatures && index === currentSegmentIndex
+                      }
+                      isEditable={isEditing && !isReadOnly}
+                      isAnonymized={isAnonymized}
+                      sttModel={transcribe?.stt_model}
+                      segmentRef={
+                        enableTimestampFeatures && index === currentSegmentIndex
+                          ? activeSegmentRef
+                          : undefined
+                      }
+                      onClick={handleSeekToWithInteraction}
+                      onTextEdit={isReadOnly ? undefined : handleTextEdit}
+                      showTimestamp={enableTimestampFeatures}
+                      segmentIndex={index}
+                      allSegments={segments}
+                      clientId={session?.client_id || null}
+                      onSpeakerChange={
+                        isReadOnly ? undefined : handleSpeakerChange
+                      }
+                    />
+                  ))}
+                  {/* 스크롤 감지용 타겟 - key를 주어 단계 변경 시 감지 상태 초기화 */}
+                  <div
+                    key={`scroll-target-${tutorialStep}`}
+                    ref={transcriptEndRef}
+                    className="h-4 w-full"
                   />
-                </div>
-              </>
-            ) : (
-              // 알 수 없는 상태
-              <div className="flex h-full items-center justify-center">
-                <p className="text-fg-muted">잠시 기다려주세요...</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div
-            ref={contentScrollRef}
-            className="h-full overflow-y-auto px-8 py-6"
-          >
-            {(() => {
-              const selectedNote = sessionProgressNotes.find(
-                (note) => note.id === activeTab
-              );
-              return selectedNote ? (
-                <ProgressNoteView note={selectedNote} />
+                </>
               ) : (
                 <div className="flex min-h-[400px] items-center justify-center">
-                  <p className="text-fg-muted">상담 노트를 선택해주세요.</p>
+                  <p className="text-fg-muted">전사 내용이 없습니다.</p>
                 </div>
-              );
-            })()}
-          </div>
-        )}
+              )}
+            </div>
+          ) : activeTab.startsWith('create-note-') ||
+            activeTab in requestingTabs ? (
+            <div className="flex h-full flex-col">
+              {activeCreatingTab?.isProcessing ? (
+                // 생성 중 로딩 UI (DB에서 처리 중인 노트)
+                <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
+                  <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
+                  <div className="text-center">
+                    <Title as="h2" className="text-lg font-medium text-fg">
+                      상담노트 작성 중...
+                    </Title>
+                    <p className="mt-2 text-sm text-fg-muted">
+                      상담노트를 작성하고 있습니다.
+                      <br />
+                      잠시만 기다려주세요.
+                    </p>
+                  </div>
+                </div>
+              ) : activeTab in creatingTabs ? (
+                // 템플릿 선택 UI
+                <>
+                  {/* 우측 상단 생성 버튼 */}
+                  <div className="flex items-center justify-between px-8 py-4">
+                    <div>
+                      <Title as="h2" className="text-base text-fg-muted">
+                        상담 노트 템플릿
+                      </Title>
+                    </div>
+                    <button
+                      onClick={handleCreateProgressNote}
+                      disabled={isReadOnly || !creatingTabs[activeTab]}
+                      className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        isReadOnly || !creatingTabs[activeTab]
+                          ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
+                          : 'bg-primary text-white hover:bg-primary-600'
+                      }`}
+                    >
+                      상담 노트 작성하기
+                    </button>
+                  </div>
+                  {/* CreateProgressNoteView */}
+                  <div
+                    ref={contentScrollRef}
+                    className="flex-1 overflow-y-auto px-8 py-6"
+                  >
+                    <CreateProgressNoteView
+                      sessionId={sessionId || ''}
+                      transcribedText={
+                        transcribe?.contents &&
+                        typeof transcribe.contents === 'object' &&
+                        transcribe.contents !== null
+                          ? transcribe.contents.raw_output || null
+                          : null
+                      }
+                      usedTemplateIds={sessionProgressNotes
+                        .map((note) => note.template_id)
+                        .filter(
+                          (id): id is number => id !== null && id !== undefined
+                        )}
+                      selectedTemplateId={creatingTabs[activeTab] || null}
+                      onTemplateSelect={handleTemplateSelect}
+                    />
+                  </div>
+                </>
+              ) : (
+                // 알 수 없는 상태
+                <div className="flex h-full items-center justify-center">
+                  <p className="text-fg-muted">잠시 기다려주세요...</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              key={`note-container-${activeTab}`}
+              ref={contentScrollRef}
+              className="h-full overflow-y-auto px-8 py-6"
+            >
+              {(() => {
+                const selectedNote = sessionProgressNotes.find(
+                  (note) => note.id === activeTab
+                );
+                return selectedNote ? (
+                  <>
+                    <ProgressNoteView note={selectedNote} />
+                    {/* 상담노트용 스크롤 감지 타겟 */}
+                    <div
+                      key={`scroll-target-note-${tutorialStep}`}
+                      ref={noteEndRef}
+                      className="h-4 w-full"
+                    />
+                  </>
+                ) : (
+                  <div className="flex min-h-[400px] items-center justify-center">
+                    <p className="text-fg-muted">상담 노트를 선택해주세요.</p>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </Spotlight>
       </div>
 
       {activeTab === 'transcript' && (
