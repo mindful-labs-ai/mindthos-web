@@ -18,7 +18,7 @@ export const ScrollIndicator = ({
   return (
     <div
       className={cn(
-        'pointer-events-none absolute bottom-0 right-4 z-50 flex flex-col items-center justify-start gap-2 py-6',
+        'pointer-events-none absolute z-50 flex flex-col items-center justify-start gap-2 py-6',
         className
       )}
     >
