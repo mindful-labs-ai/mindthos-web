@@ -11,6 +11,7 @@ import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import { getClientDetailRoute } from '@/router/constants';
 import { SearchIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientCard } from '../components/ClientCard';
@@ -35,11 +36,12 @@ export const ClientListPage: React.FC = () => {
 
   const sessionsFromQuery = sessionData?.sessions || [];
 
-  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때만 표시
-  // 세션이든 클라이언트든 하나라도 실제 데이터가 있으면 더미를 숨김
+  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때 표시하거나, 튜토리얼이 활성 상태일 때 표시
+  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
   const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
   const isDummyFlow =
-    !isLoading && !isLoadingSessions && !error && !hasAnyRealData;
+    ((!isLoading && !isLoadingSessions && !error) || isTutorialActive) &&
+    (!hasAnyRealData || isTutorialActive);
   const effectiveClients = isDummyFlow ? [dummyClient] : clients;
 
   const filteredClients = useClientSearch(effectiveClients, searchQuery);

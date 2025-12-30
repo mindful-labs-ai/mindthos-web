@@ -6,7 +6,9 @@ import { Badge } from '@/components/ui/atoms/Badge';
 import { Button } from '@/components/ui/atoms/Button';
 import { Title } from '@/components/ui/atoms/Title';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { FilterMenu } from '@/feature/session/components/FilterMenu';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import { SessionSideList } from '@/feature/session/components/SessionSideList';
@@ -22,10 +24,15 @@ import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { getSessionDetailRoute } from '@/router/constants';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 export const SessionHistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const { sessionId } = useParams<{ sessionId: string }>();
+  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
+    useTutorial({
+      currentLevel: 1,
+    });
   const userId = useAuthStore((state) => state.userId);
   const { clients, isLoading: isLoadingClients } = useClientList();
 
@@ -43,18 +50,26 @@ export const SessionHistoryPage: React.FC = () => {
     enabled: !!userId,
   });
 
-  const sessionsFromQuery = sessionData?.sessions || [];
+  const sessionsFromQuery = React.useMemo(
+    () => sessionData?.sessions || [],
+    [sessionData?.sessions]
+  );
 
-  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때만 표시
-  // 세션이든 클라이언트든 하나라도 실제 데이터가 있으면 더미를 숨김
+  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때 표시하거나, 튜토리얼이 활성 상태일 때 표시
+  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
   const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
   const isDummyFlow =
-    !isLoadingSessions && !isLoadingClients && !hasAnyRealData;
+    ((!isLoadingSessions && !isLoadingClients) || isTutorialActive) &&
+    (!hasAnyRealData || isTutorialActive);
 
-  const sessionsWithData = isDummyFlow
-    ? dummySessionRelations
-    : sessionsFromQuery;
-  const effectiveClients = isDummyFlow ? [dummyClient] : clients;
+  const sessionsWithData = React.useMemo(
+    () => (isDummyFlow ? dummySessionRelations : sessionsFromQuery),
+    [isDummyFlow, sessionsFromQuery]
+  );
+  const effectiveClients = React.useMemo(
+    () => (isDummyFlow ? [dummyClient] : clients),
+    [isDummyFlow, clients]
+  );
 
   // 필터링 및 정렬된 세션 데이터
   const filteredAndSortedSessions = React.useMemo(() => {
@@ -336,16 +351,40 @@ export const SessionHistoryPage: React.FC = () => {
                   </div>
                 </div>
               ) : records.length > 0 ? (
-                records.map((record) => (
-                  <SessionRecordCard
-                    key={record.session_id}
-                    record={record}
-                    isReadOnly={isDummyFlow}
-                    onClick={handleCardClick}
-                    onChangeClient={handleChangeClient}
-                    onDelete={handleDeleteSession}
-                  />
-                ))
+                records.map((record) => {
+                  const isStep2Active =
+                    record.session_id === 'dummy_session_3' &&
+                    checkIsTutorialActive(2);
+
+                  const card = (
+                    <SessionRecordCard
+                      key={record.session_id}
+                      record={record}
+                      isReadOnly={isDummyFlow}
+                      onClick={() =>
+                        handleTutorialAction(() => handleCardClick(record), 2)
+                      }
+                      onChangeClient={handleChangeClient}
+                      onDelete={handleDeleteSession}
+                    />
+                  );
+
+                  if (isStep2Active) {
+                    return (
+                      <Spotlight
+                        key={record.session_id}
+                        isActive={true}
+                        onClose={() => endTutorial()}
+                        tooltip="홍길동 3회기 상담 기록을 클릭해 보세요!"
+                        tooltipPosition="bottom"
+                      >
+                        {card}
+                      </Spotlight>
+                    );
+                  }
+
+                  return card;
+                })
               ) : (
                 <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
                   <div className="text-center">

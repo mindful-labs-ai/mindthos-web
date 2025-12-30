@@ -7,24 +7,23 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { ROUTES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { useAuthStore } from '@/stores/authStore';
-import { useOnboardingStore } from '@/stores/onboardingStore';
+import { useQuestStore } from '@/stores/questStore';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { initialize, clear } = useAuthStore.getState();
+  const initializeQuest = useQuestStore((state) => state.initializeQuest);
+  const clearQuest = useQuestStore((state) => state.clear);
 
   useEffect(() => {
     const { unsubscribe } = authService.onAuthStateChange(
       async (event: AuthChangeEvent, session) => {
-        const { initialize, clear } = useAuthStore.getState();
-        const { checkOnboarding, clear: clearOnboarding } =
-          useOnboardingStore.getState();
-
         switch (event) {
           case 'SIGNED_IN':
             await initialize();
             if (session?.user?.email) {
-              await checkOnboarding(session.user.email);
+              await initializeQuest(session.user.email);
             }
             break;
 
@@ -35,11 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           case 'SIGNED_OUT':
             clear();
-            clearOnboarding();
-            // toast({
-            //   title: '로그아웃 되었습니다',
-            //   duration: 3000,
-            // });
+            clearQuest();
             navigate(ROUTES.AUTH);
             break;
 
@@ -50,11 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     const initializeApp = async () => {
-      await useAuthStore.getState().initialize();
+      await initialize();
 
       const { user } = useAuthStore.getState();
       if (user?.email) {
-        await useOnboardingStore.getState().checkOnboarding(user.email);
+        await initializeQuest(user.email);
       }
     };
 
@@ -63,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, initializeQuest, clearQuest, initialize, clear]);
 
   return <>{children}</>;
 }

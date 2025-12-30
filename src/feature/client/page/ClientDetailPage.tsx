@@ -17,6 +17,7 @@ import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
@@ -53,11 +54,14 @@ export const ClientDetailPage: React.FC = () => {
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
   });
+  // 더미 데이터 노출 조건: 실제 데이터가 없거나 튜토리얼이 활성 상태일 때
+  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
   const isDummyFlow =
-    !isLoadingClients &&
-    !isLoadingSessions &&
-    !clients.length &&
-    sessionsData?.sessions.length === 0;
+    (!isLoadingClients &&
+      !isLoadingSessions &&
+      !clients.length &&
+      sessionsData?.sessions.length === 0) ||
+    isTutorialActive;
   const isReadOnly = isDummyFlow;
 
   // 클라이언트 분석 관련 hooks
