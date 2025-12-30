@@ -13,6 +13,17 @@ import { Modal } from '@/components/ui/composites/Modal';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
+import { ScrollIndicator } from '@/feature/onboarding/components/ScrollIndicator';
+import {
+  AddNoteButtonTooltip,
+  NoteClickTooltip,
+  NoteCompleteTooltip,
+  NoteScrollTooltip,
+  TotalCompleteTooltip,
+  TranscriptCompleteTooltip,
+  TranscriptScrollTooltip,
+  TranscriptTabTooltip,
+} from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
@@ -72,7 +83,6 @@ export const SessionDetailPage: React.FC = () => {
   } = useTutorial({
     currentLevel: 1,
   });
-  const user = useAuthStore((state) => state.user);
 
   const [activeTab, setActiveTab] = React.useState<string>('transcript');
   const [isEditing, setIsEditing] = React.useState(false);
@@ -112,51 +122,26 @@ export const SessionDetailPage: React.FC = () => {
   }, [isNoteEnd, nextTutorialStep, checkIsTutorialActive, activeTab]);
 
   const missionTooltip = React.useMemo(() => {
-    if (checkIsTutorialActive(4)) return '상담 내용을 끝까지 읽어보세요!';
+    if (checkIsTutorialActive(4)) return <TranscriptScrollTooltip />;
     if (checkIsTutorialActive(5)) {
-      return (
-        <div className="flex flex-col gap-3">
-          <p>미션 성공! 상담 내용을 모두 확인했습니다.</p>
-          <button
-            onClick={() => nextTutorialStep()}
-            className="rounded-lg bg-primary py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
-          >
-            다음 단계로 넘어가기
-          </button>
-        </div>
-      );
+      return <TranscriptCompleteTooltip onConfirm={() => nextTutorialStep()} />;
     }
-    if (checkIsTutorialActive(7)) return '상담 노트를 끝까지 읽어보세요!';
+    if (checkIsTutorialActive(7)) return <NoteScrollTooltip />;
     if (checkIsTutorialActive(8)) {
-      return (
-        <div className="flex flex-col gap-3">
-          <p>미션 성공! 상담 노트를 모두 확인했습니다.</p>
-          <button
-            onClick={() => nextTutorialStep()}
-            className="rounded-lg bg-primary py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
-          >
-            다음 단계로 넘어가기
-          </button>
-        </div>
-      );
+      return <NoteCompleteTooltip onConfirm={() => nextTutorialStep()} />;
     }
     if (checkIsTutorialActive(10)) {
       return (
-        <div className="flex flex-col gap-3">
-          <p>🎉 축하합니다! 상담의 모든 과정을 확인하셨습니다.</p>
-          <button
-            onClick={async () => {
-              if (user?.email) {
-                await completeNextStep(user.email);
-              }
-              setShowConfetti(true);
-              endTutorial();
-            }}
-            className="rounded-lg bg-primary py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
-          >
-            튜토리얼 완료하기
-          </button>
-        </div>
+        <TotalCompleteTooltip
+          onConfirm={async () => {
+            const email = useAuthStore.getState().user?.email;
+            if (email) {
+              await completeNextStep(email);
+            }
+            setShowConfetti(true);
+            endTutorial();
+          }}
+        />
       );
     }
     return '';
@@ -166,7 +151,6 @@ export const SessionDetailPage: React.FC = () => {
     endTutorial,
     completeNextStep,
     setShowConfetti,
-    user?.email,
   ]);
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
@@ -1207,11 +1191,13 @@ export const SessionDetailPage: React.FC = () => {
             checkIsTutorialActive(9)
           }
           tooltip={
-            checkIsTutorialActive(3)
-              ? '축어록 탭을 클릭하여 상담 내용을 확인해 보세요!'
-              : checkIsTutorialActive(6)
-                ? '상담 결과를 요약한 노트를 클릭해 보세요!'
-                : '상담 노트를 새로 작성해 보세요!'
+            checkIsTutorialActive(3) ? (
+              <TranscriptTabTooltip />
+            ) : checkIsTutorialActive(6) ? (
+              <NoteClickTooltip />
+            ) : (
+              <AddNoteButtonTooltip />
+            )
           }
           tooltipPosition="bottom"
           selector={
@@ -1256,6 +1242,8 @@ export const SessionDetailPage: React.FC = () => {
       <div
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
+        <ScrollIndicator isVisible={checkIsTutorialActive(7)} />
+        <ScrollIndicator isVisible={checkIsTutorialActive(4)} />
         {activeTab === 'transcript' && (
           <div className="absolute inset-x-0 right-4 top-0 flex select-none justify-end bg-gradient-to-t from-transparent to-slate-50">
             <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">

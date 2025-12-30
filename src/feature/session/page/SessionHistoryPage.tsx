@@ -8,6 +8,7 @@ import { Title } from '@/components/ui/atoms/Title';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import { SessionClickTooltip } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { FilterMenu } from '@/feature/session/components/FilterMenu';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
@@ -233,6 +234,8 @@ export const SessionHistoryPage: React.FC = () => {
     setSelectedClientIds([]);
   };
 
+  const sessionClickTooltip = React.useMemo(() => <SessionClickTooltip />, []);
+
   return (
     <div className="flex h-full bg-surface-contrast">
       {/* 왼쪽: 세션 목록 - 항상 렌더링 (언마운트 방지) */}
@@ -373,9 +376,9 @@ export const SessionHistoryPage: React.FC = () => {
                     return (
                       <Spotlight
                         key={record.session_id}
-                        isActive={true}
+                        isActive={isStep2Active}
                         onClose={() => endTutorial()}
-                        tooltip="홍길동 3회기 상담 기록을 클릭해 보세요!"
+                        tooltip={sessionClickTooltip}
                         tooltipPosition="bottom"
                       >
                         {card}

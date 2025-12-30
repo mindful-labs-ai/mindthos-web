@@ -9,8 +9,17 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import type { SelectItem } from '@/components/ui/composites/Select';
 import { Select } from '@/components/ui/composites/Select';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
+import { ScrollIndicator } from '@/feature/onboarding/components/ScrollIndicator';
+import {
+  AnalysisScrollTooltip,
+  MissionCompleteTooltip,
+} from '@/feature/onboarding/components/TutorialTooltips';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CheckIcon } from '@/shared/icons';
+import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { useClientTemplates } from '../hooks/useClientAnalysis';
 import type {
@@ -36,6 +45,31 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   );
   const [activeTab, setActiveTab] = useState<string>('ai_supervision');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const { user } = useAuthStore();
+  const { currentLevel } = useQuestStore();
+  const {
+    checkIsTutorialActive,
+    completeNextStep,
+    setShowConfetti,
+    endTutorial,
+    nextTutorialStep,
+  } = useTutorial({
+    currentLevel,
+  });
+
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  // 스크롤 감지 핸들러
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!checkIsTutorialActive(4, 2)) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    // 바닥에서 10px 정도 여유를 두고 감지
+    if (scrollHeight - scrollTop <= clientHeight + 10) {
+      nextTutorialStep();
+    }
+  };
 
   // 선택된 버전의 분석 데이터
   const currentAnalysis = analyses.find((a) => a.version === selectedVersion);
@@ -180,7 +214,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             <Markdown
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({ children }: any) => (
+                h1: ({ children }: { children?: React.ReactNode }) => (
                   <Title
                     as="h1"
                     className="mb-4 mt-8 text-2xl font-bold text-fg first:mt-0"
@@ -188,7 +222,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                     {children}
                   </Title>
                 ),
-                h2: ({ children }: any) => (
+                h2: ({ children }: { children?: React.ReactNode }) => (
                   <Title
                     as="h2"
                     className="mb-3 mt-6 text-xl font-semibold text-fg first:mt-0"
@@ -196,7 +230,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                     {children}
                   </Title>
                 ),
-                h3: ({ children }: any) => (
+                h3: ({ children }: { children?: React.ReactNode }) => (
                   <Title
                     as="h3"
                     className="mb-2 mt-4 text-lg font-semibold text-fg first:mt-0"
@@ -204,70 +238,70 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                     {children}
                   </Title>
                 ),
-                p: ({ children }: any) => (
+                p: ({ children }: { children?: React.ReactNode }) => (
                   <Text className="mb-4 leading-relaxed text-fg">
                     {children}
                   </Text>
                 ),
-                ul: ({ children }: any) => (
+                ul: ({ children }: { children?: React.ReactNode }) => (
                   <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">
                     {children}
                   </ul>
                 ),
-                ol: ({ children }: any) => (
+                ol: ({ children }: { children?: React.ReactNode }) => (
                   <ol className="mb-4 list-decimal space-y-1 pl-6 text-fg">
                     {children}
                   </ol>
                 ),
-                li: ({ children }: any) => (
+                li: ({ children }: { children?: React.ReactNode }) => (
                   <li className="leading-relaxed">{children}</li>
                 ),
-                strong: ({ children }: any) => (
+                strong: ({ children }: { children?: React.ReactNode }) => (
                   <strong className="font-semibold text-fg">{children}</strong>
                 ),
-                em: ({ children }: any) => (
+                em: ({ children }: { children?: React.ReactNode }) => (
                   <em className="italic text-fg">{children}</em>
                 ),
-                blockquote: ({ children }: any) => (
+                blockquote: ({ children }: { children?: React.ReactNode }) => (
                   <blockquote className="mb-4 border-l-4 border-primary pl-4 italic text-fg-muted">
                     {children}
                   </blockquote>
                 ),
-                code: ({ children }: any) => (
+                code: ({ children }: { children?: React.ReactNode }) => (
                   <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
                     {children}
                   </code>
                 ),
-                pre: ({ children }: any) => (
+                pre: ({ children }: { children?: React.ReactNode }) => (
                   <pre className="mb-4 overflow-x-auto rounded-lg bg-surface-contrast p-4">
                     {children}
                   </pre>
                 ),
                 // 테이블 관련 컴포넌트
-                table: ({ children }: any) => (
+                table: ({ children }: { children?: React.ReactNode }) => (
                   <div className="mb-4 overflow-x-auto rounded-lg border border-border">
                     <table className="min-w-full divide-y divide-border text-sm">
                       {children}
                     </table>
                   </div>
                 ),
-                thead: ({ children }: any) => (
+                thead: ({ children }: { children?: React.ReactNode }) => (
                   <thead className="bg-surface-contrast">{children}</thead>
                 ),
-                tbody: ({ children }: any) => (
+                tbody: ({ children }: { children?: React.ReactNode }) => (
                   <tbody className="divide-y divide-border bg-surface">
                     {children}
                   </tbody>
                 ),
-                tr: ({ children }: any) => (
+                tr: ({ children }: { children?: React.ReactNode }) => (
                   <tr className="hover:bg-surface-contrast/50">{children}</tr>
                 ),
-                th: ({ children }: any) => (
+                th: ({ children }: { children?: React.ReactNode }) => (
                   <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
                     {children}
                   </th>
                 ),
-                td: ({ children }: any) => (
+                td: ({ children }: { children?: React.ReactNode }) => (
                   <td className="px-4 py-3 text-fg">{children}</td>
                 ),
               }}
@@ -400,9 +434,9 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   }
 
   return (
-    <div className="">
+    <div className="flex h-full flex-col overflow-hidden">
       {/* 탭 + 버전 선택 + 다회기 분석 버튼 */}
-      <div className="flex items-center justify-between px-8">
+      <div className="flex flex-shrink-0 items-center justify-between px-8">
         {/* 탭 영역 */}
         <div className="flex items-center gap-4">
           <Tab
@@ -429,10 +463,40 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       </div>
 
       {/* 분석 내용 */}
-      <div className="min-h-[400px] rounded-lg border border-border bg-surface p-6">
-        {currentAnalysis &&
-          renderAnalysisContent(currentAnalysis.ai_supervision)}
-      </div>
+      <Spotlight
+        isActive={checkIsTutorialActive(4, 2) || checkIsTutorialActive(5, 2)}
+        tooltip={
+          checkIsTutorialActive(4, 2) ? (
+            <AnalysisScrollTooltip />
+          ) : (
+            <MissionCompleteTooltip
+              onConfirm={async () => {
+                if (user?.email) {
+                  await completeNextStep(user.email);
+                }
+                setShowConfetti(true);
+                endTutorial();
+              }}
+            />
+          )
+        }
+        tooltipPosition="left"
+        onClose={() => endTutorial()}
+        className="min-h-0 flex-1"
+      >
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="h-full overflow-y-auto rounded-lg border border-border bg-surface p-6"
+        >
+          <ScrollIndicator
+            className="bottom-8 right-16"
+            isVisible={checkIsTutorialActive(4, 2)}
+          />
+          {currentAnalysis &&
+            renderAnalysisContent(currentAnalysis.ai_supervision)}
+        </div>
+      </Spotlight>
     </div>
   );
 };
