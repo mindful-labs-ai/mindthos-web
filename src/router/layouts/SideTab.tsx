@@ -4,6 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, Sidebar, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
+import {
+  ClientTabTooltip,
+  NewRecordButtonTooltip,
+  SessionTabTooltip,
+} from '@/feature/onboarding/components/TutorialTooltips';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import type { UploadType } from '@/feature/session/types';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
@@ -19,6 +26,8 @@ import {
   UploadIcon,
   XIcon,
 } from '@/shared/icons';
+import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import {
   BOTTOM_NAV_ITEMS,
@@ -39,9 +48,21 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
   const [uploadType, setUploadType] = React.useState<UploadType>('audio');
+  const { user } = useAuthStore();
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
+  // 현재 퀘스트 레벨 가져오기
+  const { currentLevel } = useQuestStore();
+  // 튜토리얼 훅
+  const {
+    checkIsTutorialActive,
+    handleTutorialAction,
+    endTutorial,
+    completeNextStep,
+  } = useTutorial({
+    currentLevel,
+  });
 
   // 현재 경로에 따라 activeNav 자동 설정
   const activeNav: string = React.useMemo(() => {
@@ -60,7 +81,15 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
 
     const path = getPathFromNavValue(value);
     if (path) {
-      navigate(path);
+      if (value === 'sessions' && checkIsTutorialActive(1, 1)) {
+        // 레벨 1 튜토리얼: 상담 기록 탭 클릭
+        handleTutorialAction(() => navigate(path), 1, { targetLevel: 1 });
+      } else if (value === 'client' && checkIsTutorialActive(1, 2)) {
+        // 레벨 2 튜토리얼: 클라이언트 탭 클릭
+        handleTutorialAction(() => navigate(path), 1, { targetLevel: 2 });
+      } else {
+        navigate(path);
+      }
     }
   };
 
@@ -116,16 +145,41 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
           onOpenChange={setIsNewRecordMenuOpen}
           placement="bottom-right"
           trigger={
-            <Button
-              variant="outline"
-              tone="primary"
-              size="md"
-              className="w-full justify-start"
-              icon={<PlusIcon size={18} />}
-              onClick={() => setIsNewRecordMenuOpen(!isNewRecordMenuOpen)}
+            <Spotlight
+              isActive={checkIsTutorialActive(1, 3)}
+              onClose={endTutorial}
+              tooltip={
+                <NewRecordButtonTooltip
+                  onConfirm={async () => {
+                    if (user?.email) {
+                      completeNextStep(user.email);
+                    }
+                    endTutorial();
+                  }}
+                />
+              }
+              tooltipPosition="right"
+              className="w-full"
             >
-              새 상담 기록
-            </Button>
+              <Button
+                variant="outline"
+                tone="primary"
+                size="md"
+                className="w-full justify-start"
+                icon={<PlusIcon size={18} />}
+                onClick={async () => {
+                  if (checkIsTutorialActive(1, 3) && user?.email) {
+                    completeNextStep(user.email);
+                    endTutorial();
+                    setIsNewRecordMenuOpen(true);
+                  } else {
+                    setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
+                  }
+                }}
+              >
+                새 상담 기록
+              </Button>
+            </Spotlight>
           }
           content={
             <div className="w-[200px] space-y-1">
@@ -156,14 +210,32 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
         />
       </div>
 
-      {/* Main Navigation using Sidebar component */}
+      {/* Main Navigation - Integrated with Spotlight Selector */}
       <div className="flex-1 overflow-y-auto px-3">
-        <Sidebar
-          items={MAIN_NAV_ITEMS}
-          activeValue={activeNav}
-          onSelect={handleNavSelect}
-          className="min-w-0 border-none bg-transparent p-0"
-        />
+        <Spotlight
+          isActive={
+            (currentLevel === 1 && checkIsTutorialActive(1, 1)) ||
+            (currentLevel === 2 && checkIsTutorialActive(1, 2))
+          }
+          onClose={() => endTutorial()}
+          tooltip={
+            currentLevel === 1 ? <SessionTabTooltip /> : <ClientTabTooltip />
+          }
+          tooltipPosition="right"
+          selector={
+            currentLevel === 1
+              ? '[data-value="sessions"]'
+              : '[data-value="client"]'
+          }
+          className="w-full"
+        >
+          <Sidebar
+            items={MAIN_NAV_ITEMS}
+            activeValue={activeNav}
+            onSelect={handleNavSelect}
+            className="min-w-0 border-none bg-transparent py-2"
+          />
+        </Spotlight>
       </div>
 
       <div>

@@ -323,16 +323,21 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
         )}
       </div>
       <div className="flex gap-2">
-        {record.note_types
-          .map((type, index) => (
-            <Badge key={index} tone="neutral" variant="solid" size="md">
-              {type}
-            </Badge>
-          ))
-          .slice(0, 4)}
-        {record.note_types
-          .map(() => <Badge>+{record.note_types.length - 4}</Badge>)
-          .slice(4, 5)}
+        {record.note_types.slice(0, 4).map((type, index) => (
+          <Badge
+            key={`${type}-${index}`}
+            tone="neutral"
+            variant="solid"
+            size="md"
+          >
+            {type}
+          </Badge>
+        ))}
+        {record.note_types.length > 4 && (
+          <Badge key="more-tags" tone="neutral" variant="solid" size="md">
+            +{record.note_types.length - 4}
+          </Badge>
+        )}
       </div>
     </div>
   );

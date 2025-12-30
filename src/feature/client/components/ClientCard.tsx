@@ -192,6 +192,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   return (
     <>
       <Card
+        data-client-id={client.id}
         className={`cursor-pointer transition-all ${
           client.counsel_done ? 'opacity-50' : ''
         }`}

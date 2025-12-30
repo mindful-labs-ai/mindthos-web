@@ -12,10 +12,12 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { isFileSizeExceeded } from '../constants/fileUpload';
 import { useCreateSession } from '../hooks/useCreateSession';
@@ -49,6 +51,10 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   // Hooks
   const { clients } = useClientList();
   const { createSession, createdSessionId } = useCreateSession();
+  const { currentLevel, setShowConfetti } = useQuestStore();
+  const { completeNextStep, endTutorial } = useTutorial({
+    currentLevel,
+  });
 
   // Internal state
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
@@ -200,6 +206,13 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         description: `${uploadTypeLabel}를 분석하고 상담노트를 작성하고 있습니다. 잠시만 기다려주세요.`,
         duration: 5000,
       });
+
+      // 튜토리얼(레벨 4) 진행 중이라면 완료 처리
+      if (currentLevel === 4 && userIdNumber) {
+        await completeNextStep(useAuthStore.getState().user?.email || '');
+        setShowConfetti(true);
+        endTutorial();
+      }
 
       // 모달 닫기
       handleClose();
