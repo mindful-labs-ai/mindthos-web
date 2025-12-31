@@ -7,7 +7,6 @@ import { PopUp } from '@/components/ui/composites/PopUp';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
 import {
   ClientTabTooltip,
-  NewRecordButtonTooltip,
   SessionTabTooltip,
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
@@ -19,14 +18,7 @@ import {
   calculateDaysUntilReset,
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
-import {
-  // Edit3Icon,
-  // FileTextIcon,
-  PlusIcon,
-  UploadIcon,
-  XIcon,
-} from '@/shared/icons';
-import { useAuthStore } from '@/stores/authStore';
+import { PlusIcon, UploadIcon, XIcon } from '@/shared/icons';
 import { useQuestStore } from '@/stores/questStore';
 
 import {
@@ -48,21 +40,16 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
   const [uploadType, setUploadType] = React.useState<UploadType>('audio');
-  const { user } = useAuthStore();
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
   // 현재 퀘스트 레벨 가져오기
   const { currentLevel } = useQuestStore();
   // 튜토리얼 훅
-  const {
-    checkIsTutorialActive,
-    handleTutorialAction,
-    endTutorial,
-    completeNextStep,
-  } = useTutorial({
-    currentLevel,
-  });
+  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
+    useTutorial({
+      currentLevel,
+    });
 
   // 현재 경로에 따라 activeNav 자동 설정
   const activeNav: string = React.useMemo(() => {
@@ -145,41 +132,18 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
           onOpenChange={setIsNewRecordMenuOpen}
           placement="bottom-right"
           trigger={
-            <Spotlight
-              isActive={checkIsTutorialActive(1, 3)}
-              onClose={endTutorial}
-              tooltip={
-                <NewRecordButtonTooltip
-                  onConfirm={async () => {
-                    if (user?.email) {
-                      completeNextStep(user.email);
-                    }
-                    endTutorial();
-                  }}
-                />
-              }
-              tooltipPosition="right"
-              className="w-full"
+            <Button
+              variant="outline"
+              tone="primary"
+              size="md"
+              className="w-full justify-start"
+              icon={<PlusIcon size={18} />}
+              onClick={async () => {
+                setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
+              }}
             >
-              <Button
-                variant="outline"
-                tone="primary"
-                size="md"
-                className="w-full justify-start"
-                icon={<PlusIcon size={18} />}
-                onClick={async () => {
-                  if (checkIsTutorialActive(1, 3) && user?.email) {
-                    completeNextStep(user.email);
-                    endTutorial();
-                    setIsNewRecordMenuOpen(true);
-                  } else {
-                    setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
-                  }
-                }}
-              >
-                새 상담 기록
-              </Button>
-            </Spotlight>
+              새 상담 기록
+            </Button>
           }
           content={
             <div className="w-[200px] space-y-1">

@@ -156,54 +156,64 @@ export const QuestStep = ({
                       </div>
 
                       {/* 라벨 텍스트 */}
-                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center text-sm font-medium text-fg">
+                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center text-base font-medium text-fg">
                         {quest.label}
                       </p>
 
                       {/* 액션 버튼 */}
-                      <div className="w-full px-1">
-                        <Button
-                          variant={isInProgress ? 'solid' : 'ghost'}
-                          tone={isInProgress ? 'primary' : 'neutral'}
-                          disabled={!isInProgress || isLoading} // 진행 중이어도 로딩 중이면 비활성화
-                          className={cn(
-                            'h-9 w-full text-xs shadow-none',
-                            // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
-                            !isInProgress &&
-                              'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast'
-                          )}
-                          onClick={() => {
-                            if (!isInProgress) return;
+                      <div className="w-full max-w-[147px] px-1">
+                        <div className="relative">
+                          <Button
+                            variant={isInProgress ? 'solid' : 'ghost'}
+                            tone={isInProgress ? 'primary' : 'neutral'}
+                            disabled={!isInProgress || isLoading}
+                            className={cn(
+                              'h-9 w-full text-sm shadow-none',
+                              // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
+                              !isInProgress &&
+                                'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast',
+                              // 미션 진행하기 상태 (아직 시작 안 함) - 펄스 글로우 애니메이션
+                              isInProgress &&
+                                !isAlreadyStarted &&
+                                'animate-pulse-glow'
+                            )}
+                            onClick={() => {
+                              if (!isInProgress) return;
 
-                            // 이미 시작된 상태(진행 중)라면 바로 해당 기능 실행
-                            if (isAlreadyStarted) {
-                              if (quest.id === 3) {
-                                onOpenCreateSession?.();
-                              } else if (quest.id === 4) {
-                                onOpenUserEdit?.();
+                              // 이미 시작된 상태(진행 중)라면 바로 해당 기능 실행
+                              if (isAlreadyStarted) {
+                                if (quest.id === 3) {
+                                  onOpenCreateSession?.();
+                                } else if (quest.id === 4) {
+                                  onOpenUserEdit?.();
+                                }
+                                return;
                               }
-                              return;
-                            }
-                            // 튜토리얼 액션이 필요 없는 단순 미션 처리 (Quest 4 등)
-                            if (quest.id === 4) {
-                              onOpenUserEdit?.();
-                              return;
-                            }
+                              // 튜토리얼 액션이 필요 없는 단순 미션 처리 (Quest 4 등)
+                              if (quest.id === 4) {
+                                onOpenUserEdit?.();
+                                return;
+                              }
 
-                            // 튜토리얼 액션 래퍼 사용
-                            endTutorial();
-                            startTutorial();
-                            nextTutorialStep();
-                          }}
-                        >
-                          {isCompleted
-                            ? '미션 완료!'
-                            : isAlreadyStarted
-                              ? '미션 진행 중'
-                              : isLocked
-                                ? '이전 단계 후 오픈'
-                                : '미션 진행하기'}
-                        </Button>
+                              // 튜토리얼 액션 래퍼 사용
+                              endTutorial();
+                              startTutorial();
+                              nextTutorialStep();
+                            }}
+                          >
+                            {isCompleted
+                              ? '미션 완료!'
+                              : isAlreadyStarted
+                                ? '미션 진행 중'
+                                : isLocked
+                                  ? '이전 단계 후 오픈'
+                                  : '미션 진행하기'}
+                          </Button>
+                          {/* 미션 진행 중 상태 - 쉬머 오버레이 */}
+                          {isAlreadyStarted && (
+                            <div className="animate-progress pointer-events-none absolute inset-0 rounded-lg" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

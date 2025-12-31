@@ -31,7 +31,9 @@ const MainFlowLayout = () => {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
-          <Outlet />
+          <div className="mx-auto w-full max-w-[1332px] flex-1">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
