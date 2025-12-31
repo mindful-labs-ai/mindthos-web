@@ -204,7 +204,11 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             tone="primary"
             size="lg"
             className="w-full max-w-md"
-            disabled={mutation.isPending}
+            disabled={
+              mutation.isPending ||
+              !formData.name.trim() ||
+              !formData.organization?.trim()
+            }
           >
             {mutation.isPending ? '수정 중...' : '정보 입력하기'}
           </Button>

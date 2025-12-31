@@ -1,10 +1,14 @@
 import { Button } from '@/components/ui/atoms/Button';
 import { Modal } from '@/components/ui/composites/Modal';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { useQuestStore } from '@/stores/questStore';
 
 export const QuestMissionModal = () => {
   const { currentLevel, hasShownMissionModal, setHasShownMissionModal } =
     useQuestStore();
+  const { startTutorial, nextTutorialStep, endTutorial } = useTutorial({
+    currentLevel,
+  });
 
   const isOpen = currentLevel === 1 && !hasShownMissionModal;
 
@@ -14,7 +18,9 @@ export const QuestMissionModal = () => {
 
   const handleStart = () => {
     setHasShownMissionModal(true);
-    // 추가적인 시작 로직이 필요하다면 여기에 작성 (예: 특정 페이지로 이동)
+    endTutorial();
+    startTutorial();
+    nextTutorialStep();
   };
 
   return (
