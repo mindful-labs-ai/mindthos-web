@@ -30,6 +30,7 @@ import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { CardInfo } from '../components/CardInfo';
 import { PlanChangeModal } from '../components/PlanChangeModal';
@@ -187,6 +188,15 @@ export const SettingsPage: React.FC = () => {
     setDeleteError('');
   };
 
+  const { currentLevel, completeNextStep } = useQuestStore();
+
+  const handleEditInfoSuccess = async () => {
+    // 내 정보 입력 미션(Level 5)인 경우 퀘스트 완료 처리
+    if (currentLevel === 5 && user?.email) {
+      await completeNextStep(user.email);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!user?.email) {
       setDeleteError('사용자 정보를 찾을 수 없습니다.');
@@ -212,7 +222,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-contrast px-16 py-[42px]">
+    <div className="mx-auto flex min-h-screen w-full max-w-[1332px] flex-col px-16 py-[42px]">
       <div>
         <Title as="h1" className="text-left text-2xl font-bold">
           서비스 설정
@@ -420,6 +430,7 @@ export const SettingsPage: React.FC = () => {
       <UserEditModal
         open={isEditInfoModalOpen}
         onOpenChange={setIsEditInfoModalOpen}
+        onSuccess={handleEditInfoSuccess}
       />
 
       <PlanChangeModal

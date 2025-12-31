@@ -237,7 +237,7 @@ export const SessionHistoryPage: React.FC = () => {
   const sessionClickTooltip = React.useMemo(() => <SessionClickTooltip />, []);
 
   return (
-    <div className="flex h-full bg-surface-contrast">
+    <div className="flex h-full">
       {/* 왼쪽: 세션 목록 - 항상 렌더링 (언마운트 방지) */}
       {sessionId && (
         <SessionSideList
@@ -257,7 +257,7 @@ export const SessionHistoryPage: React.FC = () => {
       {/* 메인 컨텐츠 영역 */}
       {!sessionId ? (
         // 전체 카드 리스트
-        <div className="flex flex-1 flex-col bg-surface-contrast px-16 pt-[42px] transition-all duration-300">
+        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-16 pt-[42px] transition-all duration-300">
           <div className="flex-shrink-0 pb-6">
             <div className="flex items-center gap-2">
               <Title as="h1" className="text-start text-2xl font-bold">

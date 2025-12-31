@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui';
@@ -18,7 +17,7 @@ interface QuestStepProps {
 const QUESTS = [
   { id: 1, label: '상담기록 예시 보기' },
   { id: 2, label: '다회기 분석 예시 보기' },
-  { id: 3, label: '새 상담 기록 만들기' },
+  { id: 3, label: '녹음 파일 업로드하기' },
   { id: 4, label: '내 정보 입력하기' },
 ];
 
@@ -27,11 +26,9 @@ export const QuestStep = ({
   onOpenCreateSession,
   onOpenUserEdit,
 }: QuestStepProps) => {
-  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const email = user?.email;
-  const userId = user?.id;
-  const { currentLevel, getReward, isLoading } = useQuestStore();
+  const { currentLevel, isLoading } = useQuestStore();
   const { startTutorial, nextTutorialStep, endTutorial } = useTutorial({
     currentLevel,
   });
@@ -50,11 +47,11 @@ export const QuestStep = ({
   // 마일스톤 진행률 계산 (선 그래프용)
   const progressPercentage =
     activeCompletedCount > 0
-      ? ((activeCompletedCount - 1) / (totalSteps - 1)) * 100
+      ? (activeCompletedCount / (totalSteps - 1)) * 100
       : 0;
 
   return (
-    <div className="w-full rounded-xl border border-border bg-surface px-7 py-6">
+    <div className="w-full rounded-xl border border-primary bg-surface px-7 py-6">
       <div className="flex items-center">
         <div className="flex-1">
           <div className="mb-6 flex items-center gap-5">
@@ -68,11 +65,11 @@ export const QuestStep = ({
           <div className="flex-1 px-6">
             <div className="relative">
               {/* 회색 배경 선 (전체 구간) - 첫 번째 아이템 중앙(12.5%)에서 마지막 아이템 중앙(87.5%)까지 연결 */}
-              <div className="absolute left-[12.5%] top-5 -z-0 h-[2px] w-[75%] -translate-y-1/2 bg-surface-strong" />
+              <div className="absolute left-[12.5%] top-4 -z-0 h-[4px] w-[75%] -translate-y-1/2 bg-surface-strong" />
 
               {/* 초록색 진행 선 (완료된 구간) */}
               <div
-                className="absolute left-[12.5%] top-5 -z-0 h-[2px] -translate-y-1/2 bg-primary transition-all duration-500"
+                className="absolute left-[12.5%] top-4 -z-0 h-[4px] -translate-y-1/2 bg-primary transition-all duration-500"
                 style={{
                   width: `${Math.min(Math.max(progressPercentage, 0), 100) * 0.75}%`,
                 }}
@@ -146,64 +143,76 @@ export const QuestStep = ({
                       {/* 체크 아이콘 원형 배지 */}
                       <div
                         className={cn(
-                          'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors duration-300',
+                          'flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-300',
                           isCompleted
                             ? 'border-primary bg-primary text-white' // 완료됨
-                            : 'border-surface-strong bg-surface text-fg-muted' // 미완료
+                            : isInProgress
+                              ? 'border-primary bg-surface text-primary' // 진행중
+                              : 'border-fg-muted bg-surface text-fg-muted' // 미완료
                         )}
                       >
-                        <Check size={22} strokeWidth={3} />
+                        <Check size={18} strokeWidth={3} />
                       </div>
 
                       {/* 라벨 텍스트 */}
-                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center text-sm font-medium text-fg">
+                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center text-base font-medium text-fg">
                         {quest.label}
                       </p>
 
                       {/* 액션 버튼 */}
-                      <div className="w-full px-1">
-                        <Button
-                          variant={isInProgress ? 'solid' : 'ghost'}
-                          tone={isInProgress ? 'primary' : 'neutral'}
-                          disabled={!isInProgress || isLoading} // 진행 중이어도 로딩 중이면 비활성화
-                          className={cn(
-                            'h-9 w-full text-xs shadow-none',
-                            // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
-                            !isInProgress &&
-                              'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast'
-                          )}
-                          onClick={() => {
-                            if (!isInProgress) return;
+                      <div className="w-full max-w-[147px] px-1">
+                        <div className="relative">
+                          <Button
+                            variant={isInProgress ? 'solid' : 'ghost'}
+                            tone={isInProgress ? 'primary' : 'neutral'}
+                            disabled={!isInProgress || isLoading}
+                            className={cn(
+                              'h-9 w-full text-sm shadow-none',
+                              // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
+                              !isInProgress &&
+                                'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast',
+                              // 미션 진행하기 상태 (아직 시작 안 함) - 펄스 글로우 애니메이션
+                              isInProgress &&
+                                !isAlreadyStarted &&
+                                'animate-pulse-glow'
+                            )}
+                            onClick={() => {
+                              if (!isInProgress) return;
 
-                            // 이미 시작된 상태(진행 중)라면 바로 해당 기능 실행
-                            if (isAlreadyStarted) {
-                              if (quest.id === 3) {
-                                onOpenCreateSession?.();
-                              } else if (quest.id === 4) {
-                                onOpenUserEdit?.();
+                              // 이미 시작된 상태(진행 중)라면 바로 해당 기능 실행
+                              if (isAlreadyStarted) {
+                                if (quest.id === 3) {
+                                  onOpenCreateSession?.();
+                                } else if (quest.id === 4) {
+                                  onOpenUserEdit?.();
+                                }
+                                return;
                               }
-                              return;
-                            }
-                            // 튜토리얼 액션이 필요 없는 단순 미션 처리 (Quest 4 등)
-                            if (quest.id === 4) {
-                              onOpenUserEdit?.();
-                              return;
-                            }
+                              // 튜토리얼 액션이 필요 없는 단순 미션 처리 (Quest 4 등)
+                              if (quest.id === 4) {
+                                onOpenUserEdit?.();
+                                return;
+                              }
 
-                            // 튜토리얼 액션 래퍼 사용
-                            endTutorial();
-                            startTutorial();
-                            nextTutorialStep();
-                          }}
-                        >
-                          {isCompleted
-                            ? '미션 완료!'
-                            : isAlreadyStarted
-                              ? '미션 진행 중'
-                              : isLocked
-                                ? '이전 단계 후 오픈'
-                                : '미션 진행하기'}
-                        </Button>
+                              // 튜토리얼 액션 래퍼 사용
+                              endTutorial();
+                              startTutorial();
+                              nextTutorialStep();
+                            }}
+                          >
+                            {isCompleted
+                              ? '미션 완료!'
+                              : isAlreadyStarted
+                                ? `${quest.id === 3 ? '바로 업로드하기' : '미션 진행 중'}`
+                                : isLocked
+                                  ? '이전 단계 후 오픈'
+                                  : '미션 진행하기'}
+                          </Button>
+                          {/* 미션 진행 중 상태 - 쉬머 오버레이 */}
+                          {isAlreadyStarted && (
+                            <div className="animate-progress pointer-events-none absolute inset-0 rounded-lg" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -214,19 +223,20 @@ export const QuestStep = ({
         </div>
 
         {/* 보상 정보 */}
-        <div className="flex min-w-[300px] flex-col items-center justify-center rounded-xl border-2 border-primary-300 bg-primary-50 p-4 text-center">
+        <div className="flex min-w-[277px] flex-col items-center justify-center rounded-xl bg-primary-50 p-4 text-center">
           <div className="mb-2 text-start text-2xl">
             🎁
             <h3 className="mb-4 text-base font-bold text-fg">
               모든 미션 달성 시<br />
-              <span className="text-primary-600">스타터 1개월</span> 무료 쿠폰
-              지급!
+              <span className="text-primary-600">스타터 1개월</span> 무료 지급!
             </h3>
           </div>
 
-          <p className="mb-3 text-xs font-medium text-danger">
-            남은 기간 {remainingDays}일
-          </p>
+          {!isAllCompleted && (
+            <p className="mb-3 text-xs font-medium text-danger">
+              남은 기간 {remainingDays}일
+            </p>
+          )}
 
           <Button
             className="w-full"
@@ -235,18 +245,8 @@ export const QuestStep = ({
             disabled={!isAllCompleted || isLoading || currentLevel >= 7}
             onClick={async () => {
               if (email) {
-                await getReward(email);
-                // 크레딧 정보 갱신
-                if (userId) {
-                  await Promise.all([
-                    queryClient.invalidateQueries({
-                      queryKey: ['credit', 'subscription', Number(userId)],
-                    }),
-                    queryClient.invalidateQueries({
-                      queryKey: ['credit', 'usage', Number(userId)],
-                    }),
-                  ]);
-                }
+                // 바로 보상을 받는 대신, 선물상자 모달(Step 5)을 띄움
+                useQuestStore.getState().setShowCompleteModalStep(5);
               }
             }}
           >

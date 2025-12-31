@@ -2,6 +2,8 @@ import React from 'react';
 
 import { Outlet } from 'react-router-dom';
 
+import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
+import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
 import { Header } from '@/router/layouts/Header';
 import { SideTab } from '@/router/layouts/SideTab';
 import { LayersIcon } from '@/shared/icons';
@@ -34,6 +36,9 @@ const MainFlowLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      <QuestMissionModal />
+      <CompleteMissionModal />
     </div>
   );
 };

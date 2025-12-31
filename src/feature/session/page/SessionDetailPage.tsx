@@ -77,7 +77,6 @@ export const SessionDetailPage: React.FC = () => {
     handleTutorialAction,
     nextTutorialStep,
     tutorialStep,
-    setShowConfetti,
     completeNextStep,
     endTutorial,
   } = useTutorial({
@@ -138,20 +137,13 @@ export const SessionDetailPage: React.FC = () => {
             if (email) {
               await completeNextStep(email);
             }
-            setShowConfetti(true);
             endTutorial();
           }}
         />
       );
     }
     return '';
-  }, [
-    checkIsTutorialActive,
-    nextTutorialStep,
-    endTutorial,
-    completeNextStep,
-    setShowConfetti,
-  ]);
+  }, [checkIsTutorialActive, nextTutorialStep, endTutorial, completeNextStep]);
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
@@ -1153,7 +1145,7 @@ export const SessionDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center bg-surface-contrast">
+      <div className="flex h-full items-center justify-center">
         <p className="text-fg-muted">상담기록을 불러오는 중...</p>
       </div>
     );
@@ -1161,7 +1153,7 @@ export const SessionDetailPage: React.FC = () => {
 
   if (!session) {
     return (
-      <div className="flex h-full items-center justify-center bg-surface-contrast">
+      <div className="flex h-full items-center justify-center">
         <p className="text-fg-muted">상담기록을 찾을 수 없습니다.</p>
       </div>
     );
@@ -1170,7 +1162,7 @@ export const SessionDetailPage: React.FC = () => {
   const audioDuration = audioMetadata?.duration_seconds || duration || 0;
 
   return (
-    <div className="mx-auto flex h-full max-w-[calc(100vw-535px)] flex-col overflow-hidden bg-surface-contrast">
+    <div className="mx-auto flex h-full max-w-[calc(100vw-535px)] flex-col overflow-hidden">
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} preload="metadata" />
 

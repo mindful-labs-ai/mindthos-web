@@ -92,7 +92,7 @@ export const ClientListPage: React.FC = () => {
 
   return (
     <>
-      <div className="mx-auto w-full px-16 py-[42px]">
+      <div className="mx-auto w-full max-w-[1332px] px-16 py-[42px]">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Title as="h1" className="text-2xl font-bold">
             모든 클라이언트

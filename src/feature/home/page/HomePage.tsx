@@ -2,12 +2,12 @@ import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { Title } from '@/components/ui';
+import { Spotlight, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
-import { Confetti } from '@/components/ui/composites/Confetti';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
+import { NewRecordButtonTooltip } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
@@ -34,21 +34,16 @@ const HomePage = () => {
   const navigate = useNavigate();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
+  const user = useAuthStore((state) => state.user);
   const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
     React.useState(true);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
 
-  const {
-    currentLevel,
-    isChecked,
-    shouldShowOnboarding,
-    startedAt,
-    showConfetti,
-    setShowConfetti,
-  } = useQuestStore();
+  const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
+    useQuestStore();
 
-  const { completeNextStep } = useTutorial({
+  const { completeNextStep, endTutorial, checkIsTutorialActive } = useTutorial({
     currentLevel,
   });
 
@@ -152,17 +147,9 @@ const HomePage = () => {
   const remainingDays = calculateRemainingDays(startedAt);
 
   return (
-    <div className="mx-auto w-full p-16 text-left">
-      <Confetti
-        active={showConfetti}
-        numberOfPieces={150}
-        gravity={0.3}
-        friction={0.97}
-        duration={8000}
-        onComplete={() => setShowConfetti(false)}
-      />
+    <div className="mx-auto w-full max-w-[1332px] p-16 text-left">
       {isChecked && (
-        <>
+        <div className="max-w-[1200px]">
           {shouldShowOnboarding ? (
             <QuestStep
               completedStepCount={completedCount}
@@ -181,17 +168,43 @@ const HomePage = () => {
               />
             )
           )}
-        </>
+        </div>
       )}
 
       <GreetingSection userName={userName!} date={formatKoreanDate()} />
 
-      <div className="mb-8 flex flex-row gap-4">
-        <ActionCard
-          icon={<UploadIcon size={24} className="text-primary-500" />}
-          title="녹음 파일 업로드하기"
-          onClick={handleUploadClick}
-        />
+      <div className="mb-8 flex max-w-[1200px] flex-row gap-6">
+        <Spotlight
+          isActive={checkIsTutorialActive(1, 3)}
+          onClose={endTutorial}
+          tooltip={
+            <NewRecordButtonTooltip
+              onConfirm={async () => {
+                if (user?.email) {
+                  completeNextStep(user.email);
+                  handleUploadClick();
+                }
+                endTutorial();
+              }}
+            />
+          }
+          tooltipPosition="right"
+          className="w-full"
+        >
+          <ActionCard
+            icon={<UploadIcon size={24} className="text-primary-500" />}
+            title="녹음 파일 업로드하기"
+            onClick={() => {
+              if (checkIsTutorialActive(1, 3) && user?.email) {
+                completeNextStep(user.email);
+                endTutorial();
+                handleUploadClick();
+              } else {
+                handleUploadClick();
+              }
+            }}
+          />
+        </Spotlight>
         <ActionCard
           icon={<UserPlusIcon size={24} className="text-danger" />}
           title="클라이언트 추가하기"
@@ -300,7 +313,6 @@ const HomePage = () => {
           // 레벨 5 (내 정보 입력하기 단계) 진행 중이라면 완료 처리
           if (currentLevel === 5 && userId) {
             await completeNextStep(useAuthStore.getState().user?.email || '');
-            setShowConfetti(true);
           }
         }}
       />

@@ -22,10 +22,10 @@ const LEVEL_MAP: Record<number, { mission: string; totalStep: number }> = {
   },
   2: {
     mission: '다회기 분석 예시 보기',
-    totalStep: 10,
+    totalStep: 4,
   },
   3: {
-    mission: '새 상담 기록 만들기',
+    mission: '녹음 파일 업로드하기',
     totalStep: 1,
   },
 };
@@ -124,7 +124,7 @@ export const TranscriptCompleteTooltip = ({
   onConfirm,
 }: TutorialTooltipProps) => (
   <ToolTipContainer
-    title="미션 성공!"
+    title="축어록 보기"
     message={
       <span>
         축어록을 모두 확인했습니다. <br />
@@ -167,7 +167,7 @@ export const NoteScrollTooltip = () => (
 // Step 8: 상담 노트 확인 완료 안내 (SessionDetailPage)
 export const NoteCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <ToolTipContainer
-    title="미션 성공!"
+    title="상담 노트 보기"
     message={
       <p>
         상담 노트를 모두 확인했습니다. <br /> 마지막 단계로 넘어가볼까요?
@@ -257,12 +257,25 @@ export const MissionCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
 
 // Step 3: 새 상담 기록 버튼 안내 (SideTab)
 export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
-  <ToolTipContainer
-    title="새로운 상담기록 추가하기"
-    message="이제 직접 상담 기록을 추가해볼까요? [새 상담 기록] 버튼을 눌러서 실제 내담자의 상담 기록을 올려보세요."
-    submessage="선생님의 상담 기록을 생성하면 미션을 달성할 수 있어요."
-    onConfirm={onConfirm}
-    confirmText="확인"
-    level={3}
-  />
+  <div className="flex w-full max-w-[200px] flex-col justify-center gap-2">
+    <p className="text-xs font-semibold text-primary">
+      미션 - {LEVEL_MAP[3].mission}
+    </p>
+    <h4 className="mb-2 text-base font-bold text-fg">
+      새로운 상담기록 추가하기
+    </h4>
+    <div className="mb-4 break-keep text-sm">
+      이제 직접 상담 기록을 추가해볼까요? [녹음 파일 업로드하기] 버튼을 눌러서
+      실제 내담자의 상담 기록을 올려보세요.
+    </div>
+    <div className="mb-4 text-sm">
+      선생님의 상담 기록을 생성하면 미션을 달성할 수 있어요.
+    </div>
+    <button
+      onClick={onConfirm}
+      className="mt-2 w-full rounded-md bg-primary-50 py-2 font-medium text-primary"
+    >
+      확인
+    </button>
+  </div>
 );
