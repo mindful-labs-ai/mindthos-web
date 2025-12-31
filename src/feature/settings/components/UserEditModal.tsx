@@ -111,7 +111,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     },
     onSuccess: () => {
       toast({
-        title: '정보 수정 완료',
+        title: '정보 입력 완료',
         description: '사용자 정보가 성공적으로 수정되었습니다.',
       });
       onSuccess?.();
@@ -120,11 +120,11 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     onError: (error) => {
       console.error('Update user failed:', error);
       toast({
-        title: '정보 수정 실패',
+        title: '정보 입력 실패',
         description:
           error instanceof Error
             ? error.message
-            : '정보 수정에 실패했습니다. 다시 시도해주세요.',
+            : '정보 입력에 실패했습니다. 다시 시도해주세요.',
       });
     },
   });
@@ -158,7 +158,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6 py-4">
         <div className="flex items-start justify-between">
           <Title as="h2" className="px-6 text-2xl font-bold">
-            정보 수정
+            정보 입력하기
           </Title>
         </div>
 
@@ -206,7 +206,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             className="w-full max-w-md"
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? '수정 중...' : '정보 수정'}
+            {mutation.isPending ? '수정 중...' : '정보 입력하기'}
           </Button>
         </div>
       </form>
