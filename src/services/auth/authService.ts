@@ -133,7 +133,7 @@ export const authService = {
 
   async updateUser(
     userId: string,
-    data: { name?: string; organization?: string }
+    data: { name?: string; organization?: string; phoneNumber?: string }
   ): Promise<void> {
     try {
       const { error } = await supabase
@@ -141,6 +141,7 @@ export const authService = {
         .update({
           name: data.name,
           organization: data.organization,
+          phone_number: data.phoneNumber,
           updated_at: new Date().toISOString(),
         })
         .eq('id', parseInt(userId));

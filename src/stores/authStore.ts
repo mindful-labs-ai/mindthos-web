@@ -35,7 +35,11 @@ interface AuthActions {
   _setUser: (user: User | null, userData?: UserData | null) => void;
   _setLoading: (isLoading: boolean) => void;
   setDefaultTemplateId: (templateId: number | null) => void;
-  updateUser: (data: { name?: string; organization?: string }) => Promise<void>;
+  updateUser: (data: {
+    name?: string;
+    organization?: string;
+    phoneNumber?: string;
+  }) => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -92,6 +96,7 @@ export const useAuthStore = create<AuthStore>()(
           (state) => ({
             userName: data.name ?? state.userName,
             organization: data.organization ?? state.organization,
+            userPhoneNumber: data.phoneNumber ?? state.userPhoneNumber,
           }),
           false,
           'updateUser'

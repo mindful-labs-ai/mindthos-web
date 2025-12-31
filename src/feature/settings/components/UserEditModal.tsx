@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useMutation } from '@tanstack/react-query';
+import { z } from 'zod';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
@@ -9,6 +10,41 @@ import { FormField } from '@/components/ui/composites/FormField';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
+
+// Zod 스키마 정의
+const userEditSchema = z.object({
+  name: z
+    .string()
+    .min(1, '이름을 입력해주세요.')
+    .max(20, '이름은 20자 이내로 입력해주세요.'),
+  organization: z
+    .string()
+    .min(1, '소속 기관을 입력해주세요.')
+    .max(50, '소속 기관은 50자 이내로 입력해주세요.'),
+  phoneNumber: z
+    .string()
+    .regex(
+      /^$|^01[016789]-?\d{3,4}-?\d{4}$/,
+      '올바른 휴대전화 번호를 입력해주세요. (예: 010-1234-5678)'
+    )
+    .optional()
+    .or(z.literal('')),
+});
+
+type UserEditFormData = z.infer<typeof userEditSchema>;
+
+// 휴대전화 번호 포맷팅 (하이픈 자동 추가)
+const formatPhoneNumber = (value: string): string => {
+  const numbersOnly = value.replace(/[^0-9]/g, '');
+
+  if (numbersOnly.length <= 3) {
+    return numbersOnly;
+  } else if (numbersOnly.length <= 7) {
+    return `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
+  } else {
+    return `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
+  }
+};
 
 interface UserEditModalProps {
   open: boolean;
@@ -21,16 +57,18 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   onOpenChange,
   onSuccess,
 }) => {
-  const { userName, organization, updateUser } = useAuthStore();
+  const { userName, organization, userPhoneNumber, updateUser } =
+    useAuthStore();
   const { toast } = useToast();
 
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = React.useState<UserEditFormData>({
     name: '',
     organization: '',
+    phoneNumber: '',
   });
 
   const [errors, setErrors] = React.useState<
-    Partial<Record<keyof typeof formData, string>>
+    Partial<Record<keyof UserEditFormData, string>>
   >({});
 
   // 모달이 열릴 때 초기 데이터 설정
@@ -39,13 +77,21 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       setFormData({
         name: userName || '',
         organization: organization || '',
+        phoneNumber: userPhoneNumber || '',
       });
       setErrors({});
     }
-  }, [open, userName, organization]);
+  }, [open, userName, organization, userPhoneNumber]);
 
-  const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof UserEditFormData, value: string) => {
+    let processedValue = value;
+
+    // 휴대전화 번호는 자동 포맷팅 적용
+    if (field === 'phoneNumber') {
+      processedValue = formatPhoneNumber(value);
+    }
+
+    setFormData((prev) => ({ ...prev, [field]: processedValue }));
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -56,8 +102,12 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   };
 
   const mutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      await updateUser(data);
+    mutationFn: async (data: UserEditFormData) => {
+      await updateUser({
+        name: data.name,
+        organization: data.organization,
+        phoneNumber: data.phoneNumber,
+      });
     },
     onSuccess: () => {
       toast({
@@ -82,17 +132,20 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newErrors: typeof errors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = '이름을 입력해주세요.';
-    }
+    // Zod 유효성 검사
+    const result = userEditSchema.safeParse(formData);
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!result.success) {
+      const fieldErrors: Partial<Record<keyof UserEditFormData, string>> = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof UserEditFormData;
+        fieldErrors[field] = issue.message;
+      });
+      setErrors(fieldErrors);
       return;
     }
 
-    mutation.mutate(formData);
+    mutation.mutate(result.data);
   };
 
   return (
@@ -121,7 +174,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             />
           </FormField>
 
-          <FormField label="소속 기관" error={errors.organization}>
+          <FormField label="소속 기관" required error={errors.organization}>
             <Input
               type="text"
               placeholder="소속 기관을 입력해주세요"
@@ -129,6 +182,17 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
               onChange={(e) => handleChange('organization', e.target.value)}
               maxLength={50}
               error={!!errors.organization}
+            />
+          </FormField>
+
+          <FormField label="휴대전화 번호" error={errors.phoneNumber}>
+            <Input
+              type="tel"
+              placeholder="010-1234-5678"
+              value={formData.phoneNumber}
+              onChange={(e) => handleChange('phoneNumber', e.target.value)}
+              maxLength={13}
+              error={!!errors.phoneNumber}
             />
           </FormField>
         </div>
