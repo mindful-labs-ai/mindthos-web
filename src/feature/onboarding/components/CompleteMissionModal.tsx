@@ -10,6 +10,8 @@ import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
+import { useTutorial } from '../hooks/useTutorial';
+
 import { GiftBoxAnimation } from './GiftBoxAnimation';
 
 const MISSION_CONTENT: Record<number, { title: string; description: string }> =
@@ -39,7 +41,11 @@ export const CompleteMissionModal = () => {
     setShowCompleteModalStep,
     getReward,
     isLoading,
+    currentLevel,
   } = useQuestStore();
+  const { endTutorial, nextTutorialStep, startTutorial } = useTutorial({
+    currentLevel,
+  });
   const { toast } = useToast();
 
   const isOpen = showCompleteModalStep !== null;
@@ -107,6 +113,13 @@ export const CompleteMissionModal = () => {
     }
   };
 
+  const handleNextMission = () => {
+    setShowCompleteModalStep(null);
+    endTutorial();
+    startTutorial();
+    nextTutorialStep();
+  };
+
   const today = new Date();
   const dateString = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
 
@@ -133,7 +146,7 @@ export const CompleteMissionModal = () => {
             <p className="mb-8 text-sm font-medium text-fg-muted">
               *{dateString}부터 한 달 동안
               <br />
-              스타터 플랜(500 크레딧)이 적용됩니다.
+              스타터 플랜(500 크레딧 지급)이 적용됩니다.
             </p>
 
             <GiftBoxAnimation className="mb-10" />
@@ -157,7 +170,7 @@ export const CompleteMissionModal = () => {
             </div>
 
             <Button
-              onClick={handleClose}
+              onClick={handleNextMission}
               tone="primary"
               size="lg"
               className="mt-6 w-full max-w-[375px] font-bold"

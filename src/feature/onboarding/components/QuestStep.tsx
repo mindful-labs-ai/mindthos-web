@@ -224,7 +224,7 @@ export const QuestStep = ({
 
         {/* 보상 정보 */}
         <div className="flex min-w-[277px] flex-col items-center justify-center rounded-xl bg-primary-50 p-4 text-center">
-          <div className="mb-2 text-start text-2xl">
+          <div className="mb-2 text-center text-2xl">
             🎁
             <h3 className="mb-4 text-base font-bold text-fg">
               모든 미션 달성 시<br />
