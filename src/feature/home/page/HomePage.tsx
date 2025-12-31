@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 
 import { Spotlight, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
-import { Confetti } from '@/components/ui/composites/Confetti';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
@@ -41,14 +40,8 @@ const HomePage = () => {
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
 
-  const {
-    currentLevel,
-    isChecked,
-    shouldShowOnboarding,
-    startedAt,
-    showConfetti,
-    setShowConfetti,
-  } = useQuestStore();
+  const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
+    useQuestStore();
 
   const { completeNextStep, endTutorial, checkIsTutorialActive } = useTutorial({
     currentLevel,
@@ -154,16 +147,7 @@ const HomePage = () => {
   const remainingDays = calculateRemainingDays(startedAt);
 
   return (
-    <div className="mx-auto w-full p-16 text-left">
-      <Confetti
-        active={showConfetti}
-        numberOfPieces={150}
-        gravity={0.3}
-        friction={0.97}
-        duration={8000}
-        onComplete={() => setShowConfetti(false)}
-      />
-
+    <div className="mx-auto w-full max-w-[1332px] p-16 text-left">
       {isChecked && (
         <div className="max-w-[1200px]">
           {shouldShowOnboarding ? (
@@ -329,7 +313,6 @@ const HomePage = () => {
           // 레벨 5 (내 정보 입력하기 단계) 진행 중이라면 완료 처리
           if (currentLevel === 5 && userId) {
             await completeNextStep(useAuthStore.getState().user?.email || '');
-            setShowConfetti(true);
           }
         }}
       />

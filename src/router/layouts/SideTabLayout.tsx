@@ -2,6 +2,8 @@ import React from 'react';
 
 import { Outlet } from 'react-router-dom';
 
+import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
+import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
 import { Header } from '@/router/layouts/Header';
 import { SideTab } from '@/router/layouts/SideTab';
 import { LayersIcon } from '@/shared/icons';
@@ -31,11 +33,12 @@ const MainFlowLayout = () => {
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1332px] flex-1">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
+
+      <QuestMissionModal />
+      <CompleteMissionModal />
     </div>
   );
 };

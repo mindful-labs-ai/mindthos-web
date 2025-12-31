@@ -31,7 +31,7 @@ export const TemplateListPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-contrast px-16 py-[42px]">
+    <div className="mx-auto flex min-h-screen w-full max-w-[1332px] flex-col px-16 py-[42px]">
       <div className="text-left">
         <Title as="h1" className="text-2xl font-bold">
           상담 노트 템플릿

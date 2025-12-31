@@ -45,6 +45,8 @@ interface QuestStoreState {
   isTutorialActive: boolean;
   tutorialStep: number;
   shouldShowOnboarding: boolean;
+  hasShownMissionModal: boolean;
+  showCompleteModalStep: number | null;
   spotlightConfig: {
     isActive: boolean;
     targetElement: HTMLElement | null;
@@ -89,6 +91,16 @@ interface QuestActions {
   resetTutorial: () => void;
 
   /**
+   * 미션 완료 모달 표시 여부 설정
+   */
+  setShowCompleteModalStep: (step: number | null) => void;
+
+  /**
+   * 미션 안내 모달 표시 여부 설정
+   */
+  setHasShownMissionModal: (shown: boolean) => void;
+
+  /**
    * 전역 스포트라이트 설정
    */
   setSpotlightConfig: (config: QuestStoreState['spotlightConfig']) => void;
@@ -122,6 +134,8 @@ export const useQuestStore = create<QuestStore>()(
         isTutorialActive: false,
         tutorialStep: 0,
         shouldShowOnboarding: false,
+        hasShownMissionModal: false,
+        showCompleteModalStep: null,
         spotlightConfig: null,
         showConfetti: false,
 
@@ -207,6 +221,8 @@ export const useQuestStore = create<QuestStore>()(
               response.onboarding.step
             );
 
+            const prevLevel = currentLevel;
+
             set(
               {
                 currentLevel: nextLevel,
@@ -215,6 +231,16 @@ export const useQuestStore = create<QuestStore>()(
               false,
               'quest/next_success'
             );
+
+            // 미션 완료 모달 표시
+            // 1: 상담기록 예시 (L1->L2), 2: 다회기 분석 예시 (L2->L3)
+            // 3: 녹음 파일 업로드 (L4->L5), 4: 내 정보 입력 완료 및 보상 유도 (L5->L6)
+            if ([1, 2, 4, 5].includes(prevLevel)) {
+              let modalStep = prevLevel;
+              if (prevLevel === 4) modalStep = 3;
+              if (prevLevel === 5) modalStep = 5; // 마지막 미션 완료 시 5번(보상) 모달 표시
+              get().setShowCompleteModalStep(modalStep);
+            }
           } catch (error) {
             console.error('Moving to next quest step failed:', error);
             set({ isLoading: false }, false, 'quest/next_error');
@@ -260,6 +286,22 @@ export const useQuestStore = create<QuestStore>()(
           );
         },
 
+        setHasShownMissionModal: (shown: boolean) => {
+          set(
+            { hasShownMissionModal: shown },
+            false,
+            'quest/set_has_shown_mission_modal'
+          );
+        },
+
+        setShowCompleteModalStep: (step: number | null) => {
+          set(
+            { showCompleteModalStep: step },
+            false,
+            'quest/set_show_complete_modal_step'
+          );
+        },
+
         setSpotlightConfig: (config) => {
           set({ spotlightConfig: config }, false, 'quest/set_spotlight_config');
         },
@@ -290,6 +332,8 @@ export const useQuestStore = create<QuestStore>()(
               isTutorialActive: false,
               tutorialStep: 0,
               shouldShowOnboarding: false,
+              hasShownMissionModal: false,
+              showCompleteModalStep: null,
             },
             false,
             'quest/clear'
