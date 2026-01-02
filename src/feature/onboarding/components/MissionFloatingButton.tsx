@@ -241,9 +241,13 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
             </div>
 
             {/* 남은 기간 */}
-            <p className="mt-6 text-center text-sm font-bold text-danger">
-              남은 기간 {remainingDays}일
-            </p>
+            <div className="mt-6">
+              {!isAllCompleted && (
+                <p className="text-center text-sm font-bold text-danger">
+                  남은 기간 {remainingDays}일
+                </p>
+              )}
+            </div>
 
             {/* 보상 받기 버튼 */}
             <Button
