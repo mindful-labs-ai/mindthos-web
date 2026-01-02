@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
+import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import { useToast } from '@/components/ui/composites/Toast';
 import { CheckIcon } from '@/shared/icons';
 
@@ -31,38 +29,50 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
     note.processing_status === 'in_progress';
   const isFailed = note.processing_status === 'failed';
 
+  // {%...%} 패턴에서 한글 내용만 추출하는 함수
+  const removeSpecialTags = (text: string): string => {
+    return (
+      text
+        // {%A%입바람%} → 입바람 (한글 내용이 있는 경우 추출)
+        .replace(/\{%[A-Z]%([^%]+)%\}/g, '$1')
+        // {%S%} → 제거 (내용이 없는 경우)
+        .replace(/\{%[A-Z]%\}/g, '')
+    );
+  };
+
   // summary를 섹션별로 파싱
   const parseSummary = (summary: string): NoteSection[] => {
     const sections: NoteSection[] = [];
-    const lines = summary.split('\n');
+    // 먼저 전체 summary에서 특수 태그 제거
+    const cleanedSummary = removeSpecialTags(summary);
+    const lines = cleanedSummary.split('\n');
     let currentSection: NoteSection | null = null;
 
     lines.forEach((line) => {
-      // ## 또는 # 으로 시작하는 섹션 제목
-      if (line.startsWith('##') || line.startsWith('#')) {
+      // ### 으로 시작하는 섹션 제목만 구분자로 사용 (정확히 ###만)
+      if (/^###\s/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
         currentSection = {
-          title: line.replace(/^#+\s*/, '').trim(),
+          title: line.replace(/^###\s*/, '').trim(),
           content: '',
         };
       }
-      // S (Subjective): 형태의 섹션 제목 (SOAP)
-      else if (
-        /^[A-Z]\s*\([^)]+\):/.test(line) ||
-        /^[A-Z]\s*\([^)]+\)\s*:/.test(line)
-      ) {
+      // S (Subjective): 형태의 섹션 제목 (SOAP) - 줄 시작이 정확히 이 패턴일 때만
+      else if (/^[A-Z]\s*\([^)]+\)\s*:\s/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
+        // 첫 번째 ): 이후의 내용을 content로 사용
+        const colonIndex = line.indexOf('):');
         currentSection = {
-          title: line.split(':')[0].trim(),
-          content: line.substring(line.indexOf(':') + 1).trim(),
+          title: line.substring(0, colonIndex + 1).trim(),
+          content: line.substring(colonIndex + 2).trim(),
         };
       }
-      // 내용 줄
-      else if (currentSection && line.trim()) {
+      // 내용 줄 (빈 줄도 포함하여 테이블 구조 유지)
+      else if (currentSection) {
         currentSection.content += (currentSection.content ? '\n' : '') + line;
       }
     });
@@ -281,95 +291,10 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
                 </div>
 
                 {/* 마크다운 렌더링된 내용 */}
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({ children }: { children?: React.ReactNode }) => (
-                        <Text className="mb-3 leading-relaxed text-fg">
-                          {children}
-                        </Text>
-                      ),
-                      ul: ({ children }: { children?: React.ReactNode }) => (
-                        <ul className="mb-3 list-disc space-y-1 pl-6 text-fg">
-                          {children}
-                        </ul>
-                      ),
-                      ol: ({ children }: { children?: React.ReactNode }) => (
-                        <ol className="mb-3 list-decimal space-y-1 pl-6 text-fg">
-                          {children}
-                        </ol>
-                      ),
-                      li: ({ children }: { children?: React.ReactNode }) => (
-                        <li className="leading-relaxed">{children}</li>
-                      ),
-                      strong: ({
-                        children,
-                      }: {
-                        children?: React.ReactNode;
-                      }) => (
-                        <strong className="font-semibold text-fg">
-                          {children}
-                        </strong>
-                      ),
-                      em: ({ children }: { children?: React.ReactNode }) => (
-                        <em className="italic text-fg">{children}</em>
-                      ),
-                      blockquote: ({
-                        children,
-                      }: {
-                        children?: React.ReactNode;
-                      }) => (
-                        <blockquote className="mb-3 border-l-4 border-primary pl-4 italic text-fg-muted">
-                          {children}
-                        </blockquote>
-                      ),
-                      code: ({ children }: { children?: React.ReactNode }) => (
-                        <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
-                          {children}
-                        </code>
-                      ),
-                      pre: ({ children }: { children?: React.ReactNode }) => (
-                        <pre className="mb-3 overflow-x-auto rounded-lg bg-surface-contrast p-4">
-                          {children}
-                        </pre>
-                      ),
-                      // 테이블 관련 컴포넌트
-                      table: ({ children }: { children?: React.ReactNode }) => (
-                        <div className="mb-4 overflow-x-auto rounded-lg border border-border">
-                          <table className="min-w-full divide-y divide-border text-sm">
-                            {children}
-                          </table>
-                        </div>
-                      ),
-                      thead: ({ children }: { children?: React.ReactNode }) => (
-                        <thead className="bg-surface-contrast">
-                          {children}
-                        </thead>
-                      ),
-                      tbody: ({ children }: { children?: React.ReactNode }) => (
-                        <tbody className="divide-y divide-border bg-surface">
-                          {children}
-                        </tbody>
-                      ),
-                      tr: ({ children }: { children?: React.ReactNode }) => (
-                        <tr className="hover:bg-surface-contrast/50">
-                          {children}
-                        </tr>
-                      ),
-                      th: ({ children }: { children?: React.ReactNode }) => (
-                        <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
-                          {children}
-                        </th>
-                      ),
-                      td: ({ children }: { children?: React.ReactNode }) => (
-                        <td className="px-4 py-3 text-fg">{children}</td>
-                      ),
-                    }}
-                  >
-                    {section.content || '내용이 없습니다.'}
-                  </Markdown>
-                </div>
+                <MarkdownRenderer
+                  content={section.content || '내용이 없습니다.'}
+                  disableHeadings
+                />
               </div>
             ))}
           </div>
