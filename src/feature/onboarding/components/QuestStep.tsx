@@ -55,9 +55,7 @@ export const QuestStep = ({
       <div className="flex items-center">
         <div className="flex-1">
           <div className="mb-6 flex items-center gap-5">
-            <h3 className="text-xl font-semibold text-fg">
-              신규 가입자 미션 이벤트
-            </h3>
+            <h3 className="text-xl font-semibold text-fg">신규 가입자 미션</h3>
             <span className="text-sm text-fg-muted">
               {activeCompletedCount}/{totalSteps} 완료
             </span>

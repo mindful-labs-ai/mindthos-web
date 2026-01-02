@@ -163,14 +163,13 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
             'w-[352px] rounded-2xl',
             'border border-border bg-white',
             'shadow-2xl',
-            'animate-in fade-in slide-in-from-bottom-4 duration-200'
+            'animate-in fade-in slide-in-from-bottom-4 duration-200',
+            'select-none'
           )}
         >
           <div className="p-6">
             {/* 헤더 */}
-            <h3 className="text-xl font-bold text-fg">
-              신규 가입자 미션 이벤트
-            </h3>
+            <h3 className="text-xl font-bold text-fg">신규 가입자 미션</h3>
 
             {/* 진행률 바 */}
             <div className="mt-4 flex items-center gap-3">
@@ -242,9 +241,13 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
             </div>
 
             {/* 남은 기간 */}
-            <p className="mt-6 text-center text-sm font-bold text-danger">
-              남은 기간 {remainingDays}일
-            </p>
+            <div className="mt-6">
+              {!isAllCompleted && (
+                <p className="text-center text-sm font-bold text-danger">
+                  남은 기간 {remainingDays}일
+                </p>
+              )}
+            </div>
 
             {/* 보상 받기 버튼 */}
             <Button
