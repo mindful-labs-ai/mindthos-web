@@ -40,6 +40,8 @@
     "react-intersection-observer": "^10.0.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.5",
+    "rehype-sanitize": "^6.0.0",
+    "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "zod": "^4.1.12",
     "zustand": "^5.0.8"

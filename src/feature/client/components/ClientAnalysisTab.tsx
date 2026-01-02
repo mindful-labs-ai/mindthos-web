@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
+import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import type { SelectItem } from '@/components/ui/composites/Select';
 import { Select } from '@/components/ui/composites/Select';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
@@ -210,105 +208,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           </div>
 
           {/* 마크다운 렌더링 */}
-          <div className="prose prose-sm dark:prose-invert max-w-none text-start">
-            <Markdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                h1: ({ children }: { children?: React.ReactNode }) => (
-                  <Title
-                    as="h1"
-                    className="mb-4 mt-8 text-2xl font-bold text-fg first:mt-0"
-                  >
-                    {children}
-                  </Title>
-                ),
-                h2: ({ children }: { children?: React.ReactNode }) => (
-                  <Title
-                    as="h2"
-                    className="mb-3 mt-6 text-xl font-semibold text-fg first:mt-0"
-                  >
-                    {children}
-                  </Title>
-                ),
-                h3: ({ children }: { children?: React.ReactNode }) => (
-                  <Title
-                    as="h3"
-                    className="mb-2 mt-4 text-lg font-semibold text-fg first:mt-0"
-                  >
-                    {children}
-                  </Title>
-                ),
-                p: ({ children }: { children?: React.ReactNode }) => (
-                  <Text className="mb-4 leading-relaxed text-fg">
-                    {children}
-                  </Text>
-                ),
-                ul: ({ children }: { children?: React.ReactNode }) => (
-                  <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">
-                    {children}
-                  </ul>
-                ),
-                ol: ({ children }: { children?: React.ReactNode }) => (
-                  <ol className="mb-4 list-decimal space-y-1 pl-6 text-fg">
-                    {children}
-                  </ol>
-                ),
-                li: ({ children }: { children?: React.ReactNode }) => (
-                  <li className="leading-relaxed">{children}</li>
-                ),
-                strong: ({ children }: { children?: React.ReactNode }) => (
-                  <strong className="font-semibold text-fg">{children}</strong>
-                ),
-                em: ({ children }: { children?: React.ReactNode }) => (
-                  <em className="italic text-fg">{children}</em>
-                ),
-                blockquote: ({ children }: { children?: React.ReactNode }) => (
-                  <blockquote className="mb-4 border-l-4 border-primary pl-4 italic text-fg-muted">
-                    {children}
-                  </blockquote>
-                ),
-                code: ({ children }: { children?: React.ReactNode }) => (
-                  <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
-                    {children}
-                  </code>
-                ),
-                pre: ({ children }: { children?: React.ReactNode }) => (
-                  <pre className="mb-4 overflow-x-auto rounded-lg bg-surface-contrast p-4">
-                    {children}
-                  </pre>
-                ),
-                // 테이블 관련 컴포넌트
-                table: ({ children }: { children?: React.ReactNode }) => (
-                  <div className="mb-4 overflow-x-auto rounded-lg border border-border">
-                    <table className="min-w-full divide-y divide-border text-sm">
-                      {children}
-                    </table>
-                  </div>
-                ),
-                thead: ({ children }: { children?: React.ReactNode }) => (
-                  <thead className="bg-surface-contrast">{children}</thead>
-                ),
-                tbody: ({ children }: { children?: React.ReactNode }) => (
-                  <tbody className="divide-y divide-border bg-surface">
-                    {children}
-                  </tbody>
-                ),
-                tr: ({ children }: { children?: React.ReactNode }) => (
-                  <tr className="hover:bg-surface-contrast/50">{children}</tr>
-                ),
-                th: ({ children }: { children?: React.ReactNode }) => (
-                  <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
-                    {children}
-                  </th>
-                ),
-                td: ({ children }: { children?: React.ReactNode }) => (
-                  <td className="px-4 py-3 text-fg">{children}</td>
-                ),
-              }}
-            >
-              {analysis.content}
-            </Markdown>
-          </div>
+          <MarkdownRenderer content={analysis.content} className="text-start" />
         </div>
       );
     }
