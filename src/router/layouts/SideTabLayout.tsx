@@ -53,7 +53,9 @@ const MainFlowLayout = () => {
       </div>
 
       <QuestMissionModal />
-      <CompleteMissionModal />
+      <CompleteMissionModal
+        onOpenUserEdit={() => setIsUserEditModalOpen(true)}
+      />
       <MissionFloatingButton
         onOpenUserEdit={() => setIsUserEditModalOpen(true)}
       />

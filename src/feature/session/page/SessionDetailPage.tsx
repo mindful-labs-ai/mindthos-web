@@ -1162,7 +1162,7 @@ export const SessionDetailPage: React.FC = () => {
   const audioDuration = audioMetadata?.duration_seconds || duration || 0;
 
   return (
-    <div className="mx-auto flex h-full max-w-[calc(100vw-535px)] flex-col overflow-hidden">
+    <div className="mx-auto flex h-full w-full max-w-[min(100vw-535px,1332px)] flex-col overflow-hidden">
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} preload="metadata" />
 
@@ -1235,15 +1235,15 @@ export const SessionDetailPage: React.FC = () => {
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         <ScrollIndicator
-          className="bottom-0 right-4"
+          className="bottom-0 right-1/2 translate-x-1/2"
           isVisible={checkIsTutorialActive(7)}
         />
         <ScrollIndicator
-          className="bottom-0 right-4"
+          className="bottom-0 right-1/2 translate-x-1/2"
           isVisible={checkIsTutorialActive(4)}
         />
         {activeTab === 'transcript' && (
-          <div className="absolute inset-x-0 right-4 top-0 flex select-none justify-end bg-gradient-to-t from-transparent to-slate-50">
+          <div className="absolute inset-x-0 right-4 top-0 flex select-none justify-end rounded-lg bg-gradient-to-t from-transparent to-slate-50">
             <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
               {isReadOnly ? (
                 <Badge tone="warning" variant="soft" size="sm">

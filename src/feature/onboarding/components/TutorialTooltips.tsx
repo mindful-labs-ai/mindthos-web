@@ -261,9 +261,7 @@ export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
     <p className="text-xs font-semibold text-primary">
       미션 - {LEVEL_MAP[3].mission}
     </p>
-    <h4 className="mb-2 text-base font-bold text-fg">
-      새로운 상담기록 추가하기
-    </h4>
+    <h4 className="mb-2 text-base font-bold text-fg">녹음 파일 업로드하기</h4>
     <div className="mb-4 break-keep text-sm">
       이제 직접 상담 기록을 추가해볼까요? [녹음 파일 업로드하기] 버튼을 눌러서
       실제 내담자의 상담 기록을 올려보세요.
