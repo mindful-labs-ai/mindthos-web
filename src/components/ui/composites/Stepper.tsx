@@ -75,7 +75,7 @@ export const Stepper: React.FC<StepperProps> = ({
           <React.Fragment key={index}>
             <div
               className={cn(
-                'flex',
+                'flex flex-1 break-keep',
                 isHorizontal
                   ? 'flex-col items-center'
                   : 'flex-row items-start gap-3'
@@ -126,7 +126,9 @@ export const Stepper: React.FC<StepperProps> = ({
               <div
                 className={cn(
                   'bg-border',
-                  isHorizontal ? 'mx-2 mt-5 h-0.5 flex-1' : 'ml-5 h-8 w-0.5'
+                  isHorizontal
+                    ? 'mx-2 mt-5 h-0.5 w-full min-w-2'
+                    : 'ml-5 h-8 w-0.5'
                 )}
                 aria-hidden="true"
               />

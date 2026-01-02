@@ -1,23 +1,22 @@
-/**
- * 클라이언트 관련 타입
- */
 export interface Client {
   id: string;
-  group_id: number | null;
   counselor_id: string;
   name: string;
   phone_number: string;
+  email: string | null;
+  counsel_theme: string | null;
   counsel_number: number;
+  counsel_done: boolean;
   memo: string | null;
   pin: boolean;
   created_at: string;
   updated_at: string;
+  session_count?: number; // 클라이언트와 연결된 세션 개수
 }
 
 export interface CreateClientRequest {
   name: string;
   phone_number: string;
-  group_id?: number;
   memo?: string;
   pin?: boolean;
 }
@@ -25,7 +24,6 @@ export interface CreateClientRequest {
 export interface UpdateClientRequest {
   name?: string;
   phone_number?: string;
-  group_id?: number;
   memo?: string;
   pin?: boolean;
 }
