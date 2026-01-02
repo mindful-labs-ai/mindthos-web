@@ -32,7 +32,6 @@ export function useSessionDetail({
         : getSessionDetail(sessionId),
     enabled: enabled && !!sessionId,
     retry: 2,
-    staleTime: isDummySession ? Infinity : undefined,
-    // 전역 설정 사용: staleTime 5분, refetchOnWindowFocus/Mount/Reconnect false
+    staleTime: isDummySession ? Infinity : 5 * 60 * 1000,
   });
 }

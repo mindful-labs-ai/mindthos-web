@@ -490,7 +490,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           className="h-full overflow-y-auto rounded-lg border border-border bg-surface p-6"
         >
           <ScrollIndicator
-            className="bottom-8 right-16"
+            className="bottom-8 right-1/2 translate-x-44"
             isVisible={checkIsTutorialActive(4, 2)}
           />
           {currentAnalysis &&

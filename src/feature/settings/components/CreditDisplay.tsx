@@ -1,8 +1,11 @@
 import React from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import { Button } from '@/components/ui';
 import { ProgressCircle } from '@/components/ui/atoms/ProgressCircle';
 import { Text } from '@/components/ui/atoms/Text';
+import { ROUTES } from '@/router/constants';
 
 import { CreditPricingTooltip } from './CreditPricingTooltip';
 import { PlanChangeModal } from './PlanChangeModal';
@@ -30,6 +33,12 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
   const isFree = planType.toLowerCase() === 'free';
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] =
     React.useState<boolean>(false);
+
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(ROUTES.SETTINGS);
+  };
 
   if (variant === 'detailed') {
     return (
@@ -84,7 +93,13 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
 
   // sidebar variant
   return (
-    <div className="mx-3 mb-6 flex flex-col gap-y-2 rounded-lg border-t border-border bg-surface-contrast px-1 pb-2 pt-3 text-left">
+    <div
+      role="button"
+      onClick={handleClick}
+      onKeyDown={(e) => e.stopPropagation()}
+      tabIndex={0}
+      className="mx-3 mb-6 flex select-none flex-col gap-y-2 rounded-lg border-t border-border bg-surface-contrast px-1 pb-2 pt-3 text-left"
+    >
       <Text className="relative px-3 text-xs font-medium text-fg-muted">
         마음토스 크레딧
         <button className="absolute right-3 top-0">

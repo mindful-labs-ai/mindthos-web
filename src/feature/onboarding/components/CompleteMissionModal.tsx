@@ -33,7 +33,13 @@ const MISSION_CONTENT: Record<number, { title: string; description: string }> =
     },
   };
 
-export const CompleteMissionModal = () => {
+interface CompleteMissionModalProps {
+  onOpenUserEdit?: () => void;
+}
+
+export const CompleteMissionModal = ({
+  onOpenUserEdit,
+}: CompleteMissionModalProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const {
@@ -115,6 +121,14 @@ export const CompleteMissionModal = () => {
 
   const handleNextMission = () => {
     setShowCompleteModalStep(null);
+
+    // Step 3 완료 후 다음 미션(내 정보 입력하기)일 경우 UserEditModal 바로 열기
+    if (showCompleteModalStep === 3 && onOpenUserEdit) {
+      onOpenUserEdit();
+      return;
+    }
+
+    // 그 외의 경우 튜토리얼 시작
     endTutorial();
     startTutorial();
     nextTutorialStep();

@@ -18,6 +18,7 @@ import { useAuthStore } from '@/stores/authStore';
 import {
   assignClientToSession,
   deleteSession,
+  updateSessionTitle,
 } from '../services/sessionService';
 import type { SessionRecord } from '../types';
 import { extractTextOnly } from '../utils/parseNonverbalText';
@@ -46,6 +47,12 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+
+  // 제목 수정 관련 상태
+  const [isEditingTitle, setIsEditingTitle] = React.useState(false);
+  const [editedTitle, setEditedTitle] = React.useState('');
+  const [isSavingTitle, setIsSavingTitle] = React.useState(false);
+  const titleInputRef = React.useRef<HTMLInputElement>(null);
 
   const { clients } = useClientList();
 
@@ -116,9 +123,93 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     });
   };
 
+  // 제목 수정 시작
+  const handleStartEditTitle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
+    setEditedTitle(displayTitle);
+    setIsEditingTitle(true);
+    // 다음 렌더링 후 input에 포커스
+    setTimeout(() => titleInputRef.current?.focus(), 0);
+  };
+
+  // 제목 저장 (버튼 클릭용)
+  const handleSaveTitleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // 버튼 클릭 시 카드 클릭 방지
+    await handleSaveTitle();
+  };
+
+  // 제목 저장 로직
+  const handleSaveTitle = async () => {
+    const trimmedTitle = editedTitle.trim();
+    if (!trimmedTitle || trimmedTitle === displayTitle) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    setIsSavingTitle(true);
+    try {
+      await updateSessionTitle(record.session_id, trimmedTitle);
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['sessions', Number(userId)],
+        }),
+        queryClient.resetQueries({
+          queryKey: ['session', record.session_id, false],
+        }),
+      ]);
+
+      toast({
+        title: '제목 수정 완료',
+        description: '상담기록 제목이 변경되었습니다.',
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('제목 수정 실패:', error);
+      toast({
+        title: '제목 수정 실패',
+        description: '다시 시도해주세요.',
+        duration: 2500,
+      });
+    } finally {
+      setIsSavingTitle(false);
+      setIsEditingTitle(false);
+    }
+  };
+
+  // 제목 수정 취소 (버튼 클릭용)
+  const handleCancelEditTitleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleCancelEditTitle();
+  };
+
+  // 제목 수정 취소 로직
+  const handleCancelEditTitle = () => {
+    setIsEditingTitle(false);
+    setEditedTitle('');
+  };
+
+  // 제목 입력 키보드 핸들러
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveTitle();
+    } else if (e.key === 'Escape') {
+      handleCancelEditTitle();
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     // PopUp 영역 클릭 시 카드 클릭 이벤트 무시
     if ((e.target as HTMLElement).closest('[data-popup-wrapper]')) {
+      return;
+    }
+    // 제목 수정 중에는 카드 클릭 무시
+    if (isEditingTitle) {
       return;
     }
     // succeeded 상태일 때만 클릭 가능
@@ -355,9 +446,64 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           <Card.Body className="space-y-3 p-6">
             <div className="flex items-start justify-between">
               <div className="flex min-w-0 flex-1 items-center gap-2">
-                <Title as="h3" className="truncate text-left text-lg font-bold">
-                  {truncatedTitle + (isTruncated ? '...' : '')}
-                </Title>
+                {isEditingTitle ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      ref={titleInputRef}
+                      type="text"
+                      value={editedTitle}
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                      onKeyDown={handleTitleKeyDown}
+                      className="focus:ring-primary/20 w-full min-w-[200px] max-w-[300px] rounded-lg border border-border bg-bg px-2 py-1 text-lg font-bold focus:border-primary focus:outline-none focus:ring-2"
+                      disabled={isSavingTitle}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveTitleClick}
+                      disabled={isSavingTitle}
+                      className="whitespace-nowrap rounded-lg bg-primary px-3 py-1.5 text-xs text-white hover:bg-primary-600 disabled:opacity-50"
+                    >
+                      {isSavingTitle ? '저장...' : '완료'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEditTitleClick}
+                      disabled={isSavingTitle}
+                      className="hover:bg-surface-hover whitespace-nowrap rounded-lg bg-surface px-3 py-1.5 text-xs text-fg disabled:opacity-50"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Title
+                      as="h3"
+                      className="truncate text-left text-lg font-bold"
+                    >
+                      {truncatedTitle + (isTruncated ? '...' : '')}
+                    </Title>
+                    <button
+                      type="button"
+                      onClick={handleStartEditTitle}
+                      className="p-2 text-fg-muted hover:text-fg"
+                      aria-label="제목 수정"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="transition-colors"
+                      >
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                  </>
+                )}
               </div>
               {renderCardMenu()}
             </div>

@@ -173,6 +173,7 @@ export const ClientDetailPage: React.FC = () => {
 
       return {
         session_id: session.id,
+        title: session?.title || undefined,
         transcribe_id: transcribe?.id || null,
         client_id: session.client_id || '',
         client_name: client.name,
@@ -261,7 +262,7 @@ export const ClientDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-surface-contrast">
+    <div className="mx-auto flex h-full w-full max-w-[1332px] flex-col">
       {/* 헤더 */}
       <div className="flex-shrink-0 px-16 pt-[42px]">
         <div className="mb-4 flex items-start justify-between">
