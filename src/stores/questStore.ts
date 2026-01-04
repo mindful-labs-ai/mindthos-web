@@ -34,6 +34,9 @@ const getQuestLevel = (state: OnboardingStateType, step: number): number => {
     if (step >= 6) return 7;
   }
 
+  // 레거시 온보딩 데이터 (['completed', 3])
+  if (state === OnboardingState.COMPLETED && step === 3) return 8;
+
   return 0;
 };
 
