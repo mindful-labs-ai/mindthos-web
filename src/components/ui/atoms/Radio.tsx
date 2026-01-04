@@ -131,7 +131,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             key={option.value}
             htmlFor={optionId}
             className={cn(
-              'flex cursor-pointer items-start gap-2',
+              'flex cursor-pointer items-start gap-2 px-4',
               isDisabled && 'cursor-not-allowed opacity-50'
             )}
           >

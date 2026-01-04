@@ -146,8 +146,8 @@ describe('Tab', () => {
     const { container } = render(
       <Tab items={items} className="custom-class" />
     );
-    expect(container.querySelector('[role="tablist"]')).toHaveClass(
-      'custom-class'
-    );
+    // className은 tablist를 감싸는 외부 wrapper에 적용됨
+    const wrapper = container.querySelector('[role="tablist"]')?.parentElement;
+    expect(wrapper).toHaveClass('custom-class');
   });
 });

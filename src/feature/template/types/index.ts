@@ -1,20 +1,12 @@
 export interface Template {
-  id: string;
-  name: string;
+  id: number;
+  title: string;
   description: string;
   prompt: string;
   created_at: string;
-  updated_at: string;
-  content: string;
-  is_default: boolean;
-  pin: boolean;
 }
 
-export interface TemplateListItem {
-  id: string;
-  name: string;
-  description: string;
-  content: string;
-  is_default: boolean;
+export interface TemplateListItem extends Template {
   pin: boolean;
+  is_default: boolean;
 }

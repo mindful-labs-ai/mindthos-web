@@ -6,10 +6,6 @@ export type DateInputSize = 'sm' | 'md' | 'lg' | 'free';
 
 export interface DateInputProps
   extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size' | 'type'> {
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: DateInputSize;
 }
 
@@ -21,15 +17,12 @@ const sizeStyles: Record<DateInputSize, string> = {
 };
 
 /**
- * DateInput component
- *
- * Native date input with consistent styling.
+ * DateInput - 날짜 입력 컴포넌트
+ * 네이티브 date input 사용
+ * 일관된 스타일 제공
  *
  * @example
- * ```tsx
- * <DateInput value="2024-01-15" onChange={e => console.log(e.target.value)} />
- * <DateInput size="sm" min="2024-01-01" max="2024-12-31" />
- * ```
+ * <DateInput value="2024-01-15" onChange={...} />
  */
 export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
   ({ className, size = 'md', ...props }, ref) => {

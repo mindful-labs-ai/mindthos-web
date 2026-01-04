@@ -3,51 +3,22 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export interface AudioPlayerProps {
-  /**
-   * Audio source URL
-   */
   src: string;
-  /**
-   * Audio title
-   */
   title?: string;
-  /**
-   * Show timecode
-   */
   timecode?: boolean;
-  /**
-   * Play handler
-   */
   onPlay?: () => void;
-  /**
-   * Pause handler
-   */
   onPause?: () => void;
-  /**
-   * Seek handler
-   */
   onSeek?: (time: number) => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
 /**
- * AudioPlayer component
- *
- * Minimal audio player with native controls wrapper.
- * Baseline implementation using native <audio> element.
+ * AudioPlayer - 오디오 플레이어
+ * 네이티브 audio 엘리먼트 래퍼
+ * 최소한의 컨트롤 제공
  *
  * @example
- * ```tsx
- * <AudioPlayer
- *   src="/audio.mp3"
- *   title="Episode 1"
- *   timecode
- *   onPlay={() => console.log('playing')}
- * />
- * ```
+ * <AudioPlayer src="/audio.mp3" title="에피소드1" timecode />
  */
 export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   src,
