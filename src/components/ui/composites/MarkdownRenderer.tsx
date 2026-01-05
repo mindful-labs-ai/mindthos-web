@@ -142,7 +142,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   }
 
   return (
-    <div className={`prose prose-sm dark:prose-invert max-w-none ${className}`}>
+    <div
+      className={`prose prose-sm dark:prose-invert max-w-none break-keep ${className}`}
+    >
       <Markdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeSanitize]}
