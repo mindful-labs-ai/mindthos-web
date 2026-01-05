@@ -22,7 +22,7 @@ const envSchema = z.object({
 
   // Development mode detection
   DEV: z.boolean(),
-  MODE: z.enum(['development', 'production', 'test']),
+  MODE: z.enum(['development', 'production', 'test', 'staging']),
   PROD: z.boolean(),
 });
 
