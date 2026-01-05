@@ -105,7 +105,7 @@ export const ClientDetailPage: React.FC = () => {
       });
     },
   });
-  console.log(currentLevel);
+
   React.useEffect(() => {
     if (isReadOnly && clientId && !hasShownDummyToast) {
       toast({
