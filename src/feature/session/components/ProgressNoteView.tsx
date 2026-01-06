@@ -5,6 +5,7 @@ import { Title } from '@/components/ui/atoms/Title';
 import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import { useToast } from '@/components/ui/composites/Toast';
 import { CheckIcon } from '@/shared/icons';
+import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 
 import type { ProgressNote } from '../types';
 
@@ -29,33 +30,22 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
     note.processing_status === 'in_progress';
   const isFailed = note.processing_status === 'failed';
 
-  // {%...%} 패턴에서 한글 내용만 추출하는 함수
-  const removeSpecialTags = (text: string): string => {
-    return (
-      text
-        // {%A%입바람%} → 입바람 (한글 내용이 있는 경우 추출)
-        .replace(/\{%[A-Z]%([^%]+)%\}/g, '$1')
-        // {%S%} → 제거 (내용이 없는 경우)
-        .replace(/\{%[A-Z]%\}/g, '')
-    );
-  };
-
   // summary를 섹션별로 파싱
   const parseSummary = (summary: string): NoteSection[] => {
     const sections: NoteSection[] = [];
     // 먼저 전체 summary에서 특수 태그 제거
-    const cleanedSummary = removeSpecialTags(summary);
+    const cleanedSummary = removeNonverbalTags(summary);
     const lines = cleanedSummary.split('\n');
     let currentSection: NoteSection | null = null;
 
     lines.forEach((line) => {
-      // ### 으로 시작하는 섹션 제목만 구분자로 사용 (정확히 ###만)
-      if (/^###\s/.test(line)) {
+      // 마크다운 헤딩 (#, ##, ###)으로 시작하는 섹션 제목
+      if (/^#{1,3}\s/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
         currentSection = {
-          title: line.replace(/^###\s*/, '').trim(),
+          title: line.replace(/^#{1,3}\s*/, '').trim(),
           content: '',
         };
       }

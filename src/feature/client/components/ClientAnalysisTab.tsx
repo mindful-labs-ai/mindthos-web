@@ -16,6 +16,7 @@ import {
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CheckIcon } from '@/shared/icons';
+import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
@@ -208,7 +209,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           </div>
 
           {/* 마크다운 렌더링 */}
-          <MarkdownRenderer content={analysis.content} className="text-start" />
+          <MarkdownRenderer
+            content={removeNonverbalTags(analysis.content)}
+            className="text-start"
+          />
         </div>
       );
     }
