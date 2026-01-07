@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 
+import { AuthenticatedInitialize } from '@/components/AuthenticatedInitialize';
 import { useAuthStore } from '@/stores/authStore';
 
 import { ROUTES } from '../constants';
@@ -27,5 +28,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to={ROUTES.AUTH} replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AuthenticatedInitialize />
+      {children}
+    </>
+  );
 };
