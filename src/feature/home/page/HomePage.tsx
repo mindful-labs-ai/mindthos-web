@@ -9,7 +9,7 @@ import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
 import { NewRecordButtonTooltip } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
+import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -298,11 +298,10 @@ const HomePage = () => {
         )}
       </div>
 
-      {/* 세션 생성 모달 - 오디오 파일만 */}
-      <CreateSessionModal
+      {/* 다중 세션 생성 모달 */}
+      <CreateMultiSessionModal
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
-        type="audio"
       />
 
       {/* 정보 수정 모달 */}

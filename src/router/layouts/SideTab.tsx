@@ -10,8 +10,7 @@ import {
   SessionTabTooltip,
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { CreateSessionModal } from '@/feature/session/components/CreateSessionModal';
-import type { UploadType } from '@/feature/session/types';
+import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
@@ -39,7 +38,6 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
-  const [uploadType, setUploadType] = React.useState<UploadType>('audio');
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
@@ -81,7 +79,6 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
   };
 
   const handleAudioUploadClick = () => {
-    setUploadType('audio');
     setIsNewRecordMenuOpen(false);
     setIsCreateSessionModalOpen(true);
   };
@@ -227,10 +224,9 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
       </div>
 
       {/* 세션 생성 모달 */}
-      <CreateSessionModal
+      <CreateMultiSessionModal
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
-        type={uploadType}
       />
     </aside>
   );
