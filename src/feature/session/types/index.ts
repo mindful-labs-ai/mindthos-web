@@ -193,3 +193,47 @@ export interface CreateSessionBackgroundResponse {
   stt_model: 'whisper' | 'gemini-3';
   message: string;
 }
+
+// ============================================
+// 다중 파일 업로드 관련 타입
+// ============================================
+
+export type FileValidationStatus =
+  | 'pending' // duration 추출 중
+  | 'valid' // 정상
+  | 'invalid_type' // 지원하지 않는 형식
+  | 'size_exceeded'; // 용량 초과
+
+export interface MultiFileInfo {
+  id: string; // uuid
+  file: File;
+  name: string;
+  size: number;
+  duration?: number; // 오디오 파일만
+  validationStatus: FileValidationStatus;
+  errorMessage?: string;
+}
+
+// 개별 파일 세션 설정 (Step 2)
+export interface FileSessionConfig {
+  fileId: string;
+  order: number; // 업로드 순서
+  sttModel: SttModel; // 일반/고급
+  clientId?: string; // 내담자
+}
+
+// Step 1 일괄 설정
+export interface BatchSessionConfig {
+  sttModel: SttModel;
+  clientId?: string;
+}
+
+// 세션 생성 결과
+export interface SessionCreateResult {
+  fileId: string;
+  fileName: string;
+  status: 'pending' | 'uploading' | 'creating' | 'success' | 'failed';
+  uploadProgress?: number; // 0-100
+  sessionId?: string;
+  errorMessage?: string;
+}

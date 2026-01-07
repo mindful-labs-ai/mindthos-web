@@ -1,3 +1,7 @@
+export const MULTI_UPLOAD_LIMITS = {
+  MAX_FILES: 10,
+} as const;
+
 export const FILE_UPLOAD_LIMITS = {
   AUDIO: {
     MAX_SIZE_MB: 500,
