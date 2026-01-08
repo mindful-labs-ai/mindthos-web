@@ -243,7 +243,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
         variant="dropdown"
         open={isClientSelectorOpen}
         onOpenChange={setIsClientSelectorOpen}
-        placement="bottom-right"
+        placement="bottom-left"
         trigger={
           <Button
             variant="outline"

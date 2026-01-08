@@ -78,8 +78,7 @@ export const MultiFileItem: React.FC<MultiFileItemProps> = ({
   return (
     <div
       className={cn(
-        'flex h-[82px] max-w-[440px] items-center gap-3 rounded-lg px-4 py-3',
-        isError ? 'border-2 border-danger' : 'bg-surface'
+        'flex h-[82px] max-w-[440px] items-center gap-3 rounded-lg bg-surface px-4 py-3'
       )}
     >
       <StatusIcon status={file.validationStatus} />
@@ -89,7 +88,7 @@ export const MultiFileItem: React.FC<MultiFileItemProps> = ({
         {isPending ? (
           <Text className="text-sm text-fg-muted">파일 업로드 중</Text>
         ) : isError ? (
-          <Text className="text-sm text-danger">{file.errorMessage}</Text>
+          <Text className="text-sm text-red-500">{file.errorMessage}</Text>
         ) : (
           <Text className="text-sm text-fg-muted">
             {formatFileSize(file.size)}

@@ -32,9 +32,9 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
               일반 축어록
             </Text>
             <Text className="text-xs text-fg-muted">
-              일반 수준 정확도로
+              1:1 개인 상담 추천
               <br />
-              축어록을 제작
+              빠른 작성 속도, 준수한 정확도
             </Text>
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -94,7 +94,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
       <button
         type="button"
         onClick={() => setSttModel('gemini-3')}
-        className={`flex-1 rounded-lg border-2 p-4 transition-all ${
+        className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
           sttModel === 'gemini-3'
             ? 'border-primary'
             : 'border-border bg-bg hover:border-fg-muted'
@@ -171,9 +171,9 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
               </Tooltip>
             </div>
             <Text className="text-xs text-fg-muted">
-              감정 반을을 포함한 높은
+              부부·가족 상담의 화자 분리와
               <br />
-              정확도로 축어록을 제작
+              비언어 표현까지 초정밀 기록
             </Text>
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-1">
