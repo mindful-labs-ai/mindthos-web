@@ -17,7 +17,8 @@ import {
   calculateDaysUntilReset,
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
-import { PlusIcon, UploadIcon, XIcon } from '@/shared/icons';
+import { cn } from '@/lib/cn';
+import { PlusIcon, UploadIcon } from '@/shared/icons';
 import { useQuestStore } from '@/stores/questStore';
 
 import {
@@ -27,12 +28,7 @@ import {
   getPathFromNavValue,
 } from '../navigationConfig';
 
-interface SideTabProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
+export const SideTab = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
@@ -97,9 +93,13 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
 
   return (
     <aside
-      className={`relative z-10 flex h-full flex-col border-r border-border bg-bg px-3 transition-all duration-300 ${
-        isOpen ? 'min-w-64' : 'w-0'
-      } overflow-hidden`}
+      className={cn(
+        'relative z-10 flex h-full flex-col overflow-hidden border-r border-border bg-bg transition-all duration-300',
+        'w-0 px-0',
+        'lg:w-64 lg:px-3',
+        'md:w-64 md:px-3',
+        'sm:min-w-64 sm:px-3'
+      )}
     >
       {/* Logo Section */}
       <div className="flex h-14 items-center justify-between border-b border-border p-4">
@@ -113,12 +113,6 @@ export const SideTab: React.FC<SideTabProps> = ({ isOpen, onClose }) => {
             className="h-6 w-auto antialiased"
             draggable="false"
           />
-        </button>
-        <button
-          onClick={onClose}
-          className="rounded p-1 hover:bg-bg-subtle lg:hidden"
-        >
-          <XIcon size={20} />
         </button>
       </div>
 

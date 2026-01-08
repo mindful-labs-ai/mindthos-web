@@ -8,12 +8,10 @@ import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionM
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { Header } from '@/router/layouts/Header';
 import { SideTab } from '@/router/layouts/SideTab';
-import { LayersIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
 const MainFlowLayout = () => {
-  const [isSideTabOpen, setIsSideTabOpen] = React.useState(true);
   const [isUserEditModalOpen, setIsUserEditModalOpen] = React.useState(false);
 
   const user = useAuthStore((state) => state.user);
@@ -29,20 +27,10 @@ const MainFlowLayout = () => {
   return (
     <div className="flex h-screen w-full bg-bg-subtle">
       {/* SideTab */}
-      <SideTab isOpen={isSideTabOpen} onClose={() => setIsSideTabOpen(false)} />
+      <SideTab />
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col">
-        {/* Mobile Menu Button */}
-        {!isSideTabOpen && (
-          <button
-            onClick={() => setIsSideTabOpen(true)}
-            className="fixed left-4 top-4 z-10 rounded-lg bg-surface p-2 lg:hidden"
-          >
-            <LayersIcon size={24} />
-          </button>
-        )}
-
         {/* Header with BreadCrumb */}
         <Header />
 

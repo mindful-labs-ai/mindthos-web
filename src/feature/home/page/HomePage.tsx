@@ -22,6 +22,7 @@ import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
@@ -29,6 +30,7 @@ import { useQuestStore } from '@/stores/questStore';
 
 import { ActionCard } from '../components/ActionCard';
 import { GreetingSection } from '../components/GreetingSection';
+import MobileView from '../components/MobileView';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -39,6 +41,8 @@ const HomePage = () => {
     React.useState(true);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
     React.useState(false);
+
+  const { isMobile } = useDevice();
 
   const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
     useQuestStore();
@@ -145,6 +149,10 @@ const HomePage = () => {
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
   const remainingDays = calculateRemainingDays(startedAt);
+
+  if (isMobile) {
+    return <MobileView />;
+  }
 
   return (
     <div className="mx-auto w-full max-w-[1332px] p-16 text-left">

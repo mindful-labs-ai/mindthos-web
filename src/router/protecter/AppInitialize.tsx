@@ -1,4 +1,4 @@
-import { NoneDesktopAlert } from './NoneDesktopAlert';
+import { NoneDesktopAlert } from '../../components/NoneDesktopAlert';
 
 /**
  * 앱 초기화 시 실행되는 컴포넌트들을 관리

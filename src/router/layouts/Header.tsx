@@ -76,7 +76,7 @@ export const Header: React.FC = () => {
   const breadcrumbItems = getBreadcrumbItems();
 
   return (
-    <header className="sticky top-0 flex h-14 items-center justify-between border-b border-border bg-bg px-6 py-4 lg:px-8">
+    <header className="sticky top-0 hidden h-14 items-center justify-between border-b border-border bg-bg px-6 py-4 sm:flex lg:px-8">
       <BreadCrumb items={breadcrumbItems} />
       <Button
         variant="outline"
