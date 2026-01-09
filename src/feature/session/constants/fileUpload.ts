@@ -43,3 +43,52 @@ export const isFileSizeExceeded = (
 
   return fileSizeMB > maxSizeMB;
 };
+
+/**
+ * 확장자를 MIME 타입으로 변환하는 맵
+ */
+const EXTENSION_TO_MIME: Record<string, string> = {
+  MP3: 'audio/mpeg',
+  WAV: 'audio/wav',
+  M4A: 'audio/x-m4a',
+  MP4: 'video/mp4',
+  WEBM: 'audio/webm',
+  OGG: 'audio/ogg',
+  AAC: 'audio/aac',
+  FLAC: 'audio/flac',
+  WMA: 'audio/x-ms-wma',
+  PDF: 'application/pdf',
+};
+
+/**
+ * FORMATS 배열을 input accept 속성 문자열로 변환
+ * @example
+ * getAcceptString('audio') // "audio/*,.mp3,.wav,.m4a,.mp4,.webm,.ogg,.aac,.flac,.wma,audio/mpeg,audio/wav,..."
+ */
+export const getAcceptString = (type: 'audio' | 'pdf'): string => {
+  const formats =
+    type === 'audio'
+      ? FILE_UPLOAD_LIMITS.AUDIO.FORMATS
+      : FILE_UPLOAD_LIMITS.PDF.FORMATS;
+
+  const acceptParts: string[] = [];
+
+  // audio 타입인 경우 audio/* 추가
+  if (type === 'audio') {
+    acceptParts.push('audio/*');
+  }
+
+  // 각 포맷에 대해 확장자와 MIME 타입 추가
+  formats.forEach((format) => {
+    // 확장자 (.mp3, .wav 등)
+    acceptParts.push(`.${format.toLowerCase()}`);
+
+    // MIME 타입
+    const mime = EXTENSION_TO_MIME[format];
+    if (mime) {
+      acceptParts.push(mime);
+    }
+  });
+
+  return acceptParts.join(',');
+};

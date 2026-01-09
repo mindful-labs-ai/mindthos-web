@@ -261,8 +261,8 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                             size="md"
                             className={`px-4 py-2 ${
                               pendingClient?.id === client.id
-                                ? 'bg-primary text-white'
-                                : 'bg-primary-100 hover:bg-primary-200'
+                                ? ''
+                                : 'bg-transparent'
                             }`}
                           >
                             {client.name}

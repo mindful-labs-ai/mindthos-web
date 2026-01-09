@@ -1,16 +1,25 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { createSearchParams, Link } from 'react-router-dom';
+import {
+  createSearchParams,
+  Link,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 
 import { Button, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
 import { Text } from '@/components/ui/atoms/Text';
+import { SnackBar } from '@/components/ui/composites/SnackBar';
 import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
-import { MULTI_UPLOAD_LIMITS } from '@/feature/session/constants/fileUpload';
+import {
+  getAcceptString,
+  MULTI_UPLOAD_LIMITS,
+} from '@/feature/session/constants/fileUpload';
 import { useMultiFileUpload } from '@/feature/session/hooks/useMultiFileUpload';
 import { useMultiSessionCreate } from '@/feature/session/hooks/useMultiSessionCreate';
 import type {
@@ -20,6 +29,7 @@ import type {
 } from '@/feature/session/types';
 import { calculateTotalCredit } from '@/feature/session/utils/creditCalculator';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
+import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
   calculateDaysUntilReset,
@@ -51,16 +61,47 @@ type MobileViewDepth = 'home' | 'upload' | 'config' | 'setting';
 
 const MobileView = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const userName = useAuthStore((state) => state.userName);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const { clients } = useClientList();
 
-  // Depth 상태
-  const [depth, setDepth] = useState<MobileViewDepth>('home');
+  // Depth 상태 (URL query string으로 관리)
+  const depthParam = searchParams.get('depth');
+  const depth: MobileViewDepth =
+    depthParam === 'upload' ||
+    depthParam === 'config' ||
+    depthParam === 'setting'
+      ? depthParam
+      : 'home';
+
+  // depth 변경 함수 (URL 업데이트)
+  const setDepth = useCallback(
+    (newDepth: MobileViewDepth) => {
+      if (newDepth === 'home') {
+        navigate('/', { replace: false });
+      } else {
+        navigate(`/?depth=${newDepth}`, { replace: false });
+      }
+    },
+    [navigate]
+  );
 
   // 크레딧 정보
   const { creditInfo } = useCreditInfo();
+
+  // 크레딧 부족 에러 상태
+  const [creditErrorSnackBar, setCreditErrorSnackBar] = useState({
+    open: false,
+    message: '',
+  });
+  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] = useState(false);
+
+  // iOS 파일 위치 안내 모달
+  const [isIosGuideModalOpen, setIsIosGuideModalOpen] = useState(false);
+  const IOS_GUIDE_DISMISSED_KEY = 'ios_file_guide_dismissed';
 
   // 상담 기록 (커스텀 훅)
   const {
@@ -190,18 +231,15 @@ const MobileView = () => {
     setDepth('config');
   };
 
-  // 이전 단계로
+  // 이전 단계로 (브라우저 뒤로가기 사용)
   const handlePrevStep = () => {
-    if (depth === 'config') {
-      setDepth('upload');
-    } else if (depth === 'upload') {
+    if (depth === 'upload') {
+      // 업로드 화면에서 홈으로 돌아갈 때 상태 초기화
       clearFiles();
       setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
       setFileConfigs([]);
-      setDepth('home');
-    } else if (depth === 'setting') {
-      setDepth('home');
     }
+    navigate(-1);
   };
 
   // 로그아웃
@@ -215,6 +253,14 @@ const MobileView = () => {
     }
   };
 
+  const handleGuideClick = () => {
+    window.open(
+      'https://rare-puppy-06f.notion.site/2e3dd162832d80b29719d18eafac2612?source=copy_link',
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
+
   // 세션 생성
   const handleCreateSessions = async () => {
     if (!userId) {
@@ -222,6 +268,16 @@ const MobileView = () => {
         title: '오류',
         description: '로그인 정보를 불러오는 중입니다.',
         duration: 3000,
+      });
+      return;
+    }
+
+    // 크레딧 검증
+    const remainingCredit = creditInfo?.plan.remaining ?? 0;
+    if (step2TotalCredit > remainingCredit) {
+      setCreditErrorSnackBar({
+        open: true,
+        message: `크레딧이 부족합니다. 필요: ${step2TotalCredit}, 보유: ${remainingCredit}`,
       });
       return;
     }
@@ -266,10 +322,36 @@ const MobileView = () => {
     return validFiles.filter((f) => fileConfigs.some((c) => c.fileId === f.id));
   }, [validFiles, fileConfigs]);
 
+  // iOS 감지
+  const isIOS = useMemo(() => {
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+  }, []);
+
   // 업로드 버튼 클릭
   const handleUploadClick = useCallback(() => {
+    // iOS이고 "다시 보지 않기"를 선택하지 않은 경우 안내 모달 표시
+    if (isIOS && !localStorage.getItem(IOS_GUIDE_DISMISSED_KEY)) {
+      setIsIosGuideModalOpen(true);
+    } else {
+      setDepth('upload');
+    }
+  }, [setDepth, isIOS]);
+
+  // iOS 안내 모달 확인
+  const handleIosGuideConfirm = () => {
+    setIsIosGuideModalOpen(false);
     setDepth('upload');
-  }, []);
+  };
+
+  // iOS 안내 모달 "다시 보지 않기"
+  const handleIosGuideDismiss = () => {
+    localStorage.setItem(IOS_GUIDE_DISMISSED_KEY, 'true');
+    setIsIosGuideModalOpen(false);
+    setDepth('upload');
+  };
 
   const termsToService = {
     pathname: ROUTES.TERMS,
@@ -349,7 +431,7 @@ const MobileView = () => {
       <div className="flex h-full flex-col overflow-y-auto px-6">
         <button
           onClick={() => setDepth('setting')}
-          className="fixed right-5 top-7 flex h-11 w-11 items-center justify-center rounded-lg border border-surface-strong bg-surface text-fg-muted"
+          className="fixed right-5 top-7 z-10 flex h-11 w-11 items-center justify-center rounded-lg border border-surface-strong bg-surface text-fg-muted"
         >
           <TextAlignJustifyIcon />
         </button>
@@ -365,7 +447,10 @@ const MobileView = () => {
             </div>
             녹음 파일 업로드하기
           </button>
-          <button className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 text-xl font-bold">
+          <button
+            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 text-xl font-bold"
+            onClick={handleGuideClick}
+          >
             <div className="flex h-11 w-11 items-center justify-center rounded-lg border">
               <HelpCircleIcon size={24} className="text-secondary" />
             </div>
@@ -400,7 +485,7 @@ const MobileView = () => {
             )}
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 pb-2">
             {isLoadingSessions ? (
               <div className="rounded-lg border border-surface-strong bg-surface p-6 text-center">
                 <Text className="text-fg-muted">상담기록을 불러오는 중...</Text>
@@ -420,9 +505,10 @@ const MobileView = () => {
                 {hasMoreSessions && (
                   <button
                     onClick={handleLoadMore}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-surface-strong bg-surface py-4 text-fg-muted transition-colors hover:bg-surface-contrast"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-surface-strong bg-surface py-4 text-fg-muted transition-colors hover:bg-surface-contrast"
                   >
                     <PlusIcon size={20} />
+                    더보기
                   </button>
                 )}
               </>
@@ -435,6 +521,50 @@ const MobileView = () => {
             )}
           </div>
         </div>
+
+        {/* iOS 파일 위치 안내 모달 */}
+        {isIosGuideModalOpen && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ios-guide-title"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+          >
+            <div className="w-full max-w-sm rounded-2xl bg-white px-6 py-8 text-center">
+              <Title
+                as="h2"
+                id="ios-guide-title"
+                className="mb-6 text-xl font-bold"
+              >
+                파일 위치 안내
+              </Title>
+              <Text className="mb-8 text-base leading-relaxed text-fg">
+                아이폰 녹음 앱으로 녹음한 파일은
+                <br />
+                &apos;나의 iPhone&apos; 혹은 &apos;iCloud Drive&apos;안에
+                <br />
+                저장되어 있어야 업로드가 가능합니다.
+              </Text>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleIosGuideDismiss}
+                  className="flex-1 py-3 text-base text-fg-muted"
+                >
+                  다시 보지 않기
+                </button>
+                <Button
+                  variant="solid"
+                  tone="primary"
+                  size="lg"
+                  className="flex-1"
+                  onClick={handleIosGuideConfirm}
+                >
+                  확인
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -454,36 +584,27 @@ const MobileView = () => {
         </div>
 
         {/* 파일 목록 */}
-        <div className="flex-1 overflow-y-auto bg-surface-contrast p-4">
+        <div
+          className={`flex-1 select-none overflow-y-auto bg-surface-contrast p-4 ${
+            files.length === 0 ? 'flex items-center justify-center' : ''
+          }`}
+        >
           <input
             id="audioInput"
             ref={fileInputRef}
             type="file"
-            accept="*"
+            accept={getAcceptString('audio')}
             multiple
             onChange={handleFileInputChange}
-            className="sr-only"
+            className="sr-only hidden"
           />
 
-          <div className="w-full space-y-3 overflow-hidden">
-            {files.map((file) => (
-              <MobileFileItem key={file.id} file={file} onRemove={removeFile} />
-            ))}
-
-            {canAddMore && files.length > 0 && (
-              <button
-                onClick={handleButtonClick}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-surface py-6 text-fg-muted"
-              >
-                <PlusIcon size={20} />
-              </button>
-            )}
-
-            {files.length === 0 && (
-              <button
-                onClick={handleButtonClick}
-                className="flex w-full flex-col items-center justify-center gap-3 rounded-xl py-12 text-fg-muted"
-              >
+          {files.length === 0 ? (
+            <button
+              onClick={handleButtonClick}
+              className="flex flex-col items-center justify-center gap-3 text-fg-muted"
+            >
+              <div className="flex flex-col items-center justify-center gap-3 rounded-xl border p-6">
                 <UploadIcon size={32} />
                 <Text>파일을 선택해주세요</Text>
                 <Text className="text-sm text-fg-muted">
@@ -491,9 +612,28 @@ const MobileView = () => {
                   <br />
                   파일당 최대 500MB
                 </Text>
-              </button>
-            )}
-          </div>
+              </div>
+            </button>
+          ) : (
+            <div className="flex w-full flex-col gap-y-3 overflow-hidden">
+              {files.map((file) => (
+                <MobileFileItem
+                  key={file.id}
+                  file={file}
+                  onRemove={removeFile}
+                />
+              ))}
+
+              {canAddMore && (
+                <button
+                  onClick={handleButtonClick}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-surface py-6 text-fg-muted"
+                >
+                  <PlusIcon size={20} />
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 일괄 설정 */}
@@ -538,12 +678,13 @@ const MobileView = () => {
 
           {validFiles.length > 0 && (
             <div className="flex flex-1 flex-col justify-center pb-16 text-center">
-              <Text className="text-primary">
-                <span className="font-bold">{validFiles.length}개</span>의
+              <Text className="font-semibold">
+                <span className="text-primary">{validFiles.length}개</span>의
                 상담기록 생성으로
               </Text>
-              <Text className="text-primary">
-                총 <span className="font-bold">{step1TotalCredit} 크레딧</span>
+              <Text className="font-semibold">
+                총{' '}
+                <span className="text-primary">{step1TotalCredit} 크레딧</span>
                 을 사용합니다.
               </Text>
             </div>
@@ -647,6 +788,22 @@ const MobileView = () => {
           {isCreating ? '업로드 중...' : '상담 기록 만들기'}
         </Button>
       </div>
+
+      {/* 크레딧 부족 스낵바 */}
+      <SnackBar
+        open={creditErrorSnackBar.open}
+        message={creditErrorSnackBar.message}
+        onOpenChange={(open) =>
+          setCreditErrorSnackBar((prev) => ({ ...prev, open }))
+        }
+        duration={8000}
+      />
+
+      {/* 플랜 변경 모달 */}
+      <PlanChangeModal
+        open={isPlanChangeModalOpen}
+        onOpenChange={setIsPlanChangeModalOpen}
+      />
     </div>
   );
 };

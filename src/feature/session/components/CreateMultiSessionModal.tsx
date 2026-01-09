@@ -4,10 +4,13 @@ import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
+import { SnackBar } from '@/components/ui/composites/SnackBar';
 import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
+import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { CloudUploadIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -36,9 +39,17 @@ export const CreateMultiSessionModal: React.FC<
   const userId = useAuthStore((state) => state.userId);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const { clients } = useClientList();
+  const { creditInfo } = useCreditInfo();
 
   // Step 상태
   const [step, setStep] = useState<ModalStep>('upload');
+
+  // 크레딧 부족 에러 상태
+  const [creditErrorSnackBar, setCreditErrorSnackBar] = useState({
+    open: false,
+    message: '',
+  });
+  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] = useState(false);
 
   // 파일 관리
   const {
@@ -198,6 +209,16 @@ export const CreateMultiSessionModal: React.FC<
         title: '오류',
         description: '로그인 정보를 불러오는 중입니다.',
         duration: 3000,
+      });
+      return;
+    }
+
+    // 프론트 크레딧 검증
+    const remainingCredit = creditInfo?.plan.remaining ?? 0;
+    if (step2TotalCredit > remainingCredit) {
+      setCreditErrorSnackBar({
+        open: true,
+        message: `크레딧이 부족합니다. 필요: ${step2TotalCredit}, 보유: ${remainingCredit}`,
       });
       return;
     }
@@ -461,6 +482,26 @@ export const CreateMultiSessionModal: React.FC<
           </div>
         )}
       </div>
+
+      {/* 크레딧 부족 SnackBar */}
+      <SnackBar
+        open={creditErrorSnackBar.open}
+        message={creditErrorSnackBar.message}
+        onOpenChange={(open) =>
+          setCreditErrorSnackBar((prev) => ({ ...prev, open }))
+        }
+        action={{
+          label: '플랜 업그레이드',
+          onClick: () => setIsPlanChangeModalOpen(true),
+        }}
+        duration={8000}
+      />
+
+      {/* 플랜 변경 모달 */}
+      <PlanChangeModal
+        open={isPlanChangeModalOpen}
+        onOpenChange={setIsPlanChangeModalOpen}
+      />
     </Modal>
   );
 };

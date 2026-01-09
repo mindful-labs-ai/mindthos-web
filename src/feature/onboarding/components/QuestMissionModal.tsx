@@ -4,13 +4,18 @@ import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { useQuestStore } from '@/stores/questStore';
 
 export const QuestMissionModal = () => {
-  const { currentLevel, hasShownMissionModal, setHasShownMissionModal } =
-    useQuestStore();
+  const {
+    currentLevel,
+    hasShownMissionModal,
+    setHasShownMissionModal,
+    shouldShowOnboarding,
+  } = useQuestStore();
   const { startTutorial, nextTutorialStep, endTutorial } = useTutorial({
     currentLevel,
   });
 
-  const isOpen = currentLevel === 1 && !hasShownMissionModal;
+  const isOpen =
+    currentLevel === 1 && shouldShowOnboarding && !hasShownMissionModal;
 
   const handleClose = () => {
     setHasShownMissionModal(true);
