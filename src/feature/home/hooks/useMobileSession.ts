@@ -102,10 +102,12 @@ export const useSessionRecords = ({
 
   // SessionRecord 변환 함수
   const toSessionRecord = useCallback(
-    (sessionRelation: (typeof sessionsWithTranscribes)[number]): SessionRecord => {
+    (
+      sessionRelation: (typeof sessionsWithTranscribes)[number]
+    ): SessionRecord => {
       const { session, transcribe, progressNotes } = sessionRelation;
       const client = effectiveClients.find((c) => c.id === session.client_id);
-      const clientName = client?.name || '고객 없음';
+      const clientName = client?.name || '클라이언트 없음';
 
       return {
         session_id: session.id,

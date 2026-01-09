@@ -250,7 +250,7 @@ const HomePage = () => {
               const client = effectiveClients.find(
                 (c) => c.id === session.client_id
               );
-              const clientName = client?.name || '고객 없음';
+              const clientName = client?.name || '클라이언트 없음';
 
               // SessionRecord 형식으로 변환
               const sessionRecord: SessionRecord = {

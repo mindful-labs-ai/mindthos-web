@@ -117,7 +117,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
         />
         <input
           type="text"
-          placeholder="고객 검색"
+          placeholder="클라이언트 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-lg border border-surface-strong bg-surface-contrast py-1.5 pl-8 pr-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -127,7 +127,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       {/* 모든 고객 */}
       <div className="flex min-h-0 flex-1 flex-col space-y-1">
         {searchQuery === '' && (
-          <Text className="flex-shrink-0 text-xs text-muted">고객 목록</Text>
+          <Text className="flex-shrink-0 text-xs text-muted">
+            클라이언트 목록
+          </Text>
         )}
         <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto">
           {filteredClients.length > 0 ? (
@@ -201,115 +203,125 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
     return (
       <>
         {trigger && (
-          <div onClick={handleTriggerClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && handleTriggerClick()}>
+          <div
+            onClick={handleTriggerClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && handleTriggerClick()}
+          >
             {trigger}
           </div>
         )}
-        {isOpen && createPortal(
-      <div
-        className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (e.target === e.currentTarget) handleCloseModal();
-        }}
-        aria-hidden="true"
-      >
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="내담자 선택"
-          className="w-full max-w-lg rounded-t-2xl bg-surface px-5 pb-6 pt-4"
-        >
-          {/* 검색 */}
-          <div className="relative mb-4">
-            <SearchIcon
-              size={20}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted"
-            />
-            <input
-              type="text"
-              placeholder="고객 검색하기"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 text-base focus:border-primary focus:outline-none"
-            />
-          </div>
+        {isOpen &&
+          createPortal(
+            <div
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (e.target === e.currentTarget) handleCloseModal();
+              }}
+              aria-hidden="true"
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label="내담자 선택"
+                className="w-full max-w-lg rounded-t-2xl bg-surface px-5 pb-6 pt-4"
+              >
+                {/* 검색 */}
+                <div className="relative mb-4">
+                  <SearchIcon
+                    size={20}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted"
+                  />
+                  <input
+                    type="text"
+                    placeholder="클라이언트 검색하기"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 text-base focus:border-primary focus:outline-none"
+                  />
+                </div>
 
-          {/* 최근 추가한 고객 */}
-          {searchQuery === '' && recentClients.length > 0 && (
-            <div className="mb-4">
-              <Text className="mb-2 text-sm text-fg-muted">
-                최근 추가한 고객
-              </Text>
-              <div className="flex flex-wrap gap-2">
-                {recentClients.map((client) => (
-                  <button
-                    key={client.id}
-                    onClick={() => handlePendingSelect(client)}
-                  >
-                    <Badge
-                      tone="neutral"
-                      variant="soft"
-                      size="md"
-                      className={`px-4 py-2 ${
-                        pendingClient?.id === client.id
-                          ? 'bg-primary text-white'
-                          : 'bg-primary-100 hover:bg-primary-200'
-                      }`}
-                    >
-                      {client.name}
-                    </Badge>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 모든 고객 */}
-          <div className="mb-4">
-            {searchQuery === '' && (
-              <Text className="mb-2 text-sm text-fg-muted">모든 고객</Text>
-            )}
-            <div className="max-h-[240px] space-y-1 overflow-y-auto">
-              {filteredClients.length > 0 ? (
-                filteredClients.map((client) => (
-                  <button
-                    key={client.id}
-                    onClick={() => handlePendingSelect(client)}
-                    className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
-                      pendingClient?.id === client.id
-                        ? 'bg-primary-100'
-                        : 'hover:bg-surface-contrast'
-                    }`}
-                  >
-                    <Text className={`text-base ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}>
-                      {client.name}
+                {/* 최근 추가한 고객 */}
+                {searchQuery === '' && recentClients.length > 0 && (
+                  <div className="mb-4">
+                    <Text className="mb-2 text-sm text-fg-muted">
+                      최근 추가한 클라이언트
                     </Text>
-                  </button>
-                ))
-              ) : (
-                <Text className="py-4 text-center text-sm text-fg-muted">
-                  검색 결과가 없습니다
-                </Text>
-              )}
-            </div>
-          </div>
+                    <div className="flex flex-wrap gap-2">
+                      {recentClients.map((client) => (
+                        <button
+                          key={client.id}
+                          onClick={() => handlePendingSelect(client)}
+                        >
+                          <Badge
+                            tone="neutral"
+                            variant="soft"
+                            size="md"
+                            className={`px-4 py-2 ${
+                              pendingClient?.id === client.id
+                                ? ''
+                                : 'bg-transparent'
+                            }`}
+                          >
+                            {client.name}
+                          </Badge>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-          {/* 선택 버튼 */}
-          <Button
-            variant="solid"
-            tone="primary"
-            size="lg"
-            className="w-full"
-            onClick={handleConfirmSelection}
-            disabled={!pendingClient}
-          >
-            선택
-          </Button>
-        </div>
-      </div>,
-      document.body
-    )}
+                {/* 모든 고객 */}
+                <div className="mb-4">
+                  {searchQuery === '' && (
+                    <Text className="mb-2 text-sm text-fg-muted">
+                      모든 클라이언트
+                    </Text>
+                  )}
+                  <div className="max-h-[240px] space-y-1 overflow-y-auto">
+                    {filteredClients.length > 0 ? (
+                      filteredClients.map((client) => (
+                        <button
+                          key={client.id}
+                          onClick={() => handlePendingSelect(client)}
+                          className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
+                            pendingClient?.id === client.id
+                              ? 'bg-primary-100'
+                              : 'hover:bg-surface-contrast'
+                          }`}
+                        >
+                          <Text
+                            className={`text-base ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}
+                          >
+                            {client.name}
+                          </Text>
+                        </button>
+                      ))
+                    ) : (
+                      <Text className="py-4 text-center text-sm text-fg-muted">
+                        검색 결과가 없습니다
+                      </Text>
+                    )}
+                  </div>
+                </div>
+
+                {/* 선택 버튼 */}
+                <Button
+                  variant="solid"
+                  tone="primary"
+                  size="lg"
+                  className="w-full"
+                  onClick={handleConfirmSelection}
+                  disabled={!pendingClient}
+                >
+                  선택
+                </Button>
+              </div>
+            </div>,
+            document.body
+          )}
       </>
     );
   }
@@ -340,7 +352,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
         />
         <input
           type="text"
-          placeholder="고객 검색"
+          placeholder="클라이언트 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-lg border border-surface-strong bg-surface-contrast py-1.5 pl-8 pr-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
@@ -350,7 +362,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       {/* 최근 추가된 고객 */}
       {searchQuery === '' && recentClients.length > 0 && (
         <div className="flex-shrink-0 space-y-1.5">
-          <Text className="text-xs text-muted">최근 추가된 고객</Text>
+          <Text className="text-xs text-muted">최근 추가된 클라이언트</Text>
           <div className="flex flex-shrink-0 flex-wrap gap-2">
             {recentClients.map((client) => (
               <button
@@ -374,7 +386,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       {/* 모든 고객 */}
       <div className="flex min-h-0 flex-1 flex-col space-y-1">
         {searchQuery === '' && (
-          <Text className="flex-shrink-0 text-xs text-muted">모든 고객</Text>
+          <Text className="flex-shrink-0 text-xs text-muted">
+            모든 클라이언트
+          </Text>
         )}
         <div className="max-h-[200px] min-h-0 flex-1 space-y-0.5 overflow-y-auto">
           {filteredClients.length > 0 ? (
@@ -413,7 +427,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           className="flex w-full items-center justify-center gap-2"
         >
           <UserIcon size={16} />
-          <Text className="text-sm">고객 선택 안함</Text>
+          <Text className="text-sm">클라이언트 선택 안함</Text>
         </Button>
       ) : (
         <div className="flex h-10 w-full items-center gap-2 rounded-lg border border-primary px-3">

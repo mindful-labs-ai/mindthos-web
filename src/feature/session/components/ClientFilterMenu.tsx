@@ -72,7 +72,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
             </svg>
           </button>
         )}
-        <h3 className="text-sm font-semibold text-fg">고객 선택</h3>
+        <h3 className="text-sm font-semibold text-fg">클라이언트 선택</h3>
       </div>
 
       {/* 검색 입력 */}

@@ -27,6 +27,7 @@ body {
     height: 100%;
     background: theme('colors.bg.DEFAULT');
     color: theme('colors.fg.DEFAULT');
+    word-break: keep-all;
   }
 
   * {
