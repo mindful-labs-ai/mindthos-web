@@ -240,7 +240,7 @@ export const CreateMultiSessionModal: React.FC<
 
   return (
     <Modal
-      className="flex h-full max-h-[730px] max-w-[1056px] flex-col gap-12"
+      className="flex h-[730px] max-w-[1056px] flex-col gap-12"
       open={open}
       onOpenChange={handleClose}
       closeOnOverlay={!isCreating}

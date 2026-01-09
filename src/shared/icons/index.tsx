@@ -15,6 +15,8 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CloudUpload,
   Copy,
   Edit3,
@@ -35,6 +37,7 @@ import {
   Settings,
   SortDesc,
   Star,
+  TextAlignJustify,
   Trash2,
   Upload,
   User,
@@ -55,6 +58,12 @@ export const ArrowRightIcon: IconComponent = (props) => (
 export const CheckIcon: IconComponent = (props) => <Check {...props} />;
 export const ChevronDownIcon: IconComponent = (props) => (
   <ChevronDown {...props} />
+);
+export const ChevronLeftIcon: IconComponent = (props) => (
+  <ChevronLeft {...props} />
+);
+export const ChevronRightIcon: IconComponent = (props) => (
+  <ChevronRight {...props} />
 );
 export const CloudUploadIcon: IconComponent = (props) => (
   <CloudUpload {...props} />
@@ -95,6 +104,9 @@ export const UserCircle2Icon: IconComponent = (props) => (
 export const UserPlusIcon: IconComponent = (props) => <UserPlus {...props} />;
 export const UsersIcon: IconComponent = (props) => <Users {...props} />;
 export const XIcon: IconComponent = (props) => <X {...props} />;
+export const TextAlignJustifyIcon: IconComponent = (props) => (
+  <TextAlignJustify {...props} />
+);
 
 // Solid 버전 (fill='currentColor' 적용)
 export const ArrowRightIconSolid: IconComponent = (props) => (
@@ -105,6 +117,12 @@ export const CheckIconSolid: IconComponent = (props) => (
 );
 export const ChevronDownIconSolid: IconComponent = (props) => (
   <ChevronDown {...props} fill="currentColor" />
+);
+export const ChevronLeftIconSolid: IconComponent = (props) => (
+  <ChevronLeft {...props} fill="currentColor" />
+);
+export const ChevronRightIconSolid: IconComponent = (props) => (
+  <ChevronRight {...props} fill="currentColor" />
 );
 export const CloudUploadIconSolid: IconComponent = (props) => (
   <CloudUpload {...props} fill="currentColor" />
@@ -188,12 +206,18 @@ export const XIconSolid: IconComponent = (props) => (
   <X {...props} fill="currentColor" />
 );
 
+export const TextAlignJustifySolid: IconComponent = (props) => (
+  <TextAlignJustify {...props} fill="currentColor" />
+);
+
 // 편의를 위한 네임스페이스 export
 export const Icons = {
   // Stroke 버전
   ArrowRight: ArrowRightIcon,
   Check: CheckIcon,
   ChevronDown: ChevronDownIcon,
+  ChevronLeft: ChevronLeftIcon,
+  ChevronRight: ChevronRightIcon,
   CloudUpload: CloudUploadIcon,
   Copy: CopyIcon,
   Edit3: Edit3Icon,
@@ -221,11 +245,14 @@ export const Icons = {
   UserPlus: UserPlusIcon,
   Users: UsersIcon,
   X: XIcon,
+  TextAlignJustify: TextAlignJustifyIcon,
 
   // Solid 버전
   ArrowRightSolid: ArrowRightIconSolid,
   CheckSolid: CheckIconSolid,
   ChevronDownSolid: ChevronDownIconSolid,
+  ChevronLeftSolid: ChevronLeftIconSolid,
+  ChevronRightSolid: ChevronRightIconSolid,
   CloudUploadSolid: CloudUploadIconSolid,
   CopySolid: CopyIconSolid,
   Edit3Solid: Edit3IconSolid,
@@ -253,4 +280,5 @@ export const Icons = {
   UserPlusSolid: UserPlusIconSolid,
   UsersSolid: UsersIconSolid,
   XSolid: XIconSolid,
+  TextAlignJustifySolid: TextAlignJustifySolid,
 } as const;

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+
 import { createPortal } from 'react-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
@@ -12,8 +13,8 @@ interface ClientSelectorProps {
   clients: Client[];
   selectedClient?: Client | null;
   onSelect: (client: Client | null) => void;
-  variant?: 'default' | 'compact' | 'dropdown';
-  // dropdown 모드용 props
+  variant?: 'default' | 'compact' | 'dropdown' | 'modal';
+  // dropdown/modal 모드용 props
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -32,17 +33,21 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 }) => {
   const [internalOpen, setInternalOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
+  // modal 모드: 선택 대기 중인 고객
+  const [pendingClient, setPendingClient] = React.useState<Client | null>(null);
 
   // default 모드 portal용 refs와 state
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
-  // dropdown 모드일 때는 controlled, 아니면 internal state 사용
+  // dropdown/modal 모드일 때는 controlled, 아니면 internal state 사용
   const isOpen =
-    variant === 'dropdown' ? (controlledOpen ?? false) : internalOpen;
+    variant === 'dropdown' || variant === 'modal'
+      ? (controlledOpen ?? false)
+      : internalOpen;
   const setIsOpen =
-    variant === 'dropdown'
+    variant === 'dropdown' || variant === 'modal'
       ? (controlledOnOpenChange ?? setInternalOpen)
       : setInternalOpen;
 
@@ -163,6 +168,149 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
         open={isOpen}
         onOpenChange={setIsOpen}
       />
+    );
+  }
+
+  // modal 모드
+  if (variant === 'modal') {
+    const handlePendingSelect = (client: Client) => {
+      setPendingClient(client);
+    };
+
+    const handleConfirmSelection = () => {
+      if (pendingClient) {
+        onSelect(pendingClient);
+      }
+      setIsOpen(false);
+      setSearchQuery('');
+      setPendingClient(null);
+    };
+
+    const handleCloseModal = () => {
+      setIsOpen(false);
+      setSearchQuery('');
+      setPendingClient(null);
+    };
+
+    const handleTriggerClick = () => {
+      // 모달 열 때 현재 선택된 고객을 pendingClient로 설정
+      setPendingClient(selectedClient ?? null);
+      setIsOpen(true);
+    };
+
+    return (
+      <>
+        {trigger && (
+          <div onClick={handleTriggerClick} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && handleTriggerClick()}>
+            {trigger}
+          </div>
+        )}
+        {isOpen && createPortal(
+      <div
+        className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (e.target === e.currentTarget) handleCloseModal();
+        }}
+        aria-hidden="true"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="내담자 선택"
+          className="w-full max-w-lg rounded-t-2xl bg-surface px-5 pb-6 pt-4"
+        >
+          {/* 검색 */}
+          <div className="relative mb-4">
+            <SearchIcon
+              size={20}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted"
+            />
+            <input
+              type="text"
+              placeholder="고객 검색하기"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 text-base focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          {/* 최근 추가한 고객 */}
+          {searchQuery === '' && recentClients.length > 0 && (
+            <div className="mb-4">
+              <Text className="mb-2 text-sm text-fg-muted">
+                최근 추가한 고객
+              </Text>
+              <div className="flex flex-wrap gap-2">
+                {recentClients.map((client) => (
+                  <button
+                    key={client.id}
+                    onClick={() => handlePendingSelect(client)}
+                  >
+                    <Badge
+                      tone="neutral"
+                      variant="soft"
+                      size="md"
+                      className={`px-4 py-2 ${
+                        pendingClient?.id === client.id
+                          ? 'bg-primary text-white'
+                          : 'bg-primary-100 hover:bg-primary-200'
+                      }`}
+                    >
+                      {client.name}
+                    </Badge>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 모든 고객 */}
+          <div className="mb-4">
+            {searchQuery === '' && (
+              <Text className="mb-2 text-sm text-fg-muted">모든 고객</Text>
+            )}
+            <div className="max-h-[240px] space-y-1 overflow-y-auto">
+              {filteredClients.length > 0 ? (
+                filteredClients.map((client) => (
+                  <button
+                    key={client.id}
+                    onClick={() => handlePendingSelect(client)}
+                    className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
+                      pendingClient?.id === client.id
+                        ? 'bg-primary-100'
+                        : 'hover:bg-surface-contrast'
+                    }`}
+                  >
+                    <Text className={`text-base ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}>
+                      {client.name}
+                    </Text>
+                  </button>
+                ))
+              ) : (
+                <Text className="py-4 text-center text-sm text-fg-muted">
+                  검색 결과가 없습니다
+                </Text>
+              )}
+            </div>
+          </div>
+
+          {/* 선택 버튼 */}
+          <Button
+            variant="solid"
+            tone="primary"
+            size="lg"
+            className="w-full"
+            onClick={handleConfirmSelection}
+            disabled={!pendingClient}
+          >
+            선택
+          </Button>
+        </div>
+      </div>,
+      document.body
+    )}
+      </>
     );
   }
 
