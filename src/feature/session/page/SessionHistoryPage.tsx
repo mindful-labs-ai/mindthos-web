@@ -149,7 +149,7 @@ export const SessionHistoryPage: React.FC = () => {
           session_id: session.id,
           transcribe_id: transcribe?.id || null,
           client_id: session.client_id || '',
-          client_name: client?.name || '고객 없음',
+          client_name: client?.name || '클라이언트 없음',
           session_number,
           title: session.title || undefined,
           content,
@@ -188,7 +188,7 @@ export const SessionHistoryPage: React.FC = () => {
         return {
           sessionId: session.id,
           title: session.title || '제목 없음',
-          clientName: client?.name || '고객 없음',
+          clientName: client?.name || '클라이언트 없음',
           sessionNumber,
           duration: audioDuration,
           hasAudio: !!session.audio_url,
@@ -283,11 +283,11 @@ export const SessionHistoryPage: React.FC = () => {
                       iconRight={<ChevronDownIcon size={16} />}
                     >
                       {selectedClientIds.length === 0
-                        ? '모든 고객'
+                        ? '모든 클라이언트'
                         : selectedClientIds.length === 1
                           ? effectiveClients.find(
                               (c) => c.id === selectedClientIds[0]
-                            )?.name || '모든 고객'
+                            )?.name || '모든 클라이언트'
                           : `${selectedClientIds.length}명 선택`}
                     </Button>
                   }

@@ -237,7 +237,7 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
               >
                 <UserIcon size={14} />
                 <Text className="truncate text-sm">
-                  {selectedClient?.name || '고객 선택 안됨'}
+                  {selectedClient?.name || '클라이언트 선택 안됨'}
                 </Text>
               </Button>
             }

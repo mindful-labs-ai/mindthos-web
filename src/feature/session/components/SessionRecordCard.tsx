@@ -59,7 +59,8 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
   const { clients } = useClientList();
 
-  const hasClient = record.client_id && record.client_name !== '고객 없음';
+  const hasClient =
+    record.client_id && record.client_name !== '클라이언트 없음';
 
   // title이 있으면 그대로 사용, 없으면 기존 방식대로 fallback
   const displayTitle =
@@ -460,7 +461,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 size="md"
                 className="cursor-pointer border border-danger transition-all hover:bg-red-300"
               >
-                고객 미정
+                클라이언트 미정
               </Badge>
             }
             open={isClientSelectorPopupOpen}

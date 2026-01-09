@@ -512,7 +512,7 @@ const MobileView = () => {
                 <UserIcon size={14} />
                 <Text className="text-sm">
                   {clients.find((c) => c.id === batchConfig.clientId)?.name ||
-                    '고객 선택 안됨'}
+                    '클라이언트 선택 안됨'}
                 </Text>
               </Button>
               <ClientSelector
@@ -582,7 +582,7 @@ const MobileView = () => {
 
       {/* 파일 설정 목록 */}
       <div className="flex-1 overflow-y-auto bg-surface-contrast p-4">
-        <Text className="mb-3 text-sm text-fg-muted">음성파일 세부 설정</Text>
+        <Text className="mb-3 text-sm text-fg-muted">상담기록 세부 설정</Text>
 
         <div className="mb-16 space-y-3">
           {fileConfigs.map((config, index) => {
