@@ -712,7 +712,7 @@ const MobileView = () => {
   return (
     <div className="flex h-full flex-col">
       {/* 헤더 */}
-      <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+      <div className="flex items-center gap-3 border-b border-border bg-surface px-4 py-3">
         <button onClick={handlePrevStep} disabled={isCreating} className="p-1">
           <ChevronLeftIcon size={24} />
         </button>
@@ -722,7 +722,7 @@ const MobileView = () => {
       </div>
 
       {/* 파일 설정 목록 */}
-      <div className="flex-1 overflow-y-auto bg-surface-contrast p-4">
+      <div className="flex-1 overflow-y-auto bg-surface p-4">
         <Text className="mb-3 text-sm text-fg-muted">상담기록 세부 설정</Text>
 
         <div className="mb-16 space-y-3">
