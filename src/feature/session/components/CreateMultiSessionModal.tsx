@@ -240,7 +240,7 @@ export const CreateMultiSessionModal: React.FC<
 
   return (
     <Modal
-      className="flex h-full max-h-[738px] max-w-[1056px] flex-col gap-12"
+      className="flex h-[730px] max-w-[1056px] flex-col gap-12"
       open={open}
       onOpenChange={handleClose}
       closeOnOverlay={!isCreating}
@@ -254,9 +254,9 @@ export const CreateMultiSessionModal: React.FC<
 
       {step === 'upload' ? (
         /* Step 1: 파일 업로드 + 일괄 설정 */
-        <div className="mb-8 flex flex-1 flex-col items-center justify-center gap-6 space-y-4 px-12 sm:flex-col md:flex-row">
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-12 sm:flex-col md:flex-row">
           {/* 왼쪽: 파일 목록 */}
-          <div className="h-full max-h-[431px] w-full max-w-[488px] flex-1">
+          <div className="flex h-full w-full max-w-[488px] flex-1 flex-col">
             <input
               ref={fileInputRef}
               type="file"
@@ -277,7 +277,7 @@ export const CreateMultiSessionModal: React.FC<
               }`}
             >
               {files.length === 0 ? (
-                <div className="flex h-full min-h-[280px] flex-col items-center justify-center gap-4 break-keep">
+                <div className="hž flex h-full max-h-[431px] min-h-[280px] flex-col items-center justify-center gap-4 break-keep">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-contrast">
                     <CloudUploadIcon className="h-6 w-6 text-fg-muted" />
                   </div>
@@ -327,25 +327,22 @@ export const CreateMultiSessionModal: React.FC<
           </div>
 
           {/* 오른쪽: 일괄 설정 */}
-          <div className="min-w-fit space-y-6">
-            <div>
-              <Text className="mb-2 font-semibold text-fg">일괄 설정</Text>
-            </div>
+          <div className="flex h-full w-full max-w-fit flex-col gap-y-6">
+            <div className="">
+              <Text className="my-2 font-semibold text-fg">일괄 설정</Text>
+              <div className="flex flex-col justify-start md:justify-start lg:flex-row lg:justify-between">
+                <Text className="mb-2 text-sm text-fg-muted">내담자 선택</Text>
+                <ClientSelector
+                  clients={clients}
+                  selectedClient={
+                    clients.find((c) => c.id === batchConfig.clientId) || null
+                  }
+                  onSelect={handleBatchClientSelect}
+                  variant="default"
+                />
+              </div>
 
-            <div className="flex flex-col items-center justify-start lg:flex-row lg:justify-between">
-              <Text className="mb-2 text-sm text-fg-muted">내담자 선택</Text>
-              <ClientSelector
-                clients={clients}
-                selectedClient={
-                  clients.find((c) => c.id === batchConfig.clientId) || null
-                }
-                onSelect={handleBatchClientSelect}
-                variant="default"
-              />
-            </div>
-
-            <div>
-              <Text className="mb-2 text-sm text-fg-muted">축어록 종류</Text>
+              <Text className="mb-2 text-sm text-fg-muted">축어록 선택</Text>
               <SttModelSelector
                 sttModel={batchConfig.sttModel}
                 setSttModel={handleBatchSttModelChange}
@@ -353,16 +350,18 @@ export const CreateMultiSessionModal: React.FC<
             </div>
 
             {validFiles.length > 0 && (
-              <div className="text-center">
-                <Text className="text-primary">
-                  <span className="font-bold">{validFiles.length}개</span>의
-                  상담기록 생성으로
-                </Text>
-                <Text className="text-primary">
-                  총{' '}
-                  <span className="font-bold">{step1TotalCredit} 크레딧</span>을
-                  사용합니다.
-                </Text>
+              <div className="flex flex-1 items-center justify-center text-center">
+                <div>
+                  <Text className="text-primary">
+                    <span className="font-bold">{validFiles.length}개</span>의
+                    상담기록 생성으로
+                  </Text>
+                  <Text className="text-primary">
+                    총{' '}
+                    <span className="font-bold">{step1TotalCredit} 크레딧</span>
+                    을 사용합니다.
+                  </Text>
+                </div>
               </div>
             )}
           </div>
@@ -370,7 +369,7 @@ export const CreateMultiSessionModal: React.FC<
       ) : (
         /* Step 2: 개별 설정 + 순서 지정 */
         <div className="mx-auto h-full max-h-[490px] w-full max-w-[883px] space-y-4">
-          <Text className="text-sm text-fg-muted">음성파일 세부 설정</Text>
+          <Text className="text-sm text-fg-muted">상담기록 세부 설정</Text>
 
           <div className="max-h-[400px] space-y-2 overflow-y-auto">
             {fileConfigs.map((config, index) => {
@@ -404,7 +403,7 @@ export const CreateMultiSessionModal: React.FC<
             size="lg"
             onClick={handleNextStep}
             disabled={validFiles.length === 0 || isProcessing}
-            className="max-h-[41px] w-full max-w-[375px]"
+            className="w-full max-w-[375px]"
           >
             {isProcessing ? '파일 처리 중...' : '다음'}
           </Button>

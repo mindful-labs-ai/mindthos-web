@@ -9,8 +9,8 @@ export interface UseDeviceReturn {
   deviceType: DeviceType;
 }
 
-const MOBILE_BREAKPOINT = 768;
-const TABLET_BREAKPOINT = 1024;
+const MOBILE_BREAKPOINT = 640;
+const TABLET_BREAKPOINT = 768;
 
 function getDeviceType(width: number): DeviceType {
   if (width < MOBILE_BREAKPOINT) return 'mobile';
