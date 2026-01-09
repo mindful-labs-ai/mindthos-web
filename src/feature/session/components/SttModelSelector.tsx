@@ -12,18 +12,18 @@ interface SttModelSelectorProps {
 
 const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-3 sm:flex-row md:flex-col lg:flex-row">
       <button
         type="button"
         onClick={() => setSttModel('whisper')}
-        className={`flex-1 rounded-lg border-2 p-4 transition-all ${
+        className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
           sttModel === 'whisper'
             ? 'border-primary'
             : 'border-border bg-bg hover:border-fg-muted'
         }`}
       >
         <div className="flex h-full flex-col justify-start">
-          <div className="flex-1 text-left">
+          <div className="flex flex-1 flex-col justify-stretch text-left">
             <Text
               className={`mb-1 font-semibold ${
                 sttModel === 'whisper' ? 'text-primary' : 'text-fg'
@@ -34,7 +34,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
             <Text className="text-xs text-fg-muted">
               1:1 개인 상담 추천
               <br />
-              빠른 작성 속도와 준수한 정확도
+              빠른 작성 속도, 준수한 정확도
             </Text>
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -94,14 +94,14 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
       <button
         type="button"
         onClick={() => setSttModel('gemini-3')}
-        className={`flex-1 rounded-lg border-2 p-4 transition-all ${
+        className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
           sttModel === 'gemini-3'
             ? 'border-primary'
             : 'border-border bg-bg hover:border-fg-muted'
         }`}
       >
         <div className="flex h-full flex-col justify-start">
-          <div className="flex-1 text-left">
+          <div className="flex flex-1 flex-col justify-stretch text-left">
             <div className="mb-1 flex items-start justify-between">
               <Text
                 className={`font-semibold ${

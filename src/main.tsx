@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 
+import { AppInitialize } from './router/protecter/AppInitialize';
 import { ToastProvider } from './components/ui/composites/Toast';
 import ErrorBoundary from './feature/error/components/ErrorBoundary';
 import './lib/env';
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
         <ErrorBoundary>
           <ToastProvider>
             <RouterProvider router={router} />
+            <AppInitialize />
           </ToastProvider>
         </ErrorBoundary>
       </ThemeProvider>

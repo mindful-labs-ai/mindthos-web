@@ -28,6 +28,7 @@ interface SessionRecordCardProps {
   onClick?: (record: SessionRecord) => void;
   onChangeClient?: (record: SessionRecord) => void;
   onDelete?: (record: SessionRecord) => void;
+  isMobile?: boolean;
   isReadOnly?: boolean;
 }
 
@@ -35,6 +36,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   record,
   onClick,
   onChangeClient,
+  isMobile = false,
   isReadOnly = false,
 }) => {
   const queryClient = useQueryClient();
@@ -46,6 +48,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const [isClientSelectorFromMenuOpen, setIsClientSelectorFromMenuOpen] =
     React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isMobileAlertOpen, setIsMobileAlertOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
   // 제목 수정 관련 상태
@@ -214,6 +217,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     }
     // succeeded 상태일 때만 클릭 가능
     if (sessionState === 'succeeded') {
+      if (isMobile) return setIsMobileAlertOpen(true);
       onClick?.(record);
     }
   };
@@ -287,6 +291,20 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   // ==========================================
   // 공통 컴포넌트들
   // ==========================================
+  const handleOpenClientSelectorFromMenu = () => {
+    if (isReadOnly) {
+      showReadOnlyToast();
+      return;
+    }
+    if (isMobile) {
+      // 모바일: PopUp 닫고 모달 열기
+      setIsMenuOpen(false);
+      setIsClientSelectorFromMenuOpen(true);
+    } else {
+      setIsClientSelectorFromMenuOpen(true);
+    }
+  };
+
   const renderCardMenu = () => (
     <div className="flex-shrink-0" data-popup-wrapper>
       <PopUp
@@ -315,23 +333,34 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             onMouseDown={(e) => e.stopPropagation()}
             role="presentation"
           >
-            <ClientSelector
-              variant="dropdown"
-              trigger={
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
-                >
-                  <UserCircle2Icon size={18} className="text-fg-muted" />
-                  <Text className="text-fg">내담자 변경</Text>
-                </button>
-              }
-              open={isClientSelectorFromMenuOpen}
-              onOpenChange={setIsClientSelectorFromMenuOpen}
-              placement="bottom-left"
-              clients={clients}
-              onSelect={handleClientSelect}
-            />
+            {isMobile ? (
+              <button
+                type="button"
+                onClick={handleOpenClientSelectorFromMenu}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+              >
+                <UserCircle2Icon size={18} className="text-fg-muted" />
+                <Text className="text-fg">내담자 변경</Text>
+              </button>
+            ) : (
+              <ClientSelector
+                variant="dropdown"
+                trigger={
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+                  >
+                    <UserCircle2Icon size={18} className="text-fg-muted" />
+                    <Text className="text-fg">내담자 변경</Text>
+                  </button>
+                }
+                open={isClientSelectorFromMenuOpen}
+                onOpenChange={setIsClientSelectorFromMenuOpen}
+                placement="bottom-left"
+                clients={clients}
+                onSelect={handleClientSelect}
+              />
+            )}
             <button
               onClick={handleDelete}
               className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
@@ -342,7 +371,42 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </div>
         }
       />
+      {/* 모바일용 ClientSelector 모달 - PopUp 바깥에서 렌더링 */}
+      {isMobile && (
+        <ClientSelector
+          variant="modal"
+          clients={clients}
+          onSelect={handleClientSelect}
+          open={isClientSelectorFromMenuOpen}
+          onOpenChange={setIsClientSelectorFromMenuOpen}
+        />
+      )}
     </div>
+  );
+
+  const renderMobileAlertModal = () => (
+    <Modal
+      open={isMobileAlertOpen}
+      onOpenChange={setIsMobileAlertOpen}
+      className="h-[250px] max-w-sm"
+    >
+      <div className="flex h-full flex-col justify-around text-center">
+        <Text className="text-xl font-semibold text-fg">모바일 이용 안내</Text>
+        <Text className="text-base text-fg">
+          상담기록은 PC 환경에서
+          <br />
+          확인할 수 있습니다.
+        </Text>
+        <div className="flex justify-center gap-2 pt-2">
+          <button
+            onClick={() => setIsMobileAlertOpen(false)}
+            className="w-full rounded-lg bg-primary px-4 py-2 text-base font-medium text-surface transition-colors disabled:opacity-50"
+          >
+            확인
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 
   const renderDeleteModal = () => (
@@ -388,7 +452,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </Text>
         ) : (
           <ClientSelector
-            variant="dropdown"
+            variant={isMobile ? 'modal' : 'dropdown'}
             trigger={
               <Badge
                 tone="error"
@@ -413,7 +477,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           />
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="hidden gap-2 sm:flex md:flex lg:flex">
         {record.note_types.slice(0, 4).map((type, index) => (
           <Badge
             key={`${type}-${index}`}
@@ -486,7 +550,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                     <button
                       type="button"
                       onClick={handleStartEditTitle}
-                      className="p-2 text-fg-muted hover:text-fg"
+                      className="hidden p-2 text-fg-muted hover:text-fg sm:flex"
                       aria-label="제목 수정"
                     >
                       <svg
@@ -522,6 +586,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </Card.Body>
         </Card>
 
+        {renderMobileAlertModal()}
         {renderDeleteModal()}
       </>
     );

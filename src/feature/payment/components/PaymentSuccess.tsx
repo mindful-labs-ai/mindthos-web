@@ -43,14 +43,20 @@ export const PaymentSuccess = () => {
         return;
       }
 
+      let buyerName = userName;
+
       // 사용자 정보 확인
-      if (!user?.email || !userName) {
+      if (!user?.email) {
         toast({
           title: '사용자 정보 오류',
           description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
         });
         navigate('/settings');
         return;
+      }
+
+      if (!buyerName) {
+        buyerName = user.email.split('@')[0];
       }
 
       try {
@@ -63,7 +69,7 @@ export const PaymentSuccess = () => {
             authKey,
             planId,
             customerEmail: user.email,
-            customerName: userName,
+            customerName: buyerName,
           });
 
           if (response.success) {

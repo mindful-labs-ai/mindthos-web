@@ -32,7 +32,9 @@ export const CardRegistrationModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!userName || !user?.email) {
+    let buyerName = userName;
+
+    if (!user?.email) {
       toast({
         title: '사용자 정보 오류',
         description: '사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.',
@@ -40,10 +42,14 @@ export const CardRegistrationModal = ({
       return;
     }
 
+    if (!buyerName) {
+      buyerName = user.email.split('@')[0];
+    }
+
     try {
       setIsSubmitting(true);
       await requestBillingAuth({
-        customerName: userName,
+        customerName: buyerName,
         customerEmail: user.email,
       });
       onSuccess?.();

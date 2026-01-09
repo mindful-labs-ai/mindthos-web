@@ -1,5 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
+import { AuthenticatedInitialize } from '@/router/protecter/AuthenticatedInitialize';
+import { useMobileRouteGuard } from '@/shared/hooks/useMobileRouteGuard';
 import { useAuthStore } from '@/stores/authStore';
 
 import { ROUTES } from '../constants';
@@ -11,6 +13,9 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+
+  // 모바일/태블릿에서 "/" 외 라우트 접근 시 자동 리다이렉트
+  useMobileRouteGuard();
 
   if (isLoading) {
     return (
@@ -27,5 +32,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <Navigate to={ROUTES.AUTH} replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AuthenticatedInitialize />
+      {children}
+    </>
+  );
 };

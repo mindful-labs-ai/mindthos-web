@@ -82,6 +82,20 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     monthlyPlans.find((p) => p.type === currentPlanType)?.price || 0;
   const currentPlanCredit = creditInfo?.plan?.total || 0;
 
+  let buyerName = userName;
+
+  if (!user?.email) {
+    toast({
+      title: '사용자 정보 오류',
+      description: '사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.',
+    });
+    return;
+  }
+
+  if (!buyerName) {
+    buyerName = user.email.split('@')[0];
+  }
+
   const handleSelectPlan = (planId: string) => {
     setSelectedPlanId(planId);
   };
@@ -91,14 +105,6 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       toast({
         title: '플랜 선택 필요',
         description: '변경할 플랜을 선택해주세요.',
-      });
-      return;
-    }
-
-    if (!userName || !user?.email) {
-      toast({
-        title: '사용자 정보 오류',
-        description: '사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.',
       });
       return;
     }
@@ -153,7 +159,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   const handleConfirmUpgrade = async () => {
     if (!selectedPlanId || !cardInfo) {
       // 카드가 없으면 카드 등록 플로우
-      if (!cardInfo && selectedPlanId && userName && user?.email) {
+      if (!cardInfo && selectedPlanId && buyerName && user?.email) {
         const initResponse = await billingService.initUpgrade({
           planId: selectedPlanId,
         });
@@ -165,7 +171,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         }
 
         await requestBillingAuth({
-          customerName: userName,
+          customerName: buyerName,
           customerEmail: user.email,
           planId: selectedPlanId,
         });

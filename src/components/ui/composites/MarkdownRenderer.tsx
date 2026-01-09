@@ -29,6 +29,22 @@ const preprocessMarkdown = (text: string): string => {
   return result;
 };
 
+/**
+ * 렌더링 후 남아있는 깨진 마크다운 기호(**) 제거
+ * react-markdown이 파싱하지 못한 ** 기호들을 후처리로 제거
+ */
+const cleanBrokenMarkdown = (children: React.ReactNode): React.ReactNode => {
+  if (typeof children === 'string') {
+    return children.replace(/\*\*/g, '');
+  }
+  if (Array.isArray(children)) {
+    return children.map((child) =>
+      typeof child === 'string' ? child.replace(/\*\*/g, '') : child
+    );
+  }
+  return children;
+};
+
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
   className = '',
@@ -38,13 +54,19 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     const headingComponents = disableHeadings
       ? {
           h1: ({ children }: { children?: React.ReactNode }) => (
-            <Text className="mb-4 leading-relaxed text-fg">{children}</Text>
+            <Text className="mb-4 leading-relaxed text-fg">
+              {cleanBrokenMarkdown(children)}
+            </Text>
           ),
           h2: ({ children }: { children?: React.ReactNode }) => (
-            <Text className="mb-4 leading-relaxed text-fg">{children}</Text>
+            <Text className="mb-4 leading-relaxed text-fg">
+              {cleanBrokenMarkdown(children)}
+            </Text>
           ),
           h3: ({ children }: { children?: React.ReactNode }) => (
-            <Text className="mb-4 leading-relaxed text-fg">{children}</Text>
+            <Text className="mb-4 leading-relaxed text-fg">
+              {cleanBrokenMarkdown(children)}
+            </Text>
           ),
         }
       : {
@@ -53,7 +75,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               as="h1"
               className="mb-4 mt-8 text-2xl font-bold text-fg first:mt-0"
             >
-              {children}
+              {cleanBrokenMarkdown(children)}
             </Title>
           ),
           h2: ({ children }: { children?: React.ReactNode }) => (
@@ -61,7 +83,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               as="h2"
               className="mb-3 mt-6 text-xl font-semibold text-fg first:mt-0"
             >
-              {children}
+              {cleanBrokenMarkdown(children)}
             </Title>
           ),
           h3: ({ children }: { children?: React.ReactNode }) => (
@@ -69,7 +91,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
               as="h3"
               className="mb-2 mt-4 text-lg font-semibold text-fg first:mt-0"
             >
-              {children}
+              {cleanBrokenMarkdown(children)}
             </Title>
           ),
         };
@@ -77,7 +99,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     return {
       ...headingComponents,
       p: ({ children }: { children?: React.ReactNode }) => (
-        <Text className="mb-4 leading-relaxed text-fg">{children}</Text>
+        <Text className="mb-4 leading-relaxed text-fg">
+          {cleanBrokenMarkdown(children)}
+        </Text>
       ),
       ul: ({ children }: { children?: React.ReactNode }) => (
         <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">{children}</ul>
@@ -86,23 +110,25 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
         <ol className="mb-4 list-decimal space-y-1 pl-6 text-fg">{children}</ol>
       ),
       li: ({ children }: { children?: React.ReactNode }) => (
-        <li className="leading-relaxed">{children}</li>
+        <li className="leading-relaxed">{cleanBrokenMarkdown(children)}</li>
       ),
       br: () => <span className="block h-4" />,
       strong: ({ children }: { children?: React.ReactNode }) => (
-        <strong className="font-semibold text-fg">{children}</strong>
+        <strong className="font-semibold text-fg">
+          {cleanBrokenMarkdown(children)}
+        </strong>
       ),
       em: ({ children }: { children?: React.ReactNode }) => (
-        <em className="italic text-fg">{children}</em>
+        <em className="italic text-fg">{cleanBrokenMarkdown(children)}</em>
       ),
       blockquote: ({ children }: { children?: React.ReactNode }) => (
         <blockquote className="mb-4 border-l-4 border-primary pl-4 italic text-fg-muted">
-          {children}
+          {cleanBrokenMarkdown(children)}
         </blockquote>
       ),
       code: ({ children }: { children?: React.ReactNode }) => (
         <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
-          {children}
+          {cleanBrokenMarkdown(children)}
         </code>
       ),
       pre: ({ children }: { children?: React.ReactNode }) => (
@@ -128,11 +154,11 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
       ),
       th: ({ children }: { children?: React.ReactNode }) => (
         <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
-          {children}
+          {cleanBrokenMarkdown(children)}
         </th>
       ),
       td: ({ children }: { children?: React.ReactNode }) => (
-        <td className="px-4 py-3 text-fg">{children}</td>
+        <td className="px-4 py-3 text-fg">{cleanBrokenMarkdown(children)}</td>
       ),
     };
   }, [disableHeadings]);
@@ -142,7 +168,9 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   }
 
   return (
-    <div className={`prose prose-sm dark:prose-invert max-w-none ${className}`}>
+    <div
+      className={`prose prose-sm dark:prose-invert max-w-none break-keep ${className}`}
+    >
       <Markdown
         remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeSanitize]}

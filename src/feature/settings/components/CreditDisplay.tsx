@@ -16,7 +16,7 @@ interface CreditDisplayProps {
   planLabel: string;
   planType: string;
   daysUntilReset?: number;
-  variant?: 'sidebar' | 'detailed';
+  variant?: 'sidebar' | 'detailed' | 'mobile';
 }
 
 export const CreditDisplay: React.FC<CreditDisplayProps> = ({
@@ -87,6 +87,71 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
             </Text>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // mobile variant
+  if (variant === 'mobile') {
+    return (
+      <div className="flex w-full flex-col gap-3 rounded-lg border border-surface-strong bg-surface px-5 py-4">
+        <Text className="text-sm font-medium text-fg-muted">
+          마음토스 크레딧
+        </Text>
+        <div className="flex items-center gap-3">
+          <ProgressCircle
+            value={percentage}
+            size={32}
+            strokeWidth={5}
+            showValue={false}
+          />
+          <Text className="flex items-center gap-2 text-xl">
+            <span className="flex items-center gap-1 font-bold text-primary-400">
+              {remaining.toLocaleString()}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clipPath="url(#clip0_mobile)">
+                  <path
+                    d="M7 14C10.866 14 14 10.866 14 7C14 3.134 10.866 0 7 0C3.134 0 0 3.134 0 7C0.00418359 10.8643 3.13573 13.9958 7 14ZM4.1125 4.1125C5.70836 2.52055 8.29164 2.52055 9.8875 4.1125C10.1113 4.34424 10.1049 4.71352 9.87317 4.93732C9.64712 5.15566 9.28873 5.15566 9.06268 4.93732C7.92351 3.79846 6.07677 3.79868 4.9379 4.93787C3.79903 6.07707 3.79925 7.92378 4.93845 9.06265C6.07742 10.2013 7.92373 10.2013 9.0627 9.06265C9.29444 8.83884 9.66372 8.84527 9.88753 9.07701C10.1058 9.30306 10.1058 9.66142 9.88753 9.8875C8.29281 11.4822 5.70724 11.4822 4.11253 9.8875C2.51779 8.29279 2.51779 5.70721 4.1125 4.1125Z"
+                    fill="#44CE4B"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_mobile">
+                    <rect width="14" height="14" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </span>
+            <span className="text-fg-muted">/</span>
+            <span className="flex items-center gap-1 font-bold text-fg">
+              {totalCredit.toLocaleString()}
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 14 14"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7 14C10.866 14 14 10.866 14 7C14 3.134 10.866 0 7 0C3.134 0 0 3.134 0 7C0.00418359 10.8643 3.13573 13.9958 7 14ZM4.1125 4.1125C5.70836 2.52055 8.29164 2.52055 9.8875 4.1125C10.1113 4.34424 10.1049 4.71352 9.87317 4.93732C9.64712 5.15566 9.28873 5.15566 9.06268 4.93732C7.92351 3.79846 6.07677 3.79868 4.9379 4.93787C3.79903 6.07707 3.79925 7.92378 4.93845 9.06265C6.07742 10.2013 7.92373 10.2013 9.0627 9.06265C9.29444 8.83884 9.66372 8.84527 9.88753 9.07701C10.1058 9.30306 10.1058 9.66142 9.88753 9.8875C8.29281 11.4822 5.70724 11.4822 4.11253 9.8875C2.51779 8.29279 2.51779 5.70721 4.1125 4.1125Z"
+                  fill="#3C3C3C"
+                />
+              </svg>
+            </span>
+          </Text>
+        </div>
+        <Text className="text-sm text-fg-muted">
+          {isFree
+            ? '유료 플랜으로 전환하세요'
+            : daysUntilReset !== undefined &&
+              `${planLabel} 이용 중, 초기화까지 ${daysUntilReset}일`}
+        </Text>
       </div>
     );
   }
