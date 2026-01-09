@@ -11,7 +11,7 @@ import type {
   SttModel,
 } from '@/feature/session/types';
 import { cn } from '@/lib/cn';
-import { CheckIcon, UserIcon, XIcon, MoreVerticalIcon } from '@/shared/icons';
+import { CheckIcon, UserIcon, XIcon } from '@/shared/icons';
 import { formatDurationInTime, formatFileSize } from '@/shared/utils/format';
 
 // 원형 프로그레스 바 컴포넌트
@@ -184,9 +184,6 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
             </Text>
           )}
         </div>
-
-        {/* 메뉴 아이콘 */}
-        <MoreVerticalIcon size={20} className="text-fg-muted" />
       </div>
 
       {/* 우측: 상담기록 업로드 정보 */}

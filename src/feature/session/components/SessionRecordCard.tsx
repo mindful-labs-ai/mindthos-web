@@ -341,7 +341,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
               >
                 <UserCircle2Icon size={18} className="text-fg-muted" />
-                <Text className="text-fg">내담자 변경</Text>
+                <Text className="text-fg">클라이언트 변경</Text>
               </button>
             ) : (
               <ClientSelector
@@ -352,7 +352,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                     className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
                   >
                     <UserCircle2Icon size={18} className="text-fg-muted" />
-                    <Text className="text-fg">내담자 변경</Text>
+                    <Text className="text-fg">클라이언트 변경</Text>
                   </button>
                 }
                 open={isClientSelectorFromMenuOpen}

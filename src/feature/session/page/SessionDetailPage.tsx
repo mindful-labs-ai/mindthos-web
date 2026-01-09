@@ -1053,7 +1053,7 @@ export const SessionDetailPage: React.FC = () => {
           const url = await getAudioPresignedUrl(sessionId);
           setPresignedAudioUrl(url);
         } catch (error) {
-          console.error('음성 파일을 불러오는 대에 실패했습니다.:', error);
+          console.error('녹음 파일을 불러오는 대에 실패했습니다.:', error);
         }
       }
     };

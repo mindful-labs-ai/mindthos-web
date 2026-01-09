@@ -485,7 +485,7 @@ const MobileView = () => {
             )}
           </div>
 
-          <div className="space-y-3 pb-2">
+          <div className="space-y-3 pb-6">
             {isLoadingSessions ? (
               <div className="rounded-lg border border-surface-strong bg-surface p-6 text-center">
                 <Text className="text-fg-muted">상담기록을 불러오는 중...</Text>

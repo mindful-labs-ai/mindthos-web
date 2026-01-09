@@ -24,9 +24,9 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           크레딧 사용 가격
         </Text>
 
-        {/* 음성 변환 */}
+        {/* 녹음 변환 */}
         <div className="space-y-2">
-          <Text className="text-xs font-medium text-fg-muted">음성 변환</Text>
+          <Text className="text-xs font-medium text-fg-muted">녹음 변환</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
               <Text className="text-xs text-fg">일반 축어록</Text>
@@ -71,7 +71,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
         </div>
 
         <div>
-          <Text>*기본 상담 노트는 음성 변환과 함께 무료 제공됩니다.</Text>
+          <Text>*기본 상담 노트는 녹음 변환과 함께 무료 제공됩니다.</Text>
         </div>
       </div>
 

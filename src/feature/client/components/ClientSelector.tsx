@@ -225,7 +225,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               <div
                 role="dialog"
                 aria-modal="true"
-                aria-label="내담자 선택"
+                aria-label="클라이언트 선택"
                 className="w-full max-w-lg rounded-t-2xl bg-surface px-5 pb-6 pt-4"
               >
                 {/* 검색 */}
