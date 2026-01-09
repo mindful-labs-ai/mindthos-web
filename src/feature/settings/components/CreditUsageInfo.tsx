@@ -59,7 +59,7 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
       </Title>
       <div className="flex gap-2 text-left">
         <div className="flex flex-1 flex-col gap-3">
-          <Text className="text-sm font-medium text-fg-muted">음성 변환</Text>
+          <Text className="text-sm font-medium text-fg-muted">녹음 변환</Text>
           {usageItems.perMinutes.map((item, index) => (
             <div key={index} className="flex gap-6">
               <Text as="p" className="text-sm font-medium text-fg">

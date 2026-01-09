@@ -41,7 +41,7 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
           </Text>
           {hasAudio && (
             <Badge tone="neutral" variant="soft" size="sm">
-              음성 파일
+              녹음 파일
             </Badge>
           )}
         </div>

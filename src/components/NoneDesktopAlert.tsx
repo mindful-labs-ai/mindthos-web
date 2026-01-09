@@ -31,7 +31,7 @@ export const NoneDesktopAlert = () => {
         <h2 className="text-xl font-bold text-fg">모바일 이용 안내</h2>
 
         <p className="mt-6 text-fg">
-          현재 모바일 환경에서는 음성 파일 업로드 기능만 지원하고 있습니다.
+          현재 모바일 환경에서는 녹음 파일 업로드 기능만 지원하고 있습니다.
           상담기록, AI 수퍼비전 등 마음토스의 다른 기능을 사용하기 위해서는 PC
           환경에서 로그인해주세요.
         </p>
