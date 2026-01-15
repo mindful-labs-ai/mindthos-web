@@ -14,8 +14,6 @@ import type {
   Transcribe,
 } from '../types';
 
-const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_WEBAPP_SUPABASE_ANON_KEY;
 
 export interface SessionStatusResponse {
   success: boolean;
@@ -94,9 +92,6 @@ export async function getSessionList(userId: number): Promise<{
     progressNotes: ProgressNote[];
   }>;
 }> {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   // 1. 세션 목록 조회
   const { data: sessions, error: sessionsError } = await supabase
     .from('sessions')
@@ -143,9 +138,6 @@ export async function getSessionDetail(sessionId: string): Promise<{
   transcribe: Transcribe | null;
   progressNotes: ProgressNote[];
 }> {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   // 1. 세션 조회
   const { data: session, error: sessionError } = await supabase
     .from('sessions')
@@ -265,9 +257,6 @@ export async function updateTranscriptSegmentText(
   segmentId: number,
   newText: string
 ): Promise<void> {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   // 1. 현재 transcribe 데이터 조회
   const { data: transcribe, error: fetchError } = await supabase
     .from('transcribes')
@@ -316,9 +305,6 @@ export async function updateMultipleTranscriptSegments(
   transcribeId: string,
   updates: Record<number, string>
 ): Promise<void> {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   // 1. 현재 transcribe 데이터 조회
   const { data: transcribe, error: fetchError } = await supabase
     .from('transcribes')
@@ -385,9 +371,6 @@ export async function updateTranscriptSegments(
   transcribeId: string,
   updates: TranscriptUpdatePayload
 ): Promise<void> {
-  const { createClient } = await import('@supabase/supabase-js');
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   // 1. 현재 transcribe 데이터 조회
   const { data: transcribe, error: fetchError } = await supabase
     .from('transcribes')
