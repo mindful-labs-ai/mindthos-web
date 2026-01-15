@@ -14,17 +14,11 @@ export interface PlanInfo {
   type: string;
   description: string;
   price: number;
-  audio_credit: number;
-  summary_credit: number;
-}
-
-export interface UsageLimit {
-  credit: number;
+  total_credit: number;
 }
 
 export interface UsageInfo {
-  voice_transcription: UsageLimit;
-  summary_generation: UsageLimit;
+  total_usage: number;
 }
 
 export interface SettingsData {

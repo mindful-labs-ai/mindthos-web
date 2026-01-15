@@ -2,7 +2,8 @@
 
 Mindthos Web is a Vite + React application. The repo is organized as follows:
 
-- `src/` – UI 컴포넌트(`components/ui`), 라이브러리/유틸(`lib/`), 스타일(`styles/`), 테스트(`test/`), 디자인 토큰(`src/styles`), 그리고
+- `src/` – UI 컴포넌트(`components/ui`), 라이브러리/유틸(`lib/`),
+  스타일(`styles/`), 테스트(`test/`), 디자인 토큰(`src/styles`), 그리고
   `tailwind.config.ts`로 구성되어 있습니다.
 - `public/` – 정적 자산, `docs/` – 제안서·ADR, `tests/e2e/*.spec.ts` –
   Playwright 시나리오.

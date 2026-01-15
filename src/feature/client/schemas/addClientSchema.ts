@@ -1,8 +1,5 @@
 import { z } from 'zod';
 
-/**
- * 클라이언트 추가 폼 스키마
- */
 export const addClientSchema = z.object({
   name: z
     .string()
@@ -13,7 +10,7 @@ export const addClientSchema = z.object({
     .string()
     .refine(
       (val) => {
-        if (!val || val === '') return true; // 빈 문자열 허용
+        if (!val || val === '') return true;
         return /^01[0-9]-[0-9]{3,4}-[0-9]{4}$/.test(val);
       },
       {
@@ -27,7 +24,7 @@ export const addClientSchema = z.object({
     .string()
     .refine(
       (val) => {
-        if (!val || val === '') return true; // 빈 문자열 허용
+        if (!val || val === '') return true;
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
       },
       {
@@ -37,9 +34,15 @@ export const addClientSchema = z.object({
     .optional()
     .default(''),
 
+  counsel_theme: z
+    .string()
+    .max(100, '상담 주제는 최대 100자까지 입력 가능합니다')
+    .optional()
+    .default(''),
+
   memo: z
     .string()
-    .max(200, '상담 주제는 최대 200자까지 입력 가능합니다')
+    .max(200, '메모는 최대 200자까지 입력 가능합니다')
     .optional()
     .default(''),
 
@@ -48,8 +51,6 @@ export const addClientSchema = z.object({
     .int('정수를 입력해주세요')
     .min(0, '0 이상의 숫자를 입력해주세요')
     .default(0),
-
-  group_members: z.string().optional().default(''),
 });
 
 export type AddClientFormData = z.infer<typeof addClientSchema>;
