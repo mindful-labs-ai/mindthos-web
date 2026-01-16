@@ -20,12 +20,12 @@ import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord, Transcribe } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
-import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 import { ActionCard } from '../components/ActionCard';
@@ -51,7 +51,8 @@ const HomePage = () => {
     currentLevel,
   });
 
-  const [isEditInfoModalOpen, setIsEditInfoModalOpen] = React.useState(false);
+  // 전역 모달 스토어 사용
+  const openModal = useModalStore((state) => state.openModal);
 
   // 세션 목록 조회 (TanStack Query)
   const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
@@ -163,7 +164,7 @@ const HomePage = () => {
               completedStepCount={completedCount}
               remainingDays={remainingDays}
               onOpenCreateSession={handleUploadClick}
-              onOpenUserEdit={() => setIsEditInfoModalOpen(true)}
+              onOpenUserEdit={() => openModal('userEdit')}
             />
           ) : (
             isWelcomeBannerVisible && (
@@ -310,18 +311,6 @@ const HomePage = () => {
       <CreateMultiSessionModal
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
-      />
-
-      {/* 정보 수정 모달 */}
-      <UserEditModal
-        open={isEditInfoModalOpen}
-        onOpenChange={setIsEditInfoModalOpen}
-        onSuccess={async () => {
-          // 레벨 5 (내 정보 입력하기 단계) 진행 중이라면 완료 처리
-          if (currentLevel === 5 && userId) {
-            await completeNextStep(useAuthStore.getState().user?.email || '');
-          }
-        }}
       />
     </div>
   );
