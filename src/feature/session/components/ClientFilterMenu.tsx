@@ -27,8 +27,8 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
     : safeClients.filter((client) => {
         const query = searchQuery.toLowerCase();
         return (
-          client.name.toLowerCase().includes(query) ||
-          client.phone_number.includes(query)
+          client.name?.toLowerCase().includes(query) ||
+          client.phone_number?.includes(query)
         );
       });
 

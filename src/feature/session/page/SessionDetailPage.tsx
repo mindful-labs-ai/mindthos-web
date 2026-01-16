@@ -270,9 +270,10 @@ export const SessionDetailPage: React.FC = () => {
         return updated;
       });
 
+      console.error('상담노트 실패 에러 : ', error.message);
       toast({
         title: '상담노트 작성 실패',
-        description: error.message,
+        description: '상담노트 작성 중 문제가 발생했습니다. 다시 시도해주세요.',
         duration: 5000,
       });
     },
@@ -1010,9 +1011,11 @@ export const SessionDetailPage: React.FC = () => {
           ? error.message
           : '상담 노트 작성에 실패했습니다.';
 
+      console.error('상담노트 작성 에러 : ', errorMessage);
+
       toast({
         title: '상담노트 작성 실패',
-        description: errorMessage,
+        description: '상담 노트 작성에 실패했습니다.',
         duration: 5000,
       });
     }
@@ -1139,8 +1142,11 @@ export const SessionDetailPage: React.FC = () => {
   React.useEffect(() => {
     setActiveTab('transcript');
     handleTimeUpdate(0);
-    handlePlayPause();
     setHasUserInteracted(false);
+    // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+    }
   }, [sessionId]);
 
   if (isLoading) {
