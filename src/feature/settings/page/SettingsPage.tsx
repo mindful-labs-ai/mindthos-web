@@ -17,7 +17,6 @@ import { CreditUsageInfo } from '@/feature/settings/components/CreditUsageInfo';
 import { CreditUsageModal } from '@/feature/settings/components/CreditUsageModal';
 import { DeleteAccountModal } from '@/feature/settings/components/DeleteAccountModal';
 import { LogoutModal } from '@/feature/settings/components/LogoutModal';
-import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { useCardInfo } from '@/feature/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
@@ -30,7 +29,7 @@ import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
+import { useModalStore } from '@/stores/modalStore';
 
 import { CardInfo } from '../components/CardInfo';
 import { PlanChangeModal } from '../components/PlanChangeModal';
@@ -51,9 +50,11 @@ export const SettingsPage: React.FC = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const [isEditInfoModalOpen, setIsEditInfoModalOpen] = React.useState(false);
   const [isCreditUsageModalOpen, setIsCreditUsageModalOpen] =
     React.useState(false);
+
+  // 전역 모달 스토어 사용
+  const openModal = useModalStore((state) => state.openModal);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
   const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
@@ -73,7 +74,7 @@ export const SettingsPage: React.FC = () => {
   const isOAuthUser = user?.app_metadata?.provider !== 'email';
 
   const handleEditInfo = () => {
-    setIsEditInfoModalOpen(true);
+    openModal('userEdit');
   };
 
   const handleOpenCardRegistration = () => {
@@ -186,15 +187,6 @@ export const SettingsPage: React.FC = () => {
   const handleDeleteAccount = () => {
     setIsDeleteModalOpen(true);
     setDeleteError('');
-  };
-
-  const { currentLevel, completeNextStep } = useQuestStore();
-
-  const handleEditInfoSuccess = async () => {
-    // 내 정보 입력 미션(Level 5)인 경우 퀘스트 완료 처리
-    if (currentLevel === 5 && user?.email) {
-      await completeNextStep(user.email);
-    }
   };
 
   const handleConfirmDelete = async () => {
@@ -426,12 +418,6 @@ export const SettingsPage: React.FC = () => {
           )}
         </div>
       </div>
-
-      <UserEditModal
-        open={isEditInfoModalOpen}
-        onOpenChange={setIsEditInfoModalOpen}
-        onSuccess={handleEditInfoSuccess}
-      />
 
       <PlanChangeModal
         open={isUpgradeModalOpen}
