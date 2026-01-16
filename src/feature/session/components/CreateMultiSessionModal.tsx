@@ -9,10 +9,12 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
+import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { CloudUploadIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { MULTI_UPLOAD_LIMITS } from '../constants/fileUpload';
 import { useDragAndDrop } from '../hooks/useDragAndDrop';
@@ -40,6 +42,10 @@ export const CreateMultiSessionModal: React.FC<
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const { clients } = useClientList();
   const { creditInfo } = useCreditInfo();
+
+  // Quest 관련 hooks
+  const { currentLevel, setShowConfetti } = useQuestStore();
+  const { completeNextStep, endTutorial } = useTutorial({ currentLevel });
 
   // Step 상태
   const [step, setStep] = useState<ModalStep>('upload');
@@ -241,6 +247,13 @@ export const CreateMultiSessionModal: React.FC<
             : `${successCount}개의 상담 기록이 생성 중입니다.`,
         duration: 5000,
       });
+
+      // 튜토리얼(레벨 4) 진행 중이라면 완료 처리
+      if (currentLevel === 4) {
+        await completeNextStep(useAuthStore.getState().user?.email || '');
+        setShowConfetti(true);
+        endTutorial();
+      }
     }
 
     if (failedCount > 0 && successCount === 0) {

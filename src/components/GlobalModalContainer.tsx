@@ -1,0 +1,83 @@
+import { useEffect } from 'react';
+
+import { createPortal } from 'react-dom';
+
+import { UpdateNoteModal } from '@/components/UpdateNoteModal';
+import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
+import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
+import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
+import { UserEditModal } from '@/feature/settings/components/UserEditModal';
+import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
+import { useQuestStore } from '@/stores/questStore';
+import { useUpdateStore } from '@/stores/updateStore';
+
+/**
+ * 전역 모달 컨테이너
+ * 모든 모달을 Portal을 통해 document.body에 렌더링하여
+ * DOM 계층과 독립적으로 관리
+ *
+ * 책임:
+ * - 인증된 사용자의 전역 모달 렌더링
+ * - 업데이트 노트 초기화 및 표시
+ * - 온보딩 관련 모달 (QuestMission, CompleteMission)
+ * - 사용자 정보 수정 모달
+ * - 미션 플로팅 버튼
+ */
+export const GlobalModalContainer = () => {
+  const { currentLevel, completeNextStep } = useQuestStore();
+  const user = useAuthStore((state) => state.user);
+
+  // 업데이트 노트 초기화
+  const initializeUpdate = useUpdateStore((state) => state.initialize);
+  useEffect(() => {
+    initializeUpdate();
+  }, [initializeUpdate]);
+
+  // 모달 스토어에서 상태와 액션 가져오기
+  const openModal = useModalStore((state) => state.openModal);
+  const closeModal = useModalStore((state) => state.closeModal);
+  const isUserEditOpen = useModalStore((state) =>
+    state.openModals.includes('userEdit')
+  );
+
+  const handleOpenUserEdit = () => {
+    openModal('userEdit');
+  };
+
+  const handleCloseUserEdit = (open: boolean) => {
+    if (!open) {
+      closeModal('userEdit');
+    }
+  };
+
+  const handleUserEditSuccess = async () => {
+    // 내 정보 입력 미션(Level 5)인 경우 퀘스트 완료 처리
+    if (currentLevel === 5 && user?.email) {
+      await completeNextStep(user.email);
+    }
+  };
+
+  // Portal을 사용하여 body에 직접 렌더링
+  return createPortal(
+    <>
+      {/* 업데이트 노트 모달 */}
+      <UpdateNoteModal />
+
+      {/* 온보딩 관련 모달 */}
+      <QuestMissionModal />
+      <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
+
+      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) */}
+      <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
+
+      {/* 사용자 정보 수정 모달 */}
+      <UserEditModal
+        open={isUserEditOpen}
+        onOpenChange={handleCloseUserEdit}
+        onSuccess={handleUserEditSuccess}
+      />
+    </>,
+    document.body
+  );
+};
