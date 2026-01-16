@@ -1142,8 +1142,11 @@ export const SessionDetailPage: React.FC = () => {
   React.useEffect(() => {
     setActiveTab('transcript');
     handleTimeUpdate(0);
-    handlePlayPause();
     setHasUserInteracted(false);
+    // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+    }
   }, [sessionId]);
 
   if (isLoading) {
