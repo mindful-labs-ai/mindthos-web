@@ -5,40 +5,13 @@ import { cn } from '@/lib/cn';
 export type AlertTone = 'info' | 'success' | 'warn' | 'danger';
 
 export interface AlertProps {
-  /**
-   * Alert title
-   */
   title?: string;
-  /**
-   * Alert content/description
-   */
   children: React.ReactNode;
-  /**
-   * Tone variant
-   * @default 'info'
-   */
   tone?: AlertTone;
-  /**
-   * Show icon
-   * @default true
-   */
   showIcon?: boolean;
-  /**
-   * Custom icon
-   */
   icon?: React.ReactNode;
-  /**
-   * Dismissible
-   * @default false
-   */
   dismissible?: boolean;
-  /**
-   * Dismiss handler
-   */
   onDismiss?: () => void;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -137,21 +110,12 @@ const toneStyles: Record<
 };
 
 /**
- * Alert component
- *
- * Inline alert message with various tones and optional icon.
- *
- * **A11y**: role="alert" for important messages.
+ * Alert - 인라인 알림 메시지
+ * tone별 아이콘 자동 표시
+ * role="alert"로 접근성 준수
  *
  * @example
- * ```tsx
- * <Alert tone="info" title="Note">
- *   This is an informational message.
- * </Alert>
- * <Alert tone="danger" dismissible onDismiss={() => {}}>
- *   Error occurred!
- * </Alert>
- * ```
+ * <Alert tone="info" title="안내">정보 메시지</Alert>
  */
 export const Alert: React.FC<AlertProps> = ({
   title,

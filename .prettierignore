@@ -69,3 +69,6 @@ src/integrations/supabase/types.ts
 # Documentation build
 docs/.vitepress/dist
 docs/.vitepress/cache
+
+# Markdown Formatting
+*.md

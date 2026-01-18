@@ -6,46 +6,14 @@ export type CreditSize = 'sm' | 'md' | 'lg';
 export type CreditVariant = 'default' | 'bar' | 'minimal';
 
 export interface CreditProps {
-  /**
-   * Current usage count
-   */
   used: number;
-  /**
-   * Total available count
-   */
   total: number;
-  /**
-   * Size variant
-   * @default 'md'
-   */
   size?: CreditSize;
-  /**
-   * Display variant
-   * @default 'default'
-   */
   variant?: CreditVariant;
-  /**
-   * Label text
-   */
   label?: string;
-  /**
-   * Show percentage
-   * @default false
-   */
   showPercentage?: boolean;
-  /**
-   * Warning threshold (0-1, triggers warning color)
-   * @default 0.8
-   */
   warningThreshold?: number;
-  /**
-   * Danger threshold (0-1, triggers danger color)
-   * @default 0.95
-   */
   dangerThreshold?: number;
-  /**
-   * Additional className
-   */
   className?: string;
 }
 
@@ -56,19 +24,12 @@ const sizeStyles: Record<CreditSize, { text: string; bar: string }> = {
 };
 
 /**
- * Credit component
- *
- * Displays usage credits/quota with visual indicators.
- * Shows current usage vs total available with optional progress bar.
- *
- * **A11y**: aria-label, aria-valuenow/min/max for screen readers.
+ * Credit - 사용량 표시 컴포넌트
+ * used/total 기반 진행 상태 표시
+ * default/bar/minimal 변형 지원, threshold 기반 색상 변경
  *
  * @example
- * ```tsx
- * <Credit used={250} total={300} label="API Calls" />
- * <Credit used={280} total={300} variant="bar" showPercentage />
- * <Credit used={295} total={300} variant="minimal" />
- * ```
+ * <Credit used={250} total={300} variant="bar" showPercentage />
  */
 export const Credit: React.FC<CreditProps> = ({
   used,

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { CheckBox } from '@/components/ui/atoms/CheckBox';
 import { Input } from '@/components/ui/atoms/Input';
 import { FormField } from '@/components/ui/composites/FormField';
-import { ROUTES } from '@/router/constants';
+import { getTermsRoute, ROUTES, TERMS_TYPES } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
 const SignUpForm = () => {
@@ -98,7 +98,7 @@ const SignUpForm = () => {
             <label htmlFor="terms" className="text-sm text-muted">
               <span>서비스 이용약관에 동의합니다.</span>
               <HyperLink
-                href="/terms?type=service"
+                href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 external
                 underline="hover"
                 className="ml-1 text-primary-500 hover:text-primary-600"
@@ -119,7 +119,7 @@ const SignUpForm = () => {
             <label htmlFor="privacy" className="text-sm text-muted">
               <span>개인정보 처리방침에 동의합니다.</span>
               <HyperLink
-                href="/terms?type=privacy"
+                href={getTermsRoute(TERMS_TYPES.PRIVACY)}
                 external
                 underline="hover"
                 className="ml-1 text-primary-500 hover:text-primary-600"
