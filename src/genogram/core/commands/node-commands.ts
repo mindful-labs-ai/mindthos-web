@@ -1,11 +1,11 @@
-import { Gender } from "../core/enums.js";
-import { Point, UUID } from "../core/types.js";
-import { NodeLayout, createNodeLayout } from "../layout/layout-state.js";
-import { Person, createPerson } from "../models/person.js";
-import { BaseCommand, EditorState } from "./base.js";
+import { Gender } from '../types/enums.js';
+import { Point, UUID } from '../types/types.js';
+import { NodeLayout, createNodeLayout } from '../layout/layout-state.js';
+import { Person, createPerson } from '../models/person.js';
+import { BaseCommand, EditorState } from './base.js';
 
 export class AddPersonCommand extends BaseCommand {
-  readonly type = "ADD_PERSON";
+  readonly type = 'ADD_PERSON';
   private person: Person;
   private layout: NodeLayout;
 
@@ -35,7 +35,7 @@ export class AddPersonCommand extends BaseCommand {
 }
 
 export class DeletePersonCommand extends BaseCommand {
-  readonly type = "DELETE_PERSON";
+  readonly type = 'DELETE_PERSON';
   private personId: UUID;
   private backup?: { person: Person; layout: NodeLayout };
 
@@ -77,7 +77,7 @@ export class DeletePersonCommand extends BaseCommand {
 }
 
 export class UpdatePersonCommand extends BaseCommand {
-  readonly type = "UPDATE_PERSON";
+  readonly type = 'UPDATE_PERSON';
   private personId: UUID;
   private updates: Partial<Person>;
   private previousValues?: Partial<Person>;
@@ -129,7 +129,7 @@ export class UpdatePersonCommand extends BaseCommand {
 }
 
 export class MoveNodeCommand extends BaseCommand {
-  readonly type = "MOVE_NODE";
+  readonly type = 'MOVE_NODE';
   private nodeId: UUID;
   private newPosition: Point;
   private previousPosition?: Point;
@@ -170,7 +170,7 @@ export class MoveNodeCommand extends BaseCommand {
 }
 
 export class MoveMultipleNodesCommand extends BaseCommand {
-  readonly type = "MOVE_MULTIPLE_NODES";
+  readonly type = 'MOVE_MULTIPLE_NODES';
   private moves: { nodeId: UUID; newPosition: Point }[];
   private previousPositions = new Map<UUID, Point>();
 

@@ -1,4 +1,4 @@
-import { Command, EditorState } from "../commands/base.js";
+import { Command, EditorState } from '../commands/base.js';
 import {
   AddChildRelationshipCommand,
   AddEmotionalRelationshipCommand,
@@ -7,22 +7,22 @@ import {
   SetArrowDirectionCommand,
   SetEdgeLabelCommand,
   UpdateEdgeStyleCommand,
-} from "../commands/edge-commands.js";
-import { CommandManager, CommandManagerConfig } from "../commands/manager.js";
+} from '../commands/edge-commands.js';
+import { CommandManager, CommandManagerConfig } from '../commands/manager.js';
 import {
   AddPersonCommand,
   DeletePersonCommand,
   MoveMultipleNodesCommand,
   MoveNodeCommand,
   UpdatePersonCommand,
-} from "../commands/node-commands.js";
+} from '../commands/node-commands.js';
 import {
   DeselectAllCommand,
   SelectNodesCommand,
   SetOffsetCommand,
   SetZoomCommand,
   ToggleGridSnapCommand,
-} from "../commands/view-commands.js";
+} from '../commands/view-commands.js';
 import {
   ArrowDirection,
   AssetType,
@@ -31,9 +31,9 @@ import {
   Gender,
   PartnerStatus,
   ToolMode,
-} from "../core/enums.js";
-import { Point, Rect, UUID } from "../core/types.js";
-import { LayoutConfig, LayoutEngine } from "../layout/layout-engine.js";
+} from '../types/enums.js';
+import { Point, Rect, UUID } from '../types/types.js';
+import { LayoutConfig, LayoutEngine } from '../layout/layout-engine.js';
 import {
   EdgeLayout,
   LayoutState,
@@ -42,15 +42,15 @@ import {
   createLayoutState,
   deserializeLayout,
   serializeLayout,
-} from "../layout/layout-state.js";
+} from '../layout/layout-state.js';
 import {
   Genogram,
   SerializedGenogram,
   createGenogram,
   deserializeGenogram,
   serializeGenogram,
-} from "../models/genogram.js";
-import { Person } from "../models/person.js";
+} from '../models/genogram.js';
+import { Person } from '../models/person.js';
 import {
   InteractionState,
   SelectedItem,
@@ -70,19 +70,19 @@ import {
   updateDrag,
   updateMousePosition,
   updateSelectionBox,
-} from "./interaction-state.js";
-import { ViewDisplaySettings, ViewSettings } from "./view-settings.js";
+} from './interaction-state.js';
+import { ViewDisplaySettings, ViewSettings } from './view-settings.js';
 
 export type EditorEventType =
-  | "state-change"
-  | "selection-change"
-  | "view-change"
-  | "tool-change"
-  | "interaction-change";
+  | 'state-change'
+  | 'selection-change'
+  | 'view-change'
+  | 'tool-change'
+  | 'interaction-change';
 
 export type EditorEventListener = (
   event: EditorEventType,
-  data?: unknown,
+  data?: unknown
 ) => void;
 
 export interface EditorConfig {
@@ -108,7 +108,7 @@ export class GenogramEditor {
 
   constructor(config: EditorConfig = {}) {
     this.state = {
-      genogram: createGenogram("Untitled"),
+      genogram: createGenogram('Untitled'),
       layout: createLayoutState(),
     };
 
@@ -119,7 +119,7 @@ export class GenogramEditor {
 
     if (config.autoSaveInterval && config.autoSaveInterval > 0) {
       this.autoSaveTimer = setInterval(() => {
-        this.emit("state-change", { autoSave: true });
+        this.emit('state-change', { autoSave: true });
       }, config.autoSaveInterval);
     }
   }
@@ -155,7 +155,7 @@ export class GenogramEditor {
   // Tool Mode
   setToolMode(mode: ToolMode): void {
     setInteractionToolMode(this.interaction, mode);
-    this.emit("tool-change", mode);
+    this.emit('tool-change', mode);
   }
 
   getToolMode(): ToolMode {
@@ -165,20 +165,20 @@ export class GenogramEditor {
   // Commands
   private execute(command: Command): void {
     this.state = this.commandManager.execute(command, this.state);
-    this.emit("state-change");
+    this.emit('state-change');
   }
 
   private executeMultiple(commands: Command[]): void {
     if (commands.length === 0) return;
     this.state = this.commandManager.executeTransaction(commands, this.state);
-    this.emit("state-change");
+    this.emit('state-change');
   }
 
   undo(): boolean {
     if (!this.commandManager.canUndo()) return false;
     this.state = this.commandManager.undo(this.state);
     this.syncSelectionFromLayout();
-    this.emit("state-change");
+    this.emit('state-change');
     return true;
   }
 
@@ -186,7 +186,7 @@ export class GenogramEditor {
     if (!this.commandManager.canRedo()) return false;
     this.state = this.commandManager.redo(this.state);
     this.syncSelectionFromLayout();
-    this.emit("state-change");
+    this.emit('state-change');
     return true;
   }
 
@@ -211,12 +211,12 @@ export class GenogramEditor {
     name: string,
     gender: Gender,
     position: Point,
-    generation = 0,
+    generation = 0
   ): UUID {
     const snapped = this.state.layout.canvas.gridSnap
       ? this.layoutEngine.snapToGrid(
           position,
-          this.state.layout.canvas.gridSize,
+          this.state.layout.canvas.gridSize
         )
       : position;
 
@@ -240,7 +240,7 @@ export class GenogramEditor {
     const snapped = this.state.layout.canvas.gridSnap
       ? this.layoutEngine.snapToGrid(
           position,
-          this.state.layout.canvas.gridSize,
+          this.state.layout.canvas.gridSize
         )
       : position;
     this.execute(new MoveNodeCommand(personId, snapped));
@@ -264,7 +264,7 @@ export class GenogramEditor {
   addPartnerRelationship(
     personId1: UUID,
     personId2: UUID,
-    status: PartnerStatus = PartnerStatus.Married,
+    status: PartnerStatus = PartnerStatus.Married
   ): UUID {
     const pos1 = this.state.layout.nodes.get(personId1)?.position ?? {
       x: 0,
@@ -280,7 +280,7 @@ export class GenogramEditor {
       personId2,
       pos1,
       pos2,
-      status,
+      status
     );
     this.execute(cmd);
     return cmd.getRelationshipId();
@@ -290,7 +290,7 @@ export class GenogramEditor {
     parentId: UUID,
     childId: UUID,
     status: ChildStatus = ChildStatus.Biological,
-    parentRelationshipId?: UUID,
+    parentRelationshipId?: UUID
   ): UUID {
     const parentPos = this.state.layout.nodes.get(parentId)?.position ?? {
       x: 0,
@@ -315,7 +315,7 @@ export class GenogramEditor {
       sourcePos,
       childPos,
       status,
-      parentRelationshipId,
+      parentRelationshipId
     );
     this.execute(cmd);
     return cmd.getRelationshipId();
@@ -324,7 +324,7 @@ export class GenogramEditor {
   addEmotionalRelationship(
     personId1: UUID,
     personId2: UUID,
-    status: EmotionalStatus = EmotionalStatus.Basic,
+    status: EmotionalStatus = EmotionalStatus.Basic
   ): UUID {
     const pos1 = this.state.layout.nodes.get(personId1)?.position ?? {
       x: 0,
@@ -340,7 +340,7 @@ export class GenogramEditor {
       personId2,
       pos1,
       pos2,
-      status,
+      status
     );
     this.execute(cmd);
     return cmd.getRelationshipId();
@@ -366,13 +366,13 @@ export class GenogramEditor {
   select(ids: UUID[], clearOthers = true): void {
     this.execute(new SelectNodesCommand(ids, clearOthers));
     this.syncSelectionFromLayout();
-    this.emit("selection-change", this.interaction.selectedItems);
+    this.emit('selection-change', this.interaction.selectedItems);
   }
 
   deselectAll(): void {
     this.execute(new DeselectAllCommand());
     setSelectedItems(this.interaction, []);
-    this.emit("selection-change", []);
+    this.emit('selection-change', []);
   }
 
   getSelectedItems(): SelectedItem[] {
@@ -396,7 +396,7 @@ export class GenogramEditor {
     if (commands.length > 0) {
       this.executeMultiple(commands);
       setSelectedItems(this.interaction, []);
-      this.emit("selection-change", []);
+      this.emit('selection-change', []);
     }
   }
 
@@ -444,7 +444,7 @@ export class GenogramEditor {
   // View Settings
   updateViewSettings(updates: Partial<ViewDisplaySettings>): void {
     this.viewSettings.updateSettings(updates);
-    this.emit("view-change", this.viewSettings.getSettings());
+    this.emit('view-change', this.viewSettings.getSettings());
   }
 
   // Interaction Handlers
@@ -488,7 +488,7 @@ export class GenogramEditor {
         break;
     }
 
-    this.emit("interaction-change", this.interaction);
+    this.emit('interaction-change', this.interaction);
   }
 
   handleMouseMove(point: Point): void {
@@ -498,7 +498,7 @@ export class GenogramEditor {
     setHoveredItem(
       this.interaction,
       node?.nodeId ?? null,
-      node ? AssetType.Node : null,
+      node ? AssetType.Node : null
     );
 
     if (this.interaction.drag.isDragging) {
@@ -517,7 +517,7 @@ export class GenogramEditor {
       showNodeCreationPreview(this.interaction, point);
     }
 
-    this.emit("interaction-change", this.interaction);
+    this.emit('interaction-change', this.interaction);
   }
 
   handleMouseUp(point: Point): void {
@@ -555,7 +555,7 @@ export class GenogramEditor {
       if (result) {
         const targetNode = this.layoutEngine.findNodeAtPoint(
           this.state.layout,
-          point,
+          point
         );
         if (targetNode && targetNode.nodeId !== result.sourceId) {
           this.addEmotionalRelationship(result.sourceId, targetNode.nodeId);
@@ -568,7 +568,7 @@ export class GenogramEditor {
       if (rect) {
         const nodes = this.layoutEngine.findNodesInRect(
           this.state.layout,
-          rect,
+          rect
         );
         if (nodes.length > 0) {
           this.select(nodes.map((n) => n.nodeId));
@@ -580,7 +580,7 @@ export class GenogramEditor {
       hideNodeCreationPreview(this.interaction);
     }
 
-    this.emit("interaction-change", this.interaction);
+    this.emit('interaction-change', this.interaction);
   }
 
   handleWheel(delta: number): void {
@@ -601,7 +601,7 @@ export class GenogramEditor {
   // Auto Layout
   autoLayout(): void {
     this.layoutEngine.autoLayoutByGeneration(this.state.layout);
-    this.emit("state-change");
+    this.emit('state-change');
   }
 
   // Serialization
@@ -621,7 +621,7 @@ export class GenogramEditor {
     this.viewSettings.updateSettings(data.viewSettings);
     this.commandManager.clear();
     this.syncSelectionFromLayout();
-    this.emit("state-change");
+    this.emit('state-change');
   }
 
   toJSON(): string {

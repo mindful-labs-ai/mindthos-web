@@ -3,8 +3,8 @@ import {
   Gender,
   MigrationStatus,
   SexualOrientation,
-} from "../core/enums.js";
-import { UUID, generateId } from "../core/types.js";
+} from '../types/enums.js';
+import { UUID, generateId } from '../types/types.js';
 
 export interface Person {
   id: UUID;
@@ -31,7 +31,7 @@ export interface Person {
 export function createPerson(
   name: string,
   gender: Gender,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): Person {
   return {
     id,
@@ -46,4 +46,4 @@ export function createPerson(
   };
 }
 
-export type PersonUpdate = Partial<Omit<Person, "id">>;
+export type PersonUpdate = Partial<Omit<Person, 'id'>>;

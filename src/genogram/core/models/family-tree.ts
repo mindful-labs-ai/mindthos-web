@@ -1,4 +1,4 @@
-import { UUID, generateId } from "../core/types.js";
+import { UUID, generateId } from '../types/types.js';
 
 export interface TreeNode {
   personId: UUID;
@@ -19,7 +19,7 @@ export interface FamilyTree {
 export function createFamilyTree(
   name: string,
   rootPersonId: UUID,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): FamilyTree {
   const nodes = new Map<string, TreeNode>();
   nodes.set(rootPersonId, {
@@ -38,7 +38,7 @@ export function addTreeNode(
   tree: FamilyTree,
   personId: UUID,
   generation: number,
-  parentIds: UUID[] = [],
+  parentIds: UUID[] = []
 ): void {
   tree.nodes.set(personId, {
     personId,
@@ -60,7 +60,7 @@ export function addTreeNode(
 export function addPartnerLink(
   tree: FamilyTree,
   personId1: UUID,
-  personId2: UUID,
+  personId2: UUID
 ): void {
   const node1 = tree.nodes.get(personId1);
   const node2 = tree.nodes.get(personId2);
@@ -76,7 +76,7 @@ export function addPartnerLink(
 export function addSiblingLink(
   tree: FamilyTree,
   personId1: UUID,
-  personId2: UUID,
+  personId2: UUID
 ): void {
   const node1 = tree.nodes.get(personId1);
   const node2 = tree.nodes.get(personId2);

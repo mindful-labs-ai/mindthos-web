@@ -1,5 +1,5 @@
-import { Point, Rect } from "../core/types.js";
-import { LayoutState, NodeLayout } from "./layout-state.js";
+import { Point, Rect } from '../types/types.js';
+import { LayoutState, NodeLayout } from './layout-state.js';
 
 export interface LayoutConfig {
   nodeWidth: number;
@@ -44,7 +44,7 @@ export class LayoutEngine {
 
   calculateChildPosition(
     parentPositions: Point[],
-    siblingIndex: number,
+    siblingIndex: number
   ): Point {
     if (parentPositions.length === 0) {
       return { x: 0, y: 0 };
@@ -75,7 +75,7 @@ export class LayoutEngine {
   checkCollision(
     position: Point,
     existingNodes: NodeLayout[],
-    excludeId?: string,
+    excludeId?: string
   ): boolean {
     const halfW = this.config.nodeWidth / 2;
     const halfH = this.config.nodeHeight / 2;
@@ -95,7 +95,7 @@ export class LayoutEngine {
   findNonCollidingPosition(
     preferredPos: Point,
     existingNodes: NodeLayout[],
-    excludeId?: string,
+    excludeId?: string
   ): Point {
     if (!this.checkCollision(preferredPos, existingNodes, excludeId)) {
       return preferredPos;
@@ -142,7 +142,7 @@ export class LayoutEngine {
     });
 
     const sortedGenerations = Array.from(nodesByGeneration.keys()).sort(
-      (a, b) => a - b,
+      (a, b) => a - b
     );
 
     const baseY = 300;
@@ -169,7 +169,7 @@ export class LayoutEngine {
   calculateEdgePath(
     sourcePos: Point,
     targetPos: Point,
-    isVertical: boolean = false,
+    isVertical: boolean = false
   ): Point[] {
     if (!isVertical) {
       return [sourcePos, targetPos];

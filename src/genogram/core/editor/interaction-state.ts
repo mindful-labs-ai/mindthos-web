@@ -1,5 +1,5 @@
-import { AssetType, ToolMode } from "../core/enums.js";
-import { Point, Rect, UUID } from "../core/types.js";
+import { AssetType, ToolMode } from '../types/enums.js';
+import { Point, Rect, UUID } from '../types/types.js';
 
 export interface SelectedItem {
   id: UUID;
@@ -82,7 +82,7 @@ export function setToolMode(state: InteractionState, mode: ToolMode): void {
 export function startDrag(
   state: InteractionState,
   point: Point,
-  itemIds: UUID[],
+  itemIds: UUID[]
 ): void {
   state.drag = {
     isDragging: true,
@@ -99,7 +99,7 @@ export function updateDrag(state: InteractionState, point: Point): void {
 }
 
 export function endDrag(
-  state: InteractionState,
+  state: InteractionState
 ): { startPoint: Point; endPoint: Point; ids: UUID[] } | null {
   if (
     !state.drag.isDragging ||
@@ -128,7 +128,7 @@ export function endDrag(
 export function startConnectionPreview(
   state: InteractionState,
   sourceId: UUID,
-  sourcePoint: Point,
+  sourcePoint: Point
 ): void {
   state.connectionPreview = {
     isActive: true,
@@ -140,7 +140,7 @@ export function startConnectionPreview(
 
 export function updateConnectionPreview(
   state: InteractionState,
-  point: Point,
+  point: Point
 ): void {
   if (state.connectionPreview.isActive) {
     state.connectionPreview.currentPoint = { ...point };
@@ -148,7 +148,7 @@ export function updateConnectionPreview(
 }
 
 export function endConnectionPreview(
-  state: InteractionState,
+  state: InteractionState
 ): { sourceId: UUID; sourcePoint: Point; endPoint: Point } | null {
   if (
     !state.connectionPreview.isActive ||
@@ -185,7 +185,7 @@ export function startSelectionBox(state: InteractionState, point: Point): void {
 
 export function updateSelectionBox(
   state: InteractionState,
-  point: Point,
+  point: Point
 ): void {
   if (state.selectionBox.isActive) {
     state.selectionBox.currentPoint = { ...point };
@@ -222,7 +222,7 @@ export function endSelectionBox(state: InteractionState): Rect | null {
 
 export function showNodeCreationPreview(
   state: InteractionState,
-  position: Point,
+  position: Point
 ): void {
   state.nodeCreationPreview = {
     isActive: true,
@@ -239,7 +239,7 @@ export function hideNodeCreationPreview(state: InteractionState): void {
 
 export function updateMousePosition(
   state: InteractionState,
-  point: Point | null,
+  point: Point | null
 ): void {
   state.mousePosition = point ? { ...point } : null;
 }
@@ -247,7 +247,7 @@ export function updateMousePosition(
 export function setHoveredItem(
   state: InteractionState,
   id: UUID | null,
-  type: AssetType | null,
+  type: AssetType | null
 ): void {
   state.hoveredItemId = id;
   state.hoveredItemType = type;
@@ -255,7 +255,7 @@ export function setHoveredItem(
 
 export function setSelectedItems(
   state: InteractionState,
-  items: SelectedItem[],
+  items: SelectedItem[]
 ): void {
   state.selectedItems = items.map((i) => ({ ...i }));
 }

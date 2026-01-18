@@ -3,8 +3,8 @@ import {
   EmotionalStatus,
   PartnerStatus,
   RelationType,
-} from "../core/enums.js";
-import { UUID, generateId } from "../core/types.js";
+} from '../types/enums.js';
+import { UUID, generateId } from '../types/types.js';
 
 export interface RelationshipEvent {
   type: string;
@@ -53,7 +53,7 @@ export function createPartnerRelationship(
   sourceId: UUID,
   targetId: UUID,
   status: PartnerStatus = PartnerStatus.Married,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): PartnerRelationship {
   return {
     id,
@@ -70,7 +70,7 @@ export function createChildRelationship(
   targetId: UUID,
   status: ChildStatus = ChildStatus.Biological,
   parentRelationshipId?: UUID,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): ChildRelationship {
   return {
     id,
@@ -87,7 +87,7 @@ export function createEmotionalRelationship(
   sourceId: UUID,
   targetId: UUID,
   status: EmotionalStatus = EmotionalStatus.Basic,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): EmotionalRelationship {
   return {
     id,
@@ -102,12 +102,12 @@ export function createEmotionalRelationship(
 export function createGroupRelationship(
   memberIds: UUID[],
   groupName?: string,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): GroupRelationship {
   return {
     id,
-    sourceId: memberIds[0] ?? "",
-    targetId: memberIds[1] ?? "",
+    sourceId: memberIds[0] ?? '',
+    targetId: memberIds[1] ?? '',
     type: RelationType.Group,
     memberIds,
     groupName,
@@ -115,4 +115,4 @@ export function createGroupRelationship(
   };
 }
 
-export type RelationshipUpdate = Partial<Omit<Relationship, "id" | "type">>;
+export type RelationshipUpdate = Partial<Omit<Relationship, 'id' | 'type'>>;

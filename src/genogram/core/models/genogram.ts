@@ -1,8 +1,8 @@
-import { UUID, generateId } from "../core/types.js";
-import { FamilyTree } from "./family-tree.js";
-import { Person } from "./person.js";
-import { Relationship } from "./relationship.js";
-import { TextAnnotation } from "./text-annotation.js";
+import { UUID, generateId } from '../types/types.js';
+import { FamilyTree } from './family-tree.js';
+import { Person } from './person.js';
+import { Relationship } from './relationship.js';
+import { TextAnnotation } from './text-annotation.js';
 
 export interface GenogramMetadata {
   title: string;
@@ -25,7 +25,7 @@ export interface Genogram {
 
 export function createGenogram(
   title: string,
-  id: UUID = generateId(),
+  id: UUID = generateId()
 ): Genogram {
   const now = new Date();
   return {
@@ -62,7 +62,7 @@ export function removePerson(genogram: Genogram, personId: UUID): void {
 
 export function addRelationship(
   genogram: Genogram,
-  relationship: Relationship,
+  relationship: Relationship
 ): void {
   genogram.relationships.set(relationship.id, relationship);
   genogram.metadata.updatedAt = new Date();
@@ -70,7 +70,7 @@ export function addRelationship(
 
 export function removeRelationship(
   genogram: Genogram,
-  relationshipId: UUID,
+  relationshipId: UUID
 ): void {
   genogram.relationships.delete(relationshipId);
   genogram.metadata.updatedAt = new Date();
@@ -78,7 +78,7 @@ export function removeRelationship(
 
 export function addTextAnnotation(
   genogram: Genogram,
-  text: TextAnnotation,
+  text: TextAnnotation
 ): void {
   genogram.textAnnotations.set(text.id, text);
   genogram.metadata.updatedAt = new Date();
@@ -101,7 +101,7 @@ export function removeFamilyTree(genogram: Genogram, treeId: UUID): void {
 
 export function getRelationshipsByPerson(
   genogram: Genogram,
-  personId: UUID,
+  personId: UUID
 ): Relationship[] {
   const result: Relationship[] = [];
   genogram.relationships.forEach((rel) => {
@@ -133,10 +133,7 @@ export function serializeGenogram(genogram: Genogram): SerializedGenogram {
     relationships: Array.from(genogram.relationships.entries()),
     textAnnotations: Array.from(genogram.textAnnotations.entries()),
     familyTrees: Array.from(genogram.familyTrees.entries()).map(
-      ([id, tree]) => [
-        id,
-        { ...tree, nodes: Array.from(tree.nodes.entries()) },
-      ],
+      ([id, tree]) => [id, { ...tree, nodes: Array.from(tree.nodes.entries()) }]
     ),
   };
 }
@@ -156,7 +153,7 @@ export function deserializeGenogram(data: SerializedGenogram): Genogram {
       data.familyTrees.map(([id, tree]) => [
         id,
         { ...tree, nodes: new Map(tree.nodes) },
-      ]),
+      ])
     ),
   };
 }

@@ -1,5 +1,5 @@
-import { ArrowDirection, LineStyle, NodeSize } from "../core/enums.js";
-import { Point, UUID } from "../core/types.js";
+import { ArrowDirection, LineStyle, NodeSize } from '../types/enums.js';
+import { Point, UUID } from '../types/types.js';
 
 // Canvas
 export interface CanvasState {
@@ -16,7 +16,7 @@ export function createCanvasState(): CanvasState {
     offset: { x: 0, y: 0 },
     gridSnap: true,
     gridSize: 20,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
   };
 }
 
@@ -37,7 +37,7 @@ export interface NodeLayout {
 export function createNodeLayout(
   nodeId: UUID,
   position: Point,
-  generation: number = 0,
+  generation: number = 0
 ): NodeLayout {
   return {
     nodeId,
@@ -70,12 +70,12 @@ export interface EdgeLayout {
 export function createEdgeLayout(
   edgeId: UUID,
   sourcePos: Point,
-  targetPos: Point,
+  targetPos: Point
 ): EdgeLayout {
   return {
     edgeId,
     pathPoints: [sourcePos, targetPos],
-    strokeColor: "#000000",
+    strokeColor: '#000000',
     strokeWeight: 2,
     lineStyle: LineStyle.Solid,
     arrowDirection: ArrowDirection.None,
@@ -93,7 +93,7 @@ export interface TextLayout {
   color: string;
   fontSize: number;
   fontFamily: string;
-  fontWeight: "normal" | "bold";
+  fontWeight: 'normal' | 'bold';
   zIndex: number;
   isSelected: boolean;
   isVisible: boolean;
@@ -102,16 +102,16 @@ export interface TextLayout {
 export function createTextLayout(
   textId: UUID,
   position: Point,
-  targetId: UUID | null = null,
+  targetId: UUID | null = null
 ): TextLayout {
   return {
     textId,
     targetId,
     position,
-    color: "#000000",
+    color: '#000000',
     fontSize: 14,
-    fontFamily: "sans-serif",
-    fontWeight: "normal",
+    fontFamily: 'sans-serif',
+    fontWeight: 'normal',
     zIndex: 15,
     isSelected: false,
     isVisible: true,

@@ -1,4 +1,4 @@
-import { UUID, generateId } from "../core/types";
+import { UUID, generateId } from '../types/types';
 
 export interface TextAnnotation {
   id: UUID;
@@ -7,10 +7,10 @@ export interface TextAnnotation {
 }
 
 export function createTextAnnotation(
-  content: string = "",
-  id: UUID = generateId(),
+  content: string = '',
+  id: UUID = generateId()
 ): TextAnnotation {
   return { id, content };
 }
 
-export type TextAnnotationUpdate = Partial<Omit<TextAnnotation, "id">>;
+export type TextAnnotationUpdate = Partial<Omit<TextAnnotation, 'id'>>;

@@ -1,6 +1,6 @@
-import { generateId } from "../core/types.js";
-import { LayoutState } from "../layout/layout-state.js";
-import { Genogram } from "../models/genogram.js";
+import { generateId } from '../types/types.js';
+import { LayoutState } from '../layout/layout-state.js';
+import { Genogram } from '../models/genogram.js';
 
 export interface EditorState {
   genogram: Genogram;
@@ -33,7 +33,7 @@ export abstract class BaseCommand implements Command {
 }
 
 export class CompositeCommand extends BaseCommand {
-  readonly type = "COMPOSITE";
+  readonly type = 'COMPOSITE';
 
   constructor(private readonly commands: Command[]) {
     super();

@@ -1,8 +1,8 @@
-import { Point, UUID } from "../core/types.js";
-import { BaseCommand, EditorState } from "./base.js";
+import { Point, UUID } from '../types/types.js';
+import { BaseCommand, EditorState } from './base.js';
 
 export class SetZoomCommand extends BaseCommand {
-  readonly type = "SET_ZOOM";
+  readonly type = 'SET_ZOOM';
   private newZoom: number;
   private previousZoom?: number;
 
@@ -37,7 +37,7 @@ export class SetZoomCommand extends BaseCommand {
 }
 
 export class SetOffsetCommand extends BaseCommand {
-  readonly type = "SET_OFFSET";
+  readonly type = 'SET_OFFSET';
   private newOffset: Point;
   private previousOffset?: Point;
 
@@ -72,7 +72,7 @@ export class SetOffsetCommand extends BaseCommand {
 }
 
 export class ToggleGridSnapCommand extends BaseCommand {
-  readonly type = "TOGGLE_GRID_SNAP";
+  readonly type = 'TOGGLE_GRID_SNAP';
 
   execute(state: EditorState): EditorState {
     state.layout.canvas.gridSnap = !state.layout.canvas.gridSnap;
@@ -86,7 +86,7 @@ export class ToggleGridSnapCommand extends BaseCommand {
 }
 
 export class SelectNodesCommand extends BaseCommand {
-  readonly type = "SELECT_NODES";
+  readonly type = 'SELECT_NODES';
   private nodeIds: UUID[];
   private clearOthers: boolean;
   private previousSelected: UUID[] = [];
@@ -132,7 +132,7 @@ export class SelectNodesCommand extends BaseCommand {
 }
 
 export class DeselectAllCommand extends BaseCommand {
-  readonly type = "DESELECT_ALL";
+  readonly type = 'DESELECT_ALL';
   private previousNodeIds: UUID[] = [];
   private previousEdgeIds: UUID[] = [];
   private previousTextIds: UUID[] = [];

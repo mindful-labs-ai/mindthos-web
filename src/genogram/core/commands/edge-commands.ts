@@ -3,9 +3,9 @@ import {
   ChildStatus,
   EmotionalStatus,
   PartnerStatus,
-} from "../core/enums.js";
-import { Point, UUID } from "../core/types.js";
-import { EdgeLayout, createEdgeLayout } from "../layout/layout-state.js";
+} from '../types/enums.js';
+import { Point, UUID } from '../types/types.js';
+import { EdgeLayout, createEdgeLayout } from '../layout/layout-state.js';
 import {
   ChildRelationship,
   EmotionalRelationship,
@@ -14,11 +14,11 @@ import {
   createChildRelationship,
   createEmotionalRelationship,
   createPartnerRelationship,
-} from "../models/relationship.js";
-import { BaseCommand, EditorState } from "./base.js";
+} from '../models/relationship.js';
+import { BaseCommand, EditorState } from './base.js';
 
 export class AddPartnerRelationshipCommand extends BaseCommand {
-  readonly type = "ADD_PARTNER_RELATIONSHIP";
+  readonly type = 'ADD_PARTNER_RELATIONSHIP';
   private relationship: PartnerRelationship;
   private edgeLayout: EdgeLayout;
 
@@ -27,14 +27,14 @@ export class AddPartnerRelationshipCommand extends BaseCommand {
     targetId: UUID,
     sourcePos: Point,
     targetPos: Point,
-    status: PartnerStatus = PartnerStatus.Married,
+    status: PartnerStatus = PartnerStatus.Married
   ) {
     super();
     this.relationship = createPartnerRelationship(sourceId, targetId, status);
     this.edgeLayout = createEdgeLayout(
       this.relationship.id,
       sourcePos,
-      targetPos,
+      targetPos
     );
     this.edgeLayout.virtualAnchor = {
       x: (sourcePos.x + targetPos.x) / 2,
@@ -64,7 +64,7 @@ export class AddPartnerRelationshipCommand extends BaseCommand {
 }
 
 export class AddChildRelationshipCommand extends BaseCommand {
-  readonly type = "ADD_CHILD_RELATIONSHIP";
+  readonly type = 'ADD_CHILD_RELATIONSHIP';
   private relationship: ChildRelationship;
   private edgeLayout: EdgeLayout;
 
@@ -74,19 +74,19 @@ export class AddChildRelationshipCommand extends BaseCommand {
     sourcePos: Point,
     targetPos: Point,
     status: ChildStatus = ChildStatus.Biological,
-    parentRelationshipId?: UUID,
+    parentRelationshipId?: UUID
   ) {
     super();
     this.relationship = createChildRelationship(
       sourceId,
       targetId,
       status,
-      parentRelationshipId,
+      parentRelationshipId
     );
     this.edgeLayout = createEdgeLayout(
       this.relationship.id,
       sourcePos,
-      targetPos,
+      targetPos
     );
   }
 
@@ -112,7 +112,7 @@ export class AddChildRelationshipCommand extends BaseCommand {
 }
 
 export class AddEmotionalRelationshipCommand extends BaseCommand {
-  readonly type = "ADD_EMOTIONAL_RELATIONSHIP";
+  readonly type = 'ADD_EMOTIONAL_RELATIONSHIP';
   private relationship: EmotionalRelationship;
   private edgeLayout: EdgeLayout;
 
@@ -121,14 +121,14 @@ export class AddEmotionalRelationshipCommand extends BaseCommand {
     targetId: UUID,
     sourcePos: Point,
     targetPos: Point,
-    status: EmotionalStatus = EmotionalStatus.Basic,
+    status: EmotionalStatus = EmotionalStatus.Basic
   ) {
     super();
     this.relationship = createEmotionalRelationship(sourceId, targetId, status);
     this.edgeLayout = createEdgeLayout(
       this.relationship.id,
       sourcePos,
-      targetPos,
+      targetPos
     );
   }
 
@@ -154,7 +154,7 @@ export class AddEmotionalRelationshipCommand extends BaseCommand {
 }
 
 export class DeleteRelationshipCommand extends BaseCommand {
-  readonly type = "DELETE_RELATIONSHIP";
+  readonly type = 'DELETE_RELATIONSHIP';
   private relationshipId: UUID;
   private backup?: { relationship: Relationship; layout: EdgeLayout };
 
@@ -184,7 +184,7 @@ export class DeleteRelationshipCommand extends BaseCommand {
     if (this.backup) {
       state.genogram.relationships.set(
         this.relationshipId,
-        this.backup.relationship,
+        this.backup.relationship
       );
       state.layout.edges.set(this.relationshipId, this.backup.layout);
     }
@@ -194,7 +194,7 @@ export class DeleteRelationshipCommand extends BaseCommand {
 }
 
 export class UpdateEdgeStyleCommand extends BaseCommand {
-  readonly type = "UPDATE_EDGE_STYLE";
+  readonly type = 'UPDATE_EDGE_STYLE';
   private edgeId: UUID;
   private updates: Partial<EdgeLayout>;
   private previousValues?: Partial<EdgeLayout>;
@@ -228,7 +228,7 @@ export class UpdateEdgeStyleCommand extends BaseCommand {
 }
 
 export class UpdateEdgePathCommand extends BaseCommand {
-  readonly type = "UPDATE_EDGE_PATH";
+  readonly type = 'UPDATE_EDGE_PATH';
   private edgeId: UUID;
   private newPath: Point[];
   private previousPath?: Point[];
@@ -271,7 +271,7 @@ export class UpdateEdgePathCommand extends BaseCommand {
 }
 
 export class SetArrowDirectionCommand extends BaseCommand {
-  readonly type = "SET_ARROW_DIRECTION";
+  readonly type = 'SET_ARROW_DIRECTION';
   private edgeId: UUID;
   private direction: ArrowDirection;
   private previousDirection?: ArrowDirection;
@@ -301,7 +301,7 @@ export class SetArrowDirectionCommand extends BaseCommand {
 }
 
 export class SetEdgeLabelCommand extends BaseCommand {
-  readonly type = "SET_EDGE_LABEL";
+  readonly type = 'SET_EDGE_LABEL';
   private edgeId: UUID;
   private label: string;
   private previousLabel?: string;
