@@ -1,0 +1,26 @@
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface Size {
+  width: number;
+  height: number;
+}
+
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type UUID = string;
+
+export function generateId(): UUID {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+export function cloneDeep<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
