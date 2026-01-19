@@ -23,6 +23,23 @@ export const trackEvent = (
   mixpanel.track(eventName, props);
 };
 
+export const trackError = (
+  errorType: string,
+  error: unknown,
+  context?: Record<string, unknown>
+) => {
+  const errorMessage =
+    error instanceof Error ? error.message : String(error || 'Unknown error');
+  const errorStack = error instanceof Error ? error.stack : undefined;
+
+  mixpanel.track('error_occurred', {
+    error_type: errorType,
+    error_message: errorMessage,
+    error_stack: errorStack,
+    ...context,
+  });
+};
+
 export const identifyUser = (
   userId: string,
   traits?: Record<string, unknown>
