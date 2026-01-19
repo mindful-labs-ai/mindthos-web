@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - 어디에서도 import되지 않음, 결제 UI 변경으로 미사용
 import React from 'react';
 
 import { Text } from '@/components/ui/atoms/Text';
