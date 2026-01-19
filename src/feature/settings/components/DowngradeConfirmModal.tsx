@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
-import { useToast } from '@/components/ui/composites/Toast';
-import { trackError } from '@/lib/mixpanel';
 import { ArrowRightIcon, CheckIcon, HelpCircleIcon } from '@/shared/icons';
 
 import { planFeature, type PlanKey } from './PlanCard';
@@ -58,7 +56,6 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
   effectiveAt,
   onConfirm,
 }) => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -67,15 +64,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      trackError('plan_downgrade_error', error, {
-        current_plan: currentPlanType,
-        new_plan: newPlanType,
-      });
-      toast({
-        title: '플랜 다운그레이드 실패',
-        description: '플랜 변경에 실패했습니다. 다시 시도해주세요.',
-        duration: 5000,
-      });
+      console.error('다운그레이드 실패:', error);
     } finally {
       setIsLoading(false);
     }

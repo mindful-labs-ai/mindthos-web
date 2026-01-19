@@ -30,7 +30,10 @@ interface ModalState {
 
 interface ModalActions {
   /** 모달 열기 */
-  openModal: <T extends ModalType>(type: T, data?: ModalData[T]) => void;
+  openModal: <T extends ModalType>(
+    type: T,
+    data?: ModalData[T]
+  ) => void;
   /** 모달 닫기 */
   closeModal: (type: ModalType) => void;
   /** 특정 모달이 열려있는지 확인 */
@@ -38,7 +41,10 @@ interface ModalActions {
   /** 모든 모달 닫기 */
   closeAllModals: () => void;
   /** 모달 토글 */
-  toggleModal: <T extends ModalType>(type: T, data?: ModalData[T]) => void;
+  toggleModal: <T extends ModalType>(
+    type: T,
+    data?: ModalData[T]
+  ) => void;
 }
 
 type ModalStore = ModalState & ModalActions;
@@ -58,10 +64,9 @@ export const useModalStore = create<ModalStore>()(
         set(
           (state) => ({
             openModals: [...state.openModals, type],
-            modalData:
-              data !== undefined
-                ? { ...state.modalData, [type]: data }
-                : state.modalData,
+            modalData: data !== undefined
+              ? { ...state.modalData, [type]: data }
+              : state.modalData,
           }),
           false,
           `openModal/${type}`
@@ -88,7 +93,11 @@ export const useModalStore = create<ModalStore>()(
       },
 
       closeAllModals: () => {
-        set({ openModals: [], modalData: {} }, false, 'closeAllModals');
+        set(
+          { openModals: [], modalData: {} },
+          false,
+          'closeAllModals'
+        );
       },
 
       toggleModal: (type, data) => {
@@ -111,9 +120,7 @@ export const useModalStore = create<ModalStore>()(
  */
 export const useModal = <T extends ModalType>(type: T) => {
   const isOpen = useModalStore((state) => state.openModals.includes(type));
-  const data = useModalStore(
-    (state) => state.modalData[type] as ModalData[T] | undefined
-  );
+  const data = useModalStore((state) => state.modalData[type] as ModalData[T] | undefined);
   const openModal = useModalStore((state) => state.openModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const toggleModal = useModalStore((state) => state.toggleModal);

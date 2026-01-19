@@ -27,7 +27,6 @@ import {
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
-import { trackError } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
@@ -272,10 +271,6 @@ export const SessionDetailPage: React.FC = () => {
       });
 
       console.error('상담노트 실패 에러 : ', error.message);
-      trackError('progress_note_polling_error', error, {
-        session_id: sessionId,
-        note_id: note.id,
-      });
       toast({
         title: '상담노트 작성 실패',
         description: '상담노트 작성 중 문제가 발생했습니다. 다시 시도해주세요.',
@@ -614,13 +609,12 @@ export const SessionDetailPage: React.FC = () => {
         queryKey: sessionQueryKey,
       });
 
-      trackError('transcript_save_error', error, {
-        session_id: sessionId,
-        transcribe_id: transcribe?.id,
-      });
       toast({
         title: '저장 실패',
-        description: '축어록 저장에 실패했습니다. 다시 시도해주세요.',
+        description:
+          error instanceof Error
+            ? error.message
+            : '전사 내용 업데이트에 실패했습니다.',
         duration: 3000,
       });
     }
@@ -761,13 +755,10 @@ export const SessionDetailPage: React.FC = () => {
         queryKey: sessionQueryKey,
       });
 
-      trackError('speaker_change_error', error, {
-        session_id: sessionId,
-        transcribe_id: transcribe?.id,
-      });
       toast({
         title: '화자 변경 실패',
-        description: '화자 변경에 실패했습니다. 다시 시도해주세요.',
+        description:
+          error instanceof Error ? error.message : '화자 변경에 실패했습니다.',
         duration: 3000,
       });
     }
@@ -1015,15 +1006,16 @@ export const SessionDetailPage: React.FC = () => {
       // 원래 탭으로 돌아가기
       setActiveTab(currentTabId);
 
-      console.error('상담노트 작성 에러 : ', error);
-      trackError('progress_note_create_error', error, {
-        session_id: sessionId,
-        template_id: templateId,
-      });
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '상담 노트 작성에 실패했습니다.';
+
+      console.error('상담노트 작성 에러 : ', errorMessage);
 
       toast({
         title: '상담노트 작성 실패',
-        description: '상담 노트 작성에 실패했습니다. 다시 시도해주세요.',
+        description: '상담 노트 작성에 실패했습니다.',
         duration: 5000,
       });
     }
@@ -1064,10 +1056,7 @@ export const SessionDetailPage: React.FC = () => {
           const url = await getAudioPresignedUrl(sessionId);
           setPresignedAudioUrl(url);
         } catch (error) {
-          console.error('녹음 파일을 불러오는 데 실패했습니다:', error);
-          trackError('audio_presigned_url_error', error, {
-            session_id: sessionId,
-          });
+          console.error('녹음 파일을 불러오는 대에 실패했습니다.:', error);
         }
       }
     };
@@ -1149,40 +1138,16 @@ export const SessionDetailPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handlePlayPauseWithInteraction, handleBackward, handleForward]);
 
-  // 세션 이동 시 상태 초기화 및 첫 번째 상담노트로 기본 탭 설정
-  const hasInitializedTab = React.useRef<string | undefined>(undefined);
+  // 세션 이동 시 상태 초기화
   React.useEffect(() => {
-    // 세션이 변경되면 탭 초기화 상태 리셋
-    if (hasInitializedTab.current !== sessionId) {
-      hasInitializedTab.current = undefined;
-      handleTimeUpdate(0);
-      setHasUserInteracted(false);
-      // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
-      if (isPlaying && audioRef.current) {
-        audioRef.current.pause();
-      }
+    setActiveTab('transcript');
+    handleTimeUpdate(0);
+    setHasUserInteracted(false);
+    // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
     }
-
-    // 이미 이 세션에서 탭 초기화 완료했으면 스킵
-    if (hasInitializedTab.current === sessionId) return;
-
-    // 첫 번째 완료된 상담노트로 탭 설정
-    const firstCompletedNote = sessionProgressNotes.find(
-      (note) =>
-        note.processing_status === 'succeeded' ||
-        note.processing_status === 'failed'
-    );
-
-    if (firstCompletedNote) {
-      setActiveTab(firstCompletedNote.id);
-      hasInitializedTab.current = sessionId;
-    } else if (sessionProgressNotes.length === 0 && session) {
-      // 상담노트가 없으면 transcript로 설정
-      setActiveTab('transcript');
-      hasInitializedTab.current = sessionId;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, sessionProgressNotes, session, isPlaying]);
+  }, [sessionId]);
 
   if (isLoading) {
     return (

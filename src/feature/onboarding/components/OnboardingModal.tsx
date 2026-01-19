@@ -1,4 +1,3 @@
-// TODO: 삭제 예정 - 사용되지 않는 파일 (OnboardingModal이 어디에서도 import되지 않음)
 import { Stepper } from '@/components/ui/composites/Stepper';
 import { cn } from '@/lib/cn';
 import { OnboardingStep } from '@/services/onboarding/types';

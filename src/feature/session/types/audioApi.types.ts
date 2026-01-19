@@ -1,4 +1,3 @@
-// TODO: 삭제 예정 - 사용되지 않는 타입 파일
 export interface UploadAudioRequest {
   file: File;
   user_id: number;

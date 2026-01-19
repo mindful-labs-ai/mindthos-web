@@ -1,4 +1,3 @@
-// TODO: 삭제 예정 - 목 데이터, 실제 API로 대체됨
 import type { Template } from '../types';
 
 export const mockTemplates: Template[] = [

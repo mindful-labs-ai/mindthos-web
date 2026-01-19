@@ -1,4 +1,3 @@
-// TODO: 삭제 예정 - CreateSessionModal에서만 사용되며, CreateSessionModal이 사용되지 않음
 /**
  * 세션 생성 Hook
  * - 오디오: S3 업로드 → 백그라운드 세션 생성

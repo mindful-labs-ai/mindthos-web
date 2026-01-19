@@ -22,10 +22,6 @@ interface MarkdownRendererProps {
 const preprocessMarkdown = (text: string): string => {
   let result = text;
 
-  // **숫자. 제목** 형태의 섹션 제목 앞에 줄바꿈 추가 (예: ****1. 제목** → 줄바꿈 + **1. 제목**)
-  // 줄바꿈이 없이 연속된 섹션들을 분리
-  result = result.replace(/\*\*(\d+\.\s)/g, '\n\n**$1');
-
   // **텍스트**한글 → **텍스트** 한글 (닫는 ** 뒤에 한글이 바로 오면 공백 삽입)
   // 닫는 **를 구분하기 위해: 앞에 공백이 아닌 문자가 있어야 함
   result = result.replace(/([^\s])\*\*([가-힣])/g, '$1** $2');

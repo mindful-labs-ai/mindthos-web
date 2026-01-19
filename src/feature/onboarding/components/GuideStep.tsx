@@ -1,4 +1,3 @@
-// TODO: 삭제 예정 - OnboardingModal에서만 사용되며, OnboardingModal이 사용되지 않음
 import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 

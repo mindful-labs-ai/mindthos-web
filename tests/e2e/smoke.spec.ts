@@ -13,8 +13,7 @@ test.describe('Smoke Tests', () => {
   });
 
   test('page is keyboard accessible', async ({ page }) => {
-    // /auth 페이지는 로그인 없이 접근 가능
-    await page.goto('/auth');
+    await page.goto('/demo');
 
     // Wait for page to be fully loaded
     await page.waitForLoadState('networkidle');
@@ -27,9 +26,8 @@ test.describe('Smoke Tests', () => {
     await expect(focusedElement).toBeVisible({ timeout: 10000 });
   });
 
-  // 다크모드 토글 버튼이 현재 UI에 노출되어 있지 않아 테스트 스킵
-  test.skip('dark mode toggle works', async ({ page }) => {
-    await page.goto('/');
+  test('dark mode toggle works', async ({ page }) => {
+    await page.goto('/demo');
     await page.waitForLoadState('networkidle');
 
     const html = page.locator('html');

@@ -1,4 +1,3 @@
-// TODO: 삭제 예정 - 목 데이터, 실제 API로 대체됨
 import { type SettingsData } from '../types';
 
 export const freePlan = {
