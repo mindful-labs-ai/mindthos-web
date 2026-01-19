@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - CreateMultiSessionModal로 대체됨, 어디에서도 import되지 않음
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';

@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - canvas-confetti 라이브러리 미사용, react-confetti로 대체되었으나 그것도 미사용
 declare module 'canvas-confetti' {
   interface Options {
     particleCount?: number;
