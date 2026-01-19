@@ -24,7 +24,7 @@ import {
   formatRenewalDate,
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
-import { trackError, trackEvent } from '@/lib/mixpanel';
+import { trackEvent } from '@/lib/mixpanel';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
 import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
@@ -150,10 +150,10 @@ export const SettingsPage: React.FC = () => {
         description: '구독이 계속 유지됩니다.',
       });
     } catch (error) {
-      trackError('cancel_subscription_revert_error', error);
       toast({
         title: '해지 예약 취소 실패',
-        description: '다시 시도해주세요.',
+        description:
+          error instanceof Error ? error.message : '다시 시도해주세요.',
       });
     }
   };
@@ -180,7 +180,7 @@ export const SettingsPage: React.FC = () => {
       trackEvent('logout');
       await logout();
     } catch (error) {
-      trackError('logout_error', error);
+      console.error('Logout failed:', error);
     }
   };
 
@@ -203,8 +203,11 @@ export const SettingsPage: React.FC = () => {
       await authService.deleteAccount(user.email);
       await logout();
     } catch (error) {
-      trackError('account_delete_error', error);
-      setDeleteError('계정 탈퇴에 실패했습니다. 다시 시도해주세요.');
+      setDeleteError(
+        error instanceof Error
+          ? error.message
+          : '계정 탈퇴에 실패했습니다. 다시 시도해주세요.'
+      );
     } finally {
       setIsDeleting(false);
     }

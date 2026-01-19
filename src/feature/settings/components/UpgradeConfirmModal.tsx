@@ -4,9 +4,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
-import { useToast } from '@/components/ui/composites/Toast';
 import { getCardBrandName } from '@/feature/payment/constants/card';
-import { trackError } from '@/lib/mixpanel';
 import { formatPrice } from '@/shared/utils/format';
 
 export interface UpgradePreviewData {
@@ -84,7 +82,6 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
   onConfirm,
   onChangeCard,
 }) => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -93,15 +90,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      trackError('plan_upgrade_error', error, {
-        current_plan: previewData?.currentPlan?.type,
-        new_plan: previewData?.newPlan?.type,
-      });
-      toast({
-        title: '플랜 업그레이드 실패',
-        description: '플랜 업그레이드에 실패했습니다. 다시 시도해주세요.',
-        duration: 5000,
-      });
+      console.error('업그레이드 실패:', error);
     } finally {
       setIsLoading(false);
     }

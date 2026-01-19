@@ -93,10 +93,7 @@ export function useMultiSessionCreate({
 
         try {
           // 1. S3 업로드
-          updateResult(config.fileId, {
-            status: 'uploading',
-            uploadProgress: 0,
-          });
+          updateResult(config.fileId, { status: 'uploading', uploadProgress: 0 });
 
           const uploadResult = await s3UploadService.uploadAudio({
             file: file.file,
@@ -117,8 +114,7 @@ export function useMultiSessionCreate({
             title: file.name,
             s3_key: uploadResult.file_path,
             file_size_mb: uploadResult.file_size_mb,
-            duration_seconds:
-              uploadResult.duration_seconds || file.duration || 0,
+            duration_seconds: uploadResult.duration_seconds || file.duration || 0,
             client_id: config.clientId || null,
             stt_model: sttModel,
             template_id: templateId,

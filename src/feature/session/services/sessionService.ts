@@ -14,6 +14,7 @@ import type {
   Transcribe,
 } from '../types';
 
+
 export interface SessionStatusResponse {
   success: boolean;
   session_id: string;

@@ -17,7 +17,7 @@ import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
-import { trackError, trackEvent } from '@/lib/mixpanel';
+import { trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -224,13 +224,19 @@ export const ClientDetailPage: React.FC = () => {
       // 분석 탭으로 이동
       setActiveTab('analyze');
     } catch (error) {
-      trackError('client_analysis_create_error', error, {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+
+      trackEvent('client_analysis_failed', {
         client_id: clientId,
+        error: errorMessage,
       });
 
+      console.error('Failed to create analysis:', error);
       toast({
         title: '분석 실패',
-        description: '분석 작성에 실패했습니다. 다시 시도해주세요.',
+        description:
+          error instanceof Error ? error.message : '분석 작성에 실패했습니다.',
         duration: 3000,
       });
       throw error;

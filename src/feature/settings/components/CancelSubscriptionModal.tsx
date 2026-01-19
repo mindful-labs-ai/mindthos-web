@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
-import { useToast } from '@/components/ui/composites/Toast';
-import { trackError } from '@/lib/mixpanel';
 import { CheckIcon, HelpCircleIcon } from '@/shared/icons';
 
 import { planFeature, type PlanKey } from './PlanCard';
@@ -58,7 +56,6 @@ export const CancelSubscriptionModal: React.FC<
   effectiveAt,
   onConfirm,
 }) => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirm = async () => {
@@ -67,14 +64,7 @@ export const CancelSubscriptionModal: React.FC<
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      trackError('subscription_cancel_error', error, {
-        current_plan: currentPlanType,
-      });
-      toast({
-        title: '구독 해지 실패',
-        description: '구독 해지에 실패했습니다. 다시 시도해주세요.',
-        duration: 5000,
-      });
+      console.error('구독 해지 실패:', error);
     } finally {
       setIsLoading(false);
     }

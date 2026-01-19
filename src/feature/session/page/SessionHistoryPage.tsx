@@ -201,6 +201,21 @@ export const SessionHistoryPage: React.FC = () => {
     navigate(getSessionDetailRoute(record.session_id));
   };
 
+  const handleChangeClient = (_record: SessionRecord) => {
+    // TODO: 내담자 변경 기능 구현
+  };
+
+  const handleDeleteSession = (record: SessionRecord) => {
+    if (confirm('정말로 이 상담 기록을 삭제하시겠습니까?')) {
+      // TODO: DB 삭제 API 호출 필요
+
+      // 현재 선택된 세션이 삭제되는 경우 목록 페이지로 이동
+      if (sessionId === record.session_id) {
+        navigate('/sessions');
+      }
+    }
+  };
+
   const handleSessionClick = (selectedSessionId: string) => {
     navigate(getSessionDetailRoute(selectedSessionId));
   };
@@ -352,6 +367,8 @@ export const SessionHistoryPage: React.FC = () => {
                       onClick={() =>
                         handleTutorialAction(() => handleCardClick(record), 2)
                       }
+                      onChangeClient={handleChangeClient}
+                      onDelete={handleDeleteSession}
                     />
                   );
 
