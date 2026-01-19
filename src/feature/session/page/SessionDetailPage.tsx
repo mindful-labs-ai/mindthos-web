@@ -1149,16 +1149,40 @@ export const SessionDetailPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handlePlayPauseWithInteraction, handleBackward, handleForward]);
 
-  // 세션 이동 시 상태 초기화
+  // 세션 이동 시 상태 초기화 및 첫 번째 상담노트로 기본 탭 설정
+  const hasInitializedTab = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
-    setActiveTab('transcript');
-    handleTimeUpdate(0);
-    setHasUserInteracted(false);
-    // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
-    if (isPlaying && audioRef.current) {
-      audioRef.current.pause();
+    // 세션이 변경되면 탭 초기화 상태 리셋
+    if (hasInitializedTab.current !== sessionId) {
+      hasInitializedTab.current = undefined;
+      handleTimeUpdate(0);
+      setHasUserInteracted(false);
+      // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
+      if (isPlaying && audioRef.current) {
+        audioRef.current.pause();
+      }
     }
-  }, [sessionId]);
+
+    // 이미 이 세션에서 탭 초기화 완료했으면 스킵
+    if (hasInitializedTab.current === sessionId) return;
+
+    // 첫 번째 완료된 상담노트로 탭 설정
+    const firstCompletedNote = sessionProgressNotes.find(
+      (note) =>
+        note.processing_status === 'succeeded' ||
+        note.processing_status === 'failed'
+    );
+
+    if (firstCompletedNote) {
+      setActiveTab(firstCompletedNote.id);
+      hasInitializedTab.current = sessionId;
+    } else if (sessionProgressNotes.length === 0 && session) {
+      // 상담노트가 없으면 transcript로 설정
+      setActiveTab('transcript');
+      hasInitializedTab.current = sessionId;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, sessionProgressNotes, session, isPlaying]);
 
   if (isLoading) {
     return (
