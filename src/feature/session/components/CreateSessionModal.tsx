@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - CreateMultiSessionModal로 대체됨, 어디에서도 import되지 않음
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
@@ -14,7 +15,7 @@ import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
-import { trackEvent } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -220,9 +221,14 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
 
-      trackEvent('session_create_failed', {
+      trackError('session_create_error', error, {
         upload_type: type,
-        error: errorMessage,
+        transcribe_type:
+          type === 'audio'
+            ? sttModel === 'gemini-3'
+              ? 'advanced'
+              : 'basic'
+            : undefined,
       });
 
       // 크레딧 부족 에러 확인
@@ -231,7 +237,9 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       // SnackBar로 에러 표시
       setErrorSnackBar({
         open: true,
-        message: errorMessage,
+        message: isCreditError
+          ? errorMessage
+          : '상담 기록 생성에 실패했습니다. 다시 시도해주세요.',
         isCreditError,
       });
     } finally {

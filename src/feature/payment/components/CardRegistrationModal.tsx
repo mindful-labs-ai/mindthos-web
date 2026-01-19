@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackError } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 
 import { useTossPayments } from '../hooks/useTossPayments';
@@ -54,12 +55,10 @@ export const CardRegistrationModal = ({
       });
       onSuccess?.();
     } catch (error) {
+      trackError('card_registration_error', error);
       toast({
         title: '카드 등록 실패',
-        description:
-          error instanceof Error
-            ? error.message
-            : '카드 등록 중 오류가 발생했습니다.',
+        description: '카드 등록 중 오류가 발생했습니다. 다시 시도해주세요.',
       });
     } finally {
       setIsSubmitting(false);
