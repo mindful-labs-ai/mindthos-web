@@ -30,12 +30,14 @@ export const trackError = (
 ) => {
   const errorMessage =
     error instanceof Error ? error.message : String(error || 'Unknown error');
-  const errorStack = error instanceof Error ? error.stack : undefined;
+
+  const errorStack =
+    import.meta.env.DEV && error instanceof Error ? error.stack : undefined;
 
   mixpanel.track('error_occurred', {
     error_type: errorType,
     error_message: errorMessage,
-    error_stack: errorStack,
+    ...(errorStack && { error_stack: errorStack }),
     ...context,
   });
 };

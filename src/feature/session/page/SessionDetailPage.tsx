@@ -1151,38 +1151,41 @@ export const SessionDetailPage: React.FC = () => {
 
   // 세션 이동 시 상태 초기화 및 첫 번째 상담노트로 기본 탭 설정
   const hasInitializedTab = React.useRef<string | undefined>(undefined);
+  const prevSessionId = React.useRef<string | undefined>(undefined);
+
+  // 세션 변경 시 오디오 정지 및 상태 초기화 (sessionId만 의존)
   React.useEffect(() => {
-    // 세션이 변경되면 탭 초기화 상태 리셋
-    if (hasInitializedTab.current !== sessionId) {
-      hasInitializedTab.current = undefined;
-      handleTimeUpdate(0);
-      setHasUserInteracted(false);
+    if (prevSessionId.current !== sessionId) {
       // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
-      if (isPlaying && audioRef.current) {
+      if (audioRef.current) {
         audioRef.current.pause();
       }
+      handleTimeUpdate(0);
+      setHasUserInteracted(false);
+      hasInitializedTab.current = undefined;
+      prevSessionId.current = sessionId;
     }
+  }, [sessionId, handleTimeUpdate, audioRef]);
 
+  // 첫 번째 성공한 상담노트로 탭 설정 (sessionProgressNotes 변경 시)
+  React.useEffect(() => {
     // 이미 이 세션에서 탭 초기화 완료했으면 스킵
     if (hasInitializedTab.current === sessionId) return;
 
-    // 첫 번째 완료된 상담노트로 탭 설정
-    const firstCompletedNote = sessionProgressNotes.find(
-      (note) =>
-        note.processing_status === 'succeeded' ||
-        note.processing_status === 'failed'
+    // 첫 번째 성공한 상담노트로 탭 설정 (실패한 노트 제외)
+    const firstSucceededNote = sessionProgressNotes.find(
+      (note) => note.processing_status === 'succeeded'
     );
 
-    if (firstCompletedNote) {
-      setActiveTab(firstCompletedNote.id);
+    if (firstSucceededNote) {
+      setActiveTab(firstSucceededNote.id);
       hasInitializedTab.current = sessionId;
     } else if (sessionProgressNotes.length === 0 && session) {
       // 상담노트가 없으면 transcript로 설정
       setActiveTab('transcript');
       hasInitializedTab.current = sessionId;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId, sessionProgressNotes, session, isPlaying]);
+  }, [sessionId, sessionProgressNotes, session]);
 
   if (isLoading) {
     return (
