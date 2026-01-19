@@ -49,6 +49,18 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
           content: '',
         };
       }
+      // 볼드(**) 형태의 섹션 제목 (예: **0. 적용된 상담 이론 (추정)**)
+      // 줄 전체가 **로 감싸져 있고, 숫자로 시작하는 경우 (예: **1. 제목**)
+      else if (/^\*\*\d+\.\s+[^*]+\*\*\s*$/.test(line)) {
+        if (currentSection) {
+          sections.push(currentSection);
+        }
+        // ** 제거하고 제목 추출
+        currentSection = {
+          title: line.replace(/^\*\*|\*\*\s*$/g, '').trim(),
+          content: '',
+        };
+      }
       // S (Subjective): 형태의 섹션 제목 (SOAP) - 줄 시작이 정확히 이 패턴일 때만
       else if (/^[A-Z]\s*\([^)]+\)\s*:\s/.test(line)) {
         if (currentSection) {

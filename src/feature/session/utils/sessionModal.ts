@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - CreateSessionModal에서만 사용되며, CreateSessionModal이 사용되지 않음
 import type { UploadType } from '../types';
 
 export const getSessionModalTitle = (type: UploadType): string => {
