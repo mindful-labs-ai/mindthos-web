@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - 어디에서도 import되지 않음, 컨페티 효과 미사용
 import React, { useEffect, useState } from 'react';
 
 import ConfettiLib from 'react-confetti';

@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - CreateSessionModal에서만 사용되며, CreateSessionModal이 사용되지 않음
 /**
  * 세션 처리 상태 조회 Hook (TanStack Query)
  * - 백그라운드에서 처리 중인 세션의 상태를 폴링
