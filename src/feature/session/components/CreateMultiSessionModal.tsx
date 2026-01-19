@@ -266,13 +266,17 @@ export const CreateMultiSessionModal: React.FC<
     if (failedCount > 0) {
       const failedResults = finalResults.filter((r) => r.status === 'failed');
       failedResults.forEach((result) => {
-        trackError('multi_session_create_error', result.errorMessage, {
-          file_id: result.fileId,
-          file_name: result.fileName,
-          file_count: fileConfigs.length,
-          failed_count: failedCount,
-          success_count: successCount,
-        });
+        trackError(
+          'multi_session_create_error',
+          new Error(result.errorMessage || 'Unknown error'),
+          {
+            file_id: result.fileId,
+            file_name: result.fileName,
+            file_count: fileConfigs.length,
+            failed_count: failedCount,
+            success_count: successCount,
+          }
+        );
       });
 
       if (successCount === 0) {
