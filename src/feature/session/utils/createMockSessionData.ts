@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - 목 데이터 생성 유틸, 실제 API로 대체됨
 import type {
   FileInfo,
   ProgressNote,

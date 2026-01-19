@@ -1,3 +1,4 @@
+// TODO: 삭제 예정 - CreateSessionModal 관련 파일, 사용되지 않음
 import type { FileInfo, UploadType } from '../types';
 
 export interface FileUploadResult {

@@ -12,6 +12,7 @@ import type { Client } from '@/feature/client/types';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { CloudUploadIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -239,6 +240,12 @@ export const CreateMultiSessionModal: React.FC<
     ).length;
 
     if (successCount > 0) {
+      trackEvent('multi_session_create_success', {
+        success_count: successCount,
+        failed_count: failedCount,
+        total_count: fileConfigs.length,
+      });
+
       toast({
         title: '상담 기록 생성 요청 완료',
         description:
@@ -256,12 +263,25 @@ export const CreateMultiSessionModal: React.FC<
       }
     }
 
-    if (failedCount > 0 && successCount === 0) {
-      toast({
-        title: '상담 기록 생성 실패',
-        description: '모든 파일 업로드에 실패했습니다.',
-        duration: 5000,
+    if (failedCount > 0) {
+      const failedResults = finalResults.filter((r) => r.status === 'failed');
+      failedResults.forEach((result) => {
+        trackError('multi_session_create_error', result.errorMessage, {
+          file_id: result.fileId,
+          file_name: result.fileName,
+          file_count: fileConfigs.length,
+          failed_count: failedCount,
+          success_count: successCount,
+        });
       });
+
+      if (successCount === 0) {
+        toast({
+          title: '상담 기록 생성 실패',
+          description: '파일 업로드에 실패했습니다. 다시 시도해주세요.',
+          duration: 5000,
+        });
+      }
     }
 
     handleClose(false);
