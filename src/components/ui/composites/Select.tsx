@@ -204,7 +204,7 @@ export const Select: React.FC<SelectProps> = ({
           isOpen && 'border-primary'
         )}
       >
-        <span className={cn(!selectedValue && 'text-fg-muted')}>
+        <span className={cn(!selectedValue && 'text-fg-muted', 'truncate')}>
           {getDisplayValue()}
         </span>
         <svg
