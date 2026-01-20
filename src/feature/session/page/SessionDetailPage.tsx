@@ -1590,6 +1590,7 @@ export const SessionDetailPage: React.FC = () => {
                           : null
                       }
                       usedTemplateIds={sessionProgressNotes
+                        .filter((note) => note.processing_status !== 'failed')
                         .map((note) => note.template_id)
                         .filter(
                           (id): id is number => id !== null && id !== undefined
