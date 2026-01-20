@@ -165,6 +165,12 @@ const HomePage = () => {
               remainingDays={remainingDays}
               onOpenCreateSession={handleUploadClick}
               onOpenUserEdit={() => openModal('userEdit')}
+              hasSession={sessionsFromQuery.length > 0}
+              onCompleteQuest3={() => {
+                if (user?.email) {
+                  useQuestStore.getState().completeNextStep(user.email);
+                }
+              }}
             />
           ) : (
             isWelcomeBannerVisible && (
