@@ -26,6 +26,7 @@ import {
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { trackError } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
@@ -181,6 +182,10 @@ export const SessionDetailPage: React.FC = () => {
 
   const isDummySession = isDummySessionId(sessionId || '');
   const isReadOnly = isDummySession;
+
+  // 크레딧 정보 조회
+  const { creditInfo } = useCreditInfo();
+  const PROGRESS_NOTE_CREDIT = 10; // 상담노트 생성 크레딧
   const sessionQueryKey = React.useMemo(
     () => sessionDetailQueryKey(sessionId || '', isDummySession),
     [sessionId, isDummySession]
@@ -947,6 +952,17 @@ export const SessionDetailPage: React.FC = () => {
       return;
     }
 
+    // 크레딧 체크
+    const remainingCredit = creditInfo?.plan.remaining ?? 0;
+    if (remainingCredit < PROGRESS_NOTE_CREDIT) {
+      toast({
+        title: '크레딧 부족',
+        description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요합니다. (보유: ${remainingCredit})`,
+        duration: 5000,
+      });
+      return;
+    }
+
     // 현재 활성 탭이 템플릿 선택 중인 탭인지 확인
     if (!(activeTab in creatingTabs)) return;
 
@@ -1574,6 +1590,7 @@ export const SessionDetailPage: React.FC = () => {
                           : null
                       }
                       usedTemplateIds={sessionProgressNotes
+                        .filter((note) => note.processing_status !== 'failed')
                         .map((note) => note.template_id)
                         .filter(
                           (id): id is number => id !== null && id !== undefined

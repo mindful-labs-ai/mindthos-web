@@ -17,6 +17,7 @@ import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import type { SessionRecord } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
@@ -48,6 +49,10 @@ export const ClientDetailPage: React.FC = () => {
   const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
   const userId = useAuthStore((state) => state.userId);
   const { toast } = useToast();
+
+  // 크레딧 정보 조회
+  const { creditInfo } = useCreditInfo();
+  const CLIENT_ANALYSIS_CREDIT = 50; // 다회기 분석 크레딧
 
   // 현재 퀘스트 레벨 가져오기
   const { currentLevel } = useQuestStore();
@@ -200,6 +205,17 @@ export const ClientDetailPage: React.FC = () => {
       return;
     }
     if (!clientId) return;
+
+    // 크레딧 체크
+    const remainingCredit = creditInfo?.plan.remaining ?? 0;
+    if (remainingCredit < CLIENT_ANALYSIS_CREDIT) {
+      toast({
+        title: '크레딧 부족',
+        description: `다회기 분석에 ${CLIENT_ANALYSIS_CREDIT} 크레딧이 필요합니다. (보유: ${remainingCredit})`,
+        duration: 5000,
+      });
+      return;
+    }
 
     try {
       const response = await createAnalysisMutation.mutateAsync({
