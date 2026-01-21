@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { CheckBox } from '@/components/ui/atoms/CheckBox';
 import { Input } from '@/components/ui/atoms/Input';
 import { FormField } from '@/components/ui/composites/FormField';
+import { trackEvent } from '@/lib/mixpanel';
 import { getTermsRoute, ROUTES, TERMS_TYPES } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -38,10 +39,15 @@ const SignUpForm = () => {
         privacyAccepted,
       });
 
+      trackEvent('signup_success', { method: 'email' });
+
       navigate(ROUTES.EMAIL_VERIFICATION, {
         state: { email },
       });
     } catch (err) {
+      trackEvent('signup_failed', {
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
       setError(
         err instanceof Error
           ? err.message
