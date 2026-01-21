@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+
 import { PLAYBACK_RATES } from '../constants/audioPlayer';
 import { useAudioPlayerKeyboard } from '../hooks/useAudioPlayerKeyboard';
 import { formatTime } from '../utils/formatTime';
@@ -43,7 +45,14 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   const handlePlaybackRateClick = () => {
     const currentIndex = PLAYBACK_RATES.indexOf(playbackRate);
     const nextIndex = (currentIndex + 1) % PLAYBACK_RATES.length;
-    onPlaybackRateChange(PLAYBACK_RATES[nextIndex]);
+    const newRate = PLAYBACK_RATES[nextIndex];
+    trackEvent('audio_speed_change', { speed: newRate });
+    onPlaybackRateChange(newRate);
+  };
+
+  const handlePlayPauseClick = () => {
+    trackEvent(isPlaying ? 'audio_pause' : 'audio_play');
+    onPlayPause();
   };
 
   return (
@@ -115,7 +124,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             type="button"
             className="rounded-full p-2.5 text-fg transition-transform active:scale-75 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={isLoading ? '로딩 중' : isPlaying ? '일시정지' : '재생'}
-            onClick={onPlayPause}
+            onClick={handlePlayPauseClick}
             disabled={isLoading}
           >
             {isLoading ? (
