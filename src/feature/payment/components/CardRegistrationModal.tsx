@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
-import { trackError } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 
 import { useTossPayments } from '../hooks/useTossPayments';
@@ -49,12 +49,17 @@ export const CardRegistrationModal = ({
 
     try {
       setIsSubmitting(true);
+      trackEvent('card_register_attempt');
       await requestBillingAuth({
         customerName: buyerName,
         customerEmail: user.email,
       });
+      trackEvent('card_register_success');
       onSuccess?.();
     } catch (error) {
+      trackEvent('card_register_failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       trackError('card_registration_error', error);
       toast({
         title: '카드 등록 실패',

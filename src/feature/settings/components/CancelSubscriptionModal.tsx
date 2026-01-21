@@ -7,7 +7,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
-import { trackError } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { CheckIcon, HelpCircleIcon } from '@/shared/icons';
 
 import { planFeature, type PlanKey } from './PlanCard';
@@ -63,6 +63,9 @@ export const CancelSubscriptionModal: React.FC<
 
   const handleConfirm = async () => {
     setIsLoading(true);
+    trackEvent('subscription_cancel_attempt', {
+      current_plan: currentPlanType,
+    });
     try {
       await onConfirm();
       onOpenChange(false);

@@ -6,7 +6,7 @@ import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
 import { getCardBrandName } from '@/feature/payment/constants/card';
-import { trackError } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { formatPrice } from '@/shared/utils/format';
 
 export interface UpgradePreviewData {
@@ -89,6 +89,10 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
 
   const handleConfirm = async () => {
     setIsLoading(true);
+    trackEvent('plan_upgrade_attempt', {
+      current_plan: previewData?.currentPlan?.type,
+      new_plan: previewData?.newPlan?.type,
+    });
     try {
       await onConfirm();
       onOpenChange(false);

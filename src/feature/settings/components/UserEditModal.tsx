@@ -9,6 +9,7 @@ import { Title } from '@/components/ui/atoms/Title';
 import { FormField } from '@/components/ui/composites/FormField';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 
 // Zod 스키마 정의
@@ -110,6 +111,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       });
     },
     onSuccess: () => {
+      trackEvent('user_info_edit_success');
       toast({
         title: '정보 입력 완료',
         description: '사용자 정보가 성공적으로 수정되었습니다.',
@@ -118,6 +120,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       onOpenChange(false);
     },
     onError: (error) => {
+      trackEvent('user_info_edit_failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
       console.error('Update user failed:', error);
       toast({
         title: '정보 입력 실패',
