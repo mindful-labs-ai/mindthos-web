@@ -42,7 +42,7 @@ export interface ViewDisplaySettings {
  * View Settings 변경 리스너
  */
 export type ViewSettingsChangeListener = (
-  settings: ViewDisplaySettings,
+  settings: ViewDisplaySettings
 ) => void;
 
 /**
@@ -81,7 +81,7 @@ export class ViewSettings {
    * 개별 설정 조회
    */
   getSetting<K extends keyof ViewDisplaySettings>(
-    key: K,
+    key: K
   ): ViewDisplaySettings[K] {
     return this.settings[key];
   }

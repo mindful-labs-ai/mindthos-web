@@ -3,8 +3,9 @@ import {
   EmotionalStatus,
   PartnerStatus,
   RelationType,
-} from '../types/enums.js';
-import { UUID, generateId } from '../types/types.js';
+} from '../types/enums';
+import type { UUID } from '../types/types';
+import { generateId } from '../types/types';
 
 export interface RelationshipEvent {
   type: string;

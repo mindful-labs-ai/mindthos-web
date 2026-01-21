@@ -3,19 +3,23 @@ import {
   ChildStatus,
   EmotionalStatus,
   PartnerStatus,
-} from '../types/enums.js';
-import { Point, UUID } from '../types/types.js';
-import { EdgeLayout, createEdgeLayout } from '../layout/layout-state.js';
-import {
+} from '../types/enums';
+import type { Point, UUID } from '../types/types';
+import type { EdgeLayout } from '../layout/layout-state';
+import { createEdgeLayout } from '../layout/layout-state';
+import type {
   ChildRelationship,
   EmotionalRelationship,
   PartnerRelationship,
   Relationship,
+} from '../models/relationship';
+import {
   createChildRelationship,
   createEmotionalRelationship,
   createPartnerRelationship,
-} from '../models/relationship.js';
-import { BaseCommand, EditorState } from './base.js';
+} from '../models/relationship';
+import type { EditorState } from './base';
+import { BaseCommand } from './base';
 
 export class AddPartnerRelationshipCommand extends BaseCommand {
   readonly type = 'ADD_PARTNER_RELATIONSHIP';

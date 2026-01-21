@@ -1,8 +1,9 @@
-import { UUID, generateId } from '../types/types.js';
-import { FamilyTree } from './family-tree.js';
-import { Person } from './person.js';
-import { Relationship } from './relationship.js';
-import { TextAnnotation } from './text-annotation.js';
+import type { UUID } from '../types/types';
+import { generateId } from '../types/types';
+import type { FamilyTree } from './family-tree';
+import type { Person } from './person';
+import type { Relationship } from './relationship';
+import type { TextAnnotation } from './text-annotation';
 
 export interface GenogramMetadata {
   title: string;

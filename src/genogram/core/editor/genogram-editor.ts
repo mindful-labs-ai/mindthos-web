@@ -1,4 +1,4 @@
-import { Command, EditorState } from '../commands/base.js';
+import type { Command, EditorState } from '../commands/base';
 import {
   AddChildRelationshipCommand,
   AddEmotionalRelationshipCommand,
@@ -7,22 +7,43 @@ import {
   SetArrowDirectionCommand,
   SetEdgeLabelCommand,
   UpdateEdgeStyleCommand,
-} from '../commands/edge-commands.js';
-import { CommandManager, CommandManagerConfig } from '../commands/manager.js';
+} from '../commands/edge-commands';
+import type { CommandManagerConfig } from '../commands/manager';
+import { CommandManager } from '../commands/manager';
 import {
   AddPersonCommand,
   DeletePersonCommand,
   MoveMultipleNodesCommand,
   MoveNodeCommand,
   UpdatePersonCommand,
-} from '../commands/node-commands.js';
+} from '../commands/node-commands';
 import {
   DeselectAllCommand,
   SelectNodesCommand,
   SetOffsetCommand,
   SetZoomCommand,
   ToggleGridSnapCommand,
-} from '../commands/view-commands.js';
+} from '../commands/view-commands';
+import type { LayoutConfig } from '../layout/layout-engine';
+import { LayoutEngine } from '../layout/layout-engine';
+import type {
+  EdgeLayout,
+  LayoutState,
+  NodeLayout,
+  SerializedLayoutState,
+} from '../layout/layout-state';
+import {
+  createLayoutState,
+  deserializeLayout,
+  serializeLayout,
+} from '../layout/layout-state';
+import type { Genogram, SerializedGenogram } from '../models/genogram';
+import {
+  createGenogram,
+  deserializeGenogram,
+  serializeGenogram,
+} from '../models/genogram';
+import type { Person } from '../models/person';
 import {
   ArrowDirection,
   AssetType,
@@ -31,29 +52,11 @@ import {
   Gender,
   PartnerStatus,
   ToolMode,
-} from '../types/enums.js';
-import { Point, Rect, UUID } from '../types/types.js';
-import { LayoutConfig, LayoutEngine } from '../layout/layout-engine.js';
+} from '../types/enums';
+import type { Point, Rect, UUID } from '../types/types';
+
+import type { InteractionState, SelectedItem } from './interaction-state';
 import {
-  EdgeLayout,
-  LayoutState,
-  NodeLayout,
-  SerializedLayoutState,
-  createLayoutState,
-  deserializeLayout,
-  serializeLayout,
-} from '../layout/layout-state.js';
-import {
-  Genogram,
-  SerializedGenogram,
-  createGenogram,
-  deserializeGenogram,
-  serializeGenogram,
-} from '../models/genogram.js';
-import { Person } from '../models/person.js';
-import {
-  InteractionState,
-  SelectedItem,
   createInteractionState,
   endConnectionPreview,
   endDrag,
@@ -70,8 +73,9 @@ import {
   updateDrag,
   updateMousePosition,
   updateSelectionBox,
-} from './interaction-state.js';
-import { ViewDisplaySettings, ViewSettings } from './view-settings.js';
+} from './interaction-state';
+import type { ViewDisplaySettings } from './view-settings';
+import { ViewSettings } from './view-settings';
 
 export type EditorEventType =
   | 'state-change'
@@ -520,7 +524,7 @@ export class GenogramEditor {
     this.emit('interaction-change', this.interaction);
   }
 
-  handleMouseUp(point: Point): void {
+  handleMouseUp(_point: Point): void {
     const mode = this.interaction.toolMode;
 
     if (this.interaction.drag.isDragging) {

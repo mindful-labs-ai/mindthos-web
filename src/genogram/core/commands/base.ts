@@ -1,6 +1,6 @@
-import { generateId } from '../types/types.js';
-import { LayoutState } from '../layout/layout-state.js';
-import { Genogram } from '../models/genogram.js';
+import type { LayoutState } from '../layout/layout-state';
+import type { Genogram } from '../models/genogram';
+import { generateId } from '../types/types';
 
 export interface EditorState {
   genogram: Genogram;

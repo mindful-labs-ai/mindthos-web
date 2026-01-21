@@ -1,5 +1,6 @@
-import { Point, Rect } from '../types/types.js';
-import { LayoutState, NodeLayout } from './layout-state.js';
+import type { Point, Rect } from '../types/types';
+
+import type { LayoutState, NodeLayout } from './layout-state';
 
 export interface LayoutConfig {
   nodeWidth: number;
@@ -153,7 +154,7 @@ export class LayoutEngine {
       const totalWidth =
         nodes.length * this.config.nodeWidth +
         (nodes.length - 1) * this.config.horizontalGap;
-      let startX = centerX - totalWidth / 2;
+      const startX = centerX - totalWidth / 2;
 
       nodes.forEach((node, index) => {
         node.position = {

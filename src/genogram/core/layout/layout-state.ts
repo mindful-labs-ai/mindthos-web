@@ -1,5 +1,5 @@
-import { ArrowDirection, LineStyle, NodeSize } from '../types/enums.js';
-import { Point, UUID } from '../types/types.js';
+import { ArrowDirection, LineStyle, NodeSize } from '../types/enums';
+import type { Point, UUID } from '../types/types';
 
 // Canvas
 export interface CanvasState {

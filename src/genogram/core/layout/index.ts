@@ -1,2 +1,2 @@
-export * from './layout-engine.ts';
-export * from './layout-state.ts';
+export * from './layout-engine';
+export * from './layout-state';

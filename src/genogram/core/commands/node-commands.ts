@@ -1,8 +1,12 @@
-import { Gender } from '../types/enums.js';
-import { Point, UUID } from '../types/types.js';
-import { NodeLayout, createNodeLayout } from '../layout/layout-state.js';
-import { Person, createPerson } from '../models/person.js';
-import { BaseCommand, EditorState } from './base.js';
+import type { NodeLayout } from '../layout/layout-state';
+import { createNodeLayout } from '../layout/layout-state';
+import type { Person } from '../models/person';
+import { createPerson } from '../models/person';
+import { Gender } from '../types/enums';
+import type { Point, UUID } from '../types/types';
+
+import type { EditorState } from './base';
+import { BaseCommand } from './base';
 
 export class AddPersonCommand extends BaseCommand {
   readonly type = 'ADD_PERSON';

@@ -8,6 +8,7 @@ import { ClientListPage } from '@/feature/client/page/ClientListPage';
 import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
+import { GenogramPage } from '@/feature/genogram/page/GenogramPage';
 import HomePage from '@/feature/home/page/HomePage';
 import { PaymentFail } from '@/feature/payment/components/PaymentFail';
 import { PaymentSuccess } from '@/feature/payment/components/PaymentSuccess';
@@ -66,6 +67,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.TEMPLATE,
             element: <TemplateListPage />,
+          },
+          {
+            path: ROUTES.GENOGRAM,
+            element: <GenogramPage />,
           },
           {
             path: ROUTES.SETTINGS,

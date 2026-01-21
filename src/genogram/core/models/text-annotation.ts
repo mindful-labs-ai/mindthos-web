@@ -1,4 +1,5 @@
-import { UUID, generateId } from '../types/types';
+import type { UUID } from '../types/types';
+import { generateId } from '../types/types';
 
 export interface TextAnnotation {
   id: UUID;

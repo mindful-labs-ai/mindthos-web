@@ -1,6 +1,7 @@
-import { Command, EditorState } from "./base.js";
+import type { Command, EditorState } from './base';
+import { CompositeCommand } from './base';
 
-export type HistoryEvent = "execute" | "undo" | "redo" | "clear";
+export type HistoryEvent = 'execute' | 'undo' | 'redo' | 'clear';
 export type HistoryListener = (event: HistoryEvent, command?: Command) => void;
 
 export interface CommandManagerConfig {
@@ -42,7 +43,7 @@ export class CommandManager {
         this.lastExecuteTime = now;
         const undone = last.undo(state);
         const result = merged.execute(undone);
-        this.notify("execute", merged);
+        this.notify('execute', merged);
         return result;
       }
     }
@@ -56,7 +57,7 @@ export class CommandManager {
 
     this.redoStack = [];
     this.lastExecuteTime = now;
-    this.notify("execute", command);
+    this.notify('execute', command);
 
     return newState;
   }
@@ -69,12 +70,11 @@ export class CommandManager {
     if (commands.length === 1) {
       this.undoStack.push(commands[0]);
     } else {
-      const { CompositeCommand } = require("./base");
       this.undoStack.push(new CompositeCommand(commands));
     }
 
     this.redoStack = [];
-    this.notify("execute");
+    this.notify('execute');
     return result;
   }
 
@@ -84,7 +84,7 @@ export class CommandManager {
     const command = this.undoStack.pop()!;
     const newState = command.undo(state);
     this.redoStack.push(command);
-    this.notify("undo", command);
+    this.notify('undo', command);
 
     return newState;
   }
@@ -95,7 +95,7 @@ export class CommandManager {
     const command = this.redoStack.pop()!;
     const newState = command.execute(state);
     this.undoStack.push(command);
-    this.notify("redo", command);
+    this.notify('redo', command);
 
     return newState;
   }
@@ -112,7 +112,7 @@ export class CommandManager {
     this.undoStack = [];
     this.redoStack = [];
     this.savedIndex = -1;
-    this.notify("clear");
+    this.notify('clear');
   }
 
   markSaved(): void {

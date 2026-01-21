@@ -1,4 +1,5 @@
-import { UUID, generateId } from '../types/types.js';
+import type { UUID } from '../types/types';
+import { generateId } from '../types/types';
 
 export interface TreeNode {
   personId: UUID;

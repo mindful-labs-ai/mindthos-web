@@ -1,5 +1,7 @@
-import { Point, UUID } from '../types/types.js';
-import { BaseCommand, EditorState } from './base.js';
+import type { Point, UUID } from '../types/types';
+
+import type { EditorState } from './base';
+import { BaseCommand } from './base';
 
 export class SetZoomCommand extends BaseCommand {
   readonly type = 'SET_ZOOM';

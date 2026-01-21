@@ -1,5 +1,5 @@
-import { AssetType, ToolMode } from '../types/enums.js';
-import { Point, Rect, UUID } from '../types/types.js';
+import { AssetType, ToolMode } from '../types/enums';
+import type { Point, Rect, UUID } from '../types/types';
 
 export interface SelectedItem {
   id: UUID;
