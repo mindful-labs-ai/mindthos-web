@@ -15,6 +15,7 @@ import {
   MissionCompleteTooltip,
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
+import { trackEvent } from '@/lib/mixpanel';
 import { CheckIcon } from '@/shared/icons';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 import { useAuthStore } from '@/stores/authStore';
@@ -121,6 +122,8 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       await navigator.clipboard.writeText(content);
       setCopiedKey('ai_supervision');
 
+      trackEvent('analysis_copy', { tab: activeTab });
+
       toast({
         title: '복사 완료',
         description: '클립보드에 내용이 복사되었습니다.',
@@ -172,7 +175,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             {onCreateAnalysis && (
               <button
                 type="button"
-                onClick={onCreateAnalysis}
+                onClick={() => {
+                  trackEvent('supervision_retry');
+                  onCreateAnalysis();
+                }}
                 className="flex items-center gap-2 rounded-lg border border-primary bg-primary-100 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
               >
                 수퍼비전 다시 받기
@@ -346,7 +352,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           <Tab
             items={tabItems}
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={(value) => {
+              trackEvent('analysis_tab_change', { tab: value });
+              setActiveTab(value);
+            }}
             variant="underline"
             size="md"
           />

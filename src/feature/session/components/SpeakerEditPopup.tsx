@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { useToast } from '@/components/ui/composites/Toast';
 import { useClientList } from '@/feature/client/hooks/useClientList';
+import { trackEvent } from '@/lib/mixpanel';
 
 import type { Speaker, TranscribeSegment } from '../types';
 import type { SpeakerRangeOption } from '../utils/segmentRangeUtils';
@@ -167,6 +168,12 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       await onApply({
         speakerChanges,
         speakerDefinitions: cleanedSpeakers,
+      });
+
+      trackEvent('speaker_edit_apply', {
+        range,
+        selection_type: selectionType,
+        affected_segments_count: affectedSegmentIds.length,
       });
 
       // 7. 성공 시 PopUp 닫기

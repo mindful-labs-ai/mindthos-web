@@ -5,6 +5,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import type { TemplateListItem } from '@/feature/template/types';
+import { trackEvent } from '@/lib/mixpanel';
 import { StarIcon } from '@/shared/icons';
 
 export interface TemplateCardProps {
@@ -20,11 +21,16 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
 }) => {
   const handlePinClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    trackEvent('template_pin_toggle', {
+      template_id: template.id,
+      pinned: !template.pin,
+    });
     onTogglePin?.(template);
   };
 
   const handleDefaultClick = () => {
     if (!template.is_default) {
+      trackEvent('template_set_default', { template_id: template.id });
       onSetDefault?.(template);
     }
   };

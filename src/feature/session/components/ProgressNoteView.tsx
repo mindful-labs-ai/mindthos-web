@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackEvent } from '@/lib/mixpanel';
 import { CheckIcon } from '@/shared/icons';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 
@@ -94,6 +95,8 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
       await navigator.clipboard.writeText(content);
       setCopiedIndex(index);
 
+      trackEvent('progress_note_copy', { section_index: index });
+
       toast({
         title: '복사 완료',
         description: '클립보드에 내용이 복사되었습니다.',
@@ -121,6 +124,8 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
     try {
       await navigator.clipboard.writeText(note.summary);
       setCopiedAll(true);
+
+      trackEvent('progress_note_copy_all');
 
       toast({
         title: '복사 완료',
