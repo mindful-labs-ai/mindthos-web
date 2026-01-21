@@ -28,7 +28,7 @@ import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
-import { trackError } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
@@ -608,6 +608,11 @@ export const SessionDetailPage: React.FC = () => {
       // 백그라운드에서 서버 업데이트
       await updateMultipleTranscriptSegments(transcribe.id, editedSegments);
 
+      trackEvent('transcript_edit_complete', {
+        session_id: sessionId,
+        edited_segments_count: Object.keys(editedSegments).length,
+      });
+
       toast({
         title: '저장 완료',
         description: '축어록이 수정되었습니다.',
@@ -640,10 +645,12 @@ export const SessionDetailPage: React.FC = () => {
       });
       return;
     }
+    trackEvent('transcript_edit_start', { session_id: sessionId });
     setIsEditing(true);
   };
 
   const handleCancelEdit = () => {
+    trackEvent('transcript_edit_cancel', { session_id: sessionId });
     setEditedSegments({});
     setIsEditing(false);
   };
