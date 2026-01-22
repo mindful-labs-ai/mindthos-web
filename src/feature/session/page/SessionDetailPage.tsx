@@ -35,6 +35,7 @@ import { AudioPlayer } from '../components/AudioPlayer';
 import { CreateProgressNoteView } from '../components/CreateProgressNoteView';
 import { ProgressNoteView } from '../components/ProgressNoteView';
 import { SessionHeader } from '../components/SessionHeader';
+import { TranscriptEditGuideModal } from '../components/TranscriptEditGuideModal';
 import { TranscriptSegment } from '../components/TranscriptSegment';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
@@ -42,6 +43,7 @@ import {
   sessionDetailQueryKey,
   useSessionDetail,
 } from '../hooks/useSessionDetail';
+import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
 import { addProgressNote } from '../services/progressNoteService';
 import {
@@ -215,6 +217,17 @@ export const SessionDetailPage: React.FC = () => {
 
   // 훅에서 반환된 탭 아이템 사용
   const tabItems = baseTabItems;
+
+  // 축어록 편집 가이드 훅
+  const userId = useAuthStore((state) =>
+    state.userId ? Number(state.userId) : undefined
+  );
+  const { handleScroll: handleGuideScroll, isGuideActive } =
+    useTranscriptEditGuide({
+      activeTab,
+      isDummySession,
+      userId,
+    });
 
   // 탭이 바뀌면 스크롤을 최상단으로 초기화
   React.useEffect(() => {
@@ -954,7 +967,7 @@ export const SessionDetailPage: React.FC = () => {
     handleSeekTo,
     handlePlaybackRateChange,
     handleTimeUpdate,
-  } = useAudioPlayer(audioUrl);
+  } = useAudioPlayer(audioUrl, { disabled: isGuideActive });
 
   const { currentSegmentIndex, activeSegmentRef } = useTranscriptSync({
     segments,
@@ -1183,6 +1196,7 @@ export const SessionDetailPage: React.FC = () => {
                 <>
                   <button
                     type="button"
+                    data-guide="transcript-save-button"
                     className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
                     onClick={handleSaveAllEdits}
                   >
@@ -1200,6 +1214,7 @@ export const SessionDetailPage: React.FC = () => {
                 <>
                   <button
                     type="button"
+                    data-guide="transcript-edit-button"
                     className="mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
                     onClick={handleEditStart}
                     title="편집"
@@ -1361,7 +1376,9 @@ export const SessionDetailPage: React.FC = () => {
             <div
               key="transcript-container"
               ref={contentScrollRef}
+              data-guide="transcript-segment-area"
               className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
+              onScroll={handleGuideScroll}
             >
               {segments.length > 0 ? (
                 <>
@@ -1573,6 +1590,9 @@ export const SessionDetailPage: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* 축어록 편집 기능 가이드 모달 */}
+      <TranscriptEditGuideModal />
     </div>
   );
 };

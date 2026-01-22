@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useFeatureGuideStore } from '@/stores/featureGuideStore';
+
 import type { Speaker, TranscribeSegment } from '../types';
 import { formatTime } from '../utils/formatTime';
 import { getSpeakerInfo } from '../utils/getSpeakerInfo';
@@ -115,9 +117,18 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
     }
   };
 
+  // Feature Guide Store - Level 4에서 speaker label 클릭 시 Level 5로 전환
+  const activeGuide = useFeatureGuideStore((state) => state.activeGuide);
+  const nextLevel = useFeatureGuideStore((state) => state.nextLevel);
+
   const handleSpeakerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsSpeakerPopupOpen(true);
+
+    // 가이드 Level 4 (화자 라벨 클릭) → Level 5로 전환
+    if (activeGuide?.type === 'transcriptEdit' && activeGuide.level === 4) {
+      nextLevel();
+    }
   };
 
   const handleSpeakerKeyDown = (e: React.KeyboardEvent) => {
@@ -157,6 +168,7 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
                 <div
                   role="button"
                   tabIndex={0}
+                  data-guide="speaker-label"
                   onClick={handleSpeakerClick}
                   onKeyDown={handleSpeakerKeyDown}
                   aria-label="화자 편집"

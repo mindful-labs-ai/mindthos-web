@@ -204,7 +204,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       placement="bottom-right"
       triggerClassName="" // w-full 제거하여 flex 레이아웃 깨지지 않도록
       content={
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 p-4" data-guide="speaker-change-modal">
           {/* Section 1: 참석자 선택 */}
           <div>
             <Text className="mb-2 text-sm font-semibold text-fg">

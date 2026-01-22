@@ -576,4 +576,3 @@ export async function assignClientToSession(
     throw new Error(`클라이언트 할당 실패: ${error.message}`);
   }
 }
-
