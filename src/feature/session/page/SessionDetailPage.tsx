@@ -389,19 +389,33 @@ export const SessionDetailPage: React.FC = () => {
         '축어록'
       );
 
+    // 완료된 상담노트 중 template_id 별로 가장 최신(created_at이 큰) 노트만 선택
+    const succeededNotes = sessionProgressNotes.filter(
+      (note) => note.processing_status === 'succeeded'
+    );
+    const latestNotesByTemplate = succeededNotes.reduce(
+      (acc, note) => {
+        const templateId = note.template_id ?? 'null';
+        const existing = acc.get(templateId);
+        if (
+          !existing ||
+          new Date(note.created_at) > new Date(existing.created_at)
+        ) {
+          acc.set(templateId, note);
+        }
+        return acc;
+      },
+      new Map<string | number, (typeof succeededNotes)[0]>()
+    );
+    const uniqueSucceededNotes = Array.from(latestNotesByTemplate.values());
+
     const items: TabItem[] = [
       { value: 'transcript', label: transcriptLabel },
-      // 완료된 상담노트
-      ...sessionProgressNotes
-        .filter(
-          (note) =>
-            note.processing_status === 'succeeded' ||
-            note.processing_status === 'failed'
-        )
-        .map((note) => ({
-          value: note.id,
-          label: note.title || '상담 노트',
-        })),
+      // 완료된 상담노트 (실패된 노트 제외, template_id 중복 시 최신 노트만)
+      ...uniqueSucceededNotes.map((note) => ({
+        value: note.id,
+        label: note.title || '상담 노트',
+      })),
     ];
 
     // 처리 중인 상담노트 탭 (DB에서 가져온 processing 상태)
@@ -1052,6 +1066,74 @@ export const SessionDetailPage: React.FC = () => {
     }
   };
 
+  // 상담노트 재생성 핸들러
+  const [isRegenerating, setIsRegenerating] = React.useState(false);
+
+  const handleRegenerateProgressNote = async (templateId: number) => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '예시에서는 상담 노트를 작성할 수 없습니다.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    // 크레딧 체크
+    const remainingCredit = creditInfo?.plan.remaining ?? 0;
+    if (remainingCredit < PROGRESS_NOTE_CREDIT) {
+      toast({
+        title: '크레딧 부족',
+        description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요합니다. (보유: ${remainingCredit})`,
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!sessionId || !transcribe?.contents) return;
+
+    const userIdString = useAuthStore.getState().userId;
+    if (!userIdString) return;
+
+    const userId = Number(userIdString);
+    if (isNaN(userId)) return;
+
+    setIsRegenerating(true);
+
+    try {
+      await addProgressNote({
+        sessionId,
+        userId,
+        templateId,
+      });
+
+      toast({
+        title: '상담노트 재생성 시작',
+        description: '상담노트를 다시 작성하고 있습니다.',
+        duration: 3000,
+      });
+
+      // 세션 데이터 갱신
+      await queryClient.invalidateQueries({
+        queryKey: sessionDetailQueryKey(sessionId, isDummySession),
+      });
+    } catch (error) {
+      console.error('상담노트 재생성 에러:', error);
+      trackError('progress_note_regenerate_error', error, {
+        session_id: sessionId,
+        template_id: templateId,
+      });
+
+      toast({
+        title: '상담노트 재생성 실패',
+        description: '상담 노트 재생성에 실패했습니다. 다시 시도해주세요.',
+        duration: 5000,
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   const audioMetadata = session?.audio_meta_data;
   const hasS3Key = !!audioMetadata?.s3_key;
   const audioUrl = presignedAudioUrl || session?.audio_url || null;
@@ -1617,8 +1699,7 @@ export const SessionDetailPage: React.FC = () => {
           ) : (
             <div
               key={`note-container-${activeTab}`}
-              ref={contentScrollRef}
-              className="h-full overflow-y-auto px-8 py-6"
+              className="flex h-full flex-col"
             >
               {(() => {
                 const selectedNote = sessionProgressNotes.find(
@@ -1626,13 +1707,31 @@ export const SessionDetailPage: React.FC = () => {
                 );
                 return selectedNote ? (
                   <>
-                    <ProgressNoteView note={selectedNote} />
-                    {/* 상담노트용 스크롤 감지 타겟 */}
+                    {/* 상담노트 콘텐츠 */}
                     <div
-                      key={`scroll-target-note-${tutorialStep}`}
-                      ref={noteEndRef}
-                      className="h-4 w-full"
-                    />
+                      ref={contentScrollRef}
+                      className="flex-1 overflow-y-auto px-8 py-6"
+                    >
+                      <ProgressNoteView
+                        note={selectedNote}
+                        onRegenerate={
+                          selectedNote.template_id
+                            ? () =>
+                                handleRegenerateProgressNote(
+                                  selectedNote.template_id!
+                                )
+                            : undefined
+                        }
+                        isRegenerating={isRegenerating}
+                        isReadOnly={isReadOnly}
+                      />
+                      {/* 상담노트용 스크롤 감지 타겟 */}
+                      <div
+                        key={`scroll-target-note-${tutorialStep}`}
+                        ref={noteEndRef}
+                        className="h-4 w-full"
+                      />
+                    </div>
                   </>
                 ) : (
                   <div className="flex min-h-[400px] items-center justify-center">

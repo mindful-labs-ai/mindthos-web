@@ -92,7 +92,13 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       let targetName: string;
       let targetSpeakerId: number | undefined;
 
-      if (selectionType === 'client') {
+      if (selectionType === 'default_counselor') {
+        // 기본 참석자: 상담사
+        targetName = '상담사';
+      } else if (selectionType === 'default_client') {
+        // 기본 참석자: 내담자
+        targetName = '내담자';
+      } else if (selectionType === 'client') {
         // session client 선택
         targetName = sessionClient?.name || '';
       } else if (selectionType === 'custom') {
@@ -206,6 +212,10 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
             </Text>
             <RadioGroup
               options={[
+                // 기본 참석자 옵션
+                { value: 'default_counselor', label: '상담사' },
+                { value: 'default_client', label: '내담자' },
+                // 세션에 연결된 내담자
                 ...(sessionClient
                   ? [
                       {

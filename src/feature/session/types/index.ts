@@ -93,6 +93,7 @@ export interface Transcribe {
   counsel_date: string | null;
   contents: TranscriptJson | TranscribeContents | null; // 새 구조 또는 Legacy 구조
   stt_model: SttModel | null; // "whisper" | "gemini-3"
+  parsed_text: string | null; // 파싱된 텍스트 (타임스탬프 포함 형식)
   created_at: string;
 }
 
