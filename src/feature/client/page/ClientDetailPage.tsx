@@ -435,6 +435,7 @@ export const ClientDetailPage: React.FC = () => {
             <ClientAnalysisTab
               analyses={displayAnalyses}
               isLoading={isLoadingAnalyses && !isDummyFlow}
+              pollingVersion={pollingVersion}
               onCreateAnalysis={() => {
                 if (isReadOnly) {
                   toast({

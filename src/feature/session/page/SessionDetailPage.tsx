@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
-import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
 import { Text } from '@/components/ui/atoms/Text';
 import { Modal } from '@/components/ui/composites/Modal';
@@ -38,11 +37,11 @@ import { ProgressNoteView } from '../components/ProgressNoteView';
 import { SessionHeader } from '../components/SessionHeader';
 import { TranscriptSegment } from '../components/TranscriptSegment';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
 import {
   sessionDetailQueryKey,
   useSessionDetail,
 } from '../hooks/useSessionDetail';
-import { useSessionProgressNotesPolling } from '../hooks/useSessionProgressNotesPolling';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
 import { addProgressNote } from '../services/progressNoteService';
 import {
@@ -85,7 +84,6 @@ export const SessionDetailPage: React.FC = () => {
     currentLevel: 1,
   });
 
-  const [activeTab, setActiveTab] = React.useState<string>('transcript');
   const [isEditing, setIsEditing] = React.useState(false);
   const [isAnonymized, setIsAnonymized] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -100,27 +98,12 @@ export const SessionDetailPage: React.FC = () => {
     threshold: 1.0,
   });
 
-  // 탭이 바뀌면 스크롤을 최상단으로 초기화
-
-  // 탭이 바뀌면 스크롤을 최상단으로 초기화
-  React.useEffect(() => {
-    if (contentScrollRef.current) {
-      contentScrollRef.current.scrollTop = 0;
-    }
-  }, [activeTab]);
-
-  // 스크롤 감지 시 4, 7단계 클리어
+  // 스크롤 감지 시 4단계 클리어
   React.useEffect(() => {
     if (isTranscriptEnd && checkIsTutorialActive(4)) {
       nextTutorialStep();
     }
   }, [isTranscriptEnd, nextTutorialStep, checkIsTutorialActive]);
-
-  React.useEffect(() => {
-    if (isNoteEnd && checkIsTutorialActive(7) && activeTab !== 'transcript') {
-      nextTutorialStep();
-    }
-  }, [isNoteEnd, nextTutorialStep, checkIsTutorialActive, activeTab]);
 
   const missionTooltip = React.useMemo(() => {
     if (checkIsTutorialActive(4)) return <TranscriptScrollTooltip />;
@@ -162,18 +145,6 @@ export const SessionDetailPage: React.FC = () => {
   // 탭 내부 스크롤 컨테이너 ref
   const contentScrollRef = React.useRef<HTMLDivElement>(null);
 
-  // 새 상담노트 생성 탭 상태 (템플릿 선택 중인 탭)
-  // key: 탭 ID, value: 선택된 템플릿 ID (null이면 선택 안됨)
-  const [creatingTabs, setCreatingTabs] = React.useState<
-    Record<string, number | null>
-  >({});
-
-  // API 요청 중인 탭들 (중복 클릭 방지 + 대기 UI 표시)
-  // key: 탭 ID, value: { templateId, progressNoteId (응답 후 설정) }
-  const [requestingTabs, setRequestingTabs] = React.useState<
-    Record<string, { templateId: number; progressNoteId: string | null }>
-  >({});
-
   // 세션 상세 조회 (TanStack Query)
   const { data: sessionDetail, isLoading } = useSessionDetail({
     sessionId: sessionId || '',
@@ -201,276 +172,63 @@ export const SessionDetailPage: React.FC = () => {
   // 템플릿 목록 조회
   const { templates } = useTemplateList();
 
-  // 세션의 전체 상담노트 폴링 (처리 중인 노트가 있을 때만)
-  const { processingNoteIds } = useSessionProgressNotesPolling({
+  // 탭 상태 훅 - 탭 관리, 폴링, 초기 탭 설정을 한 곳에서 처리
+  // transcriptLabel 계산 (stt_model에 따라)
+  const transcriptLabel =
+    transcribe?.stt_model === 'gemini-3' ? (
+      <span className="flex items-center justify-center gap-1.5">
+        고급 축어록
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M14 5.25C13.9244 5.67356 13.7561 6.07515 13.5071 6.426L8.38367 13.321C8.22123 13.5309 8.0132 13.701 7.77531 13.8186C7.53742 13.9362 7.2759 13.9982 7.01053 13.9998C6.74517 14.0014 6.4829 13.9427 6.24359 13.828C6.00427 13.7134 5.79416 13.5458 5.62917 13.3379L0.480667 6.3C0.261963 5.9831 0.107574 5.62636 0.02625 5.25H3.68258L6.45517 12.4594C6.49736 12.5697 6.57203 12.6646 6.66931 12.7316C6.7666 12.7985 6.88191 12.8343 7 12.8343C7.11809 12.8343 7.2334 12.7985 7.33069 12.7316C7.42797 12.6646 7.50264 12.5697 7.54483 12.4594L10.3174 5.25H14ZM10.325 4.08333H13.9749C13.8862 3.68866 13.7159 3.3169 13.475 2.99192L11.9828 0.977084C11.7667 0.675067 11.4818 0.428897 11.1516 0.258976C10.8214 0.0890556 10.4554 0.000278038 10.0841 1.12792e-06H8.80075L10.325 4.08333ZM6.47967 1.12792e-06L4.92858 4.08333H9.07725L7.55708 1.12792e-06H6.47967ZM3.68083 4.08333L5.23133 1.12792e-06H3.87683C3.50862 -0.000361335 3.14558 0.0866408 2.81753 0.25386C2.48948 0.421079 2.20579 0.663744 1.98975 0.961918L0.547167 2.85308C0.271136 3.21477 0.0837343 3.63612 0 4.08333H3.68083ZM9.06733 5.25H4.93267L7 10.6248L9.06733 5.25Z"
+            fill="#44CE4B"
+          />
+        </svg>
+      </span>
+    ) : (
+      '축어록'
+    );
+
+  const {
+    activeTab,
+    setActiveTab,
+    tabItems: baseTabItems,
+    activeCreatingTab,
+    creatingTabs,
+    setCreatingTabs,
+    requestingTabs,
+    setRequestingTabs,
+  } = useProgressNoteTabs({
     sessionId: sessionId || '',
     isDummySession,
-    enabled: !isReadOnly && !!sessionId,
-    // requestingTabs에 항목이 있으면 폴링 강제 활성화 (새 노트 감지용)
-    hasExternalProcessing: Object.keys(requestingTabs).length > 0,
-    onNoteComplete: (note) => {
-      // 해당 노트의 생성 탭이 있었다면 제거
-      setCreatingTabs((prev) => {
-        const updated = { ...prev };
-        const tabId = `create-note-${note.id}`;
-        if (tabId in updated) {
-          delete updated[tabId];
-        }
-        return updated;
-      });
-
-      // requestingTabs에서 해당 노트를 찾아 제거하고 탭 전환
-      setRequestingTabs((prev) => {
-        const updated = { ...prev };
-        let matchedTabId: string | null = null;
-
-        // progressNoteId가 일치하는 탭 찾기
-        for (const [tabId, info] of Object.entries(updated)) {
-          if (info.progressNoteId === note.id) {
-            matchedTabId = tabId;
-            delete updated[tabId];
-            break;
-          }
-        }
-
-        // 해당 탭을 보고 있었다면 완성된 노트로 이동
-        if (matchedTabId && activeTab === matchedTabId) {
-          // setState 내부에서 다른 setState 호출은 권장되지 않으므로 setTimeout 사용
-          setTimeout(() => setActiveTab(note.id), 0);
-        }
-
-        return updated;
-      });
-
-      // 해당 노트의 생성 탭을 보고 있었다면 완성된 노트로 이동 (기존 로직 유지)
-      if (activeTab === `create-note-${note.id}`) {
-        setActiveTab(note.id);
-      }
-
-      toast({
-        title: '상담노트 작성 완료',
-        description: '상담노트가 성공적으로 작성되었습니다.',
-        duration: 3000,
-      });
-    },
-    onNoteError: (note, error) => {
-      // 해당 노트의 생성 탭이 있었다면 제거
-      setCreatingTabs((prev) => {
-        const updated = { ...prev };
-        const tabId = `create-note-${note.id}`;
-        if (tabId in updated) {
-          delete updated[tabId];
-        }
-        return updated;
-      });
-
-      // requestingTabs에서 해당 노트를 찾아 제거
-      setRequestingTabs((prev) => {
-        const updated = { ...prev };
-        for (const [tabId, info] of Object.entries(updated)) {
-          if (info.progressNoteId === note.id) {
-            delete updated[tabId];
-            break;
-          }
-        }
-        return updated;
-      });
-
-      console.error('상담노트 실패 에러 : ', error.message);
-      trackError('progress_note_polling_error', error, {
-        session_id: sessionId,
-        note_id: note.id,
-      });
-      toast({
-        title: '상담노트 작성 실패',
-        description: '상담노트 작성 중 문제가 발생했습니다. 다시 시도해주세요.',
-        duration: 5000,
-      });
-    },
+    isReadOnly,
+    progressNotes: sessionProgressNotes,
+    templates,
+    transcriptLabel,
   });
 
-  // DB 폴링에서 노트가 감지되면 requestingTabs에서 제거하고 탭 전환
+  // 훅에서 반환된 탭 아이템 사용
+  const tabItems = baseTabItems;
+
+  // 탭이 바뀌면 스크롤을 최상단으로 초기화
   React.useEffect(() => {
-    if (!sessionProgressNotes.length) return;
-
-    // 현재 sessionProgressNotes의 모든 노트 ID
-    const noteIdsInDb = new Set(sessionProgressNotes.map((n) => n.id));
-
-    setRequestingTabs((prev) => {
-      const updated = { ...prev };
-      let hasChanges = false;
-
-      for (const [tabId, info] of Object.entries(updated)) {
-        // progressNoteId가 있고 DB에서 감지된 경우 제거
-        if (info.progressNoteId && noteIdsInDb.has(info.progressNoteId)) {
-          // 해당 탭을 보고 있었다면 DB 기반 탭으로 전환
-          if (activeTab === tabId) {
-            const dbNote = sessionProgressNotes.find(
-              (n) => n.id === info.progressNoteId
-            );
-            if (dbNote) {
-              // 처리 중이면 create-note- 탭으로, 완료면 노트 탭으로
-              const isProcessing =
-                dbNote.processing_status === 'pending' ||
-                dbNote.processing_status === 'in_progress';
-              const newTabId = isProcessing
-                ? `create-note-${dbNote.id}`
-                : dbNote.id;
-              setTimeout(() => setActiveTab(newTabId), 0);
-            }
-          }
-          delete updated[tabId];
-          hasChanges = true;
-        }
-      }
-
-      return hasChanges ? updated : prev;
-    });
-  }, [sessionProgressNotes, activeTab]);
-
-  // 현재 활성 탭의 생성 정보
-  const activeCreatingTab = React.useMemo(() => {
-    // API 요청 중인 탭 확인 (클릭 직후 ~ DB 반영 전)
-    if (activeTab in requestingTabs) {
-      return {
-        tabId: activeTab,
-        templateId: requestingTabs[activeTab].templateId,
-        isProcessing: true,
-      };
+    if (contentScrollRef.current) {
+      contentScrollRef.current.scrollTop = 0;
     }
-    // 템플릿 선택 중인 탭 확인
-    if (activeTab.startsWith('create-note-') && activeTab in creatingTabs) {
-      return {
-        tabId: activeTab,
-        templateId: creatingTabs[activeTab],
-        isProcessing: false,
-      };
+  }, [activeTab]);
+
+  // 스크롤 감지 시 7단계 클리어 (상담노트 탭)
+  React.useEffect(() => {
+    if (isNoteEnd && checkIsTutorialActive(7) && activeTab !== 'transcript') {
+      nextTutorialStep();
     }
-    // DB에서 처리 중인 노트인지 확인
-    const noteId = activeTab.replace('create-note-', '');
-    if (processingNoteIds.has(noteId)) {
-      const note = sessionProgressNotes.find((n) => n.id === noteId);
-      return {
-        tabId: activeTab,
-        templateId: note?.template_id || null,
-        isProcessing: true,
-      };
-    }
-    return null;
-  }, [
-    activeTab,
-    creatingTabs,
-    requestingTabs,
-    processingNoteIds,
-    sessionProgressNotes,
-  ]);
-
-  // 탭 아이템 동적 생성
-  const tabItems: TabItem[] = React.useMemo(() => {
-    // transcribe의 stt_model이 "gemini-3"이면 "고급 축어록" + 프리미엄 아이콘
-    const transcriptLabel =
-      transcribe?.stt_model === 'gemini-3' ? (
-        <span className="flex items-center justify-center gap-1.5">
-          고급 축어록
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M14 5.25C13.9244 5.67356 13.7561 6.07515 13.5071 6.426L8.38367 13.321C8.22123 13.5309 8.0132 13.701 7.77531 13.8186C7.53742 13.9362 7.2759 13.9982 7.01053 13.9998C6.74517 14.0014 6.4829 13.9427 6.24359 13.828C6.00427 13.7134 5.79416 13.5458 5.62917 13.3379L0.480667 6.3C0.261963 5.9831 0.107574 5.62636 0.02625 5.25H3.68258L6.45517 12.4594C6.49736 12.5697 6.57203 12.6646 6.66931 12.7316C6.7666 12.7985 6.88191 12.8343 7 12.8343C7.11809 12.8343 7.2334 12.7985 7.33069 12.7316C7.42797 12.6646 7.50264 12.5697 7.54483 12.4594L10.3174 5.25H14ZM10.325 4.08333H13.9749C13.8862 3.68866 13.7159 3.3169 13.475 2.99192L11.9828 0.977084C11.7667 0.675067 11.4818 0.428897 11.1516 0.258976C10.8214 0.0890556 10.4554 0.000278038 10.0841 1.12792e-06H8.80075L10.325 4.08333ZM6.47967 1.12792e-06L4.92858 4.08333H9.07725L7.55708 1.12792e-06H6.47967ZM3.68083 4.08333L5.23133 1.12792e-06H3.87683C3.50862 -0.000361335 3.14558 0.0866408 2.81753 0.25386C2.48948 0.421079 2.20579 0.663744 1.98975 0.961918L0.547167 2.85308C0.271136 3.21477 0.0837343 3.63612 0 4.08333H3.68083ZM9.06733 5.25H4.93267L7 10.6248L9.06733 5.25Z"
-              fill="#44CE4B"
-            />
-          </svg>
-        </span>
-      ) : (
-        '축어록'
-      );
-
-    // 완료된 상담노트 중 template_id 별로 가장 최신(created_at이 큰) 노트만 선택
-    const succeededNotes = sessionProgressNotes.filter(
-      (note) => note.processing_status === 'succeeded'
-    );
-    const latestNotesByTemplate = succeededNotes.reduce(
-      (acc, note) => {
-        const templateId = note.template_id ?? 'null';
-        const existing = acc.get(templateId);
-        if (
-          !existing ||
-          new Date(note.created_at) > new Date(existing.created_at)
-        ) {
-          acc.set(templateId, note);
-        }
-        return acc;
-      },
-      new Map<string | number, (typeof succeededNotes)[0]>()
-    );
-    const uniqueSucceededNotes = Array.from(latestNotesByTemplate.values());
-
-    const items: TabItem[] = [
-      { value: 'transcript', label: transcriptLabel },
-      // 완료된 상담노트 (실패된 노트 제외, template_id 중복 시 최신 노트만)
-      ...uniqueSucceededNotes.map((note) => ({
-        value: note.id,
-        label: note.title || '상담 노트',
-      })),
-    ];
-
-    // 처리 중인 상담노트 탭 (DB에서 가져온 processing 상태)
-    sessionProgressNotes
-      .filter(
-        (note) =>
-          note.processing_status === 'pending' ||
-          note.processing_status === 'in_progress'
-      )
-      .forEach((note) => {
-        const template = templates.find((t) => t.id === note.template_id);
-        items.push({
-          value: `create-note-${note.id}`,
-          label: template ? `${template.title} 작성 중...` : '작성 중...',
-        });
-      });
-
-    // API 요청 중인 탭 (DB에 아직 반영 안 된 상태)
-    Object.entries(requestingTabs).forEach(([tabId, info]) => {
-      // 이미 DB에 반영된 노트는 위에서 처리됨
-      if (info.progressNoteId && processingNoteIds.has(info.progressNoteId)) {
-        return;
-      }
-      const template = templates.find((t) => t.id === info.templateId);
-      items.push({
-        value: tabId,
-        label: template ? `${template.title} 작성 중...` : '작성 중...',
-      });
-    });
-
-    // 템플릿 선택 중인 탭 (아직 API 호출 전)
-    Object.entries(creatingTabs).forEach(([tabId, templateId]) => {
-      let label = '빈 노트';
-      if (templateId) {
-        const template = templates.find((t) => t.id === templateId);
-        label = template ? template.title : '빈 노트';
-      }
-      items.push({ value: tabId, label });
-    });
-
-    // 템플릿 선택 중인 탭이 없으면 + 버튼 표시
-    const hasSelectingTab = Object.keys(creatingTabs).length > 0;
-    if (!hasSelectingTab) {
-      items.push({ value: 'add', label: '+' });
-    }
-
-    return items;
-  }, [
-    sessionProgressNotes,
-    creatingTabs,
-    requestingTabs,
-    processingNoteIds,
-    transcribe?.stt_model,
-    templates,
-  ]);
+  }, [isNoteEnd, nextTutorialStep, checkIsTutorialActive, activeTab]);
 
   // raw_output 파싱 또는 기존 result 사용
   // useMemo로 감싸서 transcribe.contents가 변경되면 재계산
@@ -1100,8 +858,23 @@ export const SessionDetailPage: React.FC = () => {
 
     setIsRegenerating(true);
 
+    // 재생성용 임시 탭 ID 생성
+    const regenerateTabId = `regenerate-${Date.now()}`;
+
+    // requestingTabs에 추가하여 즉시 처리중 UI 표시
+    setRequestingTabs((prev) => ({
+      ...prev,
+      [regenerateTabId]: {
+        templateId,
+        progressNoteId: null,
+      },
+    }));
+
+    // 재생성 탭으로 즉시 전환
+    setActiveTab(regenerateTabId);
+
     try {
-      await addProgressNote({
+      const result = await addProgressNote({
         sessionId,
         userId,
         templateId,
@@ -1113,11 +886,40 @@ export const SessionDetailPage: React.FC = () => {
         duration: 3000,
       });
 
+      // requestingTabs에 progressNoteId 업데이트
+      setRequestingTabs((prev) => ({
+        ...prev,
+        [regenerateTabId]: {
+          ...prev[regenerateTabId],
+          progressNoteId: result.progress_note_id,
+        },
+      }));
+
       // 세션 데이터 갱신
       await queryClient.invalidateQueries({
         queryKey: sessionDetailQueryKey(sessionId, isDummySession),
       });
     } catch (error) {
+      // 실패 시 requestingTabs에서 제거
+      setRequestingTabs((prev) => {
+        const updated = { ...prev };
+        delete updated[regenerateTabId];
+        return updated;
+      });
+
+      // 이전 탭으로 돌아가기 (현재 탭이 재생성 탭이면)
+      if (activeTab === regenerateTabId) {
+        // 해당 template_id의 기존 완료된 노트로 전환
+        const existingNote = sessionProgressNotes.find(
+          (n) =>
+            n.template_id === templateId && n.processing_status === 'succeeded'
+        );
+        if (existingNote) {
+          setActiveTab(existingNote.id);
+        } else {
+          setActiveTab('transcript');
+        }
+      }
       console.error('상담노트 재생성 에러:', error);
       trackError('progress_note_regenerate_error', error, {
         session_id: sessionId,
@@ -1254,43 +1056,22 @@ export const SessionDetailPage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handlePlayPauseWithInteraction, handleBackward, handleForward]);
 
-  // 세션 이동 시 상태 초기화 및 첫 번째 상담노트로 기본 탭 설정
-  const hasInitializedTab = React.useRef<string | undefined>(undefined);
-  const prevSessionId = React.useRef<string | undefined>(undefined);
+  // 세션 변경 시 오디오 정지 및 상태 초기화
+  const prevSessionIdForAudio = React.useRef<string | undefined>(undefined);
 
-  // 세션 변경 시 오디오 정지 및 상태 초기화 (sessionId만 의존)
   React.useEffect(() => {
-    if (prevSessionId.current !== sessionId) {
+    if (prevSessionIdForAudio.current !== sessionId) {
       // 재생 중이면 일시정지 (오디오 URL 변경 전에 정지)
       if (audioRef.current) {
         audioRef.current.pause();
       }
       handleTimeUpdate(0);
       setHasUserInteracted(false);
-      hasInitializedTab.current = undefined;
-      prevSessionId.current = sessionId;
+      prevSessionIdForAudio.current = sessionId;
     }
   }, [sessionId, handleTimeUpdate, audioRef]);
 
-  // 첫 번째 성공한 상담노트로 탭 설정 (sessionProgressNotes 변경 시)
-  React.useEffect(() => {
-    // 이미 이 세션에서 탭 초기화 완료했으면 스킵
-    if (hasInitializedTab.current === sessionId) return;
-
-    // 첫 번째 성공한 상담노트로 탭 설정 (실패한 노트 제외)
-    const firstSucceededNote = sessionProgressNotes.find(
-      (note) => note.processing_status === 'succeeded'
-    );
-
-    if (firstSucceededNote) {
-      setActiveTab(firstSucceededNote.id);
-      hasInitializedTab.current = sessionId;
-    } else if (sessionProgressNotes.length === 0 && session) {
-      // 상담노트가 없으면 transcript로 설정
-      setActiveTab('transcript');
-      hasInitializedTab.current = sessionId;
-    }
-  }, [sessionId, sessionProgressNotes, session]);
+  // 초기 탭 설정은 useProgressNoteTabs 훅에서 처리됨
 
   if (isLoading) {
     return (
