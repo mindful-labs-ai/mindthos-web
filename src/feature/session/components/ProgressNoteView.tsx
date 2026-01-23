@@ -47,26 +47,34 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
     const lines = cleanedSummary.split('\n');
     let currentSection: NoteSection | null = null;
 
+    // 제목에서 ** 마크다운 볼드를 제거하는 헬퍼 함수
+    const removeBoldMarkers = (text: string): string => {
+      return text.replace(/\*\*/g, '').trim();
+    };
+
     lines.forEach((line) => {
-      // 마크다운 헤딩 (#, ##, ###)으로 시작하는 섹션 제목
-      if (/^#{1,3}\s/.test(line)) {
+      // 마크다운 헤딩 (#, ##, ###, ####)으로 시작하는 섹션 제목
+      if (/^#{1,4}\s/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
+        // # 제거 후 ** 볼드 마커도 제거
+        const rawTitle = line.replace(/^#{1,4}\s*/, '').trim();
         currentSection = {
-          title: line.replace(/^#{1,3}\s*/, '').trim(),
+          title: removeBoldMarkers(rawTitle),
           content: '',
         };
       }
-      // 볼드(**) 형태의 섹션 제목 (예: **0. 적용된 상담 이론 (추정)**)
-      // 줄 전체가 **로 감싸져 있고, 숫자로 시작하는 경우 (예: **1. 제목**)
-      else if (/^\*\*\d+\.\s+[^*]+\*\*\s*$/.test(line)) {
+      // 숫자로 시작하는 섹션 제목 (예: 1. 상담 주제, 0. 적용된 상담 이론)
+      // ** 유무와 관계없이 "숫자. 제목" 형태를 인식
+      else if (/^\*{0,2}\d+\.\s+/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
-        // ** 제거하고 제목 추출
+        // **와 숫자. 제거하고 제목 추출
+        const rawTitle = line.replace(/^\*{0,2}\d+\.\s*/, '').trim();
         currentSection = {
-          title: line.replace(/^\*\*|\*\*\s*$/g, '').trim(),
+          title: removeBoldMarkers(rawTitle),
           content: '',
         };
       }
