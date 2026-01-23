@@ -5,8 +5,11 @@ import {
 } from '@/shared/utils/edgeFunctionClient';
 
 import type {
+  CreateHandWrittenSessionRequest,
+  CreateHandWrittenSessionResponse,
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,
+  HandwrittenTranscribe,
   ProgressNote,
   Session,
   SessionProcessingStatus,
@@ -83,11 +86,12 @@ export async function getSessionStatus(
 
 /**
  * 세션 목록 조회 API 호출
+ * audio_meta_data가 있으면 transcribes, 없으면 handwritten_transcribes에서 조회
  */
 export async function getSessionList(userId: number): Promise<{
   sessions: Array<{
     session: Session;
-    transcribe: Transcribe | null;
+    transcribe: Transcribe | HandwrittenTranscribe | null;
     progressNotes: ProgressNote[];
   }>;
 }> {
@@ -106,22 +110,53 @@ export async function getSessionList(userId: number): Promise<{
     return { sessions: [] };
   }
 
-  // 2. 각 세션의 transcribe와 progress_notes 조회
-  const sessionIds = sessions.map((s) => s.id);
+  // 2. 세션을 audio_meta_data 유무로 분류
+  const audioSessionIds = sessions
+    .filter((s) => s.audio_meta_data !== null)
+    .map((s) => s.id);
+  const handwrittenSessionIds = sessions
+    .filter((s) => s.audio_meta_data === null)
+    .map((s) => s.id);
 
-  const [{ data: transcribes }, { data: progressNotes }] = await Promise.all([
-    supabase.from('transcribes').select('*').in('session_id', sessionIds),
-    supabase.from('progress_notes').select('*').in('session_id', sessionIds),
+  // 3. 각 테이블에서 데이터 조회
+  const [
+    { data: transcribes },
+    { data: handwrittenTranscribes },
+    { data: progressNotes },
+  ] = await Promise.all([
+    audioSessionIds.length > 0
+      ? supabase.from('transcribes').select('*').in('session_id', audioSessionIds)
+      : Promise.resolve({ data: [] }),
+    handwrittenSessionIds.length > 0
+      ? supabase
+          .from('handwritten_transcribes')
+          .select('*')
+          .in('session_id', handwrittenSessionIds)
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from('progress_notes')
+      .select('*')
+      .in(
+        'session_id',
+        sessions.map((s) => s.id)
+      ),
   ]);
 
-  // 3. 데이터 결합
+  // 4. 데이터 결합
   const result = sessions.map((session) => {
     const sessionProgressNotes =
       progressNotes?.filter((pn) => pn.session_id === session.id) || [];
 
+    // audio_meta_data가 있으면 transcribes에서, 없으면 handwritten_transcribes에서 찾기
+    const transcribe =
+      session.audio_meta_data !== null
+        ? transcribes?.find((t) => t.session_id === session.id) || null
+        : handwrittenTranscribes?.find((t) => t.session_id === session.id) ||
+          null;
+
     return {
       session,
-      transcribe: transcribes?.find((t) => t.session_id === session.id) || null,
+      transcribe,
       progressNotes: sessionProgressNotes,
     };
   });
@@ -131,10 +166,11 @@ export async function getSessionList(userId: number): Promise<{
 
 /**
  * 개별 세션 조회 API 호출
+ * audio_meta_data가 있으면 transcribes, 없으면 handwritten_transcribes에서 조회
  */
 export async function getSessionDetail(sessionId: string): Promise<{
   session: Session;
-  transcribe: Transcribe | null;
+  transcribe: Transcribe | HandwrittenTranscribe | null;
   progressNotes: ProgressNote[];
 }> {
   // 1. 세션 조회
@@ -150,15 +186,22 @@ export async function getSessionDetail(sessionId: string): Promise<{
     );
   }
 
-  // 2. transcribe와 progress_notes 조회
-  const [{ data: transcribes }, { data: progressNotes }] = await Promise.all([
-    supabase.from('transcribes').select('*').eq('session_id', sessionId),
+  // 2. audio_meta_data 유무에 따라 다른 테이블에서 조회
+  const isHandwritten = session.audio_meta_data === null;
+
+  const [transcribeResult, { data: progressNotes }] = await Promise.all([
+    isHandwritten
+      ? supabase
+          .from('handwritten_transcribes')
+          .select('*')
+          .eq('session_id', sessionId)
+      : supabase.from('transcribes').select('*').eq('session_id', sessionId),
     supabase.from('progress_notes').select('*').eq('session_id', sessionId),
   ]);
 
   return {
     session,
-    transcribe: transcribes?.[0] || null,
+    transcribe: transcribeResult.data?.[0] || null,
     progressNotes: progressNotes || [],
   };
 }
@@ -574,5 +617,50 @@ export async function assignClientToSession(
 
   if (error) {
     throw new Error(`클라이언트 할당 실패: ${error.message}`);
+  }
+}
+
+/**
+ * 직접 입력 세션 텍스트 업데이트 API 호출
+ * handwritten_transcribes 테이블의 contents 업데이트
+ */
+export async function updateHandwrittenTranscribeContent(
+  transcribeId: string,
+  contents: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('handwritten_transcribes')
+    .update({ contents })
+    .eq('id', transcribeId);
+
+  if (error) {
+    throw new Error(`직접 입력 텍스트 업데이트 실패: ${error.message}`);
+  }
+}
+
+/**
+ * 직접 입력 세션 생성 API 호출
+ * Edge Function을 통해 축어록 직접 입력 후 상담노트 생성
+ */
+export async function createHandWrittenSession(
+  request: CreateHandWrittenSessionRequest
+): Promise<CreateHandWrittenSessionResponse> {
+  try {
+    const data = await callEdgeFunction<CreateHandWrittenSessionResponse>(
+      EDGE_FUNCTION_ENDPOINTS.SESSION.HAND_WRITTEN,
+      request
+    );
+
+    if (!data.success) {
+      throw new Error(data.message || '직접 입력 세션 생성에 실패했습니다.');
+    }
+
+    return data;
+  } catch (error: unknown) {
+    const err = error as { message?: string; status?: number };
+    throw {
+      status: err.status || 500,
+      message: err.message || '직접 입력 세션 생성 중 오류가 발생했습니다.',
+    };
   }
 }

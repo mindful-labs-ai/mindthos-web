@@ -97,6 +97,17 @@ export interface Transcribe {
   created_at: string;
 }
 
+// 직접 입력 축어록 (handwritten_transcribes 테이블)
+export interface HandwrittenTranscribe {
+  id: string;
+  session_id: string;
+  user_id: number;
+  counsel_date: string; // YYYY-MM-DD 형식
+  contents: string; // 직접 입력된 텍스트 내용 (타임스탬프 포함)
+  created_at: string;
+  updated_at: string;
+}
+
 export type ProgressNoteStatus =
   | 'pending'
   | 'in_progress'
@@ -146,6 +157,7 @@ export interface SessionRecord {
   progress_percentage?: number;
   current_step?: string;
   error_message?: string;
+  is_handwritten?: boolean; // 직접 입력 세션 여부 (audio_meta_data가 null이면 true)
 }
 
 export interface CreateSessionRequest {
@@ -237,4 +249,24 @@ export interface SessionCreateResult {
   uploadProgress?: number; // 0-100
   sessionId?: string;
   errorMessage?: string;
+}
+
+// ============================================
+// 직접 입력 (Hand-written) 세션 관련 타입
+// ============================================
+
+export interface CreateHandWrittenSessionRequest {
+  user_id: number;
+  client_id?: string;
+  title: string;
+  counsel_date: string; // YYYY-MM-DD 형식
+  contents: string; // 직접 입력한 축어록 내용
+  template_id: number;
+}
+
+export interface CreateHandWrittenSessionResponse {
+  success: boolean;
+  session_id: string;
+  progress_note_id: string;
+  message?: string;
 }

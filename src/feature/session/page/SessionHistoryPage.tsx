@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { Title } from '@/components/ui/atoms/Title';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
+import { useToast } from '@/components/ui/composites/Toast';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { SessionClickTooltip } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
@@ -36,6 +37,7 @@ export const SessionHistoryPage: React.FC = () => {
     });
   const userId = useAuthStore((state) => state.userId);
   const { clients, isLoading: isLoadingClients } = useClientList();
+  const { toast } = useToast();
 
   // 필터 상태
   const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>(
@@ -49,6 +51,24 @@ export const SessionHistoryPage: React.FC = () => {
   const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
     userId: parseInt(userId || '0'),
     enabled: !!userId,
+    onSessionComplete: (session) => {
+      const isHandwritten = session.audio_meta_data === null;
+      toast({
+        title: isHandwritten ? '상담 기록 생성 완료' : '음성 파일 처리 완료',
+        description: session.title
+          ? `"${session.title}" 생성 완료 되었습니다.`
+          : '생성 완료 되었습니다.',
+        duration: 5000,
+      });
+    },
+    onSessionError: (session) => {
+      toast({
+        title: '세션 처리 실패',
+        description:
+          session.error_message || '세션 처리 중 문제가 발생했습니다.',
+        duration: 5000,
+      });
+    },
   });
 
   const sessionsFromQuery = React.useMemo(
@@ -110,23 +130,37 @@ export const SessionHistoryPage: React.FC = () => {
       ({ session, transcribe, progressNotes }) => {
         const client = effectiveClients.find((c) => c.id === session.client_id);
 
-        // raw_output 파싱 또는 기존 result 사용
-        const transcriptData = getTranscriptData(transcribe);
+        // 직접 입력 세션 여부 확인
+        const isHandwritten = session.audio_meta_data === null;
 
         let content = '전사 내용이 없습니다.';
-        if (transcriptData) {
-          const { segments, speakers } = transcriptData;
-          content =
-            segments
-              ?.slice(0, 3)
-              .map((seg) => {
-                const speakerName = getSpeakerDisplayName(
-                  seg.speaker,
-                  speakers
-                );
-                return `${speakerName}: ${seg.text}`;
-              })
-              .join(' ') || '전사 내용이 없습니다.';
+
+        if (isHandwritten) {
+          // 직접 입력 세션: contents가 string이므로 그대로 사용
+          if (transcribe && typeof transcribe.contents === 'string') {
+            content = transcribe.contents;
+          } else {
+            content = '입력된 텍스트가 없습니다.';
+          }
+        } else {
+          // 일반 세션: raw_output 파싱 또는 기존 result 사용
+          const transcriptData = getTranscriptData(
+            transcribe as Parameters<typeof getTranscriptData>[0]
+          );
+          if (transcriptData) {
+            const { segments, speakers } = transcriptData;
+            content =
+              segments
+                ?.slice(0, 3)
+                .map((seg) => {
+                  const speakerName = getSpeakerDisplayName(
+                    seg.speaker,
+                    speakers
+                  );
+                  return `${speakerName}: ${seg.text}`;
+                })
+                .join(' ') || '전사 내용이 없습니다.';
+          }
         }
 
         // progress notes에서 note_types 추출 (constants 사용)
@@ -156,6 +190,7 @@ export const SessionHistoryPage: React.FC = () => {
           note_types,
           created_at: session.created_at,
           processing_status: session.processing_status,
+          is_handwritten: session.audio_meta_data === null, // 직접 입력 세션 여부
         };
       }
     );
@@ -193,7 +228,11 @@ export const SessionHistoryPage: React.FC = () => {
           duration: audioDuration,
           hasAudio: !!session.audio_url,
           createdAt: session.created_at,
-          isAdvancedTranscript: transcribe?.stt_model === 'gemini-3',
+          isAdvancedTranscript:
+            transcribe && 'stt_model' in transcribe
+              ? transcribe.stt_model === 'gemini-3'
+              : false,
+          isHandwritten: session.audio_meta_data === null, // 직접 입력 세션 여부
         };
       });
   }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);

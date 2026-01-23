@@ -13,6 +13,8 @@ interface SessionSideListItemProps {
   isActive?: boolean;
   /** 고급 축어록 여부 (stt_model === 'gemini-3') */
   isAdvancedTranscript?: boolean;
+  /** 직접 입력 세션 여부 (audio_meta_data === null) */
+  isHandwritten?: boolean;
   onClick: (sessionId: string) => void;
 }
 
@@ -23,6 +25,7 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
   hasAudio,
   isActive = false,
   isAdvancedTranscript = false,
+  isHandwritten = false,
   onClick,
 }) => {
   return (
@@ -57,9 +60,13 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
         </Title>
         <div className="flex items-center justify-between gap-2">
           <Text className="text-xs text-fg-muted">
-            {duration ? formatDuration(duration) : '시간 정보 없음'}
+            {isHandwritten
+              ? '직접 입력'
+              : duration
+                ? formatDuration(duration)
+                : '시간 정보 없음'}
           </Text>
-          {hasAudio && (
+          {!isHandwritten && hasAudio && (
             <Badge tone="neutral" variant="soft" size="sm">
               녹음 파일
             </Badge>
