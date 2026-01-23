@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
@@ -31,20 +31,53 @@ interface ClientAnalysisTabProps {
   analyses: ClientAnalysisVersion[];
   isLoading?: boolean;
   onCreateAnalysis?: () => void;
+  /** 현재 폴링 중인 버전 (새 분석 생성 시 자동 선택용) */
+  pollingVersion?: number | null;
 }
 
 export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   analyses,
   isLoading = false,
   onCreateAnalysis,
+  pollingVersion,
 }) => {
   const { toast } = useToast();
   const { data: templates } = useClientTemplates();
-  const [selectedVersion, setSelectedVersion] = useState<number>(
-    analyses[0]?.version || 0
+  // 사용자가 수동으로 선택한 버전 (null이면 자동 선택)
+  const [userSelectedVersion, setUserSelectedVersion] = useState<number | null>(
+    null
   );
   const [activeTab, setActiveTab] = useState<string>('ai_supervision');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // 현재 표시할 버전 계산
+  const selectedVersion = useMemo(() => {
+    // 처리 중인 분석이 있으면 우선 표시
+    const processingAnalysis = analyses.find(
+      (a) =>
+        a.ai_supervision?.status === 'pending' ||
+        a.ai_supervision?.status === 'in_progress'
+    );
+    if (processingAnalysis) {
+      return processingAnalysis.version;
+    }
+
+    // 폴링 중인 버전이 있으면 해당 버전 표시
+    if (pollingVersion && analyses.some((a) => a.version === pollingVersion)) {
+      return pollingVersion;
+    }
+
+    // 사용자가 수동 선택한 버전이 있고 유효하면 해당 버전 표시
+    if (
+      userSelectedVersion !== null &&
+      analyses.some((a) => a.version === userSelectedVersion)
+    ) {
+      return userSelectedVersion;
+    }
+
+    // 기본값: 첫 번째 분석 (가장 최신)
+    return analyses[0]?.version || 0;
+  }, [analyses, pollingVersion, userSelectedVersion]);
 
   const { user } = useAuthStore();
   const { currentLevel } = useQuestStore();
@@ -314,7 +347,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               <Select
                 items={versionItems}
                 value={String(selectedVersion)}
-                onChange={(value) => setSelectedVersion(Number(value))}
+                onChange={(value) => setUserSelectedVersion(Number(value))}
                 placeholder="버전 선택"
               />
             </div>
@@ -367,7 +400,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             <Select
               items={versionItems}
               value={String(selectedVersion)}
-              onChange={(value) => setSelectedVersion(Number(value))}
+              onChange={(value) => setUserSelectedVersion(Number(value))}
               placeholder="버전 선택"
               maxDropdownHeight={200}
             />
