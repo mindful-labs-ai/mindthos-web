@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/atoms/Button';
 import { RadioGroup } from '@/components/ui/atoms/Radio';
 import { Text } from '@/components/ui/atoms/Text';
 import { PopUp } from '@/components/ui/composites/PopUp';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { trackEvent } from '@/lib/mixpanel';
@@ -19,6 +20,8 @@ import {
   calculateAffectedSegments,
   cleanupUnusedSpeakers,
 } from '../utils/segmentRangeUtils';
+
+import { SpeakerSelectTooltip } from './TranscriptEditGuideTooltips';
 
 interface SpeakerEditPopupProps {
   open: boolean;
@@ -32,6 +35,12 @@ interface SpeakerEditPopupProps {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
   }) => Promise<void>;
+  /** 현재 가이드 레벨 (4: 화자 라벨, 5: 화자 선택 모달) */
+  guideLevel?: 4 | 5 | null;
+  /** 다음 가이드 레벨로 진행 (Level 4 → 5) */
+  onGuideNext?: () => void;
+  /** 가이드 완료 (Level 5 완료 시) */
+  onGuideComplete?: () => void;
 }
 
 export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
@@ -42,10 +51,22 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   allSegments,
   clientId,
   triggerElement,
+  guideLevel,
+  onGuideNext,
+  onGuideComplete,
   onApply,
 }) => {
   const { clients } = useClientList();
   const { toast } = useToast();
+  const [popupContentElement, setPopupContentElement] =
+    React.useState<HTMLDivElement | null>(null);
+
+  // 팝업이 열릴 때 가이드 Level 4 → 5 전환
+  React.useEffect(() => {
+    if (open && guideLevel === 4 && onGuideNext) {
+      onGuideNext();
+    }
+  }, [open, guideLevel, onGuideNext]);
 
   const [range, setRange] = React.useState<SpeakerRangeOption>('single');
   const [selectionType, setSelectionType] = React.useState<
@@ -185,7 +206,12 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       // 7. 성공 시 PopUp 닫기
       onOpenChange(false);
 
-      // 8. 상태 초기화
+      // 8. 가이드 Level 5 완료 처리
+      if (guideLevel === 5 && onGuideComplete) {
+        onGuideComplete();
+      }
+
+      // 9. 상태 초기화
       setCustomName('');
       setRange('single');
       setSelectionType('client');
@@ -196,94 +222,112 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     }
   };
 
+  const popupContent = (
+    <div ref={setPopupContentElement} className="space-y-4 p-4">
+      {/* Section 1: 참석자 선택 */}
+      <div>
+        <Text className="mb-2 text-sm font-semibold text-fg">참석자 선택</Text>
+        <RadioGroup
+          options={[
+            // 기본 참석자 옵션
+            { value: 'default_counselor', label: '상담사' },
+            { value: 'default_client', label: '내담자' },
+            // 세션에 연결된 내담자
+            ...(sessionClient
+              ? [
+                  {
+                    value: 'client',
+                    label: sessionClient.name,
+                  },
+                ]
+              : []),
+            ...existingCustomSpeakers.map((speaker) => ({
+              value: `existing_${speaker.id}`,
+              label: speaker.customName || `Speaker ${speaker.id}`,
+            })),
+            { value: 'custom', label: '직접 입력' },
+          ]}
+          value={selectionType}
+          onChange={(value) => setSelectionType(value)}
+          orientation="vertical"
+          size="sm"
+        />
+        {selectionType === 'custom' && (
+          <input
+            type="text"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            placeholder="이름 입력"
+            className="mt-2 w-full rounded-lg border-2 border-border bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors focus:border-primary"
+          />
+        )}
+      </div>
+
+      {/* Section 2: 구간 선택 */}
+      <div>
+        <Text className="mb-2 text-sm font-semibold text-fg">구간 선택</Text>
+        <RadioGroup
+          options={[
+            { value: 'single', label: '이 구간만' },
+            {
+              value: 'onwards',
+              label: '이 구간부터',
+              description: '같은 화자의 이후 구간',
+            },
+            {
+              value: 'all',
+              label: '전체 구간',
+              description: '같은 화자의 모든 구간',
+            },
+          ]}
+          value={range}
+          onChange={(value) => setRange(value as SpeakerRangeOption)}
+          orientation="vertical"
+          size="sm"
+        />
+      </div>
+
+      {/* 적용 버튼 */}
+      <Button
+        variant="solid"
+        tone="primary"
+        onClick={handleApply}
+        disabled={isApplying}
+        className="w-full"
+      >
+        {isApplying ? '적용 중...' : '적용'}
+      </Button>
+    </div>
+  );
+
   return (
-    <PopUp
-      trigger={triggerElement}
-      open={open}
-      onOpenChange={onOpenChange}
-      placement="bottom-right"
-      triggerClassName="" // w-full 제거하여 flex 레이아웃 깨지지 않도록
-      content={
-        <div className="space-y-4 p-4" data-guide="speaker-change-modal">
-          {/* Section 1: 참석자 선택 */}
-          <div>
-            <Text className="mb-2 text-sm font-semibold text-fg">
-              참석자 선택
-            </Text>
-            <RadioGroup
-              options={[
-                // 기본 참석자 옵션
-                { value: 'default_counselor', label: '상담사' },
-                { value: 'default_client', label: '내담자' },
-                // 세션에 연결된 내담자
-                ...(sessionClient
-                  ? [
-                      {
-                        value: 'client',
-                        label: sessionClient.name,
-                      },
-                    ]
-                  : []),
-                ...existingCustomSpeakers.map((speaker) => ({
-                  value: `existing_${speaker.id}`,
-                  label: speaker.customName || `Speaker ${speaker.id}`,
-                })),
-                { value: 'custom', label: '직접 입력' },
-              ]}
-              value={selectionType}
-              onChange={(value) => setSelectionType(value)}
-              orientation="vertical"
-              size="sm"
+    <>
+      <PopUp
+        trigger={triggerElement}
+        open={open}
+        onOpenChange={onOpenChange}
+        placement="bottom-right"
+        triggerClassName=""
+        content={popupContent}
+        disableOutsideClick={guideLevel === 5}
+      />
+      {/* Level 5: 화자 선택 모달에 Spotlight */}
+      {guideLevel === 5 && open && popupContentElement && (
+        <Spotlight
+          isActive={true}
+          tooltip={
+            <SpeakerSelectTooltip
+              onComplete={() => {
+                onOpenChange(false); // 팝업 닫기
+                onGuideComplete?.(); // 가이드 종료
+              }}
             />
-            {selectionType === 'custom' && (
-              <input
-                type="text"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                placeholder="이름 입력"
-                className="mt-2 w-full rounded-lg border-2 border-border bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors focus:border-primary"
-              />
-            )}
-          </div>
-
-          {/* Section 2: 구간 선택 */}
-          <div>
-            <Text className="mb-2 text-sm font-semibold text-fg">
-              구간 선택
-            </Text>
-            <RadioGroup
-              options={[
-                { value: 'single', label: '이 구간만' },
-                {
-                  value: 'onwards',
-                  label: '이 구간부터',
-                  description: '같은 화자의 이후 구간',
-                },
-                {
-                  value: 'all',
-                  label: '전체 구간',
-                  description: '같은 화자의 모든 구간',
-                },
-              ]}
-              value={range}
-              onChange={(value) => setRange(value as SpeakerRangeOption)}
-              orientation="vertical"
-              size="sm"
-            />
-          </div>
-
-          {/* 적용 버튼 */}
-          <Button
-            variant="solid"
-            tone="primary"
-            onClick={handleApply}
-            disabled={isApplying}
-            className="w-full"
-          >
-            {isApplying ? '적용 중...' : '적용'}
-          </Button>
-        </div>
-      }
-    />
+          }
+          tooltipPosition="left"
+          targetElement={popupContentElement}
+          store="featureGuide"
+        />
+      )}
+    </>
   );
 };

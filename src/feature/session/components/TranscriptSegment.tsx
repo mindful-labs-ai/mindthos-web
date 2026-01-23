@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useFeatureGuideStore } from '@/stores/featureGuideStore';
+import { Spotlight } from '@/components/ui/composites/Spotlight';
 
 import type { Speaker, TranscribeSegment } from '../types';
 import { formatTime } from '../utils/formatTime';
@@ -11,6 +11,7 @@ import {
 } from '../utils/parseNonverbalText';
 
 import { SpeakerEditPopup } from './SpeakerEditPopup';
+import { SpeakerLabelTooltip } from './TranscriptEditGuideTooltips';
 
 interface TranscriptSegmentProps {
   segment: TranscribeSegment;
@@ -22,14 +23,22 @@ interface TranscriptSegmentProps {
   segmentRef?: React.RefObject<HTMLDivElement | null>;
   onClick: (startTime: number) => void;
   onTextEdit?: (segmentId: number, newText: string) => void;
-  showTimestamp?: boolean; // 타임스탬프 표시 여부
-  segmentIndex?: number; // 시퀀스 번호용 인덱스
-  allSegments?: TranscribeSegment[]; // speaker 편집용 전체 세그먼트
-  clientId?: string | null; // session의 client_id
+  showTimestamp?: boolean;
+  segmentIndex?: number;
+  allSegments?: TranscribeSegment[];
+  clientId?: string | null;
   onSpeakerChange?: (updates: {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
   }) => Promise<void>;
+  /** 현재 가이드 레벨 (4: 화자 라벨, 5: 화자 선택) */
+  guideLevel?: 4 | 5 | null;
+  /** 다음 가이드 레벨로 진행 */
+  onGuideNext?: () => void;
+  /** 가이드 완료 */
+  onGuideComplete?: () => void;
+  /** 첫 번째 세그먼트 여부 (Spotlight은 첫 번째만) */
+  isFirstSegment?: boolean;
 }
 
 export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
@@ -47,6 +56,10 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   allSegments = [],
   clientId,
   onSpeakerChange,
+  guideLevel,
+  onGuideNext,
+  onGuideComplete,
+  isFirstSegment = false,
 }) => {
   const [editedText, setEditedText] = React.useState(segment.text);
   const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
@@ -58,56 +71,40 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   const showTimestampDisplay =
     showTimestamp && segment.start !== null && segment.end !== null;
 
-  // 클릭 가능 여부 (타임스탬프가 있고 편집 모드가 아닐 때만)
-  const isClickable = showTimestampDisplay && !isEditable;
-
-  // 비언어 표현 파싱 (gemini-3인 경우에만)
+  // 텍스트 비언어적 표현 분리
   const textParts = parseNonverbalText(segment.text);
 
-  // segment.text가 변경되면 editedText도 동기화
-  React.useEffect(() => {
-    setEditedText(segment.text);
-  }, [segment.text]);
-
-  // textarea 높이 자동 조절
-  React.useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    // 편집 모드로 전환될 때 초기 높이 설정
-    if (isEditable) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    }
-  }, [isEditable]);
-
-  // 텍스트 변경 시 높이 재조정
-  React.useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea || !isEditable) return;
-
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  }, [editedText, isEditable]);
+  // 편집 모드이고 타임스탬프가 없는 경우 (gemini-3) 클릭 비활성화
+  const isClickable =
+    !isEditable && segment.start !== null && segment.end !== null;
 
   const handleContainerClick = () => {
     if (isClickable && segment.start !== null) {
       onClick(segment.start);
-    } else if (isEditable && textareaRef.current) {
-      textareaRef.current.focus();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (
-      isClickable &&
-      segment.start !== null &&
-      (e.key === 'Enter' || e.key === ' ')
-    ) {
+    if (isClickable && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
-      onClick(segment.start);
+      if (segment.start !== null) {
+        onClick(segment.start);
+      }
     }
   };
+
+  // 텍스트 영역 높이 자동 조절
+  React.useEffect(() => {
+    if (textareaRef.current && isEditable) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [editedText, isEditable]);
+
+  // segment.text가 변경되면 editedText도 업데이트
+  React.useEffect(() => {
+    setEditedText(segment.text);
+  }, [segment.text]);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
@@ -117,18 +114,10 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
     }
   };
 
-  // Feature Guide Store - Level 4에서 speaker label 클릭 시 Level 5로 전환
-  const activeGuide = useFeatureGuideStore((state) => state.activeGuide);
-  const nextLevel = useFeatureGuideStore((state) => state.nextLevel);
-
   const handleSpeakerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsSpeakerPopupOpen(true);
-
-    // 가이드 Level 4 (화자 라벨 클릭) → Level 5로 전환
-    if (activeGuide?.type === 'transcriptEdit' && activeGuide.level === 4) {
-      nextLevel();
-    }
+    // 가이드 Level 4 → 5 전환은 SpeakerEditPopup에서 useEffect로 처리
   };
 
   const handleSpeakerKeyDown = (e: React.KeyboardEvent) => {
@@ -137,6 +126,40 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
       e.stopPropagation();
       setIsSpeakerPopupOpen(true);
     }
+  };
+
+  // 화자 라벨 렌더링 (Spotlight 래핑 포함)
+  const renderSpeakerLabel = () => {
+    const labelElement = (
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleSpeakerClick}
+        onKeyDown={handleSpeakerKeyDown}
+        aria-label="화자 편집"
+        className={`relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-all ${bgColor} ${
+          isActive ? 'scale-105' : 'group-hover:scale-105'
+        }`}
+      >
+        <span className={`text-base font-medium ${textColor}`}>{label}</span>
+      </div>
+    );
+
+    // 첫 번째 세그먼트이고 가이드 Level 4인 경우에만 Spotlight
+    if (isFirstSegment && guideLevel === 4) {
+      return (
+        <Spotlight
+          isActive={true}
+          tooltip={<SpeakerLabelTooltip />}
+          tooltipPosition="left"
+          store="featureGuide"
+        >
+          {labelElement}
+        </Spotlight>
+      );
+    }
+
+    return labelElement;
   };
 
   return (
@@ -164,24 +187,11 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
               speakers={speakers}
               allSegments={allSegments}
               clientId={clientId || null}
-              triggerElement={
-                <div
-                  role="button"
-                  tabIndex={0}
-                  data-guide="speaker-label"
-                  onClick={handleSpeakerClick}
-                  onKeyDown={handleSpeakerKeyDown}
-                  aria-label="화자 편집"
-                  className={`relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-all ${bgColor} ${
-                    isActive ? 'scale-105' : 'group-hover:scale-105'
-                  }`}
-                >
-                  <span className={`text-base font-medium ${textColor}`}>
-                    {label}
-                  </span>
-                </div>
-              }
+              triggerElement={renderSpeakerLabel()}
               onApply={onSpeakerChange}
+              guideLevel={guideLevel}
+              onGuideNext={onGuideNext}
+              onGuideComplete={onGuideComplete}
             />
           ) : (
             <div
@@ -213,11 +223,17 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
           {!isAnonymized && !onSpeakerChange && (
             <span className="text-sm font-semibold text-fg">{name}</span>
           )}
-          <span className="text-xs text-fg-muted transition-colors">
-            {showTimestampDisplay && segment.start !== null
-              ? formatTime(segment.start)
-              : `#${segmentIndex !== undefined ? segmentIndex + 1 : segment.id}`}
-          </span>
+          {isAnonymized && (
+            <span className="text-sm font-semibold text-fg">익명화됨</span>
+          )}
+          {showTimestampDisplay && segment.start !== null && (
+            <span className="text-xs text-fg-muted">
+              {formatTime(segment.start)}
+            </span>
+          )}
+          {!showTimestampDisplay && segmentIndex !== undefined && (
+            <span className="text-xs text-fg-muted">{segmentIndex + 1}</span>
+          )}
         </div>
         {isEditable ? (
           <textarea

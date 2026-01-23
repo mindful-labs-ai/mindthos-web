@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/cn';
 import { XIcon } from '@/shared/icons';
+import { useFeatureGuideStore } from '@/stores/featureGuideStore';
 import { useQuestStore } from '@/stores/questStore';
 
 export interface SpotlightProps {
@@ -33,14 +34,28 @@ export interface SpotlightProps {
   className?: string;
   /** 강조 영역 둥글기 */
   rounded?: 'sm' | 'md' | 'lg' | 'full' | number;
+  /** 사용할 store (기본: quest) */
+  store?: 'quest' | 'featureGuide';
 }
 
 /**
  * 전역에서 사용되는 실제 Spotlight 렌더링 컴포넌트
+ * questStore와 featureGuideStore 모두 지원
  */
 export const GlobalSpotlight: React.FC = () => {
-  const config = useQuestStore((state) => state.spotlightConfig);
-  const clearSpotlight = useQuestStore((state) => state.clearSpotlight);
+  // questStore (온보딩 튜토리얼용)
+  const questConfig = useQuestStore((state) => state.spotlightConfig);
+  const clearQuestSpotlight = useQuestStore((state) => state.clearSpotlight);
+
+  // featureGuideStore (기능 가이드용)
+  const featureConfig = useFeatureGuideStore((state) => state.spotlightConfig);
+  const clearFeatureSpotlight = useFeatureGuideStore(
+    (state) => state.clearSpotlight
+  );
+
+  // featureGuideStore 우선, 없으면 questStore 사용
+  const config = featureConfig || questConfig;
+  const clearSpotlight = featureConfig ? clearFeatureSpotlight : clearQuestSpotlight;
 
   if (!config || !config.isActive) return null;
 
@@ -144,7 +159,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
     const offset = 12 + padding;
     const styles: React.CSSProperties = {
       position: 'fixed',
-      zIndex: 1002,
+      zIndex: 10002,
       pointerEvents: 'auto',
     };
     switch (tooltipPosition) {
@@ -218,14 +233,14 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
   };
 
   return createPortal(
-    <div className="animate-in fade-in pointer-events-none fixed inset-0 z-[1000] overflow-hidden duration-300">
+    <div className="animate-in fade-in pointer-events-none fixed inset-0 z-[10000] overflow-hidden duration-300">
       {onClose && (
         <button
           onClick={(e) => {
             e.stopPropagation();
             onClose();
           }}
-          className="pointer-events-auto absolute right-6 top-6 z-[1001] rounded-full bg-surface p-2 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+          className="pointer-events-auto absolute right-6 top-6 z-[10001] rounded-full bg-surface p-2 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
           aria-label="튜토리얼 닫기"
         >
           <XIcon size={20} />
@@ -336,9 +351,22 @@ export const Spotlight: React.FC<SpotlightProps> = ({
   padding = 8,
   onClose,
   rounded = 'md',
+  store = 'quest',
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const setSpotlightConfig = useQuestStore((state) => state.setSpotlightConfig);
+
+  // store prop에 따라 적절한 store 사용
+  const setQuestSpotlightConfig = useQuestStore(
+    (state) => state.setSpotlightConfig
+  );
+  const setFeatureSpotlightConfig = useFeatureGuideStore(
+    (state) => state.setSpotlightConfig
+  );
+
+  const setSpotlightConfig =
+    store === 'featureGuide'
+      ? setFeatureSpotlightConfig
+      : setQuestSpotlightConfig;
 
   useLayoutEffect(() => {
     if (isActive) {
@@ -356,7 +384,10 @@ export const Spotlight: React.FC<SpotlightProps> = ({
 
       if (target) {
         // 무한 루프 방지: 현재 스토어의 설정과 동일한지 심층 비교
-        const current = useQuestStore.getState().spotlightConfig;
+        const current =
+          store === 'featureGuide'
+            ? useFeatureGuideStore.getState().spotlightConfig
+            : useQuestStore.getState().spotlightConfig;
         const isSame =
           current?.isActive === true &&
           current?.targetElement === target &&
@@ -389,6 +420,7 @@ export const Spotlight: React.FC<SpotlightProps> = ({
     rounded,
     selector,
     setSpotlightConfig,
+    store,
   ]);
 
   return (

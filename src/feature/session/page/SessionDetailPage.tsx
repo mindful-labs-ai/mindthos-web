@@ -36,6 +36,11 @@ import { CreateProgressNoteView } from '../components/CreateProgressNoteView';
 import { ProgressNoteView } from '../components/ProgressNoteView';
 import { SessionHeader } from '../components/SessionHeader';
 import { TranscriptEditGuideModal } from '../components/TranscriptEditGuideModal';
+import {
+  EditButtonTooltip,
+  SaveButtonTooltip,
+  TextEditTooltip,
+} from '../components/TranscriptEditGuideTooltips';
 import { TranscriptSegment } from '../components/TranscriptSegment';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
@@ -222,12 +227,18 @@ export const SessionDetailPage: React.FC = () => {
   const userId = useAuthStore((state) =>
     state.userId ? Number(state.userId) : undefined
   );
-  const { handleScroll: handleGuideScroll, isGuideActive } =
-    useTranscriptEditGuide({
-      activeTab,
-      isDummySession,
-      userId,
-    });
+  const {
+    handleScroll: handleGuideScroll,
+    isGuideActive,
+    checkIsGuideLevel,
+    nextLevel: nextGuideLevel,
+    endGuide: endTranscriptEditGuide,
+    scrollToTop: scrollTranscriptToTop,
+  } = useTranscriptEditGuide({
+    activeTab,
+    isDummySession,
+    userId,
+  });
 
   // 탭이 바뀌면 스크롤을 최상단으로 초기화
   React.useEffect(() => {
@@ -302,6 +313,12 @@ export const SessionDetailPage: React.FC = () => {
         duration: 3000,
       });
       return;
+    }
+
+    // 가이드 Level 3 → Level 4 진행
+    if (checkIsGuideLevel(3)) {
+      scrollTranscriptToTop();
+      nextGuideLevel();
     }
 
     if (Object.keys(editedSegments).length === 0) {
@@ -432,6 +449,11 @@ export const SessionDetailPage: React.FC = () => {
     }
     trackEvent('transcript_edit_start', { session_id: sessionId });
     setIsEditing(true);
+
+    // 가이드 Level 1 → Level 2 진행
+    if (checkIsGuideLevel(1)) {
+      nextGuideLevel();
+    }
   };
 
   const handleCancelEdit = () => {
@@ -1194,14 +1216,20 @@ export const SessionDetailPage: React.FC = () => {
                 </Badge>
               ) : isEditing ? (
                 <>
-                  <button
-                    type="button"
-                    data-guide="transcript-save-button"
-                    className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
-                    onClick={handleSaveAllEdits}
+                  <Spotlight
+                    isActive={checkIsGuideLevel(3)}
+                    tooltip={<SaveButtonTooltip />}
+                    tooltipPosition="bottom"
+                    store="featureGuide"
                   >
-                    편집 완료
-                  </button>
+                    <button
+                      type="button"
+                      className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600"
+                      onClick={handleSaveAllEdits}
+                    >
+                      편집 완료
+                    </button>
+                  </Spotlight>
                   <button
                     type="button"
                     className="hover:bg-surface-hover rounded-lg bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
@@ -1212,15 +1240,21 @@ export const SessionDetailPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <button
-                    type="button"
-                    data-guide="transcript-edit-button"
-                    className="mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
-                    onClick={handleEditStart}
-                    title="편집"
+                  <Spotlight
+                    isActive={checkIsGuideLevel(1)}
+                    tooltip={<EditButtonTooltip />}
+                    tooltipPosition="bottom"
+                    store="featureGuide"
                   >
-                    편집
-                  </button>
+                    <button
+                      type="button"
+                      className="mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                      onClick={handleEditStart}
+                      title="편집"
+                    >
+                      편집
+                    </button>
+                  </Spotlight>
                   <button
                     type="button"
                     className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
@@ -1373,55 +1407,73 @@ export const SessionDetailPage: React.FC = () => {
           onClose={() => endTutorial()}
         >
           {activeTab === 'transcript' ? (
-            <div
-              key="transcript-container"
-              ref={contentScrollRef}
-              data-guide="transcript-segment-area"
-              className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
-              onScroll={handleGuideScroll}
+            <Spotlight
+              isActive={checkIsGuideLevel(2)}
+              tooltip={<TextEditTooltip onNext={nextGuideLevel} />}
+              tooltipPosition="left"
+              store="featureGuide"
             >
-              {segments.length > 0 ? (
-                <>
-                  {segments.map((segment, index) => (
-                    <TranscriptSegment
-                      key={`segment-${index}-${segment.id}`}
-                      segment={segment}
-                      speakers={speakers}
-                      isActive={
-                        enableTimestampFeatures && index === currentSegmentIndex
-                      }
-                      isEditable={isEditing && !isReadOnly}
-                      isAnonymized={isAnonymized}
-                      sttModel={transcribe?.stt_model}
-                      segmentRef={
-                        enableTimestampFeatures && index === currentSegmentIndex
-                          ? activeSegmentRef
-                          : undefined
-                      }
-                      onClick={handleSeekToWithInteraction}
-                      onTextEdit={isReadOnly ? undefined : handleTextEdit}
-                      showTimestamp={enableTimestampFeatures}
-                      segmentIndex={index}
-                      allSegments={segments}
-                      clientId={session?.client_id || null}
-                      onSpeakerChange={
-                        isReadOnly ? undefined : handleSpeakerChange
-                      }
+              <div
+                key="transcript-container"
+                ref={contentScrollRef}
+                className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
+                onScroll={handleGuideScroll}
+              >
+                {segments.length > 0 ? (
+                  <>
+                    {segments.map((segment, index) => (
+                      <TranscriptSegment
+                        key={`segment-${index}-${segment.id}`}
+                        segment={segment}
+                        speakers={speakers}
+                        isActive={
+                          enableTimestampFeatures &&
+                          index === currentSegmentIndex
+                        }
+                        isEditable={isEditing && !isReadOnly}
+                        isAnonymized={isAnonymized}
+                        sttModel={transcribe?.stt_model}
+                        segmentRef={
+                          enableTimestampFeatures &&
+                          index === currentSegmentIndex
+                            ? activeSegmentRef
+                            : undefined
+                        }
+                        onClick={handleSeekToWithInteraction}
+                        onTextEdit={isReadOnly ? undefined : handleTextEdit}
+                        showTimestamp={enableTimestampFeatures}
+                        segmentIndex={index}
+                        allSegments={segments}
+                        clientId={session?.client_id || null}
+                        onSpeakerChange={
+                          isReadOnly ? undefined : handleSpeakerChange
+                        }
+                        guideLevel={
+                          checkIsGuideLevel(4)
+                            ? 4
+                            : checkIsGuideLevel(5)
+                              ? 5
+                              : null
+                        }
+                        onGuideNext={nextGuideLevel}
+                        onGuideComplete={endTranscriptEditGuide}
+                        isFirstSegment={index === 0}
+                      />
+                    ))}
+                    {/* 스크롤 감지용 타겟 - key를 주어 단계 변경 시 감지 상태 초기화 */}
+                    <div
+                      key={`scroll-target-${tutorialStep}`}
+                      ref={transcriptEndRef}
+                      className="h-4 w-full"
                     />
-                  ))}
-                  {/* 스크롤 감지용 타겟 - key를 주어 단계 변경 시 감지 상태 초기화 */}
-                  <div
-                    key={`scroll-target-${tutorialStep}`}
-                    ref={transcriptEndRef}
-                    className="h-4 w-full"
-                  />
-                </>
-              ) : (
-                <div className="flex min-h-[400px] items-center justify-center">
-                  <p className="text-fg-muted">전사 내용이 없습니다.</p>
-                </div>
-              )}
-            </div>
+                  </>
+                ) : (
+                  <div className="flex min-h-[400px] items-center justify-center">
+                    <p className="text-fg-muted">전사 내용이 없습니다.</p>
+                  </div>
+                )}
+              </div>
+            </Spotlight>
           ) : activeTab.startsWith('create-note-') ||
             activeTab in requestingTabs ? (
             <div className="flex h-full flex-col">

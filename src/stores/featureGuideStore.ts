@@ -43,11 +43,23 @@ interface EntryModal {
   isOpen: boolean;
 }
 
+interface SpotlightConfig {
+  isActive: boolean;
+  targetElement: HTMLElement | null;
+  tooltip?: React.ReactNode;
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
+  padding?: number;
+  onClose?: () => void;
+  rounded?: 'sm' | 'md' | 'lg' | 'full' | number;
+}
+
 interface FeatureGuideState {
   /** 현재 활성화된 가이드 (null이면 가이드 비활성) */
   activeGuide: ActiveGuide | null;
   /** 진입점 모달 상태 */
   entryModal: EntryModal | null;
+  /** Spotlight 설정 */
+  spotlightConfig: SpotlightConfig | null;
 }
 
 interface FeatureGuideActions {
@@ -87,6 +99,16 @@ interface FeatureGuideActions {
    * 상태 초기화 (테스트/디버깅용)
    */
   reset: () => void;
+
+  /**
+   * Spotlight 설정
+   */
+  setSpotlightConfig: (config: SpotlightConfig | null) => void;
+
+  /**
+   * Spotlight 초기화
+   */
+  clearSpotlight: () => void;
 }
 
 export type FeatureGuideStore = FeatureGuideState & FeatureGuideActions;
@@ -96,6 +118,7 @@ export const useFeatureGuideStore = create<FeatureGuideStore>()(
     (set, get) => ({
       activeGuide: null,
       entryModal: null,
+      spotlightConfig: null,
 
       openEntryModal: (type: FeatureGuideType) => {
         set(
@@ -149,7 +172,11 @@ export const useFeatureGuideStore = create<FeatureGuideStore>()(
         if (activeGuide) {
           markGuideSeen(activeGuide.type);
         }
-        set({ activeGuide: null }, false, 'featureGuide/endGuide');
+        set(
+          { activeGuide: null, spotlightConfig: null },
+          false,
+          'featureGuide/endGuide'
+        );
       },
 
       isGuideActive: (type: FeatureGuideType, level?: number) => {
@@ -162,10 +189,18 @@ export const useFeatureGuideStore = create<FeatureGuideStore>()(
 
       reset: () => {
         set(
-          { activeGuide: null, entryModal: null },
+          { activeGuide: null, entryModal: null, spotlightConfig: null },
           false,
           'featureGuide/reset'
         );
+      },
+
+      setSpotlightConfig: (config) => {
+        set({ spotlightConfig: config }, false, 'featureGuide/setSpotlightConfig');
+      },
+
+      clearSpotlight: () => {
+        set({ spotlightConfig: null }, false, 'featureGuide/clearSpotlight');
       },
     }),
     { name: 'FeatureGuideStore' }
