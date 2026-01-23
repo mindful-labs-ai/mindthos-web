@@ -15,6 +15,7 @@ import { useClientList } from '@/feature/client/hooks/useClientList';
 import { trackEvent } from '@/lib/mixpanel';
 
 import type { Speaker, TranscribeSegment } from '../types';
+import { getSpeakerDisplayName } from '../utils/getSpeakerInfo';
 import type { SpeakerRangeOption } from '../utils/segmentRangeUtils';
 import {
   calculateAffectedSegments,
@@ -71,7 +72,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   const [range, setRange] = React.useState<SpeakerRangeOption>('single');
   const [selectionType, setSelectionType] = React.useState<
     'client' | 'custom' | string
-  >('client');
+  >('default_counselor');
   const [customName, setCustomName] = React.useState('');
   const [isApplying, setIsApplying] = React.useState(false);
 
@@ -81,11 +82,34 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     [clients, clientId]
   );
 
-  // 기존 customName이 있는 speaker들 추출
-  const existingCustomSpeakers = React.useMemo(
-    () => speakers.filter((s) => s.customName),
-    [speakers]
-  );
+  // speakers 배열을 기반으로 동적 옵션 생성 (중앙화된 getSpeakerDisplayName 사용)
+  const speakerOptions = React.useMemo(() => {
+    return speakers.map((speaker) => ({
+      value: `speaker_${speaker.id}`,
+      label: getSpeakerDisplayName(speaker),
+    }));
+  }, [speakers]);
+
+  // 팝업이 열릴 때 현재 세그먼트의 화자에 맞게 selectionType 초기화
+  React.useEffect(() => {
+    if (open) {
+      const currentSpeaker = speakers.find((s) => s.id === segment.speaker);
+
+      if (!currentSpeaker) {
+        // 첫 번째 speaker를 기본값으로 설정
+        const firstOption = speakerOptions[0];
+        setSelectionType(firstOption?.value || 'custom');
+        return;
+      }
+
+      // 현재 세그먼트의 speaker ID에 해당하는 옵션 선택
+      setSelectionType(`speaker_${currentSpeaker.id}`);
+
+      // 상태 초기화
+      setRange('single');
+      setCustomName('');
+    }
+  }, [open, segment.speaker, speakers, speakerOptions]);
 
   const handleApply = async () => {
     // 유효성 검사: custom 입력 시 이름 필수
@@ -109,29 +133,26 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         allSegments
       );
 
-      // 2. 대상 speaker 이름 결정
+      // 2. 대상 speaker 이름 및 ID 결정
       let targetName: string;
       let targetSpeakerId: number | undefined;
 
-      if (selectionType === 'default_counselor') {
-        // 기본 참석자: 상담사
-        targetName = '상담사';
-      } else if (selectionType === 'default_client') {
-        // 기본 참석자: 내담자
-        targetName = '내담자';
+      if (selectionType.startsWith('speaker_')) {
+        // 기존 speaker 선택 (예: "speaker_1", "speaker_2")
+        const speakerId = parseInt(selectionType.replace('speaker_', ''), 10);
+        const existingSpeaker = speakers.find((s) => s.id === speakerId);
+        if (existingSpeaker) {
+          targetName = getSpeakerDisplayName(existingSpeaker);
+          targetSpeakerId = speakerId;
+        } else {
+          targetName = '';
+        }
       } else if (selectionType === 'client') {
-        // session client 선택
+        // session client 선택 (speakers에 없는 경우)
         targetName = sessionClient?.name || '';
       } else if (selectionType === 'custom') {
         // 직접 입력
         targetName = customName.trim();
-      } else if (selectionType.startsWith('existing_')) {
-        // 기존 customName speaker 선택 (예: "existing_3")
-        const speakerId = parseInt(selectionType.replace('existing_', ''), 10);
-        const existingSpeaker = speakers.find((s) => s.id === speakerId);
-        targetName = existingSpeaker?.customName || '';
-        // 기존 speaker를 재사용하므로 ID도 미리 설정
-        targetSpeakerId = speakerId;
       } else {
         targetName = '';
       }
@@ -140,19 +161,21 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       let updatedSpeakers: Speaker[];
       let finalSpeakerId: number;
 
-      // existing_ 선택 시 이미 targetSpeakerId가 설정됨
       if (targetSpeakerId !== undefined) {
-        // existing_ 선택으로 이미 ID가 결정된 경우
+        // speaker_ 선택으로 이미 ID가 결정된 경우 (기존 speaker 재사용)
         finalSpeakerId = targetSpeakerId;
         updatedSpeakers = speakers;
       } else {
-        // client 또는 custom 선택 시
+        // client 또는 custom 선택 시 - 새 speaker 생성 또는 기존 speaker 재사용
+        // customName 또는 displayName이 일치하는 speaker 찾기
         const existingSpeaker = speakers.find(
-          (s) => s.customName === targetName
+          (s) =>
+            s.customName === targetName ||
+            getSpeakerDisplayName(s) === targetName
         );
 
         if (existingSpeaker) {
-          // 이미 존재하는 customName이면 해당 speaker ID 재사용
+          // 기존 speaker 재사용 (customName 또는 displayName 일치)
           finalSpeakerId = existingSpeaker.id;
           updatedSpeakers = speakers;
         } else {
@@ -210,11 +233,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       if (guideLevel === 5 && onGuideComplete) {
         onGuideComplete();
       }
-
-      // 9. 상태 초기화
-      setCustomName('');
-      setRange('single');
-      setSelectionType('client');
     } catch {
       // 에러는 부모 컴포넌트에서 처리 (toast 표시)
     } finally {
@@ -226,14 +244,14 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     <div ref={setPopupContentElement} className="space-y-4 p-4">
       {/* Section 1: 참석자 선택 */}
       <div>
-        <Text className="mb-2 text-sm font-semibold text-fg">참석자 선택</Text>
+        <Text className="mb-2 text-sm font-semibold text-fg">참석자 변경</Text>
         <RadioGroup
           options={[
-            // 기본 참석자 옵션
-            { value: 'default_counselor', label: '상담사' },
-            { value: 'default_client', label: '내담자' },
-            // 세션에 연결된 내담자
-            ...(sessionClient
+            // speakers 배열 기반 동적 옵션
+            ...speakerOptions,
+            // 세션에 연결된 내담자 (speakers에 없는 경우에만 추가)
+            ...(sessionClient &&
+            !speakers.some((s) => s.customName === sessionClient.name)
               ? [
                   {
                     value: 'client',
@@ -241,10 +259,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
                   },
                 ]
               : []),
-            ...existingCustomSpeakers.map((speaker) => ({
-              value: `existing_${speaker.id}`,
-              label: speaker.customName || `Speaker ${speaker.id}`,
-            })),
+            // 직접 입력 옵션
             { value: 'custom', label: '직접 입력' },
           ]}
           value={selectionType}

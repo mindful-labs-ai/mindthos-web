@@ -139,9 +139,10 @@ export const SessionDetailPage: React.FC = () => {
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
-  const [editedSegments, setEditedSegments] = React.useState<
-    Record<number, string>
-  >({});
+  // useRef로 변경하여 리렌더링 없이 편집 내용 저장 (타이핑 렉 방지)
+  const editedSegmentsRef = React.useRef<Record<number, string>>({});
+  // 편집 내용이 있는지 여부만 상태로 관리 (UI 표시용)
+  const [hasEdits, setHasEdits] = React.useState(false);
   const [isTabChangeModalOpen, setIsTabChangeModalOpen] = React.useState(false);
   const [pendingTabValue, setPendingTabValue] = React.useState<string | null>(
     null
@@ -269,18 +270,8 @@ export const SessionDetailPage: React.FC = () => {
     [transcriptData]
   );
 
-  // 편집 중인 내용을 반영한 segments (편집 중에도 UI에 즉시 반영)
-  const segments = React.useMemo(() => {
-    if (Object.keys(editedSegments).length === 0) {
-      return rawSegments;
-    }
-    return rawSegments.map((seg) => {
-      if (seg.id in editedSegments) {
-        return { ...seg, text: editedSegments[seg.id] };
-      }
-      return seg;
-    });
-  }, [rawSegments, editedSegments]);
+  // 편집 중인 내용은 각 세그먼트 내부에서 관리하므로 rawSegments를 직접 사용
+  const segments = rawSegments;
 
   // 타임스탬프 기반 기능 활성화 여부 (gemini-3는 비활성화)
   const enableTimestampFeatures = shouldEnableTimestampFeatures(
@@ -288,14 +279,17 @@ export const SessionDetailPage: React.FC = () => {
     rawSegments
   );
 
-  const handleTextEdit = (segmentId: number, newText: string) => {
-    if (isReadOnly) return;
-    // 편집된 세그먼트를 메모리에 저장 (실제 저장은 편집 완료 버튼 클릭 시)
-    setEditedSegments((prev) => ({
-      ...prev,
-      [segmentId]: newText,
-    }));
-  };
+  const handleTextEdit = React.useCallback(
+    (segmentId: number, newText: string) => {
+      if (isReadOnly) return;
+      // ref에 저장하여 리렌더링 없이 편집 내용 보관
+      editedSegmentsRef.current[segmentId] = newText;
+      if (!hasEdits) {
+        setHasEdits(true);
+      }
+    },
+    [isReadOnly, hasEdits]
+  );
 
   const handleSaveAllEdits = async () => {
     if (isReadOnly) {
@@ -321,7 +315,7 @@ export const SessionDetailPage: React.FC = () => {
       nextGuideLevel();
     }
 
-    if (Object.keys(editedSegments).length === 0) {
+    if (Object.keys(editedSegmentsRef.current).length === 0) {
       toast({
         title: '알림',
         description: '수정된 내용이 없습니다.',
@@ -358,8 +352,8 @@ export const SessionDetailPage: React.FC = () => {
             const updatedSegments = contents.segments.map(
               (seg: TranscribeSegment) => {
                 // seg.id를 직접 사용 (index + 1이 아님)
-                if (seg.id in editedSegments) {
-                  return { ...seg, text: editedSegments[seg.id] };
+                if (seg.id in editedSegmentsRef.current) {
+                  return { ...seg, text: editedSegmentsRef.current[seg.id] };
                 }
                 return seg;
               }
@@ -375,8 +369,8 @@ export const SessionDetailPage: React.FC = () => {
             const updatedSegments = contents.result.segments.map(
               (seg: TranscribeSegment) => {
                 // seg.id를 직접 사용 (index + 1이 아님)
-                if (seg.id in editedSegments) {
-                  return { ...seg, text: editedSegments[seg.id] };
+                if (seg.id in editedSegmentsRef.current) {
+                  return { ...seg, text: editedSegmentsRef.current[seg.id] };
                 }
                 return seg;
               }
@@ -403,16 +397,20 @@ export const SessionDetailPage: React.FC = () => {
         }
       );
 
+      // 저장할 편집 내용 복사 (ref 초기화 전에)
+      const editsToSave = { ...editedSegmentsRef.current };
+
       // 편집 상태 초기화 (UI 즉시 반영)
-      setEditedSegments({});
+      editedSegmentsRef.current = {};
+      setHasEdits(false);
       setIsEditing(false);
 
       // 백그라운드에서 서버 업데이트
-      await updateMultipleTranscriptSegments(transcribe.id, editedSegments);
+      await updateMultipleTranscriptSegments(transcribe.id, editsToSave);
 
       trackEvent('transcript_edit_complete', {
         session_id: sessionId,
-        edited_segments_count: Object.keys(editedSegments).length,
+        edited_segments_count: Object.keys(editsToSave).length,
       });
 
       toast({
@@ -458,7 +456,8 @@ export const SessionDetailPage: React.FC = () => {
 
   const handleCancelEdit = () => {
     trackEvent('transcript_edit_cancel', { session_id: sessionId });
-    setEditedSegments({});
+    editedSegmentsRef.current = {};
+    setHasEdits(false);
     setIsEditing(false);
   };
 
@@ -632,7 +631,8 @@ export const SessionDetailPage: React.FC = () => {
   // 탭 변경 확인
   const handleConfirmTabChange = () => {
     setIsEditing(false);
-    setEditedSegments({});
+    editedSegmentsRef.current = {};
+    setHasEdits(false);
     if (pendingTabValue) {
       if (pendingTabValue === 'add') {
         const newTabId = `create-note-${Date.now()}`;
@@ -1407,12 +1407,69 @@ export const SessionDetailPage: React.FC = () => {
           onClose={() => endTutorial()}
         >
           {activeTab === 'transcript' ? (
-            <Spotlight
-              isActive={checkIsGuideLevel(2)}
-              tooltip={<TextEditTooltip onNext={nextGuideLevel} />}
-              tooltipPosition="left"
-              store="featureGuide"
-            >
+            checkIsGuideLevel(2) ? (
+              <Spotlight
+                isActive={true}
+                tooltip={<TextEditTooltip onNext={nextGuideLevel} />}
+                tooltipPosition="left"
+                store="featureGuide"
+              >
+                <div
+                  key="transcript-container"
+                  ref={contentScrollRef}
+                  className={`h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors`}
+                  onScroll={handleGuideScroll}
+                >
+                  {segments.length > 0 ? (
+                    <>
+                      {segments.map((segment, index) => (
+                        <TranscriptSegment
+                          key={`segment-${index}-${segment.id}`}
+                          segment={segment}
+                          speakers={speakers}
+                          isActive={
+                            enableTimestampFeatures &&
+                            index === currentSegmentIndex
+                          }
+                          isEditable={isEditing && !isReadOnly}
+                          isAnonymized={isAnonymized}
+                          sttModel={transcribe?.stt_model}
+                          segmentRef={
+                            enableTimestampFeatures &&
+                            index === currentSegmentIndex
+                              ? activeSegmentRef
+                              : undefined
+                          }
+                          onClick={handleSeekToWithInteraction}
+                          onTextEdit={isReadOnly ? undefined : handleTextEdit}
+                          showTimestamp={enableTimestampFeatures}
+                          segmentIndex={index}
+                          allSegments={segments}
+                          clientId={session?.client_id || null}
+                          onSpeakerChange={
+                            isReadOnly ? undefined : handleSpeakerChange
+                          }
+                          guideLevel={null}
+                          onGuideNext={nextGuideLevel}
+                          onGuideComplete={endTranscriptEditGuide}
+                          isFirstSegment={index === 0}
+                        />
+                      ))}
+                      {/* 스크롤 감지용 타겟 - key를 주어 단계 변경 시 감지 상태 초기화 */}
+                      <div
+                        key={`scroll-target-${tutorialStep}`}
+                        ref={transcriptEndRef}
+                        className="h-4 w-full"
+                      />
+                    </>
+                  ) : (
+                    <div className="flex min-h-[400px] items-center justify-center">
+                      <p className="text-fg-muted">전사 내용이 없습니다.</p>
+                    </div>
+                  )}
+                </div>
+              </Spotlight>
+            ) : (
               <div
                 key="transcript-container"
                 ref={contentScrollRef}
@@ -1473,7 +1530,7 @@ export const SessionDetailPage: React.FC = () => {
                   </div>
                 )}
               </div>
-            </Spotlight>
+            )
           ) : activeTab.startsWith('create-note-') ||
             activeTab in requestingTabs ? (
             <div className="flex h-full flex-col">

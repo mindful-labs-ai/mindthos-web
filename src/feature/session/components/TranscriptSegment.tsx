@@ -41,7 +41,7 @@ interface TranscriptSegmentProps {
   isFirstSegment?: boolean;
 }
 
-export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
+const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   segment,
   speakers,
   isActive,
@@ -93,13 +93,13 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
     }
   };
 
-  // 텍스트 영역 높이 자동 조절
+  // 텍스트 영역 높이 자동 조절 (초기 마운트 시에만)
   React.useEffect(() => {
     if (textareaRef.current && isEditable) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }, [editedText, isEditable]);
+  }, [isEditable]);
 
   // segment.text가 변경되면 editedText도 업데이트
   React.useEffect(() => {
@@ -107,8 +107,16 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
   }, [segment.text]);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newText = e.target.value;
+    const textarea = e.target;
+    const newText = textarea.value;
     setEditedText(newText);
+
+    // 높이 조절을 requestAnimationFrame으로 다음 프레임에 처리
+    requestAnimationFrame(() => {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    });
+
     if (onTextEdit) {
       onTextEdit(segment.id, newText);
     }
@@ -242,19 +250,20 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
             onChange={handleTextareaChange}
             onClick={(e) => e.stopPropagation()}
             rows={1}
-            className={`w-full resize-none overflow-hidden border-0 bg-transparent p-0 leading-relaxed outline-none ${
+            className={`m-0 block w-full resize-none overflow-hidden border-0 bg-transparent p-0 leading-relaxed outline-none ${
               isActive ? 'font-medium text-fg' : 'text-fg-muted'
             }`}
             style={{
-              lineHeight: 'inherit',
+              lineHeight: '1.625',
               fontFamily: 'inherit',
               fontSize: 'inherit',
               fontWeight: 'inherit',
+              minHeight: '1.625em',
             }}
           />
         ) : (
           <p
-            className={`leading-relaxed ${
+            className={`m-0 leading-relaxed ${
               isActive ? 'font-medium text-fg' : 'text-fg-muted'
             }`}
           >
@@ -265,3 +274,6 @@ export const TranscriptSegment: React.FC<TranscriptSegmentProps> = ({
     </div>
   );
 };
+
+// React.memo로 래핑하여 불필요한 리렌더링 방지
+export const TranscriptSegment = React.memo(TranscriptSegmentComponent);
