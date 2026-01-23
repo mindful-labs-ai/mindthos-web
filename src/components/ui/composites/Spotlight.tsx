@@ -55,7 +55,9 @@ export const GlobalSpotlight: React.FC = () => {
 
   // featureGuideStore 우선, 없으면 questStore 사용
   const config = featureConfig || questConfig;
-  const clearSpotlight = featureConfig ? clearFeatureSpotlight : clearQuestSpotlight;
+  const clearSpotlight = featureConfig
+    ? clearFeatureSpotlight
+    : clearQuestSpotlight;
 
   if (!config || !config.isActive) return null;
 

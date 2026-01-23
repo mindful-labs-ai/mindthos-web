@@ -196,7 +196,11 @@ export const useFeatureGuideStore = create<FeatureGuideStore>()(
       },
 
       setSpotlightConfig: (config) => {
-        set({ spotlightConfig: config }, false, 'featureGuide/setSpotlightConfig');
+        set(
+          { spotlightConfig: config },
+          false,
+          'featureGuide/setSpotlightConfig'
+        );
       },
 
       clearSpotlight: () => {

@@ -125,7 +125,10 @@ export async function getSessionList(userId: number): Promise<{
     { data: progressNotes },
   ] = await Promise.all([
     audioSessionIds.length > 0
-      ? supabase.from('transcribes').select('*').in('session_id', audioSessionIds)
+      ? supabase
+          .from('transcribes')
+          .select('*')
+          .in('session_id', audioSessionIds)
       : Promise.resolve({ data: [] }),
     handwrittenSessionIds.length > 0
       ? supabase

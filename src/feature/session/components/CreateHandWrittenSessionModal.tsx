@@ -248,7 +248,9 @@ export const CreateHandWrittenSessionModal: React.FC<
       {/* 하단 버튼 */}
       <div className="flex flex-col items-center gap-2 pb-4">
         <div className="flex items-center gap-1 rounded-lg bg-primary-100 px-3 py-1">
-          <Text className="font-bold text-primary-600">{HAND_WRITTEN_CREDIT}</Text>
+          <Text className="font-bold text-primary-600">
+            {HAND_WRITTEN_CREDIT}
+          </Text>
           <svg
             width="14"
             height="14"

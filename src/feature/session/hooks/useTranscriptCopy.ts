@@ -72,7 +72,10 @@ export function useTranscriptCopy({
           if (isAnonymized) {
             return `${speakerIndex}. ${cleanedText}`;
           } else {
-            const speakerName = getSpeakerDisplayName(segment.speaker, speakers);
+            const speakerName = getSpeakerDisplayName(
+              segment.speaker,
+              speakers
+            );
             return `${speakerIndex}. ${speakerName} : ${cleanedText}`;
           }
         })

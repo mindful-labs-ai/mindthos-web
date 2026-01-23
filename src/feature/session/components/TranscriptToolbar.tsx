@@ -194,7 +194,9 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                         <button
                           onClick={() => {
                             const store = useSessionStore.getState();
-                            store.setAutoScrollEnabled(!store.autoScrollEnabled);
+                            store.setAutoScrollEnabled(
+                              !store.autoScrollEnabled
+                            );
                             setIsMenuOpen(false);
                           }}
                           className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"

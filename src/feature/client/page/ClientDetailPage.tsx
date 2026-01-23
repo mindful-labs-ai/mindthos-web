@@ -163,14 +163,19 @@ export const ClientDetailPage: React.FC = () => {
         }
       } else {
         // 오디오 세션: 전사 데이터 파싱
-        const transcriptData = getTranscriptData(transcribe as Transcribe | null);
+        const transcriptData = getTranscriptData(
+          transcribe as Transcribe | null
+        );
         if (transcriptData) {
           const { segments, speakers } = transcriptData;
           content =
             segments
               ?.slice(0, 3)
               .map((seg) => {
-                const speakerName = getSpeakerDisplayName(seg.speaker, speakers);
+                const speakerName = getSpeakerDisplayName(
+                  seg.speaker,
+                  speakers
+                );
                 return `${speakerName}: ${seg.text}`;
               })
               .join(' ') || '전사 내용이 없습니다.';
