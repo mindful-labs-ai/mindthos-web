@@ -12,6 +12,8 @@ interface QuestStepProps {
   onAction?: (questId: number) => void;
   onOpenCreateSession?: () => void;
   onOpenUserEdit?: () => void;
+  hasSession?: boolean;
+  onCompleteQuest3?: () => void;
 }
 
 const QUESTS = [
@@ -25,6 +27,8 @@ export const QuestStep = ({
   remainingDays = 7,
   onOpenCreateSession,
   onOpenUserEdit,
+  hasSession = false,
+  onCompleteQuest3,
 }: QuestStepProps) => {
   const user = useAuthStore((state) => state.user);
   const email = user?.email;
@@ -90,6 +94,7 @@ export const QuestStep = ({
                         isInProgress: currentLevel === 1,
                         isAlreadyStarted: false,
                         isLocked: false,
+                        canComplete: false,
                       };
                     }
                     if (quest.id === 2) {
@@ -98,14 +103,20 @@ export const QuestStep = ({
                         isInProgress: currentLevel === 2,
                         isAlreadyStarted: false,
                         isLocked: currentLevel < 2,
+                        canComplete: false,
                       };
                     }
                     if (quest.id === 3) {
+                      // 세션이 있으면 미션 완료 가능 상태
+                      const canComplete =
+                        hasSession &&
+                        (currentLevel === 3 || currentLevel === 4);
                       return {
                         isCompleted: currentLevel >= 5,
                         isInProgress: currentLevel === 3 || currentLevel === 4,
                         isAlreadyStarted: currentLevel === 4, // 레벨 4는 이미 생성 모달 진입 상태
                         isLocked: currentLevel < 3,
+                        canComplete, // 세션이 있으면 완료 가능
                       };
                     }
                     if (quest.id === 4) {
@@ -114,6 +125,7 @@ export const QuestStep = ({
                         isInProgress: currentLevel === 5,
                         isAlreadyStarted: false,
                         isLocked: currentLevel < 5,
+                        canComplete: false,
                       };
                     }
                     return {
@@ -121,6 +133,7 @@ export const QuestStep = ({
                       isInProgress: false,
                       isAlreadyStarted: false,
                       isLocked: true,
+                      canComplete: false,
                     };
                   };
 
@@ -129,6 +142,7 @@ export const QuestStep = ({
                     isInProgress,
                     isAlreadyStarted,
                     isLocked,
+                    canComplete,
                   } = getQuestStatus();
 
                   // 모든 미션 완료 상태 예외 처리
@@ -177,6 +191,12 @@ export const QuestStep = ({
                             onClick={() => {
                               if (!isInProgress) return;
 
+                              // Quest 3: 세션이 있으면 미션 완료하기
+                              if (quest.id === 3 && canComplete) {
+                                onCompleteQuest3?.();
+                                return;
+                              }
+
                               // 이미 시작된 상태(진행 중)라면 바로 해당 기능 실행
                               if (isAlreadyStarted) {
                                 if (quest.id === 3) {
@@ -200,11 +220,13 @@ export const QuestStep = ({
                           >
                             {isCompleted
                               ? '미션 완료!'
-                              : isAlreadyStarted
-                                ? `${quest.id === 3 ? '바로 업로드하기' : '미션 진행 중'}`
-                                : isLocked
-                                  ? '이전 단계 후 오픈'
-                                  : '미션 진행하기'}
+                              : quest.id === 3 && canComplete
+                                ? '미션 완료하기'
+                                : isAlreadyStarted
+                                  ? `${quest.id === 3 ? '바로 업로드하기' : '미션 진행 중'}`
+                                  : isLocked
+                                    ? '이전 단계 후 오픈'
+                                    : '미션 진행하기'}
                           </Button>
                           {/* 미션 진행 중 상태 - 쉬머 오버레이 */}
                           {isAlreadyStarted && (

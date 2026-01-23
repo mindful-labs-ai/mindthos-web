@@ -9,6 +9,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     STATUS: (sessionId: string) => `session/status/${sessionId}`,
     PRESIGNED_URL: 'session/presigned-url',
     UPLOAD_URL: 'session/upload-url',
+    HAND_WRITTEN: 'session/hand-written',
   },
   // 상담노트 관련
   PROGRESS_NOTE: {

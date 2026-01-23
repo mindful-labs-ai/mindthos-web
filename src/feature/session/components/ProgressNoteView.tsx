@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackEvent } from '@/lib/mixpanel';
 import { CheckIcon } from '@/shared/icons';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 
@@ -11,6 +12,9 @@ import type { ProgressNote } from '../types';
 
 interface ProgressNoteViewProps {
   note: ProgressNote;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
+  isReadOnly?: boolean;
 }
 
 // 상담노트 섹션 블럭 타입
@@ -19,7 +23,12 @@ interface NoteSection {
   content: string;
 }
 
-export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
+export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
+  note,
+  onRegenerate,
+  isRegenerating = false,
+  isReadOnly = false,
+}) => {
   const { toast } = useToast();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -38,26 +47,34 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
     const lines = cleanedSummary.split('\n');
     let currentSection: NoteSection | null = null;
 
+    // 제목에서 ** 마크다운 볼드를 제거하는 헬퍼 함수
+    const removeBoldMarkers = (text: string): string => {
+      return text.replace(/\*\*/g, '').trim();
+    };
+
     lines.forEach((line) => {
-      // 마크다운 헤딩 (#, ##, ###)으로 시작하는 섹션 제목
-      if (/^#{1,3}\s/.test(line)) {
+      // 마크다운 헤딩 (#, ##, ###, ####)으로 시작하는 섹션 제목
+      if (/^#{1,4}\s/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
+        // # 제거 후 ** 볼드 마커도 제거
+        const rawTitle = line.replace(/^#{1,4}\s*/, '').trim();
         currentSection = {
-          title: line.replace(/^#{1,3}\s*/, '').trim(),
+          title: removeBoldMarkers(rawTitle),
           content: '',
         };
       }
-      // 볼드(**) 형태의 섹션 제목 (예: **0. 적용된 상담 이론 (추정)**)
-      // 줄 전체가 **로 감싸져 있고, 숫자로 시작하는 경우 (예: **1. 제목**)
-      else if (/^\*\*\d+\.\s+[^*]+\*\*\s*$/.test(line)) {
+      // 숫자로 시작하는 섹션 제목 (예: 1. 상담 주제, 0. 적용된 상담 이론)
+      // ** 유무와 관계없이 "숫자. 제목" 형태를 인식
+      else if (/^\*{0,2}\d+\.\s+/.test(line)) {
         if (currentSection) {
           sections.push(currentSection);
         }
-        // ** 제거하고 제목 추출
+        // **와 숫자. 제거하고 제목 추출
+        const rawTitle = line.replace(/^\*{0,2}\d+\.\s*/, '').trim();
         currentSection = {
-          title: line.replace(/^\*\*|\*\*\s*$/g, '').trim(),
+          title: removeBoldMarkers(rawTitle),
           content: '',
         };
       }
@@ -94,6 +111,8 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
       await navigator.clipboard.writeText(content);
       setCopiedIndex(index);
 
+      trackEvent('progress_note_copy', { section_index: index });
+
       toast({
         title: '복사 완료',
         description: '클립보드에 내용이 복사되었습니다.',
@@ -121,6 +140,8 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
     try {
       await navigator.clipboard.writeText(note.summary);
       setCopiedAll(true);
+
+      trackEvent('progress_note_copy_all');
 
       toast({
         title: '복사 완료',
@@ -217,32 +238,68 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({ note }) => {
         <Title as="h2" className="text-base font-bold text-fg-muted">
           {note.title || '상담 노트'}
         </Title>
-        <button
-          type="button"
-          onClick={handleCopyAll}
-          className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
-          aria-label="전체 복사"
-        >
-          {copiedAll ? (
-            <>
-              <CheckIcon size={18} className="text-success" />
-              <span className="text-success">복사됨</span>
-            </>
-          ) : (
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+        <div className="flex items-center gap-2">
+          {/* 재생성 버튼 */}
+          {onRegenerate && (
+            <button
+              type="button"
+              onClick={onRegenerate}
+              disabled={isReadOnly || isRegenerating}
+              className={`flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-sm text-fg-muted transition-colors ${
+                isReadOnly || isRegenerating
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'hover:bg-surface-contrast'
+              }`}
+              aria-label="노트 재생성"
             >
-              <path
-                d="M13 4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5H17.966C17.8924 4.35068 17.6074 3.74354 17.155 3.272L14.871 0.913C14.3714 0.406548 13.7085 0.0933745 13 0.029V4ZM11 4V0H7C5.67441 0.00158786 4.40356 0.528882 3.46622 1.46622C2.52888 2.40356 2.00159 3.67441 2 5V15C2.00159 16.3256 2.52888 17.5964 3.46622 18.5338C4.40356 19.4711 5.67441 19.9984 7 20H13C14.3256 19.9984 15.5964 19.4711 16.5338 18.5338C17.4711 17.5964 17.9984 16.3256 18 15V7H14C13.2044 7 12.4413 6.68393 11.8787 6.12132C11.3161 5.55871 11 4.79565 11 4ZM17 24H8C7.73478 24 7.48043 23.8946 7.29289 23.7071C7.10536 23.5196 7 23.2652 7 23C7 22.7348 7.10536 22.4804 7.29289 22.2929C7.48043 22.1054 7.73478 22 8 22H17C17.7956 22 18.5587 21.6839 19.1213 21.1213C19.6839 20.5587 20 19.7956 20 19V8C20 7.73478 20.1054 7.48043 20.2929 7.29289C20.4804 7.10536 20.7348 7 21 7C21.2652 7 21.5196 7.10536 21.7071 7.29289C21.8946 7.48043 22 7.73478 22 8V19C21.9984 20.3256 21.4711 21.5964 20.5338 22.5338C19.5964 23.4711 18.3256 23.9984 17 24Z"
-                fill="#BABAC0"
-              />
-            </svg>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={isRegenerating ? 'animate-spin' : ''}
+              >
+                <path
+                  d="M8.33447 13.3333H4.16781V17.5M11.6678 6.66667H15.8345V2.5M3.82031 7.50284C4.28755 6.34638 5.06984 5.3442 6.07826 4.61019C7.08669 3.87618 8.28185 3.4396 9.52593 3.35042C10.77 3.26125 12.0134 3.52284 13.1162 4.10551C14.219 4.68819 15.1355 5.56878 15.7629 6.64677M16.1824 12.4976C15.7152 13.654 14.9329 14.6562 13.9245 15.3902C12.9161 16.1242 11.7221 16.5602 10.478 16.6494C9.23395 16.7386 7.98953 16.477 6.88672 15.8944C5.78391 15.3117 4.86682 14.4313 4.23942 13.3533"
+                  stroke="#A2A2A2"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+
+              <span>{isRegenerating ? '재생성 중...' : '노트 재생성'}</span>
+            </button>
           )}
-        </button>
+          {/* 전체 복사 버튼 */}
+          <button
+            type="button"
+            onClick={handleCopyAll}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
+            aria-label="전체 복사"
+          >
+            {copiedAll ? (
+              <>
+                <CheckIcon size={18} className="text-success" />
+                <span className="text-success">복사됨</span>
+              </>
+            ) : (
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M13 4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5H17.966C17.8924 4.35068 17.6074 3.74354 17.155 3.272L14.871 0.913C14.3714 0.406548 13.7085 0.0933745 13 0.029V4ZM11 4V0H7C5.67441 0.00158786 4.40356 0.528882 3.46622 1.46622C2.52888 2.40356 2.00159 3.67441 2 5V15C2.00159 16.3256 2.52888 17.5964 3.46622 18.5338C4.40356 19.4711 5.67441 19.9984 7 20H13C14.3256 19.9984 15.5964 19.4711 16.5338 18.5338C17.4711 17.5964 17.9984 16.3256 18 15V7H14C13.2044 7 12.4413 6.68393 11.8787 6.12132C11.3161 5.55871 11 4.79565 11 4ZM17 24H8C7.73478 24 7.48043 23.8946 7.29289 23.7071C7.10536 23.5196 7 23.2652 7 23C7 22.7348 7.10536 22.4804 7.29289 22.2929C7.48043 22.1054 7.73478 22 8 22H17C17.7956 22 18.5587 21.6839 19.1213 21.1213C19.6839 20.5587 20 19.7956 20 19V8C20 7.73478 20.1054 7.48043 20.2929 7.29289C20.4804 7.10536 20.7348 7 21 7C21.2652 7 21.5196 7.10536 21.7071 7.29289C21.8946 7.48043 22 7.73478 22 8V19C21.9984 20.3256 21.4711 21.5964 20.5338 22.5338C19.5964 23.4711 18.3256 23.9984 17 24Z"
+                  fill="#BABAC0"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* 마크다운 문서 렌더링 */}

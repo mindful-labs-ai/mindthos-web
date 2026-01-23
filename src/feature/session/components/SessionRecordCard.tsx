@@ -578,9 +578,16 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </Text>
 
             <div className="flex items-center justify-between gap-3">
-              <Text className="text-xs text-fg-muted">
-                {formatKoreanDateTime(record.created_at)}
-              </Text>
+              <div className="flex items-center gap-2">
+                <Text className="text-xs text-fg-muted">
+                  {formatKoreanDateTime(record.created_at)}
+                </Text>
+                {record.is_handwritten && (
+                  <Badge tone="neutral" variant="soft" size="sm">
+                    직접 입력
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {renderClientInfo()}
@@ -659,9 +666,16 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             )}
 
             <div className="flex items-center justify-between gap-3">
-              <Text className="text-xs text-fg-muted">
-                {formatKoreanDateTime(record.created_at)}
-              </Text>
+              <div className="flex items-center gap-2">
+                <Text className="text-xs text-fg-muted">
+                  {formatKoreanDateTime(record.created_at)}
+                </Text>
+                {record.is_handwritten && (
+                  <Badge tone="neutral" variant="soft" size="sm">
+                    직접 입력
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {renderClientInfo()}
@@ -700,9 +714,16 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </Text>
 
           <div className="flex items-center justify-between gap-3">
-            <Text className="text-xs text-fg-muted">
-              {formatKoreanDateTime(record.created_at)}
-            </Text>
+            <div className="flex items-center gap-2">
+              <Text className="text-xs text-fg-muted">
+                {formatKoreanDateTime(record.created_at)}
+              </Text>
+              {record.is_handwritten && (
+                <Badge tone="neutral" variant="soft" size="sm">
+                  직접 입력
+                </Badge>
+              )}
+            </div>
           </div>
 
           {renderClientInfo()}

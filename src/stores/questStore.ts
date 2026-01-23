@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
+import { trackEvent } from '@/lib/mixpanel';
 import { onboardingService } from '@/services/onboarding/onboardingService';
 import {
   OnboardingState,
@@ -160,6 +161,12 @@ export const useQuestStore = create<QuestStore>()(
             // 2. 미시작 상태(Level 0)라면 자동으로 start 호출
             if (level === 0) {
               await onboardingService.start({ email });
+
+              // 퍼널 시작점: 신규 유저 서비스 첫 입장
+              trackEvent('onboarding_funnel_started', {
+                funnel_step: 'service_first_entry',
+              });
+
               // 시작 후 최신 상태 다시 조회
               response = await onboardingService.check(email);
               level = getQuestLevel(
