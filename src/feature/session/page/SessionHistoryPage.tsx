@@ -168,7 +168,7 @@ export const SessionHistoryPage: React.FC = () => {
         // 사이드탭에서는 succeeded 상태인 세션만 표시
         return session.processing_status === 'succeeded';
       })
-      .map(({ session }) => {
+      .map(({ session, transcribe }) => {
         const client = effectiveClients.find((c) => c.id === session.client_id);
         const audioDuration = session.audio_meta_data?.duration_seconds;
 
@@ -193,6 +193,7 @@ export const SessionHistoryPage: React.FC = () => {
           duration: audioDuration,
           hasAudio: !!session.audio_url,
           createdAt: session.created_at,
+          isAdvancedTranscript: transcribe?.stt_model === 'gemini-3',
         };
       });
   }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
