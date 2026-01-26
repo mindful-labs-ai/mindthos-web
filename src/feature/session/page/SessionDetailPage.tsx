@@ -664,7 +664,7 @@ export const SessionDetailPage: React.FC = () => {
 
       {/* 탭 콘텐츠 */}
       <div
-        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${((isEditing || isEditingHandwritten) && activeTab === 'transcript') ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
+        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         <ScrollIndicator
           className="bottom-0 right-1/2 translate-x-1/2"
