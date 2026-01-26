@@ -191,7 +191,8 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
             return segments.map((segment, index) => {
               // 화자별 발언 번호 계산
               const speakerId = segment.speaker;
-              speakerCounters[speakerId] = (speakerCounters[speakerId] || 0) + 1;
+              speakerCounters[speakerId] =
+                (speakerCounters[speakerId] || 0) + 1;
               const speakerUtteranceIndex = speakerCounters[speakerId];
 
               return (

@@ -241,7 +241,9 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             </span>
           )}
           {!showTimestampDisplay && speakerUtteranceIndex !== undefined && (
-            <span className="text-xs text-fg-muted">{speakerUtteranceIndex}</span>
+            <span className="text-xs text-fg-muted">
+              {speakerUtteranceIndex}
+            </span>
           )}
         </div>
         {isEditable ? (
