@@ -18,9 +18,16 @@ interface UseAudioPlayerReturn {
   handleTimeUpdate: (time: number) => void;
 }
 
+interface UseAudioPlayerOptions {
+  /** 오디오 재생 비활성화 여부 (가이드 모드 등) */
+  disabled?: boolean;
+}
+
 export const useAudioPlayer = (
-  audioUrl: string | null
+  audioUrl: string | null,
+  options: UseAudioPlayerOptions = {}
 ): UseAudioPlayerReturn => {
+  const { disabled = false } = options;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -80,6 +87,9 @@ export const useAudioPlayer = (
     const audio = audioRef.current;
     if (!audio) return;
 
+    // 비활성화 상태에서는 재생 불가
+    if (disabled && !isPlaying) return;
+
     try {
       if (isPlaying) {
         audio.pause();
@@ -122,6 +132,9 @@ export const useAudioPlayer = (
   const handleSeekTo = async (time: number) => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    // 비활성화 상태에서는 seek 후 자동 재생 불가
+    if (disabled) return;
 
     audio.currentTime = time;
     if (!isPlaying) {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Spotlight, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
+import { useToast } from '@/components/ui/composites/Toast';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
@@ -17,7 +18,11 @@ import {
 } from '@/feature/session/constants/dummySessions';
 import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
-import type { SessionRecord, Transcribe } from '@/feature/session/types';
+import type {
+  HandwrittenTranscribe,
+  SessionRecord,
+  Transcribe,
+} from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
@@ -54,10 +59,30 @@ const HomePage = () => {
   // 전역 모달 스토어 사용
   const openModal = useModalStore((state) => state.openModal);
 
+  const { toast } = useToast();
+
   // 세션 목록 조회 (TanStack Query)
   const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
     userId: parseInt(userId || '0'),
     enabled: !!userId,
+    onSessionComplete: (session) => {
+      const isHandwritten = session.audio_meta_data === null;
+      toast({
+        title: isHandwritten ? '상담 기록 생성 완료' : '음성 파일 처리 완료',
+        description: session.title
+          ? `"${session.title}" 생성 완료 되었습니다.`
+          : '생성 완료 되었습니다.',
+        duration: 5000,
+      });
+    },
+    onSessionError: (session) => {
+      toast({
+        title: '세션 처리 실패',
+        description:
+          session.error_message || '세션 처리 중 문제가 발생했습니다.',
+        duration: 5000,
+      });
+    },
   });
 
   const { clients, isLoading: isLoadingClients } = useClientList();
@@ -103,9 +128,26 @@ const HomePage = () => {
   };
 
   // 전사 내용을 SessionRecord용 텍스트로 변환 (처음 몇 줄만)
-  const getSessionContent = (transcribe: Transcribe | null): string => {
-    // raw_output 파싱 또는 기존 result 사용
-    const transcriptData = getTranscriptData(transcribe);
+  const getSessionContent = (
+    transcribe: Transcribe | HandwrittenTranscribe | null,
+    isHandwritten: boolean
+  ): string => {
+    if (!transcribe) {
+      return isHandwritten
+        ? '입력된 텍스트가 없습니다.'
+        : '전사 내용이 없습니다.';
+    }
+
+    // 직접 입력 세션: contents가 string이므로 그대로 사용
+    if (isHandwritten) {
+      if (typeof transcribe.contents === 'string') {
+        return transcribe.contents;
+      }
+      return '입력된 텍스트가 없습니다.';
+    }
+
+    // 일반 세션: raw_output 파싱 또는 기존 result 사용
+    const transcriptData = getTranscriptData(transcribe as Transcribe);
 
     if (!transcriptData) {
       return '전사 내용이 없습니다.';
@@ -259,6 +301,9 @@ const HomePage = () => {
               );
               const clientName = client?.name || '클라이언트 없음';
 
+              // 직접 입력 세션 여부
+              const isHandwritten = session.audio_meta_data === null;
+
               // SessionRecord 형식으로 변환
               const sessionRecord: SessionRecord = {
                 session_id: session.id,
@@ -270,13 +315,18 @@ const HomePage = () => {
                   session.client_id || ''
                 ),
                 title: session.title || undefined,
-                content: getSessionContent(transcribe),
+                content: getSessionContent(transcribe, isHandwritten),
                 note_types: getNoteTypesFromProgressNotes(progressNotes),
                 created_at: session.created_at,
                 processing_status: session.processing_status,
                 progress_percentage: session.progress_percentage,
                 current_step: session.current_step,
                 error_message: session.error_message,
+                is_handwritten: isHandwritten,
+                stt_model:
+                  !isHandwritten && transcribe && 'stt_model' in transcribe
+                    ? (transcribe as Transcribe).stt_model
+                    : null,
               };
 
               return (

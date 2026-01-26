@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
@@ -15,6 +15,7 @@ import {
   MissionCompleteTooltip,
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
+import { trackEvent } from '@/lib/mixpanel';
 import { CheckIcon } from '@/shared/icons';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 import { useAuthStore } from '@/stores/authStore';
@@ -30,20 +31,53 @@ interface ClientAnalysisTabProps {
   analyses: ClientAnalysisVersion[];
   isLoading?: boolean;
   onCreateAnalysis?: () => void;
+  /** 현재 폴링 중인 버전 (새 분석 생성 시 자동 선택용) */
+  pollingVersion?: number | null;
 }
 
 export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   analyses,
   isLoading = false,
   onCreateAnalysis,
+  pollingVersion,
 }) => {
   const { toast } = useToast();
   const { data: templates } = useClientTemplates();
-  const [selectedVersion, setSelectedVersion] = useState<number>(
-    analyses[0]?.version || 0
+  // 사용자가 수동으로 선택한 버전 (null이면 자동 선택)
+  const [userSelectedVersion, setUserSelectedVersion] = useState<number | null>(
+    null
   );
   const [activeTab, setActiveTab] = useState<string>('ai_supervision');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // 현재 표시할 버전 계산
+  const selectedVersion = useMemo(() => {
+    // 처리 중인 분석이 있으면 우선 표시
+    const processingAnalysis = analyses.find(
+      (a) =>
+        a.ai_supervision?.status === 'pending' ||
+        a.ai_supervision?.status === 'in_progress'
+    );
+    if (processingAnalysis) {
+      return processingAnalysis.version;
+    }
+
+    // 폴링 중인 버전이 있으면 해당 버전 표시
+    if (pollingVersion && analyses.some((a) => a.version === pollingVersion)) {
+      return pollingVersion;
+    }
+
+    // 사용자가 수동 선택한 버전이 있고 유효하면 해당 버전 표시
+    if (
+      userSelectedVersion !== null &&
+      analyses.some((a) => a.version === userSelectedVersion)
+    ) {
+      return userSelectedVersion;
+    }
+
+    // 기본값: 첫 번째 분석 (가장 최신)
+    return analyses[0]?.version || 0;
+  }, [analyses, pollingVersion, userSelectedVersion]);
 
   const { user } = useAuthStore();
   const { currentLevel } = useQuestStore();
@@ -121,6 +155,8 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       await navigator.clipboard.writeText(content);
       setCopiedKey('ai_supervision');
 
+      trackEvent('analysis_copy', { tab: activeTab });
+
       toast({
         title: '복사 완료',
         description: '클립보드에 내용이 복사되었습니다.',
@@ -172,7 +208,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             {onCreateAnalysis && (
               <button
                 type="button"
-                onClick={onCreateAnalysis}
+                onClick={() => {
+                  trackEvent('supervision_retry');
+                  onCreateAnalysis();
+                }}
                 className="flex items-center gap-2 rounded-lg border border-primary bg-primary-100 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
               >
                 수퍼비전 다시 받기
@@ -308,7 +347,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               <Select
                 items={versionItems}
                 value={String(selectedVersion)}
-                onChange={(value) => setSelectedVersion(Number(value))}
+                onChange={(value) => setUserSelectedVersion(Number(value))}
                 placeholder="버전 선택"
               />
             </div>
@@ -346,7 +385,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           <Tab
             items={tabItems}
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={(value) => {
+              trackEvent('analysis_tab_change', { tab: value });
+              setActiveTab(value);
+            }}
             variant="underline"
             size="md"
           />
@@ -358,7 +400,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             <Select
               items={versionItems}
               value={String(selectedVersion)}
-              onChange={(value) => setSelectedVersion(Number(value))}
+              onChange={(value) => setUserSelectedVersion(Number(value))}
               placeholder="버전 선택"
               maxDropdownHeight={200}
             />

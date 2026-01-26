@@ -14,7 +14,7 @@ import {
 } from '@/feature/session/constants/dummySessions';
 import { getNoteTypesFromProgressNotes } from '@/feature/session/constants/noteTypeMapping';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
-import type { SessionRecord } from '@/feature/session/types';
+import type { SessionRecord, Transcribe } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
@@ -148,20 +148,38 @@ export const ClientDetailPage: React.FC = () => {
     if (!client) return [];
 
     return clientSessions.map(({ session, transcribe, progressNotes }) => {
-      // 전사 데이터 파싱
-      const transcriptData = getTranscriptData(transcribe);
+      // 직접 입력 세션 여부 (audio_meta_data가 null이면 직접 입력)
+      const isHandwritten = session.audio_meta_data === null;
 
       let content = '전사 내용이 없습니다.';
-      if (transcriptData) {
-        const { segments, speakers } = transcriptData;
-        content =
-          segments
-            ?.slice(0, 3)
-            .map((seg) => {
-              const speakerName = getSpeakerDisplayName(seg.speaker, speakers);
-              return `${speakerName}: ${seg.text}`;
-            })
-            .join(' ') || '전사 내용이 없습니다.';
+
+      if (isHandwritten) {
+        // 직접 입력 세션: transcribe.contents가 문자열
+        if (transcribe && typeof transcribe.contents === 'string') {
+          // 미리보기용으로 앞부분만 표시 (150자 제한)
+          content =
+            transcribe.contents.slice(0, 150) +
+            (transcribe.contents.length > 150 ? '...' : '');
+        }
+      } else {
+        // 오디오 세션: 전사 데이터 파싱
+        const transcriptData = getTranscriptData(
+          transcribe as Transcribe | null
+        );
+        if (transcriptData) {
+          const { segments, speakers } = transcriptData;
+          content =
+            segments
+              ?.slice(0, 3)
+              .map((seg) => {
+                const speakerName = getSpeakerDisplayName(
+                  seg.speaker,
+                  speakers
+                );
+                return `${speakerName}: ${seg.text}`;
+              })
+              .join(' ') || '전사 내용이 없습니다.';
+        }
       }
 
       // progress notes에서 note_types 추출 (constants 사용)
@@ -187,6 +205,11 @@ export const ClientDetailPage: React.FC = () => {
         note_types,
         created_at: session.created_at,
         processing_status: session.processing_status,
+        is_handwritten: isHandwritten,
+        stt_model:
+          !isHandwritten && transcribe && 'stt_model' in transcribe
+            ? (transcribe as Transcribe).stt_model
+            : null,
       };
     });
   }, [clientSessions, client]);
@@ -339,12 +362,12 @@ export const ClientDetailPage: React.FC = () => {
       </div>
 
       {/* 컨텐츠 */}
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 overflow-hidden">
         {activeTab === 'history' ? (
-          <div className="h-full overflow-y-auto">
+          <div className="h-full overflow-y-auto overflow-x-hidden">
             <div className="grid grid-cols-[1fr_400px] gap-6 px-12 py-6">
               {/* 왼쪽: 세션 목록 */}
-              <div>
+              <div className="min-w-0">
                 {sessionRecords.length > 0 ? (
                   <div className="space-y-3">
                     {sessionRecords.map((record) => (
@@ -435,6 +458,7 @@ export const ClientDetailPage: React.FC = () => {
             <ClientAnalysisTab
               analyses={displayAnalyses}
               isLoading={isLoadingAnalyses && !isDummyFlow}
+              pollingVersion={pollingVersion}
               onCreateAnalysis={() => {
                 if (isReadOnly) {
                   toast({

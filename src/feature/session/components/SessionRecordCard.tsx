@@ -578,9 +578,18 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </Text>
 
             <div className="flex items-center justify-between gap-3">
-              <Text className="text-xs text-fg-muted">
-                {formatKoreanDateTime(record.created_at)}
-              </Text>
+              <div className="flex items-center gap-1">
+                <Text className="text-xs text-fg-muted">
+                  {formatKoreanDateTime(record.created_at)}
+                </Text>
+                <Text className="text-xs text-fg-muted">|</Text>
+                <Text className="text-xs text-fg-muted">
+                  {record.is_handwritten
+                    ? '직접 입력'
+                    : (record.stt_model === 'whisper' && '일반 축어록') ||
+                      (record.stt_model === 'gemini-3' && '고급 축어록')}
+                </Text>
+              </div>
             </div>
 
             {renderClientInfo()}
@@ -659,9 +668,16 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             )}
 
             <div className="flex items-center justify-between gap-3">
-              <Text className="text-xs text-fg-muted">
-                {formatKoreanDateTime(record.created_at)}
-              </Text>
+              <div className="flex items-center gap-2">
+                <Text className="text-xs text-fg-muted">
+                  {formatKoreanDateTime(record.created_at)}
+                </Text>
+                {record.is_handwritten && (
+                  <Badge tone="neutral" variant="soft" size="sm">
+                    직접 입력
+                  </Badge>
+                )}
+              </div>
             </div>
 
             {renderClientInfo()}
@@ -700,9 +716,16 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           </Text>
 
           <div className="flex items-center justify-between gap-3">
-            <Text className="text-xs text-fg-muted">
-              {formatKoreanDateTime(record.created_at)}
-            </Text>
+            <div className="flex items-center gap-2">
+              <Text className="text-xs text-fg-muted">
+                {formatKoreanDateTime(record.created_at)}
+              </Text>
+              {record.is_handwritten && (
+                <Badge tone="neutral" variant="soft" size="sm">
+                  직접 입력
+                </Badge>
+              )}
+            </div>
           </div>
 
           {renderClientInfo()}
