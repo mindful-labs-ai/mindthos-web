@@ -9,8 +9,12 @@ interface UseTabNavigationOptions {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isEditing: boolean;
+  /** 직접 입력 세션 편집 중 여부 */
+  isEditingHandwritten?: boolean;
   /** 편집 취소 핸들러 (편집 상태 초기화) */
   onCancelEdit: () => void;
+  /** 직접 입력 세션 편집 취소 핸들러 */
+  onCancelEditHandwritten?: () => void;
   /** 템플릿 선택 중인 탭들 setter */
   setCreatingTabs: React.Dispatch<
     React.SetStateAction<Record<string, number | null>>
@@ -42,7 +46,9 @@ export function useTabNavigation({
   activeTab,
   setActiveTab,
   isEditing,
+  isEditingHandwritten = false,
   onCancelEdit,
+  onCancelEditHandwritten,
   setCreatingTabs,
   contentScrollRef,
   checkIsTutorialActive,
@@ -55,8 +61,8 @@ export function useTabNavigation({
 
   const handleTabChange = React.useCallback(
     (value: string) => {
-      // 편집 중이고, 축어록 탭에서 다른 탭으로 변경하려는 경우
-      if (isEditing && activeTab === 'transcript') {
+      // 편집 중이고, 축어록 탭에서 다른 탭으로 변경하려는 경우 (일반 편집 또는 직접 입력 편집)
+      if ((isEditing || isEditingHandwritten) && activeTab === 'transcript') {
         setPendingTabValue(value);
         setIsTabChangeModalOpen(true);
         return;
@@ -89,6 +95,7 @@ export function useTabNavigation({
     [
       activeTab,
       isEditing,
+      isEditingHandwritten,
       setCreatingTabs,
       setActiveTab,
       contentScrollRef,
@@ -98,7 +105,11 @@ export function useTabNavigation({
   );
 
   const handleConfirmTabChange = React.useCallback(() => {
+    // 일반 편집 취소
     onCancelEdit();
+    // 직접 입력 편집 취소
+    onCancelEditHandwritten?.();
+
     if (pendingTabValue) {
       if (pendingTabValue === 'add') {
         const newTabId = `create-note-${Date.now()}`;
@@ -119,6 +130,7 @@ export function useTabNavigation({
     setPendingTabValue(null);
   }, [
     onCancelEdit,
+    onCancelEditHandwritten,
     pendingTabValue,
     setCreatingTabs,
     setActiveTab,

@@ -578,15 +578,14 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
             </Text>
 
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <Text className="text-xs text-fg-muted">
                   {formatKoreanDateTime(record.created_at)}
                 </Text>
-                {record.is_handwritten && (
-                  <Badge tone="neutral" variant="soft" size="sm">
-                    직접 입력
-                  </Badge>
-                )}
+                <Text className="text-xs text-fg-muted">|</Text>
+                <Text className="text-xs text-fg-muted">
+                  {record.is_handwritten ? '텍스트 파일' : '음성 파일'}
+                </Text>
               </div>
             </div>
 

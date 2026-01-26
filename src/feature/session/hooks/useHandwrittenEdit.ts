@@ -13,6 +13,9 @@ import { updateHandwrittenTranscribeContent } from '../services/sessionService';
 
 import { sessionDetailQueryKey } from './useSessionDetail';
 
+const MIN_CONTENT_LENGTH = 100;
+const MAX_CONTENT_LENGTH = 50000;
+
 interface UseHandwrittenEditOptions {
   transcribeId: string | undefined;
   initialContent: string;
@@ -81,6 +84,26 @@ export function useHandwrittenEdit({
 
   const handleSave = React.useCallback(async () => {
     if (!transcribeId) return;
+
+    const trimmedContent = editContent.trim();
+
+    if (trimmedContent.length < MIN_CONTENT_LENGTH) {
+      toast({
+        title: '입력 오류',
+        description: `상담 내용은 최소 ${MIN_CONTENT_LENGTH}자 이상 입력해주세요.`,
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (trimmedContent.length > MAX_CONTENT_LENGTH) {
+      toast({
+        title: '입력 오류',
+        description: `상담 내용은 최대 ${MAX_CONTENT_LENGTH.toLocaleString()}자까지 입력 가능합니다.`,
+        duration: 3000,
+      });
+      return;
+    }
 
     setIsSaving(true);
     try {

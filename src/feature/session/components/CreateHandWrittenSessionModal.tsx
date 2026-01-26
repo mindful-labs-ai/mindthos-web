@@ -23,8 +23,9 @@ interface CreateHandWrittenSessionModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const HAND_WRITTEN_CREDIT = 10;
-const MAX_CONTENT_LENGTH = 20000;
+const HAND_WRITTEN_CREDIT = 30;
+const MIN_CONTENT_LENGTH = 100;
+const MAX_CONTENT_LENGTH = 50000;
 
 export const CreateHandWrittenSessionModal: React.FC<
   CreateHandWrittenSessionModalProps
@@ -87,6 +88,15 @@ export const CreateHandWrittenSessionModal: React.FC<
       toast({
         title: '입력 오류',
         description: '상담 내용을 입력해주세요.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (contents.trim().length < MIN_CONTENT_LENGTH) {
+      toast({
+        title: '입력 오류',
+        description: `상담 내용은 최소 ${MIN_CONTENT_LENGTH}자 이상 입력해주세요.`,
         duration: 3000,
       });
       return;
@@ -163,9 +173,10 @@ export const CreateHandWrittenSessionModal: React.FC<
   };
 
   const contentLength = contents.length;
+  const isUnderLimit = contentLength < MIN_CONTENT_LENGTH;
   const isOverLimit = contentLength > MAX_CONTENT_LENGTH;
   const canSubmit =
-    contents.trim().length > 0 &&
+    contents.trim().length >= MIN_CONTENT_LENGTH &&
     title.trim().length > 0 &&
     !isOverLimit &&
     !isSubmitting;
@@ -201,11 +212,12 @@ export const CreateHandWrittenSessionModal: React.FC<
           />
           <Text
             className={`mt-2 text-center text-sm ${
-              isOverLimit ? 'text-red-500' : 'text-fg-muted'
+              isOverLimit || isUnderLimit ? 'text-red-500' : 'text-fg-muted'
             }`}
           >
-            글자 수 {contentLength.toLocaleString()} /{' '}
-            {MAX_CONTENT_LENGTH.toLocaleString()}자
+            글자 수 {contentLength.toLocaleString()} (최소{' '}
+            {MIN_CONTENT_LENGTH.toLocaleString()}자 / 최대{' '}
+            {MAX_CONTENT_LENGTH.toLocaleString()}자)
           </Text>
         </div>
 
