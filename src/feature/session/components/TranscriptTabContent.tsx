@@ -185,35 +185,47 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
     >
       {segments.length > 0 ? (
         <>
-          {segments.map((segment, index) => (
-            <TranscriptSegment
-              key={`segment-${index}-${segment.id}`}
-              segment={segment}
-              speakers={speakers}
-              isActive={
-                enableTimestampFeatures && index === currentSegmentIndex
-              }
-              isEditable={isEditing && !isReadOnly}
-              isAnonymized={isAnonymized}
-              sttModel={transcribe?.stt_model}
-              segmentRef={
-                enableTimestampFeatures && index === currentSegmentIndex
-                  ? activeSegmentRef
-                  : undefined
-              }
-              onClick={onSeekTo}
-              onTextEdit={isReadOnly ? undefined : onTextEdit}
-              showTimestamp={enableTimestampFeatures}
-              segmentIndex={index}
-              allSegments={segments}
-              clientId={clientId}
-              onSpeakerChange={isReadOnly ? undefined : onSpeakerChange}
-              guideLevel={guideLevel}
-              onGuideNext={nextGuideLevel}
-              onGuideComplete={endGuide}
-              isFirstSegment={index === 0}
-            />
-          ))}
+          {(() => {
+            // 화자별 발언 카운터 (복사 기능과 동일한 넘버링)
+            const speakerCounters: Record<number, number> = {};
+            return segments.map((segment, index) => {
+              // 화자별 발언 번호 계산
+              const speakerId = segment.speaker;
+              speakerCounters[speakerId] =
+                (speakerCounters[speakerId] || 0) + 1;
+              const speakerUtteranceIndex = speakerCounters[speakerId];
+
+              return (
+                <TranscriptSegment
+                  key={`segment-${index}-${segment.id}`}
+                  segment={segment}
+                  speakers={speakers}
+                  isActive={
+                    enableTimestampFeatures && index === currentSegmentIndex
+                  }
+                  isEditable={isEditing && !isReadOnly}
+                  isAnonymized={isAnonymized}
+                  sttModel={transcribe?.stt_model}
+                  segmentRef={
+                    enableTimestampFeatures && index === currentSegmentIndex
+                      ? activeSegmentRef
+                      : undefined
+                  }
+                  onClick={onSeekTo}
+                  onTextEdit={isReadOnly ? undefined : onTextEdit}
+                  showTimestamp={enableTimestampFeatures}
+                  speakerUtteranceIndex={speakerUtteranceIndex}
+                  allSegments={segments}
+                  clientId={clientId}
+                  onSpeakerChange={isReadOnly ? undefined : onSpeakerChange}
+                  guideLevel={guideLevel}
+                  onGuideNext={nextGuideLevel}
+                  onGuideComplete={endGuide}
+                  isFirstSegment={index === 0}
+                />
+              );
+            });
+          })()}
           {/* 스크롤 감지용 타겟 */}
           <div
             key={`scroll-target-${tutorialStep}`}

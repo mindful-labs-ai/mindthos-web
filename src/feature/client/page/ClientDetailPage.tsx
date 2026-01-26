@@ -205,6 +205,11 @@ export const ClientDetailPage: React.FC = () => {
         note_types,
         created_at: session.created_at,
         processing_status: session.processing_status,
+        is_handwritten: isHandwritten,
+        stt_model:
+          !isHandwritten && transcribe && 'stt_model' in transcribe
+            ? (transcribe as Transcribe).stt_model
+            : null,
       };
     });
   }, [clientSessions, client]);

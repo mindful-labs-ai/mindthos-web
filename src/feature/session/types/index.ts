@@ -128,20 +128,19 @@ export interface ProgressNote {
 
 export type NoteType =
   | '마음토스 노트'
-  | 'CBT'
-  | '보웬 가족치료'
   | '인간중심'
-  | '사티어 경험적가족치료'
-  | 'DBT'
-  | '미누친 구조적가족치료'
-  | 'MI'
-  | '슈퍼바이저'
-  | 'EAP'
-  | '아들러 심리치료'
-  | '가족센터 노트'
-  | '게슈탈트 심리치료'
   | 'ACT'
-  | '접수면접 노트';
+  | 'CBT'
+  | '사티어'
+  | '보웬'
+  | '미누친'
+  | 'EFT'
+  | 'EAP'
+  | '가족센터'
+  | '접수면접'
+  | '대상관계이론'
+  | '게슈탈트'
+  | 'Wee';
 
 export interface SessionRecord {
   session_id: string;
@@ -158,6 +157,7 @@ export interface SessionRecord {
   current_step?: string;
   error_message?: string;
   is_handwritten?: boolean; // 직접 입력 세션 여부 (audio_meta_data가 null이면 true)
+  stt_model?: SttModel | null; // 축어록 모델 타입 (whisper: 고급, gemini-3: 일반)
 }
 
 export interface CreateSessionRequest {
