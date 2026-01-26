@@ -18,6 +18,10 @@ interface SessionItem {
   duration?: number;
   hasAudio: boolean;
   createdAt: string;
+  /** 고급 축어록 여부 (stt_model === 'gemini-3') */
+  isAdvancedTranscript?: boolean;
+  /** 직접 입력 세션 여부 (audio_meta_data === null) */
+  isHandwritten?: boolean;
 }
 
 interface SessionSideListProps {
@@ -123,6 +127,8 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
                       duration={session.duration}
                       hasAudio={session.hasAudio}
                       isActive={session.sessionId === activeSessionId}
+                      isAdvancedTranscript={session.isAdvancedTranscript}
+                      isHandwritten={session.isHandwritten}
                       onClick={onSessionClick}
                     />
                   ))}

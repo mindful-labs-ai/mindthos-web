@@ -47,6 +47,12 @@ export function useSessionProgressNotesPolling({
     Map<string, ProgressNote['processing_status']>
   >(new Map());
 
+  // hasExternalProcessing을 ref로 저장하여 최신 값 참조
+  const hasExternalProcessingRef = useRef(hasExternalProcessing);
+  useEffect(() => {
+    hasExternalProcessingRef.current = hasExternalProcessing;
+  }, [hasExternalProcessing]);
+
   const query = useQuery<ProgressNote[], Error>({
     queryKey: ['session-progress-notes-polling', sessionId],
     queryFn: async () => {
@@ -65,7 +71,7 @@ export function useSessionProgressNotesPolling({
     enabled: enabled && !!sessionId,
     refetchInterval: (query) => {
       // 외부에서 처리 중인 노트가 있으면 폴링 강제 활성화
-      if (hasExternalProcessing) {
+      if (hasExternalProcessingRef.current) {
         return refetchInterval;
       }
 

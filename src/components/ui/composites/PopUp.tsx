@@ -22,6 +22,8 @@ export interface PopUpProps {
   placement?: PopUpPlacement;
   className?: string;
   triggerClassName?: string; // trigger wrapper 커스텀 className
+  /** 외부 클릭 시 닫기 비활성화 (가이드 모드 등) */
+  disableOutsideClick?: boolean;
 }
 
 /**
@@ -44,6 +46,7 @@ export const PopUp: React.FC<PopUpProps> = ({
   placement = 'bottom',
   className,
   triggerClassName,
+  disableOutsideClick = false,
 }) => {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
@@ -138,12 +141,18 @@ export const PopUp: React.FC<PopUpProps> = ({
   // 키보드 & 외부 클릭 처리
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 외부 클릭 비활성화 시 ESC도 무시
+      if (disableOutsideClick) return;
+
       if (e.key === 'Escape' && isOpen) {
         setOpen(false);
       }
     };
 
     const handleClickOutside = (e: MouseEvent) => {
+      // 외부 클릭 비활성화 시 무시
+      if (disableOutsideClick) return;
+
       if (
         triggerRef.current &&
         contentRef.current &&
@@ -167,7 +176,7 @@ export const PopUp: React.FC<PopUpProps> = ({
         document.removeEventListener('mousedown', handleClickOutside, true);
       };
     }
-  }, [isOpen, setOpen]);
+  }, [isOpen, setOpen, disableOutsideClick]);
 
   return (
     <>

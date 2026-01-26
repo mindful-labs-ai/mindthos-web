@@ -93,7 +93,19 @@ export interface Transcribe {
   counsel_date: string | null;
   contents: TranscriptJson | TranscribeContents | null; // 새 구조 또는 Legacy 구조
   stt_model: SttModel | null; // "whisper" | "gemini-3"
+  parsed_text: string | null; // 파싱된 텍스트 (타임스탬프 포함 형식)
   created_at: string;
+}
+
+// 직접 입력 축어록 (handwritten_transcribes 테이블)
+export interface HandwrittenTranscribe {
+  id: string;
+  session_id: string;
+  user_id: number;
+  counsel_date: string; // YYYY-MM-DD 형식
+  contents: string; // 직접 입력된 텍스트 내용 (타임스탬프 포함)
+  created_at: string;
+  updated_at: string;
 }
 
 export type ProgressNoteStatus =
@@ -116,20 +128,19 @@ export interface ProgressNote {
 
 export type NoteType =
   | '마음토스 노트'
-  | 'CBT'
-  | '보웬 가족치료'
   | '인간중심'
-  | '사티어 경험적가족치료'
-  | 'DBT'
-  | '미누친 구조적가족치료'
-  | 'MI'
-  | '슈퍼바이저'
-  | 'EAP'
-  | '아들러 심리치료'
-  | '가족센터 노트'
-  | '게슈탈트 심리치료'
   | 'ACT'
-  | '접수면접 노트';
+  | 'CBT'
+  | '사티어'
+  | '보웬'
+  | '미누친'
+  | 'EFT'
+  | 'EAP'
+  | '가족센터'
+  | '접수면접'
+  | '대상관계이론'
+  | '게슈탈트'
+  | 'Wee';
 
 export interface SessionRecord {
   session_id: string;
@@ -145,6 +156,8 @@ export interface SessionRecord {
   progress_percentage?: number;
   current_step?: string;
   error_message?: string;
+  is_handwritten?: boolean; // 직접 입력 세션 여부 (audio_meta_data가 null이면 true)
+  stt_model?: SttModel | null; // 축어록 모델 타입 (whisper: 고급, gemini-3: 일반)
 }
 
 export interface CreateSessionRequest {
@@ -236,4 +249,24 @@ export interface SessionCreateResult {
   uploadProgress?: number; // 0-100
   sessionId?: string;
   errorMessage?: string;
+}
+
+// ============================================
+// 직접 입력 (Hand-written) 세션 관련 타입
+// ============================================
+
+export interface CreateHandWrittenSessionRequest {
+  user_id: number;
+  client_id?: string;
+  title: string;
+  counsel_date: string; // YYYY-MM-DD 형식
+  contents: string; // 직접 입력한 축어록 내용
+  template_id: number;
+}
+
+export interface CreateHandWrittenSessionResponse {
+  success: boolean;
+  session_id: string;
+  progress_note_id: string;
+  message?: string;
 }
