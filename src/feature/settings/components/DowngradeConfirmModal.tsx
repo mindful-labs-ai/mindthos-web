@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
-import { trackError } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { ArrowRightIcon, CheckIcon, HelpCircleIcon } from '@/shared/icons';
 
 import { planFeature, type PlanKey } from './PlanCard';
@@ -63,6 +63,10 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
 
   const handleConfirm = async () => {
     setIsLoading(true);
+    trackEvent('plan_downgrade_attempt', {
+      current_plan: currentPlanType,
+      new_plan: newPlanType,
+    });
     try {
       await onConfirm();
       onOpenChange(false);

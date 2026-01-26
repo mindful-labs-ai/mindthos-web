@@ -81,6 +81,11 @@ export default {
           '0%': { left: '-33%' },
           '100%': { left: '100%' },
         },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-4px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(4px)' },
+        },
       },
       animation: {
         fadeIn: 'fadeIn 0.2s ease-out',
@@ -88,6 +93,7 @@ export default {
         slideUp: 'slideUp 0.2s ease-out',
         scaleIn: 'scaleIn 0.2s ease-out',
         shimmer: 'shimmer 1.5s ease-in-out infinite',
+        shake: 'shake 0.5s ease-in-out',
       },
     },
   },

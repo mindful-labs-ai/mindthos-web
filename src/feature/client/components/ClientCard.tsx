@@ -9,6 +9,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Card } from '@/components/ui/composites/Card';
 import { Modal } from '@/components/ui/composites/Modal';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 
 import { clientQueryKeys } from '../constants/queryKeys';
@@ -47,6 +48,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   const canAnalyze = (client.session_count ?? 0) >= 2;
 
   const handleCardClick = () => {
+    trackEvent('client_detail_view', { client_id: client.id });
     onClick?.(client);
   };
 
@@ -78,6 +80,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         client_id: client.id,
         counsel_done: true,
       });
+
+      trackEvent('client_session_close', { client_id: client.id });
 
       // 클라이언트 목록 갱신
       if (userId) {
@@ -119,6 +123,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         client_id: client.id,
         counsel_done: false,
       });
+
+      trackEvent('client_session_restart', { client_id: client.id });
 
       // 클라이언트 목록 갱신
       if (userId) {
@@ -168,6 +174,8 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       await clientService.deleteClient({
         client_id: client.id,
       });
+
+      trackEvent('client_delete', { client_id: client.id });
 
       // 클라이언트 목록 갱신
       if (userId) {
