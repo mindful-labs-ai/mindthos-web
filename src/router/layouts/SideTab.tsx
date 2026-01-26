@@ -10,6 +10,7 @@ import {
   SessionTabTooltip,
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
+import { CreateHandWrittenSessionModal } from '@/feature/session/components/CreateHandWrittenSessionModal';
 import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
@@ -18,7 +19,7 @@ import {
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
 import { cn } from '@/lib/cn';
-import { PlusIcon, UploadIcon } from '@/shared/icons';
+import { Edit3Icon, PlusIcon, UploadIcon } from '@/shared/icons';
 import { useQuestStore } from '@/stores/questStore';
 
 import {
@@ -33,6 +34,8 @@ export const SideTab = () => {
   const location = useLocation();
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
   const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
+    React.useState(false);
+  const [isHandWrittenModalOpen, setIsHandWrittenModalOpen] =
     React.useState(false);
 
   // 크레딧 정보 가져오기
@@ -79,17 +82,10 @@ export const SideTab = () => {
     setIsCreateSessionModalOpen(true);
   };
 
-  // const handlePdfUploadClick = () => {
-  //   setUploadType('pdf');
-  //   setIsNewRecordMenuOpen(false);
-  //   setIsCreateSessionModalOpen(true);
-  // };
-
-  // const handleDirectInputClick = () => {
-  //   setUploadType('direct');
-  //   setIsNewRecordMenuOpen(false);
-  //   setIsCreateSessionModalOpen(true);
-  // };
+  const handleDirectInputClick = () => {
+    setIsNewRecordMenuOpen(false);
+    setIsHandWrittenModalOpen(true);
+  };
 
   return (
     <aside
@@ -142,23 +138,16 @@ export const SideTab = () => {
                 onClick={handleAudioUploadClick}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
               >
-                <UploadIcon size={18} className="text-primary" />
+                <UploadIcon size={18} className="" />
                 <Text>녹음 파일 업로드</Text>
-              </button>
-              {/* <button
-                onClick={handlePdfUploadClick}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
-              >
-                <FileTextIcon size={18} className="text-primary" />
-                <Text>PDF 파일 업로드</Text>
               </button>
               <button
                 onClick={handleDirectInputClick}
                 className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
               >
-                <Edit3Icon size={18} className="text-primary" />
+                <Edit3Icon size={18} className="" />
                 <Text>직접 입력하기</Text>
-              </button> */}
+              </button>
             </div>
           }
           triggerClassName="w-full"
@@ -221,6 +210,12 @@ export const SideTab = () => {
       <CreateMultiSessionModal
         open={isCreateSessionModalOpen}
         onOpenChange={setIsCreateSessionModalOpen}
+      />
+
+      {/* 직접 입력 세션 생성 모달 */}
+      <CreateHandWrittenSessionModal
+        open={isHandWrittenModalOpen}
+        onOpenChange={setIsHandWrittenModalOpen}
       />
     </aside>
   );

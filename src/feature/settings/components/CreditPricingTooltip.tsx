@@ -53,6 +53,20 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           </div>
         </div>
 
+        <div className="space-y-2">
+          <Text className="text-xs font-medium text-fg-muted">직접 입력</Text>
+          <div className="space-y-1">
+            <div className="flex gap-2">
+              <Text className="text-xs text-fg">직접 입력</Text>
+              <div>
+                <Text className="text-xs font-semibold text-fg">
+                  30크레딧 (고정)
+                </Text>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* AI 상담 노트 및 분석 */}
         <div className="space-y-2">
           <Text className="text-xs font-medium text-fg-muted">
