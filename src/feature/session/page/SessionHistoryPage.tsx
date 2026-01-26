@@ -194,6 +194,10 @@ export const SessionHistoryPage: React.FC = () => {
           created_at: session.created_at,
           processing_status: session.processing_status,
           is_handwritten: session.audio_meta_data === null, // 직접 입력 세션 여부
+          stt_model:
+            transcribe && 'stt_model' in transcribe
+              ? transcribe.stt_model
+              : null, // 축어록 모델 타입
         };
       }
     );

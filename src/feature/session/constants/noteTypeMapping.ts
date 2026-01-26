@@ -6,20 +6,19 @@ import type { NoteType } from '../types';
  */
 export const TEMPLATE_ID_TO_NOTE_TYPE: Record<number, NoteType> = {
   1: '마음토스 노트',
-  2: 'CBT',
-  3: '보웬 가족치료',
-  4: '인간중심',
-  5: '사티어 경험적가족치료',
-  6: 'DBT',
-  7: '미누친 구조적가족치료',
-  8: 'MI',
-  9: '슈퍼바이저',
-  10: 'EAP',
-  11: '아들러 심리치료',
-  12: '가족센터 노트',
-  13: '게슈탈트 심리치료',
-  14: 'ACT',
-  15: '접수면접 노트',
+  2: '인간중심',
+  3: 'ACT',
+  5: 'CBT',
+  7: '사티어',
+  8: '보웬',
+  11: '미누친',
+  12: 'EFT',
+  13: 'EAP',
+  15: '가족센터',
+  16: '접수면접',
+  18: '대상관계이론',
+  19: '게슈탈트',
+  20: 'Wee',
 };
 
 /**
@@ -39,20 +38,42 @@ export function getNoteTypeFromTemplateId(
 
 /**
  * Progress Notes 배열을 Note Types 배열로 변환
+ * - succeeded 상태인 노트만 포함
+ * - title이 있으면 title 사용, 없으면 template_id 매핑 사용
  */
 export function getNoteTypesFromProgressNotes(
-  progressNotes: Array<{ template_id: number | null }>
+  progressNotes: Array<{
+    template_id: number | null;
+    title?: string | null;
+    processing_status?: string;
+  }>
 ): NoteType[] {
   if (!progressNotes || progressNotes.length === 0) {
-    return [DEFAULT_NOTE_TYPE];
+    return [];
   }
 
-  const types = progressNotes
-    .map((pn) => getNoteTypeFromTemplateId(pn.template_id))
+  // succeeded 상태인 노트만 필터링
+  const succeededNotes = progressNotes.filter(
+    (pn) => pn.processing_status === 'succeeded'
+  );
+
+  if (succeededNotes.length === 0) {
+    return [];
+  }
+
+  const types = succeededNotes
+    .map((pn) => {
+      // title이 있으면 title 사용
+      if (pn.title) {
+        return pn.title as NoteType;
+      }
+      // 없으면 template_id 매핑 사용
+      return getNoteTypeFromTemplateId(pn.template_id);
+    })
     .filter((type): type is NoteType => type !== null);
 
   // 중복 제거
   const uniqueTypes = Array.from(new Set(types));
 
-  return uniqueTypes.length > 0 ? uniqueTypes : [DEFAULT_NOTE_TYPE];
+  return uniqueTypes;
 }

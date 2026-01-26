@@ -25,15 +25,15 @@ export const TabChangeConfirmModal: React.FC<TabChangeConfirmModalProps> =
       <Modal
         open={open}
         onOpenChange={onOpenChange}
-        title="탭 변경 확인"
+        title="편집 취소"
         className="max-w-sm"
       >
         <div className="space-y-4">
           <Text className="text-base text-fg">
-            편집 중인 내용이 있습니다. 저장하지 않고 탭을 변경하시겠습니까?
+            편집 중인 내용이 있습니다. 저장하지 않고 나가시겠습니까?
           </Text>
           <Text className="text-sm text-fg-muted">
-            변경하면 편집 중인 내용이 모두 사라집니다.
+            지금 나가면 편집 중인 내용이 모두 사라집니다.
           </Text>
           <div className="flex justify-center gap-2 pt-2">
             <button
