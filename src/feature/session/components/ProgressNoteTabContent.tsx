@@ -177,6 +177,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
               }
               isRegenerating={isRegenerating}
               isReadOnly={isReadOnly}
+              progressNotes={progressNotes}
             />
             {/* 상담노트용 스크롤 감지 타겟 */}
             <div
