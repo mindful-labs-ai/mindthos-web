@@ -70,13 +70,13 @@ export function useTranscriptCopy({
 
           // 익명화 모드일 경우 화자 정보 제외
           if (isAnonymized) {
-            return `${speakerIndex}. ${cleanedText}`;
+            return `#${speakerIndex} : ${cleanedText}`;
           } else {
             const speakerName = getSpeakerDisplayName(
               segment.speaker,
               speakers
             );
-            return `${speakerIndex}. ${speakerName} : ${cleanedText}`;
+            return `${speakerName} #${speakerIndex} : ${cleanedText}`;
           }
         })
         .join('\n');
