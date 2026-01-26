@@ -6,6 +6,8 @@ interface SessionHeaderProps {
   title: string;
   createdAt: string;
   duration: number;
+  /** 직접 입력 세션 여부 */
+  isHandwritten?: boolean;
   onTitleUpdate?: (newTitle: string) => Promise<void>;
 }
 
@@ -13,6 +15,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   title,
   createdAt,
   duration,
+  isHandwritten = false,
   onTitleUpdate,
 }) => {
   const [isEditing, setIsEditing] = React.useState(false);
@@ -124,8 +127,8 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
           )}
         </div>
         <span className="text-sm text-fg-muted">
-          {formatKoreanDateTime(new Date(createdAt))}{' '}
-          {formatDuration(duration) || ''}
+          {formatKoreanDateTime(new Date(createdAt))}
+          {!isHandwritten && duration > 0 && ` ${formatDuration(duration)}`}
         </span>
       </div>
     </div>
