@@ -24,6 +24,7 @@ import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { trackError } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
+import { useSessionStore } from '@/stores/sessionStore';
 
 import { AudioPlayer } from '../components/AudioPlayer';
 import { HandwrittenTabContent } from '../components/HandwrittenTabContent';
@@ -339,7 +340,9 @@ export const SessionDetailPage: React.FC = () => {
     activeTab,
     setActiveTab,
     isEditing,
+    isEditingHandwritten,
     onCancelEdit: handleCancelEdit,
+    onCancelEditHandwritten: handleCancelHandwrittenEdit,
     setCreatingTabs,
     contentScrollRef,
     checkIsTutorialActive,
@@ -465,6 +468,44 @@ export const SessionDetailPage: React.FC = () => {
     }
   }, [isLoading, session, sessionId, navigate]);
 
+  // 편집 상태를 sessionStore에 동기화 (사이드바 세션 이동 시 확인용)
+  const setIsEditingGlobal = useSessionStore((state) => state.setIsEditing);
+  const setCancelEditHandler = useSessionStore(
+    (state) => state.setCancelEditHandler
+  );
+
+  React.useEffect(() => {
+    const currentlyEditing = isEditing || isEditingHandwritten;
+    setIsEditingGlobal(currentlyEditing);
+
+    if (currentlyEditing) {
+      // 현재 편집 중인 상태에 맞는 취소 핸들러 설정
+      setCancelEditHandler(() => {
+        if (isEditing) {
+          handleCancelEdit();
+        }
+        if (isEditingHandwritten) {
+          handleCancelHandwrittenEdit();
+        }
+      });
+    } else {
+      setCancelEditHandler(null);
+    }
+
+    // 컴포넌트 언마운트 시 편집 상태 초기화
+    return () => {
+      setIsEditingGlobal(false);
+      setCancelEditHandler(null);
+    };
+  }, [
+    isEditing,
+    isEditingHandwritten,
+    setIsEditingGlobal,
+    setCancelEditHandler,
+    handleCancelEdit,
+    handleCancelHandwrittenEdit,
+  ]);
+
   // 오디오 재생/일시정지 시 상호작용 상태 활성화
   const handlePlayPauseWithInteraction = React.useCallback(() => {
     setHasUserInteracted(true);
@@ -561,6 +602,7 @@ export const SessionDetailPage: React.FC = () => {
           title={session.title || '제목 없음'}
           createdAt={session.created_at}
           duration={session.audio_meta_data?.duration_seconds || 0}
+          isHandwritten={isHandwrittenSession}
           onTitleUpdate={isReadOnly ? undefined : handleTitleUpdate}
         />
       </div>
@@ -622,7 +664,7 @@ export const SessionDetailPage: React.FC = () => {
 
       {/* 탭 콘텐츠 */}
       <div
-        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${isEditing && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
+        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
       >
         <ScrollIndicator
           className="bottom-0 right-1/2 translate-x-1/2"

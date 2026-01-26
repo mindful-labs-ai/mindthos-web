@@ -27,6 +27,9 @@ import { getSessionDetailRoute } from '@/router/constants';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
+import { useSessionStore } from '@/stores/sessionStore';
+
+import { TabChangeConfirmModal } from '../components/TabChangeConfirmModal';
 
 export const SessionHistoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -237,13 +240,54 @@ export const SessionHistoryPage: React.FC = () => {
       });
   }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
 
+  // 편집 상태 체크를 위한 store 연결
+  const isEditing = useSessionStore((state) => state.isEditing);
+  const cancelEditHandler = useSessionStore((state) => state.cancelEditHandler);
+
+  // 세션 이동 확인 모달 상태
+  const [isSessionChangeModalOpen, setIsSessionChangeModalOpen] =
+    React.useState(false);
+  const [pendingSessionId, setPendingSessionId] = React.useState<string | null>(
+    null
+  );
+
   const handleCardClick = (record: SessionRecord) => {
+    // 편집 중이면 확인 모달 표시
+    if (isEditing) {
+      setPendingSessionId(record.session_id);
+      setIsSessionChangeModalOpen(true);
+      return;
+    }
     navigate(getSessionDetailRoute(record.session_id));
   };
 
   const handleSessionClick = (selectedSessionId: string) => {
+    // 편집 중이면 확인 모달 표시
+    if (isEditing) {
+      setPendingSessionId(selectedSessionId);
+      setIsSessionChangeModalOpen(true);
+      return;
+    }
     navigate(getSessionDetailRoute(selectedSessionId));
   };
+
+  // 세션 이동 확인
+  const handleConfirmSessionChange = React.useCallback(() => {
+    // 편집 취소
+    cancelEditHandler?.();
+    // 세션 이동
+    if (pendingSessionId) {
+      navigate(getSessionDetailRoute(pendingSessionId));
+    }
+    setIsSessionChangeModalOpen(false);
+    setPendingSessionId(null);
+  }, [cancelEditHandler, pendingSessionId, navigate]);
+
+  // 세션 이동 취소
+  const handleCancelSessionChange = React.useCallback(() => {
+    setIsSessionChangeModalOpen(false);
+    setPendingSessionId(null);
+  }, []);
 
   // 필터 핸들러
   const handleSortChange = (order: 'newest' | 'oldest') => {
@@ -429,6 +473,14 @@ export const SessionHistoryPage: React.FC = () => {
           <Outlet />
         </div>
       )}
+
+      {/* 세션 이동 확인 모달 */}
+      <TabChangeConfirmModal
+        open={isSessionChangeModalOpen}
+        onOpenChange={setIsSessionChangeModalOpen}
+        onCancel={handleCancelSessionChange}
+        onConfirm={handleConfirmSessionChange}
+      />
     </div>
   );
 };
