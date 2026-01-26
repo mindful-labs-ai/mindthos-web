@@ -42,6 +42,8 @@ export const CreateHandWrittenSessionModal: React.FC<
   const [title, setTitle] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showTitleError, setShowTitleError] = useState(false);
+  const [shakeTitle, setShakeTitle] = useState(false);
 
   // 크레딧 부족 에러 상태
   const [creditErrorSnackBar, setCreditErrorSnackBar] = useState({
@@ -57,6 +59,7 @@ export const CreateHandWrittenSessionModal: React.FC<
         setContents('');
         setTitle('');
         setSelectedClient(null);
+        setShowTitleError(false);
       }
       onOpenChange(isOpen);
     },
@@ -103,11 +106,9 @@ export const CreateHandWrittenSessionModal: React.FC<
     }
 
     if (!title.trim()) {
-      toast({
-        title: '입력 오류',
-        description: '상담기록 제목을 입력해주세요.',
-        duration: 3000,
-      });
+      setShowTitleError(true);
+      setShakeTitle(true);
+      setTimeout(() => setShakeTitle(false), 500);
       return;
     }
 
@@ -175,9 +176,9 @@ export const CreateHandWrittenSessionModal: React.FC<
   const contentLength = contents.length;
   const isUnderLimit = contentLength < MIN_CONTENT_LENGTH;
   const isOverLimit = contentLength > MAX_CONTENT_LENGTH;
+  const isTitleEmpty = !title.trim();
   const canSubmit =
     contents.trim().length >= MIN_CONTENT_LENGTH &&
-    title.trim().length > 0 &&
     !isOverLimit &&
     !isSubmitting;
 
@@ -229,19 +230,35 @@ export const CreateHandWrittenSessionModal: React.FC<
 
           {/* 상담기록 제목 */}
           <div className="flex flex-col gap-2">
-            <Text className="text-sm font-semibold text-fg">상담기록 제목</Text>
+            <Text className="text-sm font-semibold text-fg">
+              상담기록 제목 <span className="font-semibold text-danger">*</span>
+            </Text>
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (e.target.value.trim()) {
+                  setShowTitleError(false);
+                }
+              }}
               placeholder={
                 selectedClient
                   ? `${selectedClient.name} ${(selectedClient.session_count ?? selectedClient.counsel_number) + 1}회기`
                   : '제목을 입력해주세요'
               }
-              className="w-full rounded-lg border-2 border-border bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors focus:border-primary"
+              className={`w-full rounded-lg border-2 bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors ${
+                showTitleError && isTitleEmpty
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-border focus:border-primary'
+              } ${shakeTitle ? 'animate-shake' : ''}`}
               disabled={isSubmitting}
             />
+            {showTitleError && isTitleEmpty && (
+              <Text className="text-xs text-red-500">
+                상담기록 제목을 입력해주세요.
+              </Text>
+            )}
           </div>
 
           {/* 내담자 선택 */}

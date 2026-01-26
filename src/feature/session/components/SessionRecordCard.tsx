@@ -584,7 +584,10 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 </Text>
                 <Text className="text-xs text-fg-muted">|</Text>
                 <Text className="text-xs text-fg-muted">
-                  {record.is_handwritten ? '텍스트 파일' : '음성 파일'}
+                  {record.is_handwritten
+                    ? '직접 입력'
+                    : (record.stt_model === 'whisper' && '일반 축어록') ||
+                      (record.stt_model === 'gemini-3' && '고급 축어록')}
                 </Text>
               </div>
             </div>

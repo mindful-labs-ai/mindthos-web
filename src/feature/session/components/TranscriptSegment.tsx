@@ -24,7 +24,8 @@ interface TranscriptSegmentProps {
   onClick: (startTime: number) => void;
   onTextEdit?: (segmentId: number, newText: string) => void;
   showTimestamp?: boolean;
-  segmentIndex?: number;
+  /** 화자별 발언 번호 (복사 시 넘버링과 동일) */
+  speakerUtteranceIndex?: number;
   allSegments?: TranscribeSegment[];
   clientId?: string | null;
   onSpeakerChange?: (updates: {
@@ -52,7 +53,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   onClick,
   onTextEdit,
   showTimestamp = true,
-  segmentIndex,
+  speakerUtteranceIndex,
   allSegments = [],
   clientId,
   onSpeakerChange,
@@ -239,8 +240,10 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               {formatTime(segment.start)}
             </span>
           )}
-          {!showTimestampDisplay && segmentIndex !== undefined && (
-            <span className="text-xs text-fg-muted">{segmentIndex + 1}</span>
+          {!showTimestampDisplay && speakerUtteranceIndex !== undefined && (
+            <span className="text-xs text-fg-muted">
+              {speakerUtteranceIndex}
+            </span>
           )}
         </div>
         {isEditable ? (
