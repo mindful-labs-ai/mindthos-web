@@ -323,6 +323,10 @@ const HomePage = () => {
                 current_step: session.current_step,
                 error_message: session.error_message,
                 is_handwritten: isHandwritten,
+                stt_model:
+                  !isHandwritten && transcribe && 'stt_model' in transcribe
+                    ? (transcribe as Transcribe).stt_model
+                    : null,
               };
 
               return (
