@@ -13,6 +13,7 @@ if (!MIXPANEL_TOKEN) {
     ignore_dnt: true,
     autocapture: true,
     record_sessions_percent: 100,
+    api_transport: 'sendBeacon',
   });
 }
 
