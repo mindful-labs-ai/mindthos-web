@@ -1,10 +1,35 @@
 import type { UUID } from '../types/types';
 import { generateId } from '../types/types';
-import type { FamilyTree } from './family-tree';
-import type { Person } from './person';
-import type { Relationship } from './relationship';
-import type { TextAnnotation } from './text-annotation';
 
+import type { Subject } from './person';
+import type { Connection } from './relationship';
+import type { Annotation } from './text-annotation';
+
+// View
+export interface ViewPoint {
+  center: { x: number; y: number };
+  zoom: number;
+}
+
+export interface Visibility {
+  name: boolean;
+  age: boolean;
+  birthDate: boolean;
+  deathDate: boolean;
+  detail: boolean;
+  clinicStatus: boolean;
+  relationLine: boolean;
+  groupLine: boolean;
+  grid: boolean;
+  memo: boolean;
+}
+
+export interface GenogramView {
+  viewPoint: ViewPoint;
+  visibility: Visibility;
+}
+
+// Genogram Metadata
 export interface GenogramMetadata {
   title: string;
   clientId?: UUID;
@@ -12,16 +37,38 @@ export interface GenogramMetadata {
   updatedAt: Date;
   authorId?: string;
   description?: string;
-  version: number;
+  version: string;
 }
 
+// Genogram
 export interface Genogram {
   id: UUID;
   metadata: GenogramMetadata;
-  persons: Map<string, Person>;
-  relationships: Map<string, Relationship>;
-  textAnnotations: Map<string, TextAnnotation>;
-  familyTrees: Map<string, FamilyTree>;
+  subjects: Map<string, Subject>;
+  connections: Map<string, Connection>;
+  annotations: Map<string, Annotation>;
+  view: GenogramView;
+}
+
+export function createDefaultView(): GenogramView {
+  return {
+    viewPoint: {
+      center: { x: 0, y: 0 },
+      zoom: 1.0,
+    },
+    visibility: {
+      name: true,
+      age: true,
+      birthDate: true,
+      deathDate: true,
+      detail: true,
+      clinicStatus: true,
+      relationLine: true,
+      groupLine: true,
+      grid: false,
+      memo: true,
+    },
+  };
 }
 
 export function createGenogram(
@@ -35,107 +82,69 @@ export function createGenogram(
       title,
       createdAt: now,
       updatedAt: now,
-      version: 1,
+      version: 'v1',
     },
-    persons: new Map(),
-    relationships: new Map(),
-    textAnnotations: new Map(),
-    familyTrees: new Map(),
+    subjects: new Map(),
+    connections: new Map(),
+    annotations: new Map(),
+    view: createDefaultView(),
   };
 }
 
-export function addPerson(genogram: Genogram, person: Person): void {
-  genogram.persons.set(person.id, person);
+export function addSubject(genogram: Genogram, subject: Subject): void {
+  genogram.subjects.set(subject.id, subject);
   genogram.metadata.updatedAt = new Date();
 }
 
-export function removePerson(genogram: Genogram, personId: UUID): void {
-  genogram.persons.delete(personId);
-
-  genogram.relationships.forEach((rel, id) => {
-    if (rel.sourceId === personId || rel.targetId === personId) {
-      genogram.relationships.delete(id);
-    }
-  });
-
+export function removeSubject(genogram: Genogram, subjectId: UUID): void {
+  genogram.subjects.delete(subjectId);
   genogram.metadata.updatedAt = new Date();
 }
 
-export function addRelationship(
+export function addConnection(
   genogram: Genogram,
-  relationship: Relationship
+  connection: Connection
 ): void {
-  genogram.relationships.set(relationship.id, relationship);
+  genogram.connections.set(connection.id, connection);
   genogram.metadata.updatedAt = new Date();
 }
 
-export function removeRelationship(
+export function removeConnection(genogram: Genogram, connectionId: UUID): void {
+  genogram.connections.delete(connectionId);
+  genogram.metadata.updatedAt = new Date();
+}
+
+export function addAnnotation(
   genogram: Genogram,
-  relationshipId: UUID
+  annotation: Annotation
 ): void {
-  genogram.relationships.delete(relationshipId);
+  genogram.annotations.set(annotation.id, annotation);
   genogram.metadata.updatedAt = new Date();
 }
 
-export function addTextAnnotation(
-  genogram: Genogram,
-  text: TextAnnotation
-): void {
-  genogram.textAnnotations.set(text.id, text);
+export function removeAnnotation(genogram: Genogram, annotationId: UUID): void {
+  genogram.annotations.delete(annotationId);
   genogram.metadata.updatedAt = new Date();
-}
-
-export function removeTextAnnotation(genogram: Genogram, textId: UUID): void {
-  genogram.textAnnotations.delete(textId);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function addFamilyTree(genogram: Genogram, tree: FamilyTree): void {
-  genogram.familyTrees.set(tree.id, tree);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function removeFamilyTree(genogram: Genogram, treeId: UUID): void {
-  genogram.familyTrees.delete(treeId);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function getRelationshipsByPerson(
-  genogram: Genogram,
-  personId: UUID
-): Relationship[] {
-  const result: Relationship[] = [];
-  genogram.relationships.forEach((rel) => {
-    if (rel.sourceId === personId || rel.targetId === personId) {
-      result.push(rel);
-    }
-  });
-  return result;
 }
 
 // Serialization
 export interface SerializedGenogram {
   id: string;
   metadata: GenogramMetadata;
-  persons: [string, Person][];
-  relationships: [string, Relationship][];
-  textAnnotations: [string, TextAnnotation][];
-  familyTrees: [
-    string,
-    { id: string; name: string; rootPersonId: string; nodes: [string, any][] },
-  ][];
+  subjects: [string, Subject][];
+  connections: [string, Connection][];
+  annotations: [string, Annotation][];
+  view: GenogramView;
 }
 
 export function serializeGenogram(genogram: Genogram): SerializedGenogram {
   return {
     id: genogram.id,
     metadata: genogram.metadata,
-    persons: Array.from(genogram.persons.entries()),
-    relationships: Array.from(genogram.relationships.entries()),
-    textAnnotations: Array.from(genogram.textAnnotations.entries()),
-    familyTrees: Array.from(genogram.familyTrees.entries()).map(
-      ([id, tree]) => [id, { ...tree, nodes: Array.from(tree.nodes.entries()) }]
-    ),
+    subjects: Array.from(genogram.subjects.entries()),
+    connections: Array.from(genogram.connections.entries()),
+    annotations: Array.from(genogram.annotations.entries()),
+    view: genogram.view,
   };
 }
 
@@ -147,14 +156,9 @@ export function deserializeGenogram(data: SerializedGenogram): Genogram {
       createdAt: new Date(data.metadata.createdAt),
       updatedAt: new Date(data.metadata.updatedAt),
     },
-    persons: new Map(data.persons),
-    relationships: new Map(data.relationships),
-    textAnnotations: new Map(data.textAnnotations),
-    familyTrees: new Map(
-      data.familyTrees.map(([id, tree]) => [
-        id,
-        { ...tree, nodes: new Map(tree.nodes) },
-      ])
-    ),
+    subjects: new Map(data.subjects),
+    connections: new Map(data.connections),
+    annotations: new Map(data.annotations),
+    view: data.view,
   };
 }

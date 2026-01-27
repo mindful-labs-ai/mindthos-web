@@ -4,7 +4,7 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  type Connection,
+  type Connection as FlowConnection,
   type Edge,
   type EdgeChange,
   type Node,
@@ -12,10 +12,12 @@ import {
 } from '@xyflow/react';
 
 import { GenogramEditor } from '@/genogram/core/editor/genogram-editor';
+import type { PersonAttribute } from '@/genogram/core/models/person';
 import {
+  ConnectionType,
   Gender,
   PartnerStatus,
-  RelationType,
+  SubjectType,
 } from '@/genogram/core/types/enums';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
@@ -82,18 +84,25 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
 
     // 노드 변환
     const newNodes: Node<PersonNodeData>[] = [];
-    genogram.persons.forEach((person, id) => {
+    genogram.subjects.forEach((subject, id) => {
       const nodeLayout = layout.nodes.get(id);
       if (nodeLayout) {
+        const isPerson = subject.entity.type === SubjectType.Person;
+        const attr = subject.entity.attribute;
+        const personAttr = isPerson ? (attr as PersonAttribute) : null;
+
         newNodes.push({
           id,
           type: 'person',
           position: nodeLayout.position,
           data: {
-            name: person.name,
-            gender: person.gender,
-            age: person.age,
-            isDeceased: person.isDeceased,
+            name: isPerson
+              ? personAttr!.name
+              : (attr as { name: string | null }).name,
+            gender: personAttr?.gender,
+            subjectType: subject.entity.type,
+            age: personAttr?.age,
+            isDead: 'isDead' in attr ? attr.isDead : false,
             isSelected: nodeLayout.isSelected,
           },
           selected: nodeLayout.isSelected,
@@ -103,21 +112,38 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
 
     // 엣지 변환
     const newEdges: Edge<RelationshipEdgeData>[] = [];
-    genogram.relationships.forEach((rel, id) => {
+    genogram.connections.forEach((conn, id) => {
       const edgeLayout = layout.edges.get(id);
       if (edgeLayout) {
+        const attr = conn.entity.attribute;
+
+        // Determine source/target from attribute
+        let source = '';
+        let target = '';
+        if ('subjects' in attr && Array.isArray(attr.subjects)) {
+          source = attr.subjects[0];
+          target = attr.subjects[1];
+        } else if ('startRef' in attr && 'endRef' in attr) {
+          source = attr.startRef;
+          target = attr.endRef;
+        } else if ('parentRef' in attr && 'childRef' in attr) {
+          source = attr.parentRef;
+          target = Array.isArray(attr.childRef)
+            ? attr.childRef[0]
+            : attr.childRef;
+        }
+
         newEdges.push({
           id,
           type: 'relationship',
-          source: rel.sourceId,
-          target: rel.targetId,
+          source,
+          target,
           data: {
-            relationType: rel.type,
+            connectionType: conn.entity.type,
             partnerStatus:
-              rel.type === RelationType.Partner
-                ? (rel as { status?: PartnerStatus }).status
+              conn.entity.type === ConnectionType.Partner && 'status' in attr
+                ? (attr.status as (typeof PartnerStatus)[keyof typeof PartnerStatus])
                 : undefined,
-            label: edgeLayout.label,
           },
           selected: edgeLayout.isSelected,
         });
@@ -139,7 +165,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
 
       changes.forEach((change) => {
         if (change.type === 'position' && change.position && change.id) {
-          editor.movePerson(change.id, change.position);
+          editor.moveSubject(change.id, change.position);
         }
       });
     },
@@ -155,12 +181,12 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   );
 
   // 연결 핸들러
-  const onConnect = useCallback((connection: Connection) => {
+  const onConnect = useCallback((connection: FlowConnection) => {
     const editor = editorRef.current;
     if (!editor || !connection.source || !connection.target) return;
 
     // 기본적으로 파트너 관계로 추가
-    editor.addPartnerRelationship(
+    editor.addPartnerConnection(
       connection.source,
       connection.target,
       PartnerStatus.Married
@@ -170,22 +196,25 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   }, []);
 
   // 사람 추가
-  const addPerson = useCallback(
-    (name: string, gender: Gender, position: { x: number; y: number }) => {
+  const addSubject = useCallback(
+    (
+      gender: (typeof Gender)[keyof typeof Gender],
+      position: { x: number; y: number }
+    ) => {
       const editor = editorRef.current;
       if (!editor) return null;
 
-      return editor.addPerson(name, gender, position, 0);
+      return editor.addSubject(gender, position, 0);
     },
     []
   );
 
   // 사람 삭제
-  const deletePerson = useCallback((personId: string) => {
+  const deleteSubject = useCallback((subjectId: string) => {
     const editor = editorRef.current;
     if (!editor) return;
 
-    editor.deletePerson(personId);
+    editor.deleteSubject(subjectId);
   }, []);
 
   // Undo/Redo
@@ -224,8 +253,8 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     onNodesChange,
     onEdgesChange,
     onConnect,
-    addPerson,
-    deletePerson,
+    addPerson: addSubject,
+    deletePerson: deleteSubject,
     undo,
     redo,
     canUndo,

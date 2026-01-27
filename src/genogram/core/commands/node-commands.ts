@@ -1,67 +1,81 @@
 import type { NodeLayout } from '../layout/layout-state';
 import { createNodeLayout } from '../layout/layout-state';
-import type { Person } from '../models/person';
-import { createPerson } from '../models/person';
-import { Gender } from '../types/enums';
+import type { Subject } from '../models/person';
+import { createPersonSubject } from '../models/person';
+import type { Gender } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 
 import type { EditorState } from './base';
 import { BaseCommand } from './base';
 
-export class AddPersonCommand extends BaseCommand {
-  readonly type = 'ADD_PERSON';
-  private person: Person;
+export class AddSubjectCommand extends BaseCommand {
+  readonly type = 'ADD_SUBJECT';
+  private subject: Subject;
   private layout: NodeLayout;
 
-  constructor(name: string, gender: Gender, position: Point, generation = 0) {
+  constructor(gender: Gender, position: Point, generation = 0) {
     super();
-    this.person = createPerson(name, gender);
-    this.layout = createNodeLayout(this.person.id, position, generation);
+    this.subject = createPersonSubject(gender, position);
+    this.layout = createNodeLayout(this.subject.id, position, generation);
   }
 
   execute(state: EditorState): EditorState {
-    state.genogram.persons.set(this.person.id, { ...this.person });
+    state.genogram.subjects.set(this.subject.id, { ...this.subject });
     state.layout.nodes.set(this.layout.nodeId, { ...this.layout });
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
-    state.genogram.persons.delete(this.person.id);
+    state.genogram.subjects.delete(this.subject.id);
     state.layout.nodes.delete(this.layout.nodeId);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
-  getPersonId(): UUID {
-    return this.person.id;
+  getSubjectId(): UUID {
+    return this.subject.id;
   }
 }
 
-export class DeletePersonCommand extends BaseCommand {
-  readonly type = 'DELETE_PERSON';
-  private personId: UUID;
-  private backup?: { person: Person; layout: NodeLayout };
+export class DeleteSubjectCommand extends BaseCommand {
+  readonly type = 'DELETE_SUBJECT';
+  private subjectId: UUID;
+  private backup?: { subject: Subject; layout: NodeLayout };
 
-  constructor(personId: UUID) {
+  constructor(subjectId: UUID) {
     super();
-    this.personId = personId;
+    this.subjectId = subjectId;
   }
 
   execute(state: EditorState): EditorState {
-    const person = state.genogram.persons.get(this.personId);
-    const layout = state.layout.nodes.get(this.personId);
+    const subject = state.genogram.subjects.get(this.subjectId);
+    const layout = state.layout.nodes.get(this.subjectId);
 
-    if (person && layout) {
-      this.backup = { person: { ...person }, layout: { ...layout } };
+    if (subject && layout) {
+      this.backup = { subject: { ...subject }, layout: { ...layout } };
     }
 
-    state.genogram.persons.delete(this.personId);
-    state.layout.nodes.delete(this.personId);
+    state.genogram.subjects.delete(this.subjectId);
+    state.layout.nodes.delete(this.subjectId);
 
-    state.genogram.relationships.forEach((rel, id) => {
-      if (rel.sourceId === this.personId || rel.targetId === this.personId) {
-        state.genogram.relationships.delete(id);
+    // Remove related connections
+    state.genogram.connections.forEach((conn, id) => {
+      const attr = conn.entity.attribute;
+      const isRelated =
+        ('subjects' in attr &&
+          Array.isArray(attr.subjects) &&
+          attr.subjects.includes(this.subjectId)) ||
+        ('startRef' in attr && attr.startRef === this.subjectId) ||
+        ('endRef' in attr && attr.endRef === this.subjectId) ||
+        ('parentRef' in attr && attr.parentRef === this.subjectId) ||
+        ('childRef' in attr &&
+          (attr.childRef === this.subjectId ||
+            (Array.isArray(attr.childRef) &&
+              attr.childRef.includes(this.subjectId))));
+
+      if (isRelated) {
+        state.genogram.connections.delete(id);
         state.layout.edges.delete(id);
       }
     });
@@ -72,58 +86,59 @@ export class DeletePersonCommand extends BaseCommand {
 
   undo(state: EditorState): EditorState {
     if (this.backup) {
-      state.genogram.persons.set(this.personId, this.backup.person);
-      state.layout.nodes.set(this.personId, this.backup.layout);
+      state.genogram.subjects.set(this.subjectId, this.backup.subject);
+      state.layout.nodes.set(this.subjectId, this.backup.layout);
     }
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 }
 
-export class UpdatePersonCommand extends BaseCommand {
-  readonly type = 'UPDATE_PERSON';
-  private personId: UUID;
-  private updates: Partial<Person>;
-  private previousValues?: Partial<Person>;
+export class UpdateSubjectCommand extends BaseCommand {
+  readonly type = 'UPDATE_SUBJECT';
+  private subjectId: UUID;
+  private updates: Partial<Subject>;
+  private previousValues?: Partial<Subject>;
 
-  constructor(personId: UUID, updates: Partial<Person>) {
+  constructor(subjectId: UUID, updates: Partial<Subject>) {
     super();
-    this.personId = personId;
+    this.subjectId = subjectId;
     this.updates = updates;
   }
 
   execute(state: EditorState): EditorState {
-    const person = state.genogram.persons.get(this.personId);
-    if (!person) return state;
+    const subject = state.genogram.subjects.get(this.subjectId);
+    if (!subject) return state;
 
     this.previousValues = {};
     Object.keys(this.updates).forEach((key) => {
-      (this.previousValues as any)[key] = (person as any)[key];
+      (this.previousValues as any)[key] = (subject as any)[key];
     });
 
-    Object.assign(person, this.updates);
+    Object.assign(subject, this.updates);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
-    const person = state.genogram.persons.get(this.personId);
-    if (!person || !this.previousValues) return state;
+    const subject = state.genogram.subjects.get(this.subjectId);
+    if (!subject || !this.previousValues) return state;
 
-    Object.assign(person, this.previousValues);
+    Object.assign(subject, this.previousValues);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   canMerge(other: BaseCommand): boolean {
     return (
-      other instanceof UpdatePersonCommand && other.personId === this.personId
+      other instanceof UpdateSubjectCommand &&
+      other.subjectId === this.subjectId
     );
   }
 
   merge(other: BaseCommand): BaseCommand {
-    if (!(other instanceof UpdatePersonCommand)) return this;
-    const merged = new UpdatePersonCommand(this.personId, {
+    if (!(other instanceof UpdateSubjectCommand)) return this;
+    const merged = new UpdateSubjectCommand(this.subjectId, {
       ...this.updates,
       ...other.updates,
     });
@@ -150,6 +165,13 @@ export class MoveNodeCommand extends BaseCommand {
 
     this.previousPosition = { ...layout.position };
     layout.position = { ...this.newPosition };
+
+    // Also update Subject layout.center
+    const subject = state.genogram.subjects.get(this.nodeId);
+    if (subject) {
+      subject.layout.center = { ...this.newPosition };
+    }
+
     return state;
   }
 
@@ -158,6 +180,12 @@ export class MoveNodeCommand extends BaseCommand {
     if (!layout || !this.previousPosition) return state;
 
     layout.position = { ...this.previousPosition };
+
+    const subject = state.genogram.subjects.get(this.nodeId);
+    if (subject) {
+      subject.layout.center = { ...this.previousPosition };
+    }
+
     return state;
   }
 
@@ -193,6 +221,10 @@ export class MoveMultipleNodesCommand extends BaseCommand {
         this.previousPositions.set(nodeId, { ...layout.position });
         layout.position = { ...newPosition };
       }
+      const subject = state.genogram.subjects.get(nodeId);
+      if (subject) {
+        subject.layout.center = { ...newPosition };
+      }
     });
     return state;
   }
@@ -202,6 +234,10 @@ export class MoveMultipleNodesCommand extends BaseCommand {
       const layout = state.layout.nodes.get(nodeId);
       if (layout) {
         layout.position = { ...pos };
+      }
+      const subject = state.genogram.subjects.get(nodeId);
+      if (subject) {
+        subject.layout.center = { ...pos };
       }
     });
     return state;

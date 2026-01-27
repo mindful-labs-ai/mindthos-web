@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import {
   BaseEdge,
@@ -8,27 +8,29 @@ import {
 } from '@xyflow/react';
 
 import {
-  EmotionalStatus,
+  ConnectionType,
   PartnerStatus,
-  RelationType,
+  RelationStatus,
 } from '@/genogram/core/types/enums';
+import type { InfluenceStatus } from '@/genogram/core/types/enums';
 
 export interface RelationshipEdgeData {
-  relationType: RelationType;
-  partnerStatus?: PartnerStatus;
-  emotionalStatus?: EmotionalStatus;
+  connectionType: typeof ConnectionType[keyof typeof ConnectionType];
+  partnerStatus?: typeof PartnerStatus[keyof typeof PartnerStatus];
+  relationStatus?: typeof RelationStatus[keyof typeof RelationStatus];
+  influenceStatus?: InfluenceStatus;
   label?: string;
   [key: string]: unknown;
 }
 
 const getEdgeStyle = (
-  relationType: RelationType,
-  partnerStatus?: PartnerStatus,
-  emotionalStatus?: EmotionalStatus
+  connectionType: typeof ConnectionType[keyof typeof ConnectionType],
+  partnerStatus?: typeof PartnerStatus[keyof typeof PartnerStatus],
+  relationStatus?: typeof RelationStatus[keyof typeof RelationStatus]
 ): { stroke: string; strokeWidth: number; strokeDasharray?: string } => {
   const baseStyle = { stroke: '#374151', strokeWidth: 2 };
 
-  if (relationType === RelationType.Partner) {
+  if (connectionType === ConnectionType.Partner) {
     switch (partnerStatus) {
       case PartnerStatus.Married:
         return { ...baseStyle, strokeWidth: 2 };
@@ -43,27 +45,29 @@ const getEdgeStyle = (
     }
   }
 
-  if (relationType === RelationType.Child) {
+  if (connectionType === ConnectionType.ParentChild) {
     return baseStyle;
   }
 
-  if (relationType === RelationType.Emotional) {
-    switch (emotionalStatus) {
-      case EmotionalStatus.Close:
+  if (connectionType === ConnectionType.Relation) {
+    switch (relationStatus) {
+      case RelationStatus.Close:
         return { stroke: '#22c55e', strokeWidth: 2 };
-      case EmotionalStatus.Fused:
+      case RelationStatus.Combination:
         return { stroke: '#22c55e', strokeWidth: 3 };
-      case EmotionalStatus.Distant:
+      case RelationStatus.Estranged:
         return { stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '5,5' };
-      case EmotionalStatus.Hostile:
+      case RelationStatus.Hostility:
         return { stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '8,4' };
-      case EmotionalStatus.Cutoff:
+      case RelationStatus.CloseHostility:
         return { stroke: '#ef4444', strokeWidth: 2 };
-      case EmotionalStatus.Abuse:
-        return { stroke: '#dc2626', strokeWidth: 3 };
       default:
         return { ...baseStyle, stroke: '#6b7280' };
     }
+  }
+
+  if (connectionType === ConnectionType.Influence) {
+    return { stroke: '#dc2626', strokeWidth: 3 };
   }
 
   return baseStyle;
@@ -82,7 +86,7 @@ export const RelationshipEdge = memo(
     selected,
   }: EdgeProps) => {
     const edgeData = (data || {}) as RelationshipEdgeData;
-    const { relationType, partnerStatus, emotionalStatus, label } = edgeData;
+    const { connectionType, partnerStatus, relationStatus, label } = edgeData;
 
     const [edgePath, labelX, labelY] = getSmoothStepPath({
       sourceX,
@@ -95,9 +99,9 @@ export const RelationshipEdge = memo(
     });
 
     const style = getEdgeStyle(
-      relationType || RelationType.Partner,
+      connectionType || ConnectionType.Partner,
       partnerStatus,
-      emotionalStatus
+      relationStatus
     );
 
     return (

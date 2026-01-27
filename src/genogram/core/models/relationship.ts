@@ -1,119 +1,188 @@
 import {
-  ChildStatus,
-  EmotionalStatus,
+  ConnectionType,
+  StrokeWidth,
+} from '../types/enums';
+import type {
+  InfluenceStatus,
+  ParentChildStatus,
   PartnerStatus,
-  RelationType,
+  RelationStatus,
 } from '../types/enums';
 import type { UUID } from '../types/types';
 import { generateId } from '../types/types';
 
-export interface RelationshipEvent {
-  type: string;
-  date: string;
-  description?: string;
+// Connection Entity variants
+export interface RelationAttribute {
+  status: RelationStatus;
+  subjects: [UUID, UUID];
 }
 
-interface BaseRelationship {
-  id: UUID;
-  sourceId: UUID;
-  targetId: UUID;
-  type: RelationType;
-  events: RelationshipEvent[];
-  memo?: string;
+export interface InfluenceAttribute {
+  status: InfluenceStatus;
+  startRef: UUID;
+  endRef: UUID;
 }
 
-export interface PartnerRelationship extends BaseRelationship {
-  type: RelationType.Partner;
+export interface PartnerDetail {
+  marriedDate?: string | null;
+  divorcedDate?: string | null;
+  reunitedDate?: string | null;
+}
+
+export interface PartnerAttribute {
   status: PartnerStatus;
+  subjects: [UUID, UUID];
+  detail: PartnerDetail;
 }
 
-export interface ChildRelationship extends BaseRelationship {
-  type: RelationType.Child;
-  status: ChildStatus;
-  parentRelationshipId?: UUID;
+export interface ParentChildAttribute {
+  status: ParentChildStatus;
+  parentRef: UUID;
+  childRef: UUID | [UUID, UUID];
 }
 
-export interface EmotionalRelationship extends BaseRelationship {
-  type: RelationType.Emotional;
-  status: EmotionalStatus;
+export interface GroupAttribute {
+  subjects: UUID[];
 }
 
-export interface GroupRelationship extends BaseRelationship {
-  type: RelationType.Group;
-  memberIds: UUID[];
-  groupName?: string;
+export type ConnectionAttribute =
+  | RelationAttribute
+  | InfluenceAttribute
+  | PartnerAttribute
+  | ParentChildAttribute
+  | GroupAttribute;
+
+// Connection Entity
+export interface ConnectionEntity {
+  type: typeof ConnectionType[keyof typeof ConnectionType];
+  attribute: ConnectionAttribute;
+  memo: string | null;
 }
 
-export type Relationship =
-  | PartnerRelationship
-  | ChildRelationship
-  | EmotionalRelationship
-  | GroupRelationship;
+// Connection Layout
+export interface ConnectionLayout {
+  strokeWidth: typeof StrokeWidth[keyof typeof StrokeWidth];
+  strokeColor: string;
+  textColor: string;
+}
 
-export function createPartnerRelationship(
-  sourceId: UUID,
-  targetId: UUID,
-  status: PartnerStatus = PartnerStatus.Married,
-  id: UUID = generateId()
-): PartnerRelationship {
+// Connection
+export interface Connection {
+  id: UUID;
+  entity: ConnectionEntity;
+  layout: ConnectionLayout;
+}
+
+function createDefaultConnectionLayout(): ConnectionLayout {
   return {
-    id,
-    sourceId,
-    targetId,
-    type: RelationType.Partner,
-    status,
-    events: [],
+    strokeWidth: StrokeWidth.Default,
+    strokeColor: '#000000',
+    textColor: '#000000',
   };
 }
 
-export function createChildRelationship(
-  sourceId: UUID,
-  targetId: UUID,
-  status: ChildStatus = ChildStatus.Biological,
-  parentRelationshipId?: UUID,
+export function createRelationConnection(
+  subjectId1: UUID,
+  subjectId2: UUID,
+  status: RelationStatus,
   id: UUID = generateId()
-): ChildRelationship {
+): Connection {
   return {
     id,
-    sourceId,
-    targetId,
-    type: RelationType.Child,
-    status,
-    parentRelationshipId,
-    events: [],
+    entity: {
+      type: ConnectionType.Relation,
+      attribute: {
+        status,
+        subjects: [subjectId1, subjectId2],
+      } satisfies RelationAttribute,
+      memo: null,
+    },
+    layout: createDefaultConnectionLayout(),
   };
 }
 
-export function createEmotionalRelationship(
-  sourceId: UUID,
-  targetId: UUID,
-  status: EmotionalStatus = EmotionalStatus.Basic,
+export function createInfluenceConnection(
+  startRef: UUID,
+  endRef: UUID,
+  status: InfluenceStatus,
   id: UUID = generateId()
-): EmotionalRelationship {
+): Connection {
   return {
     id,
-    sourceId,
-    targetId,
-    type: RelationType.Emotional,
-    status,
-    events: [],
+    entity: {
+      type: ConnectionType.Influence,
+      attribute: {
+        status,
+        startRef,
+        endRef,
+      } satisfies InfluenceAttribute,
+      memo: null,
+    },
+    layout: createDefaultConnectionLayout(),
   };
 }
 
-export function createGroupRelationship(
-  memberIds: UUID[],
-  groupName?: string,
+export function createPartnerConnection(
+  subjectId1: UUID,
+  subjectId2: UUID,
+  status: PartnerStatus,
   id: UUID = generateId()
-): GroupRelationship {
+): Connection {
   return {
     id,
-    sourceId: memberIds[0] ?? '',
-    targetId: memberIds[1] ?? '',
-    type: RelationType.Group,
-    memberIds,
-    groupName,
-    events: [],
+    entity: {
+      type: ConnectionType.Partner,
+      attribute: {
+        status,
+        subjects: [subjectId1, subjectId2],
+        detail: {
+          marriedDate: null,
+          divorcedDate: null,
+          reunitedDate: null,
+        },
+      } satisfies PartnerAttribute,
+      memo: null,
+    },
+    layout: createDefaultConnectionLayout(),
   };
 }
 
-export type RelationshipUpdate = Partial<Omit<Relationship, 'id' | 'type'>>;
+export function createParentChildConnection(
+  parentRef: UUID,
+  childRef: UUID | [UUID, UUID],
+  status: ParentChildStatus,
+  id: UUID = generateId()
+): Connection {
+  return {
+    id,
+    entity: {
+      type: ConnectionType.ParentChild,
+      attribute: {
+        status,
+        parentRef,
+        childRef,
+      } satisfies ParentChildAttribute,
+      memo: null,
+    },
+    layout: createDefaultConnectionLayout(),
+  };
+}
+
+export function createGroupConnection(
+  subjects: UUID[],
+  id: UUID = generateId()
+): Connection {
+  return {
+    id,
+    entity: {
+      type: ConnectionType.Group,
+      attribute: {
+        subjects,
+      } satisfies GroupAttribute,
+      memo: null,
+    },
+    layout: createDefaultConnectionLayout(),
+  };
+}
+
+export type ConnectionUpdate = Partial<Omit<Connection, 'id'>>;

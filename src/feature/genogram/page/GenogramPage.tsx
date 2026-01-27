@@ -9,9 +9,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react';
-
 import '@xyflow/react/dist/style.css';
-
 import { RotateCcw, RotateCw } from 'lucide-react';
 
 import { Button, Title } from '@/components/ui';
@@ -58,7 +56,7 @@ const GenogramCanvas: React.FC = () => {
         y: event.clientY - bounds.top,
       };
 
-      addPerson('새 구성원', selectedGender, position);
+      addPerson(selectedGender, position);
       setIsAddingNode(false);
     },
     [isAddingNode, selectedGender, addPerson]

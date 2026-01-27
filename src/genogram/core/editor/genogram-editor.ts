@@ -1,21 +1,21 @@
 import type { Command, EditorState } from '../commands/base';
 import {
-  AddChildRelationshipCommand,
-  AddEmotionalRelationshipCommand,
-  AddPartnerRelationshipCommand,
-  DeleteRelationshipCommand,
-  SetArrowDirectionCommand,
-  SetEdgeLabelCommand,
-  UpdateEdgeStyleCommand,
+  AddRelationConnectionCommand,
+  AddInfluenceConnectionCommand,
+  AddPartnerConnectionCommand,
+  AddParentChildConnectionCommand,
+  AddGroupConnectionCommand,
+  DeleteConnectionCommand,
+  UpdateConnectionLayoutCommand,
 } from '../commands/edge-commands';
 import type { CommandManagerConfig } from '../commands/manager';
 import { CommandManager } from '../commands/manager';
 import {
-  AddPersonCommand,
-  DeletePersonCommand,
+  AddSubjectCommand,
+  DeleteSubjectCommand,
   MoveMultipleNodesCommand,
   MoveNodeCommand,
-  UpdatePersonCommand,
+  UpdateSubjectCommand,
 } from '../commands/node-commands';
 import {
   DeselectAllCommand,
@@ -27,7 +27,6 @@ import {
 import type { LayoutConfig } from '../layout/layout-engine';
 import { LayoutEngine } from '../layout/layout-engine';
 import type {
-  EdgeLayout,
   LayoutState,
   NodeLayout,
   SerializedLayoutState,
@@ -43,15 +42,18 @@ import {
   deserializeGenogram,
   serializeGenogram,
 } from '../models/genogram';
-import type { Person } from '../models/person';
+import type { Subject } from '../models/person';
+import type { ConnectionLayout } from '../models/relationship';
 import {
-  ArrowDirection,
   AssetType,
-  ChildStatus,
-  EmotionalStatus,
-  Gender,
   PartnerStatus,
+  RelationStatus,
   ToolMode,
+} from '../types/enums';
+import type {
+  Gender,
+  InfluenceStatus,
+  ParentChildStatus,
 } from '../types/enums';
 import type { Point, Rect, UUID } from '../types/types';
 
@@ -157,12 +159,12 @@ export class GenogramEditor {
   }
 
   // Tool Mode
-  setToolMode(mode: ToolMode): void {
+  setToolMode(mode: typeof ToolMode[keyof typeof ToolMode]): void {
     setInteractionToolMode(this.interaction, mode);
     this.emit('tool-change', mode);
   }
 
-  getToolMode(): ToolMode {
+  getToolMode(): typeof ToolMode[keyof typeof ToolMode] {
     return this.interaction.toolMode;
   }
 
@@ -210,9 +212,8 @@ export class GenogramEditor {
     this.commandManager.markSaved();
   }
 
-  // Person Operations
-  addPerson(
-    name: string,
+  // Subject Operations
+  addSubject(
     gender: Gender,
     position: Point,
     generation = 0
@@ -227,35 +228,35 @@ export class GenogramEditor {
     const nodes = Array.from(this.state.layout.nodes.values());
     const finalPos = this.layoutEngine.findNonCollidingPosition(snapped, nodes);
 
-    const cmd = new AddPersonCommand(name, gender, finalPos, generation);
+    const cmd = new AddSubjectCommand(gender, finalPos, generation);
     this.execute(cmd);
-    return cmd.getPersonId();
+    return cmd.getSubjectId();
   }
 
-  deletePerson(personId: UUID): void {
-    this.execute(new DeletePersonCommand(personId));
+  deleteSubject(subjectId: UUID): void {
+    this.execute(new DeleteSubjectCommand(subjectId));
   }
 
-  updatePerson(personId: UUID, updates: Partial<Person>): void {
-    this.execute(new UpdatePersonCommand(personId, updates));
+  updateSubject(subjectId: UUID, updates: Partial<Subject>): void {
+    this.execute(new UpdateSubjectCommand(subjectId, updates));
   }
 
-  movePerson(personId: UUID, position: Point): void {
+  moveSubject(subjectId: UUID, position: Point): void {
     const snapped = this.state.layout.canvas.gridSnap
       ? this.layoutEngine.snapToGrid(
           position,
           this.state.layout.canvas.gridSize
         )
       : position;
-    this.execute(new MoveNodeCommand(personId, snapped));
+    this.execute(new MoveNodeCommand(subjectId, snapped));
   }
 
-  moveMultiplePersons(moves: { personId: UUID; position: Point }[]): void {
+  moveMultipleSubjects(moves: { subjectId: UUID; position: Point }[]): void {
     const gridSize = this.state.layout.canvas.gridSize;
     const snap = this.state.layout.canvas.gridSnap;
 
     const snappedMoves = moves.map((m) => ({
-      nodeId: m.personId,
+      nodeId: m.subjectId,
       newPosition: snap
         ? this.layoutEngine.snapToGrid(m.position, gridSize)
         : m.position,
@@ -264,106 +265,74 @@ export class GenogramEditor {
     this.execute(new MoveMultipleNodesCommand(snappedMoves));
   }
 
-  // Relationship Operations
-  addPartnerRelationship(
-    personId1: UUID,
-    personId2: UUID,
-    status: PartnerStatus = PartnerStatus.Married
+  // Connection Operations
+  addRelationConnection(
+    subjectId1: UUID,
+    subjectId2: UUID,
+    status: typeof RelationStatus[keyof typeof RelationStatus] = RelationStatus.Link
   ): UUID {
-    const pos1 = this.state.layout.nodes.get(personId1)?.position ?? {
-      x: 0,
-      y: 0,
-    };
-    const pos2 = this.state.layout.nodes.get(personId2)?.position ?? {
-      x: 0,
-      y: 0,
-    };
-
-    const cmd = new AddPartnerRelationshipCommand(
-      personId1,
-      personId2,
-      pos1,
-      pos2,
+    const cmd = new AddRelationConnectionCommand(
+      subjectId1,
+      subjectId2,
       status
     );
     this.execute(cmd);
-    return cmd.getRelationshipId();
+    return cmd.getConnectionId();
   }
 
-  addChildRelationship(
-    parentId: UUID,
-    childId: UUID,
-    status: ChildStatus = ChildStatus.Biological,
-    parentRelationshipId?: UUID
+  addInfluenceConnection(
+    startRef: UUID,
+    endRef: UUID,
+    status: InfluenceStatus
   ): UUID {
-    const parentPos = this.state.layout.nodes.get(parentId)?.position ?? {
-      x: 0,
-      y: 0,
-    };
-    const childPos = this.state.layout.nodes.get(childId)?.position ?? {
-      x: 0,
-      y: 0,
-    };
-
-    let sourcePos = parentPos;
-    if (parentRelationshipId) {
-      const edge = this.state.layout.edges.get(parentRelationshipId);
-      if (edge?.virtualAnchor) {
-        sourcePos = edge.virtualAnchor;
-      }
-    }
-
-    const cmd = new AddChildRelationshipCommand(
-      parentId,
-      childId,
-      sourcePos,
-      childPos,
-      status,
-      parentRelationshipId
-    );
+    const cmd = new AddInfluenceConnectionCommand(startRef, endRef, status);
     this.execute(cmd);
-    return cmd.getRelationshipId();
+    return cmd.getConnectionId();
   }
 
-  addEmotionalRelationship(
-    personId1: UUID,
-    personId2: UUID,
-    status: EmotionalStatus = EmotionalStatus.Basic
+  addPartnerConnection(
+    subjectId1: UUID,
+    subjectId2: UUID,
+    status: typeof PartnerStatus[keyof typeof PartnerStatus] = PartnerStatus.Married
   ): UUID {
-    const pos1 = this.state.layout.nodes.get(personId1)?.position ?? {
-      x: 0,
-      y: 0,
-    };
-    const pos2 = this.state.layout.nodes.get(personId2)?.position ?? {
-      x: 0,
-      y: 0,
-    };
-
-    const cmd = new AddEmotionalRelationshipCommand(
-      personId1,
-      personId2,
-      pos1,
-      pos2,
+    const cmd = new AddPartnerConnectionCommand(
+      subjectId1,
+      subjectId2,
       status
     );
     this.execute(cmd);
-    return cmd.getRelationshipId();
+    return cmd.getConnectionId();
   }
 
-  deleteRelationship(relationshipId: UUID): void {
-    this.execute(new DeleteRelationshipCommand(relationshipId));
+  addParentChildConnection(
+    parentRef: UUID,
+    childRef: UUID | [UUID, UUID],
+    status: ParentChildStatus
+  ): UUID {
+    const cmd = new AddParentChildConnectionCommand(
+      parentRef,
+      childRef,
+      status
+    );
+    this.execute(cmd);
+    return cmd.getConnectionId();
   }
 
-  setEdgeArrowDirection(edgeId: UUID, direction: ArrowDirection): void {
-    this.execute(new SetArrowDirectionCommand(edgeId, direction));
+  addGroupConnection(subjects: UUID[]): UUID {
+    const cmd = new AddGroupConnectionCommand(subjects);
+    this.execute(cmd);
+    return cmd.getConnectionId();
   }
 
-  setEdgeLabel(edgeId: UUID, label: string): void {
-    this.execute(new SetEdgeLabelCommand(edgeId, label));
+  deleteConnection(connectionId: UUID): void {
+    this.execute(new DeleteConnectionCommand(connectionId));
   }
 
-  updateEdgeStyle(edgeId: UUID, updates: Partial<EdgeLayout>): void {
-    this.execute(new UpdateEdgeStyleCommand(edgeId, updates));
+  updateConnectionLayout(
+    connectionId: UUID,
+    updates: Partial<ConnectionLayout>
+  ): void {
+    this.execute(new UpdateConnectionLayoutCommand(connectionId, updates));
   }
 
   // Selection
@@ -391,9 +360,9 @@ export class GenogramEditor {
 
     items.forEach((item) => {
       if (item.type === AssetType.Node) {
-        commands.push(new DeletePersonCommand(item.id));
+        commands.push(new DeleteSubjectCommand(item.id));
       } else if (item.type === AssetType.Edge) {
-        commands.push(new DeleteRelationshipCommand(item.id));
+        commands.push(new DeleteConnectionCommand(item.id));
       }
     });
 
@@ -524,7 +493,7 @@ export class GenogramEditor {
     this.emit('interaction-change', this.interaction);
   }
 
-  handleMouseUp(_point: Point): void {
+  handleMouseUp(point: Point): void {
     const mode = this.interaction.toolMode;
 
     if (this.interaction.drag.isDragging) {
@@ -537,14 +506,14 @@ export class GenogramEditor {
           const moves = result.ids.map((id) => {
             const node = this.state.layout.nodes.get(id);
             return {
-              personId: id,
+              subjectId: id,
               position: {
                 x: (node?.position.x ?? 0) + dx,
                 y: (node?.position.y ?? 0) + dy,
               },
             };
           });
-          this.moveMultiplePersons(moves);
+          this.moveMultipleSubjects(moves);
         }
       } else if (mode === ToolMode.Pan && result) {
         const dx = result.endPoint.x - result.startPoint.x;
@@ -562,7 +531,7 @@ export class GenogramEditor {
           point
         );
         if (targetNode && targetNode.nodeId !== result.sourceId) {
-          this.addEmotionalRelationship(result.sourceId, targetNode.nodeId);
+          this.addRelationConnection(result.sourceId, targetNode.nodeId);
         }
       }
     }

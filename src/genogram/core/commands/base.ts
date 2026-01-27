@@ -16,12 +16,17 @@ export interface Command {
   merge(other: Command): Command;
 }
 
-export abstract class BaseCommand implements Command {
+export class BaseCommand implements Command {
   readonly id: string = generateId();
-  abstract readonly type: string;
+  readonly type: string = '';
 
-  abstract execute(state: EditorState): EditorState;
-  abstract undo(state: EditorState): EditorState;
+  execute(_state: EditorState): EditorState {
+    throw new Error('Not implemented');
+  }
+
+  undo(_state: EditorState): EditorState {
+    throw new Error('Not implemented');
+  }
 
   canMerge(_other: Command): boolean {
     return false;
@@ -33,17 +38,21 @@ export abstract class BaseCommand implements Command {
 }
 
 export class CompositeCommand extends BaseCommand {
-  readonly type = 'COMPOSITE';
+  override readonly type = 'COMPOSITE';
+  private readonly _commands: Command[];
 
-  constructor(private readonly commands: Command[]) {
+  constructor(commands: Command[]) {
     super();
+    this._commands = commands;
   }
 
-  execute(state: EditorState): EditorState {
-    return this.commands.reduce((s, cmd) => cmd.execute(s), state);
+  override execute(state: EditorState): EditorState {
+    return this._commands.reduce((s, cmd) => cmd.execute(s), state);
   }
 
-  undo(state: EditorState): EditorState {
-    return [...this.commands].reverse().reduce((s, cmd) => cmd.undo(s), state);
+  override undo(state: EditorState): EditorState {
+    return [...this._commands]
+      .reverse()
+      .reduce((s, cmd) => cmd.undo(s), state);
   }
 }

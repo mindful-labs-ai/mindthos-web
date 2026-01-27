@@ -1,7 +1,7 @@
-import { ArrowDirection, LineStyle, NodeSize } from '../types/enums';
+import { NodeSize } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 
-// Canvas
+// Canvas (editor-only runtime state)
 export interface CanvasState {
   zoomLevel: number;
   offset: Point;
@@ -20,14 +20,12 @@ export function createCanvasState(): CanvasState {
   };
 }
 
-// Node Layout
+// Node Layout (editor runtime - selection/visibility state for subjects)
 export interface NodeLayout {
   nodeId: UUID;
   position: Point;
   generation: number;
-  size: NodeSize;
-  fillColor?: string;
-  borderColor?: string;
+  size: typeof NodeSize[keyof typeof NodeSize];
   zIndex: number;
   isSelected: boolean;
   isLocked: boolean;
@@ -51,49 +49,27 @@ export function createNodeLayout(
   };
 }
 
-// Edge Layout
+// Edge Layout (editor runtime - selection state for connections)
 export interface EdgeLayout {
   edgeId: UUID;
-  pathPoints: Point[];
-  virtualAnchor?: Point;
-  strokeColor: string;
-  strokeWeight: number;
-  lineStyle: LineStyle;
-  arrowDirection: ArrowDirection;
-  label?: string;
-  labelPosition?: Point;
   zIndex: number;
   isSelected: boolean;
   isVisible: boolean;
 }
 
-export function createEdgeLayout(
-  edgeId: UUID,
-  sourcePos: Point,
-  targetPos: Point
-): EdgeLayout {
+export function createEdgeLayout(edgeId: UUID): EdgeLayout {
   return {
     edgeId,
-    pathPoints: [sourcePos, targetPos],
-    strokeColor: '#000000',
-    strokeWeight: 2,
-    lineStyle: LineStyle.Solid,
-    arrowDirection: ArrowDirection.None,
     zIndex: 5,
     isSelected: false,
     isVisible: true,
   };
 }
 
-// Text Layout
+// Text Layout (editor runtime - selection state for annotations)
 export interface TextLayout {
   textId: UUID;
-  targetId: UUID | null;
   position: Point;
-  color: string;
-  fontSize: number;
-  fontFamily: string;
-  fontWeight: 'normal' | 'bold';
   zIndex: number;
   isSelected: boolean;
   isVisible: boolean;
@@ -101,24 +77,18 @@ export interface TextLayout {
 
 export function createTextLayout(
   textId: UUID,
-  position: Point,
-  targetId: UUID | null = null
+  position: Point
 ): TextLayout {
   return {
     textId,
-    targetId,
     position,
-    color: '#000000',
-    fontSize: 14,
-    fontFamily: 'sans-serif',
-    fontWeight: 'normal',
     zIndex: 15,
     isSelected: false,
     isVisible: true,
   };
 }
 
-// Full Layout State
+// Full Layout State (editor runtime)
 export interface LayoutState {
   canvas: CanvasState;
   nodes: Map<string, NodeLayout>;

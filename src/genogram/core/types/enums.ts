@@ -1,108 +1,118 @@
-// Person
-export enum Gender {
-  Male = 'MALE',
-  Female = 'FEMALE',
-  TransMtF = 'TRANS_MTF',
-  TransFtM = 'TRANS_FTM',
-  NonBinary = 'NON_BINARY',
-  Pet = 'PET',
-}
+// Subject
+export const SubjectType = {
+  Person: 'PERSON',
+  Animal: 'ANIMAL',
+} as const;
+export type SubjectType = (typeof SubjectType)[keyof typeof SubjectType];
 
-export enum SexualOrientation {
-  Heterosexual = 'HETEROSEXUAL',
-  LGB = 'LGB',
-}
+export const Gender = {
+  Male: 'MALE',
+  Female: 'FEMALE',
+  Gay: 'GAY',
+  Lesbian: 'LESBIAN',
+  TransMale: 'TRANS_MALE',
+  TransFemale: 'TRANS_FEMALE',
+  NonBinary: 'NON_BINARY',
+} as const;
+export type Gender = (typeof Gender)[keyof typeof Gender];
 
-export enum ClinicalStatus {
-  None = 'NONE',
-  PhysicalMental = 'PHYSICAL_MENTAL',
-  SubstanceAbuse = 'SUBSTANCE_ABUSE',
-  SuspectedAbuse = 'SUSPECTED_ABUSE',
-  InRemission = 'IN_REMISSION',
-  InRecovery = 'IN_RECOVERY',
-  Comorbidity = 'COMORBIDITY',
-}
+export const ClinicStatus = {
+  None: 'NONE',
+  PsychPhysicalProblem: 'PSYCH_PHYSICAL_PROBLEM',
+  SubstanceAbuse: 'SUBSTANCE_ABUSE',
+  SuspectedSubstanceAbuse: 'SUSPECTED_SUBSTANCE_ABUSE',
+  RemissionPsychPhysical: 'REMISSION_PSYCH_PHYSICAL',
+  SubstanceRemissionWithProblem: 'SUBSTANCE_REMISSION_WITH_PROBLEM',
+  RecoveringSubstanceAbuse: 'RECOVERING_SUBSTANCE_ABUSE',
+  SevereMultipleProblems: 'SEVERE_MULTIPLE_PROBLEMS',
+  RecoveringMultipleProblems: 'RECOVERING_MULTIPLE_PROBLEMS',
+} as const;
+export type ClinicStatus = (typeof ClinicStatus)[keyof typeof ClinicStatus];
 
-export enum MigrationStatus {
-  None = 'NONE',
-  Immigrant = 'IMMIGRANT',
-  MultiCultural = 'MULTI_CULTURAL',
-}
+// Connection
+export const ConnectionType = {
+  Relation: 'RELATION',
+  Influence: 'INFLUENCE',
+  Partner: 'PARTNER',
+  ParentChild: 'PARENT_CHILD',
+  Group: 'GROUP',
+} as const;
+export type ConnectionType =
+  (typeof ConnectionType)[keyof typeof ConnectionType];
 
-// Relationship
-export enum RelationType {
-  Partner = 'PARTNER',
-  Child = 'CHILD',
-  Emotional = 'EMOTIONAL',
-  Group = 'GROUP',
-}
+export const RelationStatus = {
+  Link: 'LINK',
+  Close: 'CLOSE',
+  Combination: 'COMBINATION',
+  Estranged: 'ESTRANGED',
+  Hostility: 'HOSTILITY',
+  CloseHostility: 'CLOSE_HOSTILITY',
+} as const;
+export type RelationStatus =
+  (typeof RelationStatus)[keyof typeof RelationStatus];
 
-export enum PartnerStatus {
-  Married = 'MARRIED',
-  Separated = 'SEPARATED',
-  Divorced = 'DIVORCED',
-  Reunited = 'REUNITED',
-  Dating = 'DATING',
-  SecretAffair = 'SECRET_AFFAIR',
-}
+export const InfluenceStatus = {
+  PhysicalAbuse: 'PHYSICAL_ABUSE',
+  MentalAbuse: 'MENTAL_ABUSE',
+  SexualAbuse: 'SEXUAL_ABUSE',
+  Focus: 'FOCUS',
+  NegativeFocus: 'NEGATIVE_FOCUS',
+} as const;
+export type InfluenceStatus =
+  (typeof InfluenceStatus)[keyof typeof InfluenceStatus];
 
-export enum ChildStatus {
-  Biological = 'BIOLOGICAL',
-  Adopted = 'ADOPTED',
-  Foster = 'FOSTER',
-  Miscarriage = 'MISCARRIAGE',
-  Abortion = 'ABORTION',
-  Twins = 'TWINS',
-  IdenticalTwins = 'IDENTICAL_TWINS',
-}
+export const PartnerStatus = {
+  Married: 'MARRIED',
+  Separated: 'SEPARATED',
+  Divorced: 'DIVORCED',
+  Reunited: 'REUNITED',
+  Dating: 'DATING',
+  SecretDating: 'SECRET_DATING',
+} as const;
+export type PartnerStatus =
+  (typeof PartnerStatus)[keyof typeof PartnerStatus];
 
-export enum EmotionalStatus {
-  Basic = 'BASIC',
-  Close = 'CLOSE',
-  Fused = 'FUSED',
-  Distant = 'DISTANT',
-  Hostile = 'HOSTILE',
-  FusedHostile = 'FUSED_HOSTILE',
-  Cutoff = 'CUTOFF',
-  Abuse = 'ABUSE',
-  FocusedOn = 'FOCUSED_ON',
-}
+export const ParentChildStatus = {
+  Biological: 'BIOLOGICAL',
+  Miscarriage: 'MISCARRIAGE',
+  Abortion: 'ABORTION',
+  Twins: 'TWINS',
+  IdenticalTwins: 'IDENTICAL_TWINS',
+  AdoptedChild: 'ADOPTED_CHILD',
+  FosterChild: 'FOSTER_CHILD',
+} as const;
+export type ParentChildStatus =
+  (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
 
-// Layout
-export enum NodeSize {
-  Small = 'SMALL',
-  Default = 'DEFAULT',
-  Large = 'LARGE',
-}
+// Layout / Style
+export const NodeSize = {
+  Small: 'SMALL',
+  Default: 'DEFAULT',
+  Large: 'LARGE',
+} as const;
+export type NodeSize = (typeof NodeSize)[keyof typeof NodeSize];
 
-export enum LineStyle {
-  Solid = 'SOLID',
-  Dashed = 'DASHED',
-  Dotted = 'DOTTED',
-  Double = 'DOUBLE',
-  Triple = 'TRIPLE',
-  Zigzag = 'ZIGZAG',
-}
-
-export enum ArrowDirection {
-  None = 'NONE',
-  Forward = 'FORWARD',
-  Backward = 'BACKWARD',
-  Both = 'BOTH',
-}
+export const StrokeWidth = {
+  Thin: 'THIN',
+  Default: 'DEFAULT',
+  Thick: 'THICK',
+} as const;
+export type StrokeWidth = (typeof StrokeWidth)[keyof typeof StrokeWidth];
 
 // Editor
-export enum ToolMode {
-  Select = 'SELECT',
-  MultiSelect = 'MULTI_SELECT',
-  Pan = 'PAN',
-  CreateNode = 'CREATE_NODE',
-  Connect = 'CONNECT',
-  CreateText = 'CREATE_TEXT',
-}
+export const ToolMode = {
+  Select: 'SELECT',
+  MultiSelect: 'MULTI_SELECT',
+  Pan: 'PAN',
+  CreateNode: 'CREATE_NODE',
+  Connect: 'CONNECT',
+  CreateText: 'CREATE_TEXT',
+} as const;
+export type ToolMode = (typeof ToolMode)[keyof typeof ToolMode];
 
-export enum AssetType {
-  Node = 'NODE',
-  Edge = 'EDGE',
-  Text = 'TEXT',
-}
+export const AssetType = {
+  Node: 'NODE',
+  Edge: 'EDGE',
+  Text: 'TEXT',
+} as const;
+export type AssetType = (typeof AssetType)[keyof typeof AssetType];

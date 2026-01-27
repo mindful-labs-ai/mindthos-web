@@ -78,9 +78,6 @@ export class LayoutEngine {
     existingNodes: NodeLayout[],
     excludeId?: string
   ): boolean {
-    const halfW = this.config.nodeWidth / 2;
-    const halfH = this.config.nodeHeight / 2;
-
     return existingNodes.some((node) => {
       if (excludeId && node.nodeId === excludeId) return false;
 
