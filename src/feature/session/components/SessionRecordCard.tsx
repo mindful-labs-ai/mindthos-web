@@ -672,11 +672,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 <Text className="text-xs text-fg-muted">
                   {formatKoreanDateTime(record.created_at)}
                 </Text>
-                {record.is_handwritten && (
-                  <Badge tone="neutral" variant="soft" size="sm">
-                    직접 입력
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -720,11 +715,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
               <Text className="text-xs text-fg-muted">
                 {formatKoreanDateTime(record.created_at)}
               </Text>
-              {record.is_handwritten && (
-                <Badge tone="neutral" variant="soft" size="sm">
-                  직접 입력
-                </Badge>
-              )}
             </div>
           </div>
 

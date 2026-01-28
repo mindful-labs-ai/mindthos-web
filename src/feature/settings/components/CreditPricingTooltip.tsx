@@ -60,7 +60,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
               <Text className="text-xs text-fg">직접 입력</Text>
               <div>
                 <Text className="text-xs font-semibold text-fg">
-                  - 30크레딧 (고정)
+                  30크레딧 (고정)
                 </Text>
               </div>
             </div>
