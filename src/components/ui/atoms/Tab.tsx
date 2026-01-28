@@ -16,6 +16,7 @@ export interface TabProps {
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
+  onDisabledClick?: (value: string) => void;
   size?: TabSize;
   variant?: TabVariant;
   className?: string;
@@ -52,6 +53,7 @@ export const Tab: React.FC<TabProps> = ({
   value: controlledValue,
   defaultValue,
   onValueChange,
+  onDisabledClick,
   size = 'md',
   variant = 'pill',
   className,
@@ -171,14 +173,20 @@ export const Tab: React.FC<TabProps> = ({
               type="button"
               aria-selected={isSelected}
               aria-controls={`tabpanel-${item.value}`}
-              disabled={item.disabled}
+              aria-disabled={item.disabled}
               tabIndex={isSelected ? 0 : -1}
-              onClick={() => handleSelect(item.value)}
+              onClick={() => {
+                if (item.disabled) {
+                  onDisabledClick?.(item.value);
+                  return;
+                }
+                handleSelect(item.value);
+              }}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className={cn(
                 'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                'min-w-20 items-center text-center disabled:cursor-not-allowed disabled:opacity-50',
+                'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
                 sizeStyles[size],
                 variant === 'pill'
                   ? cn(

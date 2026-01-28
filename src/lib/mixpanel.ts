@@ -24,6 +24,13 @@ export const trackEvent = (
   mixpanel.track(eventName, props);
 };
 
+export const trackPageView = (
+  eventName: string,
+  props: { from: string; to: string }
+) => {
+  mixpanel.track(eventName, props);
+};
+
 export const trackError = (
   errorType: string,
   error: unknown,
