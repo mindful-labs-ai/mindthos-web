@@ -1,8 +1,4 @@
-import {
-  ClinicStatus,
-  NodeSize,
-  SubjectType,
-} from '../types/enums';
+import { ClinicStatus, NodeSize, SubjectType } from '../types/enums';
 import type { Gender } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 import { generateId } from '../types/types';
@@ -45,7 +41,7 @@ export interface SubjectEntity {
 
 // Subject Style
 export interface SubjectStyle {
-  size: typeof NodeSize[keyof typeof NodeSize];
+  size: (typeof NodeSize)[keyof typeof NodeSize];
   bgColor: string;
   textColor: string;
 }

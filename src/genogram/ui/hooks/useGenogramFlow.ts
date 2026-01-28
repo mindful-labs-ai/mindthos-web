@@ -12,11 +12,7 @@ import {
 } from '@xyflow/react';
 
 import type { Subject } from '@/genogram/core/models/person';
-import {
-  Gender,
-  PartnerStatus,
-  ToolMode,
-} from '@/genogram/core/types/enums';
+import { Gender, PartnerStatus, ToolMode } from '@/genogram/core/types/enums';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
 import type { PersonNodeData } from '../components/nodes/PersonNode';
@@ -113,9 +109,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         // 선택 변경 → editor에 반영
         const hasSelectChange = changes.some((c) => c.type === 'select');
         if (hasSelectChange) {
-          const selectedIds = next
-            .filter((n) => n.selected)
-            .map((n) => n.id);
+          const selectedIds = next.filter((n) => n.selected).map((n) => n.id);
 
           if (selectedIds.length > 0) {
             editor.select(selectedIds, true);
@@ -176,9 +170,9 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
       if (!editor) return null;
 
       const snappedPosition = snapToDotCenter(position);
-      const existingCenters = Array.from(
-        editor.getLayout().nodes.values()
-      ).map((n) => n.position);
+      const existingCenters = Array.from(editor.getLayout().nodes.values()).map(
+        (n) => n.position
+      );
       const finalPosition = avoidCenterCollision(
         snappedPosition,
         position,

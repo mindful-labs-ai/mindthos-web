@@ -51,8 +51,6 @@ export class CompositeCommand extends BaseCommand {
   }
 
   override undo(state: EditorState): EditorState {
-    return [...this._commands]
-      .reverse()
-      .reduce((s, cmd) => cmd.undo(s), state);
+    return [...this._commands].reverse().reduce((s, cmd) => cmd.undo(s), state);
   }
 }

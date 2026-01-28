@@ -139,7 +139,11 @@ const GenogramCanvas: React.FC = () => {
           proOptions={{ hideAttribution: true }}
           {...flowInteraction}
         >
-          <Background variant={BackgroundVariant.Dots} gap={GRID_GAP} size={2} />
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={GRID_GAP}
+            size={2}
+          />
           <Controls position="bottom-left" />
 
           {/* 하단 중앙 툴바 */}

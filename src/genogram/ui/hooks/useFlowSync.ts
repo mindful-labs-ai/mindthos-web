@@ -20,9 +20,7 @@ import { NODE_SIZE_PX } from '../constants/grid';
  * - syncFromEditor(): Editor → React Flow 전체 동기화
  * - syncSelectedSubject(): 선택된 Subject 상태 동기화
  */
-export const useFlowSync = (
-  getEditor: () => GenogramEditor | null
-) => {
+export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
   const [nodes, setNodes] = useState<Node<PersonNodeData>[]>([]);
   const [edges, setEdges] = useState<Edge<RelationshipEdgeData>[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);

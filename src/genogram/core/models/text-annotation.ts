@@ -4,7 +4,7 @@ import { generateId } from '../types/types';
 
 // Annotation Style
 export interface AnnotationStyle {
-  size: typeof NodeSize[keyof typeof NodeSize];
+  size: (typeof NodeSize)[keyof typeof NodeSize];
   bgColor: string;
   textColor: string;
   borderStyle: string;

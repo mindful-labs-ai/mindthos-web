@@ -50,13 +50,11 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   }
 
   // 드롭다운 현재 값: Person이면 gender, Animal이면 SubjectType.Animal
-  const genderDropdownValue = isPerson
-    ? attr!.gender
-    : SubjectType.Animal;
+  const genderDropdownValue = isPerson ? attr!.gender : SubjectType.Animal;
 
   // 이름/사망 공통
   const displayName = isPerson ? attr!.name : animalAttr?.name;
-  const currentIsDead = isPerson ? attr!.isDead : animalAttr?.isDead ?? false;
+  const currentIsDead = isPerson ? attr!.isDead : (animalAttr?.isDead ?? false);
 
   return (
     <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-border bg-white shadow-lg">
@@ -127,7 +125,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 size="sm"
                 type="date"
                 value={attr.lifeSpan.birth ?? ''}
-                onChange={(e) => updateLifeSpan('birth', e.target.value || null)}
+                onChange={(e) =>
+                  updateLifeSpan('birth', e.target.value || null)
+                }
                 placeholder="미입력"
                 className="w-36 text-right"
               />
@@ -140,7 +140,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 size="sm"
                 type="date"
                 value={attr.lifeSpan.death ?? ''}
-                onChange={(e) => updateLifeSpan('death', e.target.value || null)}
+                onChange={(e) =>
+                  updateLifeSpan('death', e.target.value || null)
+                }
                 placeholder="미입력"
                 className="w-36 text-right"
               />
@@ -170,7 +172,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
             {/* 임상적 상태 */}
             <section>
-              <h3 className="mb-2 text-sm font-semibold text-fg">임상적 상태</h3>
+              <h3 className="mb-2 text-sm font-semibold text-fg">
+                임상적 상태
+              </h3>
               <Dropdown
                 items={CLINIC_STATUS_ITEMS}
                 value={attr.clinicStatus}
@@ -189,7 +193,10 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 <CheckBox
                   checked={attr.detail.enable}
                   onChange={(e) =>
-                    updateDetail('enable', (e.target as HTMLInputElement).checked)
+                    updateDetail(
+                      'enable',
+                      (e.target as HTMLInputElement).checked
+                    )
                   }
                 />
               </div>
@@ -206,7 +213,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                       id="job"
                       size="sm"
                       value={attr.detail.job ?? ''}
-                      onChange={(e) => updateDetail('job', e.target.value || null)}
+                      onChange={(e) =>
+                        updateDetail('job', e.target.value || null)
+                      }
                       placeholder="메모를 추가하세요."
                     />
                   </div>

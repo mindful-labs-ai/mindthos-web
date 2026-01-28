@@ -25,7 +25,7 @@ export interface NodeLayout {
   nodeId: UUID;
   position: Point;
   generation: number;
-  size: typeof NodeSize[keyof typeof NodeSize];
+  size: (typeof NodeSize)[keyof typeof NodeSize];
   zIndex: number;
   isSelected: boolean;
   isLocked: boolean;
@@ -75,10 +75,7 @@ export interface TextLayout {
   isVisible: boolean;
 }
 
-export function createTextLayout(
-  textId: UUID,
-  position: Point
-): TextLayout {
+export function createTextLayout(textId: UUID, position: Point): TextLayout {
   return {
     textId,
     position,

@@ -159,12 +159,12 @@ export class GenogramEditor {
   }
 
   // Tool Mode
-  setToolMode(mode: typeof ToolMode[keyof typeof ToolMode]): void {
+  setToolMode(mode: (typeof ToolMode)[keyof typeof ToolMode]): void {
     setInteractionToolMode(this.interaction, mode);
     this.emit('tool-change', mode);
   }
 
-  getToolMode(): typeof ToolMode[keyof typeof ToolMode] {
+  getToolMode(): (typeof ToolMode)[keyof typeof ToolMode] {
     return this.interaction.toolMode;
   }
 
@@ -213,11 +213,7 @@ export class GenogramEditor {
   }
 
   // Subject Operations
-  addSubject(
-    gender: Gender,
-    position: Point,
-    generation = 0
-  ): UUID {
+  addSubject(gender: Gender, position: Point, generation = 0): UUID {
     const cmd = new AddSubjectCommand(gender, position, generation);
     this.execute(cmd);
     return cmd.getSubjectId();
@@ -259,7 +255,7 @@ export class GenogramEditor {
   addRelationConnection(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: typeof RelationStatus[keyof typeof RelationStatus] = RelationStatus.연결
+    status: (typeof RelationStatus)[keyof typeof RelationStatus] = RelationStatus.연결
   ): UUID {
     const cmd = new AddRelationConnectionCommand(
       subjectId1,
@@ -283,13 +279,9 @@ export class GenogramEditor {
   addPartnerConnection(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: typeof PartnerStatus[keyof typeof PartnerStatus] = PartnerStatus.결혼
+    status: (typeof PartnerStatus)[keyof typeof PartnerStatus] = PartnerStatus.결혼
   ): UUID {
-    const cmd = new AddPartnerConnectionCommand(
-      subjectId1,
-      subjectId2,
-      status
-    );
+    const cmd = new AddPartnerConnectionCommand(subjectId1, subjectId2, status);
     this.execute(cmd);
     return cmd.getConnectionId();
   }

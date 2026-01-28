@@ -1,7 +1,4 @@
-import {
-  ConnectionType,
-  StrokeWidth,
-} from '../types/enums';
+import { ConnectionType, StrokeWidth } from '../types/enums';
 import type {
   InfluenceStatus,
   ParentChildStatus,
@@ -54,14 +51,14 @@ export type ConnectionAttribute =
 
 // Connection Entity
 export interface ConnectionEntity {
-  type: typeof ConnectionType[keyof typeof ConnectionType];
+  type: (typeof ConnectionType)[keyof typeof ConnectionType];
   attribute: ConnectionAttribute;
   memo: string | null;
 }
 
 // Connection Layout
 export interface ConnectionLayout {
-  strokeWidth: typeof StrokeWidth[keyof typeof StrokeWidth];
+  strokeWidth: (typeof StrokeWidth)[keyof typeof StrokeWidth];
   strokeColor: string;
   textColor: string;
 }

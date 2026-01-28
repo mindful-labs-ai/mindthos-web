@@ -15,18 +15,18 @@ import {
 import type { InfluenceStatus } from '@/genogram/core/types/enums';
 
 export interface RelationshipEdgeData {
-  connectionType: typeof ConnectionType[keyof typeof ConnectionType];
-  partnerStatus?: typeof PartnerStatus[keyof typeof PartnerStatus];
-  relationStatus?: typeof RelationStatus[keyof typeof RelationStatus];
+  connectionType: (typeof ConnectionType)[keyof typeof ConnectionType];
+  partnerStatus?: (typeof PartnerStatus)[keyof typeof PartnerStatus];
+  relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   influenceStatus?: InfluenceStatus;
   label?: string;
   [key: string]: unknown;
 }
 
 const getEdgeStyle = (
-  connectionType: typeof ConnectionType[keyof typeof ConnectionType],
-  partnerStatus?: typeof PartnerStatus[keyof typeof PartnerStatus],
-  relationStatus?: typeof RelationStatus[keyof typeof RelationStatus]
+  connectionType: (typeof ConnectionType)[keyof typeof ConnectionType],
+  partnerStatus?: (typeof PartnerStatus)[keyof typeof PartnerStatus],
+  relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus]
 ): { stroke: string; strokeWidth: number; strokeDasharray?: string } => {
   const baseStyle = { stroke: '#374151', strokeWidth: 2 };
 

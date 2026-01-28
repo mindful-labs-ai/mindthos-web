@@ -8,23 +8,24 @@ import type {
   Subject,
   SubjectStyle,
 } from '@/genogram/core/models/person';
-import {
-  ClinicStatus,
-  Gender,
-  SubjectType,
-} from '@/genogram/core/types/enums';
+import { ClinicStatus, Gender, SubjectType } from '@/genogram/core/types/enums';
 
 interface UsePropertyPanelOptions {
   subject: Subject | null;
   onUpdate: (subjectId: string, updates: Partial<Subject>) => void;
 }
 
-export const usePropertyPanel = ({ subject, onUpdate }: UsePropertyPanelOptions) => {
+export const usePropertyPanel = ({
+  subject,
+  onUpdate,
+}: UsePropertyPanelOptions) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [memoValue, setMemoValue] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
 
   const isPerson = subject?.entity.type === SubjectType.Person;
   const isAnimal = subject?.entity.type === SubjectType.Animal;
@@ -82,8 +83,12 @@ export const usePropertyPanel = ({ subject, onUpdate }: UsePropertyPanelOptions)
           entity: {
             type: SubjectType.Animal,
             attribute: {
-              name: isPerson ? attr?.name ?? null : animalAttr?.name ?? null,
-              isDead: isPerson ? attr?.isDead ?? false : animalAttr?.isDead ?? false,
+              name: isPerson
+                ? (attr?.name ?? null)
+                : (animalAttr?.name ?? null),
+              isDead: isPerson
+                ? (attr?.isDead ?? false)
+                : (animalAttr?.isDead ?? false),
             } satisfies AnimalAttribute,
             memo: subject.entity.memo,
           },
@@ -102,7 +107,12 @@ export const usePropertyPanel = ({ subject, onUpdate }: UsePropertyPanelOptions)
                 lifeSpan: { birth: null, death: null },
                 age: null,
                 clinicStatus: ClinicStatus.없음,
-                detail: { enable: false, job: null, education: null, region: null },
+                detail: {
+                  enable: false,
+                  job: null,
+                  education: null,
+                  region: null,
+                },
               } satisfies PersonAttribute,
               memo: subject.entity.memo,
             },
