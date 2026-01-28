@@ -14,11 +14,9 @@ export const LockedFeatureModal: React.FC<LockedFeatureModalProps> = React.memo(
     return (
       <Modal open={open} onOpenChange={onOpenChange} className="max-w-md">
         <div className="flex flex-col items-center py-4">
-
           <Title as="h2" className="mb-8 text-center font-bold text-fg">
             출시 예정 기능
           </Title>
-
 
           <div className="mb-6 flex flex-col items-center">
             <Title as="h3" className="mb-4 text-center font-bold text-fg">
@@ -30,7 +28,6 @@ export const LockedFeatureModal: React.FC<LockedFeatureModalProps> = React.memo(
               소식을 알려드릴게요.
             </Text>
           </div>
-
 
           <div className="flex w-full max-w-[375px] gap-2 pt-2">
             <button
