@@ -11,9 +11,9 @@ import {
   Type,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui';
-import { Tooltip } from '@/components/ui/composites/Tooltip';
 import { ToolMode } from '@/genogram/core/types/enums';
+
+import { SimpleTooltip } from './common/SimpleTooltip';
 
 type ToolModeValue = (typeof ToolMode)[keyof typeof ToolMode];
 
@@ -58,17 +58,20 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
             const Icon = tool.icon;
             const isActive = toolMode === tool.mode;
             return (
-              <Tooltip key={tool.mode} content={tool.label}>
-                <Button
-                  size="sm"
-                  variant={isActive ? 'soft' : 'ghost'}
-                  tone={isActive ? 'primary' : 'neutral'}
+              <SimpleTooltip key={tool.mode} content={tool.label}>
+                <button
+                  type="button"
+                  className={`inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-fg hover:bg-surface-contrast'
+                  }`}
                   onClick={() => onToolModeChange(tool.mode)}
                   aria-pressed={isActive}
                 >
                   <Icon size={18} />
-                </Button>
-              </Tooltip>
+                </button>
+              </SimpleTooltip>
             );
           })}
         </React.Fragment>
@@ -76,22 +79,24 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
 
       {/* 액션 그룹 */}
       <div className="mx-1 h-6 w-px bg-border" />
-      <Tooltip content="태그">
-        <Button size="sm" variant="ghost" tone="neutral">
+      <SimpleTooltip content="태그">
+        <button
+          type="button"
+          className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+        >
           <Tag size={18} />
-        </Button>
-      </Tooltip>
-      <Tooltip content="삭제">
-        <Button
-          size="sm"
-          variant="ghost"
-          tone="danger"
+        </button>
+      </SimpleTooltip>
+      <SimpleTooltip content="삭제">
+        <button
+          type="button"
+          className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
           onClick={onDelete}
           disabled={!hasSelection}
         >
           <Trash2 size={18} />
-        </Button>
-      </Tooltip>
+        </button>
+      </SimpleTooltip>
     </div>
   );
 };

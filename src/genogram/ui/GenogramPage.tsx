@@ -9,29 +9,23 @@ import {
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { ClipboardCopy, RotateCcw, RotateCw } from 'lucide-react';
 
-import { Button, Title } from '@/components/ui';
 import { Gender } from '@/genogram/core/types/enums';
-import { PlusIcon } from '@/shared/icons';
 
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
+import { EmptyStatePanel } from './components/EmptyStatePanel';
+import { GenogramHeader } from './components/GenogramHeader';
 import { GenogramPropertyPanel } from './components/GenogramPropertyPanel';
 import { GenogramToolbar } from './components/GenogramToolbar';
+import { GhostPreview } from './components/GhostPreview';
 import { PersonNode } from './components/nodes/PersonNode';
-import { GHOST_NODE_SIZE, GRID_GAP } from './constants/grid';
+import { GRID_GAP } from './constants/grid';
 import { useCanvasInteraction } from './hooks/useCanvasInteraction';
 import { useGenogramFlow } from './hooks/useGenogramFlow';
 
-// 커스텀 노드 타입 등록
-const nodeTypes = {
-  person: PersonNode,
-};
-
-// 커스텀 엣지 타입 등록
-const edgeTypes = {
-  relationship: RelationshipEdge,
-};
+// 커스텀 노드/엣지 타입 등록
+const nodeTypes = { person: PersonNode };
+const edgeTypes = { relationship: RelationshipEdge };
 
 const GenogramCanvas: React.FC = () => {
   const {
@@ -82,38 +76,12 @@ const GenogramCanvas: React.FC = () => {
 
   return (
     <div className="flex h-full flex-col">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-4">
-        <Title as="h1" className="text-xl font-bold">
-          가계도
-        </Title>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCopyJSON}
-            icon={<ClipboardCopy size={16} />}
-          >
-            {copied ? '복사됨' : 'JSON 복사'}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={undo}
-            icon={<RotateCcw size={16} />}
-          >
-            실행취소
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={redo}
-            icon={<RotateCw size={16} />}
-          >
-            다시실행
-          </Button>
-        </div>
-      </div>
+      <GenogramHeader
+        copied={copied}
+        onCopyJSON={handleCopyJSON}
+        onUndo={undo}
+        onRedo={redo}
+      />
 
       {/* 캔버스 영역 */}
       <div
@@ -133,9 +101,7 @@ const GenogramCanvas: React.FC = () => {
           nodeOrigin={[0.5, 0.5]}
           fitView
           snapToGrid={false}
-          defaultEdgeOptions={{
-            type: 'relationship',
-          }}
+          defaultEdgeOptions={{ type: 'relationship' }}
           proOptions={{ hideAttribution: true }}
           {...flowInteraction}
         >
@@ -157,55 +123,11 @@ const GenogramCanvas: React.FC = () => {
           </Panel>
 
           {/* 빈 상태 안내 */}
-          {nodes.length === 0 && (
-            <Panel
-              position="top-center"
-              className="mt-20 flex flex-col items-center gap-4"
-            >
-              <div className="rounded-lg border border-dashed border-border bg-white/80 p-8 text-center backdrop-blur-sm">
-                <div className="mb-4 flex justify-center">
-                  <PlusIcon size={32} className="text-fg-muted" />
-                </div>
-                <p className="mb-2 font-medium text-fg">가계도를 시작하세요</p>
-                <p className="text-sm text-fg-muted">
-                  하단 도구에서 구성원 추가를 선택한 후
-                  <br />
-                  캔버스를 클릭하여 추가합니다
-                </p>
-              </div>
-            </Panel>
-          )}
+          {nodes.length === 0 && <EmptyStatePanel />}
         </ReactFlow>
 
         {/* CreateNode 모드: ghost 미리보기 */}
-        {isCreateMode && ghostPos && (
-          <div
-            className="pointer-events-none absolute z-20"
-            style={{
-              left: ghostPos.x - GHOST_NODE_SIZE / 2,
-              top: ghostPos.y - GHOST_NODE_SIZE / 2,
-            }}
-          >
-            <svg
-              width={GHOST_NODE_SIZE}
-              height={GHOST_NODE_SIZE}
-              viewBox={`0 0 ${GHOST_NODE_SIZE} ${GHOST_NODE_SIZE}`}
-              opacity={0.5}
-            >
-              <rect
-                x="2"
-                y="2"
-                width={GHOST_NODE_SIZE - 4}
-                height={GHOST_NODE_SIZE - 4}
-                fill="#ffffff"
-                stroke="#374151"
-                strokeWidth={1.5}
-                strokeDasharray="4 3"
-                rx="2"
-              />
-            </svg>
-          </div>
-        )}
+        {isCreateMode && ghostPos && <GhostPreview position={ghostPos} />}
 
         {/* 우측 속성 편집 패널 */}
         <GenogramPropertyPanel

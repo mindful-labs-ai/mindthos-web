@@ -321,7 +321,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
       {/* 오른쪽: 상세정보 */}
       {hasDetail && (
         <div
-          className="absolute top-0 whitespace-nowrap text-xs text-fg-muted"
+          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs text-fg"
           style={{ left: S + 8 }}
         >
           {detailTexts.map((text) => (
