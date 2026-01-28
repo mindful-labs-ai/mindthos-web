@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 
 import type { TabItem } from '@/components/ui/atoms/Tab';
 import { Tab } from '@/components/ui/atoms/Tab';
@@ -27,6 +27,8 @@ import type {
   ClientAnalysisVersion,
 } from '../types/clientAnalysis.types';
 
+import { LockedFeatureModal } from './LockedFeatureModal';
+
 interface ClientAnalysisTabProps {
   analyses: ClientAnalysisVersion[];
   isLoading?: boolean;
@@ -49,6 +51,11 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   );
   const [activeTab, setActiveTab] = useState<string>('ai_supervision');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [isLockedModalOpen, setIsLockedModalOpen] = useState(false);
+
+  const handleDisabledTabClick = useCallback(() => {
+    setIsLockedModalOpen(true);
+  }, []);
 
   // 현재 표시할 버전 계산
   const selectedVersion = useMemo(() => {
@@ -285,18 +292,9 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       label: (
         <span className="flex items-center gap-1.5">
           프로파일링
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M11.0827 4.914V4.08332C11.0827 1.82818 9.25452 0 6.99934 0C4.74416 0 2.91602 1.82818 2.91602 4.08332V4.914C1.85437 5.37734 1.16755 6.42499 1.16602 7.58332V11.0833C1.16793 12.6934 2.47264 13.9981 4.08266 14H9.91599C11.526 13.9981 12.8307 12.6934 12.8327 11.0833V7.58332C12.8312 6.42499 12.1443 5.37734 11.0827 4.914ZM7.58266 9.91668C7.58266 10.2388 7.3215 10.5 6.99934 10.5C6.67718 10.5 6.41602 10.2388 6.41602 9.91668V8.75C6.41602 8.42784 6.67718 8.16668 6.99934 8.16668C7.3215 8.16668 7.58266 8.42784 7.58266 8.75V9.91668ZM9.91602 4.66668H4.08266V4.08335C4.08266 2.47253 5.38849 1.16668 6.99934 1.16668C8.61019 1.16668 9.91602 2.4725 9.91602 4.08335V4.66668Z"
-              fill="#C6C5D5"
-            />
-          </svg>
+          <div className="flex items-center rounded-md bg-fg-muted p-1">
+            <span className="text-xs font-bold text-surface">준비 중</span>
+          </div>
         </span>
       ),
       disabled: true,
@@ -306,7 +304,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       label: (
         <span className="flex items-center gap-1.5">
           심리치료계획
-          <svg
+          <div className="flex items-center rounded-md bg-fg-muted p-1">
+            <span className="text-xs font-bold text-surface">준비 중</span>
+          </div>
+          {/* <svg
             width="14"
             height="14"
             viewBox="0 0 14 14"
@@ -317,7 +318,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               d="M11.0827 4.914V4.08332C11.0827 1.82818 9.25452 0 6.99934 0C4.74416 0 2.91602 1.82818 2.91602 4.08332V4.914C1.85437 5.37734 1.16755 6.42499 1.16602 7.58332V11.0833C1.16793 12.6934 2.47264 13.9981 4.08266 14H9.91599C11.526 13.9981 12.8307 12.6934 12.8327 11.0833V7.58332C12.8312 6.42499 12.1443 5.37734 11.0827 4.914ZM7.58266 9.91668C7.58266 10.2388 7.3215 10.5 6.99934 10.5C6.67718 10.5 6.41602 10.2388 6.41602 9.91668V8.75C6.41602 8.42784 6.67718 8.16668 6.99934 8.16668C7.3215 8.16668 7.58266 8.42784 7.58266 8.75V9.91668ZM9.91602 4.66668H4.08266V4.08335C4.08266 2.47253 5.38849 1.16668 6.99934 1.16668C8.61019 1.16668 9.91602 2.4725 9.91602 4.08335V4.66668Z"
               fill="#C6C5D5"
             />
-          </svg>
+          </svg> */}
         </span>
       ),
       disabled: true,
@@ -336,6 +337,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               items={tabItems}
               value={activeTab}
               onValueChange={setActiveTab}
+              onDisabledClick={handleDisabledTabClick}
               variant="underline"
               size="md"
             />
@@ -372,6 +374,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             </button>
           )}
         </div>
+        <LockedFeatureModal
+          open={isLockedModalOpen}
+          onOpenChange={setIsLockedModalOpen}
+        />
       </div>
     );
   }
@@ -389,6 +395,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               trackEvent('analysis_tab_change', { tab: value });
               setActiveTab(value);
             }}
+            onDisabledClick={handleDisabledTabClick}
             variant="underline"
             size="md"
           />
@@ -443,6 +450,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             renderAnalysisContent(currentAnalysis.ai_supervision)}
         </div>
       </Spotlight>
+      <LockedFeatureModal
+        open={isLockedModalOpen}
+        onOpenChange={setIsLockedModalOpen}
+      />
     </div>
   );
 };
