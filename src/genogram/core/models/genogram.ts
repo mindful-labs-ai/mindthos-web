@@ -131,9 +131,9 @@ export function removeAnnotation(genogram: Genogram, annotationId: UUID): void {
 export interface SerializedGenogram {
   id: string;
   metadata: GenogramMetadata;
-  subjects: [string, Subject][];
-  connections: [string, Connection][];
-  annotations: [string, Annotation][];
+  subjects: Subject[];
+  connections: Connection[];
+  annotations: Annotation[];
   view: GenogramView;
 }
 
@@ -141,9 +141,9 @@ export function serializeGenogram(genogram: Genogram): SerializedGenogram {
   return {
     id: genogram.id,
     metadata: genogram.metadata,
-    subjects: Array.from(genogram.subjects.entries()),
-    connections: Array.from(genogram.connections.entries()),
-    annotations: Array.from(genogram.annotations.entries()),
+    subjects: Array.from(genogram.subjects.values()),
+    connections: Array.from(genogram.connections.values()),
+    annotations: Array.from(genogram.annotations.values()),
     view: genogram.view,
   };
 }
@@ -156,9 +156,9 @@ export function deserializeGenogram(data: SerializedGenogram): Genogram {
       createdAt: new Date(data.metadata.createdAt),
       updatedAt: new Date(data.metadata.updatedAt),
     },
-    subjects: new Map(data.subjects),
-    connections: new Map(data.connections),
-    annotations: new Map(data.annotations),
+    subjects: new Map(data.subjects.map((s) => [s.id, s])),
+    connections: new Map(data.connections.map((c) => [c.id, c])),
+    annotations: new Map(data.annotations.map((a) => [a.id, a])),
     view: data.view,
   };
 }

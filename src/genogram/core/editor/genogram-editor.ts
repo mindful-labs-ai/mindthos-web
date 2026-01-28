@@ -218,17 +218,7 @@ export class GenogramEditor {
     position: Point,
     generation = 0
   ): UUID {
-    const snapped = this.state.layout.canvas.gridSnap
-      ? this.layoutEngine.snapToGrid(
-          position,
-          this.state.layout.canvas.gridSize
-        )
-      : position;
-
-    const nodes = Array.from(this.state.layout.nodes.values());
-    const finalPos = this.layoutEngine.findNonCollidingPosition(snapped, nodes);
-
-    const cmd = new AddSubjectCommand(gender, finalPos, generation);
+    const cmd = new AddSubjectCommand(gender, position, generation);
     this.execute(cmd);
     return cmd.getSubjectId();
   }
@@ -598,7 +588,7 @@ export class GenogramEditor {
   }
 
   toJSON(): string {
-    return JSON.stringify(this.serialize());
+    return JSON.stringify(serializeGenogram(this.state.genogram), null, 2);
   }
 
   fromJSON(json: string): void {

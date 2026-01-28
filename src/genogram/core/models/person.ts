@@ -43,11 +43,6 @@ export interface SubjectEntity {
   memo: string | null;
 }
 
-// Subject Layout
-export interface SubjectLayout {
-  center: Point;
-}
-
 // Subject Style
 export interface SubjectStyle {
   size: typeof NodeSize[keyof typeof NodeSize];
@@ -55,12 +50,17 @@ export interface SubjectStyle {
   textColor: string;
 }
 
+// Subject Layout (style은 layout 하위)
+export interface SubjectLayout {
+  center: Point;
+  style: SubjectStyle;
+}
+
 // Subject
 export interface Subject {
   id: UUID;
   entity: SubjectEntity;
   layout: SubjectLayout;
-  style: SubjectStyle;
 }
 
 export function createPersonSubject(
@@ -88,11 +88,13 @@ export function createPersonSubject(
       } satisfies PersonAttribute,
       memo: null,
     },
-    layout: { center: position },
-    style: {
-      size: NodeSize.Default,
-      bgColor: '#FFFFFF',
-      textColor: '#000000',
+    layout: {
+      center: position,
+      style: {
+        size: NodeSize.Default,
+        bgColor: '#FFFFFF',
+        textColor: '#000000',
+      },
     },
   };
 }
@@ -111,11 +113,13 @@ export function createAnimalSubject(
       } satisfies AnimalAttribute,
       memo: null,
     },
-    layout: { center: position },
-    style: {
-      size: NodeSize.Default,
-      bgColor: '#FFFFFF',
-      textColor: '#000000',
+    layout: {
+      center: position,
+      style: {
+        size: NodeSize.Default,
+        bgColor: '#FFFFFF',
+        textColor: '#000000',
+      },
     },
   };
 }

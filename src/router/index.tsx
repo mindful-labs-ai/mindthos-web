@@ -8,7 +8,6 @@ import { ClientListPage } from '@/feature/client/page/ClientListPage';
 import ErrorPage from '@/feature/error/page/ErrorPage';
 import ErrorTestPage from '@/feature/error/page/ErrorTestPage';
 import NotFoundPage from '@/feature/error/page/NotFoundPage';
-import { GenogramPage } from '@/feature/genogram/page/GenogramPage';
 import HomePage from '@/feature/home/page/HomePage';
 import { PaymentFail } from '@/feature/payment/components/PaymentFail';
 import { PaymentSuccess } from '@/feature/payment/components/PaymentSuccess';
@@ -17,6 +16,7 @@ import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
+import { GenogramPage } from '@/genogram';
 
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';

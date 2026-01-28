@@ -11,9 +11,9 @@ export interface LayoutConfig {
 }
 
 const DEFAULT_CONFIG: LayoutConfig = {
-  nodeWidth: 40,
-  nodeHeight: 40,
-  horizontalGap: 60,
+  nodeWidth: 60,
+  nodeHeight: 60,
+  horizontalGap: 80,
   verticalGap: 80,
   generationHeight: 120,
 };

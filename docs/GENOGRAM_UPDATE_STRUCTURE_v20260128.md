@@ -10,21 +10,11 @@ UI 상의 자동 레이아웃, 선택/편집/스타일 변경, 복합 커맨드 
 
 ### 1. 핵심 설계 원칙 (Design Principles)
 
-1.1 트리 구조를 사용하지 않는다
-	•	가계도는 다중 부모, 재결합, 이혼, 재혼, 그룹 관계를 포함
-	•	단일 부모-자식 트리로는 표현 불가능
-	•	따라서 Graph 모델을 기본으로 채택
-
-1.2 Domain(의미)과 UI 계산은 분리하되, 데이터는 단일 소스 유지
-	•	subjects, connections는 의미 모델
-	•	layout, view는 표현 모델
-	•	layout은 캐시/계산 대상이며, domain을 오염시키지 않음
-
-1.3 연결선(Connection)은 “편집 가능한 객체”
-	•	선택 가능
-	•	스타일 변경 가능
-	•	내부 텍스트(memo) 포함 가능
-→ 따라서 Connection도 1급 엔티티
+1. 모든 구성 요소는 Domain 과 Layout 분리
+  • `entity`(데이터)와 `layout`(렌더링 정보) 분리된 객체지향모델
+    • `entity`: 의미 모델. 데이터 자체의 의미 및 속성
+    • `layout`: 표현 모델. UI 렌더링 및 배치 정보
+  • layout은 domain을 참조하지만, domain은 layout에 의존하지 않음 (중요)
 
 ---
 
@@ -33,6 +23,7 @@ UI 상의 자동 레이아웃, 선택/편집/스타일 변경, 복합 커맨드 
 ```
 genogram:
   version: v1
+  metadata:        # user_id, created_at, updated_at등 
   subjects:        # 노드 (Person, Animal)
   connections:     # 엣지 (관계선)
   annotation:      # 자유 주석 (텍스트 박스)
@@ -65,10 +56,10 @@ SubjectType = 'Person' | 'Animal'
     memo: string | null
   layout:
     center: { x: number, y: number }
-  style:
-    size: 'small' | 'default' | 'large'
-    bgColor: string
-    textColor: string
+    style:
+      size: 'small' | 'default' | 'large'
+      bgColor: string
+      textColor: string
 ```
 
 3.4 Person Attribute
@@ -273,12 +264,12 @@ layout:
   text: string
   layout:
     center: { x: number, y: number }
-  style:
-    size: 'small' | 'default' | 'large'
-    bgColor: string
-    textColor: string
-    borderStyle: string
-    borderColor: string
+    style:
+      size: 'small' | 'default' | 'large'
+      bgColor: string
+      textColor: string
+      borderStyle: string
+      borderColor: string
 ```
 
 	•	도형과 독립된 레이어

@@ -14,8 +14,8 @@ export function createCanvasState(): CanvasState {
   return {
     zoomLevel: 1.0,
     offset: { x: 0, y: 0 },
-    gridSnap: true,
-    gridSize: 20,
+    gridSnap: false,
+    gridSize: 30,
     backgroundColor: '#FFFFFF',
   };
 }
