@@ -44,6 +44,41 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     icon: <LayersIcon size={18} />,
   },
   {
+    path: ROUTES.GENOGRAM,
+    label: '가계도',
+    value: 'genogram',
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          x="1"
+          y="1"
+          width="8.88889"
+          height="8.88889"
+          rx="1.11111"
+          fill="currentColor"
+        />
+        <circle cx="18.9444" cy="5.44444" r="4.44444" fill="currentColor" />
+        <circle cx="11.9444" cy="18.4444" r="4.44444" fill="currentColor" />
+        <path
+          d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <path
+          d="M12 12.1094V14.3316"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+      </svg>
+    ),
+  },
+  {
     path: ROUTES.SETTINGS,
     label: '설정',
     value: 'settings',
@@ -85,9 +120,9 @@ export const getRouteLabel = (path: string): string => {
   return item?.label || path;
 };
 
-// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿)
+// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿, 가계도)
 export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['home', 'client', 'sessions', 'template'].includes(item.value)
+  ['home', 'client', 'sessions', 'template', 'genogram'].includes(item.value)
 ).map((item) => ({
   icon: item.icon,
   label: item.label,

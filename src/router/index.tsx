@@ -16,6 +16,7 @@ import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
+import { GenogramPage } from '@/genogram';
 
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';
@@ -66,6 +67,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.TEMPLATE,
             element: <TemplateListPage />,
+          },
+          {
+            path: ROUTES.GENOGRAM,
+            element: <GenogramPage />,
           },
           {
             path: ROUTES.SETTINGS,

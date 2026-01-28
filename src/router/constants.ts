@@ -17,6 +17,7 @@ export const ROUTES = {
   PAYMENT_FAIL: '/payment/fail',
   ERROR_TEST: '/error-test',
   NOT_FOUND: '*',
+  GENOGRAM: '/genogram',
 } as const;
 
 export const TERMS_TYPES = {
