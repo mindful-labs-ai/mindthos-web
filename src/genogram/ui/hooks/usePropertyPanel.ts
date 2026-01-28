@@ -101,7 +101,7 @@ export const usePropertyPanel = ({ subject, onUpdate }: UsePropertyPanelOptions)
                 isDead: animalAttr?.isDead ?? false,
                 lifeSpan: { birth: null, death: null },
                 age: null,
-                clinicStatus: ClinicStatus.None,
+                clinicStatus: ClinicStatus.없음,
                 detail: { enable: false, job: null, education: null, region: null },
               } satisfies PersonAttribute,
               memo: subject.entity.memo,

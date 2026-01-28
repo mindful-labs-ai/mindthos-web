@@ -62,7 +62,7 @@ const GenogramCanvas: React.FC = () => {
   } = useCanvasInteraction({
     toolMode,
     addPerson,
-    defaultGender: Gender.Male,
+    defaultGender: Gender.남성,
   });
 
   const [copied, setCopied] = useState(false);

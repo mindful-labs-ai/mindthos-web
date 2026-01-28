@@ -30,43 +30,43 @@ const getEdgeStyle = (
 ): { stroke: string; strokeWidth: number; strokeDasharray?: string } => {
   const baseStyle = { stroke: '#374151', strokeWidth: 2 };
 
-  if (connectionType === ConnectionType.Partner) {
+  if (connectionType === ConnectionType.파트너선) {
     switch (partnerStatus) {
-      case PartnerStatus.Married:
+      case PartnerStatus.결혼:
         return { ...baseStyle, strokeWidth: 2 };
-      case PartnerStatus.Divorced:
+      case PartnerStatus.이혼:
         return { ...baseStyle, strokeDasharray: '5,5' };
-      case PartnerStatus.Separated:
+      case PartnerStatus.별거:
         return { ...baseStyle, strokeDasharray: '10,5' };
-      case PartnerStatus.Dating:
+      case PartnerStatus.연애:
         return { ...baseStyle, strokeDasharray: '2,2' };
       default:
         return baseStyle;
     }
   }
 
-  if (connectionType === ConnectionType.ParentChild) {
+  if (connectionType === ConnectionType.부모자식선) {
     return baseStyle;
   }
 
-  if (connectionType === ConnectionType.Relation) {
+  if (connectionType === ConnectionType.관계선) {
     switch (relationStatus) {
-      case RelationStatus.Close:
+      case RelationStatus.친밀:
         return { stroke: '#22c55e', strokeWidth: 2 };
-      case RelationStatus.Combination:
+      case RelationStatus.융합:
         return { stroke: '#22c55e', strokeWidth: 3 };
-      case RelationStatus.Estranged:
+      case RelationStatus.소원:
         return { stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '5,5' };
-      case RelationStatus.Hostility:
+      case RelationStatus.적대:
         return { stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '8,4' };
-      case RelationStatus.CloseHostility:
+      case RelationStatus.친밀적대:
         return { stroke: '#ef4444', strokeWidth: 2 };
       default:
         return { ...baseStyle, stroke: '#6b7280' };
     }
   }
 
-  if (connectionType === ConnectionType.Influence) {
+  if (connectionType === ConnectionType.영향선) {
     return { stroke: '#dc2626', strokeWidth: 3 };
   }
 
@@ -99,7 +99,7 @@ export const RelationshipEdge = memo(
     });
 
     const style = getEdgeStyle(
-      connectionType || ConnectionType.Partner,
+      connectionType || ConnectionType.파트너선,
       partnerStatus,
       relationStatus
     );

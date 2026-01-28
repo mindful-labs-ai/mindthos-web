@@ -23,7 +23,7 @@ export class AddRelationConnectionCommand extends BaseCommand {
   constructor(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: RelationStatus = RelationStatus.Link
+    status: RelationStatus = RelationStatus.연결
   ) {
     super();
     this.connection = createRelationConnection(subjectId1, subjectId2, status);
@@ -91,7 +91,7 @@ export class AddPartnerConnectionCommand extends BaseCommand {
   constructor(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: PartnerStatus = PartnerStatus.Married
+    status: PartnerStatus = PartnerStatus.결혼
   ) {
     super();
     this.connection = createPartnerConnection(subjectId1, subjectId2, status);

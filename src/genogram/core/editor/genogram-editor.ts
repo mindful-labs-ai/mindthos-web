@@ -259,7 +259,7 @@ export class GenogramEditor {
   addRelationConnection(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: typeof RelationStatus[keyof typeof RelationStatus] = RelationStatus.Link
+    status: typeof RelationStatus[keyof typeof RelationStatus] = RelationStatus.연결
   ): UUID {
     const cmd = new AddRelationConnectionCommand(
       subjectId1,
@@ -283,7 +283,7 @@ export class GenogramEditor {
   addPartnerConnection(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: typeof PartnerStatus[keyof typeof PartnerStatus] = PartnerStatus.Married
+    status: typeof PartnerStatus[keyof typeof PartnerStatus] = PartnerStatus.결혼
   ): UUID {
     const cmd = new AddPartnerConnectionCommand(
       subjectId1,
@@ -418,7 +418,7 @@ export class GenogramEditor {
     updateMousePosition(this.interaction, point);
 
     switch (mode) {
-      case ToolMode.Select:
+      case ToolMode.단일선택도구:
         if (node) {
           if (!node.isSelected) {
             this.select([node.nodeId]);
@@ -432,21 +432,21 @@ export class GenogramEditor {
         }
         break;
 
-      case ToolMode.MultiSelect:
+      case ToolMode.다중선택도구:
         startSelectionBox(this.interaction, point);
         break;
 
-      case ToolMode.Pan:
+      case ToolMode.이동도구:
         startDrag(this.interaction, point, []);
         break;
 
-      case ToolMode.Connect:
+      case ToolMode.관계추가도구:
         if (node) {
           startConnectionPreview(this.interaction, node.nodeId, node.position);
         }
         break;
 
-      case ToolMode.CreateNode:
+      case ToolMode.인물추가도구:
         showNodeCreationPreview(this.interaction, point);
         break;
     }
@@ -505,7 +505,7 @@ export class GenogramEditor {
           });
           this.moveMultipleSubjects(moves);
         }
-      } else if (mode === ToolMode.Pan && result) {
+      } else if (mode === ToolMode.이동도구 && result) {
         const dx = result.endPoint.x - result.startPoint.x;
         const dy = result.endPoint.y - result.startPoint.y;
         const current = this.state.layout.canvas.offset;

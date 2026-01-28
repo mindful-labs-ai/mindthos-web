@@ -6,80 +6,83 @@ export const SubjectType = {
 export type SubjectType = (typeof SubjectType)[keyof typeof SubjectType];
 
 export const Gender = {
-  Male: 'MALE',
-  Female: 'FEMALE',
-  Gay: 'GAY',
-  Lesbian: 'LESBIAN',
-  TransMale: 'TRANS_MALE',
-  TransFemale: 'TRANS_FEMALE',
-  NonBinary: 'NON_BINARY',
+  남성: '남성',
+  여성: '여성',
+  게이: '게이',
+  레즈비언: '레즈비언',
+  트랜스젠더_남성: '트랜스젠더_남성',
+  트랜스젠더_여성: '트랜스젠더_여성',
+  논바이너리: '논바이너리',
 } as const;
 export type Gender = (typeof Gender)[keyof typeof Gender];
 
 export const ClinicStatus = {
-  None: 'NONE',
-  PsychPhysicalProblem: 'PSYCH_PHYSICAL_PROBLEM',
-  SubstanceAbuse: 'SUBSTANCE_ABUSE',
-  SuspectedSubstanceAbuse: 'SUSPECTED_SUBSTANCE_ABUSE',
-  RemissionPsychPhysical: 'REMISSION_PSYCH_PHYSICAL',
-  SubstanceRemissionWithProblem: 'SUBSTANCE_REMISSION_WITH_PROBLEM',
-  RecoveringSubstanceAbuse: 'RECOVERING_SUBSTANCE_ABUSE',
-  SevereMultipleProblems: 'SEVERE_MULTIPLE_PROBLEMS',
-  RecoveringMultipleProblems: 'RECOVERING_MULTIPLE_PROBLEMS',
+  없음: '없음',
+  심리적_신체적_문제: '심리적_신체적_문제',
+  알코올_약물_남용: '알코올_약물_남용',
+  알코올_약물_남용_의심: '알코올_약물_남용_의심',
+  완화된_심리적_신체적_문제: '완화된_심리적_신체적_문제',
+  완화된_알코올_약물_문제와_심리적_신체적_문제:
+    '완화된_알코올_약물_문제와_심리적_신체적_문제',
+  알코올_약물_문제_회복_중: '알코올_약물_문제_회복_중',
+  심각한_심리적_신체적_질환과_심각한_알코올_약물_문제:
+    '심각한_심리적_신체적_질환과_심각한_알코올_약물_문제',
+  심리적_신체적_질환과_심각한_알코올_약물_문제_회복_중:
+    '심리적_신체적_질환과_심각한_알코올_약물_문제_회복_중',
 } as const;
 export type ClinicStatus = (typeof ClinicStatus)[keyof typeof ClinicStatus];
 
 // Connection
 export const ConnectionType = {
-  Relation: 'RELATION',
-  Influence: 'INFLUENCE',
-  Partner: 'PARTNER',
-  ParentChild: 'PARENT_CHILD',
-  Group: 'GROUP',
+  관계선: '관계선',
+  영향선: '영향선',
+  파트너선: '파트너선',
+  부모자식선: '부모자식선',
+  그룹선: '그룹선',
 } as const;
 export type ConnectionType =
   (typeof ConnectionType)[keyof typeof ConnectionType];
 
 export const RelationStatus = {
-  Link: 'LINK',
-  Close: 'CLOSE',
-  Combination: 'COMBINATION',
-  Estranged: 'ESTRANGED',
-  Hostility: 'HOSTILITY',
-  CloseHostility: 'CLOSE_HOSTILITY',
+  연결: '연결',
+  친밀: '친밀',
+  융합: '융합',
+  소원: '소원',
+  적대: '적대',
+  친밀적대: '친밀적대',
 } as const;
 export type RelationStatus =
   (typeof RelationStatus)[keyof typeof RelationStatus];
 
 export const InfluenceStatus = {
-  PhysicalAbuse: 'PHYSICAL_ABUSE',
-  MentalAbuse: 'MENTAL_ABUSE',
-  SexualAbuse: 'SEXUAL_ABUSE',
-  Focus: 'FOCUS',
-  NegativeFocus: 'NEGATIVE_FOCUS',
+  신체적학대: '신체적학대',
+  정신적학대: '정신적학대',
+  성적학대: '성적학대',
+  집중됨: '집중됨',
+  부정적집중됨: '부정적집중됨',
 } as const;
 export type InfluenceStatus =
   (typeof InfluenceStatus)[keyof typeof InfluenceStatus];
 
 export const PartnerStatus = {
-  Married: 'MARRIED',
-  Separated: 'SEPARATED',
-  Divorced: 'DIVORCED',
-  Reunited: 'REUNITED',
-  Dating: 'DATING',
-  SecretDating: 'SECRET_DATING',
+  결혼: '결혼',
+  별거: '별거',
+  이혼: '이혼',
+  재결합: '재결합',
+  연애: '연애',
+  비밀연애: '비밀연애',
 } as const;
-export type PartnerStatus =
-  (typeof PartnerStatus)[keyof typeof PartnerStatus];
+export type PartnerStatus = (typeof PartnerStatus)[keyof typeof PartnerStatus];
 
 export const ParentChildStatus = {
-  Biological: 'BIOLOGICAL',
-  Miscarriage: 'MISCARRIAGE',
-  Abortion: 'ABORTION',
-  Twins: 'TWINS',
-  IdenticalTwins: 'IDENTICAL_TWINS',
-  AdoptedChild: 'ADOPTED_CHILD',
-  FosterChild: 'FOSTER_CHILD',
+  친자녀: '친자녀',
+  유산: '유산',
+  낙태: '낙태',
+  임신: '임신',
+  쌍둥이: '쌍둥이',
+  일란성쌍둥이: '일란성쌍둥이',
+  입양자녀: '입양자녀',
+  위탁자녀: '위탁자녀',
 } as const;
 export type ParentChildStatus =
   (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
@@ -101,12 +104,12 @@ export type StrokeWidth = (typeof StrokeWidth)[keyof typeof StrokeWidth];
 
 // Editor
 export const ToolMode = {
-  Select: 'SELECT',
-  MultiSelect: 'MULTI_SELECT',
-  Pan: 'PAN',
-  CreateNode: 'CREATE_NODE',
-  Connect: 'CONNECT',
-  CreateText: 'CREATE_TEXT',
+  단일선택도구: '단일선택도구',
+  다중선택도구: '다중선택도구',
+  이동도구: '이동도구',
+  인물추가도구: '인물추가도구',
+  관계추가도구: '관계추가도구',
+  주석달기도구: '주석달기도구',
 } as const;
 export type ToolMode = (typeof ToolMode)[keyof typeof ToolMode];
 

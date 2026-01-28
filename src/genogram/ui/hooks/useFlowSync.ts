@@ -121,7 +121,7 @@ export const useFlowSync = (
         data: {
           connectionType: conn.entity.type,
           partnerStatus:
-            conn.entity.type === ConnectionType.Partner && 'status' in attr
+            conn.entity.type === ConnectionType.파트너선 && 'status' in attr
               ? (attr.status as (typeof PartnerStatus)[keyof typeof PartnerStatus])
               : undefined,
         },
