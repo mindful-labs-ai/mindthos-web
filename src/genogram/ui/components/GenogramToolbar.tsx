@@ -25,14 +25,14 @@ interface ToolItem {
 
 const TOOL_GROUPS: ToolItem[][] = [
   [
-    { mode: ToolMode.단일선택도구, icon: MousePointer2, label: '선택' },
-    { mode: ToolMode.이동도구, icon: Move, label: '이동' },
-    { mode: ToolMode.다중선택도구, icon: BoxSelect, label: '다중 선택' },
+    { mode: ToolMode.Select_Tool, icon: MousePointer2, label: '선택' },
+    { mode: ToolMode.Pan_Tool, icon: Move, label: '이동' },
+    { mode: ToolMode.Multi_Select_Tool, icon: BoxSelect, label: '다중 선택' },
   ],
   [
-    { mode: ToolMode.인물추가도구, icon: Square, label: '구성원 추가' },
-    { mode: ToolMode.관계추가도구, icon: Slash, label: '관계 연결' },
-    { mode: ToolMode.주석달기도구, icon: Type, label: '텍스트 추가' },
+    { mode: ToolMode.Create_Subject_Tool, icon: Square, label: '구성원 추가' },
+    { mode: ToolMode.Create_Connection_Tool, icon: Slash, label: '관계 연결' },
+    { mode: ToolMode.Create_Annotation_Tool, icon: Type, label: '텍스트 추가' },
   ],
 ];
 

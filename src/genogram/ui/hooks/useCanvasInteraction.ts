@@ -29,12 +29,12 @@ export const useCanvasInteraction = ({
     null
   );
 
-  const isCreateMode = toolMode === ToolMode.인물추가도구;
+  const isCreateMode = toolMode === ToolMode.Create_Subject_Tool;
 
   // CreateNode 모드: 마우스 이동 시 ghost 위치 업데이트
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (toolMode !== ToolMode.인물추가도구) {
+      if (toolMode !== ToolMode.Create_Subject_Tool) {
         setGhostPos(null);
         return;
       }
@@ -52,7 +52,7 @@ export const useCanvasInteraction = ({
   // 캔버스 클릭 시 노드 추가
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {
-      if (toolMode !== ToolMode.인물추가도구) return;
+      if (toolMode !== ToolMode.Create_Subject_Tool) return;
 
       const position = screenToFlowPosition({
         x: event.clientX,
@@ -68,7 +68,7 @@ export const useCanvasInteraction = ({
   // ToolMode별 ReactFlow 동작 설정
   const flowInteraction = useMemo(() => {
     switch (toolMode) {
-      case ToolMode.이동도구:
+      case ToolMode.Pan_Tool:
         return {
           panOnDrag: true,
           selectionOnDrag: false,
@@ -76,7 +76,7 @@ export const useCanvasInteraction = ({
           nodesConnectable: false,
           elementsSelectable: false,
         };
-      case ToolMode.다중선택도구:
+      case ToolMode.Multi_Select_Tool:
         return {
           panOnDrag: false,
           selectionOnDrag: true,
@@ -84,9 +84,9 @@ export const useCanvasInteraction = ({
           nodesDraggable: false,
           nodesConnectable: false,
         };
-      case ToolMode.인물추가도구:
-      case ToolMode.관계추가도구:
-      case ToolMode.주석달기도구:
+      case ToolMode.Create_Subject_Tool:
+      case ToolMode.Create_Connection_Tool:
+      case ToolMode.Create_Annotation_Tool:
         return {
           panOnDrag: false,
           selectionOnDrag: false,
@@ -94,7 +94,7 @@ export const useCanvasInteraction = ({
           nodesConnectable: false,
           elementsSelectable: false,
         };
-      case ToolMode.단일선택도구:
+      case ToolMode.Select_Tool:
       default:
         return {
           panOnDrag: false,
@@ -108,17 +108,17 @@ export const useCanvasInteraction = ({
   // ToolMode별 커서 클래스
   const cursorClass = useMemo(() => {
     switch (toolMode) {
-      case ToolMode.이동도구:
+      case ToolMode.Pan_Tool:
         return 'cursor-grab active:cursor-grabbing';
-      case ToolMode.다중선택도구:
+      case ToolMode.Multi_Select_Tool:
         return 'cursor-crosshair';
-      case ToolMode.인물추가도구:
+      case ToolMode.Create_Subject_Tool:
         return 'cursor-copy';
-      case ToolMode.관계추가도구:
+      case ToolMode.Create_Connection_Tool:
         return 'cursor-crosshair';
-      case ToolMode.주석달기도구:
+      case ToolMode.Create_Annotation_Tool:
         return 'cursor-text';
-      case ToolMode.단일선택도구:
+      case ToolMode.Select_Tool:
       default:
         return 'cursor-default';
     }

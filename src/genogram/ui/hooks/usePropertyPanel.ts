@@ -8,7 +8,7 @@ import type {
   Subject,
   SubjectStyle,
 } from '@/genogram/core/models/person';
-import { ClinicStatus, Gender, SubjectType } from '@/genogram/core/types/enums';
+import { Gender, Illness, SubjectType } from '@/genogram/core/types/enums';
 
 interface UsePropertyPanelOptions {
   subject: Subject | null;
@@ -106,7 +106,7 @@ export const usePropertyPanel = ({
                 isDead: animalAttr?.isDead ?? false,
                 lifeSpan: { birth: null, death: null },
                 age: null,
-                clinicStatus: ClinicStatus.없음,
+                illness: Illness.None,
                 detail: {
                   enable: false,
                   job: null,

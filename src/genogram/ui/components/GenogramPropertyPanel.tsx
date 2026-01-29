@@ -6,8 +6,8 @@ import type { Subject } from '@/genogram/core/models/person';
 import { SubjectType } from '@/genogram/core/types/enums';
 
 import {
-  CLINIC_STATUS_ITEMS,
   GENDER_TYPE_ITEMS,
+  ILLNESS_ITEMS,
   NODE_SIZE_ITEMS,
 } from '../constants/labels';
 import { usePropertyPanel } from '../hooks/usePropertyPanel';
@@ -15,8 +15,8 @@ import { usePropertyPanel } from '../hooks/usePropertyPanel';
 import { DateInput } from './common/DateInput';
 import { IconDropdown } from './common/IconDropdown';
 import { InlineDropdown } from './common/InlineDropdown';
-import { ClinicStatusIcon } from './icons/ClinicStatusIcon';
 import { GenderIcon } from './icons/GenderIcon';
+import { IllnessIcon } from './icons/IllnessIcon';
 
 // ── 메인 컴포넌트 ──
 
@@ -57,8 +57,8 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     []
   );
 
-  const renderClinicIcon = useCallback(
-    (value: string) => <ClinicStatusIcon value={value} />,
+  const renderIllnessIcon = useCallback(
+    (value: string) => <IllnessIcon value={value} />,
     []
   );
 
@@ -245,10 +245,10 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 임상적 상태
               </h3>
               <IconDropdown
-                items={CLINIC_STATUS_ITEMS}
-                value={attr.clinicStatus}
-                onChange={(value) => updateAttribute('clinicStatus', value)}
-                renderIcon={renderClinicIcon}
+                items={ILLNESS_ITEMS}
+                value={attr.illness}
+                onChange={(value) => updateAttribute('illness', value)}
+                renderIcon={renderIllnessIcon}
               />
             </section>
 

@@ -17,7 +17,7 @@ export interface Visibility {
   birthDate: boolean;
   deathDate: boolean;
   detail: boolean;
-  clinicStatus: boolean;
+  illness: boolean;
   relationLine: boolean;
   groupLine: boolean;
   grid: boolean;
@@ -62,7 +62,7 @@ export function createDefaultView(): GenogramView {
       birthDate: true,
       deathDate: true,
       detail: true,
-      clinicStatus: true,
+      illness: true,
       relationLine: true,
       groupLine: true,
       grid: false,

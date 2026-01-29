@@ -30,43 +30,43 @@ const getEdgeStyle = (
 ): { stroke: string; strokeWidth: number; strokeDasharray?: string } => {
   const baseStyle = { stroke: '#374151', strokeWidth: 2 };
 
-  if (connectionType === ConnectionType.파트너선) {
+  if (connectionType === ConnectionType.Partner_Line) {
     switch (partnerStatus) {
-      case PartnerStatus.결혼:
+      case PartnerStatus.Marriage:
         return { ...baseStyle, strokeWidth: 2 };
-      case PartnerStatus.이혼:
+      case PartnerStatus.Divorce:
         return { ...baseStyle, strokeDasharray: '5,5' };
-      case PartnerStatus.별거:
+      case PartnerStatus.Marital_Separation:
         return { ...baseStyle, strokeDasharray: '10,5' };
-      case PartnerStatus.연애:
+      case PartnerStatus.Couple_Relationship:
         return { ...baseStyle, strokeDasharray: '2,2' };
       default:
         return baseStyle;
     }
   }
 
-  if (connectionType === ConnectionType.부모자식선) {
+  if (connectionType === ConnectionType.Children_Parents_Line) {
     return baseStyle;
   }
 
-  if (connectionType === ConnectionType.관계선) {
+  if (connectionType === ConnectionType.Relation_Line) {
     switch (relationStatus) {
-      case RelationStatus.친밀:
+      case RelationStatus.Close:
         return { stroke: '#22c55e', strokeWidth: 2 };
-      case RelationStatus.융합:
+      case RelationStatus.Fused:
         return { stroke: '#22c55e', strokeWidth: 3 };
-      case RelationStatus.소원:
+      case RelationStatus.Distant:
         return { stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '5,5' };
-      case RelationStatus.적대:
+      case RelationStatus.Hostile:
         return { stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '8,4' };
-      case RelationStatus.친밀적대:
+      case RelationStatus.Close_Hostile:
         return { stroke: '#ef4444', strokeWidth: 2 };
       default:
         return { ...baseStyle, stroke: '#6b7280' };
     }
   }
 
-  if (connectionType === ConnectionType.영향선) {
+  if (connectionType === ConnectionType.Influence_Line) {
     return { stroke: '#dc2626', strokeWidth: 3 };
   }
 
@@ -99,7 +99,7 @@ export const RelationshipEdge = memo(
     });
 
     const style = getEdgeStyle(
-      connectionType || ConnectionType.파트너선,
+      connectionType || ConnectionType.Partner_Line,
       partnerStatus,
       relationStatus
     );

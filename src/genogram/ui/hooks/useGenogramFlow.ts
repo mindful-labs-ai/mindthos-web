@@ -29,7 +29,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   const isDraggingRef = useRef(false);
   const [toolMode, setToolModeState] = useState<
     (typeof ToolMode)[keyof typeof ToolMode]
-  >(ToolMode.단일선택도구);
+  >(ToolMode.Select_Tool);
 
   // syncFromEditor/syncSelectedSubject를 ref로 감싸서
   // useGenogramEditor의 onEvent 콜백에서 초기화 순서 문제 없이 참조
@@ -141,7 +141,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
       editor.addPartnerConnection(
         connection.source,
         connection.target,
-        PartnerStatus.결혼
+        PartnerStatus.Marriage
       );
 
       setEdges((eds) => addEdge(connection, eds));
@@ -180,8 +180,8 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
       );
       const id = editor.addSubject(gender, finalPosition, 0);
       editor.select([id], true);
-      editor.setToolMode(ToolMode.단일선택도구);
-      setToolModeState(ToolMode.단일선택도구);
+      editor.setToolMode(ToolMode.Select_Tool);
+      setToolModeState(ToolMode.Select_Tool);
       return id;
     },
     [getEditor]

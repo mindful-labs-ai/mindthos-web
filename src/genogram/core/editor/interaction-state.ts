@@ -45,7 +45,7 @@ export interface InteractionState {
 
 export function createInteractionState(): InteractionState {
   return {
-    toolMode: ToolMode.단일선택도구,
+    toolMode: ToolMode.Select_Tool,
     selectedItems: [],
     hoveredItemId: null,
     hoveredItemType: null,

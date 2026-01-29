@@ -119,7 +119,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
         data: {
           connectionType: conn.entity.type,
           partnerStatus:
-            conn.entity.type === ConnectionType.파트너선 && 'status' in attr
+            conn.entity.type === ConnectionType.Partner_Line && 'status' in attr
               ? (attr.status as (typeof PartnerStatus)[keyof typeof PartnerStatus])
               : undefined,
         },

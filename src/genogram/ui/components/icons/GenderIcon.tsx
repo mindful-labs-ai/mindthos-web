@@ -28,7 +28,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
     }
 
     switch (value) {
-      case Gender.남성:
+      case Gender.Male:
         return (
           <rect
             x={m}
@@ -42,7 +42,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
           />
         );
 
-      case Gender.여성:
+      case Gender.Female:
         return (
           <circle
             cx={c}
@@ -54,7 +54,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
           />
         );
 
-      case Gender.게이: {
+      case Gender.Gay: {
         const triH = S * (innerScale * 0.8);
         const triW = triH * (2 / Math.sqrt(3));
         const offset = 0.5;
@@ -80,7 +80,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
         );
       }
 
-      case Gender.레즈비언: {
+      case Gender.Lesbian: {
         const triH = S * (innerScale * 0.8);
         const triW = triH * (2 / Math.sqrt(3));
         const offset = 1;
@@ -104,7 +104,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
         );
       }
 
-      case Gender.트랜스젠더_남성: {
+      case Gender.Transgender_Male: {
         const innerR = S * innerScale * 0.5;
         return (
           <>
@@ -130,7 +130,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
         );
       }
 
-      case Gender.트랜스젠더_여성: {
+      case Gender.Transgender_Female: {
         const innerHalf = S * innerScale * 0.45;
         return (
           <>
@@ -156,7 +156,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
         );
       }
 
-      case Gender.논바이너리:
+      case Gender.Nonbinary:
         return (
           <>
             <rect

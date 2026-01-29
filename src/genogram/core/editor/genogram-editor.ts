@@ -255,7 +255,7 @@ export class GenogramEditor {
   addRelationConnection(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: (typeof RelationStatus)[keyof typeof RelationStatus] = RelationStatus.연결
+    status: (typeof RelationStatus)[keyof typeof RelationStatus] = RelationStatus.Connected
   ): UUID {
     const cmd = new AddRelationConnectionCommand(
       subjectId1,
@@ -279,7 +279,7 @@ export class GenogramEditor {
   addPartnerConnection(
     subjectId1: UUID,
     subjectId2: UUID,
-    status: (typeof PartnerStatus)[keyof typeof PartnerStatus] = PartnerStatus.결혼
+    status: (typeof PartnerStatus)[keyof typeof PartnerStatus] = PartnerStatus.Marriage
   ): UUID {
     const cmd = new AddPartnerConnectionCommand(subjectId1, subjectId2, status);
     this.execute(cmd);
@@ -410,7 +410,7 @@ export class GenogramEditor {
     updateMousePosition(this.interaction, point);
 
     switch (mode) {
-      case ToolMode.단일선택도구:
+      case ToolMode.Select_Tool:
         if (node) {
           if (!node.isSelected) {
             this.select([node.nodeId]);
@@ -424,21 +424,21 @@ export class GenogramEditor {
         }
         break;
 
-      case ToolMode.다중선택도구:
+      case ToolMode.Multi_Select_Tool:
         startSelectionBox(this.interaction, point);
         break;
 
-      case ToolMode.이동도구:
+      case ToolMode.Pan_Tool:
         startDrag(this.interaction, point, []);
         break;
 
-      case ToolMode.관계추가도구:
+      case ToolMode.Create_Connection_Tool:
         if (node) {
           startConnectionPreview(this.interaction, node.nodeId, node.position);
         }
         break;
 
-      case ToolMode.인물추가도구:
+      case ToolMode.Create_Subject_Tool:
         showNodeCreationPreview(this.interaction, point);
         break;
     }
@@ -497,7 +497,7 @@ export class GenogramEditor {
           });
           this.moveMultipleSubjects(moves);
         }
-      } else if (mode === ToolMode.이동도구 && result) {
+      } else if (mode === ToolMode.Pan_Tool && result) {
         const dx = result.endPoint.x - result.startPoint.x;
         const dy = result.endPoint.y - result.startPoint.y;
         const current = this.state.layout.canvas.offset;

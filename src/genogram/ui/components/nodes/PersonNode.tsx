@@ -56,7 +56,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
     }
 
     switch (gender) {
-      case Gender.남성:
+      case Gender.Male:
         // 남성: 사각형
         return (
           <rect
@@ -71,7 +71,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
           />
         );
 
-      case Gender.여성:
+      case Gender.Female:
         // 여성: 원
         return (
           <circle
@@ -84,7 +84,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
           />
         );
 
-      case Gender.게이: {
+      case Gender.Gay: {
         // 게이: 사각형 + 정삼각형 (꼭짓점 위)
         const triH = S * (innerScale * 0.8);
         const triW = triH * (2 / Math.sqrt(3));
@@ -112,7 +112,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
         );
       }
 
-      case Gender.레즈비언: {
+      case Gender.Lesbian: {
         // 레즈비언: 원 + 정삼각형 (꼭짓점 아래)
         const triH = S * (innerScale * 0.8);
         const triW = triH * (2 / Math.sqrt(3));
@@ -138,7 +138,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
         );
       }
 
-      case Gender.트랜스젠더_남성: {
+      case Gender.Transgender_Male: {
         // 트랜스남성: 사각형 + 내부 원
         const innerR = S * innerScale * 0.5;
         return (
@@ -165,7 +165,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
         );
       }
 
-      case Gender.트랜스젠더_여성: {
+      case Gender.Transgender_Female: {
         // 트랜스여성: 원 + 내부 사각형
         const innerHalf = S * innerScale * 0.45;
         return (
@@ -192,7 +192,7 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
         );
       }
 
-      case Gender.논바이너리:
+      case Gender.Nonbinary:
         // 논바이너리: 상단 반원 + 하단 사각형 조합
         return (
           <>

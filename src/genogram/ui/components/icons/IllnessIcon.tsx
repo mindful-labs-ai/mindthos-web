@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { ClinicStatus } from '@/genogram/core/types/enums';
+import { Illness } from '@/genogram/core/types/enums';
 
 const S = 20;
 const m = 1.5;
@@ -22,12 +22,12 @@ const fill = '#ffffff';
  * - 심각한 전부: 전체 채움
  * - 심각한 회복 중: 전체 채움 + X
  */
-export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
+export const IllnessIcon: React.FC<{ value: string }> = ({ value }) => {
   const uid = `cs-${value.replace(/[^a-zA-Z가-힣]/g, '').slice(0, 8)}`;
 
   const renderPattern = () => {
     switch (value) {
-      case ClinicStatus.없음:
+      case Illness.None:
         // 빈 사각형
         return (
           <rect
@@ -42,7 +42,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           />
         );
 
-      case ClinicStatus.심리적_신체적_문제:
+      case Illness.Psychological_Or_Physical_Problem:
         // 아래쪽 반 채움
         return (
           <>
@@ -70,7 +70,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
-      case ClinicStatus.알코올_약물_남용:
+      case Illness.Alcohol_Or_Drug_Abuse:
         // 아래쪽 반 대각선 해칭
         return (
           <>
@@ -122,7 +122,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
-      case ClinicStatus.알코올_약물_남용_의심:
+      case Illness.Suspected_Alcohol_Or_Drug_Abuse:
         // 아래쪽 반 점선 해칭 (희미한)
         return (
           <>
@@ -175,7 +175,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
-      case ClinicStatus.완화된_심리적_신체적_문제:
+      case Illness.Psychological_Or_Physical_Illness_In_Remission:
         // 아래쪽 반 채움 + 가운데 가로선 (완화 표시)
         return (
           <>
@@ -219,7 +219,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
-      case ClinicStatus.완화된_알코올_약물_문제와_심리적_신체적_문제:
+      case Illness.In_Recovery_From_Substance_Abuse_But_Having_Physical_Or_Mental_Problems:
         // 위 채움 + 아래 해칭 + 가로선
         return (
           <>
@@ -287,7 +287,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
-      case ClinicStatus.알코올_약물_문제_회복_중:
+      case Illness.In_Recovery_From_Substance_Abuse:
         // 아래 해칭 + X 표시
         return (
           <>
@@ -343,7 +343,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
-      case ClinicStatus.심각한_심리적_신체적_질환과_심각한_알코올_약물_문제:
+      case Illness.Serious_Mental_Or_Physical_Problems_And_Substance_Abuse:
         // 전체 채움
         return (
           <rect
@@ -358,7 +358,7 @@ export const ClinicStatusIcon: React.FC<{ value: string }> = ({ value }) => {
           />
         );
 
-      case ClinicStatus.심리적_신체적_질환과_심각한_알코올_약물_문제_회복_중:
+      case Illness.In_Recovery_From_Substance_Abuse_And_Physical_Or_Mental_Problems:
         // 전체 채움 + X
         return (
           <>

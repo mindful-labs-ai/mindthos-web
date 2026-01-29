@@ -1,4 +1,4 @@
-import { ClinicStatus, NodeSize, SubjectType } from '../types/enums';
+import { Illness, NodeSize, SubjectType } from '../types/enums';
 import type { Gender } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 import { generateId } from '../types/types';
@@ -22,7 +22,7 @@ export interface PersonAttribute {
   isDead: boolean;
   lifeSpan: PersonLifeSpan;
   age: number | null;
-  clinicStatus: ClinicStatus;
+  illness: Illness;
   detail: PersonDetail;
 }
 
@@ -74,7 +74,7 @@ export function createPersonSubject(
         isDead: false,
         lifeSpan: { birth: null, death: null },
         age: null,
-        clinicStatus: ClinicStatus.없음,
+        illness: Illness.None,
         detail: {
           enable: false,
           job: null,

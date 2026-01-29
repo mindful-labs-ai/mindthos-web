@@ -6,83 +6,84 @@ export const SubjectType = {
 export type SubjectType = (typeof SubjectType)[keyof typeof SubjectType];
 
 export const Gender = {
-  남성: '남성',
-  여성: '여성',
-  게이: '게이',
-  레즈비언: '레즈비언',
-  트랜스젠더_남성: '트랜스젠더_남성',
-  트랜스젠더_여성: '트랜스젠더_여성',
-  논바이너리: '논바이너리',
+  Male: 'Male',
+  Female: 'Female',
+  Gay: 'Gay',
+  Lesbian: 'Lesbian',
+  Transgender_Male: 'Transgender_Male',
+  Transgender_Female: 'Transgender_Female',
+  Nonbinary: 'Nonbinary',
 } as const;
 export type Gender = (typeof Gender)[keyof typeof Gender];
 
-export const ClinicStatus = {
-  없음: '없음',
-  심리적_신체적_문제: '심리적_신체적_문제',
-  알코올_약물_남용: '알코올_약물_남용',
-  알코올_약물_남용_의심: '알코올_약물_남용_의심',
-  완화된_심리적_신체적_문제: '완화된_심리적_신체적_문제',
-  완화된_알코올_약물_문제와_심리적_신체적_문제:
-    '완화된_알코올_약물_문제와_심리적_신체적_문제',
-  알코올_약물_문제_회복_중: '알코올_약물_문제_회복_중',
-  심각한_심리적_신체적_질환과_심각한_알코올_약물_문제:
-    '심각한_심리적_신체적_질환과_심각한_알코올_약물_문제',
-  심리적_신체적_질환과_심각한_알코올_약물_문제_회복_중:
-    '심리적_신체적_질환과_심각한_알코올_약물_문제_회복_중',
+export const Illness = {
+  None: 'None',
+  Psychological_Or_Physical_Problem: 'Psychological_Or_Physical_Problem',
+  Alcohol_Or_Drug_Abuse: 'Alcohol_Or_Drug_Abuse',
+  Suspected_Alcohol_Or_Drug_Abuse: 'Suspected_Alcohol_Or_Drug_Abuse',
+  Psychological_Or_Physical_Illness_In_Remission:
+    'Psychological_Or_Physical_Illness_In_Remission',
+  In_Recovery_From_Substance_Abuse_But_Having_Physical_Or_Mental_Problems:
+    'In_Recovery_From_Substance_Abuse_But_Having_Physical_Or_Mental_Problems',
+  In_Recovery_From_Substance_Abuse: 'In_Recovery_From_Substance_Abuse',
+  Serious_Mental_Or_Physical_Problems_And_Substance_Abuse:
+    'Serious_Mental_Or_Physical_Problems_And_Substance_Abuse',
+  In_Recovery_From_Substance_Abuse_And_Physical_Or_Mental_Problems:
+    'In_Recovery_From_Substance_Abuse_And_Physical_Or_Mental_Problems',
 } as const;
-export type ClinicStatus = (typeof ClinicStatus)[keyof typeof ClinicStatus];
+export type Illness = (typeof Illness)[keyof typeof Illness];
 
 // Connection
 export const ConnectionType = {
-  관계선: '관계선',
-  영향선: '영향선',
-  파트너선: '파트너선',
-  부모자식선: '부모자식선',
-  그룹선: '그룹선',
+  Relation_Line: 'Relation_Line',
+  Influence_Line: 'Influence_Line',
+  Partner_Line: 'Partner_Line',
+  Children_Parents_Line: 'Children_Parents_Line',
+  Group_Line: 'Group_Line',
 } as const;
 export type ConnectionType =
   (typeof ConnectionType)[keyof typeof ConnectionType];
 
 export const RelationStatus = {
-  연결: '연결',
-  친밀: '친밀',
-  융합: '융합',
-  소원: '소원',
-  적대: '적대',
-  친밀적대: '친밀적대',
+  Connected: 'Connected',
+  Close: 'Close',
+  Fused: 'Fused',
+  Distant: 'Distant',
+  Hostile: 'Hostile',
+  Close_Hostile: 'Close_Hostile',
 } as const;
 export type RelationStatus =
   (typeof RelationStatus)[keyof typeof RelationStatus];
 
 export const InfluenceStatus = {
-  신체적학대: '신체적학대',
-  정신적학대: '정신적학대',
-  성적학대: '성적학대',
-  집중됨: '집중됨',
-  부정적집중됨: '부정적집중됨',
+  Physical_Abuse: 'Physical_Abuse',
+  Emotional_Abuse: 'Emotional_Abuse',
+  Sexual_Abuse: 'Sexual_Abuse',
+  Focused_On: 'Focused_On',
+  Focused_On_Negatively: 'Focused_On_Negatively',
 } as const;
 export type InfluenceStatus =
   (typeof InfluenceStatus)[keyof typeof InfluenceStatus];
 
 export const PartnerStatus = {
-  결혼: '결혼',
-  별거: '별거',
-  이혼: '이혼',
-  재결합: '재결합',
-  연애: '연애',
-  비밀연애: '비밀연애',
+  Marriage: 'Marriage',
+  Marital_Separation: 'Marital_Separation',
+  Divorce: 'Divorce',
+  Remarriage: 'Remarriage',
+  Couple_Relationship: 'Couple_Relationship',
+  Secret_Affair: 'Secret_Affair',
 } as const;
 export type PartnerStatus = (typeof PartnerStatus)[keyof typeof PartnerStatus];
 
 export const ParentChildStatus = {
-  친자녀: '친자녀',
-  유산: '유산',
-  낙태: '낙태',
-  임신: '임신',
-  쌍둥이: '쌍둥이',
-  일란성쌍둥이: '일란성쌍둥이',
-  입양자녀: '입양자녀',
-  위탁자녀: '위탁자녀',
+  Biological_Child: 'Biological_Child',
+  Miscarriage: 'Miscarriage',
+  Abortion: 'Abortion',
+  Pregnancy: 'Pregnancy',
+  Twins: 'Twins',
+  Identical_Twins: 'Identical_Twins',
+  Adopted_Child: 'Adopted_Child',
+  Foster_Child: 'Foster_Child',
 } as const;
 export type ParentChildStatus =
   (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
@@ -104,12 +105,12 @@ export type StrokeWidth = (typeof StrokeWidth)[keyof typeof StrokeWidth];
 
 // Editor
 export const ToolMode = {
-  단일선택도구: '단일선택도구',
-  다중선택도구: '다중선택도구',
-  이동도구: '이동도구',
-  인물추가도구: '인물추가도구',
-  관계추가도구: '관계추가도구',
-  주석달기도구: '주석달기도구',
+  Select_Tool: 'Select_Tool',
+  Multi_Select_Tool: 'Multi_Select_Tool',
+  Pan_Tool: 'Pan_Tool',
+  Create_Subject_Tool: 'Create_Subject_Tool',
+  Create_Connection_Tool: 'Create_Connection_Tool',
+  Create_Annotation_Tool: 'Create_Annotation_Tool',
 } as const;
 export type ToolMode = (typeof ToolMode)[keyof typeof ToolMode];
 

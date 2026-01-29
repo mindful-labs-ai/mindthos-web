@@ -87,7 +87,7 @@ export function createRelationConnection(
   return {
     id,
     entity: {
-      type: ConnectionType.관계선,
+      type: ConnectionType.Relation_Line,
       attribute: {
         status,
         subjects: [subjectId1, subjectId2],
@@ -107,7 +107,7 @@ export function createInfluenceConnection(
   return {
     id,
     entity: {
-      type: ConnectionType.영향선,
+      type: ConnectionType.Influence_Line,
       attribute: {
         status,
         startRef,
@@ -128,7 +128,7 @@ export function createPartnerConnection(
   return {
     id,
     entity: {
-      type: ConnectionType.파트너선,
+      type: ConnectionType.Partner_Line,
       attribute: {
         status,
         subjects: [subjectId1, subjectId2],
@@ -153,7 +153,7 @@ export function createParentChildConnection(
   return {
     id,
     entity: {
-      type: ConnectionType.부모자식선,
+      type: ConnectionType.Children_Parents_Line,
       attribute: {
         status,
         parentRef,
@@ -172,7 +172,7 @@ export function createGroupConnection(
   return {
     id,
     entity: {
-      type: ConnectionType.그룹선,
+      type: ConnectionType.Group_Line,
       attribute: {
         subjects,
       } satisfies GroupAttribute,
