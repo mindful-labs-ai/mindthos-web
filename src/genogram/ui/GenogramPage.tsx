@@ -46,7 +46,7 @@ const GenogramCanvas: React.FC = () => {
   } = useGenogramFlow();
 
   const {
-    ghostPos,
+    ghost,
     isCreateMode,
     handleMouseMove,
     handleMouseLeave,
@@ -127,7 +127,7 @@ const GenogramCanvas: React.FC = () => {
         </ReactFlow>
 
         {/* CreateNode 모드: ghost 미리보기 */}
-        {isCreateMode && ghostPos && <GhostPreview position={ghostPos} />}
+        {isCreateMode && ghost && <GhostPreview position={ghost} zoom={ghost.zoom} />}
 
         {/* 우측 속성 편집 패널 */}
         <GenogramPropertyPanel

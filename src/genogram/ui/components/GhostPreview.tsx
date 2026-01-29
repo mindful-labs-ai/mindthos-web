@@ -4,21 +4,27 @@ import { GHOST_NODE_SIZE } from '../constants/grid';
 
 interface GhostPreviewProps {
   position: { x: number; y: number };
+  zoom?: number;
 }
 
 /** CreateNode 모드에서 마우스를 따라다니는 미리보기 사각형 */
-export const GhostPreview: React.FC<GhostPreviewProps> = ({ position }) => {
+export const GhostPreview: React.FC<GhostPreviewProps> = ({
+  position,
+  zoom = 1,
+}) => {
+  const scaledSize = GHOST_NODE_SIZE * zoom;
+
   return (
     <div
       className="pointer-events-none absolute z-20"
       style={{
-        left: position.x - GHOST_NODE_SIZE / 2,
-        top: position.y - GHOST_NODE_SIZE / 2,
+        left: position.x - scaledSize / 2,
+        top: position.y - scaledSize / 2,
       }}
     >
       <svg
-        width={GHOST_NODE_SIZE}
-        height={GHOST_NODE_SIZE}
+        width={scaledSize}
+        height={scaledSize}
         viewBox={`0 0 ${GHOST_NODE_SIZE} ${GHOST_NODE_SIZE}`}
         opacity={0.5}
       >

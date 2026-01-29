@@ -5,6 +5,8 @@ import { SelectionMode, useReactFlow } from '@xyflow/react';
 import type { Gender } from '@/genogram/core/types/enums';
 import { ToolMode } from '@/genogram/core/types/enums';
 
+import { snapToDotCenter } from '../utils/snap';
+
 export interface UseCanvasInteractionOptions {
   toolMode: (typeof ToolMode)[keyof typeof ToolMode];
   addPerson: (
@@ -24,30 +26,41 @@ export const useCanvasInteraction = ({
   addPerson,
   defaultGender,
 }: UseCanvasInteractionOptions) => {
-  const { screenToFlowPosition } = useReactFlow();
-  const [ghostPos, setGhostPos] = useState<{ x: number; y: number } | null>(
-    null
-  );
+  const { screenToFlowPosition, flowToScreenPosition, getZoom } =
+    useReactFlow();
+  const [ghost, setGhost] = useState<{
+    x: number;
+    y: number;
+    zoom: number;
+  } | null>(null);
 
   const isCreateMode = toolMode === ToolMode.Create_Subject_Tool;
 
-  // CreateNode 모드: 마우스 이동 시 ghost 위치 업데이트
+  // CreateNode 모드: 마우스 이동 시 그리드 스냅된 ghost 위치 업데이트
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       if (toolMode !== ToolMode.Create_Subject_Tool) {
-        setGhostPos(null);
+        setGhost(null);
         return;
       }
+      // 화면 → 캔버스 → 그리드 스냅 → 화면 좌표 변환
+      const flowPos = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+      const snapped = snapToDotCenter(flowPos);
+      const screenPos = flowToScreenPosition(snapped);
       const rect = event.currentTarget.getBoundingClientRect();
-      setGhostPos({
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
+      setGhost({
+        x: screenPos.x - rect.left,
+        y: screenPos.y - rect.top,
+        zoom: getZoom(),
       });
     },
-    [toolMode]
+    [toolMode, screenToFlowPosition, flowToScreenPosition, getZoom]
   );
 
-  const handleMouseLeave = useCallback(() => setGhostPos(null), []);
+  const handleMouseLeave = useCallback(() => setGhost(null), []);
 
   // 캔버스 클릭 시 노드 추가
   const handlePaneClick = useCallback(
@@ -60,7 +73,7 @@ export const useCanvasInteraction = ({
       });
 
       addPerson(defaultGender, position);
-      setGhostPos(null);
+      setGhost(null);
     },
     [toolMode, addPerson, defaultGender, screenToFlowPosition]
   );
@@ -125,7 +138,7 @@ export const useCanvasInteraction = ({
   }, [toolMode]);
 
   return {
-    ghostPos,
+    ghost,
     isCreateMode,
     handleMouseMove,
     handleMouseLeave,
