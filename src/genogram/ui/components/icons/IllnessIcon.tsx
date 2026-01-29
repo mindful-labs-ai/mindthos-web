@@ -2,9 +2,10 @@ import React from 'react';
 
 import { Illness } from '@/genogram/core/types/enums';
 
-const S = 20;
+const S = 32;
+const RS = 24;
 const m = 1.5;
-const sw = 1.2;
+const sw = 2;
 const c = S / 2;
 const stroke = '#374151';
 const fill = '#ffffff';
@@ -97,7 +98,7 @@ export const IllnessIcon: React.FC<{ value: string }> = ({ value }) => {
         patternUnits="userSpaceOnUse"
         patternTransform="rotate(45)"
       >
-        <line x1="0" y1="0" x2="0" y2="4" stroke={stroke} strokeWidth="1.2" />
+        <line x1="0" y1="0" x2="0" y2="4" stroke={stroke} strokeWidth="2" />
       </pattern>
       {clipDef}
     </defs>
@@ -234,7 +235,7 @@ export const IllnessIcon: React.FC<{ value: string }> = ({ value }) => {
   };
 
   return (
-    <svg width={S} height={S} viewBox={`0 0 ${S} ${S}`} className="shrink-0">
+    <svg width={RS} height={RS} viewBox={`0 0 ${S} ${S}`} className="shrink-0">
       {renderPattern()}
     </svg>
   );

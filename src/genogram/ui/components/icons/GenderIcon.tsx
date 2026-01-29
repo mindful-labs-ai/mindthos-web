@@ -2,11 +2,12 @@ import React from 'react';
 
 import { Gender, SubjectType } from '@/genogram/core/types/enums';
 
-const S = 20; // 아이콘 크기
+const S = 32; // viewBox 크기
+const RS = 24; // 렌더링 크기
 const c = S / 2;
 const m = 1.5;
 const r = c - m;
-const sw = 1.2; // strokeWidth
+const sw = 2; // strokeWidth
 const stroke = '#374151';
 const fill = '#ffffff';
 
@@ -200,12 +201,7 @@ export const GenderIcon: React.FC<{ value: string }> = ({ value }) => {
   };
 
   return (
-    <svg
-      width={S}
-      height={S}
-      viewBox={`0 0 ${S} ${S}`}
-      className="shrink-0"
-    >
+    <svg width={RS} height={RS} viewBox={`0 0 ${S} ${S}`} className="shrink-0">
       {renderShape()}
     </svg>
   );
