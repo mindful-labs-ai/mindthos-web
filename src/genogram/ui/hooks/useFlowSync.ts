@@ -79,6 +79,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           subjectType: subject.entity.type,
           age: personAttr?.age,
           isDead: 'isDead' in attr ? attr.isDead : false,
+          illness: personAttr?.illness,
           isSelected: nodeLayout.isSelected,
           lifeSpanLabel,
           detailTexts,

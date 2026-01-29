@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import type { NodeProps } from '@xyflow/react';
 
-import { Gender, SubjectType } from '@/genogram/core/types/enums';
+import { Gender, Illness, SubjectType } from '@/genogram/core/types/enums';
 
 import { DEFAULT_NODE_SIZE } from '../../constants/grid';
 
@@ -15,6 +15,7 @@ export interface PersonNodeData {
   isSelected?: boolean;
   lifeSpanLabel?: string | null;
   detailTexts?: string[];
+  illness?: Illness;
   sizePx?: number;
   [key: string]: unknown;
 }
@@ -23,15 +24,23 @@ const COLORS = {
   stroke: '#374151',
   fill: '#ffffff',
   selected: '#374151',
-  deceased: '#6b7280',
+  deceased: '#374151',
   text: '#1f2937',
   selectedHalo: 'rgba(34, 197, 94, 0.12)',
 };
 
-export const PersonNode = memo(({ data, selected }: NodeProps) => {
+export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as PersonNodeData;
-  const { name, gender, subjectType, age, isDead, lifeSpanLabel, detailTexts } =
-    nodeData;
+  const {
+    name,
+    gender,
+    subjectType,
+    age,
+    isDead,
+    illness,
+    lifeSpanLabel,
+    detailTexts,
+  } = nodeData;
   const S = nodeData.sizePx ?? DEFAULT_NODE_SIZE;
   const haloSize = S + 48;
   const strokeColor = selected ? COLORS.selected : COLORS.stroke;
@@ -251,12 +260,240 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
     }
   };
 
+  // Gender별 외곽 도형에 맞는 clipPath
+  const renderClipPath = () => {
+    const clipId = `clip-${id}`;
+    const c = S / 2;
+    const m = 2;
+    const r = c - m;
+
+    if (subjectType === SubjectType.Animal) {
+      return (
+        <clipPath id={clipId}>
+          <polygon points={`${c},${m} ${S - m},${c} ${c},${S - m} ${m},${c}`} />
+        </clipPath>
+      );
+    }
+
+    switch (gender) {
+      case Gender.Male:
+      case Gender.Gay:
+      case Gender.Transgender_Male:
+        return (
+          <clipPath id={clipId}>
+            <rect x={m} y={m} width={S - m * 2} height={S - m * 2} rx="2" />
+          </clipPath>
+        );
+      case Gender.Female:
+      case Gender.Lesbian:
+      case Gender.Transgender_Female:
+        return (
+          <clipPath id={clipId}>
+            <circle cx={c} cy={c} r={r} />
+          </clipPath>
+        );
+      case Gender.Nonbinary:
+        return (
+          <clipPath id={clipId}>
+            <path
+              d={`M ${m},${S - m} V ${c} A ${r},${r} 0 0 1 ${S - m},${c} V ${S - m} Z`}
+            />
+          </clipPath>
+        );
+      default:
+        return (
+          <clipPath id={clipId}>
+            <circle cx={c} cy={c} r={r} />
+          </clipPath>
+        );
+    }
+  };
+
+  // Illness 상태 패턴 렌더링
+  const renderIllness = () => {
+    if (!illness || illness === Illness.None) return null;
+
+    const clip = `url(#clip-${id})`;
+    const hatchId = `hatch-${id}`;
+    const c = S / 2;
+
+    // 기본 블록
+    const halfLeft = (
+      <rect
+        x={0}
+        y={0}
+        width={c}
+        height={S}
+        fill={COLORS.stroke}
+        clipPath={clip}
+      />
+    );
+    const halfBottom = (
+      <rect
+        x={0}
+        y={c}
+        width={S}
+        height={c}
+        fill={COLORS.stroke}
+        clipPath={clip}
+      />
+    );
+    const quarterBottomLeft = (
+      <rect
+        x={0}
+        y={c}
+        width={c}
+        height={c}
+        fill={COLORS.stroke}
+        clipPath={clip}
+      />
+    );
+    const threeQuarters = (
+      <>
+        <rect
+          x={0}
+          y={0}
+          width={c}
+          height={S}
+          fill={COLORS.stroke}
+          clipPath={clip}
+        />
+        <rect
+          x={c}
+          y={c}
+          width={c}
+          height={c}
+          fill={COLORS.stroke}
+          clipPath={clip}
+        />
+      </>
+    );
+    const halfBottomHatch = (
+      <rect
+        x={0}
+        y={c}
+        width={S}
+        height={c}
+        fill={`url(#${hatchId})`}
+        clipPath={clip}
+      />
+    );
+
+    const hatchDefs = (
+      <defs>
+        <pattern
+          id={hatchId}
+          width="4"
+          height="4"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)"
+        >
+          <line
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="4"
+            stroke={COLORS.stroke}
+            strokeWidth="1.2"
+          />
+        </pattern>
+      </defs>
+    );
+
+    const vLine = (
+      <line
+        x1={c}
+        y1={0}
+        x2={c}
+        y2={S}
+        stroke={COLORS.stroke}
+        strokeWidth="1.5"
+        clipPath={clip}
+      />
+    );
+    const hLine = (
+      <line
+        x1={0}
+        y1={c}
+        x2={S}
+        y2={c}
+        stroke={COLORS.stroke}
+        strokeWidth="1.5"
+        clipPath={clip}
+      />
+    );
+
+    switch (illness) {
+      // 왼쪽 반 채움
+      case Illness.Psychological_Or_Physical_Problem:
+        return halfLeft;
+
+      // 아래쪽 반 채움
+      case Illness.Alcohol_Or_Drug_Abuse:
+        return halfBottom;
+
+      // 아래쪽 반 빗금 + 가로 중앙선
+      case Illness.Suspected_Alcohol_Or_Drug_Abuse:
+        return (
+          <>
+            {hatchDefs}
+            {halfBottomHatch}
+            {hLine}
+          </>
+        );
+
+      // 왼쪽 하단 1/4 채움 + 세로 중앙선
+      case Illness.Psychological_Or_Physical_Illness_In_Remission:
+        return (
+          <>
+            {quarterBottomLeft}
+            {vLine}
+          </>
+        );
+
+      // 왼쪽 반 채움 + 가로 중앙선
+      case Illness.In_Recovery_From_Substance_Abuse_But_Having_Physical_Or_Mental_Problems:
+        return (
+          <>
+            {halfLeft}
+            {hLine}
+          </>
+        );
+
+      // 왼쪽 하단 1/4 채움 + 가로 중앙선
+      case Illness.In_Recovery_From_Substance_Abuse:
+        return (
+          <>
+            {quarterBottomLeft}
+            {hLine}
+          </>
+        );
+
+      // 오른쪽 상단 1/4 제외 나머지 채움
+      case Illness.Serious_Mental_Or_Physical_Problems_And_Substance_Abuse:
+        return threeQuarters;
+
+      // 왼쪽 하단 1/4 채움 + 가로 중앙선 + 세로 중앙선
+      case Illness.In_Recovery_From_Substance_Abuse_And_Physical_Or_Mental_Problems:
+        return (
+          <>
+            {quarterBottomLeft}
+            {hLine}
+            {vLine}
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   const renderDeceased = () => {
     if (!isDead) return null;
     return (
-      <g stroke={COLORS.deceased} strokeWidth="2">
-        <line x1="8" y1="8" x2={S - 8} y2={S - 8} />
-        <line x1={S - 8} y1="8" x2="8" y2={S - 8} />
+      <g stroke={COLORS.deceased} strokeWidth="2" clipPath={`url(#clip-${id})`}>
+        <line x1={0} y1={0} x2={S} y2={S} />
+        <line x1={S} y1={0} x2={0} y2={S} />
       </g>
     );
   };
@@ -298,7 +535,9 @@ export const PersonNode = memo(({ data, selected }: NodeProps) => {
         viewBox={`0 0 ${S} ${S}`}
         className="cursor-pointer"
       >
+        <defs>{renderClipPath()}</defs>
         {renderShape()}
+        {renderIllness()}
         {renderDeceased()}
       </svg>
 
