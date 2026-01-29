@@ -68,13 +68,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         <path
           d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
           stroke="currentColor"
-          stroke-width="1.5"
+          strokeWidth="1.5"
         />
-        <path
-          d="M12 12.1094V14.3316"
-          stroke="currentColor"
-          stroke-width="1.5"
-        />
+        <path d="M12 12.1094V14.3316" stroke="currentColor" strokeWidth="1.5" />
       </svg>
     ),
   },

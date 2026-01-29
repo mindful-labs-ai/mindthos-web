@@ -12,11 +12,16 @@ import '@xyflow/react/dist/style.css';
 
 import { Gender } from '@/genogram/core/types/enums';
 
+import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
 import { EmptyStatePanel } from './components/EmptyStatePanel';
 import { GenogramHeader } from './components/GenogramHeader';
 import { GenogramPropertyPanel } from './components/GenogramPropertyPanel';
-import { GenogramToolbar } from './components/GenogramToolbar';
+import {
+  GenogramToolbar,
+  type ConnectionSubTool,
+  type SubjectSubTool,
+} from './components/GenogramToolbar';
 import { GhostPreview } from './components/GhostPreview';
 import { PersonNode } from './components/nodes/PersonNode';
 import { GRID_GAP } from './constants/grid';
@@ -33,30 +38,92 @@ const GenogramCanvas: React.FC = () => {
     edges,
     onNodesChange,
     onEdgesChange,
-    onConnect,
+    createConnection,
     addPerson,
+    addFamily,
+    addAnimal,
     undo,
     redo,
     toolMode,
     setToolMode,
     selectedSubject,
+    selectedConnection,
     updateSubject,
+    updateConnection,
     deleteSelected,
     toJSON,
+    pendingConnectionKind,
+    setPendingConnectionKind,
+    pendingRelationStatus,
+    setPendingRelationStatus,
+    pendingInfluenceStatus,
+    setPendingInfluenceStatus,
   } = useGenogramFlow();
+
+  // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
+  const [subjectCreateMode, setSubjectCreateMode] = useState<
+    'person' | 'family' | 'animal'
+  >('person');
+  const [defaultGender, setDefaultGender] = useState<
+    (typeof Gender)[keyof typeof Gender]
+  >(Gender.Male);
+
+  // Subject 서브툴 선택 핸들러
+  const handleSubjectSubToolSelect = useCallback((subTool: SubjectSubTool) => {
+    switch (subTool.kind) {
+      case 'family':
+        setSubjectCreateMode('family');
+        break;
+      case 'gender':
+        setSubjectCreateMode('person');
+        setDefaultGender(subTool.gender);
+        break;
+      case 'animal':
+        setSubjectCreateMode('animal');
+        break;
+    }
+    // Create_Subject_Tool 모드 유지 (이미 활성화 상태)
+  }, []);
+
+  // Connection 서브툴 선택 핸들러
+  const handleConnectionSubToolSelect = useCallback(
+    (subTool: ConnectionSubTool) => {
+      if (subTool.kind === 'relation') {
+        setPendingConnectionKind('relation');
+        setPendingRelationStatus(subTool.status);
+      } else {
+        setPendingConnectionKind('influence');
+        setPendingInfluenceStatus(subTool.status);
+      }
+    },
+    [
+      setPendingConnectionKind,
+      setPendingRelationStatus,
+      setPendingInfluenceStatus,
+    ]
+  );
 
   const {
     ghost,
     isCreateMode,
+    connectionPreview,
     handleMouseMove,
     handleMouseLeave,
     handlePaneClick,
+    handleNodeClick,
     flowInteraction,
     cursorClass,
   } = useCanvasInteraction({
     toolMode,
     addPerson,
-    defaultGender: Gender.Male,
+    defaultGender,
+    onConnectionCreate: createConnection,
+    onFamilyCreate: addFamily,
+    onAnimalCreate: addAnimal,
+    subjectCreateMode,
+    pendingConnectionKind,
+    pendingRelationStatus,
+    pendingInfluenceStatus,
   });
 
   const [copied, setCopied] = useState(false);
@@ -94,14 +161,16 @@ const GenogramCanvas: React.FC = () => {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
           onPaneClick={handlePaneClick}
+          onNodeClick={handleNodeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           nodeOrigin={[0.5, 0.5]}
-          fitView
+          onInit={(instance) => {
+            if (nodes.length > 0) instance.fitView();
+          }}
           snapToGrid={false}
-          defaultEdgeOptions={{ type: 'relationship' }}
+          defaultEdgeOptions={{ type: 'relationship', interactionWidth: 20 }}
           proOptions={{ hideAttribution: true }}
           {...flowInteraction}
         >
@@ -118,23 +187,43 @@ const GenogramCanvas: React.FC = () => {
               toolMode={toolMode}
               onToolModeChange={setToolMode}
               onDelete={deleteSelected}
-              hasSelection={selectedSubject !== null}
+              hasSelection={
+                selectedSubject !== null || selectedConnection !== null
+              }
+              onSubjectSubToolSelect={handleSubjectSubToolSelect}
+              onConnectionSubToolSelect={handleConnectionSubToolSelect}
             />
           </Panel>
 
           {/* 빈 상태 안내 */}
           {nodes.length === 0 && <EmptyStatePanel />}
+
+          {/* 클릭 기반 연결 미리보기 선 */}
+          {connectionPreview && (
+            <ConnectionPreviewLine preview={connectionPreview} />
+          )}
         </ReactFlow>
 
         {/* CreateNode 모드: ghost 미리보기 */}
-        {isCreateMode && ghost && <GhostPreview position={ghost} zoom={ghost.zoom} />}
+        {isCreateMode && ghost && (
+          <GhostPreview
+            position={ghost}
+            zoom={ghost.zoom}
+            subjectCreateMode={subjectCreateMode}
+            gender={defaultGender}
+          />
+        )}
 
         {/* 우측 속성 편집 패널 */}
-        <GenogramPropertyPanel
-          subject={selectedSubject}
-          onUpdate={updateSubject}
-          onClose={handleClosePanel}
-        />
+        {(selectedSubject || selectedConnection) && (
+          <GenogramPropertyPanel
+            subject={selectedSubject}
+            onUpdate={updateSubject}
+            connection={selectedConnection}
+            onConnectionUpdate={updateConnection}
+            onClose={handleClosePanel}
+          />
+        )}
       </div>
     </div>
   );

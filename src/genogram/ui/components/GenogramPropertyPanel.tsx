@@ -1,14 +1,31 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
-import { Edit3, X } from 'lucide-react';
+import { Edit3 } from 'lucide-react';
 
 import type { Subject } from '@/genogram/core/models/person';
-import { SubjectType } from '@/genogram/core/types/enums';
+import type {
+  Connection,
+  ConnectionAttribute,
+  ConnectionLayout,
+  InfluenceAttribute,
+  PartnerAttribute,
+} from '@/genogram/core/models/relationship';
+import {
+  ConnectionType,
+  PartnerStatus,
+  SubjectType,
+} from '@/genogram/core/types/enums';
 
 import {
+  CONNECTION_TYPE_LABELS,
   GENDER_TYPE_ITEMS,
   ILLNESS_ITEMS,
+  INFLUENCE_STATUS_ITEMS,
   NODE_SIZE_ITEMS,
+  PARENT_CHILD_STATUS_ITEMS,
+  PARTNER_STATUS_ITEMS,
+  RELATION_STATUS_ITEMS,
+  STROKE_WIDTH_ITEMS,
 } from '../constants/labels';
 import { usePropertyPanel } from '../hooks/usePropertyPanel';
 
@@ -17,20 +34,31 @@ import { IconDropdown } from './common/IconDropdown';
 import { InlineDropdown } from './common/InlineDropdown';
 import { GenderIcon } from './icons/GenderIcon';
 import { IllnessIcon } from './icons/IllnessIcon';
+import { ParentChildIcon } from './icons/ParentChildIcon';
+import { PartnerIcon } from './icons/PartnerIcon';
+import { RelationIcon } from './icons/RelationIcon';
 
 // ── 메인 컴포넌트 ──
 
 interface GenogramPropertyPanelProps {
   subject: Subject | null;
   onUpdate: (subjectId: string, updates: Partial<Subject>) => void;
+  connection?: Connection | null;
+  onConnectionUpdate?: (
+    connectionId: string,
+    updates: Partial<Connection>
+  ) => void;
   onClose: () => void;
 }
 
 export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   subject,
   onUpdate,
-  onClose,
+  connection,
+  onConnectionUpdate,
+  onClose: _onClose,
 }) => {
+  // ── Subject 관련 훅 ──
   const {
     isPerson,
     isAnimal,
@@ -52,6 +80,139 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     commitName,
   } = usePropertyPanel({ subject, onUpdate });
 
+  // ── Connection 관련 상태 ──
+  const [connMemoValue, setConnMemoValue] = useState('');
+  const [prevConnId, setPrevConnId] = useState<string | null>(null);
+  const connDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
+
+  // connection 변경 시 로컬 메모 동기화 (렌더 중 상태 조정)
+  const currentConnId = connection?.id ?? null;
+  if (currentConnId !== prevConnId) {
+    setPrevConnId(currentConnId);
+    setConnMemoValue(connection?.entity.memo ?? '');
+  }
+
+  const handleConnMemoChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const val = e.target.value;
+      setConnMemoValue(val);
+
+      if (connDebounceRef.current) clearTimeout(connDebounceRef.current);
+      connDebounceRef.current = setTimeout(() => {
+        if (!connection || !onConnectionUpdate) return;
+        onConnectionUpdate(connection.id, {
+          entity: {
+            ...connection.entity,
+            memo: val || null,
+          },
+        });
+      }, 300);
+    },
+    [connection, onConnectionUpdate]
+  );
+
+  const updateStatus = useCallback(
+    (status: string) => {
+      if (!connection || !onConnectionUpdate) return;
+      onConnectionUpdate(connection.id, {
+        entity: {
+          ...connection.entity,
+          attribute: {
+            ...connection.entity.attribute,
+            status,
+          } as ConnectionAttribute,
+        },
+      });
+    },
+    [connection, onConnectionUpdate]
+  );
+
+  const updateConnLayout = useCallback(
+    (field: keyof ConnectionLayout, value: string) => {
+      if (!connection || !onConnectionUpdate) return;
+      onConnectionUpdate(connection.id, {
+        layout: {
+          ...connection.layout,
+          [field]: value,
+        },
+      });
+    },
+    [connection, onConnectionUpdate]
+  );
+
+  const updatePartnerDetail = useCallback(
+    (field: string, value: string | null) => {
+      if (!connection || !onConnectionUpdate) return;
+      const connAttr = connection.entity.attribute as PartnerAttribute;
+      onConnectionUpdate(connection.id, {
+        entity: {
+          ...connection.entity,
+          attribute: {
+            ...connAttr,
+            detail: { ...connAttr.detail, [field]: value },
+          },
+        },
+      });
+    },
+    [connection, onConnectionUpdate]
+  );
+
+  const handleReverse = useCallback(() => {
+    if (!connection || !onConnectionUpdate) return;
+    const connAttr = connection.entity.attribute;
+    const { type } = connection.entity;
+
+    if (type === ConnectionType.Influence_Line && 'startRef' in connAttr) {
+      const influenceAttr = connAttr as InfluenceAttribute;
+      onConnectionUpdate(connection.id, {
+        entity: {
+          ...connection.entity,
+          attribute: {
+            ...influenceAttr,
+            startRef: influenceAttr.endRef,
+            endRef: influenceAttr.startRef,
+          },
+        },
+      });
+    } else if (
+      'subjects' in connAttr &&
+      Array.isArray(connAttr.subjects) &&
+      connAttr.subjects.length === 2
+    ) {
+      onConnectionUpdate(connection.id, {
+        entity: {
+          ...connection.entity,
+          attribute: {
+            ...connAttr,
+            subjects: [connAttr.subjects[1], connAttr.subjects[0]],
+          } as ConnectionAttribute,
+        },
+      });
+    } else if ('parentRef' in connAttr && 'childRef' in connAttr) {
+      const pcAttr = connAttr as {
+        parentRef: string;
+        childRef: string;
+        status: string;
+      };
+      onConnectionUpdate(connection.id, {
+        entity: {
+          ...connection.entity,
+          attribute: {
+            ...pcAttr,
+            parentRef:
+              typeof pcAttr.childRef === 'string'
+                ? pcAttr.childRef
+                : pcAttr.childRef,
+            childRef: pcAttr.parentRef,
+          } as ConnectionAttribute,
+        },
+      });
+    }
+  }, [connection, onConnectionUpdate]);
+
+  // ── 아이콘 렌더러 ──
   const renderGenderIcon = useCallback(
     (value: string) => <GenderIcon value={value} />,
     []
@@ -62,9 +223,238 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     []
   );
 
-  if (!subject || (!isPerson && !isAnimal)) {
+  const renderRelationIcon = useCallback(
+    (value: string) => <RelationIcon value={value} />,
+    []
+  );
+
+  const renderPartnerIcon = useCallback(
+    (value: string) => <PartnerIcon value={value} />,
+    []
+  );
+
+  const renderParentChildIcon = useCallback(
+    (value: string) => <ParentChildIcon value={value} />,
+    []
+  );
+
+  // ── 모드 판별 ──
+  const isSubjectMode = subject && (isPerson || isAnimal);
+  const isConnectionMode = !isSubjectMode && connection;
+
+  if (!isSubjectMode && !isConnectionMode) {
     return null;
   }
+
+  // ══════════════════════════════════════════
+  // Connection 모드 렌더링
+  // ══════════════════════════════════════════
+  if (isConnectionMode && connection) {
+    const { type, attribute } = connection.entity;
+    const typeLabel = CONNECTION_TYPE_LABELS[type] ?? type;
+
+    let statusItems: { value: string; label: string }[] = [];
+    let currentStatus = '';
+
+    if ('status' in attribute) {
+      currentStatus = attribute.status as string;
+    }
+
+    let statusIconRenderer: ((value: string) => React.ReactNode) | undefined;
+
+    switch (type) {
+      case ConnectionType.Partner_Line:
+        statusItems = PARTNER_STATUS_ITEMS;
+        statusIconRenderer = renderPartnerIcon;
+        break;
+      case ConnectionType.Relation_Line:
+        statusItems = RELATION_STATUS_ITEMS;
+        statusIconRenderer = renderRelationIcon;
+        break;
+      case ConnectionType.Influence_Line:
+        statusItems = INFLUENCE_STATUS_ITEMS;
+        statusIconRenderer = renderRelationIcon;
+        break;
+      case ConnectionType.Children_Parents_Line:
+        statusItems = PARENT_CHILD_STATUS_ITEMS;
+        statusIconRenderer = renderParentChildIcon;
+        break;
+    }
+
+    const isPartner = type === ConnectionType.Partner_Line;
+    const partnerAttr = isPartner ? (attribute as PartnerAttribute) : null;
+
+    return (
+      <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-border bg-white shadow-lg">
+        {/* 헤더 */}
+        <div className="px-5 pt-5">
+          <h2 className="text-lg font-bold text-fg">{typeLabel}</h2>
+        </div>
+
+        <hr className="mx-5 mt-3 border-border" />
+
+        <div className="flex flex-col gap-5 px-5 py-5">
+          {/* 종류 (상태) */}
+          {statusItems.length > 0 && (
+            <section>
+              <h3 className="mb-2 text-base font-medium text-fg">종류</h3>
+              <IconDropdown
+                items={statusItems}
+                value={currentStatus}
+                onChange={updateStatus}
+                renderIcon={statusIconRenderer}
+              />
+            </section>
+          )}
+
+          {/* Partner 상세: 상태별 날짜 필드 */}
+          {isPartner &&
+            partnerAttr &&
+            (() => {
+              const ps = partnerAttr.status;
+              const showMarried =
+                ps === PartnerStatus.Marriage ||
+                ps === PartnerStatus.Marital_Separation ||
+                ps === PartnerStatus.Divorce ||
+                ps === PartnerStatus.Remarriage;
+              const showDivorced =
+                ps === PartnerStatus.Divorce || ps === PartnerStatus.Remarriage;
+              const showReunited = ps === PartnerStatus.Remarriage;
+              const showRelStart =
+                ps === PartnerStatus.Couple_Relationship ||
+                ps === PartnerStatus.Secret_Affair;
+
+              return (
+                <>
+                  {showMarried && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-medium text-fg">
+                        결혼일
+                      </span>
+                      <DateInput
+                        key={`married-${connection.id}-${partnerAttr.detail.marriedDate}`}
+                        value={partnerAttr.detail.marriedDate ?? null}
+                        onChange={(value) =>
+                          updatePartnerDetail('marriedDate', value)
+                        }
+                      />
+                    </div>
+                  )}
+                  {showDivorced && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-medium text-fg">
+                        이혼일
+                      </span>
+                      <DateInput
+                        key={`divorced-${connection.id}-${partnerAttr.detail.divorcedDate}`}
+                        value={partnerAttr.detail.divorcedDate ?? null}
+                        onChange={(value) =>
+                          updatePartnerDetail('divorcedDate', value)
+                        }
+                      />
+                    </div>
+                  )}
+                  {showReunited && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-medium text-fg">
+                        재결합일
+                      </span>
+                      <DateInput
+                        key={`reunited-${connection.id}-${partnerAttr.detail.reunitedDate}`}
+                        value={partnerAttr.detail.reunitedDate ?? null}
+                        onChange={(value) =>
+                          updatePartnerDetail('reunitedDate', value)
+                        }
+                      />
+                    </div>
+                  )}
+                  {showRelStart && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-medium text-fg">
+                        연애 시작일
+                      </span>
+                      <DateInput
+                        key={`relstart-${connection.id}-${partnerAttr.detail.relationshipStartDate}`}
+                        value={partnerAttr.detail.relationshipStartDate ?? null}
+                        onChange={(value) =>
+                          updatePartnerDetail('relationshipStartDate', value)
+                        }
+                      />
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+
+          {/* 역방향 — 방향성이 있는 타입만 표시 */}
+          {(type === ConnectionType.Influence_Line ||
+            type === ConnectionType.Children_Parents_Line) && (
+            <div className="flex items-center justify-between">
+              <span className="text-base font-medium text-fg">역방향</span>
+              <button
+                type="button"
+                className="flex h-6 w-11 items-center rounded-full bg-surface-contrast px-0.5 transition-colors"
+                onClick={handleReverse}
+                title="방향 반전"
+              >
+                <span className="text-xs text-fg-muted">전환</span>
+              </button>
+            </div>
+          )}
+
+          {/* 부가 설명 */}
+          <section>
+            <h3 className="mb-2 text-base font-medium text-fg">부가 설명</h3>
+            <textarea
+              value={connMemoValue}
+              onChange={handleConnMemoChange}
+              placeholder="메모를 추가하세요."
+              rows={5}
+              className="w-full resize-none rounded-md border-2 border-border bg-surface p-3 text-sm outline-none transition-colors placeholder:text-fg-muted"
+            />
+          </section>
+
+          <hr className="border-border" />
+
+          {/* 선 두께 */}
+          <section className="flex items-center justify-between">
+            <h3 className="text-base font-medium text-fg">선 두께</h3>
+            <InlineDropdown
+              items={STROKE_WIDTH_ITEMS}
+              value={connection.layout.strokeWidth}
+              onChange={(v) => updateConnLayout('strokeWidth', v)}
+            />
+          </section>
+
+          {/* 선 색상 */}
+          <div className="flex items-center justify-between">
+            <span className="text-base font-medium text-fg">선 색상</span>
+            <input
+              type="color"
+              value={connection.layout.strokeColor}
+              onChange={(e) => updateConnLayout('strokeColor', e.target.value)}
+              className="h-8 w-8 cursor-pointer rounded border border-border"
+            />
+          </div>
+
+          {/* 텍스트 색상 */}
+          <div className="flex items-center justify-between">
+            <span className="text-base font-medium text-fg">텍스트 색상</span>
+            <input
+              type="color"
+              value={connection.layout.textColor}
+              onChange={(e) => updateConnLayout('textColor', e.target.value)}
+              className="h-8 w-8 cursor-pointer rounded border border-border"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════
+  // Subject 모드 렌더링 (기존 코드)
+  // ══════════════════════════════════════════
 
   // 드롭다운 현재 값: Person이면 gender, Animal이면 SubjectType.Animal
   const genderDropdownValue = isPerson ? attr!.gender : SubjectType.Animal;
@@ -103,13 +493,6 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             <Edit3 size={16} className="text-fg-muted" />
           </button>
         )}
-        <button
-          type="button"
-          className="inline-flex h-8 items-center justify-center rounded-md px-2 text-fg transition-colors hover:bg-surface-contrast"
-          onClick={onClose}
-        >
-          <X size={16} />
-        </button>
       </div>
 
       <hr className="mx-5 mt-3 border-border" />
@@ -145,7 +528,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-base font-medium text-fg">출생일</span>
               <DateInput
-                key={`birth-${subject.id}-${attr.lifeSpan.birth}`}
+                key={`birth-${subject!.id}-${attr.lifeSpan.birth}`}
                 value={attr.lifeSpan.birth}
                 onChange={(value) => updateLifeSpan('birth', value)}
               />
@@ -156,7 +539,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-fg">사망일</span>
                 <DateInput
-                  key={`death-${subject.id}-${attr.lifeSpan.death}`}
+                  key={`death-${subject!.id}-${attr.lifeSpan.death}`}
                   value={attr.lifeSpan.death}
                   onChange={(value) => updateLifeSpan('death', value)}
                 />
