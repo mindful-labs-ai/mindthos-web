@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  addEdge,
   applyEdgeChanges,
   applyNodeChanges,
-  type Connection as FlowConnection,
   type Edge,
   type EdgeChange,
   type Node,
@@ -12,7 +10,13 @@ import {
 } from '@xyflow/react';
 
 import type { Subject } from '@/genogram/core/models/person';
-import { Gender, PartnerStatus, ToolMode } from '@/genogram/core/types/enums';
+import type { Connection } from '@/genogram/core/models/relationship';
+import {
+  Gender,
+  InfluenceStatus,
+  RelationStatus,
+  ToolMode,
+} from '@/genogram/core/types/enums';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
 import type { PersonNodeData } from '../components/nodes/PersonNode';
@@ -36,7 +40,12 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   const syncRef = useRef<{
     syncFromEditor: () => void;
     syncSelectedSubject: () => void;
-  }>({ syncFromEditor: () => {}, syncSelectedSubject: () => {} });
+    syncSelectedConnection: () => void;
+  }>({
+    syncFromEditor: () => {},
+    syncSelectedSubject: () => {},
+    syncSelectedConnection: () => {},
+  });
 
   // Editor 생명주기
   const { getEditor } = useGenogramEditor({
@@ -47,9 +56,11 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
           syncRef.current.syncFromEditor();
         }
         syncRef.current.syncSelectedSubject();
+        syncRef.current.syncSelectedConnection();
       }
       if (eventType === 'selection-change') {
         syncRef.current.syncSelectedSubject();
+        syncRef.current.syncSelectedConnection();
       }
       if (eventType === 'tool-change') {
         const editor = getEditor();
@@ -58,6 +69,17 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     },
   });
 
+  // Connection 생성 시 사용할 상태 (서브툴 선택에 의해 결정)
+  const [pendingRelationStatus, setPendingRelationStatus] = useState<
+    (typeof RelationStatus)[keyof typeof RelationStatus]
+  >(RelationStatus.Connected);
+  const [pendingInfluenceStatus, setPendingInfluenceStatus] = useState<
+    (typeof InfluenceStatus)[keyof typeof InfluenceStatus]
+  >(InfluenceStatus.Focused_On);
+  const [pendingConnectionKind, setPendingConnectionKind] = useState<
+    'relation' | 'influence'
+  >('relation');
+
   // 도메인 → ReactFlow 동기화
   const {
     nodes,
@@ -65,13 +87,16 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     edges,
     setEdges,
     selectedSubject,
+    selectedConnection,
     syncFromEditor,
     syncSelectedSubject,
+    syncSelectedConnection,
   } = useFlowSync(getEditor);
 
   // ref를 최신 함수로 갱신
   syncRef.current.syncFromEditor = syncFromEditor;
   syncRef.current.syncSelectedSubject = syncSelectedSubject;
+  syncRef.current.syncSelectedConnection = syncSelectedConnection;
 
   // 초기 동기화 (Editor useEffect 완료 후)
   useEffect(() => {
@@ -124,29 +149,48 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor, setNodes]
   );
 
-  // 엣지 변경 핸들러
+  // 엣지 변경 핸들러 (선택 변경 포함)
   const onEdgesChange = useCallback(
     (changes: EdgeChange<Edge<RelationshipEdgeData>>[]) => {
-      setEdges((eds) => applyEdgeChanges(changes, eds));
-    },
-    [setEdges]
-  );
+      setEdges((eds) => {
+        const next = applyEdgeChanges(changes, eds);
+        const editor = getEditor();
+        if (!editor) return next;
 
-  // 연결 핸들러
-  const onConnect = useCallback(
-    (connection: FlowConnection) => {
-      const editor = getEditor();
-      if (!editor || !connection.source || !connection.target) return;
+        const hasSelectChange = changes.some((c) => c.type === 'select');
+        if (hasSelectChange) {
+          const selectedIds = next.filter((e) => e.selected).map((e) => e.id);
+          if (selectedIds.length > 0) {
+            editor.select(selectedIds, true);
+          } else {
+            editor.deselectAll();
+          }
+        }
 
-      editor.addPartnerConnection(
-        connection.source,
-        connection.target,
-        PartnerStatus.Marriage
-      );
-
-      setEdges((eds) => addEdge(connection, eds));
+        return next;
+      });
     },
     [getEditor, setEdges]
+  );
+
+  // 클릭 기반 연결 생성 (pendingConnectionKind + 각 status에 따라 분기)
+  const createConnection = useCallback(
+    (source: string, target: string) => {
+      const editor = getEditor();
+      if (!editor) return;
+
+      if (pendingConnectionKind === 'relation') {
+        editor.addRelationConnection(source, target, pendingRelationStatus);
+      } else {
+        editor.addInfluenceConnection(source, target, pendingInfluenceStatus);
+      }
+    },
+    [
+      getEditor,
+      pendingConnectionKind,
+      pendingRelationStatus,
+      pendingInfluenceStatus,
+    ]
   );
 
   // 도구 모드 변경
@@ -187,6 +231,46 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // 가족 복합 생성 (자동 선택 + Select 모드 전환)
+  const addFamily = useCallback(
+    (position: { x: number; y: number }) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const snappedPosition = snapToDotCenter(position);
+      const result = editor.addFamily(snappedPosition);
+      editor.select([result.childId], true);
+      editor.setToolMode(ToolMode.Select_Tool);
+      setToolModeState(ToolMode.Select_Tool);
+      return result;
+    },
+    [getEditor]
+  );
+
+  // 반려동물 추가 (자동 선택 + Select 모드 전환)
+  const addAnimal = useCallback(
+    (position: { x: number; y: number }) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const snappedPosition = snapToDotCenter(position);
+      const existingCenters = Array.from(editor.getLayout().nodes.values()).map(
+        (n) => n.position
+      );
+      const finalPosition = avoidCenterCollision(
+        snappedPosition,
+        position,
+        existingCenters
+      );
+      const id = editor.addAnimal(finalPosition, 0);
+      editor.select([id], true);
+      editor.setToolMode(ToolMode.Select_Tool);
+      setToolModeState(ToolMode.Select_Tool);
+      return id;
+    },
+    [getEditor]
+  );
+
   // Subject 삭제
   const deleteSubject = useCallback(
     (subjectId: string) => {
@@ -203,6 +287,16 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
       const editor = getEditor();
       if (!editor) return;
       editor.updateSubject(subjectId, updates);
+    },
+    [getEditor]
+  );
+
+  // Connection 업데이트
+  const updateConnection = useCallback(
+    (connectionId: string, updates: Partial<Connection>) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.updateConnectionEntity(connectionId, updates);
     },
     [getEditor]
   );
@@ -251,10 +345,13 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     edges,
     onNodesChange,
     onEdgesChange,
-    onConnect,
+    createConnection,
     addPerson: addSubject,
+    addFamily,
+    addAnimal,
     deletePerson: deleteSubject,
     updateSubject,
+    updateConnection,
     deleteSelected,
     undo,
     redo,
@@ -265,5 +362,12 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     toolMode,
     setToolMode,
     selectedSubject,
+    selectedConnection,
+    pendingConnectionKind,
+    setPendingConnectionKind,
+    pendingRelationStatus,
+    setPendingRelationStatus,
+    pendingInfluenceStatus,
+    setPendingInfluenceStatus,
   };
 };

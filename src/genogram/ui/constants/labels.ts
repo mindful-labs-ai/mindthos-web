@@ -1,4 +1,13 @@
-import { Gender, Illness, SubjectType } from '@/genogram/core/types/enums';
+import {
+  ConnectionType,
+  Gender,
+  Illness,
+  InfluenceStatus,
+  ParentChildStatus,
+  PartnerStatus,
+  RelationStatus,
+  SubjectType,
+} from '@/genogram/core/types/enums';
 
 // 성별 라벨
 export const GENDER_LABELS: Record<string, string> = {
@@ -53,5 +62,87 @@ export const NODE_SIZE_LABELS: Record<string, string> = {
 };
 
 export const NODE_SIZE_ITEMS = Object.entries(NODE_SIZE_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
+
+// Connection 타입 라벨
+export const CONNECTION_TYPE_LABELS: Record<string, string> = {
+  [ConnectionType.Partner_Line]: '파트너선',
+  [ConnectionType.Relation_Line]: '관계선',
+  [ConnectionType.Influence_Line]: '영향선',
+  [ConnectionType.Children_Parents_Line]: '부모-자녀선',
+  [ConnectionType.Group_Line]: '그룹선',
+};
+
+export const CONNECTION_TYPE_ITEMS = Object.entries(CONNECTION_TYPE_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
+
+// 파트너 상태 라벨
+export const PARTNER_STATUS_LABELS: Record<string, string> = {
+  [PartnerStatus.Marriage]: '결혼',
+  [PartnerStatus.Marital_Separation]: '별거',
+  [PartnerStatus.Divorce]: '이혼',
+  [PartnerStatus.Remarriage]: '재결합',
+  [PartnerStatus.Couple_Relationship]: '연애',
+  [PartnerStatus.Secret_Affair]: '비밀 연애',
+};
+
+export const PARTNER_STATUS_ITEMS = Object.entries(PARTNER_STATUS_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
+
+// 관계 상태 라벨
+export const RELATION_STATUS_LABELS: Record<string, string> = {
+  [RelationStatus.Connected]: '연결',
+  [RelationStatus.Close]: '친밀',
+  [RelationStatus.Fused]: '밀착',
+  [RelationStatus.Distant]: '소원',
+  [RelationStatus.Hostile]: '적대',
+  [RelationStatus.Close_Hostile]: '친밀-적대',
+  [RelationStatus.Cutoff]: '단절',
+};
+
+export const RELATION_STATUS_ITEMS = Object.entries(RELATION_STATUS_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
+
+// 영향 상태 라벨
+export const INFLUENCE_STATUS_LABELS: Record<string, string> = {
+  [InfluenceStatus.Physical_Abuse]: '신체적 학대',
+  [InfluenceStatus.Emotional_Abuse]: '정서적 학대',
+  [InfluenceStatus.Sexual_Abuse]: '성적 학대',
+  [InfluenceStatus.Focused_On]: '집중',
+  [InfluenceStatus.Focused_On_Negatively]: '부정적 집중',
+};
+
+export const INFLUENCE_STATUS_ITEMS = Object.entries(
+  INFLUENCE_STATUS_LABELS
+).map(([value, label]) => ({ value, label }));
+
+// 부모-자녀 상태 라벨
+export const PARENT_CHILD_STATUS_LABELS: Record<string, string> = {
+  [ParentChildStatus.Biological_Child]: '친자',
+  [ParentChildStatus.Miscarriage]: '유산',
+  [ParentChildStatus.Abortion]: '낙태',
+  [ParentChildStatus.Pregnancy]: '임신 중',
+  [ParentChildStatus.Twins]: '쌍둥이',
+  [ParentChildStatus.Identical_Twins]: '일란성 쌍둥이',
+  [ParentChildStatus.Adopted_Child]: '입양',
+  [ParentChildStatus.Foster_Child]: '위탁',
+};
+
+export const PARENT_CHILD_STATUS_ITEMS = Object.entries(
+  PARENT_CHILD_STATUS_LABELS
+).map(([value, label]) => ({ value, label }));
+
+// 선 두께 라벨
+export const STROKE_WIDTH_LABELS: Record<string, string> = {
+  THIN: '얇음',
+  DEFAULT: '기본',
+  THICK: '굵음',
+};
+
+export const STROKE_WIDTH_ITEMS = Object.entries(STROKE_WIDTH_LABELS).map(
   ([value, label]) => ({ value, label })
 );
