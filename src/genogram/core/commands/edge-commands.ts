@@ -1,6 +1,10 @@
 import type { EdgeLayout } from '../layout/layout-state';
 import { createEdgeLayout } from '../layout/layout-state';
-import type { Connection, ConnectionLayout } from '../models/relationship';
+import type {
+  Connection,
+  ConnectionEntity,
+  ConnectionLayout,
+} from '../models/relationship';
 import {
   createRelationConnection,
   createInfluenceConnection,
@@ -240,10 +244,7 @@ export class UpdateConnectionLayoutCommand extends BaseCommand {
     const conn = state.genogram.connections.get(this.connectionId);
     if (!conn) return state;
 
-    this.previousValues = {};
-    Object.keys(this.updates).forEach((key) => {
-      (this.previousValues as any)[key] = (conn.layout as any)[key];
-    });
+    this.previousValues = { ...conn.layout };
 
     Object.assign(conn.layout, this.updates);
     return state;
@@ -254,6 +255,59 @@ export class UpdateConnectionLayoutCommand extends BaseCommand {
     if (!conn || !this.previousValues) return state;
 
     Object.assign(conn.layout, this.previousValues);
+    return state;
+  }
+}
+
+export class UpdateConnectionEntityCommand extends BaseCommand {
+  readonly type = 'UPDATE_CONNECTION_ENTITY';
+  private connectionId: UUID;
+  private updates: Partial<ConnectionEntity>;
+  private previousEntity?: ConnectionEntity;
+
+  constructor(connectionId: UUID, updates: Partial<ConnectionEntity>) {
+    super();
+    this.connectionId = connectionId;
+    this.updates = updates;
+  }
+
+  execute(state: EditorState): EditorState {
+    const conn = state.genogram.connections.get(this.connectionId);
+    if (!conn) return state;
+
+    this.previousEntity = {
+      ...conn.entity,
+      attribute: { ...conn.entity.attribute },
+    };
+
+    const newEntity = { ...conn.entity };
+    if (this.updates.attribute) {
+      newEntity.attribute = {
+        ...conn.entity.attribute,
+        ...this.updates.attribute,
+      };
+    }
+    if (this.updates.memo !== undefined) {
+      newEntity.memo = this.updates.memo;
+    }
+
+    state.genogram.connections.set(this.connectionId, {
+      ...conn,
+      entity: newEntity,
+    });
+    state.genogram.metadata.updatedAt = new Date();
+    return state;
+  }
+
+  undo(state: EditorState): EditorState {
+    const conn = state.genogram.connections.get(this.connectionId);
+    if (!conn || !this.previousEntity) return state;
+
+    state.genogram.connections.set(this.connectionId, {
+      ...conn,
+      entity: this.previousEntity,
+    });
+    state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 }

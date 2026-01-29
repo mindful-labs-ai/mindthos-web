@@ -89,19 +89,23 @@ export class ToggleGridSnapCommand extends BaseCommand {
 
 export class SelectNodesCommand extends BaseCommand {
   readonly type = 'SELECT_NODES';
-  private nodeIds: UUID[];
+  private ids: UUID[];
   private clearOthers: boolean;
-  private previousSelected: UUID[] = [];
+  private previousSelectedNodes: UUID[] = [];
+  private previousSelectedEdges: UUID[] = [];
 
-  constructor(nodeIds: UUID[], clearOthers = true) {
+  constructor(ids: UUID[], clearOthers = true) {
     super();
-    this.nodeIds = [...nodeIds];
+    this.ids = [...ids];
     this.clearOthers = clearOthers;
   }
 
   execute(state: EditorState): EditorState {
     state.layout.nodes.forEach((node, id) => {
-      if (node.isSelected) this.previousSelected.push(id);
+      if (node.isSelected) this.previousSelectedNodes.push(id);
+    });
+    state.layout.edges.forEach((edge, id) => {
+      if (edge.isSelected) this.previousSelectedEdges.push(id);
     });
 
     if (this.clearOthers) {
@@ -110,23 +114,36 @@ export class SelectNodesCommand extends BaseCommand {
       state.layout.texts.forEach((t) => (t.isSelected = false));
     }
 
-    this.nodeIds.forEach((id) => {
+    this.ids.forEach((id) => {
       const node = state.layout.nodes.get(id);
-      if (node) node.isSelected = true;
+      if (node) {
+        node.isSelected = true;
+        return;
+      }
+      const edge = state.layout.edges.get(id);
+      if (edge) {
+        edge.isSelected = true;
+      }
     });
 
     return state;
   }
 
   undo(state: EditorState): EditorState {
-    this.nodeIds.forEach((id) => {
+    this.ids.forEach((id) => {
       const node = state.layout.nodes.get(id);
       if (node) node.isSelected = false;
+      const edge = state.layout.edges.get(id);
+      if (edge) edge.isSelected = false;
     });
 
-    this.previousSelected.forEach((id) => {
+    this.previousSelectedNodes.forEach((id) => {
       const node = state.layout.nodes.get(id);
       if (node) node.isSelected = true;
+    });
+    this.previousSelectedEdges.forEach((id) => {
+      const edge = state.layout.edges.get(id);
+      if (edge) edge.isSelected = true;
     });
 
     return state;

@@ -6,11 +6,13 @@ import {
   AddParentChildConnectionCommand,
   AddGroupConnectionCommand,
   DeleteConnectionCommand,
+  UpdateConnectionEntityCommand,
   UpdateConnectionLayoutCommand,
 } from '../commands/edge-commands';
 import type { CommandManagerConfig } from '../commands/manager';
 import { CommandManager } from '../commands/manager';
 import {
+  AddAnimalSubjectCommand,
   AddSubjectCommand,
   DeleteSubjectCommand,
   MoveMultipleNodesCommand,
@@ -24,6 +26,7 @@ import {
   SetZoomCommand,
   ToggleGridSnapCommand,
 } from '../commands/view-commands';
+import { GRID_GAP } from '../constants/grid';
 import type { LayoutConfig } from '../layout/layout-engine';
 import { LayoutEngine } from '../layout/layout-engine';
 import type {
@@ -43,9 +46,11 @@ import {
   serializeGenogram,
 } from '../models/genogram';
 import type { Subject } from '../models/person';
-import type { ConnectionLayout } from '../models/relationship';
+import type { Connection, ConnectionLayout } from '../models/relationship';
 import {
   AssetType,
+  Gender as GenderEnum,
+  ParentChildStatus as ParentChildStatusEnum,
   PartnerStatus,
   RelationStatus,
   ToolMode,
@@ -219,6 +224,12 @@ export class GenogramEditor {
     return cmd.getSubjectId();
   }
 
+  addAnimal(position: Point, generation = 0): UUID {
+    const cmd = new AddAnimalSubjectCommand(position, generation);
+    this.execute(cmd);
+    return cmd.getSubjectId();
+  }
+
   deleteSubject(subjectId: UUID): void {
     this.execute(new DeleteSubjectCommand(subjectId));
   }
@@ -310,11 +321,79 @@ export class GenogramEditor {
     this.execute(new DeleteConnectionCommand(connectionId));
   }
 
+  updateConnectionEntity(
+    connectionId: UUID,
+    updates: Partial<Connection>
+  ): void {
+    if (updates.entity) {
+      this.execute(
+        new UpdateConnectionEntityCommand(connectionId, updates.entity)
+      );
+    }
+    if (updates.layout) {
+      this.execute(
+        new UpdateConnectionLayoutCommand(connectionId, updates.layout)
+      );
+    }
+  }
+
   updateConnectionLayout(
     connectionId: UUID,
     updates: Partial<ConnectionLayout>
   ): void {
     this.execute(new UpdateConnectionLayoutCommand(connectionId, updates));
+  }
+
+  /**
+   * 가족 복합 생성: 아버지 + 어머니 + 자녀(남성) + 파트너선 + 부모-자녀선
+   * 단일 트랜잭션으로 실행되어 undo 한 번에 전체 롤백.
+   */
+  addFamily(clickPosition: Point): {
+    fatherId: UUID;
+    motherId: UUID;
+    childId: UUID;
+  } {
+    const gap = GRID_GAP;
+
+    const fatherPos = {
+      x: clickPosition.x - 3 * gap,
+      y: clickPosition.y - 2 * gap,
+    };
+    const motherPos = {
+      x: clickPosition.x + 3 * gap,
+      y: clickPosition.y - 2 * gap,
+    };
+    const childPos = { x: clickPosition.x, y: clickPosition.y + 3 * gap };
+
+    const fatherCmd = new AddSubjectCommand(GenderEnum.Male, fatherPos, 0);
+    const motherCmd = new AddSubjectCommand(GenderEnum.Female, motherPos, 0);
+    const childCmd = new AddSubjectCommand(GenderEnum.Male, childPos, 1);
+
+    const partnerCmd = new AddPartnerConnectionCommand(
+      fatherCmd.getSubjectId(),
+      motherCmd.getSubjectId(),
+      PartnerStatus.Marriage
+    );
+
+    const parentChildCmd = new AddParentChildConnectionCommand(
+      partnerCmd.getConnectionId(),
+      childCmd.getSubjectId(),
+      ParentChildStatusEnum.Biological_Child
+    );
+
+    this.executeMultiple([
+      fatherCmd,
+      motherCmd,
+      childCmd,
+      partnerCmd,
+      parentChildCmd,
+    ]);
+
+    return {
+      fatherId: fatherCmd.getSubjectId(),
+      motherId: motherCmd.getSubjectId(),
+      childId: childCmd.getSubjectId(),
+    };
   }
 
   // Selection

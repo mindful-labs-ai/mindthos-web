@@ -1,7 +1,7 @@
 import type { NodeLayout } from '../layout/layout-state';
 import { createNodeLayout } from '../layout/layout-state';
 import type { Subject } from '../models/person';
-import { createPersonSubject } from '../models/person';
+import { createAnimalSubject, createPersonSubject } from '../models/person';
 import type { Gender } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 
@@ -16,6 +16,36 @@ export class AddSubjectCommand extends BaseCommand {
   constructor(gender: Gender, position: Point, generation = 0) {
     super();
     this.subject = createPersonSubject(gender, position);
+    this.layout = createNodeLayout(this.subject.id, position, generation);
+  }
+
+  execute(state: EditorState): EditorState {
+    state.genogram.subjects.set(this.subject.id, { ...this.subject });
+    state.layout.nodes.set(this.layout.nodeId, { ...this.layout });
+    state.genogram.metadata.updatedAt = new Date();
+    return state;
+  }
+
+  undo(state: EditorState): EditorState {
+    state.genogram.subjects.delete(this.subject.id);
+    state.layout.nodes.delete(this.layout.nodeId);
+    state.genogram.metadata.updatedAt = new Date();
+    return state;
+  }
+
+  getSubjectId(): UUID {
+    return this.subject.id;
+  }
+}
+
+export class AddAnimalSubjectCommand extends BaseCommand {
+  readonly type = 'ADD_ANIMAL_SUBJECT';
+  private subject: Subject;
+  private layout: NodeLayout;
+
+  constructor(position: Point, generation = 0) {
+    super();
+    this.subject = createAnimalSubject(position);
     this.layout = createNodeLayout(this.subject.id, position, generation);
   }
 
@@ -110,10 +140,7 @@ export class UpdateSubjectCommand extends BaseCommand {
     const subject = state.genogram.subjects.get(this.subjectId);
     if (!subject) return state;
 
-    this.previousValues = {};
-    Object.keys(this.updates).forEach((key) => {
-      (this.previousValues as any)[key] = (subject as any)[key];
-    });
+    this.previousValues = { ...subject };
 
     Object.assign(subject, this.updates);
     state.genogram.metadata.updatedAt = new Date();
