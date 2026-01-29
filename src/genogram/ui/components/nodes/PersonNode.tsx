@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import React, { memo } from 'react';
 
-import type { NodeProps } from '@xyflow/react';
+import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import { Gender, Illness, SubjectType } from '@/genogram/core/types/enums';
 
@@ -576,6 +576,51 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       >
         {name}
       </div>
+
+      {/* 엣지 앵커용 핸들 — 4방향×2타입 + 중앙×2타입 (비가시·비인터랙티브) */}
+      {(['top', 'right', 'bottom', 'left'] as const).map((pos) => {
+        const position = {
+          top: Position.Top,
+          right: Position.Right,
+          bottom: Position.Bottom,
+          left: Position.Left,
+        }[pos];
+        return (
+          <React.Fragment key={pos}>
+            <Handle
+              type="source"
+              position={position}
+              id={`${pos}-source`}
+              isConnectable={false}
+              className="!pointer-events-none !h-0 !min-h-0 !w-0 !min-w-0 !border-none !opacity-0"
+            />
+            <Handle
+              type="target"
+              position={position}
+              id={`${pos}-target`}
+              isConnectable={false}
+              className="!pointer-events-none !h-0 !min-h-0 !w-0 !min-w-0 !border-none !opacity-0"
+            />
+          </React.Fragment>
+        );
+      })}
+      {/* 중앙 핸들 — Relation/Influence/Group 직선 연결용 */}
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="center-source"
+        isConnectable={false}
+        className="!pointer-events-none !h-0 !min-h-0 !w-0 !min-w-0 !border-none !opacity-0"
+        style={{ top: '50%', left: '50%' }}
+      />
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="center-target"
+        isConnectable={false}
+        className="!pointer-events-none !h-0 !min-h-0 !w-0 !min-w-0 !border-none !opacity-0"
+        style={{ top: '50%', left: '50%' }}
+      />
     </div>
   );
 });
