@@ -1,5 +1,6 @@
-/** 배경 도트 간격 (px) — ReactFlow Background gap과 동일해야 함 */
-export const GRID_GAP = 30;
+import { GRID_GAP } from '@/genogram/core/constants/grid';
+
+export { GRID_GAP };
 
 /** 도트 중앙 오프셋 (GRID_GAP / 2) */
 export const DOT_CENTER_OFFSET = GRID_GAP / 2;
