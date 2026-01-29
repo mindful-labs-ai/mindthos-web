@@ -24,6 +24,7 @@ export interface PartnerDetail {
   marriedDate?: string | null;
   divorcedDate?: string | null;
   reunitedDate?: string | null;
+  relationshipStartDate?: string | null;
 }
 
 export interface PartnerAttribute {
@@ -34,6 +35,7 @@ export interface PartnerAttribute {
 
 export interface ParentChildAttribute {
   status: ParentChildStatus;
+  /** 파트너선(Partner_Line) Connection ID — 이 선의 중간 지점에서 자녀 방향으로 연결 */
   parentRef: UUID;
   childRef: UUID | [UUID, UUID];
 }
@@ -136,6 +138,7 @@ export function createPartnerConnection(
           marriedDate: null,
           divorcedDate: null,
           reunitedDate: null,
+          relationshipStartDate: null,
         },
       } satisfies PartnerAttribute,
       memo: null,
