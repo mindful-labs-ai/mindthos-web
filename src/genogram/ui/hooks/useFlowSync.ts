@@ -308,9 +308,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       return;
     }
 
-    const selectedEdge = items.find(
-      (item) => item.type === AssetType.Edge
-    );
+    const selectedEdge = items.find((item) => item.type === AssetType.Edge);
 
     if (selectedEdge) {
       const conn = editor.getGenogram().connections.get(selectedEdge.id);

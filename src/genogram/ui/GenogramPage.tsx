@@ -175,9 +175,7 @@ const GenogramCanvas: React.FC = () => {
       };
     } else if (selectionContext.type === 'single-connection') {
       // 파트너선: 두 노드의 중간 지점 우측에 FAB 배치
-      const edge = edges.find(
-        (e) => e.id === selectionContext.connectionId
-      );
+      const edge = edges.find((e) => e.id === selectionContext.connectionId);
       if (
         !edge ||
         (edge.data as { connectionType?: string })?.connectionType !==
@@ -188,10 +186,8 @@ const GenogramCanvas: React.FC = () => {
       const sourceNode = nodes.find((n) => n.id === edge.source);
       const targetNode = nodes.find((n) => n.id === edge.target);
       if (!sourceNode || !targetNode) return null;
-      const srcSizePx =
-        (sourceNode.data as { sizePx?: number }).sizePx ?? 60;
-      const tgtSizePx =
-        (targetNode.data as { sizePx?: number }).sizePx ?? 60;
+      const srcSizePx = (sourceNode.data as { sizePx?: number }).sizePx ?? 60;
+      const tgtSizePx = (targetNode.data as { sizePx?: number }).sizePx ?? 60;
       const midX = (sourceNode.position.x + targetNode.position.x) / 2;
       // 파트너선 U자 커브 하단(bottomY) 바로 위에 배치
       const bottomY =
