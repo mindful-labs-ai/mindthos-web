@@ -17,6 +17,7 @@ import {
 } from '@/genogram/core/types/enums';
 import type {
   InfluenceStatus,
+  ParentChildStatus,
   PartnerStatus,
   RelationStatus,
 } from '@/genogram/core/types/enums';
@@ -233,6 +234,11 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
             conn.entity.type === ConnectionType.Influence_Line &&
             'status' in attr
               ? (attr.status as InfluenceStatus)
+              : undefined,
+          parentChildStatus:
+            conn.entity.type === ConnectionType.Children_Parents_Line &&
+            'status' in attr
+              ? (attr.status as ParentChildStatus)
               : undefined,
           sourceSizePx: getSubjectSizePx(genogram.subjects.get(source)),
           targetSizePx: getSubjectSizePx(genogram.subjects.get(target)),
