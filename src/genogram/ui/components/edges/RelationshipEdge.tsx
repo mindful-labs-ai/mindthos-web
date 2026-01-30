@@ -2,6 +2,7 @@ import { memo, type ReactNode } from 'react';
 
 import { EdgeLabelRenderer, type EdgeProps } from '@xyflow/react';
 
+import type { PartnerDetail } from '@/genogram/core/models/relationship';
 import {
   ConnectionType,
   InfluenceStatus,
@@ -23,6 +24,7 @@ export interface RelationshipEdgeData {
   relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   influenceStatus?: (typeof InfluenceStatus)[keyof typeof InfluenceStatus];
   parentChildStatus?: (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
+  partnerDetail?: PartnerDetail;
   label?: string;
   sourceSizePx?: number;
   targetSizePx?: number;
@@ -35,6 +37,7 @@ export interface RelationshipEdgeData {
 
 /* ───────────────────────── 공통 상수 ───────────────────────── */
 
+const TEXT_COLOR = '#1f2937';
 const STROKE = '#374151';
 const SW = 2;
 const SW_SUB = 1.5;
@@ -46,6 +49,18 @@ const CUTOFF_LEN = 8;
 const CUTOFF_GAP = 3;
 const SLASH_LEN = 10;
 const ARROW_INSET = 14; // 화살표 머리 크기만큼 지그재그 끝점 축소
+const HIT_WIDTH = 16; // 클릭 가능 히트 영역 두께
+const HIT_BORDER = '#44CE4B'; // 선택 하이라이트 테두리
+const HIT_INNER = '#f0fdf0'; // 선택 하이라이트 내부 (거의 흰색에 가까운 연두)
+
+/** render 함수 반환 타입 */
+interface EdgeRenderResult {
+  content: ReactNode;
+  /** 히트/하이라이트 영역에 사용할 path d 문자열(들) */
+  hitPaths: string[];
+  /** 중심선 기준 양쪽으로 퍼진 최대 폭 (px). 하이라이트 두께 계산에 사용 */
+  spreadWidth?: number;
+}
 
 /* ───────────────────── 유틸 함수 ──────────────────────── */
 
@@ -245,62 +260,79 @@ const renderRelationEdge = (
   tx: number,
   ty: number,
   color: string
-): ReactNode => {
+): EdgeRenderResult => {
   const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
+  const straight = `M ${sx},${sy} L ${tx},${ty}`;
 
   switch (status) {
     case RelationStatus.Connected:
-      return <path d={`M ${sx},${sy} L ${tx},${ty}`} {...base} />;
+      return {
+        content: <path d={straight} {...base} />,
+        hitPaths: [straight],
+      };
 
     case RelationStatus.Close:
-      return (
-        <>
-          <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP)} {...base} />
-          <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP)} {...base} />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP)} {...base} />
+            <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP)} {...base} />
+          </>
+        ),
+        hitPaths: [straight],
+        spreadWidth: PARALLEL_GAP * 2 + SW,
+      };
 
     case RelationStatus.Fused:
-      return (
-        <>
-          <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP)} {...base} />
-          <path d={`M ${sx},${sy} L ${tx},${ty}`} {...base} />
-          <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP)} {...base} />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP)} {...base} />
+            <path d={straight} {...base} />
+            <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP)} {...base} />
+          </>
+        ),
+        hitPaths: [straight],
+        spreadWidth: PARALLEL_GAP * 2 + SW,
+      };
 
     case RelationStatus.Distant:
-      return (
-        <path
-          d={`M ${sx},${sy} L ${tx},${ty}`}
-          {...base}
-          strokeDasharray="5,5"
-        />
-      );
+      return {
+        content: <path d={straight} {...base} strokeDasharray="5,5" />,
+        hitPaths: [straight],
+      };
 
     case RelationStatus.Hostile:
-      return (
-        <polyline
-          points={buildZigzagPoints(sx, sy, tx, ty)}
-          {...base}
-          strokeWidth={SW_SUB}
-          strokeLinejoin="round"
-        />
-      );
-
-    case RelationStatus.Close_Hostile:
-      return (
-        <>
-          <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP * 2)} {...base} />
+      return {
+        content: (
           <polyline
             points={buildZigzagPoints(sx, sy, tx, ty)}
             {...base}
             strokeWidth={SW_SUB}
             strokeLinejoin="round"
           />
-          <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP * 2)} {...base} />
-        </>
-      );
+        ),
+        hitPaths: [straight],
+        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+      };
+
+    case RelationStatus.Close_Hostile:
+      return {
+        content: (
+          <>
+            <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP * 2)} {...base} />
+            <polyline
+              points={buildZigzagPoints(sx, sy, tx, ty)}
+              {...base}
+              strokeWidth={SW_SUB}
+              strokeLinejoin="round"
+            />
+            <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP * 2)} {...base} />
+          </>
+        ),
+        hitPaths: [straight],
+        spreadWidth: PARALLEL_GAP * 4 + SW,
+      };
 
     case RelationStatus.Cutoff: {
       const dx = tx - sx;
@@ -309,34 +341,40 @@ const renderRelationEdge = (
       const { ux, uy, len } = getUnit(dx, dy);
       const cx = sx + ux * len * 0.5;
       const cy = sy + uy * len * 0.5;
-      return (
-        <>
-          <path d={`M ${sx},${sy} L ${tx},${ty}`} {...base} />
-          {/* 커팅 마크 2개 (법선 방향으로 살짝 분리) */}
-          <line
-            x1={cx + ux * CUTOFF_GAP - nx * CUTOFF_LEN}
-            y1={cy + uy * CUTOFF_GAP - ny * CUTOFF_LEN}
-            x2={cx + ux * CUTOFF_GAP + nx * CUTOFF_LEN}
-            y2={cy + uy * CUTOFF_GAP + ny * CUTOFF_LEN}
-            stroke={color}
-            strokeWidth={SW}
-            strokeLinecap="round"
-          />
-          <line
-            x1={cx - ux * CUTOFF_GAP - nx * CUTOFF_LEN}
-            y1={cy - uy * CUTOFF_GAP - ny * CUTOFF_LEN}
-            x2={cx - ux * CUTOFF_GAP + nx * CUTOFF_LEN}
-            y2={cy - uy * CUTOFF_GAP + ny * CUTOFF_LEN}
-            stroke={color}
-            strokeWidth={SW}
-            strokeLinecap="round"
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={straight} {...base} />
+            <line
+              x1={cx + ux * CUTOFF_GAP - nx * CUTOFF_LEN}
+              y1={cy + uy * CUTOFF_GAP - ny * CUTOFF_LEN}
+              x2={cx + ux * CUTOFF_GAP + nx * CUTOFF_LEN}
+              y2={cy + uy * CUTOFF_GAP + ny * CUTOFF_LEN}
+              stroke={color}
+              strokeWidth={SW}
+              strokeLinecap="round"
+            />
+            <line
+              x1={cx - ux * CUTOFF_GAP - nx * CUTOFF_LEN}
+              y1={cy - uy * CUTOFF_GAP - ny * CUTOFF_LEN}
+              x2={cx - ux * CUTOFF_GAP + nx * CUTOFF_LEN}
+              y2={cy - uy * CUTOFF_GAP + ny * CUTOFF_LEN}
+              stroke={color}
+              strokeWidth={SW}
+              strokeLinecap="round"
+            />
+          </>
+        ),
+        hitPaths: [straight],
+        spreadWidth: CUTOFF_LEN * 2 + SW,
+      };
     }
 
     default:
-      return <path d={`M ${sx},${sy} L ${tx},${ty}`} {...base} />;
+      return {
+        content: <path d={straight} {...base} />,
+        hitPaths: [straight],
+      };
   }
 };
 
@@ -354,7 +392,7 @@ const renderInfluenceEdge = (
   srcShape: NodeShape,
   tgtShape: NodeShape,
   color: string
-): ReactNode => {
+): EdgeRenderResult => {
   const { x1, y1, x2, y2 } = getShapeAwareEndpoints(
     sx,
     sy,
@@ -404,150 +442,173 @@ const renderInfluenceEdge = (
     </marker>
   );
 
-  // 투명 가이드 직선 (화살표 방향 기준용, 지그재그 끝 방향에 영향받지 않음)
   const guideLine = `M ${x1},${y1} L ${x2},${y2}`;
 
   switch (status) {
-    // 신체적 학대: 지그재그 + 채워진 화살표
     case InfluenceStatus.Physical_Abuse:
-      return (
-        <>
-          <defs>{filledMarker}</defs>
-          <polyline
-            points={buildZigzagPoints(
-              x1,
-              y1,
-              x2,
-              y2,
-              ZIGZAG_AMP,
-              ZIGZAG_PERIOD,
-              ARROW_INSET
-            )}
-            {...base}
-            strokeWidth={SW_SUB}
-            strokeLinejoin="round"
-          />
-          <path
-            d={guideLine}
-            fill="none"
-            stroke={color}
-            strokeWidth={1}
-            strokeOpacity={0}
-            markerEnd={`url(#${filledMarkerId})`}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <defs>{filledMarker}</defs>
+            <polyline
+              points={buildZigzagPoints(
+                x1,
+                y1,
+                x2,
+                y2,
+                ZIGZAG_AMP,
+                ZIGZAG_PERIOD,
+                ARROW_INSET
+              )}
+              {...base}
+              strokeWidth={SW_SUB}
+              strokeLinejoin="round"
+            />
+            <path
+              d={guideLine}
+              fill="none"
+              stroke={color}
+              strokeWidth={1}
+              strokeOpacity={0}
+              markerEnd={`url(#${filledMarkerId})`}
+            />
+          </>
+        ),
+        hitPaths: [guideLine],
+        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+      };
 
-    // 정신적 학대: 지그재그 + 빈 화살표
     case InfluenceStatus.Emotional_Abuse:
-      return (
-        <>
-          <defs>{emptyMarker}</defs>
-          <polyline
-            points={buildZigzagPoints(
-              x1,
-              y1,
-              x2,
-              y2,
-              ZIGZAG_AMP,
-              ZIGZAG_PERIOD,
-              ARROW_INSET
-            )}
-            {...base}
-            strokeWidth={SW_SUB}
-            strokeLinejoin="round"
-          />
-          <path
-            d={guideLine}
-            fill="none"
-            stroke={color}
-            strokeWidth={1}
-            strokeOpacity={0}
-            markerEnd={`url(#${emptyMarkerId})`}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <defs>{emptyMarker}</defs>
+            <polyline
+              points={buildZigzagPoints(
+                x1,
+                y1,
+                x2,
+                y2,
+                ZIGZAG_AMP,
+                ZIGZAG_PERIOD,
+                ARROW_INSET
+              )}
+              {...base}
+              strokeWidth={SW_SUB}
+              strokeLinejoin="round"
+            />
+            <path
+              d={guideLine}
+              fill="none"
+              stroke={color}
+              strokeWidth={1}
+              strokeOpacity={0}
+              markerEnd={`url(#${emptyMarkerId})`}
+            />
+          </>
+        ),
+        hitPaths: [guideLine],
+        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+      };
 
-    // 성적 학대: 평행선 2개 + 지그재그 + 채워진 화살표 (투명 중심선에 화살표)
     case InfluenceStatus.Sexual_Abuse:
-      return (
-        <>
-          <defs>{filledMarker}</defs>
-          <path d={offsetLine(x1, y1, x2, y2, -PARALLEL_GAP * 2)} {...base} />
-          <polyline
-            points={buildZigzagPoints(
-              x1,
-              y1,
-              x2,
-              y2,
-              ZIGZAG_AMP,
-              ZIGZAG_PERIOD,
-              ARROW_INSET
-            )}
-            {...base}
-            strokeWidth={SW_SUB}
-            strokeLinejoin="round"
-          />
-          <path d={offsetLine(x1, y1, x2, y2, PARALLEL_GAP * 2)} {...base} />
-          <path
-            d={guideLine}
-            fill="none"
-            stroke={color}
-            strokeWidth={1}
-            strokeOpacity={0}
-            markerEnd={`url(#${filledMarkerId})`}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <defs>{filledMarker}</defs>
+            <path d={offsetLine(x1, y1, x2, y2, -PARALLEL_GAP * 2)} {...base} />
+            <polyline
+              points={buildZigzagPoints(
+                x1,
+                y1,
+                x2,
+                y2,
+                ZIGZAG_AMP,
+                ZIGZAG_PERIOD,
+                ARROW_INSET
+              )}
+              {...base}
+              strokeWidth={SW_SUB}
+              strokeLinejoin="round"
+            />
+            <path d={offsetLine(x1, y1, x2, y2, PARALLEL_GAP * 2)} {...base} />
+            <path
+              d={guideLine}
+              fill="none"
+              stroke={color}
+              strokeWidth={1}
+              strokeOpacity={0}
+              markerEnd={`url(#${filledMarkerId})`}
+            />
+          </>
+        ),
+        hitPaths: [guideLine],
+        spreadWidth: PARALLEL_GAP * 4 + SW,
+      };
 
-    // 집중됨: 직선 + 채워진 화살표
     case InfluenceStatus.Focused_On:
-      return (
-        <>
-          <defs>{filledMarker}</defs>
-          <path d={guideLine} {...base} markerEnd={`url(#${filledMarkerId})`} />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <defs>{filledMarker}</defs>
+            <path
+              d={guideLine}
+              {...base}
+              markerEnd={`url(#${filledMarkerId})`}
+            />
+          </>
+        ),
+        hitPaths: [guideLine],
+      };
 
-    // 부정적 집중: 지그재그 + 직선 겹침 (동일 중심선) + 채워진 화살표
     case InfluenceStatus.Focused_On_Negatively:
-      return (
-        <>
-          <defs>{filledMarker}</defs>
-          <polyline
-            points={buildZigzagPoints(
-              x1,
-              y1,
-              x2,
-              y2,
-              ZIGZAG_AMP,
-              ZIGZAG_PERIOD,
-              ARROW_INSET
-            )}
-            {...base}
-            strokeWidth={SW_SUB}
-            strokeLinejoin="round"
-          />
-          <path d={guideLine} {...base} />
-          <path
-            d={guideLine}
-            fill="none"
-            stroke={color}
-            strokeWidth={1}
-            strokeOpacity={0}
-            markerEnd={`url(#${filledMarkerId})`}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <defs>{filledMarker}</defs>
+            <polyline
+              points={buildZigzagPoints(
+                x1,
+                y1,
+                x2,
+                y2,
+                ZIGZAG_AMP,
+                ZIGZAG_PERIOD,
+                ARROW_INSET
+              )}
+              {...base}
+              strokeWidth={SW_SUB}
+              strokeLinejoin="round"
+            />
+            <path d={guideLine} {...base} />
+            <path
+              d={guideLine}
+              fill="none"
+              stroke={color}
+              strokeWidth={1}
+              strokeOpacity={0}
+              markerEnd={`url(#${filledMarkerId})`}
+            />
+          </>
+        ),
+        hitPaths: [guideLine],
+        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+      };
 
-    // 기본: 직선 + 채워진 화살표
     default:
-      return (
-        <>
-          <defs>{filledMarker}</defs>
-          <path d={guideLine} {...base} markerEnd={`url(#${filledMarkerId})`} />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <defs>{filledMarker}</defs>
+            <path
+              d={guideLine}
+              {...base}
+              markerEnd={`url(#${filledMarkerId})`}
+            />
+          </>
+        ),
+        hitPaths: [guideLine],
+      };
   }
 };
 
@@ -560,128 +621,136 @@ const renderPartnerEdge = (
   tx: number,
   ty: number,
   color: string
-): ReactNode => {
+): EdgeRenderResult => {
   const bottomY = Math.max(sy, ty) + PARTNER_OFFSET;
   const midX = (sx + tx) / 2;
   const uPath = buildPartnerPath(sx, sy, tx, ty);
   const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
 
   switch (status) {
-    // 결혼: U자 실선
     case PartnerStatus.Marriage:
-      return <path d={uPath} {...base} />;
+      return { content: <path d={uPath} {...base} />, hitPaths: [uPath] };
 
-    // 별거: U자 + 사선 1개
     case PartnerStatus.Marital_Separation:
-      return (
-        <>
-          <path d={uPath} {...base} />
-          <line
-            x1={midX - SLASH_LEN / 2}
-            y1={bottomY + SLASH_LEN / 2}
-            x2={midX + SLASH_LEN / 2}
-            y2={bottomY - SLASH_LEN / 2}
-            stroke={color}
-            strokeWidth={SW_SUB}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={uPath} {...base} />
+            <line
+              x1={midX - SLASH_LEN / 2}
+              y1={bottomY + SLASH_LEN / 2}
+              x2={midX + SLASH_LEN / 2}
+              y2={bottomY - SLASH_LEN / 2}
+              stroke={color}
+              strokeWidth={SW_SUB}
+            />
+          </>
+        ),
+        hitPaths: [uPath],
+      };
 
-    // 이혼: U자 + 사선 2개
     case PartnerStatus.Divorce:
-      return (
-        <>
-          <path d={uPath} {...base} />
-          <line
-            x1={midX - 2 - SLASH_LEN / 2}
-            y1={bottomY + SLASH_LEN / 2}
-            x2={midX - 2 + SLASH_LEN / 2}
-            y2={bottomY - SLASH_LEN / 2}
-            stroke={color}
-            strokeWidth={SW_SUB}
-          />
-          <line
-            x1={midX + 2 - SLASH_LEN / 2}
-            y1={bottomY + SLASH_LEN / 2}
-            x2={midX + 2 + SLASH_LEN / 2}
-            y2={bottomY - SLASH_LEN / 2}
-            stroke={color}
-            strokeWidth={SW_SUB}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={uPath} {...base} />
+            <line
+              x1={midX - 2 - SLASH_LEN / 2}
+              y1={bottomY + SLASH_LEN / 2}
+              x2={midX - 2 + SLASH_LEN / 2}
+              y2={bottomY - SLASH_LEN / 2}
+              stroke={color}
+              strokeWidth={SW_SUB}
+            />
+            <line
+              x1={midX + 2 - SLASH_LEN / 2}
+              y1={bottomY + SLASH_LEN / 2}
+              x2={midX + 2 + SLASH_LEN / 2}
+              y2={bottomY - SLASH_LEN / 2}
+              stroke={color}
+              strokeWidth={SW_SUB}
+            />
+          </>
+        ),
+        hitPaths: [uPath],
+      };
 
-    // 재결합: U자 + 사선 2개 + 역방향 사선 1개
     case PartnerStatus.Remarriage:
-      return (
-        <>
-          <path d={uPath} {...base} />
-          <line
-            x1={midX - 2 - SLASH_LEN / 2}
-            y1={bottomY + SLASH_LEN / 2}
-            x2={midX - 2 + SLASH_LEN / 2}
-            y2={bottomY - SLASH_LEN / 2}
-            stroke={color}
-            strokeWidth={SW_SUB}
-          />
-          <line
-            x1={midX + 2 - SLASH_LEN / 2}
-            y1={bottomY + SLASH_LEN / 2}
-            x2={midX + 2 + SLASH_LEN / 2}
-            y2={bottomY - SLASH_LEN / 2}
-            stroke={color}
-            strokeWidth={SW_SUB}
-          />
-          <line
-            x1={midX - SLASH_LEN / 2}
-            y1={bottomY - SLASH_LEN / 2}
-            x2={midX + SLASH_LEN / 2}
-            y2={bottomY + SLASH_LEN / 2}
-            stroke={color}
-            strokeWidth={SW_SUB}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={uPath} {...base} />
+            <line
+              x1={midX - 2 - SLASH_LEN / 2}
+              y1={bottomY + SLASH_LEN / 2}
+              x2={midX - 2 + SLASH_LEN / 2}
+              y2={bottomY - SLASH_LEN / 2}
+              stroke={color}
+              strokeWidth={SW_SUB}
+            />
+            <line
+              x1={midX + 2 - SLASH_LEN / 2}
+              y1={bottomY + SLASH_LEN / 2}
+              x2={midX + 2 + SLASH_LEN / 2}
+              y2={bottomY - SLASH_LEN / 2}
+              stroke={color}
+              strokeWidth={SW_SUB}
+            />
+            <line
+              x1={midX - SLASH_LEN / 2}
+              y1={bottomY - SLASH_LEN / 2}
+              x2={midX + SLASH_LEN / 2}
+              y2={bottomY + SLASH_LEN / 2}
+              stroke={color}
+              strokeWidth={SW_SUB}
+            />
+          </>
+        ),
+        hitPaths: [uPath],
+      };
 
-    // 연애: 수직 실선 2개 + 수평 점선
     case PartnerStatus.Couple_Relationship:
-      return (
-        <>
-          <path d={`M ${sx},${sy} V ${bottomY}`} {...base} />
-          <path d={`M ${tx},${ty} V ${bottomY}`} {...base} />
-          <path
-            d={`M ${sx},${bottomY} H ${tx}`}
-            {...base}
-            strokeDasharray="4,4"
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={`M ${sx},${sy} V ${bottomY}`} {...base} />
+            <path d={`M ${tx},${ty} V ${bottomY}`} {...base} />
+            <path
+              d={`M ${sx},${bottomY} H ${tx}`}
+              {...base}
+              strokeDasharray="4,4"
+            />
+          </>
+        ),
+        hitPaths: [uPath],
+      };
 
-    // 비밀 연애: 수직 실선 2개 + 수평 점선 + 삼각형
     case PartnerStatus.Secret_Affair: {
       const triSize = 6;
-      return (
-        <>
-          <path d={`M ${sx},${sy} V ${bottomY}`} {...base} />
-          <path d={`M ${tx},${ty} V ${bottomY}`} {...base} />
-          <path
-            d={`M ${sx},${bottomY} H ${tx}`}
-            {...base}
-            strokeDasharray="4,4"
-          />
-          <polygon
-            points={`${midX},${bottomY - triSize} ${midX + triSize * 0.6},${bottomY - 1} ${midX - triSize * 0.6},${bottomY - 1}`}
-            fill={color}
-            stroke={color}
-            strokeWidth={1}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={`M ${sx},${sy} V ${bottomY}`} {...base} />
+            <path d={`M ${tx},${ty} V ${bottomY}`} {...base} />
+            <path
+              d={`M ${sx},${bottomY} H ${tx}`}
+              {...base}
+              strokeDasharray="4,4"
+            />
+            <polygon
+              points={`${midX},${bottomY - triSize} ${midX + triSize * 0.6},${bottomY - 1} ${midX - triSize * 0.6},${bottomY - 1}`}
+              fill={color}
+              stroke={color}
+              strokeWidth={1}
+            />
+          </>
+        ),
+        hitPaths: [uPath],
+      };
     }
 
-    // 기본
     default:
-      return <path d={uPath} {...base} />;
+      return { content: <path d={uPath} {...base} />, hitPaths: [uPath] };
   }
 };
 
@@ -698,7 +767,7 @@ const renderChildParentEdge = (
   color: string,
   partnerMidpoint?: { x: number; y: number } | null,
   partnerSubjects?: { x1: number; x2: number } | null
-): ReactNode => {
+): EdgeRenderResult => {
   const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
   const { path } = buildChildParentPath(
     sx,
@@ -710,29 +779,30 @@ const renderChildParentEdge = (
   );
 
   switch (status) {
-    // 위탁자녀: 점선
     case ParentChildStatus.Foster_Child:
-      return <path d={path} {...base} strokeDasharray="5,5" />;
+      return {
+        content: <path d={path} {...base} strokeDasharray="5,5" />,
+        hitPaths: [path],
+      };
 
-    // 입양자녀: 이중선 (실선 + 점선)
     case ParentChildStatus.Adopted_Child: {
-      // 꺾임 path를 그대로 2번 그리되 약간의 수평 offset
       const gap = 2.5;
-      return (
-        <>
-          <path d={path} {...base} transform={`translate(${-gap}, 0)`} />
-          <path
-            d={path}
-            {...base}
-            strokeDasharray="4,3"
-            transform={`translate(${gap}, 0)`}
-          />
-        </>
-      );
+      return {
+        content: (
+          <>
+            <path d={path} {...base} transform={`translate(${-gap}, 0)`} />
+            <path
+              d={path}
+              {...base}
+              strokeDasharray="4,3"
+              transform={`translate(${gap}, 0)`}
+            />
+          </>
+        ),
+        hitPaths: [path],
+      };
     }
 
-    // Twins, Identical_Twins: 현재 childRef가 단일 UUID이므로 일반 선으로 처리
-    // (쌍둥이는 복합 커맨드로 2개 연결선이 생성되므로 개별 선은 일반과 동일)
     case ParentChildStatus.Twins:
     case ParentChildStatus.Identical_Twins:
     case ParentChildStatus.Biological_Child:
@@ -740,7 +810,7 @@ const renderChildParentEdge = (
     case ParentChildStatus.Abortion:
     case ParentChildStatus.Pregnancy:
     default:
-      return <path d={path} {...base} />;
+      return { content: <path d={path} {...base} />, hitPaths: [path] };
   }
 };
 
@@ -765,6 +835,7 @@ export const RelationshipEdge = memo(
       relationStatus,
       influenceStatus,
       parentChildStatus,
+      partnerDetail,
       label,
       sourceSizePx,
       targetSizePx,
@@ -775,15 +846,15 @@ export const RelationshipEdge = memo(
     } = edgeData;
     const ct = connectionType || ConnectionType.Partner_Line;
 
-    const baseColor = selected ? '#3b82f6' : STROKE;
+    const baseColor = STROKE;
 
-    let edgeContent: ReactNode;
+    let renderResult: EdgeRenderResult;
     let labelX: number;
     let labelY: number;
 
     switch (ct) {
       case ConnectionType.Partner_Line: {
-        edgeContent = renderPartnerEdge(
+        renderResult = renderPartnerEdge(
           partnerStatus,
           sourceX,
           sourceY,
@@ -797,7 +868,7 @@ export const RelationshipEdge = memo(
       }
 
       case ConnectionType.Children_Parents_Line: {
-        edgeContent = renderChildParentEdge(
+        renderResult = renderChildParentEdge(
           parentChildStatus,
           sourceX,
           sourceY,
@@ -823,7 +894,7 @@ export const RelationshipEdge = memo(
       case ConnectionType.Influence_Line: {
         const srcHalf = (sourceSizePx ?? DEFAULT_NODE_SIZE) / 2;
         const tgtHalf = (targetSizePx ?? DEFAULT_NODE_SIZE) / 2;
-        edgeContent = renderInfluenceEdge(
+        renderResult = renderInfluenceEdge(
           id,
           influenceStatus,
           sourceX,
@@ -844,7 +915,7 @@ export const RelationshipEdge = memo(
       case ConnectionType.Relation_Line:
       case ConnectionType.Group_Line:
       default: {
-        edgeContent = renderRelationEdge(
+        renderResult = renderRelationEdge(
           relationStatus,
           sourceX,
           sourceY,
@@ -858,9 +929,96 @@ export const RelationshipEdge = memo(
       }
     }
 
+    const { content, hitPaths, spreadWidth } = renderResult;
+    const hitW = Math.max(HIT_WIDTH, (spreadWidth ?? 0) + 8);
+
     return (
       <>
-        {edgeContent}
+        {/* 히트 영역: 투명한 두꺼운 path (클릭 가능 영역 확대) */}
+        {hitPaths.map((hp, i) => (
+          <path
+            key={`hit-${i}`}
+            d={hp}
+            fill="none"
+            stroke="transparent"
+            strokeWidth={hitW}
+            style={{ pointerEvents: 'stroke' }}
+          />
+        ))}
+
+        {/* 선택 하이라이트: 테두리 → 반투명 채움 순서 */}
+        {selected &&
+          hitPaths.map((hp, i) => (
+            <g key={`hl-${i}`} style={{ pointerEvents: 'none' }}>
+              <path
+                d={hp}
+                fill="none"
+                stroke={HIT_BORDER}
+                strokeWidth={hitW + 2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeOpacity={0.45}
+              />
+              <path
+                d={hp}
+                fill="none"
+                stroke={HIT_INNER}
+                strokeWidth={hitW}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </g>
+          ))}
+
+        {content}
+
+        {/* 파트너 날짜 라벨 (U자 안쪽 바닥 중앙) */}
+        {ct === ConnectionType.Partner_Line &&
+          partnerDetail &&
+          (() => {
+            const ps = partnerStatus;
+            const parts: string[] = [];
+            const toYear = (d: string) => d.slice(0, 4);
+
+            const showMarried =
+              ps === PartnerStatus.Marriage ||
+              ps === PartnerStatus.Marital_Separation ||
+              ps === PartnerStatus.Divorce ||
+              ps === PartnerStatus.Remarriage;
+            const showDivorced =
+              ps === PartnerStatus.Divorce || ps === PartnerStatus.Remarriage;
+            const showReunited = ps === PartnerStatus.Remarriage;
+            const showRelStart =
+              ps === PartnerStatus.Couple_Relationship ||
+              ps === PartnerStatus.Secret_Affair;
+
+            if (showMarried && partnerDetail.marriedDate)
+              parts.push(`m.${toYear(partnerDetail.marriedDate)}`);
+            if (showDivorced && partnerDetail.divorcedDate)
+              parts.push(`d.${toYear(partnerDetail.divorcedDate)}`);
+            if (showReunited && partnerDetail.reunitedDate)
+              parts.push(`r.${toYear(partnerDetail.reunitedDate)}`);
+            if (showRelStart && partnerDetail.relationshipStartDate)
+              parts.push(`s.${toYear(partnerDetail.relationshipStartDate)}`);
+
+            if (parts.length === 0) return null;
+
+            return (
+              <EdgeLabelRenderer>
+                <div
+                  className="nodrag nopan pointer-events-none absolute text-xs"
+                  style={{
+                    transform: `translate(-50%, -100%) translate(${labelX}px, ${labelY - 6}px)`,
+                    color: TEXT_COLOR,
+                    textShadow:
+                      '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
+                  }}
+                >
+                  {parts.join('  ')}
+                </div>
+              </EdgeLabelRenderer>
+            );
+          })()}
 
         {label && (
           <EdgeLabelRenderer>

@@ -225,6 +225,10 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
             conn.entity.type === ConnectionType.Partner_Line && 'status' in attr
               ? (attr.status as PartnerStatus)
               : undefined,
+          partnerDetail:
+            conn.entity.type === ConnectionType.Partner_Line && 'detail' in attr
+              ? (attr as PartnerAttribute).detail
+              : undefined,
           relationStatus:
             conn.entity.type === ConnectionType.Relation_Line &&
             'status' in attr
@@ -263,6 +267,13 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     }
 
     const selectedItems = editor.getSelectedItems();
+
+    // 다중 선택 시 속성 패널 숨김
+    if (selectedItems.length > 1) {
+      setSelectedSubject(null);
+      return;
+    }
+
     const selectedNode = selectedItems.find(
       (item) => item.type === AssetType.Node
     );
@@ -283,6 +294,13 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     }
 
     const selectedItems = editor.getSelectedItems();
+
+    // 다중 선택 시 속성 패널 숨김
+    if (selectedItems.length > 1) {
+      setSelectedConnection(null);
+      return;
+    }
+
     const selectedEdge = selectedItems.find(
       (item) => item.type === AssetType.Edge
     );
