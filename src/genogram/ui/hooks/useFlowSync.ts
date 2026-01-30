@@ -253,6 +253,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           partnerMidpoint,
           partnerSubjects,
           strokeColor: conn.layout.strokeColor,
+          strokeWidth: conn.layout.strokeWidth,
           textColor: conn.layout.textColor,
         },
         selected: edgeLayout.isSelected,

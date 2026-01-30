@@ -9,6 +9,7 @@ import {
   ParentChildStatus,
   PartnerStatus,
   RelationStatus,
+  StrokeWidth,
 } from '@/genogram/core/types/enums';
 
 import { DEFAULT_NODE_SIZE } from '../../constants/grid';
@@ -33,6 +34,7 @@ export interface RelationshipEdgeData {
   partnerMidpoint?: { x: number; y: number } | null;
   partnerSubjects?: { x1: number; x2: number } | null;
   strokeColor?: string;
+  strokeWidth?: string; // StrokeWidth enum value ('THIN' | 'DEFAULT' | 'THICK')
   textColor?: string;
   [key: string]: unknown;
 }
@@ -43,6 +45,13 @@ const TEXT_COLOR = '#1f2937';
 const STROKE = '#374151';
 const SW = 2;
 const SW_SUB = 1.5;
+
+/** StrokeWidth enum → px 변환 */
+const STROKE_WIDTH_PX: Record<string, number> = {
+  [StrokeWidth.Thin]: 1,
+  [StrokeWidth.Default]: 2,
+  [StrokeWidth.Thick]: 3,
+};
 const PARTNER_OFFSET = 40;
 const ZIGZAG_AMP = 6;
 const ZIGZAG_PERIOD = 16;
@@ -261,9 +270,10 @@ const renderRelationEdge = (
   sy: number,
   tx: number,
   ty: number,
-  color: string
+  color: string,
+  sw: number = SW
 ): EdgeRenderResult => {
-  const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
+  const base = { stroke: color, strokeWidth: sw, fill: 'none' as const };
   const straight = `M ${sx},${sy} L ${tx},${ty}`;
 
   switch (status) {
@@ -310,12 +320,11 @@ const renderRelationEdge = (
           <polyline
             points={buildZigzagPoints(sx, sy, tx, ty)}
             {...base}
-            strokeWidth={SW_SUB}
             strokeLinejoin="round"
           />
         ),
         hitPaths: [straight],
-        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
 
     case RelationStatus.Close_Hostile:
@@ -326,14 +335,13 @@ const renderRelationEdge = (
             <polyline
               points={buildZigzagPoints(sx, sy, tx, ty)}
               {...base}
-              strokeWidth={SW_SUB}
               strokeLinejoin="round"
             />
             <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP * 2)} {...base} />
           </>
         ),
         hitPaths: [straight],
-        spreadWidth: PARALLEL_GAP * 4 + SW,
+        spreadWidth: PARALLEL_GAP * 4 + sw,
       };
 
     case RelationStatus.Cutoff: {
@@ -393,7 +401,8 @@ const renderInfluenceEdge = (
   tgtHalf: number,
   srcShape: NodeShape,
   tgtShape: NodeShape,
-  color: string
+  color: string,
+  sw: number = SW
 ): EdgeRenderResult => {
   const { x1, y1, x2, y2 } = getShapeAwareEndpoints(
     sx,
@@ -406,7 +415,7 @@ const renderInfluenceEdge = (
     tgtShape
   );
 
-  const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
+  const base = { stroke: color, strokeWidth: sw, fill: 'none' as const };
   const filledMarkerId = `arrow-filled-${id}`;
   const emptyMarkerId = `arrow-empty-${id}`;
 
@@ -418,6 +427,7 @@ const renderInfluenceEdge = (
       refY="5"
       markerWidth="16"
       markerHeight="16"
+      markerUnits="userSpaceOnUse"
       orient="auto-start-reverse"
     >
       <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
@@ -432,13 +442,14 @@ const renderInfluenceEdge = (
       refY="5"
       markerWidth="16"
       markerHeight="16"
+      markerUnits="userSpaceOnUse"
       orient="auto-start-reverse"
     >
       <path
         d="M 0 0 L 10 5 L 0 10 z"
         fill="#ffffff"
         stroke={color}
-        strokeWidth="1.5"
+        strokeWidth={sw}
         strokeLinejoin="round"
       />
     </marker>
@@ -463,7 +474,6 @@ const renderInfluenceEdge = (
                 ARROW_INSET
               )}
               {...base}
-              strokeWidth={SW_SUB}
               strokeLinejoin="round"
             />
             <path
@@ -477,7 +487,7 @@ const renderInfluenceEdge = (
           </>
         ),
         hitPaths: [guideLine],
-        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
 
     case InfluenceStatus.Emotional_Abuse:
@@ -496,7 +506,6 @@ const renderInfluenceEdge = (
                 ARROW_INSET
               )}
               {...base}
-              strokeWidth={SW_SUB}
               strokeLinejoin="round"
             />
             <path
@@ -510,7 +519,7 @@ const renderInfluenceEdge = (
           </>
         ),
         hitPaths: [guideLine],
-        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
 
     case InfluenceStatus.Sexual_Abuse:
@@ -530,7 +539,6 @@ const renderInfluenceEdge = (
                 ARROW_INSET
               )}
               {...base}
-              strokeWidth={SW_SUB}
               strokeLinejoin="round"
             />
             <path d={offsetLine(x1, y1, x2, y2, PARALLEL_GAP * 2)} {...base} />
@@ -545,7 +553,7 @@ const renderInfluenceEdge = (
           </>
         ),
         hitPaths: [guideLine],
-        spreadWidth: PARALLEL_GAP * 4 + SW,
+        spreadWidth: PARALLEL_GAP * 4 + sw,
       };
 
     case InfluenceStatus.Focused_On:
@@ -579,7 +587,6 @@ const renderInfluenceEdge = (
                 ARROW_INSET
               )}
               {...base}
-              strokeWidth={SW_SUB}
               strokeLinejoin="round"
             />
             <path d={guideLine} {...base} />
@@ -594,7 +601,7 @@ const renderInfluenceEdge = (
           </>
         ),
         hitPaths: [guideLine],
-        spreadWidth: ZIGZAG_AMP * 2 + SW_SUB,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
 
     default:
@@ -622,12 +629,13 @@ const renderPartnerEdge = (
   sy: number,
   tx: number,
   ty: number,
-  color: string
+  color: string,
+  sw: number = SW
 ): EdgeRenderResult => {
   const bottomY = Math.max(sy, ty) + PARTNER_OFFSET;
   const midX = (sx + tx) / 2;
   const uPath = buildPartnerPath(sx, sy, tx, ty);
-  const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
+  const base = { stroke: color, strokeWidth: sw, fill: 'none' as const };
 
   switch (status) {
     case PartnerStatus.Marriage:
@@ -768,9 +776,10 @@ const renderChildParentEdge = (
   ty: number,
   color: string,
   partnerMidpoint?: { x: number; y: number } | null,
-  partnerSubjects?: { x1: number; x2: number } | null
+  partnerSubjects?: { x1: number; x2: number } | null,
+  sw: number = SW
 ): EdgeRenderResult => {
-  const base = { stroke: color, strokeWidth: SW, fill: 'none' as const };
+  const base = { stroke: color, strokeWidth: sw, fill: 'none' as const };
   const { path } = buildChildParentPath(
     sx,
     sy,
@@ -846,11 +855,13 @@ export const RelationshipEdge = memo(
       partnerMidpoint,
       partnerSubjects,
       strokeColor: dataStrokeColor,
+      strokeWidth: dataStrokeWidth,
       textColor: dataTextColor,
     } = edgeData;
     const ct = connectionType || ConnectionType.Partner_Line;
 
     const baseColor = dataStrokeColor || STROKE;
+    const baseSw = STROKE_WIDTH_PX[dataStrokeWidth ?? ''] ?? SW;
     const baseTxtColor = dataTextColor || TEXT_COLOR;
 
     let renderResult: EdgeRenderResult;
@@ -865,7 +876,8 @@ export const RelationshipEdge = memo(
           sourceY,
           targetX,
           targetY,
-          baseColor
+          baseColor,
+          baseSw
         );
         labelX = (sourceX + targetX) / 2;
         labelY = Math.max(sourceY, targetY) + PARTNER_OFFSET;
@@ -881,7 +893,8 @@ export const RelationshipEdge = memo(
           targetY,
           baseColor,
           partnerMidpoint,
-          partnerSubjects
+          partnerSubjects,
+          baseSw
         );
         const result = buildChildParentPath(
           sourceX,
@@ -910,7 +923,8 @@ export const RelationshipEdge = memo(
           tgtHalf,
           sourceShape ?? 'circle',
           targetShape ?? 'circle',
-          baseColor
+          baseColor,
+          baseSw
         );
         labelX = (sourceX + targetX) / 2;
         labelY = (sourceY + targetY) / 2;
@@ -926,7 +940,8 @@ export const RelationshipEdge = memo(
           sourceY,
           targetX,
           targetY,
-          baseColor
+          baseColor,
+          baseSw
         );
         labelX = (sourceX + targetX) / 2;
         labelY = (sourceY + targetY) / 2;
