@@ -41,10 +41,12 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     syncFromEditor: () => void;
     syncSelectedSubject: () => void;
     syncSelectedConnection: () => void;
+    syncSelectedItems: () => void;
   }>({
     syncFromEditor: () => {},
     syncSelectedSubject: () => {},
     syncSelectedConnection: () => {},
+    syncSelectedItems: () => {},
   });
 
   // Editor 생명주기
@@ -57,10 +59,12 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         }
         syncRef.current.syncSelectedSubject();
         syncRef.current.syncSelectedConnection();
+        syncRef.current.syncSelectedItems();
       }
       if (eventType === 'selection-change') {
         syncRef.current.syncSelectedSubject();
         syncRef.current.syncSelectedConnection();
+        syncRef.current.syncSelectedItems();
       }
       if (eventType === 'tool-change') {
         const editor = getEditor();
@@ -88,15 +92,18 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     setEdges,
     selectedSubject,
     selectedConnection,
+    selectedItems,
     syncFromEditor,
     syncSelectedSubject,
     syncSelectedConnection,
+    syncSelectedItems,
   } = useFlowSync(getEditor);
 
   // ref를 최신 함수로 갱신
   syncRef.current.syncFromEditor = syncFromEditor;
   syncRef.current.syncSelectedSubject = syncSelectedSubject;
   syncRef.current.syncSelectedConnection = syncSelectedConnection;
+  syncRef.current.syncSelectedItems = syncSelectedItems;
 
   // 초기 동기화 (Editor useEffect 완료 후)
   useEffect(() => {
@@ -363,6 +370,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     setToolMode,
     selectedSubject,
     selectedConnection,
+    selectedItems,
     pendingConnectionKind,
     setPendingConnectionKind,
     pendingRelationStatus,

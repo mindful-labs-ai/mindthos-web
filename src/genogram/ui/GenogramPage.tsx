@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 
 import {
   Background,
@@ -7,14 +7,22 @@ import {
   Panel,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
+  useViewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { Gender } from '@/genogram/core/types/enums';
+import { ConnectionType, Gender } from '@/genogram/core/types/enums';
 
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
 import { EmptyStatePanel } from './components/EmptyStatePanel';
+import {
+  deriveSelectionContext,
+  FloatingActionButton,
+  type FloatingActionType,
+  type SelectionContext,
+} from './components/FloatingActionButton';
 import { GenogramHeader } from './components/GenogramHeader';
 import { GenogramPropertyPanel } from './components/GenogramPropertyPanel';
 import {
@@ -48,6 +56,7 @@ const GenogramCanvas: React.FC = () => {
     setToolMode,
     selectedSubject,
     selectedConnection,
+    selectedItems,
     updateSubject,
     updateConnection,
     deleteSelected,
@@ -141,6 +150,79 @@ const GenogramCanvas: React.FC = () => {
     // deselectAll은 훅에서 아직 미노출 — 빈 영역 클릭으로 해제됨
   }, []);
 
+  // ── 플로팅 액션 버튼 ──
+
+  const selectionContext = useMemo<SelectionContext>(
+    () => deriveSelectionContext(selectedItems),
+    [selectedItems]
+  );
+
+  const { flowToScreenPosition } = useReactFlow();
+  const viewport = useViewport();
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  // 선택된 노드/엣지의 화면 좌표 계산 (캔버스 컨테이너 기준 상대 좌표)
+  const fabPosition = useMemo<{ x: number; y: number } | null>(() => {
+    let flowPoint: { x: number; y: number } | null = null;
+
+    if (selectionContext.type === 'single-subject') {
+      const node = nodes.find((n) => n.id === selectionContext.subjectId);
+      if (!node) return null;
+      const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
+      flowPoint = {
+        x: node.position.x + sizePx / 2 + 12,
+        y: node.position.y,
+      };
+    } else if (selectionContext.type === 'single-connection') {
+      // 파트너선: 두 노드의 중간 지점 우측에 FAB 배치
+      const edge = edges.find(
+        (e) => e.id === selectionContext.connectionId
+      );
+      if (
+        !edge ||
+        (edge.data as { connectionType?: string })?.connectionType !==
+          ConnectionType.Partner_Line
+      ) {
+        return null;
+      }
+      const sourceNode = nodes.find((n) => n.id === edge.source);
+      const targetNode = nodes.find((n) => n.id === edge.target);
+      if (!sourceNode || !targetNode) return null;
+      const srcSizePx =
+        (sourceNode.data as { sizePx?: number }).sizePx ?? 60;
+      const tgtSizePx =
+        (targetNode.data as { sizePx?: number }).sizePx ?? 60;
+      const midX = (sourceNode.position.x + targetNode.position.x) / 2;
+      // 파트너선 U자 커브 하단(bottomY) 바로 위에 배치
+      const bottomY =
+        Math.max(
+          sourceNode.position.y + srcSizePx / 2,
+          targetNode.position.y + tgtSizePx / 2
+        ) + 40; // PARTNER_OFFSET
+      flowPoint = { x: midX, y: bottomY + 20 };
+    }
+
+    if (!flowPoint) return null;
+
+    const screenPos = flowToScreenPosition(flowPoint);
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return screenPos;
+
+    return {
+      x: screenPos.x - rect.left,
+      y: screenPos.y - rect.top,
+    };
+    // viewport를 deps에 포함하여 줌/팬 시 재계산
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionContext, nodes, edges, flowToScreenPosition, viewport]);
+
+  const handleFloatingAction = useCallback(
+    (_action: FloatingActionType, _context: SelectionContext) => {
+      // 향후 복합 커맨드 구현 시 여기에 분기 로직 추가
+    },
+    []
+  );
+
   return (
     <div className="flex h-full flex-col">
       <GenogramHeader
@@ -152,6 +234,7 @@ const GenogramCanvas: React.FC = () => {
 
       {/* 캔버스 영역 */}
       <div
+        ref={canvasRef}
         className={`relative flex-1 ${cursorClass}`}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -213,6 +296,13 @@ const GenogramCanvas: React.FC = () => {
             gender={defaultGender}
           />
         )}
+
+        {/* 선택 노드 옆 플로팅 액션 버튼 */}
+        <FloatingActionButton
+          selectionContext={selectionContext}
+          position={fabPosition}
+          onAction={handleFloatingAction}
+        />
 
         {/* 우측 속성 편집 패널 */}
         {(selectedSubject || selectedConnection) && (

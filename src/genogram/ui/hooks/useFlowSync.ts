@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import type { Edge, Node } from '@xyflow/react';
 
 import type { GenogramEditor } from '@/genogram/core/editor/genogram-editor';
+import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
 import type { Subject, PersonAttribute } from '@/genogram/core/models/person';
 import type {
   Connection,
@@ -60,6 +61,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedConnection, setSelectedConnection] =
     useState<Connection | null>(null);
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
 
   const syncFromEditor = useCallback(() => {
     const editor = getEditor();
@@ -298,15 +300,15 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       return;
     }
 
-    const selectedItems = editor.getSelectedItems();
+    const items = editor.getSelectedItems();
 
     // 다중 선택 시 속성 패널 숨김
-    if (selectedItems.length > 1) {
+    if (items.length > 1) {
       setSelectedConnection(null);
       return;
     }
 
-    const selectedEdge = selectedItems.find(
+    const selectedEdge = items.find(
       (item) => item.type === AssetType.Edge
     );
 
@@ -318,6 +320,15 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     }
   }, [getEditor]);
 
+  const syncSelectedItems = useCallback(() => {
+    const editor = getEditor();
+    if (!editor) {
+      setSelectedItems([]);
+      return;
+    }
+    setSelectedItems(editor.getSelectedItems());
+  }, [getEditor]);
+
   return {
     nodes,
     setNodes,
@@ -325,8 +336,10 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     setEdges,
     selectedSubject,
     selectedConnection,
+    selectedItems,
     syncFromEditor,
     syncSelectedSubject,
     syncSelectedConnection,
+    syncSelectedItems,
   };
 };
