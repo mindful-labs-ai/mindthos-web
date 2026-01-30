@@ -75,8 +75,8 @@ export interface Connection {
 function createDefaultConnectionLayout(): ConnectionLayout {
   return {
     strokeWidth: StrokeWidth.Default,
-    strokeColor: '#000000',
-    textColor: '#000000',
+    strokeColor: '#374151',
+    textColor: '#1f2937',
   };
 }
 

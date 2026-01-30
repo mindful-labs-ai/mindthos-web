@@ -88,8 +88,8 @@ export function createPersonSubject(
       center: position,
       style: {
         size: NodeSize.Default,
-        bgColor: '#FFFFFF',
-        textColor: '#000000',
+        bgColor: '#ffffff',
+        textColor: '#1f2937',
       },
     },
   };
@@ -113,8 +113,8 @@ export function createAnimalSubject(
       center: position,
       style: {
         size: NodeSize.Default,
-        bgColor: '#FFFFFF',
-        textColor: '#000000',
+        bgColor: '#ffffff',
+        textColor: '#1f2937',
       },
     },
   };

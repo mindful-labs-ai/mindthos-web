@@ -119,6 +119,8 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           lifeSpanLabel,
           detailTexts,
           sizePx,
+          bgColor: subject.layout.style.bgColor,
+          textColor: subject.layout.style.textColor,
         },
         selected: nodeLayout.isSelected,
       });
@@ -250,6 +252,8 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           targetShape: getSubjectShape(genogram.subjects.get(target)),
           partnerMidpoint,
           partnerSubjects,
+          strokeColor: conn.layout.strokeColor,
+          textColor: conn.layout.textColor,
         },
         selected: edgeLayout.isSelected,
       });

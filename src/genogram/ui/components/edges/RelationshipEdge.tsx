@@ -32,6 +32,8 @@ export interface RelationshipEdgeData {
   targetShape?: NodeShape;
   partnerMidpoint?: { x: number; y: number } | null;
   partnerSubjects?: { x1: number; x2: number } | null;
+  strokeColor?: string;
+  textColor?: string;
   [key: string]: unknown;
 }
 
@@ -843,10 +845,13 @@ export const RelationshipEdge = memo(
       targetShape,
       partnerMidpoint,
       partnerSubjects,
+      strokeColor: dataStrokeColor,
+      textColor: dataTextColor,
     } = edgeData;
     const ct = connectionType || ConnectionType.Partner_Line;
 
-    const baseColor = STROKE;
+    const baseColor = dataStrokeColor || STROKE;
+    const baseTxtColor = dataTextColor || TEXT_COLOR;
 
     let renderResult: EdgeRenderResult;
     let labelX: number;
@@ -1009,7 +1014,7 @@ export const RelationshipEdge = memo(
                   className="nodrag nopan pointer-events-none absolute text-xs"
                   style={{
                     transform: `translate(-50%, -100%) translate(${labelX}px, ${labelY - 6}px)`,
-                    color: TEXT_COLOR,
+                    color: baseTxtColor,
                     textShadow:
                       '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
                   }}

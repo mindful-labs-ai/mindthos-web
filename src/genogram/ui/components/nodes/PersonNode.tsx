@@ -17,13 +17,14 @@ export interface PersonNodeData {
   detailTexts?: string[];
   illness?: Illness;
   sizePx?: number;
+  bgColor?: string;
+  textColor?: string;
   [key: string]: unknown;
 }
 
 const COLORS = {
   stroke: '#374151',
   fill: '#ffffff',
-  selected: '#374151',
   deceased: '#374151',
   text: '#1f2937',
   selectedHalo: 'rgba(34, 197, 94, 0.12)',
@@ -43,7 +44,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
   } = nodeData;
   const S = nodeData.sizePx ?? DEFAULT_NODE_SIZE;
   const haloSize = S + 48;
-  const strokeColor = selected ? COLORS.selected : COLORS.stroke;
+  const fillColor = nodeData.bgColor || COLORS.fill;
+  const textColor = nodeData.textColor || COLORS.text;
+  const strokeColor = COLORS.stroke;
   const strokeWidth = 1.5;
 
   const renderShape = () => {
@@ -57,7 +60,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       return (
         <polygon
           points={`${c},${m} ${S - m},${c} ${c},${S - m} ${m},${c}`}
-          fill={COLORS.fill}
+          fill={fillColor}
           stroke={strokeColor}
           strokeWidth={strokeWidth}
         />
@@ -73,7 +76,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
             y={m}
             width={S - m * 2}
             height={S - m * 2}
-            fill={COLORS.fill}
+            fill={fillColor}
             stroke={strokeColor}
             strokeWidth={strokeWidth}
             rx="2"
@@ -87,7 +90,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
             cx={c}
             cy={c}
             r={r}
-            fill={COLORS.fill}
+            fill={fillColor}
             stroke={strokeColor}
             strokeWidth={strokeWidth}
           />
@@ -106,7 +109,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               y={m}
               width={S - m * 2}
               height={S - m * 2}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               rx="2"
@@ -133,7 +136,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               cx={c}
               cy={c}
               r={r}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
             />
@@ -157,7 +160,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               y={m}
               width={S - m * 2}
               height={S - m * 2}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
               rx="2"
@@ -183,7 +186,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               cx={c}
               cy={c}
               r={r}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
             />
@@ -211,14 +214,14 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               y={c}
               width={S - m * 2}
               height={c - m}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
             />
             {/* 상단 반원 (아래 직선은 사각형 상단과 겹침) */}
             <path
               d={`M ${m},${c} A ${r},${r} 0 0 1 ${S - m},${c}`}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
             />
@@ -228,7 +231,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               y1={c}
               x2={S - m - strokeWidth / 2}
               y2={c}
-              stroke={COLORS.fill}
+              stroke={fillColor}
               strokeWidth={strokeWidth + 0.5}
             />
           </>
@@ -242,7 +245,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               cx={c}
               cy={c}
               r={r}
-              fill={COLORS.fill}
+              fill={fillColor}
               stroke={strokeColor}
               strokeWidth={strokeWidth}
             />
@@ -251,7 +254,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               y={c + 5}
               textAnchor="middle"
               fontSize="18"
-              fill={COLORS.text}
+              fill={textColor}
             >
               ?
             </text>
@@ -547,7 +550,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
           <span
             className="text-xs font-bold"
             style={{
-              color: COLORS.text,
+              color: textColor,
               textShadow:
                 '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
             }}
@@ -563,7 +566,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
           className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-fg"
           style={{
             left: S + 8,
-            color: COLORS.text,
+            color: textColor,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
