@@ -39,6 +39,7 @@ import {
   deserializeLayout,
   serializeLayout,
 } from '../layout/layout-state';
+import { ConnectionIndex } from '../models/connection-index';
 import type { Genogram, SerializedGenogram } from '../models/genogram';
 import {
   createGenogram,
@@ -121,6 +122,7 @@ export class GenogramEditor {
     this.state = {
       genogram: createGenogram('Untitled'),
       layout: createLayoutState(),
+      connectionIndex: new ConnectionIndex(),
     };
 
     this.commandManager = new CommandManager(config.commandManager);
@@ -648,9 +650,14 @@ export class GenogramEditor {
   }
 
   deserialize(data: SerializedEditor): void {
+    const genogram = deserializeGenogram(data.genogram);
+    const connectionIndex = new ConnectionIndex();
+    connectionIndex.rebuild(genogram.connections);
+
     this.state = {
-      genogram: deserializeGenogram(data.genogram),
+      genogram,
       layout: deserializeLayout(data.layout),
+      connectionIndex,
     };
     this.viewSettings.updateSettings(data.viewSettings);
     this.commandManager.clear();

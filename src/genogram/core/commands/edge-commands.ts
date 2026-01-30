@@ -39,11 +39,13 @@ export class AddRelationConnectionCommand extends BaseCommand {
       ...this.connection,
     });
     state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
+    state.connectionIndex.add(this.connection);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
+    state.connectionIndex.remove(this.connection);
     state.genogram.connections.delete(this.connection.id);
     state.layout.edges.delete(this.edgeLayout.edgeId);
     state.genogram.metadata.updatedAt = new Date();
@@ -71,11 +73,13 @@ export class AddInfluenceConnectionCommand extends BaseCommand {
       ...this.connection,
     });
     state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
+    state.connectionIndex.add(this.connection);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
+    state.connectionIndex.remove(this.connection);
     state.genogram.connections.delete(this.connection.id);
     state.layout.edges.delete(this.edgeLayout.edgeId);
     state.genogram.metadata.updatedAt = new Date();
@@ -107,11 +111,13 @@ export class AddPartnerConnectionCommand extends BaseCommand {
       ...this.connection,
     });
     state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
+    state.connectionIndex.add(this.connection);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
+    state.connectionIndex.remove(this.connection);
     state.genogram.connections.delete(this.connection.id);
     state.layout.edges.delete(this.edgeLayout.edgeId);
     state.genogram.metadata.updatedAt = new Date();
@@ -143,11 +149,13 @@ export class AddParentChildConnectionCommand extends BaseCommand {
       ...this.connection,
     });
     state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
+    state.connectionIndex.add(this.connection);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
+    state.connectionIndex.remove(this.connection);
     state.genogram.connections.delete(this.connection.id);
     state.layout.edges.delete(this.edgeLayout.edgeId);
     state.genogram.metadata.updatedAt = new Date();
@@ -175,11 +183,13 @@ export class AddGroupConnectionCommand extends BaseCommand {
       ...this.connection,
     });
     state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
+    state.connectionIndex.add(this.connection);
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
+    state.connectionIndex.remove(this.connection);
     state.genogram.connections.delete(this.connection.id);
     state.layout.edges.delete(this.edgeLayout.edgeId);
     state.genogram.metadata.updatedAt = new Date();
@@ -210,6 +220,7 @@ export class DeleteConnectionCommand extends BaseCommand {
         connection: { ...conn } as Connection,
         layout: { ...layout },
       };
+      state.connectionIndex.remove(conn);
     }
 
     state.genogram.connections.delete(this.connectionId);
@@ -222,6 +233,7 @@ export class DeleteConnectionCommand extends BaseCommand {
     if (this.backup) {
       state.genogram.connections.set(this.connectionId, this.backup.connection);
       state.layout.edges.set(this.connectionId, this.backup.layout);
+      state.connectionIndex.add(this.backup.connection);
     }
     state.genogram.metadata.updatedAt = new Date();
     return state;

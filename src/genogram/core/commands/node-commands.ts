@@ -1,7 +1,8 @@
-import type { NodeLayout } from '../layout/layout-state';
+import type { EdgeLayout, NodeLayout } from '../layout/layout-state';
 import { createNodeLayout } from '../layout/layout-state';
 import type { Subject } from '../models/person';
 import { createAnimalSubject, createPersonSubject } from '../models/person';
+import type { Connection } from '../models/relationship';
 import type { Gender } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 
@@ -71,7 +72,11 @@ export class AddAnimalSubjectCommand extends BaseCommand {
 export class DeleteSubjectCommand extends BaseCommand {
   readonly type = 'DELETE_SUBJECT';
   private subjectId: UUID;
-  private backup?: { subject: Subject; layout: NodeLayout };
+  private subjectBackup?: { subject: Subject; layout: NodeLayout };
+  private deletedConnections: {
+    connection: Connection;
+    layout: EdgeLayout;
+  }[] = [];
 
   constructor(subjectId: UUID) {
     super();
@@ -83,42 +88,61 @@ export class DeleteSubjectCommand extends BaseCommand {
     const layout = state.layout.nodes.get(this.subjectId);
 
     if (subject && layout) {
-      this.backup = { subject: { ...subject }, layout: { ...layout } };
+      this.subjectBackup = { subject: { ...subject }, layout: { ...layout } };
     }
 
     state.genogram.subjects.delete(this.subjectId);
     state.layout.nodes.delete(this.subjectId);
 
-    // Remove related connections
-    state.genogram.connections.forEach((conn, id) => {
-      const attr = conn.entity.attribute;
-      const isRelated =
-        ('subjects' in attr &&
-          Array.isArray(attr.subjects) &&
-          attr.subjects.includes(this.subjectId)) ||
-        ('startRef' in attr && attr.startRef === this.subjectId) ||
-        ('endRef' in attr && attr.endRef === this.subjectId) ||
-        ('parentRef' in attr && attr.parentRef === this.subjectId) ||
-        ('childRef' in attr &&
-          (attr.childRef === this.subjectId ||
-            (Array.isArray(attr.childRef) &&
-              attr.childRef.includes(this.subjectId))));
+    // 1차: 인덱스를 통해 Subject를 직접 참조하는 Connection 수집 — O(1)
+    this.deletedConnections = [];
+    const directDeleteIds = new Set<UUID>(
+      state.connectionIndex.getBySubject(this.subjectId)
+    );
 
-      if (isRelated) {
-        state.genogram.connections.delete(id);
-        state.layout.edges.delete(id);
+    // 2차: 삭제될 Connection을 parentRef로 참조하는 자녀선 수집 — O(k)
+    const cascadeDeleteIds = new Set<UUID>();
+    for (const directId of directDeleteIds) {
+      for (const childId of state.connectionIndex.getByParentRef(directId)) {
+        if (!directDeleteIds.has(childId)) {
+          cascadeDeleteIds.add(childId);
+        }
       }
-    });
+    }
+
+    // 백업 후 삭제 (인덱스도 갱신)
+    const allDeleteIds = [...directDeleteIds, ...cascadeDeleteIds];
+    for (const id of allDeleteIds) {
+      const conn = state.genogram.connections.get(id);
+      const edgeLayout = state.layout.edges.get(id);
+      if (conn && edgeLayout) {
+        this.deletedConnections.push({
+          connection: { ...conn },
+          layout: { ...edgeLayout },
+        });
+        state.connectionIndex.remove(conn);
+      }
+      state.genogram.connections.delete(id);
+      state.layout.edges.delete(id);
+    }
 
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }
 
   undo(state: EditorState): EditorState {
-    if (this.backup) {
-      state.genogram.subjects.set(this.subjectId, this.backup.subject);
-      state.layout.nodes.set(this.subjectId, this.backup.layout);
+    // Connection 먼저 복원 (파트너선이 있어야 자녀선 참조가 유효) + 인덱스 복원
+    for (const { connection, layout } of this.deletedConnections) {
+      state.genogram.connections.set(connection.id, connection);
+      state.layout.edges.set(layout.edgeId, layout);
+      state.connectionIndex.add(connection);
     }
+
+    if (this.subjectBackup) {
+      state.genogram.subjects.set(this.subjectId, this.subjectBackup.subject);
+      state.layout.nodes.set(this.subjectId, this.subjectBackup.layout);
+    }
+
     state.genogram.metadata.updatedAt = new Date();
     return state;
   }

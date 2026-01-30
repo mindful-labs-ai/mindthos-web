@@ -1,10 +1,13 @@
 import type { LayoutState } from '../layout/layout-state';
+import type { ConnectionIndex } from '../models/connection-index';
 import type { Genogram } from '../models/genogram';
 import { generateId } from '../types/types';
 
 export interface EditorState {
   genogram: Genogram;
   layout: LayoutState;
+  /** Subject↔Connection 역인덱스 — O(1) 연관 검색용 */
+  connectionIndex: ConnectionIndex;
 }
 
 export interface Command {
