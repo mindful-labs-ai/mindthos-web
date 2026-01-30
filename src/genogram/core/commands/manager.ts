@@ -29,6 +29,11 @@ export class CommandManager {
   }
 
   execute(command: Command, state: EditorState): EditorState {
+    // UI 상태 변경(선택, 줌, 팬 등)은 실행만 하고 히스토리에 기록하지 않음
+    if (!command.recordInHistory) {
+      return command.execute(state);
+    }
+
     const now = Date.now();
 
     if (

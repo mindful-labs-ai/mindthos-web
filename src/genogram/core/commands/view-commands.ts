@@ -4,6 +4,7 @@ import type { EditorState } from './base';
 import { BaseCommand } from './base';
 
 export class SetZoomCommand extends BaseCommand {
+  override readonly recordInHistory = false;
   readonly type = 'SET_ZOOM';
   private newZoom: number;
   private previousZoom?: number;
@@ -39,6 +40,7 @@ export class SetZoomCommand extends BaseCommand {
 }
 
 export class SetOffsetCommand extends BaseCommand {
+  override readonly recordInHistory = false;
   readonly type = 'SET_OFFSET';
   private newOffset: Point;
   private previousOffset?: Point;
@@ -74,6 +76,7 @@ export class SetOffsetCommand extends BaseCommand {
 }
 
 export class ToggleGridSnapCommand extends BaseCommand {
+  override readonly recordInHistory = false;
   readonly type = 'TOGGLE_GRID_SNAP';
 
   execute(state: EditorState): EditorState {
@@ -88,6 +91,7 @@ export class ToggleGridSnapCommand extends BaseCommand {
 }
 
 export class SelectNodesCommand extends BaseCommand {
+  override readonly recordInHistory = false;
   readonly type = 'SELECT_NODES';
   private ids: UUID[];
   private clearOthers: boolean;
@@ -151,6 +155,7 @@ export class SelectNodesCommand extends BaseCommand {
 }
 
 export class DeselectAllCommand extends BaseCommand {
+  override readonly recordInHistory = false;
   readonly type = 'DESELECT_ALL';
   private previousNodeIds: UUID[] = [];
   private previousEdgeIds: UUID[] = [];
