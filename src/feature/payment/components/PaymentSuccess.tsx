@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 
 import { billingService } from '../services/billingService';
@@ -86,11 +87,12 @@ export const PaymentSuccess = () => {
               }
             }
 
+            trackEvent('plan_upgrade_success', { plan_id: planId });
+
             toast({
               title: '플랜 업그레이드 완료',
               description: '플랜이 성공적으로 업그레이드되었습니다.',
             });
-            // 설정 페이지로 이동
             navigate('/settings');
           } else {
             throw new Error(
@@ -120,6 +122,14 @@ export const PaymentSuccess = () => {
         // 설정 페이지로 이동
         navigate('/settings');
       } catch (error) {
+        if (planId) {
+          trackEvent('plan_upgrade_failed', {
+            plan_id: planId,
+            error_message:
+              error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+
         toast({
           title: planId ? '플랜 업그레이드 실패' : '카드 등록 실패',
           description:

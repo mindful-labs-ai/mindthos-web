@@ -73,7 +73,10 @@ describe('Tab', () => {
       { value: 'tab2', label: 'Tab 2', disabled: true },
     ];
     render(<Tab items={itemsWithDisabled} />);
-    expect(screen.getByRole('tab', { name: 'Tab 2' })).toBeDisabled();
+    expect(screen.getByRole('tab', { name: 'Tab 2' })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
   });
 
   it('navigates with Home key', async () => {
