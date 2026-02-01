@@ -13,6 +13,7 @@ import type { CommandManagerConfig } from '../commands/manager';
 import { CommandManager } from '../commands/manager';
 import {
   AddAnimalSubjectCommand,
+  AddSpecialChildSubjectCommand,
   AddSubjectCommand,
   DeleteSubjectCommand,
   MoveMultipleNodesCommand,
@@ -54,6 +55,7 @@ import {
   ParentChildStatus as ParentChildStatusEnum,
   PartnerStatus,
   RelationStatus,
+  SubjectType as SubjectTypeEnum,
   ToolMode,
 } from '../types/enums';
 import type {
@@ -84,6 +86,15 @@ import {
 } from './interaction-state';
 import type { ViewDisplaySettings } from './view-settings';
 import { ViewSettings } from './view-settings';
+
+/** ParentChildStatus → SubjectType 매핑 (유산/낙태/임신 중) */
+const SPECIAL_CHILD_SUBJECT_TYPE: Readonly<
+  Record<string, typeof SubjectTypeEnum.Miscarriage | typeof SubjectTypeEnum.Abortion | typeof SubjectTypeEnum.Pregnancy>
+> = {
+  [ParentChildStatusEnum.Miscarriage]: SubjectTypeEnum.Miscarriage,
+  [ParentChildStatusEnum.Abortion]: SubjectTypeEnum.Abortion,
+  [ParentChildStatusEnum.Pregnancy]: SubjectTypeEnum.Pregnancy,
+};
 
 export type EditorEventType =
   | 'state-change'
@@ -396,6 +407,182 @@ export class GenogramEditor {
       motherId: motherCmd.getSubjectId(),
       childId: childCmd.getSubjectId(),
     };
+  }
+
+  /**
+   * 부모 쌍 복합 생성: 아버지 + 어머니 + 파트너선 + 부모-자녀선
+   * 선택된 자녀 Subject의 위쪽에 배치. 단일 트랜잭션으로 undo 한 번에 전체 롤백.
+   */
+  addParentPair(childId: UUID): {
+    fatherId: UUID;
+    motherId: UUID;
+    partnerLineId: UUID;
+    parentChildLineId: UUID;
+  } {
+    const childLayout = this.state.layout.nodes.get(childId);
+    if (!childLayout) {
+      throw new Error(`Subject layout not found: ${childId}`);
+    }
+
+    const gap = GRID_GAP;
+    const childPos = childLayout.position;
+
+    const fatherPos = {
+      x: childPos.x - 3 * gap,
+      y: childPos.y - 5 * gap,
+    };
+    const motherPos = {
+      x: childPos.x + 3 * gap,
+      y: childPos.y - 5 * gap,
+    };
+
+    const fatherCmd = new AddSubjectCommand(GenderEnum.Male, fatherPos, 0);
+    const motherCmd = new AddSubjectCommand(GenderEnum.Female, motherPos, 0);
+
+    const partnerCmd = new AddPartnerConnectionCommand(
+      fatherCmd.getSubjectId(),
+      motherCmd.getSubjectId(),
+      PartnerStatus.Marriage
+    );
+
+    const parentChildCmd = new AddParentChildConnectionCommand(
+      partnerCmd.getConnectionId(),
+      childId,
+      ParentChildStatusEnum.Biological_Child
+    );
+
+    this.executeMultiple([fatherCmd, motherCmd, partnerCmd, parentChildCmd]);
+
+    return {
+      fatherId: fatherCmd.getSubjectId(),
+      motherId: motherCmd.getSubjectId(),
+      partnerLineId: partnerCmd.getConnectionId(),
+      parentChildLineId: parentChildCmd.getConnectionId(),
+    };
+  }
+
+  /**
+   * parentRef(파트너선 ID 또는 Subject ID) 아래에 자녀 Subject를 생성하고
+   * 부모-자녀선을 연결합니다.
+   * 쌍둥이(Twins, Identical_Twins)일 때는 자녀 2명을 생성합니다.
+   */
+  addChildToParentRef(
+    parentRef: UUID,
+    childStatus: ParentChildStatus
+  ): { childIds: UUID[]; parentChildLineId: UUID } {
+    const gap = GRID_GAP;
+    let basePos: Point;
+
+    // parentRef가 파트너선인지 Subject인지 판별
+    const connection = this.state.genogram.connections.get(parentRef);
+    if (connection && 'subjects' in connection.entity.attribute) {
+      // 파트너선 → 두 부모의 중간 아래
+      const attr = connection.entity
+        .attribute as import('../models/relationship').PartnerAttribute;
+      const sourceLayout = this.state.layout.nodes.get(attr.subjects[0]);
+      const targetLayout = this.state.layout.nodes.get(attr.subjects[1]);
+      if (!sourceLayout || !targetLayout) {
+        throw new Error('Partner source/target layout not found');
+      }
+      const midX =
+        (sourceLayout.position.x + targetLayout.position.x) / 2;
+      const bottomY = Math.max(
+        sourceLayout.position.y,
+        targetLayout.position.y
+      );
+      basePos = { x: midX, y: bottomY + 4 * gap };
+    } else {
+      // Subject ID → 해당 Subject 바로 아래
+      const parentLayout = this.state.layout.nodes.get(parentRef);
+      if (!parentLayout) {
+        throw new Error(`Parent layout not found: ${parentRef}`);
+      }
+      basePos = {
+        x: parentLayout.position.x,
+        y: parentLayout.position.y + 4 * gap,
+      };
+    }
+
+    const isTwins =
+      childStatus === ParentChildStatusEnum.Twins ||
+      childStatus === ParentChildStatusEnum.Identical_Twins;
+
+    const specialSubjectType = SPECIAL_CHILD_SUBJECT_TYPE[childStatus];
+
+    const existingCenters = Array.from(
+      this.state.layout.nodes.values()
+    ).map((n) => n.position);
+
+    const avoidCollision = (pos: Point): Point => {
+      let finalPos = pos;
+      for (const center of existingCenters) {
+        if (
+          Math.abs(center.x - finalPos.x) < gap &&
+          Math.abs(center.y - finalPos.y) < gap
+        ) {
+          finalPos = { x: finalPos.x + 2 * gap, y: finalPos.y };
+        }
+      }
+      return finalPos;
+    };
+
+    if (isTwins) {
+      // 쌍둥이: 자녀 2명 생성, childRef = [UUID, UUID]
+      const pos1 = avoidCollision({
+        x: basePos.x - 2 * gap,
+        y: basePos.y,
+      });
+      const pos2 = avoidCollision({
+        x: basePos.x + 2 * gap,
+        y: basePos.y,
+      });
+      const child1Cmd = new AddSubjectCommand(GenderEnum.Male, pos1, 0);
+      const child2Cmd = new AddSubjectCommand(
+        GenderEnum.Female,
+        pos2,
+        0
+      );
+      const parentChildCmd = new AddParentChildConnectionCommand(
+        parentRef,
+        [child1Cmd.getSubjectId(), child2Cmd.getSubjectId()],
+        childStatus
+      );
+      this.executeMultiple([child1Cmd, child2Cmd, parentChildCmd]);
+      return {
+        childIds: [
+          child1Cmd.getSubjectId(),
+          child2Cmd.getSubjectId(),
+        ],
+        parentChildLineId: parentChildCmd.getConnectionId(),
+      };
+    }
+
+    // 단일 자녀
+    const finalPos = avoidCollision(basePos);
+    const childCmd = specialSubjectType
+      ? new AddSpecialChildSubjectCommand(specialSubjectType, finalPos, 0)
+      : new AddSubjectCommand(GenderEnum.Male, finalPos, 0);
+    const parentChildCmd = new AddParentChildConnectionCommand(
+      parentRef,
+      childCmd.getSubjectId(),
+      childStatus
+    );
+    this.executeMultiple([childCmd, parentChildCmd]);
+    return {
+      childIds: [childCmd.getSubjectId()],
+      parentChildLineId: parentChildCmd.getConnectionId(),
+    };
+  }
+
+  /**
+   * 기존 Subject를 parentRef(파트너선 ID 또는 Subject ID)에 자녀로 연결합니다.
+   */
+  addChildConnectionToParentRef(
+    parentRef: UUID,
+    childId: UUID,
+    childStatus: ParentChildStatus
+  ): UUID {
+    return this.addParentChildConnection(parentRef, childId, childStatus);
   }
 
   // Selection

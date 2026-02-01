@@ -12,7 +12,12 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { ConnectionType, Gender } from '@/genogram/core/types/enums';
+import {
+  ConnectionType,
+  Gender,
+  ParentChildStatus,
+  ToolMode,
+} from '@/genogram/core/types/enums';
 
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
@@ -20,6 +25,7 @@ import { EmptyStatePanel } from './components/EmptyStatePanel';
 import {
   deriveSelectionContext,
   FloatingActionButton,
+  type FloatingActionExtra,
   type FloatingActionType,
   type SelectionContext,
 } from './components/FloatingActionButton';
@@ -50,6 +56,9 @@ const GenogramCanvas: React.FC = () => {
     addPerson,
     addFamily,
     addAnimal,
+    addParentPair,
+    addChildToParentRef,
+    addChildConnectionToParentRef,
     undo,
     redo,
     toolMode,
@@ -76,6 +85,61 @@ const GenogramCanvas: React.FC = () => {
   const [defaultGender, setDefaultGender] = useState<
     (typeof Gender)[keyof typeof Gender]
   >(Gender.Male);
+
+  // FAB에서 연결 모드 진입 시 소스 Subject ID 추적 (partner/relation 공용)
+  const [fabSourceId, setFabSourceId] = useState<string | null>(null);
+
+  // 자녀 모드: FAB에서 자녀 추가 시 파트너선 ID + 자녀 상태 추적
+  const [pendingChildPartnerLineId, setPendingChildPartnerLineId] = useState<
+    string | null
+  >(null);
+  const [pendingChildStatus, setPendingChildStatus] = useState<
+    (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
+  >(ParentChildStatus.Biological_Child);
+
+  // 파트너 모드에서 빈 곳 클릭 시: 파트너 Subject 생성 + 파트너선 연결
+  const handlePartnerCreateAtPosition = useCallback(
+    (sourceId: string, position: { x: number; y: number }) => {
+      // 소스 Subject의 성별에 따라 반대 성별 자동 선택
+      const sourceNode = nodes.find((n) => n.id === sourceId);
+      const sourceGender = (sourceNode?.data as { gender?: string })?.gender;
+      let partnerGender: (typeof Gender)[keyof typeof Gender] = Gender.Male;
+      if (sourceGender === Gender.Male) partnerGender = Gender.Female;
+      else if (sourceGender === Gender.Female) partnerGender = Gender.Male;
+      // 그 외(Gay, Lesbian, Transgender 등)는 기본 Male
+
+      const newId = addPerson(partnerGender, position);
+      if (newId) {
+        createConnection(sourceId, newId);
+      }
+      setFabSourceId(null);
+    },
+    [addPerson, createConnection, nodes]
+  );
+
+  // 자녀 모드에서 빈 곳 클릭 시: 자녀 Subject 생성 + 부모-자녀선 연결
+  const handleChildCreateAtPosition = useCallback(
+    (_sourceId: string, position: { x: number; y: number }) => {
+      if (!pendingChildPartnerLineId) return;
+      const newId = addPerson(defaultGender, position);
+      if (newId) {
+        addChildConnectionToParentRef(
+          pendingChildPartnerLineId,
+          newId,
+          pendingChildStatus
+        );
+      }
+      setPendingChildPartnerLineId(null);
+      setFabSourceId(null);
+    },
+    [
+      addPerson,
+      defaultGender,
+      addChildConnectionToParentRef,
+      pendingChildPartnerLineId,
+      pendingChildStatus,
+    ]
+  );
 
   // Subject 서브툴 선택 핸들러
   const handleSubjectSubToolSelect = useCallback((subTool: SubjectSubTool) => {
@@ -133,6 +197,30 @@ const GenogramCanvas: React.FC = () => {
     pendingConnectionKind,
     pendingRelationStatus,
     pendingInfluenceStatus,
+    fabSourceId,
+    onPartnerCreateAtPosition: handlePartnerCreateAtPosition,
+    onChildCreateAtPosition: handleChildCreateAtPosition,
+    onChildNodeClick: useCallback(
+      (childId: string) => {
+        if (!pendingChildPartnerLineId) return;
+        addChildConnectionToParentRef(
+          pendingChildPartnerLineId,
+          childId,
+          pendingChildStatus
+        );
+        setPendingChildPartnerLineId(null);
+      },
+      [
+        addChildConnectionToParentRef,
+        pendingChildPartnerLineId,
+        pendingChildStatus,
+      ]
+    ),
+    onFabComplete: useCallback(() => {
+      setFabSourceId(null);
+      setPendingChildPartnerLineId(null);
+      setToolMode(ToolMode.Select_Tool);
+    }, [setToolMode]),
   });
 
   const [copied, setCopied] = useState(false);
@@ -152,10 +240,17 @@ const GenogramCanvas: React.FC = () => {
 
   // ── 플로팅 액션 버튼 ──
 
-  const selectionContext = useMemo<SelectionContext>(
-    () => deriveSelectionContext(selectedItems),
-    [selectedItems]
-  );
+  const selectionContext = useMemo<SelectionContext>(() => {
+    const ctx = deriveSelectionContext(selectedItems);
+    // single-subject인 경우 subjectType 보강
+    if (ctx.type === 'single-subject') {
+      const node = nodes.find((n) => n.id === ctx.subjectId);
+      if (node) {
+        ctx.subjectType = (node.data as { subjectType?: string }).subjectType;
+      }
+    }
+    return ctx;
+  }, [selectedItems, nodes]);
 
   const { flowToScreenPosition } = useReactFlow();
   const viewport = useViewport();
@@ -213,10 +308,73 @@ const GenogramCanvas: React.FC = () => {
   }, [selectionContext, nodes, edges, flowToScreenPosition, viewport]);
 
   const handleFloatingAction = useCallback(
-    (_action: FloatingActionType, _context: SelectionContext) => {
-      // 향후 복합 커맨드 구현 시 여기에 분기 로직 추가
+    (
+      action: FloatingActionType,
+      context: SelectionContext,
+      extra?: FloatingActionExtra
+    ) => {
+      switch (action) {
+        case 'add-parent':
+          if (context.type === 'single-subject') {
+            addParentPair(context.subjectId);
+          }
+          break;
+        case 'add-partner':
+          if (context.type === 'single-subject') {
+            // 파트너 연결 모드 진입: 소스 설정 + Create_Connection_Tool + partner kind
+            setFabSourceId(context.subjectId);
+            setPendingConnectionKind('partner');
+            setToolMode(ToolMode.Create_Connection_Tool);
+          }
+          break;
+        case 'add-relation':
+          if (context.type === 'single-subject' && extra?.relationStatus) {
+            // 관계선 연결 모드 진입: 소스 설정 + Create_Connection_Tool + relation kind
+            setFabSourceId(context.subjectId);
+            setPendingConnectionKind('relation');
+            setPendingRelationStatus(extra.relationStatus);
+            setToolMode(ToolMode.Create_Connection_Tool);
+          }
+          break;
+        case 'add-child':
+          if (extra?.parentChildStatus) {
+            const status = extra.parentChildStatus;
+            // parentRef: 파트너선 ID (single-connection) 또는 Subject ID (single-subject)
+            const parentRef =
+              context.type === 'single-connection'
+                ? context.connectionId
+                : context.type === 'single-subject'
+                  ? context.subjectId
+                  : null;
+            if (!parentRef) break;
+
+            const selectableStatuses: string[] = [
+              ParentChildStatus.Biological_Child,
+              ParentChildStatus.Adopted_Child,
+              ParentChildStatus.Foster_Child,
+            ];
+            if (selectableStatuses.includes(status)) {
+              // 선택/생성 모드 진입: 기존 Subject 클릭 → 연결, 빈 곳 클릭 → 생성 + 연결
+              setPendingChildPartnerLineId(parentRef);
+              setPendingChildStatus(status);
+              setFabSourceId(parentRef);
+              setPendingConnectionKind('child');
+              setToolMode(ToolMode.Create_Connection_Tool);
+            } else {
+              // 즉시 생성
+              addChildToParentRef(parentRef, status);
+            }
+          }
+          break;
+      }
     },
-    []
+    [
+      addParentPair,
+      addChildToParentRef,
+      setPendingConnectionKind,
+      setPendingRelationStatus,
+      setToolMode,
+    ]
   );
 
   return (

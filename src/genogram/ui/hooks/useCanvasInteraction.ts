@@ -26,12 +26,28 @@ export interface UseCanvasInteractionOptions {
   onAnimalCreate?: (position: { x: number; y: number }) => void;
   /** 현재 서브툴 모드 ('person' | 'family' | 'animal') */
   subjectCreateMode?: 'person' | 'family' | 'animal';
-  /** 현재 연결 종류 ('relation' | 'influence') */
-  pendingConnectionKind?: 'relation' | 'influence';
+  /** 현재 연결 종류 ('relation' | 'influence' | 'partner' | 'child') */
+  pendingConnectionKind?: 'relation' | 'influence' | 'partner' | 'child';
   /** 현재 관계 상태 */
   pendingRelationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   /** 현재 영향 상태 */
   pendingInfluenceStatus?: (typeof InfluenceStatus)[keyof typeof InfluenceStatus];
+  /** FAB에서 연결 모드 진입 시 소스 Subject ID (partner/relation 공용) */
+  fabSourceId?: string | null;
+  /** 파트너 모드에서 빈 곳 클릭 시 파트너 생성 + 연결 */
+  onPartnerCreateAtPosition?: (
+    sourceId: string,
+    position: { x: number; y: number }
+  ) => void;
+  /** 자녀 모드에서 빈 곳 클릭 시 자녀 생성 + 부모-자녀선 연결 */
+  onChildCreateAtPosition?: (
+    sourceId: string,
+    position: { x: number; y: number }
+  ) => void;
+  /** 자녀 모드에서 기존 노드 클릭 시 부모-자녀선 연결 */
+  onChildNodeClick?: (childId: string) => void;
+  /** FAB 1회성 연결 완료/취소 시 호출 (fabSourceId 초기화) */
+  onFabComplete?: () => void;
 }
 
 /** 연결 미리보기에 필요한 정보 */
@@ -41,7 +57,7 @@ export interface ConnectionPreview {
   /** 마우스의 현재 flow 좌표 */
   mousePosition: { x: number; y: number };
   /** 연결 종류 */
-  connectionKind: 'relation' | 'influence';
+  connectionKind: 'relation' | 'influence' | 'partner' | 'child';
   /** 관계 상태 (connectionKind === 'relation'일 때) */
   relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   /** 영향 상태 (connectionKind === 'influence'일 때) */
@@ -65,6 +81,11 @@ export const useCanvasInteraction = ({
   pendingConnectionKind = 'relation',
   pendingRelationStatus,
   pendingInfluenceStatus,
+  fabSourceId,
+  onPartnerCreateAtPosition,
+  onChildCreateAtPosition,
+  onChildNodeClick,
+  onFabComplete,
 }: UseCanvasInteractionOptions) => {
   const { screenToFlowPosition, flowToScreenPosition, getZoom, getNode } =
     useReactFlow();
@@ -81,6 +102,11 @@ export const useCanvasInteraction = ({
     useState<ConnectionPreview | null>(null);
   const isCreateMode = toolMode === ToolMode.Create_Subject_Tool;
   const isConnectionMode = toolMode === ToolMode.Create_Connection_Tool;
+  const isPartnerMode =
+    isConnectionMode && pendingConnectionKind === 'partner';
+  const isChildMode =
+    isConnectionMode && pendingConnectionKind === 'child';
+  const effectiveSourceId = fabSourceId ?? pendingSourceId;
 
   // 노드 중심 좌표 가져오기 (nodeOrigin=[0.5,0.5]이므로 position이 곧 중심)
   const getNodeCenter = useCallback(
@@ -113,8 +139,8 @@ export const useCanvasInteraction = ({
       }
 
       // connection preview line
-      if (isConnectionMode && pendingSourceId) {
-        const sourcePos = getNodeCenter(pendingSourceId);
+      if (isConnectionMode && effectiveSourceId) {
+        const sourcePos = getNodeCenter(effectiveSourceId);
         if (!sourcePos) return;
 
         const mouseFlowPos = screenToFlowPosition({
@@ -138,7 +164,7 @@ export const useCanvasInteraction = ({
     [
       toolMode,
       isConnectionMode,
-      pendingSourceId,
+      effectiveSourceId,
       pendingConnectionKind,
       pendingRelationStatus,
       pendingInfluenceStatus,
@@ -179,10 +205,37 @@ export const useCanvasInteraction = ({
         return;
       }
 
-      // Connection 모드에서 빈 영역 클릭 → 취소
-      if (isConnectionMode && pendingSourceId) {
+      // 파트너 모드에서 빈 영역 클릭 → 파트너 생성 + 연결
+      if (isPartnerMode && effectiveSourceId) {
+        const position = screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        });
+        onPartnerCreateAtPosition?.(effectiveSourceId, position);
         setPendingSourceId(null);
         setConnectionPreview(null);
+        return;
+      }
+
+      // 자녀 모드에서 빈 영역 클릭 → 자녀 생성 + 연결
+      if (isChildMode && fabSourceId) {
+        const position = screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        });
+        onChildCreateAtPosition?.(fabSourceId, position);
+        setPendingSourceId(null);
+        setConnectionPreview(null);
+        onFabComplete?.();
+        return;
+      }
+
+      // Connection 모드에서 빈 영역 클릭 → 취소
+      if (isConnectionMode && effectiveSourceId) {
+        setPendingSourceId(null);
+        setConnectionPreview(null);
+        // FAB 1회성 연결 취소
+        if (fabSourceId) onFabComplete?.();
       }
     },
     [
@@ -192,9 +245,15 @@ export const useCanvasInteraction = ({
       defaultGender,
       screenToFlowPosition,
       isConnectionMode,
-      pendingSourceId,
+      isPartnerMode,
+      isChildMode,
+      effectiveSourceId,
+      fabSourceId,
       onFamilyCreate,
       onAnimalCreate,
+      onPartnerCreateAtPosition,
+      onChildCreateAtPosition,
+      onFabComplete,
     ]
   );
 
@@ -203,19 +262,30 @@ export const useCanvasInteraction = ({
     (_event: React.MouseEvent, node: Node) => {
       if (!isConnectionMode) return;
 
-      if (!pendingSourceId) {
+      // 자녀 모드: 기존 노드 클릭 → 부모-자녀선 연결
+      if (isChildMode && fabSourceId) {
+        onChildNodeClick?.(node.id);
+        setPendingSourceId(null);
+        setConnectionPreview(null);
+        onFabComplete?.();
+        return;
+      }
+
+      if (!effectiveSourceId) {
         // 첫 번째 클릭: source 설정
         setPendingSourceId(node.id);
       } else {
-        // 두 번째 클릭: 연결 생성
-        if (node.id !== pendingSourceId) {
-          onConnectionCreate(pendingSourceId, node.id);
+        // 두 번째 클릭(또는 FAB 진입 후 첫 클릭): 연결 생성
+        if (node.id !== effectiveSourceId) {
+          onConnectionCreate(effectiveSourceId, node.id);
         }
         setPendingSourceId(null);
         setConnectionPreview(null);
+        // FAB 1회성 연결 완료
+        if (fabSourceId) onFabComplete?.();
       }
     },
-    [isConnectionMode, pendingSourceId, onConnectionCreate]
+    [isConnectionMode, isChildMode, effectiveSourceId, fabSourceId, onConnectionCreate, onChildNodeClick, onFabComplete]
   );
 
   // ToolMode별 ReactFlow 동작 설정

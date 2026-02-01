@@ -14,6 +14,7 @@ import type { Connection } from '@/genogram/core/models/relationship';
 import {
   Gender,
   InfluenceStatus,
+  type ParentChildStatus,
   RelationStatus,
   ToolMode,
 } from '@/genogram/core/types/enums';
@@ -81,7 +82,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     (typeof InfluenceStatus)[keyof typeof InfluenceStatus]
   >(InfluenceStatus.Focused_On);
   const [pendingConnectionKind, setPendingConnectionKind] = useState<
-    'relation' | 'influence'
+    'relation' | 'influence' | 'partner' | 'child'
   >('relation');
 
   // 도메인 → ReactFlow 동기화
@@ -186,7 +187,11 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
       const editor = getEditor();
       if (!editor) return;
 
-      if (pendingConnectionKind === 'relation') {
+      if (pendingConnectionKind === 'partner') {
+        editor.addPartnerConnection(source, target);
+        editor.setToolMode(ToolMode.Select_Tool);
+        setToolModeState(ToolMode.Select_Tool);
+      } else if (pendingConnectionKind === 'relation') {
         editor.addRelationConnection(source, target, pendingRelationStatus);
       } else {
         editor.addInfluenceConnection(source, target, pendingInfluenceStatus);
@@ -278,6 +283,52 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // 부모 쌍 복합 생성 (자동 선택)
+  const addParentPair = useCallback(
+    (childId: string) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const result = editor.addParentPair(childId);
+      editor.select([result.fatherId, result.motherId], true);
+      return result;
+    },
+    [getEditor]
+  );
+
+  // parentRef(파트너선 ID 또는 Subject ID)에 자녀 생성 + 연결 (자동 선택 + Select 모드 전환)
+  const addChildToParentRef = useCallback(
+    (parentRef: string, childStatus: ParentChildStatus) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const result = editor.addChildToParentRef(parentRef, childStatus);
+      editor.select(result.childIds, true);
+      editor.setToolMode(ToolMode.Select_Tool);
+      setToolModeState(ToolMode.Select_Tool);
+      return result;
+    },
+    [getEditor]
+  );
+
+  // 기존 Subject를 parentRef에 자녀로 연결
+  const addChildConnectionToParentRef = useCallback(
+    (parentRef: string, childId: string, childStatus: ParentChildStatus) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const id = editor.addChildConnectionToParentRef(
+        parentRef,
+        childId,
+        childStatus
+      );
+      editor.setToolMode(ToolMode.Select_Tool);
+      setToolModeState(ToolMode.Select_Tool);
+      return id;
+    },
+    [getEditor]
+  );
+
   // Subject 삭제
   const deleteSubject = useCallback(
     (subjectId: string) => {
@@ -356,6 +407,9 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     addPerson: addSubject,
     addFamily,
     addAnimal,
+    addParentPair,
+    addChildToParentRef,
+    addChildConnectionToParentRef,
     deletePerson: deleteSubject,
     updateSubject,
     updateConnection,

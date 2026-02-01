@@ -216,6 +216,28 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
         }
       }
 
+      // 쌍둥이: 두 번째 자녀 위치
+      let twinTargetPosition: { x: number; y: number } | null = null;
+      if (
+        conn.entity.type === ConnectionType.Children_Parents_Line &&
+        'childRef' in attr
+      ) {
+        const pcAttr = attr as ParentChildAttribute;
+        if (Array.isArray(pcAttr.childRef) && pcAttr.childRef.length === 2) {
+          const twin2Layout = layout.nodes.get(pcAttr.childRef[1]);
+          if (twin2Layout) {
+            const twin2SizePx = getSubjectSizePx(
+              genogram.subjects.get(pcAttr.childRef[1])
+            );
+            // center → top handle 보정 (nodeOrigin=[0.5,0.5])
+            twinTargetPosition = {
+              x: twin2Layout.position.x,
+              y: twin2Layout.position.y - twin2SizePx / 2,
+            };
+          }
+        }
+      }
+
       newEdges.push({
         id,
         type: 'relationship',
@@ -254,6 +276,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           targetShape: getSubjectShape(genogram.subjects.get(target)),
           partnerMidpoint,
           partnerSubjects,
+          twinTargetPosition,
           strokeColor: conn.layout.strokeColor,
           strokeWidth: conn.layout.strokeWidth,
           textColor: conn.layout.textColor,

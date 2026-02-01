@@ -1,9 +1,14 @@
 import type { EdgeLayout, NodeLayout } from '../layout/layout-state';
 import { createNodeLayout } from '../layout/layout-state';
 import type { Subject } from '../models/person';
-import { createAnimalSubject, createPersonSubject } from '../models/person';
+import {
+  createAnimalSubject,
+  createPersonSubject,
+  createSpecialChildSubject,
+} from '../models/person';
 import type { Connection } from '../models/relationship';
 import type { Gender } from '../types/enums';
+import { SubjectType } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 
 import type { EditorState } from './base';
@@ -47,6 +52,43 @@ export class AddAnimalSubjectCommand extends BaseCommand {
   constructor(position: Point, generation = 0) {
     super();
     this.subject = createAnimalSubject(position);
+    this.layout = createNodeLayout(this.subject.id, position, generation);
+  }
+
+  execute(state: EditorState): EditorState {
+    state.genogram.subjects.set(this.subject.id, { ...this.subject });
+    state.layout.nodes.set(this.layout.nodeId, { ...this.layout });
+    state.genogram.metadata.updatedAt = new Date();
+    return state;
+  }
+
+  undo(state: EditorState): EditorState {
+    state.genogram.subjects.delete(this.subject.id);
+    state.layout.nodes.delete(this.layout.nodeId);
+    state.genogram.metadata.updatedAt = new Date();
+    return state;
+  }
+
+  getSubjectId(): UUID {
+    return this.subject.id;
+  }
+}
+
+export class AddSpecialChildSubjectCommand extends BaseCommand {
+  readonly type = 'ADD_SPECIAL_CHILD_SUBJECT';
+  private subject: Subject;
+  private layout: NodeLayout;
+
+  constructor(
+    subjectType:
+      | typeof SubjectType.Miscarriage
+      | typeof SubjectType.Abortion
+      | typeof SubjectType.Pregnancy,
+    position: Point,
+    generation = 0
+  ) {
+    super();
+    this.subject = createSpecialChildSubject(subjectType, position);
     this.layout = createNodeLayout(this.subject.id, position, generation);
   }
 

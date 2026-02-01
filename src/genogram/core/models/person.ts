@@ -32,10 +32,15 @@ export interface AnimalAttribute {
   isDead: boolean;
 }
 
+// Special Child Attribute (유산/낙태/임신 중)
+export interface SpecialChildAttribute {
+  name: null;
+}
+
 // Subject Entity
 export interface SubjectEntity {
   type: SubjectType;
-  attribute: PersonAttribute | AnimalAttribute;
+  attribute: PersonAttribute | AnimalAttribute | SpecialChildAttribute;
   memo: string | null;
 }
 
@@ -113,6 +118,32 @@ export function createAnimalSubject(
       center: position,
       style: {
         size: NodeSize.Default,
+        bgColor: '#ffffff',
+        textColor: '#1f2937',
+      },
+    },
+  };
+}
+
+export function createSpecialChildSubject(
+  subjectType:
+    | typeof SubjectType.Miscarriage
+    | typeof SubjectType.Abortion
+    | typeof SubjectType.Pregnancy,
+  position: Point,
+  id: UUID = generateId()
+): Subject {
+  return {
+    id,
+    entity: {
+      type: subjectType,
+      attribute: { name: null } satisfies SpecialChildAttribute,
+      memo: null,
+    },
+    layout: {
+      center: position,
+      style: {
+        size: NodeSize.Small,
         bgColor: '#ffffff',
         textColor: '#1f2937',
       },

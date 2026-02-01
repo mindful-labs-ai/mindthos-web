@@ -2,6 +2,9 @@
 export const SubjectType = {
   Person: 'PERSON',
   Animal: 'ANIMAL',
+  Miscarriage: 'MISCARRIAGE',
+  Abortion: 'ABORTION',
+  Pregnancy: 'PREGNANCY',
 } as const;
 export type SubjectType = (typeof SubjectType)[keyof typeof SubjectType];
 

@@ -33,6 +33,8 @@ export interface RelationshipEdgeData {
   targetShape?: NodeShape;
   partnerMidpoint?: { x: number; y: number } | null;
   partnerSubjects?: { x1: number; x2: number } | null;
+  /** 쌍둥이: 두 번째 자녀의 flow 좌표 */
+  twinTargetPosition?: { x: number; y: number } | null;
   strokeColor?: string;
   strokeWidth?: string; // StrokeWidth enum value ('THIN' | 'DEFAULT' | 'THICK')
   textColor?: string;
@@ -212,6 +214,64 @@ const buildPartnerPath = (
   return `M ${sx},${sy} V ${bottomY} H ${tx} V ${ty}`;
 };
 
+/** Children_Parents_Line 꺾임선 경로를 구성하는 꼭짓점 리스트 반환 */
+const buildChildParentPoints = (
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number,
+  partnerMidpoint?: { x: number; y: number } | null,
+  partnerSubjects?: { x1: number; x2: number } | null
+): { x: number; y: number }[] => {
+  if (partnerMidpoint && partnerSubjects) {
+    const my = partnerMidpoint.y;
+    const minX = Math.min(partnerSubjects.x1, partnerSubjects.x2);
+    const maxX = Math.max(partnerSubjects.x1, partnerSubjects.x2);
+    const anchorX = Math.max(minX, Math.min(maxX, targetX));
+
+    if (anchorX === targetX) {
+      return [
+        { x: anchorX, y: my },
+        { x: anchorX, y: targetY },
+      ];
+    }
+
+    const midY = (my + targetY) / 2;
+    return [
+      { x: anchorX, y: my },
+      { x: anchorX, y: midY },
+      { x: targetX, y: midY },
+      { x: targetX, y: targetY },
+    ];
+  }
+
+  if (partnerMidpoint) {
+    const mx = partnerMidpoint.x;
+    const my = partnerMidpoint.y;
+    const midY = (my + targetY) / 2;
+    return [
+      { x: mx, y: my },
+      { x: mx, y: midY + 2 },
+      { x: targetX, y: midY },
+      { x: targetX, y: targetY },
+    ];
+  }
+
+  const midY = (sourceY + targetY) / 2;
+  return [
+    { x: sourceX, y: sourceY },
+    { x: sourceX, y: midY },
+    { x: targetX, y: midY },
+    { x: targetX, y: targetY },
+  ];
+};
+
+/** 꼭짓점 리스트를 SVG path 문자열로 변환 */
+const pointsToPath = (pts: { x: number; y: number }[]): string => {
+  if (pts.length === 0) return '';
+  return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x},${p.y}`).join(' ');
+};
+
 /** Children_Parents_Line 꺾임선 경로 */
 const buildChildParentPath = (
   sourceX: number,
@@ -221,45 +281,19 @@ const buildChildParentPath = (
   partnerMidpoint?: { x: number; y: number } | null,
   partnerSubjects?: { x1: number; x2: number } | null
 ): { path: string; labelX: number; labelY: number } => {
-  if (partnerMidpoint && partnerSubjects) {
-    const my = partnerMidpoint.y;
-    const minX = Math.min(partnerSubjects.x1, partnerSubjects.x2);
-    const maxX = Math.max(partnerSubjects.x1, partnerSubjects.x2);
-    const anchorX = Math.max(minX, Math.min(maxX, targetX));
-
-    if (anchorX === targetX) {
-      return {
-        path: `M ${anchorX},${my} V ${targetY}`,
-        labelX: anchorX,
-        labelY: (my + targetY) / 2,
-      };
-    }
-
-    const midY = (my + targetY) / 2;
-    return {
-      path: `M ${anchorX},${my} V ${midY} H ${targetX} V ${targetY}`,
-      labelX: (anchorX + targetX) / 2,
-      labelY: midY,
-    };
-  }
-
-  if (partnerMidpoint) {
-    const mx = partnerMidpoint.x;
-    const my = partnerMidpoint.y;
-    const midY = (my + targetY) / 2;
-    return {
-      path: `M ${mx},${my} V ${midY} H ${targetX} V ${targetY}`,
-      labelX: (mx + targetX) / 2,
-      labelY: midY,
-    };
-  }
-
-  const midY = (sourceY + targetY) / 2;
-  return {
-    path: `M ${sourceX},${sourceY} V ${midY} H ${targetX} V ${targetY}`,
-    labelX: (sourceX + targetX) / 2,
-    labelY: midY,
-  };
+  const pts = buildChildParentPoints(
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    partnerMidpoint,
+    partnerSubjects
+  );
+  const path = pointsToPath(pts);
+  const mid = pts.length >= 2 ? Math.floor(pts.length / 2) : 0;
+  const labelX = pts.length >= 2 ? (pts[mid - 1].x + pts[mid].x) / 2 : sourceX;
+  const labelY = pts.length >= 2 ? (pts[mid - 1].y + pts[mid].y) / 2 : sourceY;
+  return { path, labelX, labelY };
 };
 
 /* ──────────────────── Relation 렌더 ──────────────────── */
@@ -777,7 +811,8 @@ const renderChildParentEdge = (
   color: string,
   partnerMidpoint?: { x: number; y: number } | null,
   partnerSubjects?: { x1: number; x2: number } | null,
-  sw: number = SW
+  sw: number = SW,
+  twinTargetPosition?: { x: number; y: number } | null
 ): EdgeRenderResult => {
   const base = { stroke: color, strokeWidth: sw, fill: 'none' as const };
   const { path } = buildChildParentPath(
@@ -815,7 +850,57 @@ const renderChildParentEdge = (
     }
 
     case ParentChildStatus.Twins:
-    case ParentChildStatus.Identical_Twins:
+    case ParentChildStatus.Identical_Twins: {
+      if (!twinTargetPosition) {
+        // 쌍둥이 데이터가 없으면 일반 선으로 폴백
+        return { content: <path d={path} {...base} />, hitPaths: [path] };
+      }
+
+      // 부모 기준점 계산 (partnerMidpoint 또는 source)
+      const parentY = partnerMidpoint ? partnerMidpoint.y : sy;
+      let parentX: number;
+      if (partnerMidpoint && partnerSubjects) {
+        const minX = Math.min(partnerSubjects.x1, partnerSubjects.x2);
+        const maxX = Math.max(partnerSubjects.x1, partnerSubjects.x2);
+        const childMidX = (tx + twinTargetPosition.x) / 2;
+        parentX = Math.max(minX, Math.min(maxX, childMidX));
+      } else if (partnerMidpoint) {
+        parentX = partnerMidpoint.x;
+      } else {
+        parentX = sx;
+      }
+
+      const child1X = tx;
+      const child1Y = ty;
+      const child2X = twinTargetPosition.x;
+      const child2Y = twinTargetPosition.y;
+
+      // 부모에서 바로 두 자녀로 대각선 (수직 stem 없음)
+      const leg1Path = `M ${parentX},${parentY} L ${child1X},${child1Y}`;
+      const leg2Path = `M ${parentX},${parentY} L ${child2X},${child2Y}`;
+
+      const allPaths = [leg1Path, leg2Path];
+
+      if (status === ParentChildStatus.Identical_Twins) {
+        // 일란성: 두 대각선 중간에 가로 바
+        const barY = (parentY + Math.min(child1Y, child2Y)) / 2;
+        const t1 =
+          child1Y === parentY ? 0 : (barY - parentY) / (child1Y - parentY);
+        const barX1 = parentX + (child1X - parentX) * t1;
+        const t2 =
+          child2Y === parentY ? 0 : (barY - parentY) / (child2Y - parentY);
+        const barX2 = parentX + (child2X - parentX) * t2;
+        const barPath = `M ${barX1},${barY} L ${barX2},${barY}`;
+        allPaths.push(barPath);
+      }
+
+      const combinedPath = allPaths.join(' ');
+      return {
+        content: <path d={combinedPath} {...base} />,
+        hitPaths: allPaths,
+      };
+    }
+
     case ParentChildStatus.Biological_Child:
     case ParentChildStatus.Miscarriage:
     case ParentChildStatus.Abortion:
@@ -854,6 +939,7 @@ export const RelationshipEdge = memo(
       targetShape,
       partnerMidpoint,
       partnerSubjects,
+      twinTargetPosition,
       strokeColor: dataStrokeColor,
       strokeWidth: dataStrokeWidth,
       textColor: dataTextColor,
@@ -894,7 +980,8 @@ export const RelationshipEdge = memo(
           baseColor,
           partnerMidpoint,
           partnerSubjects,
-          baseSw
+          baseSw,
+          twinTargetPosition
         );
         const result = buildChildParentPath(
           sourceX,

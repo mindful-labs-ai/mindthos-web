@@ -3,15 +3,32 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Plus } from 'lucide-react';
 
 import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
-import { AssetType } from '@/genogram/core/types/enums';
+import {
+  AssetType,
+  ParentChildStatus,
+  RelationStatus,
+  SubjectType,
+} from '@/genogram/core/types/enums';
+
+import {
+  PARENT_CHILD_STATUS_LABELS,
+  RELATION_STATUS_LABELS,
+} from '../constants/labels';
 
 // ── 선택 컨텍스트 ──
 
 export type SelectionContext =
   | { type: 'none' }
-  | { type: 'single-subject'; subjectId: string }
+  | { type: 'single-subject'; subjectId: string; subjectType?: string }
   | { type: 'single-connection'; connectionId: string }
   | { type: 'multi'; ids: string[] };
+
+/** FAB를 표시하지 않을 특수 자녀 SubjectType 집합 */
+const SPECIAL_CHILD_TYPES: ReadonlySet<string> = new Set([
+  SubjectType.Miscarriage,
+  SubjectType.Abortion,
+  SubjectType.Pregnancy,
+]);
 
 export function deriveSelectionContext(
   items: SelectedItem[]
@@ -132,11 +149,20 @@ const PARTNER_CONNECTION_MENU: MenuItem[] = [
 
 // ── Props ──
 
+export interface FloatingActionExtra {
+  relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
+  parentChildStatus?: (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
+}
+
 interface FloatingActionButtonProps {
   selectionContext: SelectionContext;
   /** FAB가 표시될 화면 좌표 (캔버스 컨테이너 기준 상대 좌표) */
   position: { x: number; y: number } | null;
-  onAction: (action: FloatingActionType, context: SelectionContext) => void;
+  onAction: (
+    action: FloatingActionType,
+    context: SelectionContext,
+    extra?: FloatingActionExtra
+  ) => void;
 }
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
@@ -153,10 +179,18 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         : selectionContext.type;
   const [openForKey, setOpenForKey] = useState<string | null>(null);
   const isOpen = openForKey === contextKey;
+  const [showRelationSub, setShowRelationSub] = useState(false);
+  const [showChildSub, setShowChildSub] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const setOpen = useCallback(
-    (value: boolean) => setOpenForKey(value ? contextKey : null),
+    (value: boolean) => {
+      setOpenForKey(value ? contextKey : null);
+      if (!value) {
+        setShowRelationSub(false);
+        setShowChildSub(false);
+      }
+    },
     [contextKey]
   );
 
@@ -181,17 +215,50 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
 
   const handleItemClick = useCallback(
     (action: FloatingActionType) => {
+      if (action === 'add-relation') {
+        setShowRelationSub(true);
+        return;
+      }
+      if (action === 'add-child') {
+        setShowChildSub(true);
+        return;
+      }
       onAction(action, selectionContext);
       setOpen(false);
     },
     [onAction, selectionContext, setOpen]
   );
 
-  // 표시 조건: single-subject 또는 single-connection
+  const handleRelationSelect = useCallback(
+    (status: (typeof RelationStatus)[keyof typeof RelationStatus]) => {
+      onAction('add-relation', selectionContext, { relationStatus: status });
+      setOpen(false);
+    },
+    [onAction, selectionContext, setOpen]
+  );
+
+  const handleChildSelect = useCallback(
+    (
+      status: (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
+    ) => {
+      onAction('add-child', selectionContext, { parentChildStatus: status });
+      setOpen(false);
+    },
+    [onAction, selectionContext, setOpen]
+  );
+
+  // 표시 조건: single-subject 또는 single-connection (특수 자녀 제외)
   if (
     (selectionContext.type !== 'single-subject' &&
       selectionContext.type !== 'single-connection') ||
     !position
+  ) {
+    return null;
+  }
+  if (
+    selectionContext.type === 'single-subject' &&
+    selectionContext.subjectType &&
+    SPECIAL_CHILD_TYPES.has(selectionContext.subjectType)
   ) {
     return null;
   }
@@ -229,20 +296,74 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
           className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-xl border border-border bg-white p-2 py-1.5 shadow-lg"
           style={{ minWidth: 140 }}
         >
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            return (
+          {showRelationSub ? (
+            <>
               <button
-                key={item.action}
                 type="button"
-                className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
-                onClick={() => handleItemClick(item.action)}
+                className="mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-fg/60 transition-colors hover:bg-surface-contrast"
+                onClick={() => setShowRelationSub(false)}
               >
-                <Icon />
-                {item.label}
+                ← 관계 선택
               </button>
-            );
-          })}
+              {Object.entries(RELATION_STATUS_LABELS).map(
+                ([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                    onClick={() =>
+                      handleRelationSelect(
+                        value as (typeof RelationStatus)[keyof typeof RelationStatus]
+                      )
+                    }
+                  >
+                    {label}
+                  </button>
+                )
+              )}
+            </>
+          ) : showChildSub ? (
+            <>
+              <button
+                type="button"
+                className="mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-fg/60 transition-colors hover:bg-surface-contrast"
+                onClick={() => setShowChildSub(false)}
+              >
+                ← 자녀 선택
+              </button>
+              {Object.entries(PARENT_CHILD_STATUS_LABELS).map(
+                ([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                    onClick={() =>
+                      handleChildSelect(
+                        value as (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
+                      )
+                    }
+                  >
+                    {label}
+                  </button>
+                )
+              )}
+            </>
+          ) : (
+            menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.action}
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  onClick={() => handleItemClick(item.action)}
+                >
+                  <Icon />
+                  {item.label}
+                </button>
+              );
+            })
+          )}
         </div>
       )}
     </div>
