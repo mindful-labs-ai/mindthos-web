@@ -1081,6 +1081,7 @@ export class GenogramEditor {
     this.commandManager.clear();
     this.syncSelectionFromLayout();
     this.emit('state-change');
+    this.emit('view-change', this.viewSettings.getSettings());
   }
 
   // Event System

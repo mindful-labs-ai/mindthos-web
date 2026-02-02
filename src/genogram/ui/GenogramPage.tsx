@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import {
   Background,
@@ -49,7 +49,14 @@ import { useGenogramFlow } from './hooks/useGenogramFlow';
 const nodeTypes = { person: PersonNode, 'group-boundary': GroupBoundaryNode, annotation: AnnotationNode };
 const edgeTypes = { relationship: RelationshipEdge };
 
-const GenogramCanvas: React.FC = () => {
+export interface GenogramPageHandle {
+  /** JSON string을 받아 가계도 데이터를 로드한다. 어떤 타이밍이든 호출 가능. */
+  loadJSON: (json: string) => void;
+  /** 현재 가계도 데이터를 JSON string으로 반환한다. */
+  toJSON: () => string;
+}
+
+const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
   const {
     nodes,
     edges,
@@ -77,6 +84,7 @@ const GenogramCanvas: React.FC = () => {
     updateConnection,
     deleteSelected,
     toJSON,
+    fromJSON,
     pendingConnectionKind,
     setPendingConnectionKind,
     pendingRelationStatus,
@@ -90,6 +98,11 @@ const GenogramCanvas: React.FC = () => {
     updateAnnotation,
     deselectNode,
   } = useGenogramFlow();
+
+  useImperativeHandle(ref, () => ({
+    loadJSON: fromJSON,
+    toJSON,
+  }), [fromJSON, toJSON]);
 
   // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
   const [subjectCreateMode, setSubjectCreateMode] = useState<
@@ -426,6 +439,7 @@ const GenogramCanvas: React.FC = () => {
       <GenogramHeader
         copied={copied}
         onCopyJSON={handleCopyJSON}
+        onImportJSON={fromJSON}
         onUndo={undo}
         onRedo={redo}
       />
@@ -524,14 +538,20 @@ const GenogramCanvas: React.FC = () => {
       </div>
     </div>
   );
-};
+});
 
-export const GenogramPage: React.FC = () => {
-  return (
-    <ReactFlowProvider>
-      <GenogramCanvas />
-    </ReactFlowProvider>
-  );
-};
+GenogramCanvas.displayName = 'GenogramCanvas';
+
+export const GenogramPage = React.forwardRef<GenogramPageHandle>(
+  (_props, ref) => {
+    return (
+      <ReactFlowProvider>
+        <GenogramCanvas ref={ref} />
+      </ReactFlowProvider>
+    );
+  }
+);
+
+GenogramPage.displayName = 'GenogramPage';
 
 export default GenogramPage;
