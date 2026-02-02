@@ -37,13 +37,14 @@ import {
   type SubjectSubTool,
 } from './components/GenogramToolbar';
 import { GhostPreview } from './components/GhostPreview';
+import { GroupBoundaryNode } from './components/nodes/GroupBoundaryNode';
 import { PersonNode } from './components/nodes/PersonNode';
 import { GRID_GAP } from './constants/grid';
 import { useCanvasInteraction } from './hooks/useCanvasInteraction';
 import { useGenogramFlow } from './hooks/useGenogramFlow';
 
 // 커스텀 노드/엣지 타입 등록
-const nodeTypes = { person: PersonNode };
+const nodeTypes = { person: PersonNode, 'group-boundary': GroupBoundaryNode };
 const edgeTypes = { relationship: RelationshipEdge };
 
 const GenogramCanvas: React.FC = () => {
@@ -61,6 +62,7 @@ const GenogramCanvas: React.FC = () => {
     convertSubjectType,
     addChildToParentRef,
     addChildConnectionToParentRef,
+    addGroupConnection,
     isFetusSubject,
     undo,
     redo,
@@ -279,6 +281,23 @@ const GenogramCanvas: React.FC = () => {
           targetNode.position.y + tgtSizePx / 2
         ) + 40; // PARTNER_OFFSET
       flowPoint = { x: midX, y: bottomY + 20 };
+    } else if (selectionContext.type === 'multi') {
+      // 다중 선택: 선택된 노드들의 가장 오른쪽 + 12px, 평균 Y
+      const selectedNodes = nodes.filter(
+        (n) => n.selected && !n.id.startsWith('group-boundary-')
+      );
+      if (selectedNodes.length === 0) return null;
+      let maxX = -Infinity;
+      let sumY = 0;
+      for (const n of selectedNodes) {
+        const sizePx = (n.data as { sizePx?: number }).sizePx ?? 60;
+        maxX = Math.max(maxX, n.position.x + sizePx / 2);
+        sumY += n.position.y;
+      }
+      flowPoint = {
+        x: maxX + 12,
+        y: sumY / selectedNodes.length,
+      };
     }
 
     if (!flowPoint) return null;
@@ -324,6 +343,27 @@ const GenogramCanvas: React.FC = () => {
             setToolMode(ToolMode.Create_Connection_Tool);
           }
           break;
+        case 'add-group':
+          if (context.type === 'multi') {
+            // 선택된 Subject 노드들의 현재 위치를 스냅샷으로 저장
+            const memberPositions: { x: number; y: number; sizePx: number }[] = [];
+            for (const nid of context.ids) {
+              const node = nodes.find(
+                (n) => n.id === nid && !n.id.startsWith('group-boundary-')
+              );
+              if (!node) continue;
+              const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
+              memberPositions.push({
+                x: node.position.x,
+                y: node.position.y,
+                sizePx,
+              });
+            }
+            if (memberPositions.length >= 2) {
+              addGroupConnection(memberPositions);
+            }
+          }
+          break;
         case 'add-child':
           if (extra?.parentChildStatus) {
             const status = extra.parentChildStatus;
@@ -359,6 +399,8 @@ const GenogramCanvas: React.FC = () => {
     [
       addParentPair,
       addChildToParentRef,
+      addGroupConnection,
+      nodes,
       setPendingConnectionKind,
       setPendingRelationStatus,
       setToolMode,

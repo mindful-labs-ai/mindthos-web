@@ -278,9 +278,13 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
         statusItems = PARENT_CHILD_STATUS_ITEMS;
         statusIconRenderer = renderParentChildIcon;
         break;
+      case ConnectionType.Group_Line:
+        statusItems = [];
+        break;
     }
 
     const isPartner = type === ConnectionType.Partner_Line;
+    const isGroup = type === ConnectionType.Group_Line;
     const partnerAttr = isPartner ? (attribute as PartnerAttribute) : null;
 
     return (
@@ -405,15 +409,17 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
           <hr className="border-border" />
 
-          {/* 선 두께 */}
-          <section className="flex items-center justify-between">
-            <h3 className="text-base font-medium text-fg">선 두께</h3>
-            <InlineDropdown
-              items={STROKE_WIDTH_ITEMS}
-              value={connection.layout.strokeWidth}
-              onChange={(v) => updateConnLayout('strokeWidth', v)}
-            />
-          </section>
+          {/* 선 두께 — Group_Line에서는 숨김 */}
+          {!isGroup && (
+            <section className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-fg">선 두께</h3>
+              <InlineDropdown
+                items={STROKE_WIDTH_ITEMS}
+                value={connection.layout.strokeWidth}
+                onChange={(v) => updateConnLayout('strokeWidth', v)}
+              />
+            </section>
+          )}
 
           {/* 선 색상 */}
           <div className="flex items-center justify-between">
@@ -426,16 +432,18 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             />
           </div>
 
-          {/* 텍스트 색상 */}
-          <div className="flex items-center justify-between">
-            <span className="text-base font-medium text-fg">텍스트 색상</span>
-            <input
-              type="color"
-              value={connection.layout.textColor}
-              onChange={(e) => updateConnLayout('textColor', e.target.value)}
-              className="h-8 w-8 cursor-pointer rounded border border-border"
-            />
-          </div>
+          {/* 텍스트 색상 — Group_Line에서는 숨김 */}
+          {!isGroup && (
+            <div className="flex items-center justify-between">
+              <span className="text-base font-medium text-fg">텍스트 색상</span>
+              <input
+                type="color"
+                value={connection.layout.textColor}
+                onChange={(e) => updateConnLayout('textColor', e.target.value)}
+                className="h-8 w-8 cursor-pointer rounded border border-border"
+              />
+            </div>
+          )}
         </div>
       </div>
     );

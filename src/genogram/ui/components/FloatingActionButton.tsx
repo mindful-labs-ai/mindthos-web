@@ -44,7 +44,8 @@ export type FloatingActionType =
   | 'add-parent'
   | 'add-child'
   | 'add-partner'
-  | 'add-relation';
+  | 'add-relation'
+  | 'add-group';
 
 // ── 메뉴 아이콘 ──
 
@@ -120,6 +121,18 @@ const RelationMenuIcon: React.FC = () => (
   </svg>
 );
 
+const GroupMenuIcon: React.FC = () => (
+  <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+    <path
+      d="M22.6667 26.6641C22.6667 24.4549 19.6819 22.6641 16 22.6641C12.3181 22.6641 9.33333 24.4549 9.33333 26.6641M28 22.6646C28 21.0243 26.3545 19.6146 24 18.9974M4 22.6646C4 21.0243 5.64546 19.6146 8 18.9974M24 13.6455C24.8183 12.9131 25.3333 11.8487 25.3333 10.6641C25.3333 8.45492 23.5425 6.66406 21.3333 6.66406C20.3089 6.66406 19.3743 7.0492 18.6667 7.68259M8 13.6455C7.18167 12.9131 6.66667 11.8487 6.66667 10.6641C6.66667 8.45492 8.45753 6.66406 10.6667 6.66406C11.6911 6.66406 12.6257 7.0492 13.3333 7.68259M16 18.6641C13.7909 18.6641 12 16.8732 12 14.6641C12 12.4549 13.7909 10.6641 16 10.6641C18.2091 10.6641 20 12.4549 20 14.6641C20 16.8732 18.2091 18.6641 16 18.6641Z"
+      stroke="currentColor"
+      strokeWidth="2.66667"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 // ── 메뉴 아이템 정의 ──
 
 interface MenuItem {
@@ -137,6 +150,10 @@ const SINGLE_SUBJECT_MENU: MenuItem[] = [
 
 const PARTNER_CONNECTION_MENU: MenuItem[] = [
   { icon: ChildMenuIcon, label: '자녀', action: 'add-child' },
+];
+
+const MULTI_SUBJECT_MENU: MenuItem[] = [
+  { icon: GroupMenuIcon, label: '그룹으로 연결하기', action: 'add-group' },
 ];
 
 // ── Props ──
@@ -237,10 +254,11 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     [onAction, selectionContext, setOpen]
   );
 
-  // 표시 조건: single-subject 또는 single-connection (특수 자녀 제외)
+  // 표시 조건: single-subject, single-connection, multi (특수 자녀 제외)
   if (
     (selectionContext.type !== 'single-subject' &&
-      selectionContext.type !== 'single-connection') ||
+      selectionContext.type !== 'single-connection' &&
+      selectionContext.type !== 'multi') ||
     !position
   ) {
     return null;
@@ -253,14 +271,16 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   }
 
   const menuItems =
-    selectionContext.type === 'single-connection'
-      ? PARTNER_CONNECTION_MENU
-      : SINGLE_SUBJECT_MENU;
+    selectionContext.type === 'multi'
+      ? MULTI_SUBJECT_MENU
+      : selectionContext.type === 'single-connection'
+        ? PARTNER_CONNECTION_MENU
+        : SINGLE_SUBJECT_MENU;
 
   return (
     <div
       ref={containerRef}
-      className="pointer-events-auto absolute z-20"
+      className="pointer-events-auto absolute z-10"
       style={{
         left: position.x,
         top: position.y,
@@ -283,7 +303,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       {isOpen && (
         <div
           className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-xl border border-border bg-white p-2 py-1.5 shadow-lg"
-          style={{ minWidth: 140 }}
+          style={{ minWidth: 'max-content' }}
         >
           {showRelationSub ? (
             <>

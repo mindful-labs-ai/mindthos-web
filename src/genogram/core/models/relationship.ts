@@ -44,8 +44,14 @@ export interface ParentChildAttribute {
   childRef: UUID | [UUID, UUID];
 }
 
+export interface GroupMemberPosition {
+  x: number;
+  y: number;
+  sizePx: number;
+}
+
 export interface GroupAttribute {
-  subjects: UUID[];
+  memberPositions: GroupMemberPosition[];
 }
 
 export type ConnectionAttribute =
@@ -173,7 +179,7 @@ export function createParentChildConnection(
 }
 
 export function createGroupConnection(
-  subjects: UUID[],
+  memberPositions: GroupMemberPosition[],
   id: UUID = generateId()
 ): Connection {
   return {
@@ -181,11 +187,11 @@ export function createGroupConnection(
     entity: {
       type: ConnectionType.Group_Line,
       attribute: {
-        subjects,
+        memberPositions,
       } satisfies GroupAttribute,
       memo: null,
     },
-    layout: createDefaultConnectionLayout(),
+    layout: { ...createDefaultConnectionLayout(), strokeColor: '#3450EE' },
   };
 }
 

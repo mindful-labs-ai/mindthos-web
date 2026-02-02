@@ -1018,7 +1018,6 @@ export const RelationshipEdge = memo(
       }
 
       case ConnectionType.Relation_Line:
-      case ConnectionType.Group_Line:
       default: {
         renderResult = renderRelationEdge(
           relationStatus,

@@ -1,11 +1,10 @@
 import type { EdgeLayout } from '../layout/layout-state';
 import { createEdgeLayout } from '../layout/layout-state';
-import type {
-  Connection,
-  ConnectionEntity,
-  ConnectionLayout,
-} from '../models/relationship';
 import {
+  type Connection,
+  type ConnectionEntity,
+  type ConnectionLayout,
+  type GroupMemberPosition,
   createRelationConnection,
   createInfluenceConnection,
   createPartnerConnection,
@@ -172,9 +171,9 @@ export class AddGroupConnectionCommand extends BaseCommand {
   private connection: Connection;
   private edgeLayout: EdgeLayout;
 
-  constructor(subjects: UUID[]) {
+  constructor(memberPositions: GroupMemberPosition[]) {
     super();
-    this.connection = createGroupConnection(subjects);
+    this.connection = createGroupConnection(memberPositions);
     this.edgeLayout = createEdgeLayout(this.connection.id);
   }
 

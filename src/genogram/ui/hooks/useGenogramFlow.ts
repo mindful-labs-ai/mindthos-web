@@ -20,7 +20,6 @@ import {
 } from '@/genogram/core/types/enums';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
-import type { PersonNodeData } from '../components/nodes/PersonNode';
 import { avoidCenterCollision, snapToDotCenter } from '../utils/snap';
 
 import { useFlowSync } from './useFlowSync';
@@ -114,7 +113,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
 
   // 노드 변경 핸들러 (드래그 스냅 포함)
   const onNodesChange = useCallback(
-    (changes: NodeChange<Node<PersonNodeData>>[]) => {
+    (changes: NodeChange<Node>[]) => {
       setNodes((nds) => {
         const next = applyNodeChanges(changes, nds);
         const editor = getEditor();
@@ -142,10 +141,22 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         // 선택 변경 → editor에 반영
         const hasSelectChange = changes.some((c) => c.type === 'select');
         if (hasSelectChange) {
-          const selectedIds = next.filter((n) => n.selected).map((n) => n.id);
+          const selectedNodeIds: string[] = [];
+          const selectedEdgeIds: string[] = [];
 
-          if (selectedIds.length > 0) {
-            editor.select(selectedIds, true);
+          for (const n of next) {
+            if (!n.selected) continue;
+            // group-boundary 노드 선택 → 엣지(Connection) 선택으로 매핑
+            if (n.id.startsWith('group-boundary-')) {
+              selectedEdgeIds.push(n.id.replace('group-boundary-', ''));
+            } else {
+              selectedNodeIds.push(n.id);
+            }
+          }
+
+          const allIds = [...selectedNodeIds, ...selectedEdgeIds];
+          if (allIds.length > 0) {
+            editor.select(allIds, true);
           } else {
             editor.deselectAll();
           }
@@ -362,6 +373,16 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // 그룹 연결 생성 (고정 좌표 기반)
+  const addGroupConnection = useCallback(
+    (memberPositions: { x: number; y: number; sizePx: number }[]) => {
+      const editor = getEditor();
+      if (!editor || memberPositions.length < 2) return null;
+      return editor.addGroupConnection(memberPositions);
+    },
+    [getEditor]
+  );
+
   // Subject 삭제
   const deleteSubject = useCallback(
     (subjectId: string) => {
@@ -445,6 +466,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     convertSubjectType,
     addChildToParentRef,
     addChildConnectionToParentRef,
+    addGroupConnection,
     isFetusSubject,
     deletePerson: deleteSubject,
     updateSubject,

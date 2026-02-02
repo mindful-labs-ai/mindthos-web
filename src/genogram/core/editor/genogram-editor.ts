@@ -316,8 +316,10 @@ export class GenogramEditor {
     return cmd.getConnectionId();
   }
 
-  addGroupConnection(subjects: UUID[]): UUID {
-    const cmd = new AddGroupConnectionCommand(subjects);
+  addGroupConnection(
+    memberPositions: { x: number; y: number; sizePx: number }[]
+  ): UUID {
+    const cmd = new AddGroupConnectionCommand(memberPositions);
     this.execute(cmd);
     return cmd.getConnectionId();
   }

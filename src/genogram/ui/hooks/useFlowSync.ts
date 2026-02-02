@@ -12,6 +12,7 @@ import type {
 import { getNodeShape } from '@/genogram/core/models/person';
 import type {
   Connection,
+  GroupAttribute,
   ParentChildAttribute,
   PartnerAttribute,
 } from '@/genogram/core/models/relationship';
@@ -28,8 +29,10 @@ import type {
 } from '@/genogram/core/types/enums';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
-import type { PersonNodeData } from '../components/nodes/PersonNode';
+import type { GroupBoundaryNodeData } from '../components/nodes/GroupBoundaryNode';
 import { NODE_SIZE_PX } from '../constants/grid';
+
+const GROUP_BOUNDARY_PADDING = 30;
 
 /** Subject의 size 속성에서 px 크기를 안전하게 조회 */
 const getSubjectSizePx = (subject: Subject | undefined): number =>
@@ -41,12 +44,22 @@ const getSubjectSizePx = (subject: Subject | undefined): number =>
  * - syncSelectedSubject(): 선택된 Subject 상태 동기화
  */
 export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
-  const [nodes, setNodes] = useState<Node<PersonNodeData>[]>([]);
+  const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge<RelationshipEdgeData>[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedConnection, setSelectedConnection] =
     useState<Connection | null>(null);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+
+  // Group boundary 노드 클릭 시 editor에 선택을 전달하는 콜백
+  const handleGroupSelect = useCallback(
+    (connectionId: string, additive: boolean) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.select([connectionId], !additive);
+    },
+    [getEditor],
+  );
 
   const syncFromEditor = useCallback(() => {
     const editor = getEditor();
@@ -56,7 +69,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     const layout = editor.getLayout();
 
     // 노드 변환
-    const newNodes: Node<PersonNodeData>[] = [];
+    const newNodes: Node[] = [];
     genogram.subjects.forEach((subject, id) => {
       const nodeLayout = layout.nodes.get(id);
       if (!nodeLayout) return;
@@ -116,9 +129,65 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       });
     });
 
+    // Group_Line → group-boundary 오버레이 노드 변환 (고정 좌표 기반)
+    genogram.connections.forEach((conn, id) => {
+      if (conn.entity.type !== ConnectionType.Group_Line) return;
+      const edgeLayout = layout.edges.get(id);
+      if (!edgeLayout) return;
+
+      const groupAttr = conn.entity.attribute as GroupAttribute;
+      const { memberPositions } = groupAttr;
+
+      if (memberPositions.length < 2) return;
+
+      // 바운딩 박스 계산 (nodeOrigin=[0.5, 0.5] 기준)
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      for (const mp of memberPositions) {
+        const half = mp.sizePx / 2;
+        minX = Math.min(minX, mp.x - half);
+        minY = Math.min(minY, mp.y - half);
+        maxX = Math.max(maxX, mp.x + half);
+        maxY = Math.max(maxY, mp.y + half);
+      }
+
+      const pad = GROUP_BOUNDARY_PADDING;
+      const w = maxX - minX + pad * 2;
+      const h = maxY - minY + pad * 2;
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+
+      newNodes.push({
+        id: `group-boundary-${id}`,
+        type: 'group-boundary',
+        position: { x: cx, y: cy },
+        data: {
+          connectionId: id,
+          memberPositions,
+          strokeColor: conn.layout.strokeColor,
+          memo: conn.entity.memo,
+          isSelected: edgeLayout.isSelected,
+          width: w,
+          height: h,
+          onSelect: handleGroupSelect,
+        } satisfies GroupBoundaryNodeData,
+        style: { pointerEvents: 'none' },
+        zIndex: -1,
+        draggable: false,
+        selectable: false,
+        focusable: false,
+        selected: edgeLayout.isSelected,
+      });
+    });
+
     // 엣지 변환
     const newEdges: Edge<RelationshipEdgeData>[] = [];
     genogram.connections.forEach((conn, id) => {
+      // Group_Line은 오버레이 노드로 처리됨
+      if (conn.entity.type === ConnectionType.Group_Line) return;
+
       const edgeLayout = layout.edges.get(id);
       if (!edgeLayout) return;
 
@@ -166,7 +235,6 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           break;
         case ConnectionType.Relation_Line:
         case ConnectionType.Influence_Line:
-        case ConnectionType.Group_Line:
         default:
           // 노드 중심 간 직선
           sourceHandle = 'center-source';
@@ -275,7 +343,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [getEditor]);
+  }, [getEditor, handleGroupSelect]);
 
   const syncSelectedSubject = useCallback(() => {
     const editor = getEditor();
