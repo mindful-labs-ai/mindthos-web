@@ -57,8 +57,11 @@ const GenogramCanvas: React.FC = () => {
     addFamily,
     addAnimal,
     addParentPair,
+    addPartnerAtPosition,
+    convertSubjectType,
     addChildToParentRef,
     addChildConnectionToParentRef,
+    isFetusSubject,
     undo,
     redo,
     toolMode,
@@ -100,21 +103,10 @@ const GenogramCanvas: React.FC = () => {
   // 파트너 모드에서 빈 곳 클릭 시: 파트너 Subject 생성 + 파트너선 연결
   const handlePartnerCreateAtPosition = useCallback(
     (sourceId: string, position: { x: number; y: number }) => {
-      // 소스 Subject의 성별에 따라 반대 성별 자동 선택
-      const sourceNode = nodes.find((n) => n.id === sourceId);
-      const sourceGender = (sourceNode?.data as { gender?: string })?.gender;
-      let partnerGender: (typeof Gender)[keyof typeof Gender] = Gender.Male;
-      if (sourceGender === Gender.Male) partnerGender = Gender.Female;
-      else if (sourceGender === Gender.Female) partnerGender = Gender.Male;
-      // 그 외(Gay, Lesbian, Transgender 등)는 기본 Male
-
-      const newId = addPerson(partnerGender, position);
-      if (newId) {
-        createConnection(sourceId, newId);
-      }
+      addPartnerAtPosition(sourceId, position);
       setFabSourceId(null);
     },
-    [addPerson, createConnection, nodes]
+    [addPartnerAtPosition]
   );
 
   // 자녀 모드에서 빈 곳 클릭 시: 자녀 Subject 생성 + 부모-자녀선 연결
@@ -242,15 +234,11 @@ const GenogramCanvas: React.FC = () => {
 
   const selectionContext = useMemo<SelectionContext>(() => {
     const ctx = deriveSelectionContext(selectedItems);
-    // single-subject인 경우 subjectType 보강
     if (ctx.type === 'single-subject') {
-      const node = nodes.find((n) => n.id === ctx.subjectId);
-      if (node) {
-        ctx.subjectType = (node.data as { subjectType?: string }).subjectType;
-      }
+      ctx.isSpecialChild = isFetusSubject(ctx.subjectId);
     }
     return ctx;
-  }, [selectedItems, nodes]);
+  }, [selectedItems, isFetusSubject]);
 
   const { flowToScreenPosition } = useReactFlow();
   const viewport = useViewport();
@@ -463,6 +451,7 @@ const GenogramCanvas: React.FC = () => {
           <GenogramPropertyPanel
             subject={selectedSubject}
             onUpdate={updateSubject}
+            onConvertType={convertSubjectType}
             connection={selectedConnection}
             onConnectionUpdate={updateConnection}
             onClose={handleClosePanel}

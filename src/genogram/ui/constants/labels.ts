@@ -1,5 +1,6 @@
 import {
   ConnectionType,
+  FetusStatus,
   Gender,
   Illness,
   InfluenceStatus,
@@ -20,13 +21,30 @@ export const GENDER_LABELS: Record<string, string> = {
   [Gender.Nonbinary]: '논바이너리',
 };
 
+// Subject 타입 라벨 (Gender 외)
+export const SUBJECT_TYPE_LABELS: Record<string, string> = {
+  [SubjectType.Animal]: '반려동물',
+};
+
+// 툴바 전용 라벨
+export const TOOLBAR_LABELS = {
+  FAMILY: '가족',
+} as const;
+
+// 태아 상태 라벨
+export const FETUS_STATUS_LABELS: Record<string, string> = {
+  [FetusStatus.Miscarriage]: '유산',
+  [FetusStatus.Abortion]: '낙태',
+  [FetusStatus.Pregnancy]: '임신',
+};
+
 /** 성별 + 반려동물 통합 드롭다운 아이템 (반려동물은 SubjectType 변경) */
 export const GENDER_TYPE_ITEMS = [
   ...Object.entries(GENDER_LABELS).map(([value, label]) => ({
     value,
     label,
   })),
-  { value: SubjectType.Animal, label: '반려동물' },
+  { value: SubjectType.Animal, label: SUBJECT_TYPE_LABELS[SubjectType.Animal] },
 ];
 
 export const GENDER_ITEMS = Object.entries(GENDER_LABELS).map(
@@ -96,11 +114,11 @@ export const PARTNER_STATUS_ITEMS = Object.entries(PARTNER_STATUS_LABELS).map(
 export const RELATION_STATUS_LABELS: Record<string, string> = {
   [RelationStatus.Connected]: '연결',
   [RelationStatus.Close]: '친밀',
-  [RelationStatus.Fused]: '밀착',
+  [RelationStatus.Fused]: '융합',
   [RelationStatus.Distant]: '소원',
   [RelationStatus.Hostile]: '적대',
   [RelationStatus.Close_Hostile]: '친밀-적대',
-  [RelationStatus.Cutoff]: '단절',
+  [RelationStatus.Cutoff]: '단절됨',
 };
 
 export const RELATION_STATUS_ITEMS = Object.entries(RELATION_STATUS_LABELS).map(
@@ -110,10 +128,10 @@ export const RELATION_STATUS_ITEMS = Object.entries(RELATION_STATUS_LABELS).map(
 // 영향 상태 라벨
 export const INFLUENCE_STATUS_LABELS: Record<string, string> = {
   [InfluenceStatus.Physical_Abuse]: '신체적 학대',
-  [InfluenceStatus.Emotional_Abuse]: '정서적 학대',
+  [InfluenceStatus.Emotional_Abuse]: '정신적 학대',
   [InfluenceStatus.Sexual_Abuse]: '성적 학대',
-  [InfluenceStatus.Focused_On]: '집중',
-  [InfluenceStatus.Focused_On_Negatively]: '부정적 집중',
+  [InfluenceStatus.Focused_On]: '집중됨',
+  [InfluenceStatus.Focused_On_Negatively]: '부정적 집중됨',
 };
 
 export const INFLUENCE_STATUS_ITEMS = Object.entries(
@@ -122,14 +140,14 @@ export const INFLUENCE_STATUS_ITEMS = Object.entries(
 
 // 부모-자녀 상태 라벨
 export const PARENT_CHILD_STATUS_LABELS: Record<string, string> = {
-  [ParentChildStatus.Biological_Child]: '친자',
+  [ParentChildStatus.Biological_Child]: '친자녀',
   [ParentChildStatus.Miscarriage]: '유산',
   [ParentChildStatus.Abortion]: '낙태',
-  [ParentChildStatus.Pregnancy]: '임신 중',
+  [ParentChildStatus.Pregnancy]: '임신',
   [ParentChildStatus.Twins]: '쌍둥이',
   [ParentChildStatus.Identical_Twins]: '일란성 쌍둥이',
-  [ParentChildStatus.Adopted_Child]: '입양',
-  [ParentChildStatus.Foster_Child]: '위탁',
+  [ParentChildStatus.Adopted_Child]: '입양자녀',
+  [ParentChildStatus.Foster_Child]: '위탁자녀',
 };
 
 export const PARENT_CHILD_STATUS_ITEMS = Object.entries(

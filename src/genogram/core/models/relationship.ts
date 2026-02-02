@@ -1,4 +1,8 @@
-import { ConnectionType, StrokeWidth } from '../types/enums';
+import {
+  ConnectionType,
+  PartnerStatus as PartnerStatusEnum,
+  StrokeWidth,
+} from '../types/enums';
 import type {
   InfluenceStatus,
   ParentChildStatus,
@@ -186,3 +190,28 @@ export function createGroupConnection(
 }
 
 export type ConnectionUpdate = Partial<Omit<Connection, 'id'>>;
+
+/**
+ * PartnerStatus에 따라 각 날짜 필드의 표시 여부를 반환합니다.
+ */
+export function getPartnerDateVisibility(status: PartnerStatus): {
+  showMarried: boolean;
+  showDivorced: boolean;
+  showReunited: boolean;
+  showRelStart: boolean;
+} {
+  return {
+    showMarried:
+      status === PartnerStatusEnum.Marriage ||
+      status === PartnerStatusEnum.Marital_Separation ||
+      status === PartnerStatusEnum.Divorce ||
+      status === PartnerStatusEnum.Remarriage,
+    showDivorced:
+      status === PartnerStatusEnum.Divorce ||
+      status === PartnerStatusEnum.Remarriage,
+    showReunited: status === PartnerStatusEnum.Remarriage,
+    showRelStart:
+      status === PartnerStatusEnum.Couple_Relationship ||
+      status === PartnerStatusEnum.Secret_Affair,
+  };
+}

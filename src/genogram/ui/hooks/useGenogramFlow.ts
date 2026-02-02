@@ -296,6 +296,39 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // 파트너 Subject 생성 + 파트너선 연결 (성별 자동 선택)
+  const addPartnerAtPosition = useCallback(
+    (sourceId: string, position: { x: number; y: number }) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const result = editor.addPartnerAtPosition(sourceId, position);
+      editor.select([result.partnerId], true);
+      return result;
+    },
+    [getEditor]
+  );
+
+  // Subject 타입 변환 (Person↔Animal 또는 성별 변경)
+  const convertSubjectType = useCallback(
+    (subjectId: string, targetType: string) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.convertSubjectType(subjectId, targetType);
+    },
+    [getEditor]
+  );
+
+  // 태아 타입 판별
+  const isFetusSubject = useCallback(
+    (subjectId: string): boolean => {
+      const editor = getEditor();
+      if (!editor) return false;
+      return editor.isFetusSubject(subjectId);
+    },
+    [getEditor]
+  );
+
   // parentRef(파트너선 ID 또는 Subject ID)에 자녀 생성 + 연결 (자동 선택 + Select 모드 전환)
   const addChildToParentRef = useCallback(
     (parentRef: string, childStatus: ParentChildStatus) => {
@@ -408,8 +441,11 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     addFamily,
     addAnimal,
     addParentPair,
+    addPartnerAtPosition,
+    convertSubjectType,
     addChildToParentRef,
     addChildConnectionToParentRef,
+    isFetusSubject,
     deletePerson: deleteSubject,
     updateSubject,
     updateConnection,

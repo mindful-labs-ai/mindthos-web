@@ -1,7 +1,8 @@
+import { FetusStatus, SubjectType } from '../types/enums';
 import type { UUID } from '../types/types';
 import { generateId } from '../types/types';
 
-import type { Subject } from './person';
+import type { FetusAttribute, Subject } from './person';
 import type { Connection } from './relationship';
 import type { Annotation } from './text-annotation';
 
@@ -148,6 +149,28 @@ export function serializeGenogram(genogram: Genogram): SerializedGenogram {
   };
 }
 
+/** 레거시 SubjectType → FetusStatus 매핑 */
+const LEGACY_SUBJECT_TYPE_TO_FETUS_STATUS: Record<string, FetusStatus> = {
+  MISCARRIAGE: FetusStatus.Miscarriage,
+  ABORTION: FetusStatus.Abortion,
+  PREGNANCY: FetusStatus.Pregnancy,
+};
+
+/** 레거시 SubjectType(MISCARRIAGE/ABORTION/PREGNANCY)을 Fetus + FetusStatus로 마이그레이션 */
+function migrateSubject(subject: Subject): Subject {
+  const fetusStatus =
+    LEGACY_SUBJECT_TYPE_TO_FETUS_STATUS[subject.entity.type as string];
+  if (!fetusStatus) return subject;
+  return {
+    ...subject,
+    entity: {
+      ...subject.entity,
+      type: SubjectType.Fetus,
+      attribute: { name: null, status: fetusStatus } satisfies FetusAttribute,
+    },
+  };
+}
+
 export function deserializeGenogram(data: SerializedGenogram): Genogram {
   return {
     id: data.id,
@@ -156,7 +179,12 @@ export function deserializeGenogram(data: SerializedGenogram): Genogram {
       createdAt: new Date(data.metadata.createdAt),
       updatedAt: new Date(data.metadata.updatedAt),
     },
-    subjects: new Map(data.subjects.map((s) => [s.id, s])),
+    subjects: new Map(
+      data.subjects.map((s) => {
+        const migrated = migrateSubject(s);
+        return [migrated.id, migrated];
+      })
+    ),
     connections: new Map(data.connections.map((c) => [c.id, c])),
     annotations: new Map(data.annotations.map((a) => [a.id, a])),
     view: data.view,

@@ -19,6 +19,14 @@ import {
   ToolMode,
 } from '@/genogram/core/types/enums';
 
+import {
+  GENDER_LABELS,
+  INFLUENCE_STATUS_LABELS,
+  RELATION_STATUS_LABELS,
+  SUBJECT_TYPE_LABELS,
+  TOOLBAR_LABELS,
+} from '../constants/labels';
+
 import { SimpleTooltip } from './common/SimpleTooltip';
 import { GenderIcon } from './icons/GenderIcon';
 import { RelationIcon } from './icons/RelationIcon';
@@ -70,82 +78,97 @@ const getSubjectIconValue = (subTool: SubjectSubTool): string => {
 };
 
 const SUBJECT_PRIMARY_ITEMS: SubjectMenuItem[] = [
-  { label: '가족', subTool: { kind: 'family' } },
-  { label: '남성', subTool: { kind: 'gender', gender: Gender.Male } },
-  { label: '여성', subTool: { kind: 'gender', gender: Gender.Female } },
+  { label: TOOLBAR_LABELS.FAMILY, subTool: { kind: 'family' } },
+  {
+    label: GENDER_LABELS[Gender.Male],
+    subTool: { kind: 'gender', gender: Gender.Male },
+  },
+  {
+    label: GENDER_LABELS[Gender.Female],
+    subTool: { kind: 'gender', gender: Gender.Female },
+  },
 ];
 
 const SUBJECT_SECONDARY_ITEMS: SubjectMenuItem[] = [
-  { label: '게이', subTool: { kind: 'gender', gender: Gender.Gay } },
-  { label: '레즈비언', subTool: { kind: 'gender', gender: Gender.Lesbian } },
   {
-    label: '트랜스젠더 - 남성',
+    label: GENDER_LABELS[Gender.Gay],
+    subTool: { kind: 'gender', gender: Gender.Gay },
+  },
+  {
+    label: GENDER_LABELS[Gender.Lesbian],
+    subTool: { kind: 'gender', gender: Gender.Lesbian },
+  },
+  {
+    label: GENDER_LABELS[Gender.Transgender_Male],
     subTool: { kind: 'gender', gender: Gender.Transgender_Male },
   },
   {
-    label: '트랜스젠더 - 여성',
+    label: GENDER_LABELS[Gender.Transgender_Female],
     subTool: { kind: 'gender', gender: Gender.Transgender_Female },
   },
   {
-    label: '논바이너리',
+    label: GENDER_LABELS[Gender.Nonbinary],
     subTool: { kind: 'gender', gender: Gender.Nonbinary },
   },
-  { label: '반려동물', subTool: { kind: 'animal' } },
+  {
+    label: SUBJECT_TYPE_LABELS[SubjectType.Animal],
+    subTool: { kind: 'animal' },
+  },
 ];
 
 const CONNECTION_PRIMARY_ITEMS: ConnectionMenuItem[] = [
   {
-    label: '기본',
+    label: RELATION_STATUS_LABELS[RelationStatus.Connected],
     subTool: { kind: 'relation', status: RelationStatus.Connected },
   },
   {
-    label: '가까움',
+    label: RELATION_STATUS_LABELS[RelationStatus.Close],
     subTool: { kind: 'relation', status: RelationStatus.Close },
   },
   {
-    label: '융합',
+    label: RELATION_STATUS_LABELS[RelationStatus.Fused],
     subTool: { kind: 'relation', status: RelationStatus.Fused },
   },
   {
-    label: '소홀함',
+    label: RELATION_STATUS_LABELS[RelationStatus.Distant],
     subTool: { kind: 'relation', status: RelationStatus.Distant },
   },
   {
-    label: '갈등',
+    label: RELATION_STATUS_LABELS[RelationStatus.Hostile],
     subTool: { kind: 'relation', status: RelationStatus.Hostile },
   },
 ];
 
 const CONNECTION_SECONDARY_ITEMS: ConnectionMenuItem[] = [
   {
-    label: '갈등-가까움',
+    label: RELATION_STATUS_LABELS[RelationStatus.Close_Hostile],
     subTool: { kind: 'relation', status: RelationStatus.Close_Hostile },
   },
   {
-    label: '신체적 학대',
+    label: INFLUENCE_STATUS_LABELS[InfluenceStatus.Physical_Abuse],
     subTool: { kind: 'influence', status: InfluenceStatus.Physical_Abuse },
   },
   {
-    label: '정신적 학대',
+    label: INFLUENCE_STATUS_LABELS[InfluenceStatus.Emotional_Abuse],
     subTool: { kind: 'influence', status: InfluenceStatus.Emotional_Abuse },
   },
   {
-    label: '성적 학대',
+    label: INFLUENCE_STATUS_LABELS[InfluenceStatus.Sexual_Abuse],
     subTool: { kind: 'influence', status: InfluenceStatus.Sexual_Abuse },
   },
   {
-    label: '집중됨',
+    label: INFLUENCE_STATUS_LABELS[InfluenceStatus.Focused_On],
     subTool: { kind: 'influence', status: InfluenceStatus.Focused_On },
   },
   {
-    label: '부정적 집중됨',
+    label: INFLUENCE_STATUS_LABELS[InfluenceStatus.Focused_On_Negatively],
     subTool: {
       kind: 'influence',
       status: InfluenceStatus.Focused_On_Negatively,
     },
   },
   {
-    label: '단절됨',
+    label: RELATION_STATUS_LABELS[RelationStatus.Cutoff],
     subTool: { kind: 'relation', status: RelationStatus.Cutoff },
   },
 ];

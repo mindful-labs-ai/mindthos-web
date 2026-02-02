@@ -4,7 +4,12 @@ import type { Edge, Node } from '@xyflow/react';
 
 import type { GenogramEditor } from '@/genogram/core/editor/genogram-editor';
 import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
-import type { Subject, PersonAttribute } from '@/genogram/core/models/person';
+import type {
+  Subject,
+  PersonAttribute,
+  FetusAttribute,
+} from '@/genogram/core/models/person';
+import { getNodeShape } from '@/genogram/core/models/person';
 import type {
   Connection,
   ParentChildAttribute,
@@ -13,7 +18,6 @@ import type {
 import {
   AssetType,
   ConnectionType,
-  Gender,
   SubjectType,
 } from '@/genogram/core/types/enums';
 import type {
@@ -23,32 +27,13 @@ import type {
   RelationStatus,
 } from '@/genogram/core/types/enums';
 
-import type {
-  RelationshipEdgeData,
-  NodeShape,
-} from '../components/edges/RelationshipEdge';
+import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
 import type { PersonNodeData } from '../components/nodes/PersonNode';
 import { NODE_SIZE_PX } from '../constants/grid';
 
 /** Subject의 size 속성에서 px 크기를 안전하게 조회 */
 const getSubjectSizePx = (subject: Subject | undefined): number =>
   NODE_SIZE_PX[subject?.layout.style.size ?? ''] ?? NODE_SIZE_PX.DEFAULT;
-
-/** Subject의 gender/type에서 노드 도형을 판별 */
-const getSubjectShape = (subject: Subject | undefined): NodeShape => {
-  if (!subject) return 'circle';
-  if (subject.entity.type === SubjectType.Animal) return 'diamond';
-  const attr = subject.entity.attribute as PersonAttribute;
-  switch (attr.gender) {
-    case Gender.Male:
-    case Gender.Gay:
-    case Gender.Transgender_Male:
-    case Gender.Nonbinary:
-      return 'rect';
-    default:
-      return 'circle';
-  }
-};
 
 /**
  * GenogramEditor 상태를 ReactFlow 노드/엣지로 변환하는 훅.
@@ -77,8 +62,10 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       if (!nodeLayout) return;
 
       const isPerson = subject.entity.type === SubjectType.Person;
+      const isFetus = subject.entity.type === SubjectType.Fetus;
       const attr = subject.entity.attribute;
       const personAttr = isPerson ? (attr as PersonAttribute) : null;
+      const fetusAttr = isFetus ? (attr as FetusAttribute) : null;
 
       // 생몰연도 포맷: "1980-" 또는 "1980 ~ 2024"
       let lifeSpanLabel: string | null = null;
@@ -121,6 +108,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           lifeSpanLabel,
           detailTexts,
           sizePx,
+          fetusStatus: fetusAttr?.status,
           bgColor: subject.layout.style.bgColor,
           textColor: subject.layout.style.textColor,
         },
@@ -272,8 +260,8 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
               : undefined,
           sourceSizePx: getSubjectSizePx(genogram.subjects.get(source)),
           targetSizePx: getSubjectSizePx(genogram.subjects.get(target)),
-          sourceShape: getSubjectShape(genogram.subjects.get(source)),
-          targetShape: getSubjectShape(genogram.subjects.get(target)),
+          sourceShape: getNodeShape(genogram.subjects.get(source)),
+          targetShape: getNodeShape(genogram.subjects.get(target)),
           partnerMidpoint,
           partnerSubjects,
           twinTargetPosition,

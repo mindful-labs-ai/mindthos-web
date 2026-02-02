@@ -7,7 +7,6 @@ import {
   AssetType,
   ParentChildStatus,
   RelationStatus,
-  SubjectType,
 } from '@/genogram/core/types/enums';
 
 import {
@@ -19,16 +18,9 @@ import {
 
 export type SelectionContext =
   | { type: 'none' }
-  | { type: 'single-subject'; subjectId: string; subjectType?: string }
+  | { type: 'single-subject'; subjectId: string; isSpecialChild?: boolean }
   | { type: 'single-connection'; connectionId: string }
   | { type: 'multi'; ids: string[] };
-
-/** FAB를 표시하지 않을 특수 자녀 SubjectType 집합 */
-const SPECIAL_CHILD_TYPES: ReadonlySet<string> = new Set([
-  SubjectType.Miscarriage,
-  SubjectType.Abortion,
-  SubjectType.Pregnancy,
-]);
 
 export function deriveSelectionContext(
   items: SelectedItem[]
@@ -238,9 +230,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   );
 
   const handleChildSelect = useCallback(
-    (
-      status: (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
-    ) => {
+    (status: (typeof ParentChildStatus)[keyof typeof ParentChildStatus]) => {
       onAction('add-child', selectionContext, { parentChildStatus: status });
       setOpen(false);
     },
@@ -257,8 +247,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   }
   if (
     selectionContext.type === 'single-subject' &&
-    selectionContext.subjectType &&
-    SPECIAL_CHILD_TYPES.has(selectionContext.subjectType)
+    selectionContext.isSpecialChild
   ) {
     return null;
   }
@@ -300,33 +289,31 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             <>
               <button
                 type="button"
-                className="mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-fg/60 transition-colors hover:bg-surface-contrast"
+                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors hover:bg-surface-contrast"
                 onClick={() => setShowRelationSub(false)}
               >
                 ← 관계 선택
               </button>
-              {Object.entries(RELATION_STATUS_LABELS).map(
-                ([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
-                    onClick={() =>
-                      handleRelationSelect(
-                        value as (typeof RelationStatus)[keyof typeof RelationStatus]
-                      )
-                    }
-                  >
-                    {label}
-                  </button>
-                )
-              )}
+              {Object.entries(RELATION_STATUS_LABELS).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  onClick={() =>
+                    handleRelationSelect(
+                      value as (typeof RelationStatus)[keyof typeof RelationStatus]
+                    )
+                  }
+                >
+                  {label}
+                </button>
+              ))}
             </>
           ) : showChildSub ? (
             <>
               <button
                 type="button"
-                className="mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-fg/60 transition-colors hover:bg-surface-contrast"
+                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors hover:bg-surface-contrast"
                 onClick={() => setShowChildSub(false)}
               >
                 ← 자녀 선택

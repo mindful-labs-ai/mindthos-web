@@ -2,7 +2,9 @@ import { memo, type ReactNode } from 'react';
 
 import { EdgeLabelRenderer, type EdgeProps } from '@xyflow/react';
 
+import type { NodeShape } from '@/genogram/core/models/person';
 import type { PartnerDetail } from '@/genogram/core/models/relationship';
+import { getPartnerDateVisibility } from '@/genogram/core/models/relationship';
 import {
   ConnectionType,
   InfluenceStatus,
@@ -15,9 +17,6 @@ import {
 import { DEFAULT_NODE_SIZE } from '../../constants/grid';
 
 /* ───────────────────────────── Types ───────────────────────────── */
-
-/** 노드 도형 타입 */
-export type NodeShape = 'circle' | 'rect' | 'diamond';
 
 export interface RelationshipEdgeData {
   connectionType: (typeof ConnectionType)[keyof typeof ConnectionType];
@@ -1083,21 +1082,18 @@ export const RelationshipEdge = memo(
         {ct === ConnectionType.Partner_Line &&
           partnerDetail &&
           (() => {
-            const ps = partnerStatus;
             const parts: string[] = [];
             const toYear = (d: string) => d.slice(0, 4);
 
-            const showMarried =
-              ps === PartnerStatus.Marriage ||
-              ps === PartnerStatus.Marital_Separation ||
-              ps === PartnerStatus.Divorce ||
-              ps === PartnerStatus.Remarriage;
-            const showDivorced =
-              ps === PartnerStatus.Divorce || ps === PartnerStatus.Remarriage;
-            const showReunited = ps === PartnerStatus.Remarriage;
-            const showRelStart =
-              ps === PartnerStatus.Couple_Relationship ||
-              ps === PartnerStatus.Secret_Affair;
+            const { showMarried, showDivorced, showReunited, showRelStart } =
+              partnerStatus
+                ? getPartnerDateVisibility(partnerStatus)
+                : {
+                    showMarried: false,
+                    showDivorced: false,
+                    showReunited: false,
+                    showRelStart: false,
+                  };
 
             if (showMarried && partnerDetail.marriedDate)
               parts.push(`m.${toYear(partnerDetail.marriedDate)}`);

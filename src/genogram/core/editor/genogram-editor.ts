@@ -13,7 +13,7 @@ import type { CommandManagerConfig } from '../commands/manager';
 import { CommandManager } from '../commands/manager';
 import {
   AddAnimalSubjectCommand,
-  AddSpecialChildSubjectCommand,
+  AddFetusSubjectCommand,
   AddSubjectCommand,
   DeleteSubjectCommand,
   MoveMultipleNodesCommand,
@@ -52,6 +52,7 @@ import type { Connection, ConnectionLayout } from '../models/relationship';
 import {
   AssetType,
   Gender as GenderEnum,
+  Illness,
   ParentChildStatus as ParentChildStatusEnum,
   PartnerStatus,
   RelationStatus,
@@ -86,15 +87,6 @@ import {
 } from './interaction-state';
 import type { ViewDisplaySettings } from './view-settings';
 import { ViewSettings } from './view-settings';
-
-/** ParentChildStatus → SubjectType 매핑 (유산/낙태/임신 중) */
-const SPECIAL_CHILD_SUBJECT_TYPE: Readonly<
-  Record<string, typeof SubjectTypeEnum.Miscarriage | typeof SubjectTypeEnum.Abortion | typeof SubjectTypeEnum.Pregnancy>
-> = {
-  [ParentChildStatusEnum.Miscarriage]: SubjectTypeEnum.Miscarriage,
-  [ParentChildStatusEnum.Abortion]: SubjectTypeEnum.Abortion,
-  [ParentChildStatusEnum.Pregnancy]: SubjectTypeEnum.Pregnancy,
-};
 
 export type EditorEventType =
   | 'state-change'
@@ -462,6 +454,114 @@ export class GenogramEditor {
   }
 
   /**
+   * 파트너 Subject를 생성하고 파트너선을 연결합니다.
+   * 소스 Subject의 성별에 따라 반대 성별을 자동 선택합니다.
+   * 단일 트랜잭션으로 undo 한 번에 전체 롤백.
+   */
+  addPartnerAtPosition(
+    sourceId: UUID,
+    position: Point
+  ): { partnerId: UUID; partnerLineId: UUID } {
+    const source = this.state.genogram.subjects.get(sourceId);
+    let partnerGender: Gender = GenderEnum.Male;
+    if (source?.entity.type === SubjectTypeEnum.Person) {
+      const sourceGender = (source.entity.attribute as { gender?: Gender })
+        .gender;
+      if (sourceGender === GenderEnum.Male) partnerGender = GenderEnum.Female;
+      else if (sourceGender === GenderEnum.Female)
+        partnerGender = GenderEnum.Male;
+    }
+
+    const partnerCmd = new AddSubjectCommand(partnerGender, position, 0);
+    const connectionCmd = new AddPartnerConnectionCommand(
+      sourceId,
+      partnerCmd.getSubjectId(),
+      PartnerStatus.Marriage
+    );
+
+    this.executeMultiple([partnerCmd, connectionCmd]);
+
+    return {
+      partnerId: partnerCmd.getSubjectId(),
+      partnerLineId: connectionCmd.getConnectionId(),
+    };
+  }
+
+  /**
+   * Subject의 타입(Person↔Animal)을 변환하거나 Person의 성별을 변경합니다.
+   * Person→Animal: 이름·사망여부를 보존하고 나머지 Person 속성은 버림
+   * Animal→Person: 이름·사망여부를 보존하고 Person 기본값으로 초기화
+   * Person→Person: 성별만 변경
+   */
+  convertSubjectType(subjectId: UUID, targetType: string): void {
+    const subject = this.state.genogram.subjects.get(subjectId);
+    if (!subject) return;
+
+    // Fetus Subject는 타입 변환 대상이 아님
+    if (subject.entity.type === SubjectTypeEnum.Fetus) return;
+
+    const currentAttr = subject.entity.attribute;
+    const currentName =
+      'name' in currentAttr ? (currentAttr.name as string | null) : null;
+    const currentIsDead =
+      'isDead' in currentAttr ? (currentAttr.isDead as boolean) : false;
+    const currentMemo = subject.entity.memo;
+
+    if (targetType === SubjectTypeEnum.Animal) {
+      // → Animal 전환
+      this.updateSubject(subjectId, {
+        entity: {
+          type: SubjectTypeEnum.Animal,
+          attribute: { name: currentName, isDead: currentIsDead },
+          memo: currentMemo,
+        },
+      });
+    } else {
+      // → Person 전환 또는 성별 변경
+      const genderValue = targetType as Gender;
+      if (subject.entity.type === SubjectTypeEnum.Animal) {
+        this.updateSubject(subjectId, {
+          entity: {
+            type: SubjectTypeEnum.Person,
+            attribute: {
+              gender: genderValue,
+              name: currentName,
+              isDead: currentIsDead,
+              lifeSpan: { birth: null, death: null },
+              age: null,
+              illness: Illness.None,
+              detail: {
+                enable: false,
+                job: null,
+                education: null,
+                region: null,
+              },
+            },
+            memo: currentMemo,
+          },
+        });
+      } else {
+        // Person → Person 성별 변경
+        this.updateSubject(subjectId, {
+          entity: {
+            ...subject.entity,
+            attribute: { ...currentAttr, gender: genderValue },
+          },
+        });
+      }
+    }
+  }
+
+  /**
+   * 지정된 Subject가 태아 타입(유산/낙태/임신 중)인지 확인합니다.
+   */
+  isFetusSubject(subjectId: UUID): boolean {
+    const subject = this.state.genogram.subjects.get(subjectId);
+    if (!subject) return false;
+    return subject.entity.type === SubjectTypeEnum.Fetus;
+  }
+
+  /**
    * parentRef(파트너선 ID 또는 Subject ID) 아래에 자녀 Subject를 생성하고
    * 부모-자녀선을 연결합니다.
    * 쌍둥이(Twins, Identical_Twins)일 때는 자녀 2명을 생성합니다.
@@ -484,8 +584,7 @@ export class GenogramEditor {
       if (!sourceLayout || !targetLayout) {
         throw new Error('Partner source/target layout not found');
       }
-      const midX =
-        (sourceLayout.position.x + targetLayout.position.x) / 2;
+      const midX = (sourceLayout.position.x + targetLayout.position.x) / 2;
       const bottomY = Math.max(
         sourceLayout.position.y,
         targetLayout.position.y
@@ -507,11 +606,11 @@ export class GenogramEditor {
       childStatus === ParentChildStatusEnum.Twins ||
       childStatus === ParentChildStatusEnum.Identical_Twins;
 
-    const specialSubjectType = SPECIAL_CHILD_SUBJECT_TYPE[childStatus];
+    const fetusStatus = AddFetusSubjectCommand.resolveFetusStatus(childStatus);
 
-    const existingCenters = Array.from(
-      this.state.layout.nodes.values()
-    ).map((n) => n.position);
+    const existingCenters = Array.from(this.state.layout.nodes.values()).map(
+      (n) => n.position
+    );
 
     const avoidCollision = (pos: Point): Point => {
       let finalPos = pos;
@@ -537,11 +636,7 @@ export class GenogramEditor {
         y: basePos.y,
       });
       const child1Cmd = new AddSubjectCommand(GenderEnum.Male, pos1, 0);
-      const child2Cmd = new AddSubjectCommand(
-        GenderEnum.Female,
-        pos2,
-        0
-      );
+      const child2Cmd = new AddSubjectCommand(GenderEnum.Female, pos2, 0);
       const parentChildCmd = new AddParentChildConnectionCommand(
         parentRef,
         [child1Cmd.getSubjectId(), child2Cmd.getSubjectId()],
@@ -549,18 +644,15 @@ export class GenogramEditor {
       );
       this.executeMultiple([child1Cmd, child2Cmd, parentChildCmd]);
       return {
-        childIds: [
-          child1Cmd.getSubjectId(),
-          child2Cmd.getSubjectId(),
-        ],
+        childIds: [child1Cmd.getSubjectId(), child2Cmd.getSubjectId()],
         parentChildLineId: parentChildCmd.getConnectionId(),
       };
     }
 
     // 단일 자녀
     const finalPos = avoidCollision(basePos);
-    const childCmd = specialSubjectType
-      ? new AddSpecialChildSubjectCommand(specialSubjectType, finalPos, 0)
+    const childCmd = fetusStatus
+      ? new AddFetusSubjectCommand(fetusStatus, finalPos, 0)
       : new AddSubjectCommand(GenderEnum.Male, finalPos, 0);
     const parentChildCmd = new AddParentChildConnectionCommand(
       parentRef,

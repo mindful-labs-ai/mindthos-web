@@ -8,16 +8,18 @@ import type {
   Subject,
   SubjectStyle,
 } from '@/genogram/core/models/person';
-import { Gender, Illness, SubjectType } from '@/genogram/core/types/enums';
+import { SubjectType } from '@/genogram/core/types/enums';
 
 interface UsePropertyPanelOptions {
   subject: Subject | null;
   onUpdate: (subjectId: string, updates: Partial<Subject>) => void;
+  onConvertType?: (subjectId: string, targetType: string) => void;
 }
 
 export const usePropertyPanel = ({
   subject,
   onUpdate,
+  onConvertType,
 }: UsePropertyPanelOptions) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
@@ -71,58 +73,15 @@ export const usePropertyPanel = ({
     [subject, attr, animalAttr, onUpdate]
   );
 
-  // 성별/타입 통합 변경 핸들러
-  // "ANIMAL" 선택 시 SubjectType을 Animal로 변경, 그 외는 Person + 성별 변경
+  // 성별/타입 통합 변경 핸들러 → editor에 위임
   const updateGenderOrType = useCallback(
     (value: string) => {
       if (!subject) return;
-
-      if (value === SubjectType.Animal) {
-        // Person → Animal 전환
-        onUpdate(subject.id, {
-          entity: {
-            type: SubjectType.Animal,
-            attribute: {
-              name: isPerson
-                ? (attr?.name ?? null)
-                : (animalAttr?.name ?? null),
-              isDead: isPerson
-                ? (attr?.isDead ?? false)
-                : (animalAttr?.isDead ?? false),
-            } satisfies AnimalAttribute,
-            memo: subject.entity.memo,
-          },
-        });
-      } else {
-        // Animal → Person 전환 또는 Person 성별 변경
-        const genderValue = value as Gender;
-        if (isAnimal) {
-          onUpdate(subject.id, {
-            entity: {
-              type: SubjectType.Person,
-              attribute: {
-                gender: genderValue,
-                name: animalAttr?.name ?? null,
-                isDead: animalAttr?.isDead ?? false,
-                lifeSpan: { birth: null, death: null },
-                age: null,
-                illness: Illness.None,
-                detail: {
-                  enable: false,
-                  job: null,
-                  education: null,
-                  region: null,
-                },
-              } satisfies PersonAttribute,
-              memo: subject.entity.memo,
-            },
-          });
-        } else {
-          updateAttribute('gender', genderValue);
-        }
+      if (onConvertType) {
+        onConvertType(subject.id, value);
       }
     },
-    [subject, isPerson, isAnimal, attr, animalAttr, onUpdate, updateAttribute]
+    [subject, onConvertType]
   );
 
   // lifeSpan 업데이트 헬퍼

@@ -2,11 +2,16 @@
 export const SubjectType = {
   Person: 'PERSON',
   Animal: 'ANIMAL',
-  Miscarriage: 'MISCARRIAGE',
-  Abortion: 'ABORTION',
-  Pregnancy: 'PREGNANCY',
+  Fetus: 'FETUS',
 } as const;
 export type SubjectType = (typeof SubjectType)[keyof typeof SubjectType];
+
+export const FetusStatus = {
+  Miscarriage: 'Miscarriage',
+  Abortion: 'Abortion',
+  Pregnancy: 'Pregnancy',
+} as const;
+export type FetusStatus = (typeof FetusStatus)[keyof typeof FetusStatus];
 
 export const Gender = {
   Male: 'Male',

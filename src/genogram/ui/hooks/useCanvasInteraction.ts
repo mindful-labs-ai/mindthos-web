@@ -102,10 +102,8 @@ export const useCanvasInteraction = ({
     useState<ConnectionPreview | null>(null);
   const isCreateMode = toolMode === ToolMode.Create_Subject_Tool;
   const isConnectionMode = toolMode === ToolMode.Create_Connection_Tool;
-  const isPartnerMode =
-    isConnectionMode && pendingConnectionKind === 'partner';
-  const isChildMode =
-    isConnectionMode && pendingConnectionKind === 'child';
+  const isPartnerMode = isConnectionMode && pendingConnectionKind === 'partner';
+  const isChildMode = isConnectionMode && pendingConnectionKind === 'child';
   const effectiveSourceId = fabSourceId ?? pendingSourceId;
 
   // 노드 중심 좌표 가져오기 (nodeOrigin=[0.5,0.5]이므로 position이 곧 중심)
@@ -285,7 +283,15 @@ export const useCanvasInteraction = ({
         if (fabSourceId) onFabComplete?.();
       }
     },
-    [isConnectionMode, isChildMode, effectiveSourceId, fabSourceId, onConnectionCreate, onChildNodeClick, onFabComplete]
+    [
+      isConnectionMode,
+      isChildMode,
+      effectiveSourceId,
+      fabSourceId,
+      onConnectionCreate,
+      onChildNodeClick,
+      onFabComplete,
+    ]
   );
 
   // ToolMode별 ReactFlow 동작 설정

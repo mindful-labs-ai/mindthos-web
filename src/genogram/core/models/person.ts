@@ -1,5 +1,10 @@
-import { Illness, NodeSize, SubjectType } from '../types/enums';
-import type { Gender } from '../types/enums';
+import {
+  Gender as GenderEnum,
+  Illness,
+  NodeSize,
+  SubjectType,
+} from '../types/enums';
+import type { Gender, FetusStatus } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 import { generateId } from '../types/types';
 
@@ -32,15 +37,16 @@ export interface AnimalAttribute {
   isDead: boolean;
 }
 
-// Special Child Attribute (유산/낙태/임신 중)
-export interface SpecialChildAttribute {
+// Fetus Attribute (유산/낙태/임신 중)
+export interface FetusAttribute {
   name: null;
+  status: FetusStatus;
 }
 
 // Subject Entity
 export interface SubjectEntity {
   type: SubjectType;
-  attribute: PersonAttribute | AnimalAttribute | SpecialChildAttribute;
+  attribute: PersonAttribute | AnimalAttribute | FetusAttribute;
   memo: string | null;
 }
 
@@ -125,19 +131,16 @@ export function createAnimalSubject(
   };
 }
 
-export function createSpecialChildSubject(
-  subjectType:
-    | typeof SubjectType.Miscarriage
-    | typeof SubjectType.Abortion
-    | typeof SubjectType.Pregnancy,
+export function createFetusSubject(
+  status: FetusStatus,
   position: Point,
   id: UUID = generateId()
 ): Subject {
   return {
     id,
     entity: {
-      type: subjectType,
-      attribute: { name: null } satisfies SpecialChildAttribute,
+      type: SubjectType.Fetus,
+      attribute: { name: null, status } satisfies FetusAttribute,
       memo: null,
     },
     layout: {
@@ -152,3 +155,44 @@ export function createSpecialChildSubject(
 }
 
 export type SubjectUpdate = Partial<Omit<Subject, 'id'>>;
+
+/** 노드 도형 타입 */
+export type NodeShape = 'circle' | 'rect' | 'diamond';
+
+/**
+ * Subject의 gender/type에서 노드 도형을 판별합니다.
+ */
+export function getNodeShape(subject: Subject | undefined): NodeShape {
+  if (!subject) return 'circle';
+  if (subject.entity.type === SubjectType.Animal) return 'diamond';
+  if (subject.entity.type === SubjectType.Fetus) return 'circle';
+  const attr = subject.entity.attribute as PersonAttribute;
+  switch (attr.gender) {
+    case GenderEnum.Male:
+    case GenderEnum.Gay:
+    case GenderEnum.Transgender_Male:
+    case GenderEnum.Nonbinary:
+      return 'rect';
+    default:
+      return 'circle';
+  }
+}
+
+/**
+ * Gender 값에서 노드 도형을 판별합니다 (Ghost 미리보기 등에서 사용).
+ */
+export function getGenderShape(gender: Gender | undefined): NodeShape {
+  switch (gender) {
+    case GenderEnum.Female:
+    case GenderEnum.Lesbian:
+    case GenderEnum.Transgender_Female:
+      return 'circle';
+    case GenderEnum.Nonbinary:
+      return 'rect';
+    case GenderEnum.Male:
+    case GenderEnum.Gay:
+    case GenderEnum.Transgender_Male:
+    default:
+      return 'rect';
+  }
+}

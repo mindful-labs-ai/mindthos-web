@@ -3,13 +3,23 @@ import { createNodeLayout } from '../layout/layout-state';
 import type { Subject } from '../models/person';
 import {
   createAnimalSubject,
+  createFetusSubject,
   createPersonSubject,
-  createSpecialChildSubject,
 } from '../models/person';
 import type { Connection } from '../models/relationship';
-import type { Gender } from '../types/enums';
-import { SubjectType } from '../types/enums';
+import type { Gender, FetusStatus } from '../types/enums';
+import {
+  FetusStatus as FetusStatusEnum,
+  ParentChildStatus as ParentChildStatusEnum,
+} from '../types/enums';
 import type { Point, UUID } from '../types/types';
+
+/** ParentChildStatus → FetusStatus 매핑 (유산/낙태/임신 중) */
+const PARENT_CHILD_TO_FETUS_STATUS: Readonly<Record<string, FetusStatus>> = {
+  [ParentChildStatusEnum.Miscarriage]: FetusStatusEnum.Miscarriage,
+  [ParentChildStatusEnum.Abortion]: FetusStatusEnum.Abortion,
+  [ParentChildStatusEnum.Pregnancy]: FetusStatusEnum.Pregnancy,
+};
 
 import type { EditorState } from './base';
 import { BaseCommand } from './base';
@@ -74,21 +84,14 @@ export class AddAnimalSubjectCommand extends BaseCommand {
   }
 }
 
-export class AddSpecialChildSubjectCommand extends BaseCommand {
-  readonly type = 'ADD_SPECIAL_CHILD_SUBJECT';
+export class AddFetusSubjectCommand extends BaseCommand {
+  readonly type = 'ADD_FETUS_SUBJECT';
   private subject: Subject;
   private layout: NodeLayout;
 
-  constructor(
-    subjectType:
-      | typeof SubjectType.Miscarriage
-      | typeof SubjectType.Abortion
-      | typeof SubjectType.Pregnancy,
-    position: Point,
-    generation = 0
-  ) {
+  constructor(status: FetusStatus, position: Point, generation = 0) {
     super();
-    this.subject = createSpecialChildSubject(subjectType, position);
+    this.subject = createFetusSubject(status, position);
     this.layout = createNodeLayout(this.subject.id, position, generation);
   }
 
@@ -108,6 +111,14 @@ export class AddSpecialChildSubjectCommand extends BaseCommand {
 
   getSubjectId(): UUID {
     return this.subject.id;
+  }
+
+  /**
+   * ParentChildStatus가 태아 상태에 해당하면 FetusStatus를 반환,
+   * 아니면 undefined를 반환합니다.
+   */
+  static resolveFetusStatus(childStatus: string): FetusStatus | undefined {
+    return PARENT_CHILD_TO_FETUS_STATUS[childStatus];
   }
 }
 

@@ -2,7 +2,12 @@ import React, { memo } from 'react';
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
-import { Gender, Illness, SubjectType } from '@/genogram/core/types/enums';
+import {
+  FetusStatus,
+  Gender,
+  Illness,
+  SubjectType,
+} from '@/genogram/core/types/enums';
 
 import { DEFAULT_NODE_SIZE } from '../../constants/grid';
 
@@ -16,6 +21,7 @@ export interface PersonNodeData {
   lifeSpanLabel?: string | null;
   detailTexts?: string[];
   illness?: Illness;
+  fetusStatus?: (typeof FetusStatus)[keyof typeof FetusStatus];
   sizePx?: number;
   bgColor?: string;
   textColor?: string;
@@ -30,9 +36,9 @@ const COLORS = {
   selectedHalo: 'rgba(34, 197, 94, 0.12)',
 };
 
-/** 특수 자녀 타입(유산/낙태/임신 중) SVG 도형 렌더링. 해당하지 않으면 null 반환. */
-function renderSpecialChildShape(
-  subjectType: string | undefined,
+/** 태아 타입(유산/낙태/임신 중) SVG 도형 렌더링. 해당하지 않으면 null 반환. */
+function renderFetusShape(
+  fetusStatus: string | undefined,
   c: number,
   r: number,
   m: number,
@@ -41,8 +47,8 @@ function renderSpecialChildShape(
   strokeWidth: number,
   fillColor: string
 ): React.ReactElement | null {
-  switch (subjectType) {
-    case SubjectType.Miscarriage:
+  switch (fetusStatus) {
+    case FetusStatus.Miscarriage:
       return (
         <circle
           cx={c}
@@ -53,7 +59,7 @@ function renderSpecialChildShape(
           strokeWidth={strokeWidth}
         />
       );
-    case SubjectType.Abortion: {
+    case FetusStatus.Abortion: {
       const xr = r * 0.8;
       return (
         <>
@@ -76,7 +82,7 @@ function renderSpecialChildShape(
         </>
       );
     }
-    case SubjectType.Pregnancy: {
+    case FetusStatus.Pregnancy: {
       const side = S - m * 2;
       const h = (side * Math.sqrt(3)) / 2;
       const topY = c - h / 2;
@@ -133,11 +139,20 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       );
     }
 
-    // 특수 자녀 (유산/낙태/임신 중)
-    const specialShape = renderSpecialChildShape(
-      subjectType, c, r, m, S, strokeColor, strokeWidth, fillColor
-    );
-    if (specialShape) return specialShape;
+    // 태아 (유산/낙태/임신 중)
+    if (subjectType === SubjectType.Fetus) {
+      const fetusShape = renderFetusShape(
+        nodeData.fetusStatus,
+        c,
+        r,
+        m,
+        S,
+        strokeColor,
+        strokeWidth,
+        fillColor
+      );
+      if (fetusShape) return fetusShape;
+    }
 
     switch (gender) {
       case Gender.Male:
@@ -350,12 +365,8 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       );
     }
 
-    // 특수 자녀: 원형 클립
-    if (
-      subjectType === SubjectType.Miscarriage ||
-      subjectType === SubjectType.Abortion ||
-      subjectType === SubjectType.Pregnancy
-    ) {
+    // 태아: 원형 클립
+    if (subjectType === SubjectType.Fetus) {
       return (
         <clipPath id={clipId}>
           <circle cx={c} cy={c} r={r} />

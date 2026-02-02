@@ -10,11 +10,8 @@ import type {
   InfluenceAttribute,
   PartnerAttribute,
 } from '@/genogram/core/models/relationship';
-import {
-  ConnectionType,
-  PartnerStatus,
-  SubjectType,
-} from '@/genogram/core/types/enums';
+import { getPartnerDateVisibility } from '@/genogram/core/models/relationship';
+import { ConnectionType, SubjectType } from '@/genogram/core/types/enums';
 
 import {
   CONNECTION_TYPE_LABELS,
@@ -43,6 +40,7 @@ import { RelationIcon } from './icons/RelationIcon';
 interface GenogramPropertyPanelProps {
   subject: Subject | null;
   onUpdate: (subjectId: string, updates: Partial<Subject>) => void;
+  onConvertType?: (subjectId: string, targetType: string) => void;
   connection?: Connection | null;
   onConnectionUpdate?: (
     connectionId: string,
@@ -54,6 +52,7 @@ interface GenogramPropertyPanelProps {
 export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   subject,
   onUpdate,
+  onConvertType,
   connection,
   onConnectionUpdate,
   onClose: _onClose,
@@ -78,7 +77,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     updateStyle,
     handleMemoChange,
     commitName,
-  } = usePropertyPanel({ subject, onUpdate });
+  } = usePropertyPanel({ subject, onUpdate, onConvertType });
 
   // ── Connection 관련 상태 ──
   const [connMemoValue, setConnMemoValue] = useState('');
@@ -311,18 +310,8 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {isPartner &&
             partnerAttr &&
             (() => {
-              const ps = partnerAttr.status;
-              const showMarried =
-                ps === PartnerStatus.Marriage ||
-                ps === PartnerStatus.Marital_Separation ||
-                ps === PartnerStatus.Divorce ||
-                ps === PartnerStatus.Remarriage;
-              const showDivorced =
-                ps === PartnerStatus.Divorce || ps === PartnerStatus.Remarriage;
-              const showReunited = ps === PartnerStatus.Remarriage;
-              const showRelStart =
-                ps === PartnerStatus.Couple_Relationship ||
-                ps === PartnerStatus.Secret_Affair;
+              const { showMarried, showDivorced, showReunited, showRelStart } =
+                getPartnerDateVisibility(partnerAttr.status);
 
               return (
                 <>
