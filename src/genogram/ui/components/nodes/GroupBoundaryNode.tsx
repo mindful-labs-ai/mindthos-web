@@ -36,7 +36,10 @@ function convexHull(points: Pt[]): Pt[] {
 
   const lower: Pt[] = [];
   for (const p of pts) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
+    while (
+      lower.length >= 2 &&
+      cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0
+    ) {
       lower.pop();
     }
     lower.push(p);
@@ -45,7 +48,10 @@ function convexHull(points: Pt[]): Pt[] {
   const upper: Pt[] = [];
   for (let i = pts.length - 1; i >= 0; i--) {
     const p = pts[i];
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
+    while (
+      upper.length >= 2 &&
+      cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0
+    ) {
       upper.pop();
     }
     upper.push(p);
@@ -77,7 +83,7 @@ function buildGroupPath(
   cx: number,
   cy: number,
   w: number,
-  h: number,
+  h: number
 ): string {
   if (members.length === 0) return '';
 
@@ -135,7 +141,7 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
       e.stopPropagation();
       onSelect(connectionId, e.shiftKey);
     },
-    [connectionId, onSelect],
+    [connectionId, onSelect]
   );
 
   // 노드 position이 center 좌표이므로
@@ -143,7 +149,10 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
   // 노드 자체의 center 좌표가 필요 → memberPositions의 바운딩 박스 중심 사용
   const center = useMemo(() => {
     if (memberPositions.length === 0) return { x: 0, y: 0 };
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
     for (const mp of memberPositions) {
       const half = mp.sizePx / 2;
       minX = Math.min(minX, mp.x - half);
@@ -156,7 +165,7 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
 
   const pathD = useMemo(
     () => buildGroupPath(memberPositions, center.x, center.y, width, height),
-    [memberPositions, center.x, center.y, width, height],
+    [memberPositions, center.x, center.y, width, height]
   );
 
   if (width <= 0 || height <= 0 || !pathD) return null;

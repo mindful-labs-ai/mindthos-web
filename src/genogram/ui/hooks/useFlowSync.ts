@@ -58,7 +58,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       if (!editor) return;
       editor.select([connectionId], !additive);
     },
-    [getEditor],
+    [getEditor]
   );
 
   const syncFromEditor = useCallback(() => {

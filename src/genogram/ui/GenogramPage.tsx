@@ -346,7 +346,8 @@ const GenogramCanvas: React.FC = () => {
         case 'add-group':
           if (context.type === 'multi') {
             // 선택된 Subject 노드들의 현재 위치를 스냅샷으로 저장
-            const memberPositions: { x: number; y: number; sizePx: number }[] = [];
+            const memberPositions: { x: number; y: number; sizePx: number }[] =
+              [];
             for (const nid of context.ids) {
               const node = nodes.find(
                 (n) => n.id === nid && !n.id.startsWith('group-boundary-')
