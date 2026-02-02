@@ -1,3 +1,4 @@
+import { DEFAULT_BG, DEFAULT_FG } from '../constants/colors';
 import { NodeSize } from '../types/enums';
 import type { Point, UUID } from '../types/types';
 import { generateId } from '../types/types';
@@ -36,10 +37,10 @@ export function createAnnotation(
       center: position,
       style: {
         size: NodeSize.Default,
-        bgColor: '#FFFFFF',
-        textColor: '#000000',
+        bgColor: DEFAULT_BG,
+        textColor: DEFAULT_FG,
         borderStyle: 'solid',
-        borderColor: '#000000',
+        borderColor: DEFAULT_FG,
       },
     },
   };

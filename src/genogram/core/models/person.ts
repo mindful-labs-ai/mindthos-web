@@ -1,3 +1,4 @@
+import { DEFAULT_BG, DEFAULT_FG } from '../constants/colors';
 import {
   Gender as GenderEnum,
   Illness,
@@ -99,8 +100,8 @@ export function createPersonSubject(
       center: position,
       style: {
         size: NodeSize.Default,
-        bgColor: '#ffffff',
-        textColor: '#1f2937',
+        bgColor: DEFAULT_BG,
+        textColor: DEFAULT_FG,
       },
     },
   };
@@ -124,8 +125,8 @@ export function createAnimalSubject(
       center: position,
       style: {
         size: NodeSize.Default,
-        bgColor: '#ffffff',
-        textColor: '#1f2937',
+        bgColor: DEFAULT_BG,
+        textColor: DEFAULT_FG,
       },
     },
   };
@@ -147,8 +148,8 @@ export function createFetusSubject(
       center: position,
       style: {
         size: NodeSize.Small,
-        bgColor: '#ffffff',
-        textColor: '#1f2937',
+        bgColor: DEFAULT_BG,
+        textColor: DEFAULT_FG,
       },
     },
   };

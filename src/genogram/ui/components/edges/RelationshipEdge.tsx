@@ -2,6 +2,11 @@ import { memo, type ReactNode } from 'react';
 
 import { EdgeLabelRenderer, type EdgeProps } from '@xyflow/react';
 
+import {
+  DEFAULT_FG,
+  SELECTION_BORDER,
+  SELECTION_INNER,
+} from '@/genogram/core/constants/colors';
 import type { NodeShape } from '@/genogram/core/models/person';
 import type { PartnerDetail } from '@/genogram/core/models/relationship';
 import { getPartnerDateVisibility } from '@/genogram/core/models/relationship';
@@ -42,8 +47,8 @@ export interface RelationshipEdgeData {
 
 /* ───────────────────────── 공통 상수 ───────────────────────── */
 
-const TEXT_COLOR = '#1f2937';
-const STROKE = '#374151';
+const TEXT_COLOR = DEFAULT_FG;
+const STROKE = DEFAULT_FG;
 const SW = 2;
 const SW_SUB = 1.5;
 
@@ -62,8 +67,8 @@ const CUTOFF_GAP = 3;
 const SLASH_LEN = 10;
 const ARROW_INSET = 14; // 화살표 머리 크기만큼 지그재그 끝점 축소
 const HIT_WIDTH = 16; // 클릭 가능 히트 영역 두께
-const HIT_BORDER = '#44CE4B'; // 선택 하이라이트 테두리
-const HIT_INNER = '#f0fdf0'; // 선택 하이라이트 내부 (거의 흰색에 가까운 연두)
+const HIT_BORDER = SELECTION_BORDER; // 선택 하이라이트 테두리
+const HIT_INNER = SELECTION_INNER; // 선택 하이라이트 내부 (거의 흰색에 가까운 연두)
 
 /** render 함수 반환 타입 */
 interface EdgeRenderResult {

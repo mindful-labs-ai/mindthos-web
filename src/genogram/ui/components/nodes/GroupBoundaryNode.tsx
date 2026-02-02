@@ -2,6 +2,8 @@ import { memo, useCallback, useMemo } from 'react';
 
 import type { NodeProps } from '@xyflow/react';
 
+import { SELECTION_BORDER, SELECTION_INNER } from '@/genogram/core/constants/colors';
+
 export interface GroupBoundaryNodeData {
   connectionId: string;
   memberPositions: { x: number; y: number; sizePx: number }[];
@@ -172,8 +174,8 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
 
   const sw = 2;
   // 선택 하이라이트: RelationshipEdge와 동일한 연두색 2-layer
-  const HIT_BORDER = '#44CE4B';
-  const HIT_INNER = '#f0fdf0';
+  const HIT_BORDER = SELECTION_BORDER;
+  const HIT_INNER = SELECTION_INNER;
   const hitW = 16;
 
   return (

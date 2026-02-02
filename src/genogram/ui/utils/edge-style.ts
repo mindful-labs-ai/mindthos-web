@@ -1,4 +1,13 @@
 import {
+  DEFAULT_FG,
+  INFLUENCE_STROKE,
+  RELATION_CLOSE,
+  RELATION_CUTOFF,
+  RELATION_DEFAULT,
+  RELATION_DISTANT,
+  RELATION_HOSTILE,
+} from '@/genogram/core/constants/colors';
+import {
   ConnectionType,
   PartnerStatus,
   RelationStatus,
@@ -15,7 +24,7 @@ export const getEdgeStyle = (
   partnerStatus?: (typeof PartnerStatus)[keyof typeof PartnerStatus],
   relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus]
 ): EdgeStyle => {
-  const baseStyle: EdgeStyle = { stroke: '#374151', strokeWidth: 2 };
+  const baseStyle: EdgeStyle = { stroke: DEFAULT_FG, strokeWidth: 2 };
 
   if (connectionType === ConnectionType.Partner_Line) {
     switch (partnerStatus) {
@@ -39,24 +48,24 @@ export const getEdgeStyle = (
   if (connectionType === ConnectionType.Relation_Line) {
     switch (relationStatus) {
       case RelationStatus.Close:
-        return { stroke: '#22c55e', strokeWidth: 2 };
+        return { stroke: RELATION_CLOSE, strokeWidth: 2 };
       case RelationStatus.Fused:
-        return { stroke: '#22c55e', strokeWidth: 3 };
+        return { stroke: RELATION_CLOSE, strokeWidth: 3 };
       case RelationStatus.Distant:
-        return { stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '5,5' };
+        return { stroke: RELATION_DISTANT, strokeWidth: 1, strokeDasharray: '5,5' };
       case RelationStatus.Hostile:
-        return { stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '8,4' };
+        return { stroke: RELATION_HOSTILE, strokeWidth: 2, strokeDasharray: '8,4' };
       case RelationStatus.Close_Hostile:
-        return { stroke: '#ef4444', strokeWidth: 2 };
+        return { stroke: RELATION_HOSTILE, strokeWidth: 2 };
       case RelationStatus.Cutoff:
-        return { stroke: '#374151', strokeWidth: 2, strokeDasharray: '2,6' };
+        return { stroke: RELATION_CUTOFF, strokeWidth: 2, strokeDasharray: '2,6' };
       default:
-        return { ...baseStyle, stroke: '#6b7280' };
+        return { ...baseStyle, stroke: RELATION_DEFAULT };
     }
   }
 
   if (connectionType === ConnectionType.Influence_Line) {
-    return { stroke: '#dc2626', strokeWidth: 3 };
+    return { stroke: INFLUENCE_STROKE, strokeWidth: 3 };
   }
 
   return baseStyle;

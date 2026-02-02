@@ -3,6 +3,11 @@ import React, { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
 import {
+  DEFAULT_BG,
+  DEFAULT_FG,
+  SELECTION_HALO,
+} from '@/genogram/core/constants/colors';
+import {
   FetusStatus,
   Gender,
   Illness,
@@ -29,11 +34,11 @@ export interface PersonNodeData {
 }
 
 const COLORS = {
-  stroke: '#374151',
-  fill: '#ffffff',
-  deceased: '#374151',
-  text: '#1f2937',
-  selectedHalo: 'rgba(34, 197, 94, 0.12)',
+  stroke: DEFAULT_FG,
+  fill: DEFAULT_BG,
+  deceased: DEFAULT_FG,
+  text: DEFAULT_FG,
+  selectedHalo: SELECTION_HALO,
 };
 
 /** 태아 타입(유산/낙태/임신 중) SVG 도형 렌더링. 해당하지 않으면 null 반환. */

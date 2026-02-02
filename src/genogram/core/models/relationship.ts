@@ -1,3 +1,4 @@
+import { DEFAULT_FG, DEFAULT_GROUP_STROKE } from '../constants/colors';
 import {
   ConnectionType,
   PartnerStatus as PartnerStatusEnum,
@@ -85,8 +86,8 @@ export interface Connection {
 function createDefaultConnectionLayout(): ConnectionLayout {
   return {
     strokeWidth: StrokeWidth.Default,
-    strokeColor: '#374151',
-    textColor: '#1f2937',
+    strokeColor: DEFAULT_FG,
+    textColor: DEFAULT_FG,
   };
 }
 
@@ -191,7 +192,7 @@ export function createGroupConnection(
       } satisfies GroupAttribute,
       memo: null,
     },
-    layout: { ...createDefaultConnectionLayout(), strokeColor: '#3450EE' },
+    layout: { ...createDefaultConnectionLayout(), strokeColor: DEFAULT_GROUP_STROKE },
   };
 }
 
