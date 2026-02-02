@@ -6,11 +6,7 @@ import {
 } from '../commands/annotation-commands';
 import type { Command, EditorState } from '../commands/base';
 import {
-  AddRelationConnectionCommand,
-  AddInfluenceConnectionCommand,
-  AddPartnerConnectionCommand,
-  AddParentChildConnectionCommand,
-  AddGroupConnectionCommand,
+  AddConnectionCommand,
   DeleteConnectionCommand,
   UpdateConnectionEntityCommand,
   UpdateConnectionLayoutCommand,
@@ -18,13 +14,12 @@ import {
 import type { CommandManagerConfig } from '../commands/manager';
 import { CommandManager } from '../commands/manager';
 import {
-  AddAnimalSubjectCommand,
-  AddFetusSubjectCommand,
   AddSubjectCommand,
   DeleteSubjectCommand,
   MoveMultipleNodesCommand,
   MoveNodeCommand,
   UpdateSubjectCommand,
+  resolveFetusStatus,
 } from '../commands/node-commands';
 import {
   DeselectAllCommand,
@@ -42,7 +37,10 @@ import type {
   SerializedLayoutState,
 } from '../layout/layout-state';
 import {
+  createEdgeLayout,
   createLayoutState,
+  createNodeLayout,
+  createTextLayout,
   deserializeLayout,
   serializeLayout,
 } from '../layout/layout-state';
@@ -54,7 +52,23 @@ import {
   serializeGenogram,
 } from '../models/genogram';
 import type { Subject } from '../models/person';
-import type { Connection, ConnectionLayout } from '../models/relationship';
+import {
+  createAnimalSubject,
+  createFetusSubject,
+  createPersonSubject,
+} from '../models/person';
+import {
+  createRelationConnection,
+  createInfluenceConnection,
+  createPartnerConnection,
+  createParentChildConnection,
+  createGroupConnection,
+} from '../models/relationship';
+import type {
+  Connection,
+  ConnectionLayout,
+  GroupMemberPosition,
+} from '../models/relationship';
 import type { AnnotationUpdate } from '../models/text-annotation';
 import {
   AssetType,
@@ -231,13 +245,21 @@ export class GenogramEditor {
 
   // Subject Operations
   addSubject(gender: Gender, position: Point, generation = 0): UUID {
-    const cmd = new AddSubjectCommand(gender, position, generation);
+    const cmd = this.createAddSubjectCmd(
+      createPersonSubject(gender, position),
+      position,
+      generation
+    );
     this.execute(cmd);
     return cmd.getSubjectId();
   }
 
   addAnimal(position: Point, generation = 0): UUID {
-    const cmd = new AddAnimalSubjectCommand(position, generation);
+    const cmd = this.createAddSubjectCmd(
+      createAnimalSubject(position),
+      position,
+      generation
+    );
     this.execute(cmd);
     return cmd.getSubjectId();
   }
@@ -280,10 +302,8 @@ export class GenogramEditor {
     subjectId2: UUID,
     status: (typeof RelationStatus)[keyof typeof RelationStatus] = RelationStatus.Connected
   ): UUID {
-    const cmd = new AddRelationConnectionCommand(
-      subjectId1,
-      subjectId2,
-      status
+    const cmd = new AddConnectionCommand(
+      createRelationConnection(subjectId1, subjectId2, status)
     );
     this.execute(cmd);
     return cmd.getConnectionId();
@@ -294,7 +314,9 @@ export class GenogramEditor {
     endRef: UUID,
     status: InfluenceStatus
   ): UUID {
-    const cmd = new AddInfluenceConnectionCommand(startRef, endRef, status);
+    const cmd = new AddConnectionCommand(
+      createInfluenceConnection(startRef, endRef, status)
+    );
     this.execute(cmd);
     return cmd.getConnectionId();
   }
@@ -304,7 +326,9 @@ export class GenogramEditor {
     subjectId2: UUID,
     status: (typeof PartnerStatus)[keyof typeof PartnerStatus] = PartnerStatus.Marriage
   ): UUID {
-    const cmd = new AddPartnerConnectionCommand(subjectId1, subjectId2, status);
+    const cmd = new AddConnectionCommand(
+      createPartnerConnection(subjectId1, subjectId2, status)
+    );
     this.execute(cmd);
     return cmd.getConnectionId();
   }
@@ -314,19 +338,17 @@ export class GenogramEditor {
     childRef: UUID | [UUID, UUID],
     status: ParentChildStatus
   ): UUID {
-    const cmd = new AddParentChildConnectionCommand(
-      parentRef,
-      childRef,
-      status
+    const cmd = new AddConnectionCommand(
+      createParentChildConnection(parentRef, childRef, status)
     );
     this.execute(cmd);
     return cmd.getConnectionId();
   }
 
-  addGroupConnection(
-    memberPositions: { x: number; y: number; sizePx: number }[]
-  ): UUID {
-    const cmd = new AddGroupConnectionCommand(memberPositions);
+  addGroupConnection(memberPositions: GroupMemberPosition[]): UUID {
+    const cmd = new AddConnectionCommand(
+      createGroupConnection(memberPositions)
+    );
     this.execute(cmd);
     return cmd.getConnectionId();
   }
@@ -379,20 +401,36 @@ export class GenogramEditor {
     };
     const childPos = { x: clickPosition.x, y: clickPosition.y + 3 * gap };
 
-    const fatherCmd = new AddSubjectCommand(GenderEnum.Male, fatherPos, 0);
-    const motherCmd = new AddSubjectCommand(GenderEnum.Female, motherPos, 0);
-    const childCmd = new AddSubjectCommand(GenderEnum.Male, childPos, 1);
-
-    const partnerCmd = new AddPartnerConnectionCommand(
-      fatherCmd.getSubjectId(),
-      motherCmd.getSubjectId(),
-      PartnerStatus.Marriage
+    const fatherCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Male, fatherPos),
+      fatherPos,
+      0
+    );
+    const motherCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Female, motherPos),
+      motherPos,
+      0
+    );
+    const childCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Male, childPos),
+      childPos,
+      1
     );
 
-    const parentChildCmd = new AddParentChildConnectionCommand(
-      partnerCmd.getConnectionId(),
-      childCmd.getSubjectId(),
-      ParentChildStatusEnum.Biological_Child
+    const partnerCmd = new AddConnectionCommand(
+      createPartnerConnection(
+        fatherCmd.getSubjectId(),
+        motherCmd.getSubjectId(),
+        PartnerStatus.Marriage
+      )
+    );
+
+    const parentChildCmd = new AddConnectionCommand(
+      createParentChildConnection(
+        partnerCmd.getConnectionId(),
+        childCmd.getSubjectId(),
+        ParentChildStatusEnum.Biological_Child
+      )
     );
 
     this.executeMultiple([
@@ -437,19 +475,31 @@ export class GenogramEditor {
       y: childPos.y - 5 * gap,
     };
 
-    const fatherCmd = new AddSubjectCommand(GenderEnum.Male, fatherPos, 0);
-    const motherCmd = new AddSubjectCommand(GenderEnum.Female, motherPos, 0);
-
-    const partnerCmd = new AddPartnerConnectionCommand(
-      fatherCmd.getSubjectId(),
-      motherCmd.getSubjectId(),
-      PartnerStatus.Marriage
+    const fatherCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Male, fatherPos),
+      fatherPos,
+      0
+    );
+    const motherCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Female, motherPos),
+      motherPos,
+      0
     );
 
-    const parentChildCmd = new AddParentChildConnectionCommand(
-      partnerCmd.getConnectionId(),
-      childId,
-      ParentChildStatusEnum.Biological_Child
+    const partnerCmd = new AddConnectionCommand(
+      createPartnerConnection(
+        fatherCmd.getSubjectId(),
+        motherCmd.getSubjectId(),
+        PartnerStatus.Marriage
+      )
+    );
+
+    const parentChildCmd = new AddConnectionCommand(
+      createParentChildConnection(
+        partnerCmd.getConnectionId(),
+        childId,
+        ParentChildStatusEnum.Biological_Child
+      )
     );
 
     this.executeMultiple([fatherCmd, motherCmd, partnerCmd, parentChildCmd]);
@@ -481,11 +531,17 @@ export class GenogramEditor {
         partnerGender = GenderEnum.Male;
     }
 
-    const partnerCmd = new AddSubjectCommand(partnerGender, position, 0);
-    const connectionCmd = new AddPartnerConnectionCommand(
-      sourceId,
-      partnerCmd.getSubjectId(),
-      PartnerStatus.Marriage
+    const partnerCmd = this.createAddSubjectCmd(
+      createPersonSubject(partnerGender, position),
+      position,
+      0
+    );
+    const connectionCmd = new AddConnectionCommand(
+      createPartnerConnection(
+        sourceId,
+        partnerCmd.getSubjectId(),
+        PartnerStatus.Marriage
+      )
     );
 
     this.executeMultiple([partnerCmd, connectionCmd]);
@@ -615,7 +671,7 @@ export class GenogramEditor {
       childStatus === ParentChildStatusEnum.Twins ||
       childStatus === ParentChildStatusEnum.Identical_Twins;
 
-    const fetusStatus = AddFetusSubjectCommand.resolveFetusStatus(childStatus);
+    const fetusStatus = resolveFetusStatus(childStatus);
 
     const existingCenters = Array.from(this.state.layout.nodes.values()).map(
       (n) => n.position
@@ -644,12 +700,22 @@ export class GenogramEditor {
         x: basePos.x + 2 * gap,
         y: basePos.y,
       });
-      const child1Cmd = new AddSubjectCommand(GenderEnum.Male, pos1, 0);
-      const child2Cmd = new AddSubjectCommand(GenderEnum.Female, pos2, 0);
-      const parentChildCmd = new AddParentChildConnectionCommand(
-        parentRef,
-        [child1Cmd.getSubjectId(), child2Cmd.getSubjectId()],
-        childStatus
+      const child1Cmd = this.createAddSubjectCmd(
+        createPersonSubject(GenderEnum.Male, pos1),
+        pos1,
+        0
+      );
+      const child2Cmd = this.createAddSubjectCmd(
+        createPersonSubject(GenderEnum.Female, pos2),
+        pos2,
+        0
+      );
+      const parentChildCmd = new AddConnectionCommand(
+        createParentChildConnection(
+          parentRef,
+          [child1Cmd.getSubjectId(), child2Cmd.getSubjectId()],
+          childStatus
+        )
       );
       this.executeMultiple([child1Cmd, child2Cmd, parentChildCmd]);
       return {
@@ -661,12 +727,22 @@ export class GenogramEditor {
     // 단일 자녀
     const finalPos = avoidCollision(basePos);
     const childCmd = fetusStatus
-      ? new AddFetusSubjectCommand(fetusStatus, finalPos, 0)
-      : new AddSubjectCommand(GenderEnum.Male, finalPos, 0);
-    const parentChildCmd = new AddParentChildConnectionCommand(
-      parentRef,
-      childCmd.getSubjectId(),
-      childStatus
+      ? this.createAddSubjectCmd(
+          createFetusSubject(fetusStatus, finalPos),
+          finalPos,
+          0
+        )
+      : this.createAddSubjectCmd(
+          createPersonSubject(GenderEnum.Male, finalPos),
+          finalPos,
+          0
+        );
+    const parentChildCmd = new AddConnectionCommand(
+      createParentChildConnection(
+        parentRef,
+        childCmd.getSubjectId(),
+        childStatus
+      )
     );
     this.executeMultiple([childCmd, parentChildCmd]);
     return {
@@ -975,11 +1051,36 @@ export class GenogramEditor {
   }
 
   toJSON(): string {
+    // ViewSettings → genogram.view.visibility 동기화
+    this.state.genogram.view.visibility = {
+      ...this.viewSettings.getSettings(),
+    };
     return JSON.stringify(serializeGenogram(this.state.genogram), null, 2);
   }
 
   fromJSON(json: string): void {
-    this.deserialize(JSON.parse(json));
+    const serialized = JSON.parse(json) as SerializedGenogram;
+    const genogram = deserializeGenogram(serialized);
+    const connectionIndex = new ConnectionIndex();
+    connectionIndex.rebuild(genogram.connections);
+
+    const layout = createLayoutState();
+    genogram.subjects.forEach((subject, id) => {
+      layout.nodes.set(id, createNodeLayout(id, subject.layout.center));
+    });
+    genogram.connections.forEach((_conn, id) => {
+      layout.edges.set(id, createEdgeLayout(id));
+    });
+    genogram.annotations.forEach((annotation, id) => {
+      layout.texts.set(id, createTextLayout(id, annotation.layout.center));
+    });
+
+    this.state = { genogram, layout, connectionIndex };
+    // genogram.view.visibility → ViewSettings 동기화
+    this.viewSettings.updateSettings(genogram.view.visibility);
+    this.commandManager.clear();
+    this.syncSelectionFromLayout();
+    this.emit('state-change');
   }
 
   // Event System
@@ -995,5 +1096,14 @@ export class GenogramEditor {
 
   private emit(event: EditorEventType, data?: unknown): void {
     this.listeners.forEach((fn) => fn(event, data));
+  }
+
+  private createAddSubjectCmd(
+    subject: Subject,
+    position: Point,
+    generation: number
+  ): AddSubjectCommand {
+    const layout = createNodeLayout(subject.id, position, generation);
+    return new AddSubjectCommand(subject, layout);
   }
 }

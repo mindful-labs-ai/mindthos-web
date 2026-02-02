@@ -1,13 +1,7 @@
 import type { EdgeLayout, NodeLayout } from '../layout/layout-state';
-import { createNodeLayout } from '../layout/layout-state';
 import type { Subject } from '../models/person';
-import {
-  createAnimalSubject,
-  createFetusSubject,
-  createPersonSubject,
-} from '../models/person';
 import type { Connection } from '../models/relationship';
-import type { Gender, FetusStatus } from '../types/enums';
+import type { FetusStatus } from '../types/enums';
 import {
   FetusStatus as FetusStatusEnum,
   ParentChildStatus as ParentChildStatusEnum,
@@ -24,15 +18,25 @@ const PARENT_CHILD_TO_FETUS_STATUS: Readonly<Record<string, FetusStatus>> = {
 import type { EditorState } from './base';
 import { BaseCommand } from './base';
 
+/**
+ * ParentChildStatus가 태아 상태에 해당하면 FetusStatus를 반환,
+ * 아니면 undefined를 반환합니다.
+ */
+export function resolveFetusStatus(
+  childStatus: string
+): FetusStatus | undefined {
+  return PARENT_CHILD_TO_FETUS_STATUS[childStatus];
+}
+
 export class AddSubjectCommand extends BaseCommand {
   readonly type = 'ADD_SUBJECT';
   private subject: Subject;
   private layout: NodeLayout;
 
-  constructor(gender: Gender, position: Point, generation = 0) {
+  constructor(subject: Subject, layout: NodeLayout) {
     super();
-    this.subject = createPersonSubject(gender, position);
-    this.layout = createNodeLayout(this.subject.id, position, generation);
+    this.subject = subject;
+    this.layout = layout;
   }
 
   execute(state: EditorState): EditorState {
@@ -51,74 +55,6 @@ export class AddSubjectCommand extends BaseCommand {
 
   getSubjectId(): UUID {
     return this.subject.id;
-  }
-}
-
-export class AddAnimalSubjectCommand extends BaseCommand {
-  readonly type = 'ADD_ANIMAL_SUBJECT';
-  private subject: Subject;
-  private layout: NodeLayout;
-
-  constructor(position: Point, generation = 0) {
-    super();
-    this.subject = createAnimalSubject(position);
-    this.layout = createNodeLayout(this.subject.id, position, generation);
-  }
-
-  execute(state: EditorState): EditorState {
-    state.genogram.subjects.set(this.subject.id, { ...this.subject });
-    state.layout.nodes.set(this.layout.nodeId, { ...this.layout });
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  undo(state: EditorState): EditorState {
-    state.genogram.subjects.delete(this.subject.id);
-    state.layout.nodes.delete(this.layout.nodeId);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  getSubjectId(): UUID {
-    return this.subject.id;
-  }
-}
-
-export class AddFetusSubjectCommand extends BaseCommand {
-  readonly type = 'ADD_FETUS_SUBJECT';
-  private subject: Subject;
-  private layout: NodeLayout;
-
-  constructor(status: FetusStatus, position: Point, generation = 0) {
-    super();
-    this.subject = createFetusSubject(status, position);
-    this.layout = createNodeLayout(this.subject.id, position, generation);
-  }
-
-  execute(state: EditorState): EditorState {
-    state.genogram.subjects.set(this.subject.id, { ...this.subject });
-    state.layout.nodes.set(this.layout.nodeId, { ...this.layout });
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  undo(state: EditorState): EditorState {
-    state.genogram.subjects.delete(this.subject.id);
-    state.layout.nodes.delete(this.layout.nodeId);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  getSubjectId(): UUID {
-    return this.subject.id;
-  }
-
-  /**
-   * ParentChildStatus가 태아 상태에 해당하면 FetusStatus를 반환,
-   * 아니면 undefined를 반환합니다.
-   */
-  static resolveFetusStatus(childStatus: string): FetusStatus | undefined {
-    return PARENT_CHILD_TO_FETUS_STATUS[childStatus];
   }
 }
 
@@ -140,15 +76,17 @@ export class DeleteSubjectCommand extends BaseCommand {
     const subject = state.genogram.subjects.get(this.subjectId);
     const layout = state.layout.nodes.get(this.subjectId);
 
-    if (subject && layout) {
-      this.subjectBackup = { subject: { ...subject }, layout: { ...layout } };
+    if (!this.subjectBackup && subject && layout) {
+      this.subjectBackup = {
+        subject: structuredClone(subject),
+        layout: { ...layout, position: { ...layout.position } },
+      };
     }
 
     state.genogram.subjects.delete(this.subjectId);
     state.layout.nodes.delete(this.subjectId);
 
     // 1차: 인덱스를 통해 Subject를 직접 참조하는 Connection 수집 — O(1)
-    this.deletedConnections = [];
     const directDeleteIds = new Set<UUID>(
       state.connectionIndex.getBySubject(this.subjectId)
     );
@@ -165,16 +103,21 @@ export class DeleteSubjectCommand extends BaseCommand {
 
     // 백업 후 삭제 (인덱스도 갱신)
     const allDeleteIds = [...directDeleteIds, ...cascadeDeleteIds];
+    if (this.deletedConnections.length === 0) {
+      for (const id of allDeleteIds) {
+        const conn = state.genogram.connections.get(id);
+        const edgeLayout = state.layout.edges.get(id);
+        if (conn && edgeLayout) {
+          this.deletedConnections.push({
+            connection: structuredClone(conn),
+            layout: { ...edgeLayout },
+          });
+        }
+      }
+    }
     for (const id of allDeleteIds) {
       const conn = state.genogram.connections.get(id);
-      const edgeLayout = state.layout.edges.get(id);
-      if (conn && edgeLayout) {
-        this.deletedConnections.push({
-          connection: { ...conn },
-          layout: { ...edgeLayout },
-        });
-        state.connectionIndex.remove(conn);
-      }
+      if (conn) state.connectionIndex.remove(conn);
       state.genogram.connections.delete(id);
       state.layout.edges.delete(id);
     }
@@ -217,7 +160,7 @@ export class UpdateSubjectCommand extends BaseCommand {
     const subject = state.genogram.subjects.get(this.subjectId);
     if (!subject) return state;
 
-    this.previousValues = { ...subject };
+    if (!this.previousValues) this.previousValues = structuredClone(subject);
 
     Object.assign(subject, this.updates);
     state.genogram.metadata.updatedAt = new Date();
@@ -267,7 +210,7 @@ export class MoveNodeCommand extends BaseCommand {
     const layout = state.layout.nodes.get(this.nodeId);
     if (!layout) return state;
 
-    this.previousPosition = { ...layout.position };
+    if (!this.previousPosition) this.previousPosition = { ...layout.position };
     layout.position = { ...this.newPosition };
 
     // Also update Subject layout.center
@@ -322,7 +265,9 @@ export class MoveMultipleNodesCommand extends BaseCommand {
     this.moves.forEach(({ nodeId, newPosition }) => {
       const layout = state.layout.nodes.get(nodeId);
       if (layout) {
-        this.previousPositions.set(nodeId, { ...layout.position });
+        if (!this.previousPositions.has(nodeId)) {
+          this.previousPositions.set(nodeId, { ...layout.position });
+        }
         layout.position = { ...newPosition };
       }
       const subject = state.genogram.subjects.get(nodeId);

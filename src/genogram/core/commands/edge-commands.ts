@@ -4,177 +4,21 @@ import {
   type Connection,
   type ConnectionEntity,
   type ConnectionLayout,
-  type GroupMemberPosition,
-  createRelationConnection,
-  createInfluenceConnection,
-  createPartnerConnection,
-  createParentChildConnection,
-  createGroupConnection,
 } from '../models/relationship';
-import type { InfluenceStatus, ParentChildStatus } from '../types/enums';
-import { PartnerStatus, RelationStatus } from '../types/enums';
 import type { UUID } from '../types/types';
 
 import type { EditorState } from './base';
 import { BaseCommand } from './base';
 
-export class AddRelationConnectionCommand extends BaseCommand {
-  readonly type = 'ADD_RELATION_CONNECTION';
+export class AddConnectionCommand extends BaseCommand {
+  readonly type = 'ADD_CONNECTION';
   private connection: Connection;
   private edgeLayout: EdgeLayout;
 
-  constructor(
-    subjectId1: UUID,
-    subjectId2: UUID,
-    status: RelationStatus = RelationStatus.Connected
-  ) {
+  constructor(connection: Connection, edgeLayout?: EdgeLayout) {
     super();
-    this.connection = createRelationConnection(subjectId1, subjectId2, status);
-    this.edgeLayout = createEdgeLayout(this.connection.id);
-  }
-
-  execute(state: EditorState): EditorState {
-    state.genogram.connections.set(this.connection.id, {
-      ...this.connection,
-    });
-    state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
-    state.connectionIndex.add(this.connection);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  undo(state: EditorState): EditorState {
-    state.connectionIndex.remove(this.connection);
-    state.genogram.connections.delete(this.connection.id);
-    state.layout.edges.delete(this.edgeLayout.edgeId);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  getConnectionId(): UUID {
-    return this.connection.id;
-  }
-}
-
-export class AddInfluenceConnectionCommand extends BaseCommand {
-  readonly type = 'ADD_INFLUENCE_CONNECTION';
-  private connection: Connection;
-  private edgeLayout: EdgeLayout;
-
-  constructor(startRef: UUID, endRef: UUID, status: InfluenceStatus) {
-    super();
-    this.connection = createInfluenceConnection(startRef, endRef, status);
-    this.edgeLayout = createEdgeLayout(this.connection.id);
-  }
-
-  execute(state: EditorState): EditorState {
-    state.genogram.connections.set(this.connection.id, {
-      ...this.connection,
-    });
-    state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
-    state.connectionIndex.add(this.connection);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  undo(state: EditorState): EditorState {
-    state.connectionIndex.remove(this.connection);
-    state.genogram.connections.delete(this.connection.id);
-    state.layout.edges.delete(this.edgeLayout.edgeId);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  getConnectionId(): UUID {
-    return this.connection.id;
-  }
-}
-
-export class AddPartnerConnectionCommand extends BaseCommand {
-  readonly type = 'ADD_PARTNER_CONNECTION';
-  private connection: Connection;
-  private edgeLayout: EdgeLayout;
-
-  constructor(
-    subjectId1: UUID,
-    subjectId2: UUID,
-    status: PartnerStatus = PartnerStatus.Marriage
-  ) {
-    super();
-    this.connection = createPartnerConnection(subjectId1, subjectId2, status);
-    this.edgeLayout = createEdgeLayout(this.connection.id);
-  }
-
-  execute(state: EditorState): EditorState {
-    state.genogram.connections.set(this.connection.id, {
-      ...this.connection,
-    });
-    state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
-    state.connectionIndex.add(this.connection);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  undo(state: EditorState): EditorState {
-    state.connectionIndex.remove(this.connection);
-    state.genogram.connections.delete(this.connection.id);
-    state.layout.edges.delete(this.edgeLayout.edgeId);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  getConnectionId(): UUID {
-    return this.connection.id;
-  }
-}
-
-export class AddParentChildConnectionCommand extends BaseCommand {
-  readonly type = 'ADD_PARENT_CHILD_CONNECTION';
-  private connection: Connection;
-  private edgeLayout: EdgeLayout;
-
-  constructor(
-    parentRef: UUID,
-    childRef: UUID | [UUID, UUID],
-    status: ParentChildStatus
-  ) {
-    super();
-    this.connection = createParentChildConnection(parentRef, childRef, status);
-    this.edgeLayout = createEdgeLayout(this.connection.id);
-  }
-
-  execute(state: EditorState): EditorState {
-    state.genogram.connections.set(this.connection.id, {
-      ...this.connection,
-    });
-    state.layout.edges.set(this.edgeLayout.edgeId, { ...this.edgeLayout });
-    state.connectionIndex.add(this.connection);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  undo(state: EditorState): EditorState {
-    state.connectionIndex.remove(this.connection);
-    state.genogram.connections.delete(this.connection.id);
-    state.layout.edges.delete(this.edgeLayout.edgeId);
-    state.genogram.metadata.updatedAt = new Date();
-    return state;
-  }
-
-  getConnectionId(): UUID {
-    return this.connection.id;
-  }
-}
-
-export class AddGroupConnectionCommand extends BaseCommand {
-  readonly type = 'ADD_GROUP_CONNECTION';
-  private connection: Connection;
-  private edgeLayout: EdgeLayout;
-
-  constructor(memberPositions: GroupMemberPosition[]) {
-    super();
-    this.connection = createGroupConnection(memberPositions);
-    this.edgeLayout = createEdgeLayout(this.connection.id);
+    this.connection = connection;
+    this.edgeLayout = edgeLayout ?? createEdgeLayout(connection.id);
   }
 
   execute(state: EditorState): EditorState {
@@ -214,11 +58,13 @@ export class DeleteConnectionCommand extends BaseCommand {
     const conn = state.genogram.connections.get(this.connectionId);
     const layout = state.layout.edges.get(this.connectionId);
 
-    if (conn && layout) {
+    if (!this.backup && conn && layout) {
       this.backup = {
-        connection: { ...conn } as Connection,
+        connection: structuredClone(conn) as Connection,
         layout: { ...layout },
       };
+    }
+    if (conn) {
       state.connectionIndex.remove(conn);
     }
 
@@ -255,7 +101,7 @@ export class UpdateConnectionLayoutCommand extends BaseCommand {
     const conn = state.genogram.connections.get(this.connectionId);
     if (!conn) return state;
 
-    this.previousValues = { ...conn.layout };
+    if (!this.previousValues) this.previousValues = { ...conn.layout };
 
     Object.assign(conn.layout, this.updates);
     return state;
@@ -286,10 +132,12 @@ export class UpdateConnectionEntityCommand extends BaseCommand {
     const conn = state.genogram.connections.get(this.connectionId);
     if (!conn) return state;
 
-    this.previousEntity = {
-      ...conn.entity,
-      attribute: { ...conn.entity.attribute },
-    };
+    if (!this.previousEntity) {
+      this.previousEntity = {
+        ...conn.entity,
+        attribute: { ...conn.entity.attribute },
+      };
+    }
 
     const newEntity = { ...conn.entity };
     if (this.updates.attribute) {

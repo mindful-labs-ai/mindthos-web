@@ -97,6 +97,7 @@ export class SelectNodesCommand extends BaseCommand {
   private clearOthers: boolean;
   private previousSelectedNodes: UUID[] = [];
   private previousSelectedEdges: UUID[] = [];
+  private previousSelectedTexts: UUID[] = [];
 
   constructor(ids: UUID[], clearOthers = true) {
     super();
@@ -110,6 +111,9 @@ export class SelectNodesCommand extends BaseCommand {
     });
     state.layout.edges.forEach((edge, id) => {
       if (edge.isSelected) this.previousSelectedEdges.push(id);
+    });
+    state.layout.texts.forEach((text, id) => {
+      if (text.isSelected) this.previousSelectedTexts.push(id);
     });
 
     if (this.clearOthers) {
@@ -155,6 +159,10 @@ export class SelectNodesCommand extends BaseCommand {
     this.previousSelectedEdges.forEach((id) => {
       const edge = state.layout.edges.get(id);
       if (edge) edge.isSelected = true;
+    });
+    this.previousSelectedTexts.forEach((id) => {
+      const text = state.layout.texts.get(id);
+      if (text) text.isSelected = true;
     });
 
     return state;

@@ -92,42 +92,6 @@ export function createGenogram(
   };
 }
 
-export function addSubject(genogram: Genogram, subject: Subject): void {
-  genogram.subjects.set(subject.id, subject);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function removeSubject(genogram: Genogram, subjectId: UUID): void {
-  genogram.subjects.delete(subjectId);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function addConnection(
-  genogram: Genogram,
-  connection: Connection
-): void {
-  genogram.connections.set(connection.id, connection);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function removeConnection(genogram: Genogram, connectionId: UUID): void {
-  genogram.connections.delete(connectionId);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function addAnnotation(
-  genogram: Genogram,
-  annotation: Annotation
-): void {
-  genogram.annotations.set(annotation.id, annotation);
-  genogram.metadata.updatedAt = new Date();
-}
-
-export function removeAnnotation(genogram: Genogram, annotationId: UUID): void {
-  genogram.annotations.delete(annotationId);
-  genogram.metadata.updatedAt = new Date();
-}
-
 // Serialization
 export interface SerializedGenogram {
   id: string;

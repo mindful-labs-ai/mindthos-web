@@ -78,6 +78,10 @@ export class CommandManager {
       this.undoStack.push(new CompositeCommand(commands));
     }
 
+    if (this.undoStack.length > this.config.maxHistorySize) {
+      this.undoStack.shift();
+    }
+
     this.redoStack = [];
     this.notify('execute');
     return result;

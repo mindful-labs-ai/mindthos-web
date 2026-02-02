@@ -6,15 +6,14 @@ import type { GenogramEditor } from '@/genogram/core/editor/genogram-editor';
 import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
 import type { Visibility } from '@/genogram/core/models/genogram';
 import type {
-  Subject,
-  PersonAttribute,
   FetusAttribute,
+  PersonAttribute,
+  Subject,
 } from '@/genogram/core/models/person';
 import { getNodeShape } from '@/genogram/core/models/person';
 import type {
   Connection,
   GroupAttribute,
-  ParentChildAttribute,
   PartnerAttribute,
 } from '@/genogram/core/models/relationship';
 import type { Annotation } from '@/genogram/core/models/text-annotation';
@@ -29,6 +28,20 @@ import type {
   PartnerStatus,
   RelationStatus,
 } from '@/genogram/core/types/enums';
+import {
+  resolveConnectionEndpoints,
+  resolveConnectionHandles,
+} from '@/genogram/core/utils/connection-resolver';
+import {
+  buildPartnerMidpoint,
+  buildTwinTargetPosition,
+  getSubjectSizePx,
+} from '@/genogram/core/utils/edge-data-builder';
+import {
+  buildDetailTexts,
+  buildLifeSpanLabel,
+  resolveVisibleName,
+} from '@/genogram/core/utils/node-data-builder';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
 import type { AnnotationNodeData } from '../components/nodes/AnnotationNode';
@@ -36,10 +49,6 @@ import type { GroupBoundaryNodeData } from '../components/nodes/GroupBoundaryNod
 import { NODE_SIZE_PX } from '../constants/grid';
 
 const GROUP_BOUNDARY_PADDING = 30;
-
-/** Subject의 size 속성에서 px 크기를 안전하게 조회 */
-const getSubjectSizePx = (subject: Subject | undefined): number =>
-  NODE_SIZE_PX[subject?.layout.style.size ?? ''] ?? NODE_SIZE_PX.DEFAULT;
 
 /**
  * GenogramEditor 상태를 ReactFlow 노드/엣지로 변환하는 훅.
@@ -88,43 +97,10 @@ export const useFlowSync = (
       const personAttr = isPerson ? (attr as PersonAttribute) : null;
       const fetusAttr = isFetus ? (attr as FetusAttribute) : null;
 
-      // 생몰연도 포맷: visibility 토글에 따라 출생일/사망일 개별 제어
-      let lifeSpanLabel: string | null = null;
-      if (personAttr?.lifeSpan.birth) {
-        const birthPart = visibility.birthDate
-          ? personAttr.lifeSpan.birth.slice(0, 4)
-          : null;
-        const deathPart =
-          visibility.deathDate && personAttr.lifeSpan.death
-            ? personAttr.lifeSpan.death.slice(0, 4)
-            : null;
-        if (birthPart && deathPart) {
-          lifeSpanLabel = `${birthPart} ~ ${deathPart}`;
-        } else if (birthPart) {
-          lifeSpanLabel = `${birthPart}-`;
-        } else if (deathPart) {
-          lifeSpanLabel = `~ ${deathPart}`;
-        }
-      }
-
-      // 상세정보 텍스트 배열
-      const detailTexts: string[] = [];
-      if (personAttr?.detail.enable) {
-        if (personAttr.detail.job) detailTexts.push(personAttr.detail.job);
-        if (personAttr.detail.education)
-          detailTexts.push(personAttr.detail.education);
-        if (personAttr.detail.region)
-          detailTexts.push(personAttr.detail.region);
-      }
-
-      const sizePx = getSubjectSizePx(subject);
-
-      // visibility에 따라 표시할 데이터를 조건부 전달
-      const visibleName = visibility.name
-        ? isPerson
-          ? (personAttr?.name ?? null)
-          : (attr as { name: string | null }).name
-        : null;
+      const lifeSpanLabel = buildLifeSpanLabel(personAttr, visibility);
+      const detailTexts = buildDetailTexts(personAttr);
+      const sizePx = getSubjectSizePx(subject, NODE_SIZE_PX);
+      const visibleName = resolveVisibleName(subject, visibility);
 
       newNodes.push({
         id,
@@ -247,107 +223,10 @@ export const useFlowSync = (
       if (!edgeLayout) return;
 
       const attr = conn.entity.attribute;
-
-      let source = '';
-      let target = '';
-      if ('subjects' in attr && Array.isArray(attr.subjects)) {
-        source = attr.subjects[0];
-        target = attr.subjects[1];
-      } else if ('startRef' in attr && 'endRef' in attr) {
-        source = attr.startRef;
-        target = attr.endRef;
-      } else if ('parentRef' in attr && 'childRef' in attr) {
-        const pcAttr = attr as ParentChildAttribute;
-        // parentRef가 파트너선 ID인지 Subject ID인지 판별
-        const partnerConn = genogram.connections.get(pcAttr.parentRef);
-        if (partnerConn && 'subjects' in partnerConn.entity.attribute) {
-          // 파트너선 참조 → source는 파트너선의 첫 번째 Subject
-          const pAttr = partnerConn.entity.attribute as PartnerAttribute;
-          source = pAttr.subjects[0];
-        } else {
-          // Subject ID 직접 참조
-          source = pcAttr.parentRef;
-        }
-        target = Array.isArray(pcAttr.childRef)
-          ? pcAttr.childRef[0]
-          : pcAttr.childRef;
-      }
-
-      // ConnectionType별 Handle 앵커 지정
-      let sourceHandle: string | undefined;
-      let targetHandle: string | undefined;
-
-      switch (conn.entity.type) {
-        case ConnectionType.Partner_Line:
-          // 양쪽 노드 하단
-          sourceHandle = 'bottom-source';
-          targetHandle = 'bottom-target';
-          break;
-        case ConnectionType.Children_Parents_Line:
-          // 부모=하단, 자녀=상단
-          sourceHandle = 'bottom-source';
-          targetHandle = 'top-target';
-          break;
-        case ConnectionType.Relation_Line:
-        case ConnectionType.Influence_Line:
-        default:
-          // 노드 중심 간 직선
-          sourceHandle = 'center-source';
-          targetHandle = 'center-target';
-          break;
-      }
-
-      // Children_Parents_Line: parentRef가 파트너선이면 중간 지점 및 부모 x 좌표 계산
-      let partnerMidpoint: { x: number; y: number } | null = null;
-      let partnerSubjects: { x1: number; x2: number } | null = null;
-      if (
-        conn.entity.type === ConnectionType.Children_Parents_Line &&
-        'parentRef' in attr
-      ) {
-        const pcAttr = attr as ParentChildAttribute;
-        const partnerConn = genogram.connections.get(pcAttr.parentRef);
-        if (partnerConn && 'subjects' in partnerConn.entity.attribute) {
-          const pAttr = partnerConn.entity.attribute as PartnerAttribute;
-          const pos1 = layout.nodes.get(pAttr.subjects[0])?.position;
-          const pos2 = layout.nodes.get(pAttr.subjects[1])?.position;
-          if (pos1 && pos2) {
-            const sizePx1 = getSubjectSizePx(
-              genogram.subjects.get(pAttr.subjects[0])
-            );
-            const sizePx2 = getSubjectSizePx(
-              genogram.subjects.get(pAttr.subjects[1])
-            );
-            const bottomY1 = pos1.y + sizePx1 / 2;
-            const bottomY2 = pos2.y + sizePx2 / 2;
-            const midX = (pos1.x + pos2.x) / 2;
-            const bottomY = Math.max(bottomY1, bottomY2) + 40; // U자 offset
-            partnerMidpoint = { x: midX, y: bottomY };
-            partnerSubjects = { x1: pos1.x, x2: pos2.x };
-          }
-        }
-      }
-
-      // 쌍둥이: 두 번째 자녀 위치
-      let twinTargetPosition: { x: number; y: number } | null = null;
-      if (
-        conn.entity.type === ConnectionType.Children_Parents_Line &&
-        'childRef' in attr
-      ) {
-        const pcAttr = attr as ParentChildAttribute;
-        if (Array.isArray(pcAttr.childRef) && pcAttr.childRef.length === 2) {
-          const twin2Layout = layout.nodes.get(pcAttr.childRef[1]);
-          if (twin2Layout) {
-            const twin2SizePx = getSubjectSizePx(
-              genogram.subjects.get(pcAttr.childRef[1])
-            );
-            // center → top handle 보정 (nodeOrigin=[0.5,0.5])
-            twinTargetPosition = {
-              x: twin2Layout.position.x,
-              y: twin2Layout.position.y - twin2SizePx / 2,
-            };
-          }
-        }
-      }
+      const { source, target } = resolveConnectionEndpoints(conn, genogram);
+      const { sourceHandle, targetHandle } = resolveConnectionHandles(conn.entity.type);
+      const { partnerMidpoint, partnerSubjects } = buildPartnerMidpoint(conn, genogram, layout, NODE_SIZE_PX);
+      const twinTargetPosition = buildTwinTargetPosition(conn, genogram, layout, NODE_SIZE_PX);
 
       newEdges.push({
         id,
@@ -381,8 +260,8 @@ export const useFlowSync = (
             'status' in attr
               ? (attr.status as ParentChildStatus)
               : undefined,
-          sourceSizePx: getSubjectSizePx(genogram.subjects.get(source)),
-          targetSizePx: getSubjectSizePx(genogram.subjects.get(target)),
+          sourceSizePx: getSubjectSizePx(genogram.subjects.get(source), NODE_SIZE_PX),
+          targetSizePx: getSubjectSizePx(genogram.subjects.get(target), NODE_SIZE_PX),
           sourceShape: getNodeShape(genogram.subjects.get(source)),
           targetShape: getNodeShape(genogram.subjects.get(target)),
           partnerMidpoint,
