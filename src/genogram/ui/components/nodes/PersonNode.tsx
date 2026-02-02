@@ -676,7 +676,11 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 아래: 이름 */}
       <div
         className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-xs font-medium text-fg"
-        style={{ top: S + 4 }}
+        style={{
+          top: S + 4,
+          textShadow:
+            '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
+        }}
       >
         {name}
       </div>
