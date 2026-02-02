@@ -26,6 +26,7 @@ import {
 } from '../constants/labels';
 import { usePropertyPanel } from '../hooks/usePropertyPanel';
 
+import { ColorPicker } from './common/ColorPicker';
 import { DateInput } from './common/DateInput';
 import { IconDropdown } from './common/IconDropdown';
 import { InlineDropdown } from './common/InlineDropdown';
@@ -422,27 +423,23 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           )}
 
           {/* 선 색상 */}
-          <div className="flex items-center justify-between">
-            <span className="text-base font-medium text-fg">선 색상</span>
-            <input
-              type="color"
+          <section className="flex items-center justify-between">
+            <h3 className="text-base font-medium text-fg">선 색상</h3>
+            <ColorPicker
               value={connection.layout.strokeColor}
-              onChange={(e) => updateConnLayout('strokeColor', e.target.value)}
-              className="h-8 w-8 cursor-pointer rounded border border-border"
+              onChange={(v) => updateConnLayout('strokeColor', v)}
             />
-          </div>
+          </section>
 
           {/* 텍스트 색상 — Group_Line에서는 숨김 */}
           {!isGroup && (
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-fg">텍스트 색상</span>
-              <input
-                type="color"
+            <section className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-fg">텍스트 색상</h3>
+              <ColorPicker
                 value={connection.layout.textColor}
-                onChange={(e) => updateConnLayout('textColor', e.target.value)}
-                className="h-8 w-8 cursor-pointer rounded border border-border"
+                onChange={(v) => updateConnLayout('textColor', v)}
               />
-            </div>
+            </section>
           )}
         </div>
       </div>
@@ -734,26 +731,22 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             </div>
 
             {/* 도형 색상 */}
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-fg">도형 색상</span>
-              <input
-                type="color"
+            <section className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-fg">도형 색상</h3>
+              <ColorPicker
                 value={style.bgColor}
-                onChange={(e) => updateStyle('bgColor', e.target.value)}
-                className="h-8 w-8 cursor-pointer rounded border border-border"
+                onChange={(v) => updateStyle('bgColor', v)}
               />
-            </div>
+            </section>
 
             {/* 텍스트 색상 */}
-            <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-fg">텍스트 색상</span>
-              <input
-                type="color"
+            <section className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-fg">텍스트 색상</h3>
+              <ColorPicker
                 value={style.textColor}
-                onChange={(e) => updateStyle('textColor', e.target.value)}
-                className="h-8 w-8 cursor-pointer rounded border border-border"
+                onChange={(v) => updateStyle('textColor', v)}
               />
-            </div>
+            </section>
           </div>
         )}
       </div>
