@@ -455,9 +455,7 @@ const GenogramCanvas: React.FC = () => {
               toolMode={toolMode}
               onToolModeChange={setToolMode}
               onDelete={deleteSelected}
-              hasSelection={
-                selectedSubject !== null || selectedConnection !== null
-              }
+              hasSelection={selectedItems.length > 0}
               onSubjectSubToolSelect={handleSubjectSubToolSelect}
               onConnectionSubToolSelect={handleConnectionSubToolSelect}
             />

@@ -105,11 +105,46 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   syncRef.current.syncSelectedConnection = syncSelectedConnection;
   syncRef.current.syncSelectedItems = syncSelectedItems;
 
+  // 선택 동기화 시 양쪽(node/edge) 상태를 합치기 위한 ref
+  const nodesRef = useRef<Node[]>([]);
+  const edgesRef = useRef<Edge<RelationshipEdgeData>[]>([]);
+  nodesRef.current = nodes;
+  edgesRef.current = edges;
+
   // 초기 동기화 (Editor useEffect 완료 후)
   useEffect(() => {
     syncFromEditor();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /** nodes + edges의 현재 선택 상태를 합쳐서 editor에 반영 */
+  const syncSelectionToEditor = useCallback(
+    (nextNodes: Node[], nextEdges: Edge<RelationshipEdgeData>[]) => {
+      const editor = getEditor();
+      if (!editor) return;
+
+      const allIds: string[] = [];
+
+      for (const n of nextNodes) {
+        if (!n.selected) continue;
+        if (n.id.startsWith('group-boundary-')) {
+          allIds.push(n.id.replace('group-boundary-', ''));
+        } else {
+          allIds.push(n.id);
+        }
+      }
+      for (const e of nextEdges) {
+        if (e.selected) allIds.push(e.id);
+      }
+
+      if (allIds.length > 0) {
+        editor.select(allIds, true);
+      } else {
+        editor.deselectAll();
+      }
+    },
+    [getEditor],
+  );
 
   // 노드 변경 핸들러 (드래그 스냅 포함)
   const onNodesChange = useCallback(
@@ -118,6 +153,9 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         const next = applyNodeChanges(changes, nds);
         const editor = getEditor();
         if (!editor) return next;
+
+        // 드래그 완료된 이동을 모아서 한 번에 커맨드 실행 (undo 단위 통합)
+        const completedMoves: { subjectId: string; position: { x: number; y: number } }[] = [];
 
         changes.forEach((change) => {
           if (change.type === 'position' && change.id) {
@@ -132,40 +170,30 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
               }
             } else if (change.position) {
               isDraggingRef.current = false;
-              const snapped = snapToDotCenter(change.position);
-              editor.moveSubject(change.id, snapped);
+              completedMoves.push({
+                subjectId: change.id,
+                position: snapToDotCenter(change.position),
+              });
             }
           }
         });
 
-        // 선택 변경 → editor에 반영
+        if (completedMoves.length === 1) {
+          editor.moveSubject(completedMoves[0].subjectId, completedMoves[0].position);
+        } else if (completedMoves.length > 1) {
+          editor.moveMultipleSubjects(completedMoves);
+        }
+
+        // 선택 변경 → editor에 반영 (현재 edge 선택 상태도 함께 전달)
         const hasSelectChange = changes.some((c) => c.type === 'select');
         if (hasSelectChange) {
-          const selectedNodeIds: string[] = [];
-          const selectedEdgeIds: string[] = [];
-
-          for (const n of next) {
-            if (!n.selected) continue;
-            // group-boundary 노드 선택 → 엣지(Connection) 선택으로 매핑
-            if (n.id.startsWith('group-boundary-')) {
-              selectedEdgeIds.push(n.id.replace('group-boundary-', ''));
-            } else {
-              selectedNodeIds.push(n.id);
-            }
-          }
-
-          const allIds = [...selectedNodeIds, ...selectedEdgeIds];
-          if (allIds.length > 0) {
-            editor.select(allIds, true);
-          } else {
-            editor.deselectAll();
-          }
+          syncSelectionToEditor(next, edgesRef.current);
         }
 
         return next;
       });
     },
-    [getEditor, setNodes]
+    [getEditor, setNodes, syncSelectionToEditor]
   );
 
   // 엣지 변경 핸들러 (선택 변경 포함)
@@ -173,23 +201,17 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     (changes: EdgeChange<Edge<RelationshipEdgeData>>[]) => {
       setEdges((eds) => {
         const next = applyEdgeChanges(changes, eds);
-        const editor = getEditor();
-        if (!editor) return next;
 
+        // 선택 변경 → editor에 반영 (현재 node 선택 상태도 함께 전달)
         const hasSelectChange = changes.some((c) => c.type === 'select');
         if (hasSelectChange) {
-          const selectedIds = next.filter((e) => e.selected).map((e) => e.id);
-          if (selectedIds.length > 0) {
-            editor.select(selectedIds, true);
-          } else {
-            editor.deselectAll();
-          }
+          syncSelectionToEditor(nodesRef.current, next);
         }
 
         return next;
       });
     },
-    [getEditor, setEdges]
+    [setEdges, syncSelectionToEditor]
   );
 
   // 클릭 기반 연결 생성 (pendingConnectionKind + 각 status에 따라 분기)
