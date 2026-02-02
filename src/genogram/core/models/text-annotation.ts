@@ -28,7 +28,7 @@ export interface Annotation {
 export function createAnnotation(
   text: string = '',
   position: Point,
-  id: UUID = generateId()
+  id: UUID = generateId('annotation')
 ): Annotation {
   return {
     id,

@@ -52,13 +52,25 @@ export const getEdgeStyle = (
       case RelationStatus.Fused:
         return { stroke: RELATION_CLOSE, strokeWidth: 3 };
       case RelationStatus.Distant:
-        return { stroke: RELATION_DISTANT, strokeWidth: 1, strokeDasharray: '5,5' };
+        return {
+          stroke: RELATION_DISTANT,
+          strokeWidth: 1,
+          strokeDasharray: '5,5',
+        };
       case RelationStatus.Hostile:
-        return { stroke: RELATION_HOSTILE, strokeWidth: 2, strokeDasharray: '8,4' };
+        return {
+          stroke: RELATION_HOSTILE,
+          strokeWidth: 2,
+          strokeDasharray: '8,4',
+        };
       case RelationStatus.Close_Hostile:
         return { stroke: RELATION_HOSTILE, strokeWidth: 2 };
       case RelationStatus.Cutoff:
-        return { stroke: RELATION_CUTOFF, strokeWidth: 2, strokeDasharray: '2,6' };
+        return {
+          stroke: RELATION_CUTOFF,
+          strokeWidth: 2,
+          strokeDasharray: '2,6',
+        };
       default:
         return { ...baseStyle, stroke: RELATION_DEFAULT };
     }

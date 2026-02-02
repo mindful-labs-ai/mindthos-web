@@ -30,10 +30,11 @@ export function buildLifeSpanLabel(
  */
 export function buildDetailTexts(personAttr: PersonAttribute | null): string[] {
   const texts: string[] = [];
-  if (!personAttr?.detail.enable) return texts;
-  if (personAttr.detail.job) texts.push(personAttr.detail.job);
-  if (personAttr.detail.education) texts.push(personAttr.detail.education);
-  if (personAttr.detail.region) texts.push(personAttr.detail.region);
+  if (!personAttr?.extraInfo?.enable) return texts;
+  if (personAttr.extraInfo.job) texts.push(personAttr.extraInfo.job);
+  if (personAttr.extraInfo.education)
+    texts.push(personAttr.extraInfo.education);
+  if (personAttr.extraInfo.region) texts.push(personAttr.extraInfo.region);
   return texts;
 }
 

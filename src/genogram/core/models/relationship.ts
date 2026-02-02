@@ -96,7 +96,7 @@ export function createRelationConnection(
   subjectId1: UUID,
   subjectId2: UUID,
   status: RelationStatus,
-  id: UUID = generateId()
+  id: UUID = generateId('relation')
 ): Connection {
   return {
     id,
@@ -116,7 +116,7 @@ export function createInfluenceConnection(
   startRef: UUID,
   endRef: UUID,
   status: InfluenceStatus,
-  id: UUID = generateId()
+  id: UUID = generateId('influence')
 ): Connection {
   return {
     id,
@@ -137,7 +137,7 @@ export function createPartnerConnection(
   subjectId1: UUID,
   subjectId2: UUID,
   status: PartnerStatus,
-  id: UUID = generateId()
+  id: UUID = generateId('partner')
 ): Connection {
   return {
     id,
@@ -163,7 +163,7 @@ export function createParentChildConnection(
   parentRef: UUID,
   childRef: UUID | [UUID, UUID],
   status: ParentChildStatus,
-  id: UUID = generateId()
+  id: UUID = generateId('parentchild')
 ): Connection {
   return {
     id,
@@ -183,7 +183,7 @@ export function createParentChildConnection(
 export function createGroupConnection(
   memberIds: UUID[],
   memberPositions: GroupMemberPosition[],
-  id: UUID = generateId()
+  id: UUID = generateId('group')
 ): Connection {
   return {
     id,
@@ -195,7 +195,10 @@ export function createGroupConnection(
       } satisfies GroupAttribute,
       memo: null,
     },
-    layout: { ...createDefaultConnectionLayout(), strokeColor: DEFAULT_GROUP_STROKE },
+    layout: {
+      ...createDefaultConnectionLayout(),
+      strokeColor: DEFAULT_GROUP_STROKE,
+    },
   };
 }
 

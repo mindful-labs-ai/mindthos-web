@@ -345,7 +345,10 @@ export class GenogramEditor {
     return cmd.getConnectionId();
   }
 
-  addGroupConnection(memberIds: UUID[], memberPositions: GroupMemberPosition[]): UUID {
+  addGroupConnection(
+    memberIds: UUID[],
+    memberPositions: GroupMemberPosition[]
+  ): UUID {
     const cmd = new AddConnectionCommand(
       createGroupConnection(memberIds, memberPositions)
     );
@@ -595,7 +598,7 @@ export class GenogramEditor {
               lifeSpan: { birth: null, death: null },
               age: null,
               illness: Illness.None,
-              detail: {
+              extraInfo: {
                 enable: false,
                 job: null,
                 education: null,

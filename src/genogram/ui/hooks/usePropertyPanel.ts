@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   AnimalAttribute,
   PersonAttribute,
-  PersonDetail,
+  PersonExtraInfo,
   PersonLifeSpan,
   Subject,
   SubjectStyle,
@@ -101,16 +101,16 @@ export const usePropertyPanel = ({
     [subject, attr, onUpdate]
   );
 
-  // detail 업데이트 헬퍼
-  const updateDetail = useCallback(
-    (field: keyof PersonDetail, value: unknown) => {
+  // extraInfo 업데이트 헬퍼
+  const updateExtraInfo = useCallback(
+    (field: keyof PersonExtraInfo, value: unknown) => {
       if (!subject || !attr) return;
       onUpdate(subject.id, {
         entity: {
           ...subject.entity,
           attribute: {
             ...attr,
-            detail: { ...attr.detail, [field]: value },
+            extraInfo: { ...attr.extraInfo, [field]: value },
           },
         },
       });
@@ -174,7 +174,7 @@ export const usePropertyPanel = ({
     updateAttribute,
     updateGenderOrType,
     updateLifeSpan,
-    updateDetail,
+    updateExtraInfo,
     updateStyle,
     handleMemoChange,
     commitName,

@@ -15,7 +15,7 @@ export interface PersonLifeSpan {
   death: string | null;
 }
 
-export interface PersonDetail {
+export interface PersonExtraInfo {
   enable: boolean;
   job: string | null;
   education: string | null;
@@ -29,7 +29,7 @@ export interface PersonAttribute {
   lifeSpan: PersonLifeSpan;
   age: number | null;
   illness: Illness;
-  detail: PersonDetail;
+  extraInfo: PersonExtraInfo;
 }
 
 // Animal Attribute
@@ -74,7 +74,7 @@ export interface Subject {
 export function createPersonSubject(
   gender: Gender,
   position: Point,
-  id: UUID = generateId()
+  id: UUID = generateId('person')
 ): Subject {
   return {
     id,
@@ -87,7 +87,7 @@ export function createPersonSubject(
         lifeSpan: { birth: null, death: null },
         age: null,
         illness: Illness.None,
-        detail: {
+        extraInfo: {
           enable: false,
           job: null,
           education: null,
@@ -109,7 +109,7 @@ export function createPersonSubject(
 
 export function createAnimalSubject(
   position: Point,
-  id: UUID = generateId()
+  id: UUID = generateId('animal')
 ): Subject {
   return {
     id,
@@ -135,7 +135,7 @@ export function createAnimalSubject(
 export function createFetusSubject(
   status: FetusStatus,
   position: Point,
-  id: UUID = generateId()
+  id: UUID = generateId('fetus')
 ): Subject {
   return {
     id,

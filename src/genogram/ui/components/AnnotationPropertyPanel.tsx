@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 
-import type { Annotation } from '@/genogram/core/models/text-annotation';
-import type { AnnotationUpdate } from '@/genogram/core/models/text-annotation';
+import type { Annotation , AnnotationUpdate } from '@/genogram/core/models/text-annotation';
 
 import { ColorPicker } from './common/ColorPicker';
 

@@ -74,7 +74,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     updateAttribute,
     updateGenderOrType,
     updateLifeSpan,
-    updateDetail,
+    updateExtraInfo,
     updateStyle,
     handleMemoChange,
     commitName,
@@ -635,12 +635,12 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 <span className="text-base font-medium text-fg">인적 사항</span>
                 <input
                   type="checkbox"
-                  checked={attr.detail.enable}
-                  onChange={(e) => updateDetail('enable', e.target.checked)}
+                  checked={attr.extraInfo.enable}
+                  onChange={(e) => updateExtraInfo('enable', e.target.checked)}
                   className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-border bg-surface after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-fg checked:bg-fg checked:after:opacity-100"
                 />
               </div>
-              {attr.detail.enable && (
+              {attr.extraInfo.enable && (
                 <div className="flex flex-col gap-3">
                   <div>
                     <label
@@ -652,9 +652,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                     <input
                       id="job"
                       type="text"
-                      value={attr.detail.job ?? ''}
+                      value={attr.extraInfo.job ?? ''}
                       onChange={(e) =>
-                        updateDetail('job', e.target.value || null)
+                        updateExtraInfo('job', e.target.value || null)
                       }
                       placeholder="메모를 추가하세요."
                       className="h-10 w-full rounded-md border-2 border-border bg-surface px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
@@ -670,9 +670,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                     <input
                       id="education"
                       type="text"
-                      value={attr.detail.education ?? ''}
+                      value={attr.extraInfo.education ?? ''}
                       onChange={(e) =>
-                        updateDetail('education', e.target.value || null)
+                        updateExtraInfo('education', e.target.value || null)
                       }
                       placeholder="메모를 추가하세요."
                       className="h-10 w-full rounded-md border-2 border-border bg-surface px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
@@ -688,9 +688,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                     <input
                       id="region"
                       type="text"
-                      value={attr.detail.region ?? ''}
+                      value={attr.extraInfo.region ?? ''}
                       onChange={(e) =>
-                        updateDetail('region', e.target.value || null)
+                        updateExtraInfo('region', e.target.value || null)
                       }
                       placeholder="메모를 추가하세요."
                       className="h-10 w-full rounded-md border-2 border-border bg-surface px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"

@@ -2,7 +2,10 @@ import { memo, useCallback, useMemo } from 'react';
 
 import type { NodeProps } from '@xyflow/react';
 
-import { SELECTION_BORDER, SELECTION_INNER } from '@/genogram/core/constants/colors';
+import {
+  SELECTION_BORDER,
+  SELECTION_INNER,
+} from '@/genogram/core/constants/colors';
 
 export interface GroupBoundaryNodeData {
   connectionId: string;

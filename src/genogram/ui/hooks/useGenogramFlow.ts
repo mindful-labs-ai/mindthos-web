@@ -41,7 +41,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     age: true,
     birthDate: true,
     deathDate: true,
-    detail: true,
+    extraInfo: true,
     illness: true,
     relationLine: true,
     groupLine: true,
@@ -512,7 +512,10 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
 
   // 그룹 연결 생성 (멤버 ID + 고정 좌표 기반)
   const addGroupConnection = useCallback(
-    (memberIds: string[], memberPositions: { x: number; y: number; sizePx: number }[]) => {
+    (
+      memberIds: string[],
+      memberPositions: { x: number; y: number; sizePx: number }[]
+    ) => {
       const editor = getEditor();
       if (!editor || memberPositions.length < 2) return null;
       return editor.addGroupConnection(memberIds, memberPositions);

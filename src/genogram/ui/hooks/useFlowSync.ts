@@ -115,7 +115,7 @@ export const useFlowSync = (
           illness: visibility.illness ? personAttr?.illness : undefined,
           isSelected: nodeLayout.isSelected,
           lifeSpanLabel,
-          detailTexts: visibility.detail ? detailTexts : [],
+          detailTexts: visibility.extraInfo ? detailTexts : [],
           sizePx,
           fetusStatus: fetusAttr?.status,
           bgColor: subject.layout.style.bgColor,

@@ -1,4 +1,10 @@
-import React, { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import {
   Background,
@@ -46,7 +52,11 @@ import { useCanvasInteraction } from './hooks/useCanvasInteraction';
 import { useGenogramFlow } from './hooks/useGenogramFlow';
 
 // 커스텀 노드/엣지 타입 등록
-const nodeTypes = { person: PersonNode, 'group-boundary': GroupBoundaryNode, annotation: AnnotationNode };
+const nodeTypes = {
+  person: PersonNode,
+  'group-boundary': GroupBoundaryNode,
+  annotation: AnnotationNode,
+};
 const edgeTypes = { relationship: RelationshipEdge };
 
 export interface GenogramPageHandle {
@@ -99,10 +109,14 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     deselectNode,
   } = useGenogramFlow();
 
-  useImperativeHandle(ref, () => ({
-    loadJSON: fromJSON,
-    toJSON,
-  }), [fromJSON, toJSON]);
+  useImperativeHandle(
+    ref,
+    () => ({
+      loadJSON: fromJSON,
+      toJSON,
+    }),
+    [fromJSON, toJSON]
+  );
 
   // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
   const [subjectCreateMode, setSubjectCreateMode] = useState<
@@ -525,7 +539,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
             annotation={selectedAnnotation}
             onUpdate={updateAnnotation}
           />
-        ) : (selectedSubject || selectedConnection) ? (
+        ) : selectedSubject || selectedConnection ? (
           <GenogramPropertyPanel
             subject={selectedSubject}
             onUpdate={updateSubject}

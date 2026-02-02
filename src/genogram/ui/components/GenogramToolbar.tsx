@@ -185,30 +185,30 @@ const FamilyIcon: React.FC<{ size?: number }> = () => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <g clip-path="url(#clip0_4319_32992)">
+    <g clipPath="url(#clip0_4319_32992)">
       <path
         d="M2 3.77789V10.2223C2 10.8446 2 11.1553 2.1211 11.393C2.22763 11.6021 2.39748 11.7725 2.60655 11.879C2.844 12 3.155 12 3.77606 12H10.2239C10.845 12 11.1556 12 11.393 11.879C11.6021 11.7725 11.7725 11.6021 11.879 11.393C12 11.1556 12 10.845 12 10.2239V3.77606C12 3.155 12 2.844 11.879 2.60655C11.7725 2.39748 11.6021 2.22763 11.393 2.1211C11.1553 2 10.8446 2 10.2223 2H3.77789C3.15561 2 2.84423 2 2.60655 2.1211C2.39748 2.22763 2.22763 2.39748 2.1211 2.60655C2 2.84423 2 3.15561 2 3.77789Z"
         stroke="#3C3C3C"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M20 7C20 9.76142 22.2386 12 25 12C27.7614 12 30 9.76142 30 7C30 4.23858 27.7614 2 25 2C22.2386 2 20 4.23858 20 7Z"
         stroke="#3C3C3C"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M11 25C11 27.7614 13.2386 30 16 30C18.7614 30 21 27.7614 21 25C21 22.2386 18.7614 20 16 20C13.2386 20 11 22.2386 11 25Z"
         stroke="#3C3C3C"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <path d="M7 13V16H25V13" stroke="#3C3C3C" stroke-width="2" />
-      <path d="M16 16V19" stroke="#3C3C3C" stroke-width="2" />
+      <path d="M7 13V16H25V13" stroke="#3C3C3C" strokeWidth="2" />
+      <path d="M16 16V19" stroke="#3C3C3C" strokeWidth="2" />
     </g>
     <defs>
       <clipPath id="clip0_4319_32992">
@@ -230,21 +230,21 @@ const ConnectionIcon: React.FC<{ size?: number }> = () => (
     <path
       d="M3 17.5156L17.5185 2.99711"
       stroke="#3C3C3C"
-      stroke-width="2"
-      stroke-linecap="round"
+      strokeWidth="2"
+      strokeLinecap="round"
     />
     <path
       d="M12 28.5938L28.5926 12.0012"
       stroke="#3C3C3C"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-dasharray="4 4"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeDasharray="4 4"
     />
     <path
       d="M6 22H8.30303H11.1818V19.5V17H13.4848H15.7879V14.5V12H18.0909H20.3939V9.5V7H22.697H25"
       stroke="#3C3C3C"
-      stroke-width="2"
-      stroke-linecap="round"
+      strokeWidth="2"
+      strokeLinecap="round"
     />
   </svg>
 );
@@ -299,7 +299,7 @@ const VISIBILITY_ITEMS: { key: keyof Visibility; label: string }[] = [
   { key: 'groupLine', label: '그룹선' },
   { key: 'birthDate', label: '출생일' },
   { key: 'grid', label: '배경 격자' },
-  { key: 'detail', label: '인적 사항' },
+  { key: 'extraInfo', label: '인적 사항' },
   { key: 'deathDate', label: '사망일' },
   { key: 'illness', label: '임상적 상태' },
   { key: 'memo', label: '부가설명' },
@@ -330,17 +330,11 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
   >('primary');
 
   // 외부 클릭 시 메뉴 닫기
-  const handleClickOutside = useCallback(
-    (e: MouseEvent) => {
-      if (
-        toolbarRef.current &&
-        !toolbarRef.current.contains(e.target as Node)
-      ) {
-        setOpenMenu(null);
-      }
-    },
-    []
-  );
+  const handleClickOutside = useCallback((e: MouseEvent) => {
+    if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
+      setOpenMenu(null);
+    }
+  }, []);
 
   useEffect(() => {
     if (openMenu) {

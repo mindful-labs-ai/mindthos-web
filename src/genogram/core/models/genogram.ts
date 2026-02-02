@@ -17,7 +17,7 @@ export interface Visibility {
   age: boolean;
   birthDate: boolean;
   deathDate: boolean;
-  detail: boolean;
+  extraInfo: boolean;
   illness: boolean;
   relationLine: boolean;
   groupLine: boolean;
@@ -38,12 +38,12 @@ export interface GenogramMetadata {
   updatedAt: Date;
   authorId?: string;
   description?: string;
-  version: string;
 }
 
 // Genogram
 export interface Genogram {
   id: UUID;
+  version: string;
   metadata: GenogramMetadata;
   subjects: Map<string, Subject>;
   connections: Map<string, Connection>;
@@ -62,7 +62,7 @@ export function createDefaultView(): GenogramView {
       age: true,
       birthDate: true,
       deathDate: true,
-      detail: true,
+      extraInfo: true,
       illness: true,
       relationLine: true,
       groupLine: true,
@@ -74,16 +74,16 @@ export function createDefaultView(): GenogramView {
 
 export function createGenogram(
   title: string,
-  id: UUID = generateId()
+  id: UUID = generateId('genogram')
 ): Genogram {
   const now = new Date();
   return {
     id,
+    version: 'v1',
     metadata: {
       title,
       createdAt: now,
       updatedAt: now,
-      version: 'v1',
     },
     subjects: new Map(),
     connections: new Map(),
@@ -95,6 +95,7 @@ export function createGenogram(
 // Serialization
 export interface SerializedGenogram {
   id: string;
+  version: string;
   metadata: GenogramMetadata;
   subjects: Subject[];
   connections: Connection[];
@@ -105,6 +106,7 @@ export interface SerializedGenogram {
 export function serializeGenogram(genogram: Genogram): SerializedGenogram {
   return {
     id: genogram.id,
+    version: genogram.version,
     metadata: genogram.metadata,
     subjects: Array.from(genogram.subjects.values()),
     connections: Array.from(genogram.connections.values()),
@@ -138,6 +140,7 @@ function migrateSubject(subject: Subject): Subject {
 export function deserializeGenogram(data: SerializedGenogram): Genogram {
   return {
     id: data.id,
+    version: data.version,
     metadata: {
       ...data.metadata,
       createdAt: new Date(data.metadata.createdAt),

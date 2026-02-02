@@ -52,8 +52,13 @@ export class DeleteAnnotationCommand extends BaseCommand {
     const annotation = state.genogram.annotations.get(this.annotationId);
     const textLayout = state.layout.texts.get(this.annotationId);
 
-    if (!this.annotationBackup && annotation) this.annotationBackup = structuredClone(annotation);
-    if (!this.textLayoutBackup && textLayout) this.textLayoutBackup = { ...textLayout, position: { ...textLayout.position } };
+    if (!this.annotationBackup && annotation)
+      this.annotationBackup = structuredClone(annotation);
+    if (!this.textLayoutBackup && textLayout)
+      this.textLayoutBackup = {
+        ...textLayout,
+        position: { ...textLayout.position },
+      };
 
     state.genogram.annotations.delete(this.annotationId);
     state.layout.texts.delete(this.annotationId);
@@ -144,7 +149,8 @@ export class MoveAnnotationCommand extends BaseCommand {
     const textLayout = state.layout.texts.get(this.annotationId);
     if (!annotation || !textLayout) return state;
 
-    if (!this.previousPosition) this.previousPosition = { ...annotation.layout.center };
+    if (!this.previousPosition)
+      this.previousPosition = { ...annotation.layout.center };
     annotation.layout.center = { ...this.newPosition };
     textLayout.position = { ...this.newPosition };
     return state;

@@ -20,14 +20,8 @@ const TEXT_LINE_HEIGHT = 1.4;
 
 export const AnnotationNode = memo(
   ({ data, selected }: NodeProps & { data: AnnotationNodeData }) => {
-    const {
-      text,
-      bgColor,
-      textColor,
-      borderStyle,
-      borderColor,
-      isSelected,
-    } = data;
+    const { text, bgColor, textColor, borderStyle, borderColor, isSelected } =
+      data;
 
     const active = selected || isSelected;
 
