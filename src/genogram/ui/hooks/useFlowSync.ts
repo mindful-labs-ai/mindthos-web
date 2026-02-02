@@ -57,7 +57,7 @@ const GROUP_BOUNDARY_PADDING = 30;
  */
 export const useFlowSync = (
   getEditor: () => GenogramEditor | null,
-  visibility: Visibility,
+  visibility: Visibility
 ) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge<RelationshipEdgeData>[]>([]);
@@ -180,29 +180,30 @@ export const useFlowSync = (
     });
 
     // Annotation → annotation 노드 변환 (부가설명 표시 토글)
-    if (visibility.memo) genogram.annotations.forEach((annotation, id) => {
-      const textLayout = layout.texts.get(id);
-      if (!textLayout) return;
+    if (visibility.memo)
+      genogram.annotations.forEach((annotation, id) => {
+        const textLayout = layout.texts.get(id);
+        if (!textLayout) return;
 
-      const style = annotation.layout.style;
+        const style = annotation.layout.style;
 
-      newNodes.push({
-        id: `annotation-${id}`,
-        type: 'annotation',
-        position: annotation.layout.center,
-        data: {
-          annotationId: id,
-          text: annotation.text,
-          bgColor: style.bgColor,
-          textColor: style.textColor,
-          borderStyle: style.borderStyle,
-          borderColor: style.borderColor,
-          isSelected: textLayout.isSelected,
-        } satisfies AnnotationNodeData,
-        zIndex: textLayout.zIndex,
-        selected: textLayout.isSelected,
+        newNodes.push({
+          id: `annotation-${id}`,
+          type: 'annotation',
+          position: annotation.layout.center,
+          data: {
+            annotationId: id,
+            text: annotation.text,
+            bgColor: style.bgColor,
+            textColor: style.textColor,
+            borderStyle: style.borderStyle,
+            borderColor: style.borderColor,
+            isSelected: textLayout.isSelected,
+          } satisfies AnnotationNodeData,
+          zIndex: textLayout.zIndex,
+          selected: textLayout.isSelected,
+        });
       });
-    });
 
     // 엣지 변환
     const newEdges: Edge<RelationshipEdgeData>[] = [];
@@ -224,9 +225,21 @@ export const useFlowSync = (
 
       const attr = conn.entity.attribute;
       const { source, target } = resolveConnectionEndpoints(conn, genogram);
-      const { sourceHandle, targetHandle } = resolveConnectionHandles(conn.entity.type);
-      const { partnerMidpoint, partnerSubjects } = buildPartnerMidpoint(conn, genogram, layout, NODE_SIZE_PX);
-      const twinTargetPosition = buildTwinTargetPosition(conn, genogram, layout, NODE_SIZE_PX);
+      const { sourceHandle, targetHandle } = resolveConnectionHandles(
+        conn.entity.type
+      );
+      const { partnerMidpoint, partnerSubjects } = buildPartnerMidpoint(
+        conn,
+        genogram,
+        layout,
+        NODE_SIZE_PX
+      );
+      const twinTargetPosition = buildTwinTargetPosition(
+        conn,
+        genogram,
+        layout,
+        NODE_SIZE_PX
+      );
 
       newEdges.push({
         id,
@@ -260,8 +273,14 @@ export const useFlowSync = (
             'status' in attr
               ? (attr.status as ParentChildStatus)
               : undefined,
-          sourceSizePx: getSubjectSizePx(genogram.subjects.get(source), NODE_SIZE_PX),
-          targetSizePx: getSubjectSizePx(genogram.subjects.get(target), NODE_SIZE_PX),
+          sourceSizePx: getSubjectSizePx(
+            genogram.subjects.get(source),
+            NODE_SIZE_PX
+          ),
+          targetSizePx: getSubjectSizePx(
+            genogram.subjects.get(target),
+            NODE_SIZE_PX
+          ),
           sourceShape: getNodeShape(genogram.subjects.get(source)),
           targetShape: getNodeShape(genogram.subjects.get(target)),
           partnerMidpoint,

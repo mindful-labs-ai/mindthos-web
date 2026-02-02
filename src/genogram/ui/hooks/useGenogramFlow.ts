@@ -186,6 +186,31 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   // 노드 변경 핸들러 (드래그 스냅 포함)
   const onNodesChange = useCallback(
     (changes: NodeChange<Node>[]) => {
+      // Multi_Select_Tool 모드: 클릭 선택을 additive + toggle로 변환
+      if (toolMode === ToolMode.Multi_Select_Tool) {
+        const hasSelect = changes.some((c) => c.type === 'select');
+        if (hasSelect) {
+          const filtered: NodeChange<Node>[] = [];
+          for (const c of changes) {
+            if (c.type !== 'select') {
+              filtered.push(c);
+              continue;
+            }
+            if (c.selected) {
+              // 이미 선택된 노드 클릭 → 선택 해제 (toggle)
+              const node = nodesRef.current.find((n) => n.id === c.id);
+              if (node?.selected) {
+                filtered.push({ ...c, selected: false });
+              } else {
+                filtered.push(c);
+              }
+            }
+            // selected: false인 변경은 무시 (다른 노드의 선택 유지)
+          }
+          changes = filtered;
+        }
+      }
+
       // 드래그 중인 변경이 있으면 선택 동기화보다 먼저 isDraggingRef를 설정
       // (syncFromEditor가 드래그 중에 실행되어 위치가 튀는 것을 방지)
       const hasDragging = changes.some(
@@ -260,12 +285,35 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         return next;
       });
     },
-    [getEditor, setNodes, syncSelectionToEditor]
+    [getEditor, setNodes, syncSelectionToEditor, toolMode]
   );
 
   // 엣지 변경 핸들러 (선택 변경 포함)
   const onEdgesChange = useCallback(
     (changes: EdgeChange<Edge<RelationshipEdgeData>>[]) => {
+      // Multi_Select_Tool 모드: 클릭 선택을 additive + toggle로 변환
+      if (toolMode === ToolMode.Multi_Select_Tool) {
+        const hasSelect = changes.some((c) => c.type === 'select');
+        if (hasSelect) {
+          const filtered: EdgeChange<Edge<RelationshipEdgeData>>[] = [];
+          for (const c of changes) {
+            if (c.type !== 'select') {
+              filtered.push(c);
+              continue;
+            }
+            if (c.selected) {
+              const edge = edgesRef.current.find((e) => e.id === c.id);
+              if (edge?.selected) {
+                filtered.push({ ...c, selected: false });
+              } else {
+                filtered.push(c);
+              }
+            }
+          }
+          changes = filtered;
+        }
+      }
+
       setEdges((eds) => {
         const next = applyEdgeChanges(changes, eds);
 
@@ -278,7 +326,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         return next;
       });
     },
-    [setEdges, syncSelectionToEditor]
+    [setEdges, syncSelectionToEditor, toolMode]
   );
 
   // 클릭 기반 연결 생성 (pendingConnectionKind + 각 status에 따라 분기)
@@ -462,12 +510,12 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
-  // 그룹 연결 생성 (고정 좌표 기반)
+  // 그룹 연결 생성 (멤버 ID + 고정 좌표 기반)
   const addGroupConnection = useCallback(
-    (memberPositions: { x: number; y: number; sizePx: number }[]) => {
+    (memberIds: string[], memberPositions: { x: number; y: number; sizePx: number }[]) => {
       const editor = getEditor();
       if (!editor || memberPositions.length < 2) return null;
-      return editor.addGroupConnection(memberPositions);
+      return editor.addGroupConnection(memberIds, memberPositions);
     },
     [getEditor]
   );
@@ -563,6 +611,24 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // Multi_Select_Tool: 특정 노드를 현재 선택에서 제거
+  const deselectNode = useCallback(
+    (nodeId: string) => {
+      const editor = getEditor();
+      if (!editor) return;
+      const currentItems = editor.getSelectedItems();
+      const remainingIds = currentItems
+        .map((item) => item.id)
+        .filter((id) => id !== nodeId);
+      if (remainingIds.length > 0) {
+        editor.select(remainingIds, true);
+      } else {
+        editor.deselectAll();
+      }
+    },
+    [getEditor]
+  );
+
   // 직렬화
   const toJSON = useCallback(() => {
     return getEditor()?.toJSON() ?? '';
@@ -618,5 +684,6 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     addAnnotation,
     selectedAnnotation,
     updateAnnotation,
+    deselectNode,
   };
 };

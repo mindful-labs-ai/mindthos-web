@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { SelectionMode, useReactFlow } from '@xyflow/react';
-import type { Node } from '@xyflow/react';
+import type { Edge, Node } from '@xyflow/react';
 
 import type {
   Gender,
@@ -50,6 +50,8 @@ export interface UseCanvasInteractionOptions {
   onFabComplete?: () => void;
   /** 캔버스 클릭 시 주석 생성 */
   onAnnotationCreate?: (position: { x: number; y: number }) => void;
+  /** Multi_Select_Tool에서 노드 클릭 시 toggle select */
+  onMultiSelectToggle?: (nodeId: string) => void;
 }
 
 /** 연결 미리보기에 필요한 정보 */
@@ -89,6 +91,7 @@ export const useCanvasInteraction = ({
   onChildNodeClick,
   onFabComplete,
   onAnnotationCreate,
+  onMultiSelectToggle,
 }: UseCanvasInteractionOptions) => {
   const { screenToFlowPosition, flowToScreenPosition, getZoom, getNode } =
     useReactFlow();
@@ -268,9 +271,19 @@ export const useCanvasInteraction = ({
     ]
   );
 
-  // 노드 클릭 핸들러 (Connection 모드 전용)
+  const isMultiSelectMode = toolMode === ToolMode.Multi_Select_Tool;
+
+  // 노드 클릭 핸들러
   const handleNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
+      // Multi_Select_Tool: 이미 선택된 노드 클릭 시 toggle deselect
+      if (isMultiSelectMode) {
+        if (node.selected) {
+          onMultiSelectToggle?.(node.id);
+        }
+        return;
+      }
+
       if (!isConnectionMode) return;
 
       // 자녀 모드: 기존 노드 클릭 → 부모-자녀선 연결
@@ -297,6 +310,7 @@ export const useCanvasInteraction = ({
       }
     },
     [
+      isMultiSelectMode,
       isConnectionMode,
       isChildMode,
       effectiveSourceId,
@@ -304,7 +318,18 @@ export const useCanvasInteraction = ({
       onConnectionCreate,
       onChildNodeClick,
       onFabComplete,
+      onMultiSelectToggle,
     ]
+  );
+
+  // 엣지 클릭 핸들러 (Multi_Select_Tool: 선택된 엣지 클릭 시 toggle deselect)
+  const handleEdgeClick = useCallback(
+    (_event: React.MouseEvent, edge: Edge) => {
+      if (isMultiSelectMode && edge.selected) {
+        onMultiSelectToggle?.(edge.id);
+      }
+    },
+    [isMultiSelectMode, onMultiSelectToggle]
   );
 
   // ToolMode별 ReactFlow 동작 설정
@@ -325,6 +350,7 @@ export const useCanvasInteraction = ({
           selectionMode: SelectionMode.Full,
           nodesDraggable: false,
           nodesConnectable: false,
+          elementsSelectable: true,
         };
       case ToolMode.Create_Connection_Tool:
         return {
@@ -394,6 +420,7 @@ export const useCanvasInteraction = ({
     handleMouseLeave,
     handlePaneClick,
     handleNodeClick,
+    handleEdgeClick,
     flowInteraction,
     cursorClass,
   };

@@ -88,6 +88,7 @@ const GenogramCanvas: React.FC = () => {
     addAnnotation,
     selectedAnnotation,
     updateAnnotation,
+    deselectNode,
   } = useGenogramFlow();
 
   // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
@@ -185,6 +186,7 @@ const GenogramCanvas: React.FC = () => {
     handleMouseLeave,
     handlePaneClick,
     handleNodeClick,
+    handleEdgeClick,
     flowInteraction,
     cursorClass,
   } = useCanvasInteraction({
@@ -223,6 +225,7 @@ const GenogramCanvas: React.FC = () => {
       setToolMode(ToolMode.Select_Tool);
     }, [setToolMode]),
     onAnnotationCreate: addAnnotation,
+    onMultiSelectToggle: deselectNode,
   });
 
   const [copied, setCopied] = useState(false);
@@ -353,7 +356,8 @@ const GenogramCanvas: React.FC = () => {
           break;
         case 'add-group':
           if (context.type === 'multi') {
-            // 선택된 Subject 노드들의 현재 위치를 스냅샷으로 저장
+            // 선택된 Subject 노드들의 ID와 현재 위치를 스냅샷으로 저장
+            const memberIds: string[] = [];
             const memberPositions: { x: number; y: number; sizePx: number }[] =
               [];
             for (const nid of context.ids) {
@@ -362,6 +366,7 @@ const GenogramCanvas: React.FC = () => {
               );
               if (!node) continue;
               const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
+              memberIds.push(nid);
               memberPositions.push({
                 x: node.position.x,
                 y: node.position.y,
@@ -369,7 +374,7 @@ const GenogramCanvas: React.FC = () => {
               });
             }
             if (memberPositions.length >= 2) {
-              addGroupConnection(memberPositions);
+              addGroupConnection(memberIds, memberPositions);
             }
           }
           break;
@@ -439,6 +444,7 @@ const GenogramCanvas: React.FC = () => {
           onEdgesChange={onEdgesChange}
           onPaneClick={handlePaneClick}
           onNodeClick={handleNodeClick}
+          onEdgeClick={handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           nodeOrigin={[0.5, 0.5]}

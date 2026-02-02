@@ -59,7 +59,6 @@ function convexHull(points: Pt[]): Pt[] {
     upper.push(p);
   }
 
-  // 마지막 점은 다음 체인의 첫 점과 중복
   lower.pop();
   upper.pop();
   return lower.concat(upper);
@@ -67,18 +66,19 @@ function convexHull(points: Pt[]): Pt[] {
 
 // ── Path 생성 ──
 
+function hullToPath(hull: Pt[]): string {
+  if (hull.length < 3) return '';
+  const first = hull[0];
+  const parts: string[] = [`M ${first.x.toFixed(1)} ${first.y.toFixed(1)}`];
+  for (let i = 1; i < hull.length; i++) {
+    parts.push(`L ${hull[i].x.toFixed(1)} ${hull[i].y.toFixed(1)}`);
+  }
+  parts.push('Z');
+  return parts.join(' ');
+}
+
 /**
- * 멤버 위치 기반 Convex Hull Rounded Path를 생성한다.
- *
- * 각 멤버를 (sizePx/2 + padding) 반지름 원으로 확장하고,
- * 원 둘레의 샘플 포인트들로 Convex Hull을 계산하면
- * 자연스럽게 둥근 외곽이 나온다.
- *
- * @param members 멤버 위치 (노드 center 기준 절대 좌표)
- * @param cx 노드 중심 X (절대 좌표)
- * @param cy 노드 중심 Y (절대 좌표)
- * @param w SVG 너비
- * @param h SVG 높이
+ * 멤버 위치 기반 Convex Hull Path를 생성한다.
  */
 function buildGroupPath(
   members: { x: number; y: number; sizePx: number }[],
@@ -89,10 +89,10 @@ function buildGroupPath(
 ): string {
   if (members.length === 0) return '';
 
-  // 절대 좌표 → SVG 로컬 좌표 (center가 SVG의 w/2, h/2에 위치)
   const halfW = w / 2;
   const halfH = h / 2;
 
+  // 멤버 원 둘레 샘플 → convex hull
   const samplePoints: Pt[] = [];
   for (const m of members) {
     const localX = m.x - cx + halfW;
@@ -111,15 +111,7 @@ function buildGroupPath(
   const hull = convexHull(samplePoints);
   if (hull.length < 3) return '';
 
-  // Hull 포인트를 SVG path로 변환
-  const first = hull[0];
-  const parts: string[] = [`M ${first.x.toFixed(1)} ${first.y.toFixed(1)}`];
-  for (let i = 1; i < hull.length; i++) {
-    parts.push(`L ${hull[i].x.toFixed(1)} ${hull[i].y.toFixed(1)}`);
-  }
-  parts.push('Z');
-
-  return parts.join(' ');
+  return hullToPath(hull);
 }
 
 // ── 컴포넌트 ──
@@ -137,7 +129,6 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
   } = nodeData;
   const isSelected = selected || nodeData.isSelected;
 
-  // path 클릭 시 onSelect 콜백으로 editor에 선택 전달
   const handlePathClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -146,9 +137,6 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
     [connectionId, onSelect]
   );
 
-  // 노드 position이 center 좌표이므로
-  // memberPositions(절대 좌표)를 SVG 로컬 좌표로 변환하기 위해
-  // 노드 자체의 center 좌표가 필요 → memberPositions의 바운딩 박스 중심 사용
   const center = useMemo(() => {
     if (memberPositions.length === 0) return { x: 0, y: 0 };
     let minX = Infinity,
@@ -173,7 +161,6 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
   if (width <= 0 || height <= 0 || !pathD) return null;
 
   const sw = 2;
-  // 선택 하이라이트: RelationshipEdge와 동일한 연두색 2-layer
   const HIT_BORDER = SELECTION_BORDER;
   const HIT_INNER = SELECTION_INNER;
   const hitW = 16;
@@ -192,7 +179,6 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
         height={height}
         style={{ position: 'absolute', top: 0, left: 0, overflow: 'visible' }}
       >
-        {/* 선택 하이라이트 (반투명 연두색) */}
         {isSelected && (
           <g style={{ pointerEvents: 'none' }}>
             <path
@@ -214,7 +200,6 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
             />
           </g>
         )}
-        {/* 투명 히트 영역 (넓은 strokeWidth로 클릭하기 쉽게) */}
         <path
           d={pathD}
           fill="none"
@@ -224,7 +209,6 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
           style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
           onClick={handlePathClick}
         />
-        {/* 실제 표시되는 선 */}
         <path
           d={pathD}
           fill="none"

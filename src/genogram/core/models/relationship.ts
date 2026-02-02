@@ -52,6 +52,7 @@ export interface GroupMemberPosition {
 }
 
 export interface GroupAttribute {
+  memberIds: UUID[];
   memberPositions: GroupMemberPosition[];
 }
 
@@ -180,6 +181,7 @@ export function createParentChildConnection(
 }
 
 export function createGroupConnection(
+  memberIds: UUID[],
   memberPositions: GroupMemberPosition[],
   id: UUID = generateId()
 ): Connection {
@@ -188,6 +190,7 @@ export function createGroupConnection(
     entity: {
       type: ConnectionType.Group_Line,
       attribute: {
+        memberIds,
         memberPositions,
       } satisfies GroupAttribute,
       memo: null,
