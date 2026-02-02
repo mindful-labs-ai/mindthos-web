@@ -9,8 +9,10 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 
+import type { Visibility } from '@/genogram/core/models/genogram';
 import type { Subject } from '@/genogram/core/models/person';
 import type { Connection } from '@/genogram/core/models/relationship';
+import type { AnnotationUpdate } from '@/genogram/core/models/text-annotation';
 import {
   Gender,
   InfluenceStatus,
@@ -34,6 +36,18 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   const [toolMode, setToolModeState] = useState<
     (typeof ToolMode)[keyof typeof ToolMode]
   >(ToolMode.Select_Tool);
+  const [visibility, setVisibility] = useState<Visibility>({
+    name: true,
+    age: true,
+    birthDate: true,
+    deathDate: true,
+    detail: true,
+    illness: true,
+    relationLine: true,
+    groupLine: true,
+    grid: true,
+    memo: true,
+  });
 
   // syncFromEditor/syncSelectedSubject를 ref로 감싸서
   // useGenogramEditor의 onEvent 콜백에서 초기화 순서 문제 없이 참조
@@ -41,11 +55,13 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     syncFromEditor: () => void;
     syncSelectedSubject: () => void;
     syncSelectedConnection: () => void;
+    syncSelectedAnnotation: () => void;
     syncSelectedItems: () => void;
   }>({
     syncFromEditor: () => {},
     syncSelectedSubject: () => {},
     syncSelectedConnection: () => {},
+    syncSelectedAnnotation: () => {},
     syncSelectedItems: () => {},
   });
 
@@ -59,12 +75,18 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         }
         syncRef.current.syncSelectedSubject();
         syncRef.current.syncSelectedConnection();
+        syncRef.current.syncSelectedAnnotation();
         syncRef.current.syncSelectedItems();
       }
       if (eventType === 'selection-change') {
         syncRef.current.syncSelectedSubject();
         syncRef.current.syncSelectedConnection();
+        syncRef.current.syncSelectedAnnotation();
         syncRef.current.syncSelectedItems();
+      }
+      if (eventType === 'view-change') {
+        const editor = getEditor();
+        if (editor) setVisibility(editor.getViewSettings());
       }
       if (eventType === 'tool-change') {
         const editor = getEditor();
@@ -92,17 +114,20 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     setEdges,
     selectedSubject,
     selectedConnection,
+    selectedAnnotation,
     selectedItems,
     syncFromEditor,
     syncSelectedSubject,
     syncSelectedConnection,
+    syncSelectedAnnotation,
     syncSelectedItems,
-  } = useFlowSync(getEditor);
+  } = useFlowSync(getEditor, visibility);
 
   // ref를 최신 함수로 갱신
   syncRef.current.syncFromEditor = syncFromEditor;
   syncRef.current.syncSelectedSubject = syncSelectedSubject;
   syncRef.current.syncSelectedConnection = syncSelectedConnection;
+  syncRef.current.syncSelectedAnnotation = syncSelectedAnnotation;
   syncRef.current.syncSelectedItems = syncSelectedItems;
 
   // 선택 동기화 시 양쪽(node/edge) 상태를 합치기 위한 ref
@@ -117,6 +142,16 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // visibility 변경 시 노드/엣지 재동기화
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    syncRef.current.syncFromEditor();
+  }, [visibility]);
+
   /** nodes + edges의 현재 선택 상태를 합쳐서 editor에 반영 */
   const syncSelectionToEditor = useCallback(
     (nextNodes: Node[], nextEdges: Edge<RelationshipEdgeData>[]) => {
@@ -129,6 +164,8 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         if (!n.selected) continue;
         if (n.id.startsWith('group-boundary-')) {
           allIds.push(n.id.replace('group-boundary-', ''));
+        } else if (n.id.startsWith('annotation-')) {
+          allIds.push(n.id.replace('annotation-', ''));
         } else {
           allIds.push(n.id);
         }
@@ -143,25 +180,41 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         editor.deselectAll();
       }
     },
-    [getEditor],
+    [getEditor]
   );
 
   // 노드 변경 핸들러 (드래그 스냅 포함)
   const onNodesChange = useCallback(
     (changes: NodeChange<Node>[]) => {
+      // 드래그 중인 변경이 있으면 선택 동기화보다 먼저 isDraggingRef를 설정
+      // (syncFromEditor가 드래그 중에 실행되어 위치가 튀는 것을 방지)
+      const hasDragging = changes.some(
+        (c) => c.type === 'position' && 'dragging' in c && c.dragging
+      );
+      if (hasDragging) {
+        isDraggingRef.current = true;
+      }
+
       setNodes((nds) => {
         const next = applyNodeChanges(changes, nds);
         const editor = getEditor();
         if (!editor) return next;
 
         // 드래그 완료된 이동을 모아서 한 번에 커맨드 실행 (undo 단위 통합)
-        const completedMoves: { subjectId: string; position: { x: number; y: number } }[] = [];
+        const completedMoves: {
+          subjectId: string;
+          position: { x: number; y: number };
+        }[] = [];
+        const completedAnnotationMoves: {
+          annotationId: string;
+          position: { x: number; y: number };
+        }[] = [];
 
         changes.forEach((change) => {
           if (change.type === 'position' && change.id) {
+            const isAnnotation = change.id.startsWith('annotation-');
             if (change.dragging) {
-              isDraggingRef.current = true;
-              if (change.position) {
+              if (change.position && !isAnnotation) {
                 const snapped = snapToDotCenter(change.position);
                 const node = next.find((n) => n.id === change.id);
                 if (node) {
@@ -170,18 +223,32 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
               }
             } else if (change.position) {
               isDraggingRef.current = false;
-              completedMoves.push({
-                subjectId: change.id,
-                position: snapToDotCenter(change.position),
-              });
+              if (isAnnotation) {
+                completedAnnotationMoves.push({
+                  annotationId: change.id.replace('annotation-', ''),
+                  position: change.position,
+                });
+              } else {
+                completedMoves.push({
+                  subjectId: change.id,
+                  position: snapToDotCenter(change.position),
+                });
+              }
             }
           }
         });
 
         if (completedMoves.length === 1) {
-          editor.moveSubject(completedMoves[0].subjectId, completedMoves[0].position);
+          editor.moveSubject(
+            completedMoves[0].subjectId,
+            completedMoves[0].position
+          );
         } else if (completedMoves.length > 1) {
           editor.moveMultipleSubjects(completedMoves);
+        }
+
+        for (const am of completedAnnotationMoves) {
+          editor.moveAnnotation(am.annotationId, am.position);
         }
 
         // 선택 변경 → editor에 반영 (현재 edge 선택 상태도 함께 전달)
@@ -461,6 +528,41 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges]);
 
+  // 표시 설정 토글
+  const toggleVisibility = useCallback(
+    (key: keyof Visibility) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.updateViewSettings({ [key]: !visibility[key] });
+    },
+    [getEditor, visibility]
+  );
+
+  // Annotation 추가 (생성 후 자동 선택 + Select 모드 전환)
+  const addAnnotation = useCallback(
+    (position: { x: number; y: number }) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const id = editor.addAnnotation('', position);
+      editor.select([id], true);
+      editor.setToolMode(ToolMode.Select_Tool);
+      setToolModeState(ToolMode.Select_Tool);
+      return id;
+    },
+    [getEditor]
+  );
+
+  // Annotation 업데이트
+  const updateAnnotation = useCallback(
+    (annotationId: string, updates: AnnotationUpdate) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.updateAnnotation(annotationId, updates);
+    },
+    [getEditor]
+  );
+
   // 직렬화
   const toJSON = useCallback(() => {
     return getEditor()?.toJSON() ?? '';
@@ -511,5 +613,10 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     setPendingRelationStatus,
     pendingInfluenceStatus,
     setPendingInfluenceStatus,
+    visibility,
+    toggleVisibility,
+    addAnnotation,
+    selectedAnnotation,
+    updateAnnotation,
   };
 };

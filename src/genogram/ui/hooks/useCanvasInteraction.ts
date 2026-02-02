@@ -48,6 +48,8 @@ export interface UseCanvasInteractionOptions {
   onChildNodeClick?: (childId: string) => void;
   /** FAB 1회성 연결 완료/취소 시 호출 (fabSourceId 초기화) */
   onFabComplete?: () => void;
+  /** 캔버스 클릭 시 주석 생성 */
+  onAnnotationCreate?: (position: { x: number; y: number }) => void;
 }
 
 /** 연결 미리보기에 필요한 정보 */
@@ -86,6 +88,7 @@ export const useCanvasInteraction = ({
   onChildCreateAtPosition,
   onChildNodeClick,
   onFabComplete,
+  onAnnotationCreate,
 }: UseCanvasInteractionOptions) => {
   const { screenToFlowPosition, flowToScreenPosition, getZoom, getNode } =
     useReactFlow();
@@ -181,6 +184,15 @@ export const useCanvasInteraction = ({
   // 캔버스(빈 영역) 클릭
   const handlePaneClick = useCallback(
     (event: React.MouseEvent) => {
+      if (toolMode === ToolMode.Create_Annotation_Tool) {
+        const position = screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        });
+        onAnnotationCreate?.(position);
+        return;
+      }
+
       if (toolMode === ToolMode.Create_Subject_Tool) {
         const position = screenToFlowPosition({
           x: event.clientX,
@@ -249,6 +261,7 @@ export const useCanvasInteraction = ({
       fabSourceId,
       onFamilyCreate,
       onAnimalCreate,
+      onAnnotationCreate,
       onPartnerCreateAtPosition,
       onChildCreateAtPosition,
       onFabComplete,

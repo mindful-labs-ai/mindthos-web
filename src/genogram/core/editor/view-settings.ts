@@ -25,7 +25,7 @@ export class ViewSettings {
       illness: true,
       relationLine: true,
       groupLine: true,
-      grid: false,
+      grid: true,
       memo: true,
       ...initialSettings,
     };

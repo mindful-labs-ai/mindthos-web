@@ -1,3 +1,9 @@
+import {
+  AddAnnotationCommand,
+  DeleteAnnotationCommand,
+  MoveAnnotationCommand,
+  UpdateAnnotationCommand,
+} from '../commands/annotation-commands';
 import type { Command, EditorState } from '../commands/base';
 import {
   AddRelationConnectionCommand,
@@ -49,6 +55,7 @@ import {
 } from '../models/genogram';
 import type { Subject } from '../models/person';
 import type { Connection, ConnectionLayout } from '../models/relationship';
+import type { AnnotationUpdate } from '../models/text-annotation';
 import {
   AssetType,
   Gender as GenderEnum,
@@ -679,6 +686,25 @@ export class GenogramEditor {
     return this.addParentChildConnection(parentRef, childId, childStatus);
   }
 
+  // Annotation Operations
+  addAnnotation(text: string, position: Point): UUID {
+    const cmd = new AddAnnotationCommand(text, position);
+    this.execute(cmd);
+    return cmd.getAnnotationId();
+  }
+
+  deleteAnnotation(annotationId: UUID): void {
+    this.execute(new DeleteAnnotationCommand(annotationId));
+  }
+
+  updateAnnotation(annotationId: UUID, updates: AnnotationUpdate): void {
+    this.execute(new UpdateAnnotationCommand(annotationId, updates));
+  }
+
+  moveAnnotation(annotationId: UUID, position: Point): void {
+    this.execute(new MoveAnnotationCommand(annotationId, position));
+  }
+
   // Selection
   select(ids: UUID[], clearOthers = true): void {
     this.execute(new SelectNodesCommand(ids, clearOthers));
@@ -707,6 +733,8 @@ export class GenogramEditor {
         commands.push(new DeleteSubjectCommand(item.id));
       } else if (item.type === AssetType.Edge) {
         commands.push(new DeleteConnectionCommand(item.id));
+      } else if (item.type === AssetType.Text) {
+        commands.push(new DeleteAnnotationCommand(item.id));
       }
     });
 

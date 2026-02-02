@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   BoxSelect,
@@ -11,6 +11,7 @@ import {
   Type,
 } from 'lucide-react';
 
+import type { Visibility } from '@/genogram/core/models/genogram';
 import {
   Gender,
   InfluenceStatus,
@@ -286,7 +287,23 @@ interface GenogramToolbarProps {
   hasSelection: boolean;
   onSubjectSubToolSelect?: (subTool: SubjectSubTool) => void;
   onConnectionSubToolSelect?: (subTool: ConnectionSubTool) => void;
+  visibility: Visibility;
+  onToggleVisibility: (key: keyof Visibility) => void;
 }
+
+/** Visibility 키 → 한글 라벨 (이미지 순서 기준 2열 배치) */
+const VISIBILITY_ITEMS: { key: keyof Visibility; label: string }[] = [
+  { key: 'name', label: '이름' },
+  { key: 'relationLine', label: '관계선' },
+  { key: 'age', label: '나이' },
+  { key: 'groupLine', label: '그룹선' },
+  { key: 'birthDate', label: '출생일' },
+  { key: 'grid', label: '배경 격자' },
+  { key: 'detail', label: '인적 사항' },
+  { key: 'deathDate', label: '사망일' },
+  { key: 'illness', label: '임상적 상태' },
+  { key: 'memo', label: '부가설명' },
+];
 
 export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
   toolMode,
@@ -295,11 +312,15 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
   hasSelection,
   onSubjectSubToolSelect,
   onConnectionSubToolSelect,
+  visibility,
+  onToggleVisibility,
 }) => {
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
   // 서브 메뉴 표시 여부 (toolMode와 별개)
-  const [openMenu, setOpenMenu] = useState<'subject' | 'connection' | null>(
-    null
-  );
+  const [openMenu, setOpenMenu] = useState<
+    'subject' | 'connection' | 'visibility' | null
+  >(null);
   // 서브 메뉴 depth: 'primary' | 'secondary'
   const [subjectDepth, setSubjectDepth] = useState<'primary' | 'secondary'>(
     'primary'
@@ -307,6 +328,27 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
   const [connectionDepth, setConnectionDepth] = useState<
     'primary' | 'secondary'
   >('primary');
+
+  // 외부 클릭 시 메뉴 닫기
+  const handleClickOutside = useCallback(
+    (e: MouseEvent) => {
+      if (
+        toolbarRef.current &&
+        !toolbarRef.current.contains(e.target as Node)
+      ) {
+        setOpenMenu(null);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (openMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [openMenu, handleClickOutside]);
 
   const hasSubMenu = (mode: ToolModeValue) =>
     mode === ToolMode.Create_Subject_Tool ||
@@ -355,7 +397,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div ref={toolbarRef} className="flex flex-col items-center gap-2">
       {/* CreateSubject 서브 메뉴 */}
       {openMenu === 'subject' && (
         <div className="rounded-xl border border-border bg-white shadow-md">
@@ -458,6 +500,28 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
         </div>
       )}
 
+      {/* Visibility 토글 팝오버 */}
+      {openMenu === 'visibility' && (
+        <div className="rounded-xl border border-border bg-white px-3 py-3 shadow-md">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {VISIBILITY_ITEMS.map((item) => (
+              <label
+                key={item.key}
+                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+              >
+                <input
+                  type="checkbox"
+                  checked={visibility[item.key]}
+                  onChange={() => onToggleVisibility(item.key)}
+                  className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-border bg-surface after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-fg checked:bg-fg checked:after:opacity-100"
+                />
+                {item.label}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 메인 툴바 */}
       <div className="flex items-center gap-1 rounded-xl border border-border bg-white px-4 py-3 shadow-md">
         {TOOL_GROUPS.map((group, gi) => (
@@ -493,10 +557,17 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
 
         {/* 액션 그룹 */}
         <div className="mx-1 h-12 w-px bg-border" />
-        <SimpleTooltip content="태그">
+        <SimpleTooltip content="표시 설정">
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+            className={`inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors ${
+              openMenu === 'visibility'
+                ? 'bg-surface-contrast'
+                : 'text-fg hover:bg-surface-contrast'
+            }`}
+            onClick={() => {
+              setOpenMenu(openMenu === 'visibility' ? null : 'visibility');
+            }}
           >
             <Tag size={18} />
           </button>

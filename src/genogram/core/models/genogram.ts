@@ -66,7 +66,7 @@ export function createDefaultView(): GenogramView {
       illness: true,
       relationLine: true,
       groupLine: true,
-      grid: false,
+      grid: true,
       memo: true,
     },
   };

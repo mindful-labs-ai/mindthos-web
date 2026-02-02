@@ -4,6 +4,7 @@ import type { Edge, Node } from '@xyflow/react';
 
 import type { GenogramEditor } from '@/genogram/core/editor/genogram-editor';
 import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
+import type { Visibility } from '@/genogram/core/models/genogram';
 import type {
   Subject,
   PersonAttribute,
@@ -16,6 +17,7 @@ import type {
   ParentChildAttribute,
   PartnerAttribute,
 } from '@/genogram/core/models/relationship';
+import type { Annotation } from '@/genogram/core/models/text-annotation';
 import {
   AssetType,
   ConnectionType,
@@ -29,6 +31,7 @@ import type {
 } from '@/genogram/core/types/enums';
 
 import type { RelationshipEdgeData } from '../components/edges/RelationshipEdge';
+import type { AnnotationNodeData } from '../components/nodes/AnnotationNode';
 import type { GroupBoundaryNodeData } from '../components/nodes/GroupBoundaryNode';
 import { NODE_SIZE_PX } from '../constants/grid';
 
@@ -43,13 +46,18 @@ const getSubjectSizePx = (subject: Subject | undefined): number =>
  * - syncFromEditor(): Editor → React Flow 전체 동기화
  * - syncSelectedSubject(): 선택된 Subject 상태 동기화
  */
-export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
+export const useFlowSync = (
+  getEditor: () => GenogramEditor | null,
+  visibility: Visibility,
+) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge<RelationshipEdgeData>[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedConnection, setSelectedConnection] =
     useState<Connection | null>(null);
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  const [selectedAnnotation, setSelectedAnnotation] =
+    useState<Annotation | null>(null);
 
   // Group boundary 노드 클릭 시 editor에 선택을 전달하는 콜백
   const handleGroupSelect = useCallback(
@@ -80,16 +88,23 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       const personAttr = isPerson ? (attr as PersonAttribute) : null;
       const fetusAttr = isFetus ? (attr as FetusAttribute) : null;
 
-      // 생몰연도 포맷: "1980-" 또는 "1980 ~ 2024"
+      // 생몰연도 포맷: visibility 토글에 따라 출생일/사망일 개별 제어
       let lifeSpanLabel: string | null = null;
       if (personAttr?.lifeSpan.birth) {
-        const birthPart = personAttr.lifeSpan.birth.slice(0, 4);
-        const deathPart = personAttr.lifeSpan.death
-          ? personAttr.lifeSpan.death.slice(0, 4)
+        const birthPart = visibility.birthDate
+          ? personAttr.lifeSpan.birth.slice(0, 4)
           : null;
-        lifeSpanLabel = deathPart
-          ? `${birthPart} ~ ${deathPart}`
-          : `${birthPart}-`;
+        const deathPart =
+          visibility.deathDate && personAttr.lifeSpan.death
+            ? personAttr.lifeSpan.death.slice(0, 4)
+            : null;
+        if (birthPart && deathPart) {
+          lifeSpanLabel = `${birthPart} ~ ${deathPart}`;
+        } else if (birthPart) {
+          lifeSpanLabel = `${birthPart}-`;
+        } else if (deathPart) {
+          lifeSpanLabel = `~ ${deathPart}`;
+        }
       }
 
       // 상세정보 텍스트 배열
@@ -104,22 +119,27 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
 
       const sizePx = getSubjectSizePx(subject);
 
+      // visibility에 따라 표시할 데이터를 조건부 전달
+      const visibleName = visibility.name
+        ? isPerson
+          ? (personAttr?.name ?? null)
+          : (attr as { name: string | null }).name
+        : null;
+
       newNodes.push({
         id,
         type: 'person',
         position: nodeLayout.position,
         data: {
-          name: isPerson
-            ? (personAttr?.name ?? null)
-            : (attr as { name: string | null }).name,
+          name: visibleName,
           gender: personAttr?.gender,
           subjectType: subject.entity.type,
-          age: personAttr?.age,
+          age: visibility.age ? personAttr?.age : null,
           isDead: 'isDead' in attr ? attr.isDead : false,
-          illness: personAttr?.illness,
+          illness: visibility.illness ? personAttr?.illness : undefined,
           isSelected: nodeLayout.isSelected,
           lifeSpanLabel,
-          detailTexts,
+          detailTexts: visibility.detail ? detailTexts : [],
           sizePx,
           fetusStatus: fetusAttr?.status,
           bgColor: subject.layout.style.bgColor,
@@ -132,6 +152,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     // Group_Line → group-boundary 오버레이 노드 변환 (고정 좌표 기반)
     genogram.connections.forEach((conn, id) => {
       if (conn.entity.type !== ConnectionType.Group_Line) return;
+      if (!visibility.groupLine) return;
       const edgeLayout = layout.edges.get(id);
       if (!edgeLayout) return;
 
@@ -167,7 +188,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
           connectionId: id,
           memberPositions,
           strokeColor: conn.layout.strokeColor,
-          memo: conn.entity.memo,
+          memo: visibility.memo ? conn.entity.memo : null,
           isSelected: edgeLayout.isSelected,
           width: w,
           height: h,
@@ -182,11 +203,45 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
       });
     });
 
+    // Annotation → annotation 노드 변환 (부가설명 표시 토글)
+    if (visibility.memo) genogram.annotations.forEach((annotation, id) => {
+      const textLayout = layout.texts.get(id);
+      if (!textLayout) return;
+
+      const style = annotation.layout.style;
+
+      newNodes.push({
+        id: `annotation-${id}`,
+        type: 'annotation',
+        position: annotation.layout.center,
+        data: {
+          annotationId: id,
+          text: annotation.text,
+          bgColor: style.bgColor,
+          textColor: style.textColor,
+          borderStyle: style.borderStyle,
+          borderColor: style.borderColor,
+          isSelected: textLayout.isSelected,
+        } satisfies AnnotationNodeData,
+        zIndex: textLayout.zIndex,
+        selected: textLayout.isSelected,
+      });
+    });
+
     // 엣지 변환
     const newEdges: Edge<RelationshipEdgeData>[] = [];
     genogram.connections.forEach((conn, id) => {
       // Group_Line은 오버레이 노드로 처리됨
       if (conn.entity.type === ConnectionType.Group_Line) return;
+
+      // 관계선 visibility: Relation_Line, Influence_Line 숨김
+      if (
+        !visibility.relationLine &&
+        (conn.entity.type === ConnectionType.Relation_Line ||
+          conn.entity.type === ConnectionType.Influence_Line)
+      ) {
+        return;
+      }
 
       const edgeLayout = layout.edges.get(id);
       if (!edgeLayout) return;
@@ -343,7 +398,7 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
 
     setNodes(newNodes);
     setEdges(newEdges);
-  }, [getEditor, handleGroupSelect]);
+  }, [getEditor, handleGroupSelect, visibility]);
 
   const syncSelectedSubject = useCallback(() => {
     const editor = getEditor();
@@ -397,6 +452,30 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     }
   }, [getEditor]);
 
+  const syncSelectedAnnotation = useCallback(() => {
+    const editor = getEditor();
+    if (!editor) {
+      setSelectedAnnotation(null);
+      return;
+    }
+
+    const items = editor.getSelectedItems();
+
+    if (items.length > 1) {
+      setSelectedAnnotation(null);
+      return;
+    }
+
+    const selectedText = items.find((item) => item.type === AssetType.Text);
+
+    if (selectedText) {
+      const ann = editor.getGenogram().annotations.get(selectedText.id);
+      setSelectedAnnotation(ann ? { ...ann } : null);
+    } else {
+      setSelectedAnnotation(null);
+    }
+  }, [getEditor]);
+
   const syncSelectedItems = useCallback(() => {
     const editor = getEditor();
     if (!editor) {
@@ -413,10 +492,12 @@ export const useFlowSync = (getEditor: () => GenogramEditor | null) => {
     setEdges,
     selectedSubject,
     selectedConnection,
+    selectedAnnotation,
     selectedItems,
     syncFromEditor,
     syncSelectedSubject,
     syncSelectedConnection,
+    syncSelectedAnnotation,
     syncSelectedItems,
   };
 };

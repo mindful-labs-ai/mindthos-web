@@ -127,6 +127,11 @@ export class SelectNodesCommand extends BaseCommand {
       const edge = state.layout.edges.get(id);
       if (edge) {
         edge.isSelected = true;
+        return;
+      }
+      const text = state.layout.texts.get(id);
+      if (text) {
+        text.isSelected = true;
       }
     });
 
@@ -139,6 +144,8 @@ export class SelectNodesCommand extends BaseCommand {
       if (node) node.isSelected = false;
       const edge = state.layout.edges.get(id);
       if (edge) edge.isSelected = false;
+      const text = state.layout.texts.get(id);
+      if (text) text.isSelected = false;
     });
 
     this.previousSelectedNodes.forEach((id) => {

@@ -19,6 +19,7 @@ import {
   ToolMode,
 } from '@/genogram/core/types/enums';
 
+import { AnnotationPropertyPanel } from './components/AnnotationPropertyPanel';
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
 import { EmptyStatePanel } from './components/EmptyStatePanel';
@@ -37,6 +38,7 @@ import {
   type SubjectSubTool,
 } from './components/GenogramToolbar';
 import { GhostPreview } from './components/GhostPreview';
+import { AnnotationNode } from './components/nodes/AnnotationNode';
 import { GroupBoundaryNode } from './components/nodes/GroupBoundaryNode';
 import { PersonNode } from './components/nodes/PersonNode';
 import { GRID_GAP } from './constants/grid';
@@ -44,7 +46,7 @@ import { useCanvasInteraction } from './hooks/useCanvasInteraction';
 import { useGenogramFlow } from './hooks/useGenogramFlow';
 
 // 커스텀 노드/엣지 타입 등록
-const nodeTypes = { person: PersonNode, 'group-boundary': GroupBoundaryNode };
+const nodeTypes = { person: PersonNode, 'group-boundary': GroupBoundaryNode, annotation: AnnotationNode };
 const edgeTypes = { relationship: RelationshipEdge };
 
 const GenogramCanvas: React.FC = () => {
@@ -81,6 +83,11 @@ const GenogramCanvas: React.FC = () => {
     setPendingRelationStatus,
     pendingInfluenceStatus,
     setPendingInfluenceStatus,
+    visibility,
+    toggleVisibility,
+    addAnnotation,
+    selectedAnnotation,
+    updateAnnotation,
   } = useGenogramFlow();
 
   // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
@@ -215,6 +222,7 @@ const GenogramCanvas: React.FC = () => {
       setPendingChildPartnerLineId(null);
       setToolMode(ToolMode.Select_Tool);
     }, [setToolMode]),
+    onAnnotationCreate: addAnnotation,
   });
 
   const [copied, setCopied] = useState(false);
@@ -442,11 +450,13 @@ const GenogramCanvas: React.FC = () => {
           proOptions={{ hideAttribution: true }}
           {...flowInteraction}
         >
-          <Background
-            variant={BackgroundVariant.Dots}
-            gap={GRID_GAP}
-            size={2}
-          />
+          {visibility.grid && (
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={GRID_GAP}
+              size={2}
+            />
+          )}
           <Controls position="bottom-left" />
 
           {/* 하단 중앙 툴바 */}
@@ -458,6 +468,8 @@ const GenogramCanvas: React.FC = () => {
               hasSelection={selectedItems.length > 0}
               onSubjectSubToolSelect={handleSubjectSubToolSelect}
               onConnectionSubToolSelect={handleConnectionSubToolSelect}
+              visibility={visibility}
+              onToggleVisibility={toggleVisibility}
             />
           </Panel>
 
@@ -488,7 +500,12 @@ const GenogramCanvas: React.FC = () => {
         />
 
         {/* 우측 속성 편집 패널 */}
-        {(selectedSubject || selectedConnection) && (
+        {selectedAnnotation ? (
+          <AnnotationPropertyPanel
+            annotation={selectedAnnotation}
+            onUpdate={updateAnnotation}
+          />
+        ) : (selectedSubject || selectedConnection) ? (
           <GenogramPropertyPanel
             subject={selectedSubject}
             onUpdate={updateSubject}
@@ -497,7 +514,7 @@ const GenogramCanvas: React.FC = () => {
             onConnectionUpdate={updateConnection}
             onClose={handleClosePanel}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );

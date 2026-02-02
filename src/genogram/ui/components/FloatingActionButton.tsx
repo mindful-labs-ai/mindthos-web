@@ -25,9 +25,11 @@ export type SelectionContext =
 export function deriveSelectionContext(
   items: SelectedItem[]
 ): SelectionContext {
-  if (items.length === 0) return { type: 'none' };
-  if (items.length === 1) {
-    const item = items[0];
+  // Annotation(Text) 선택은 FAB 대상이 아니므로 제외
+  const filtered = items.filter((i) => i.type !== AssetType.Text);
+  if (filtered.length === 0) return { type: 'none' };
+  if (filtered.length === 1) {
+    const item = filtered[0];
     if (item.type === AssetType.Node) {
       return { type: 'single-subject', subjectId: item.id };
     }
@@ -35,7 +37,7 @@ export function deriveSelectionContext(
       return { type: 'single-connection', connectionId: item.id };
     }
   }
-  return { type: 'multi', ids: items.map((i) => i.id) };
+  return { type: 'multi', ids: filtered.map((i) => i.id) };
 }
 
 // ── 액션 타입 ──
