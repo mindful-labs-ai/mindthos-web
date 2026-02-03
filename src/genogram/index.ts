@@ -1,9 +1,6 @@
 // UI
 export { GenogramPage } from './ui/GenogramPage';
-export type {
-  GenogramPageProps,
-  GenogramPageHandle,
-} from './ui/GenogramPage';
+export type { GenogramPageProps, GenogramPageHandle } from './ui/GenogramPage';
 
 // Core
 export { GenogramEditor } from './core/editor/genogram-editor';

@@ -13,6 +13,7 @@ import {
   PARENT_CHILD_STATUS_LABELS,
   RELATION_STATUS_LABELS,
 } from '../constants/labels';
+
 import { ParentChildIcon } from './icons/ParentChildIcon';
 import { RelationIcon } from './icons/RelationIcon';
 
@@ -22,7 +23,12 @@ export type SelectionContext =
   | { type: 'none' }
   | { type: 'single-subject'; subjectId: string; isSpecialChild?: boolean }
   | { type: 'single-connection'; connectionId: string }
-  | { type: 'dual-subject'; ids: [string, string]; isParentChild?: boolean; isPartner?: boolean }
+  | {
+      type: 'dual-subject';
+      ids: [string, string];
+      isParentChild?: boolean;
+      isPartner?: boolean;
+    }
   | { type: 'multi'; ids: string[] };
 
 export function deriveSelectionContext(
@@ -324,9 +330,10 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
 
   let menuItems: MenuItem[];
   if (selectionContext.type === 'dual-subject') {
-    menuItems = (selectionContext.isParentChild || selectionContext.isPartner)
-      ? DUAL_SUBJECT_NO_PARTNER_MENU
-      : DUAL_SUBJECT_MENU;
+    menuItems =
+      selectionContext.isParentChild || selectionContext.isPartner
+        ? DUAL_SUBJECT_NO_PARTNER_MENU
+        : DUAL_SUBJECT_MENU;
   } else if (selectionContext.type === 'multi') {
     menuItems = MULTI_SUBJECT_MENU;
   } else if (selectionContext.type === 'single-connection') {
@@ -399,23 +406,21 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
               >
                 ← 관계 선택
               </button>
-              {Object.entries(RELATION_STATUS_LABELS).map(
-                ([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
-                    onClick={() =>
-                      handleRelationSelect(
-                        value as (typeof RelationStatus)[keyof typeof RelationStatus]
-                      )
-                    }
-                  >
-                    <RelationIcon value={value} />
-                    {label}
-                  </button>
-                )
-              )}
+              {Object.entries(RELATION_STATUS_LABELS).map(([value, label]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  onClick={() =>
+                    handleRelationSelect(
+                      value as (typeof RelationStatus)[keyof typeof RelationStatus]
+                    )
+                  }
+                >
+                  <RelationIcon value={value} />
+                  {label}
+                </button>
+              ))}
             </>
           ) : (
             menuItems.map((item) => {

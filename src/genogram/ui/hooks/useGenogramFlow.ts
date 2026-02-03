@@ -139,7 +139,9 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   // 선택 동기화 배치: onNodesChange/onEdgesChange가 같은 이벤트 사이클에
   // 동시에 호출될 수 있으므로, rAF로 한 프레임 뒤에 한 번만 처리.
   // 이렇게 하면 엣지 해제 + 노드 선택이 동시에 일어나도 최종 상태를 반영.
-  const selectionBatchRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
+  const selectionBatchRef = useRef<ReturnType<
+    typeof requestAnimationFrame
+  > | null>(null);
 
   // 초기 동기화 (Editor useEffect 완료 후) + rAF 클린업
   useEffect(() => {
@@ -678,7 +680,11 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     (id1: string, id2: string, status: string) => {
       const editor = getEditor();
       if (!editor) return;
-      editor.addRelationConnection(id1, id2, status as Parameters<typeof editor.addRelationConnection>[2]);
+      editor.addRelationConnection(
+        id1,
+        id2,
+        status as Parameters<typeof editor.addRelationConnection>[2]
+      );
     },
     [getEditor]
   );

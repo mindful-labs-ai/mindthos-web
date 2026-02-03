@@ -85,426 +85,449 @@ export interface GenogramPageHandle {
 
 const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
   (props, ref) => {
-  const {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    createConnection,
-    addPerson,
-    addFamily,
-    addAnimal,
-    addParentPair,
-    addSibling,
-    addPartnerConnection,
-    addRelationConnection,
-    isParentChildRelated,
-    isPartnerConnected,
-    addPartnerAtPosition,
-    convertSubjectType,
-    addChildToParentRef,
-    addChildConnectionToParentRef,
-    addGroupConnection,
-    isFetusSubject,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    toolMode,
-    setToolMode,
-    selectedSubject,
-    selectedConnection,
-    selectedItems,
-    updateSubject,
-    updateConnection,
-    deleteSelected,
-    toJSON,
-    fromJSON,
-    pendingConnectionKind,
-    setPendingConnectionKind,
-    pendingRelationStatus,
-    setPendingRelationStatus,
-    pendingInfluenceStatus,
-    setPendingInfluenceStatus,
-    visibility,
-    toggleVisibility,
-    addAnnotation,
-    selectedAnnotation,
-    updateAnnotation,
-    deselectNode,
-  } = useGenogramFlow({ initialData: props.initialData });
-
-  // onChange 호출: state-change 이벤트 시 toJSON으로 데이터 전달
-  const onChangeRef = useRef(props.onChange);
-  onChangeRef.current = props.onChange;
-
-  const toJSONRef = useRef(toJSON);
-  toJSONRef.current = toJSON;
-
-  useEffect(() => {
-    if (!onChangeRef.current) return;
-    // nodes가 변경될 때마다 onChange 호출 (state-change 이벤트 반영)
-    onChangeRef.current(toJSONRef.current());
-  }, [nodes]);
-
-  // 속성 패널 열림 상태
-  const isPanelOpen = !!(selectedSubject || selectedConnection || selectedAnnotation);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      loadJSON: fromJSON,
-      toJSON,
-      undo,
-      redo,
-      canUndo: () => canUndo,
-      canRedo: () => canRedo,
-      isPanelOpen: () => isPanelOpen,
-    }),
-    [fromJSON, toJSON, undo, redo, canUndo, canRedo, isPanelOpen]
-  );
-
-  // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
-  const [subjectCreateMode, setSubjectCreateMode] = useState<
-    'person' | 'family' | 'animal'
-  >('person');
-  const [defaultGender, setDefaultGender] = useState<
-    (typeof Gender)[keyof typeof Gender]
-  >(Gender.Male);
-
-  // FAB에서 연결 모드 진입 시 소스 Subject ID 추적 (partner/relation 공용)
-  const [fabSourceId, setFabSourceId] = useState<string | null>(null);
-
-  // 자녀 모드: FAB에서 자녀 추가 시 파트너선 ID + 자녀 상태 추적
-  const [pendingChildPartnerLineId, setPendingChildPartnerLineId] = useState<
-    string | null
-  >(null);
-  const [pendingChildStatus, setPendingChildStatus] = useState<
-    (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
-  >(ParentChildStatus.Biological_Child);
-
-  // 파트너 모드에서 빈 곳 클릭 시: 파트너 Subject 생성 + 파트너선 연결
-  const handlePartnerCreateAtPosition = useCallback(
-    (sourceId: string, position: { x: number; y: number }) => {
-      addPartnerAtPosition(sourceId, position);
-      setFabSourceId(null);
-    },
-    [addPartnerAtPosition]
-  );
-
-  // 자녀 모드에서 빈 곳 클릭 시: 자녀 Subject 생성 + 부모-자녀선 연결
-  const handleChildCreateAtPosition = useCallback(
-    (_sourceId: string, position: { x: number; y: number }) => {
-      if (!pendingChildPartnerLineId) return;
-      const newId = addPerson(defaultGender, position);
-      if (newId) {
-        addChildConnectionToParentRef(
-          pendingChildPartnerLineId,
-          newId,
-          pendingChildStatus
-        );
-      }
-      setPendingChildPartnerLineId(null);
-      setFabSourceId(null);
-    },
-    [
+    const {
+      nodes,
+      edges,
+      onNodesChange,
+      onEdgesChange,
+      createConnection,
       addPerson,
-      defaultGender,
-      addChildConnectionToParentRef,
-      pendingChildPartnerLineId,
-      pendingChildStatus,
-    ]
-  );
-
-  // Subject 서브툴 선택 핸들러
-  const handleSubjectSubToolSelect = useCallback((subTool: SubjectSubTool) => {
-    switch (subTool.kind) {
-      case 'family':
-        setSubjectCreateMode('family');
-        break;
-      case 'gender':
-        setSubjectCreateMode('person');
-        setDefaultGender(subTool.gender);
-        break;
-      case 'animal':
-        setSubjectCreateMode('animal');
-        break;
-    }
-    // Create_Subject_Tool 모드 유지 (이미 활성화 상태)
-  }, []);
-
-  // Connection 서브툴 선택 핸들러
-  const handleConnectionSubToolSelect = useCallback(
-    (subTool: ConnectionSubTool) => {
-      if (subTool.kind === 'relation') {
-        setPendingConnectionKind('relation');
-        setPendingRelationStatus(subTool.status);
-      } else {
-        setPendingConnectionKind('influence');
-        setPendingInfluenceStatus(subTool.status);
-      }
-    },
-    [
-      setPendingConnectionKind,
-      setPendingRelationStatus,
-      setPendingInfluenceStatus,
-    ]
-  );
-
-  const {
-    ghost,
-    isCreateMode,
-    connectionPreview,
-    handleMouseMove,
-    handleMouseLeave,
-    handlePaneClick,
-    handleNodeClick,
-    handleEdgeClick,
-    flowInteraction,
-    cursorClass,
-  } = useCanvasInteraction({
-    toolMode,
-    addPerson,
-    defaultGender,
-    onConnectionCreate: createConnection,
-    onFamilyCreate: addFamily,
-    onAnimalCreate: addAnimal,
-    subjectCreateMode,
-    pendingConnectionKind,
-    pendingRelationStatus,
-    pendingInfluenceStatus,
-    fabSourceId,
-    onPartnerCreateAtPosition: handlePartnerCreateAtPosition,
-    onChildCreateAtPosition: handleChildCreateAtPosition,
-    onChildNodeClick: useCallback(
-      (childId: string) => {
-        if (!pendingChildPartnerLineId) return;
-        addChildConnectionToParentRef(
-          pendingChildPartnerLineId,
-          childId,
-          pendingChildStatus
-        );
-        setPendingChildPartnerLineId(null);
-      },
-      [
-        addChildConnectionToParentRef,
-        pendingChildPartnerLineId,
-        pendingChildStatus,
-      ]
-    ),
-    onFabComplete: useCallback(() => {
-      setFabSourceId(null);
-      setPendingChildPartnerLineId(null);
-      setToolMode(ToolMode.Select_Tool);
-    }, [setToolMode]),
-    onAnnotationCreate: addAnnotation,
-    onMultiSelectToggle: deselectNode,
-  });
-
-  // 속성 패널 닫기
-  const handleClosePanel = useCallback(() => {
-    // deselectAll은 훅에서 아직 미노출 — 빈 영역 클릭으로 해제됨
-  }, []);
-
-  // ── 플로팅 액션 버튼 ──
-
-  const selectionContext = useMemo<SelectionContext>(() => {
-    const ctx = deriveSelectionContext(selectedItems);
-    if (ctx.type === 'single-subject') {
-      ctx.isSpecialChild = isFetusSubject(ctx.subjectId);
-    }
-    if (ctx.type === 'dual-subject') {
-      ctx.isParentChild = isParentChildRelated(ctx.ids[0], ctx.ids[1]);
-      ctx.isPartner = isPartnerConnected(ctx.ids[0], ctx.ids[1]);
-    }
-    return ctx;
-  }, [selectedItems, isFetusSubject, isParentChildRelated, isPartnerConnected]);
-
-  const { flowToScreenPosition } = useReactFlow();
-  const viewport = useViewport();
-  const canvasRef = useRef<HTMLDivElement>(null);
-
-  // 선택된 노드/엣지의 화면 좌표 계산 (캔버스 컨테이너 기준 상대 좌표)
-  const fabPosition = useMemo<{ x: number; y: number } | null>(() => {
-    let flowPoint: { x: number; y: number } | null = null;
-
-    if (selectionContext.type === 'single-subject') {
-      const node = nodes.find((n) => n.id === selectionContext.subjectId);
-      if (!node) return null;
-      const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
-      flowPoint = {
-        x: node.position.x + sizePx / 2 + 12,
-        y: node.position.y,
-      };
-    } else if (selectionContext.type === 'single-connection') {
-      // 파트너선: 두 노드의 중간 지점 우측에 FAB 배치
-      const edge = edges.find((e) => e.id === selectionContext.connectionId);
-      if (
-        !edge ||
-        (edge.data as { connectionType?: string })?.connectionType !==
-          ConnectionType.Partner_Line
-      ) {
-        return null;
-      }
-      const sourceNode = nodes.find((n) => n.id === edge.source);
-      const targetNode = nodes.find((n) => n.id === edge.target);
-      if (!sourceNode || !targetNode) return null;
-      const srcSizePx = (sourceNode.data as { sizePx?: number }).sizePx ?? 60;
-      const tgtSizePx = (targetNode.data as { sizePx?: number }).sizePx ?? 60;
-      const midX = (sourceNode.position.x + targetNode.position.x) / 2;
-      // 파트너선 U자 커브 하단(bottomY) 바로 위에 배치
-      const bottomY =
-        Math.max(
-          sourceNode.position.y + srcSizePx / 2,
-          targetNode.position.y + tgtSizePx / 2
-        ) + 40; // PARTNER_OFFSET
-      flowPoint = { x: midX, y: bottomY + 20 };
-    } else if (selectionContext.type === 'dual-subject' || selectionContext.type === 'multi') {
-      // 다중 선택: 선택된 노드들의 가장 오른쪽 + 12px, 평균 Y
-      const selectedNodes = nodes.filter(
-        (n) => n.selected && !n.id.startsWith('group-boundary-')
-      );
-      if (selectedNodes.length === 0) return null;
-      let maxX = -Infinity;
-      let sumY = 0;
-      for (const n of selectedNodes) {
-        const sizePx = (n.data as { sizePx?: number }).sizePx ?? 60;
-        maxX = Math.max(maxX, n.position.x + sizePx / 2);
-        sumY += n.position.y;
-      }
-      flowPoint = {
-        x: maxX + 12,
-        y: sumY / selectedNodes.length,
-      };
-    }
-
-    if (!flowPoint) return null;
-
-    const screenPos = flowToScreenPosition(flowPoint);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return screenPos;
-
-    return {
-      x: screenPos.x - rect.left,
-      y: screenPos.y - rect.top,
-    };
-    // viewport를 deps에 포함하여 줌/팬 시 재계산
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectionContext, nodes, edges, flowToScreenPosition, viewport]);
-
-  const handleFloatingAction = useCallback(
-    (
-      action: FloatingActionType,
-      context: SelectionContext,
-      extra?: FloatingActionExtra
-    ) => {
-      switch (action) {
-        case 'add-parent':
-          if (context.type === 'single-subject') {
-            addParentPair(context.subjectId);
-          }
-          break;
-        case 'add-sibling':
-          if (context.type === 'single-subject') {
-            addSibling(context.subjectId);
-          }
-          break;
-        case 'add-partner':
-          if (context.type === 'single-subject') {
-            // 파트너 연결 모드 진입: 소스 설정 + Create_Connection_Tool + partner kind
-            setFabSourceId(context.subjectId);
-            setPendingConnectionKind('partner');
-            setToolMode(ToolMode.Create_Connection_Tool);
-          } else if (context.type === 'dual-subject') {
-            addPartnerConnection(context.ids[0], context.ids[1]);
-          }
-          break;
-        case 'add-relation':
-          if (context.type === 'dual-subject' && extra?.relationStatus) {
-            addRelationConnection(context.ids[0], context.ids[1], extra.relationStatus);
-          }
-          break;
-        case 'add-group': {
-          const ids = context.type === 'multi'
-            ? context.ids
-            : context.type === 'dual-subject'
-              ? context.ids
-              : null;
-          if (ids) {
-            const memberIds: string[] = [];
-            const memberPositions: { x: number; y: number; sizePx: number }[] =
-              [];
-            for (const nid of ids) {
-              const node = nodes.find(
-                (n) => n.id === nid && !n.id.startsWith('group-boundary-')
-              );
-              if (!node) continue;
-              const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
-              memberIds.push(nid);
-              memberPositions.push({
-                x: node.position.x,
-                y: node.position.y,
-                sizePx,
-              });
-            }
-            if (memberPositions.length >= 2) {
-              addGroupConnection(memberIds, memberPositions);
-            }
-          }
-          break;
-        }
-        case 'add-child':
-          if (extra?.parentChildStatus) {
-            const status = extra.parentChildStatus;
-            // parentRef: 파트너선 ID (single-connection) 또는 Subject ID (single-subject)
-            const parentRef =
-              context.type === 'single-connection'
-                ? context.connectionId
-                : context.type === 'single-subject'
-                  ? context.subjectId
-                  : null;
-            if (!parentRef) break;
-
-            const selectableStatuses: string[] = [
-              ParentChildStatus.Biological_Child,
-              ParentChildStatus.Adopted_Child,
-              ParentChildStatus.Foster_Child,
-            ];
-            if (selectableStatuses.includes(status)) {
-              // 선택/생성 모드 진입: 기존 Subject 클릭 → 연결, 빈 곳 클릭 → 생성 + 연결
-              setPendingChildPartnerLineId(parentRef);
-              setPendingChildStatus(status);
-              setFabSourceId(parentRef);
-              setPendingConnectionKind('child');
-              setToolMode(ToolMode.Create_Connection_Tool);
-            } else {
-              // 즉시 생성
-              addChildToParentRef(parentRef, status);
-            }
-          }
-          break;
-      }
-    },
-    [
+      addFamily,
+      addAnimal,
       addParentPair,
       addSibling,
       addPartnerConnection,
       addRelationConnection,
+      isParentChildRelated,
+      isPartnerConnected,
+      addPartnerAtPosition,
+      convertSubjectType,
       addChildToParentRef,
+      addChildConnectionToParentRef,
       addGroupConnection,
-      nodes,
-      setPendingConnectionKind,
+      isFetusSubject,
+      undo,
+      redo,
+      canUndo,
+      canRedo,
+      toolMode,
       setToolMode,
-    ]
-  );
+      selectedSubject,
+      selectedConnection,
+      selectedItems,
+      updateSubject,
+      updateConnection,
+      deleteSelected,
+      toJSON,
+      fromJSON,
+      pendingConnectionKind,
+      setPendingConnectionKind,
+      pendingRelationStatus,
+      setPendingRelationStatus,
+      pendingInfluenceStatus,
+      setPendingInfluenceStatus,
+      visibility,
+      toggleVisibility,
+      addAnnotation,
+      selectedAnnotation,
+      updateAnnotation,
+      deselectNode,
+    } = useGenogramFlow({ initialData: props.initialData });
 
-  return (
-    <div
-      ref={canvasRef}
-      className={`relative h-full ${cursorClass}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
+    // onChange 호출: state-change 이벤트 시 toJSON으로 데이터 전달
+    const onChangeRef = useRef(props.onChange);
+    onChangeRef.current = props.onChange;
+
+    const toJSONRef = useRef(toJSON);
+    toJSONRef.current = toJSON;
+
+    useEffect(() => {
+      if (!onChangeRef.current) return;
+      // nodes가 변경될 때마다 onChange 호출 (state-change 이벤트 반영)
+      onChangeRef.current(toJSONRef.current());
+    }, [nodes]);
+
+    // 속성 패널 열림 상태
+    const isPanelOpen = !!(
+      selectedSubject ||
+      selectedConnection ||
+      selectedAnnotation
+    );
+
+    useImperativeHandle(
+      ref,
+      () => ({
+        loadJSON: fromJSON,
+        toJSON,
+        undo,
+        redo,
+        canUndo: () => canUndo,
+        canRedo: () => canRedo,
+        isPanelOpen: () => isPanelOpen,
+      }),
+      [fromJSON, toJSON, undo, redo, canUndo, canRedo, isPanelOpen]
+    );
+
+    // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
+    const [subjectCreateMode, setSubjectCreateMode] = useState<
+      'person' | 'family' | 'animal'
+    >('person');
+    const [defaultGender, setDefaultGender] = useState<
+      (typeof Gender)[keyof typeof Gender]
+    >(Gender.Male);
+
+    // FAB에서 연결 모드 진입 시 소스 Subject ID 추적 (partner/relation 공용)
+    const [fabSourceId, setFabSourceId] = useState<string | null>(null);
+
+    // 자녀 모드: FAB에서 자녀 추가 시 파트너선 ID + 자녀 상태 추적
+    const [pendingChildPartnerLineId, setPendingChildPartnerLineId] = useState<
+      string | null
+    >(null);
+    const [pendingChildStatus, setPendingChildStatus] = useState<
+      (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
+    >(ParentChildStatus.Biological_Child);
+
+    // 파트너 모드에서 빈 곳 클릭 시: 파트너 Subject 생성 + 파트너선 연결
+    const handlePartnerCreateAtPosition = useCallback(
+      (sourceId: string, position: { x: number; y: number }) => {
+        addPartnerAtPosition(sourceId, position);
+        setFabSourceId(null);
+      },
+      [addPartnerAtPosition]
+    );
+
+    // 자녀 모드에서 빈 곳 클릭 시: 자녀 Subject 생성 + 부모-자녀선 연결
+    const handleChildCreateAtPosition = useCallback(
+      (_sourceId: string, position: { x: number; y: number }) => {
+        if (!pendingChildPartnerLineId) return;
+        const newId = addPerson(defaultGender, position);
+        if (newId) {
+          addChildConnectionToParentRef(
+            pendingChildPartnerLineId,
+            newId,
+            pendingChildStatus
+          );
+        }
+        setPendingChildPartnerLineId(null);
+        setFabSourceId(null);
+      },
+      [
+        addPerson,
+        defaultGender,
+        addChildConnectionToParentRef,
+        pendingChildPartnerLineId,
+        pendingChildStatus,
+      ]
+    );
+
+    // Subject 서브툴 선택 핸들러
+    const handleSubjectSubToolSelect = useCallback(
+      (subTool: SubjectSubTool) => {
+        switch (subTool.kind) {
+          case 'family':
+            setSubjectCreateMode('family');
+            break;
+          case 'gender':
+            setSubjectCreateMode('person');
+            setDefaultGender(subTool.gender);
+            break;
+          case 'animal':
+            setSubjectCreateMode('animal');
+            break;
+        }
+        // Create_Subject_Tool 모드 유지 (이미 활성화 상태)
+      },
+      []
+    );
+
+    // Connection 서브툴 선택 핸들러
+    const handleConnectionSubToolSelect = useCallback(
+      (subTool: ConnectionSubTool) => {
+        if (subTool.kind === 'relation') {
+          setPendingConnectionKind('relation');
+          setPendingRelationStatus(subTool.status);
+        } else {
+          setPendingConnectionKind('influence');
+          setPendingInfluenceStatus(subTool.status);
+        }
+      },
+      [
+        setPendingConnectionKind,
+        setPendingRelationStatus,
+        setPendingInfluenceStatus,
+      ]
+    );
+
+    const {
+      ghost,
+      isCreateMode,
+      connectionPreview,
+      handleMouseMove,
+      handleMouseLeave,
+      handlePaneClick,
+      handleNodeClick,
+      handleEdgeClick,
+      flowInteraction,
+      cursorClass,
+    } = useCanvasInteraction({
+      toolMode,
+      addPerson,
+      defaultGender,
+      onConnectionCreate: createConnection,
+      onFamilyCreate: addFamily,
+      onAnimalCreate: addAnimal,
+      subjectCreateMode,
+      pendingConnectionKind,
+      pendingRelationStatus,
+      pendingInfluenceStatus,
+      fabSourceId,
+      onPartnerCreateAtPosition: handlePartnerCreateAtPosition,
+      onChildCreateAtPosition: handleChildCreateAtPosition,
+      onChildNodeClick: useCallback(
+        (childId: string) => {
+          if (!pendingChildPartnerLineId) return;
+          addChildConnectionToParentRef(
+            pendingChildPartnerLineId,
+            childId,
+            pendingChildStatus
+          );
+          setPendingChildPartnerLineId(null);
+        },
+        [
+          addChildConnectionToParentRef,
+          pendingChildPartnerLineId,
+          pendingChildStatus,
+        ]
+      ),
+      onFabComplete: useCallback(() => {
+        setFabSourceId(null);
+        setPendingChildPartnerLineId(null);
+        setToolMode(ToolMode.Select_Tool);
+      }, [setToolMode]),
+      onAnnotationCreate: addAnnotation,
+      onMultiSelectToggle: deselectNode,
+    });
+
+    // 속성 패널 닫기
+    const handleClosePanel = useCallback(() => {
+      // deselectAll은 훅에서 아직 미노출 — 빈 영역 클릭으로 해제됨
+    }, []);
+
+    // ── 플로팅 액션 버튼 ──
+
+    const selectionContext = useMemo<SelectionContext>(() => {
+      const ctx = deriveSelectionContext(selectedItems);
+      if (ctx.type === 'single-subject') {
+        ctx.isSpecialChild = isFetusSubject(ctx.subjectId);
+      }
+      if (ctx.type === 'dual-subject') {
+        ctx.isParentChild = isParentChildRelated(ctx.ids[0], ctx.ids[1]);
+        ctx.isPartner = isPartnerConnected(ctx.ids[0], ctx.ids[1]);
+      }
+      return ctx;
+    }, [
+      selectedItems,
+      isFetusSubject,
+      isParentChildRelated,
+      isPartnerConnected,
+    ]);
+
+    const { flowToScreenPosition } = useReactFlow();
+    const viewport = useViewport();
+    const canvasRef = useRef<HTMLDivElement>(null);
+
+    // 선택된 노드/엣지의 화면 좌표 계산 (캔버스 컨테이너 기준 상대 좌표)
+    const fabPosition = useMemo<{ x: number; y: number } | null>(() => {
+      let flowPoint: { x: number; y: number } | null = null;
+
+      if (selectionContext.type === 'single-subject') {
+        const node = nodes.find((n) => n.id === selectionContext.subjectId);
+        if (!node) return null;
+        const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
+        flowPoint = {
+          x: node.position.x + sizePx / 2 + 12,
+          y: node.position.y,
+        };
+      } else if (selectionContext.type === 'single-connection') {
+        // 파트너선: 두 노드의 중간 지점 우측에 FAB 배치
+        const edge = edges.find((e) => e.id === selectionContext.connectionId);
+        if (
+          !edge ||
+          (edge.data as { connectionType?: string })?.connectionType !==
+            ConnectionType.Partner_Line
+        ) {
+          return null;
+        }
+        const sourceNode = nodes.find((n) => n.id === edge.source);
+        const targetNode = nodes.find((n) => n.id === edge.target);
+        if (!sourceNode || !targetNode) return null;
+        const srcSizePx = (sourceNode.data as { sizePx?: number }).sizePx ?? 60;
+        const tgtSizePx = (targetNode.data as { sizePx?: number }).sizePx ?? 60;
+        const midX = (sourceNode.position.x + targetNode.position.x) / 2;
+        // 파트너선 U자 커브 하단(bottomY) 바로 위에 배치
+        const bottomY =
+          Math.max(
+            sourceNode.position.y + srcSizePx / 2,
+            targetNode.position.y + tgtSizePx / 2
+          ) + 40; // PARTNER_OFFSET
+        flowPoint = { x: midX, y: bottomY + 20 };
+      } else if (
+        selectionContext.type === 'dual-subject' ||
+        selectionContext.type === 'multi'
+      ) {
+        // 다중 선택: 선택된 노드들의 가장 오른쪽 + 12px, 평균 Y
+        const selectedNodes = nodes.filter(
+          (n) => n.selected && !n.id.startsWith('group-boundary-')
+        );
+        if (selectedNodes.length === 0) return null;
+        let maxX = -Infinity;
+        let sumY = 0;
+        for (const n of selectedNodes) {
+          const sizePx = (n.data as { sizePx?: number }).sizePx ?? 60;
+          maxX = Math.max(maxX, n.position.x + sizePx / 2);
+          sumY += n.position.y;
+        }
+        flowPoint = {
+          x: maxX + 12,
+          y: sumY / selectedNodes.length,
+        };
+      }
+
+      if (!flowPoint) return null;
+
+      const screenPos = flowToScreenPosition(flowPoint);
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return screenPos;
+
+      return {
+        x: screenPos.x - rect.left,
+        y: screenPos.y - rect.top,
+      };
+      // viewport를 deps에 포함하여 줌/팬 시 재계산
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectionContext, nodes, edges, flowToScreenPosition, viewport]);
+
+    const handleFloatingAction = useCallback(
+      (
+        action: FloatingActionType,
+        context: SelectionContext,
+        extra?: FloatingActionExtra
+      ) => {
+        switch (action) {
+          case 'add-parent':
+            if (context.type === 'single-subject') {
+              addParentPair(context.subjectId);
+            }
+            break;
+          case 'add-sibling':
+            if (context.type === 'single-subject') {
+              addSibling(context.subjectId);
+            }
+            break;
+          case 'add-partner':
+            if (context.type === 'single-subject') {
+              // 파트너 연결 모드 진입: 소스 설정 + Create_Connection_Tool + partner kind
+              setFabSourceId(context.subjectId);
+              setPendingConnectionKind('partner');
+              setToolMode(ToolMode.Create_Connection_Tool);
+            } else if (context.type === 'dual-subject') {
+              addPartnerConnection(context.ids[0], context.ids[1]);
+            }
+            break;
+          case 'add-relation':
+            if (context.type === 'dual-subject' && extra?.relationStatus) {
+              addRelationConnection(
+                context.ids[0],
+                context.ids[1],
+                extra.relationStatus
+              );
+            }
+            break;
+          case 'add-group': {
+            const ids =
+              context.type === 'multi'
+                ? context.ids
+                : context.type === 'dual-subject'
+                  ? context.ids
+                  : null;
+            if (ids) {
+              const memberIds: string[] = [];
+              const memberPositions: {
+                x: number;
+                y: number;
+                sizePx: number;
+              }[] = [];
+              for (const nid of ids) {
+                const node = nodes.find(
+                  (n) => n.id === nid && !n.id.startsWith('group-boundary-')
+                );
+                if (!node) continue;
+                const sizePx = (node.data as { sizePx?: number }).sizePx ?? 60;
+                memberIds.push(nid);
+                memberPositions.push({
+                  x: node.position.x,
+                  y: node.position.y,
+                  sizePx,
+                });
+              }
+              if (memberPositions.length >= 2) {
+                addGroupConnection(memberIds, memberPositions);
+              }
+            }
+            break;
+          }
+          case 'add-child':
+            if (extra?.parentChildStatus) {
+              const status = extra.parentChildStatus;
+              // parentRef: 파트너선 ID (single-connection) 또는 Subject ID (single-subject)
+              const parentRef =
+                context.type === 'single-connection'
+                  ? context.connectionId
+                  : context.type === 'single-subject'
+                    ? context.subjectId
+                    : null;
+              if (!parentRef) break;
+
+              const selectableStatuses: string[] = [
+                ParentChildStatus.Biological_Child,
+                ParentChildStatus.Adopted_Child,
+                ParentChildStatus.Foster_Child,
+              ];
+              if (selectableStatuses.includes(status)) {
+                // 선택/생성 모드 진입: 기존 Subject 클릭 → 연결, 빈 곳 클릭 → 생성 + 연결
+                setPendingChildPartnerLineId(parentRef);
+                setPendingChildStatus(status);
+                setFabSourceId(parentRef);
+                setPendingConnectionKind('child');
+                setToolMode(ToolMode.Create_Connection_Tool);
+              } else {
+                // 즉시 생성
+                addChildToParentRef(parentRef, status);
+              }
+            }
+            break;
+        }
+      },
+      [
+        addParentPair,
+        addSibling,
+        addPartnerConnection,
+        addRelationConnection,
+        addChildToParentRef,
+        addGroupConnection,
+        nodes,
+        setPendingConnectionKind,
+        setToolMode,
+      ]
+    );
+
+    return (
+      <div
+        ref={canvasRef}
+        className={`relative h-full ${cursorClass}`}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -589,9 +612,10 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             onClose={handleClosePanel}
           />
         ) : null}
-    </div>
-  );
-});
+      </div>
+    );
+  }
+);
 
 GenogramCanvas.displayName = 'GenogramCanvas';
 

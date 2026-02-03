@@ -780,7 +780,10 @@ export class GenogramEditor {
       const conn = this.state.genogram.connections.get(connId);
       if (!conn) continue;
       if (conn.entity.type !== ConnectionType.Children_Parents_Line) continue;
-      const attr = conn.entity.attribute as { parentRef: UUID; childRef: UUID | [UUID, UUID] };
+      const attr = conn.entity.attribute as {
+        parentRef: UUID;
+        childRef: UUID | [UUID, UUID];
+      };
       // childRef가 이 subject를 포함하는지 확인
       const childRef = attr.childRef;
       const isChild = Array.isArray(childRef)
@@ -815,31 +818,50 @@ export class GenogramEditor {
     const siblingPos = { x: childPos.x + 4 * gap, y: childPos.y };
 
     const fatherCmd = this.createAddSubjectCmd(
-      createPersonSubject(GenderEnum.Male, fatherPos), fatherPos, 0
+      createPersonSubject(GenderEnum.Male, fatherPos),
+      fatherPos,
+      0
     );
     const motherCmd = this.createAddSubjectCmd(
-      createPersonSubject(GenderEnum.Female, motherPos), motherPos, 0
+      createPersonSubject(GenderEnum.Female, motherPos),
+      motherPos,
+      0
     );
     const partnerCmd = new AddConnectionCommand(
       createPartnerConnection(
-        fatherCmd.getSubjectId(), motherCmd.getSubjectId(), PartnerStatus.Marriage
+        fatherCmd.getSubjectId(),
+        motherCmd.getSubjectId(),
+        PartnerStatus.Marriage
       )
     );
     const childLineCmd = new AddConnectionCommand(
       createParentChildConnection(
-        partnerCmd.getConnectionId(), subjectId, ParentChildStatusEnum.Biological_Child
+        partnerCmd.getConnectionId(),
+        subjectId,
+        ParentChildStatusEnum.Biological_Child
       )
     );
     const siblingCmd = this.createAddSubjectCmd(
-      createPersonSubject(GenderEnum.Male, siblingPos), siblingPos, 0
+      createPersonSubject(GenderEnum.Male, siblingPos),
+      siblingPos,
+      0
     );
     const siblingLineCmd = new AddConnectionCommand(
       createParentChildConnection(
-        partnerCmd.getConnectionId(), siblingCmd.getSubjectId(), ParentChildStatusEnum.Biological_Child
+        partnerCmd.getConnectionId(),
+        siblingCmd.getSubjectId(),
+        ParentChildStatusEnum.Biological_Child
       )
     );
 
-    this.executeMultiple([fatherCmd, motherCmd, partnerCmd, childLineCmd, siblingCmd, siblingLineCmd]);
+    this.executeMultiple([
+      fatherCmd,
+      motherCmd,
+      partnerCmd,
+      childLineCmd,
+      siblingCmd,
+      siblingLineCmd,
+    ]);
     return { siblingId: siblingCmd.getSubjectId() };
   }
 
@@ -874,9 +896,13 @@ export class GenogramEditor {
       for (const clId of childLineIds) {
         const childLine = this.state.genogram.connections.get(clId);
         if (!childLine) continue;
-        const attr = childLine.entity.attribute as { childRef: UUID | [UUID, UUID] };
+        const attr = childLine.entity.attribute as {
+          childRef: UUID | [UUID, UUID];
+        };
         const childRef = attr.childRef;
-        const hasId2 = Array.isArray(childRef) ? childRef.includes(id2) : childRef === id2;
+        const hasId2 = Array.isArray(childRef)
+          ? childRef.includes(id2)
+          : childRef === id2;
         if (hasId2) return true;
       }
     }
@@ -887,9 +913,13 @@ export class GenogramEditor {
       for (const clId of childLineIds) {
         const childLine = this.state.genogram.connections.get(clId);
         if (!childLine) continue;
-        const attr = childLine.entity.attribute as { childRef: UUID | [UUID, UUID] };
+        const attr = childLine.entity.attribute as {
+          childRef: UUID | [UUID, UUID];
+        };
         const childRef = attr.childRef;
-        const hasId1 = Array.isArray(childRef) ? childRef.includes(id1) : childRef === id1;
+        const hasId1 = Array.isArray(childRef)
+          ? childRef.includes(id1)
+          : childRef === id1;
         if (hasId1) return true;
       }
     }
