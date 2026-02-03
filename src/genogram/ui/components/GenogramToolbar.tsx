@@ -146,6 +146,10 @@ const CONNECTION_SECONDARY_ITEMS: ConnectionMenuItem[] = [
     subTool: { kind: 'relation', status: RelationStatus.Close_Hostile },
   },
   {
+    label: RELATION_STATUS_LABELS[RelationStatus.Fused_Hostile],
+    subTool: { kind: 'relation', status: RelationStatus.Fused_Hostile },
+  },
+  {
     label: INFLUENCE_STATUS_LABELS[InfluenceStatus.Physical_Abuse],
     subTool: { kind: 'influence', status: InfluenceStatus.Physical_Abuse },
   },
@@ -171,6 +175,10 @@ const CONNECTION_SECONDARY_ITEMS: ConnectionMenuItem[] = [
   {
     label: RELATION_STATUS_LABELS[RelationStatus.Cutoff],
     subTool: { kind: 'relation', status: RelationStatus.Cutoff },
+  },
+  {
+    label: RELATION_STATUS_LABELS[RelationStatus.Cutoff_Repaired],
+    subTool: { kind: 'relation', status: RelationStatus.Cutoff_Repaired },
   },
 ];
 

@@ -59,9 +59,9 @@ const STROKE_WIDTH_PX: Record<string, number> = {
   [StrokeWidth.Thick]: 3,
 };
 const PARTNER_OFFSET = 40;
-const ZIGZAG_AMP = 6;
-const ZIGZAG_PERIOD = 16;
-const PARALLEL_GAP = 4;
+const ZIGZAG_AMP = 10;
+const ZIGZAG_PERIOD = 8;
+const PARALLEL_GAP = 3;
 const CUTOFF_LEN = 8;
 const CUTOFF_GAP = 3;
 const SLASH_LEN = 10;
@@ -382,6 +382,26 @@ const renderRelationEdge = (
         spreadWidth: PARALLEL_GAP * 4 + sw,
       };
 
+    case RelationStatus.Fused_Hostile: {
+      const fOff = PARALLEL_GAP * 2;
+      return {
+        content: (
+          <>
+            <path d={offsetLine(sx, sy, tx, ty, -fOff)} {...base} />
+            <path d={straight} {...base} />
+            <path d={offsetLine(sx, sy, tx, ty, fOff)} {...base} />
+            <polyline
+              points={buildZigzagPoints(sx, sy, tx, ty)}
+              {...base}
+              strokeLinejoin="round"
+            />
+          </>
+        ),
+        hitPaths: [straight],
+        spreadWidth: fOff * 2 + ZIGZAG_AMP * 2 + sw,
+      };
+    }
+
     case RelationStatus.Cutoff: {
       const dx = tx - sx;
       const dy = ty - sy;
@@ -389,10 +409,17 @@ const renderRelationEdge = (
       const { ux, uy, len } = getUnit(dx, dy);
       const cx = sx + ux * len * 0.5;
       const cy = sy + uy * len * 0.5;
+      const gapX1 = cx - ux * CUTOFF_GAP;
+      const gapY1 = cy - uy * CUTOFF_GAP;
+      const gapX2 = cx + ux * CUTOFF_GAP;
+      const gapY2 = cy + uy * CUTOFF_GAP;
+      const seg1 = `M ${sx} ${sy} L ${gapX1} ${gapY1}`;
+      const seg2 = `M ${gapX2} ${gapY2} L ${tx} ${ty}`;
       return {
         content: (
           <>
-            <path d={straight} {...base} />
+            <path d={seg1} {...base} />
+            <path d={seg2} {...base} />
             <line
               x1={cx + ux * CUTOFF_GAP - nx * CUTOFF_LEN}
               y1={cy + uy * CUTOFF_GAP - ny * CUTOFF_LEN}
@@ -410,6 +437,59 @@ const renderRelationEdge = (
               stroke={color}
               strokeWidth={SW}
               strokeLinecap="round"
+            />
+          </>
+        ),
+        hitPaths: [straight],
+        spreadWidth: CUTOFF_LEN * 2 + SW,
+      };
+    }
+
+    case RelationStatus.Cutoff_Repaired: {
+      const dx2 = tx - sx;
+      const dy2 = ty - sy;
+      const { nx: nx2, ny: ny2 } = getNormal(dx2, dy2);
+      const { ux: ux2, uy: uy2, len: len2 } = getUnit(dx2, dy2);
+      const cx2 = sx + ux2 * len2 * 0.5;
+      const cy2 = sy + uy2 * len2 * 0.5;
+      const circleR = 4;
+      const cutoffSpread = CUTOFF_GAP + circleR;
+      const gapX1r = cx2 - ux2 * cutoffSpread;
+      const gapY1r = cy2 - uy2 * cutoffSpread;
+      const gapX2r = cx2 + ux2 * cutoffSpread;
+      const gapY2r = cy2 + uy2 * cutoffSpread;
+      const seg1r = `M ${sx} ${sy} L ${gapX1r} ${gapY1r}`;
+      const seg2r = `M ${gapX2r} ${gapY2r} L ${tx} ${ty}`;
+      return {
+        content: (
+          <>
+            <path d={seg1r} {...base} />
+            <path d={seg2r} {...base} />
+            <line
+              x1={cx2 + ux2 * cutoffSpread - nx2 * CUTOFF_LEN}
+              y1={cy2 + uy2 * cutoffSpread - ny2 * CUTOFF_LEN}
+              x2={cx2 + ux2 * cutoffSpread + nx2 * CUTOFF_LEN}
+              y2={cy2 + uy2 * cutoffSpread + ny2 * CUTOFF_LEN}
+              stroke={color}
+              strokeWidth={SW}
+              strokeLinecap="round"
+            />
+            <line
+              x1={cx2 - ux2 * cutoffSpread - nx2 * CUTOFF_LEN}
+              y1={cy2 - uy2 * cutoffSpread - ny2 * CUTOFF_LEN}
+              x2={cx2 - ux2 * cutoffSpread + nx2 * CUTOFF_LEN}
+              y2={cy2 - uy2 * cutoffSpread + ny2 * CUTOFF_LEN}
+              stroke={color}
+              strokeWidth={SW}
+              strokeLinecap="round"
+            />
+            <circle
+              cx={cx2}
+              cy={cy2}
+              r={circleR}
+              stroke={color}
+              strokeWidth={SW}
+              fill="none"
             />
           </>
         ),

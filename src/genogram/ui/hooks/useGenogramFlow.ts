@@ -136,9 +136,19 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   nodesRef.current = nodes;
   edgesRef.current = edges;
 
-  // 초기 동기화 (Editor useEffect 완료 후)
+  // 선택 동기화 배치: onNodesChange/onEdgesChange가 같은 이벤트 사이클에
+  // 동시에 호출될 수 있으므로, rAF로 한 프레임 뒤에 한 번만 처리.
+  // 이렇게 하면 엣지 해제 + 노드 선택이 동시에 일어나도 최종 상태를 반영.
+  const selectionBatchRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
+
+  // 초기 동기화 (Editor useEffect 완료 후) + rAF 클린업
   useEffect(() => {
     syncFromEditor();
+    return () => {
+      if (selectionBatchRef.current !== null) {
+        cancelAnimationFrame(selectionBatchRef.current);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -152,36 +162,44 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     syncRef.current.syncFromEditor();
   }, [visibility]);
 
-  /** nodes + edges의 현재 선택 상태를 합쳐서 editor에 반영 */
-  const syncSelectionToEditor = useCallback(
-    (nextNodes: Node[], nextEdges: Edge<RelationshipEdgeData>[]) => {
+  /** 선택 동기화를 다음 프레임으로 예약 (배치) */
+  const scheduleSelectionSync = useCallback(() => {
+    if (selectionBatchRef.current !== null) {
+      cancelAnimationFrame(selectionBatchRef.current);
+    }
+    selectionBatchRef.current = requestAnimationFrame(() => {
+      selectionBatchRef.current = null;
       const editor = getEditor();
       if (!editor) return;
 
-      const allIds: string[] = [];
+      const latestNodes = nodesRef.current;
+      const latestEdges = edgesRef.current;
 
-      for (const n of nextNodes) {
+      const nodeIds: string[] = [];
+      for (const n of latestNodes) {
         if (!n.selected) continue;
         if (n.id.startsWith('group-boundary-')) {
-          allIds.push(n.id.replace('group-boundary-', ''));
+          nodeIds.push(n.id.replace('group-boundary-', ''));
         } else if (n.id.startsWith('annotation-')) {
-          allIds.push(n.id.replace('annotation-', ''));
+          nodeIds.push(n.id.replace('annotation-', ''));
         } else {
-          allIds.push(n.id);
+          nodeIds.push(n.id);
         }
       }
-      for (const e of nextEdges) {
-        if (e.selected) allIds.push(e.id);
+
+      const edgeIds: string[] = [];
+      for (const e of latestEdges) {
+        if (e.selected) edgeIds.push(e.id);
       }
 
+      const allIds = [...nodeIds, ...edgeIds];
       if (allIds.length > 0) {
         editor.select(allIds, true);
       } else {
         editor.deselectAll();
       }
-    },
-    [getEditor]
-  );
+    });
+  }, [getEditor]);
 
   // 노드 변경 핸들러 (드래그 스냅 포함)
   const onNodesChange = useCallback(
@@ -276,16 +294,17 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
           editor.moveAnnotation(am.annotationId, am.position);
         }
 
-        // 선택 변경 → editor에 반영 (현재 edge 선택 상태도 함께 전달)
+        // 선택 변경 → 다음 프레임에 배치 처리
         const hasSelectChange = changes.some((c) => c.type === 'select');
         if (hasSelectChange) {
-          syncSelectionToEditor(next, edgesRef.current);
+          nodesRef.current = next;
+          scheduleSelectionSync();
         }
 
         return next;
       });
     },
-    [getEditor, setNodes, syncSelectionToEditor, toolMode]
+    [getEditor, setNodes, scheduleSelectionSync, toolMode]
   );
 
   // 엣지 변경 핸들러 (선택 변경 포함)
@@ -317,16 +336,17 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
       setEdges((eds) => {
         const next = applyEdgeChanges(changes, eds);
 
-        // 선택 변경 → editor에 반영 (현재 node 선택 상태도 함께 전달)
+        // 선택 변경 → 다음 프레임에 배치 처리
         const hasSelectChange = changes.some((c) => c.type === 'select');
         if (hasSelectChange) {
-          syncSelectionToEditor(nodesRef.current, next);
+          edgesRef.current = next;
+          scheduleSelectionSync();
         }
 
         return next;
       });
     },
-    [setEdges, syncSelectionToEditor, toolMode]
+    [setEdges, scheduleSelectionSync, toolMode]
   );
 
   // 클릭 기반 연결 생성 (pendingConnectionKind + 각 status에 따라 분기)

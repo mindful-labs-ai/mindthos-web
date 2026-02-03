@@ -59,7 +59,9 @@ export const RelationStatus = {
   Distant: 'Distant',
   Hostile: 'Hostile',
   Close_Hostile: 'Close_Hostile',
+  Fused_Hostile: 'Fused_Hostile',
   Cutoff: 'Cutoff',
+  Cutoff_Repaired: 'Cutoff_Repaired',
 } as const;
 export type RelationStatus =
   (typeof RelationStatus)[keyof typeof RelationStatus];

@@ -118,7 +118,9 @@ export const RELATION_STATUS_LABELS: Record<string, string> = {
   [RelationStatus.Distant]: '소원',
   [RelationStatus.Hostile]: '적대',
   [RelationStatus.Close_Hostile]: '친밀-적대',
+  [RelationStatus.Fused_Hostile]: '융합-적대',
   [RelationStatus.Cutoff]: '단절됨',
+  [RelationStatus.Cutoff_Repaired]: '단절-회복',
 };
 
 export const RELATION_STATUS_ITEMS = Object.entries(RELATION_STATUS_LABELS).map(
