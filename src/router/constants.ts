@@ -20,6 +20,9 @@ export const ROUTES = {
   GENOGRAM: '/genogram',
 } as const;
 
+export const getGenogramRoute = (clientId?: string) =>
+  clientId ? `/genogram?clientId=${clientId}` : '/genogram';
+
 export const TERMS_TYPES = {
   SERVICE: 'service',
   PRIVACY: 'privacy',

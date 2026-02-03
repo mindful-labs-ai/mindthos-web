@@ -1,5 +1,6 @@
 import React, {
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -36,7 +37,6 @@ import {
   type FloatingActionType,
   type SelectionContext,
 } from './components/FloatingActionButton';
-import { GenogramHeader } from './components/GenogramHeader';
 import { GenogramPropertyPanel } from './components/GenogramPropertyPanel';
 import {
   GenogramToolbar,
@@ -59,14 +59,32 @@ const nodeTypes = {
 };
 const edgeTypes = { relationship: RelationshipEdge };
 
+export interface GenogramPageProps {
+  /** JSON string — 최초 로드 데이터 */
+  initialData?: string;
+  /** 데이터 변경 시 콜백 (JSON string) */
+  onChange?: (json: string) => void;
+}
+
 export interface GenogramPageHandle {
   /** JSON string을 받아 가계도 데이터를 로드한다. 어떤 타이밍이든 호출 가능. */
   loadJSON: (json: string) => void;
   /** 현재 가계도 데이터를 JSON string으로 반환한다. */
   toJSON: () => string;
+  /** 실행 취소 */
+  undo: () => void;
+  /** 다시 실행 */
+  redo: () => void;
+  /** 실행 취소 가능 여부 */
+  canUndo: () => boolean;
+  /** 다시 실행 가능 여부 */
+  canRedo: () => boolean;
+  /** 우측 속성 패널이 열려있는지 여부 */
+  isPanelOpen: () => boolean;
 }
 
-const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
+const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
+  (props, ref) => {
   const {
     nodes,
     edges,
@@ -90,6 +108,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     isFetusSubject,
     undo,
     redo,
+    canUndo,
+    canRedo,
     toolMode,
     setToolMode,
     selectedSubject,
@@ -112,15 +132,36 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     selectedAnnotation,
     updateAnnotation,
     deselectNode,
-  } = useGenogramFlow();
+  } = useGenogramFlow({ initialData: props.initialData });
+
+  // onChange 호출: state-change 이벤트 시 toJSON으로 데이터 전달
+  const onChangeRef = useRef(props.onChange);
+  onChangeRef.current = props.onChange;
+
+  const toJSONRef = useRef(toJSON);
+  toJSONRef.current = toJSON;
+
+  useEffect(() => {
+    if (!onChangeRef.current) return;
+    // nodes가 변경될 때마다 onChange 호출 (state-change 이벤트 반영)
+    onChangeRef.current(toJSONRef.current());
+  }, [nodes]);
+
+  // 속성 패널 열림 상태
+  const isPanelOpen = !!(selectedSubject || selectedConnection || selectedAnnotation);
 
   useImperativeHandle(
     ref,
     () => ({
       loadJSON: fromJSON,
       toJSON,
+      undo,
+      redo,
+      canUndo: () => canUndo,
+      canRedo: () => canRedo,
+      isPanelOpen: () => isPanelOpen,
     }),
-    [fromJSON, toJSON]
+    [fromJSON, toJSON, undo, redo, canUndo, canRedo, isPanelOpen]
   );
 
   // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
@@ -259,16 +300,6 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     onAnnotationCreate: addAnnotation,
     onMultiSelectToggle: deselectNode,
   });
-
-  const [copied, setCopied] = useState(false);
-
-  const handleCopyJSON = useCallback(() => {
-    const json = toJSON();
-    navigator.clipboard.writeText(json).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [toJSON]);
 
   // 속성 패널 닫기
   const handleClosePanel = useCallback(() => {
@@ -468,22 +499,12 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
   );
 
   return (
-    <div className="flex h-full flex-col">
-      <GenogramHeader
-        copied={copied}
-        onCopyJSON={handleCopyJSON}
-        onImportJSON={fromJSON}
-        onUndo={undo}
-        onRedo={redo}
-      />
-
-      {/* 캔버스 영역 */}
-      <div
-        ref={canvasRef}
-        className={`relative flex-1 ${cursorClass}`}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
+    <div
+      ref={canvasRef}
+      className={`relative h-full ${cursorClass}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -568,22 +589,22 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
             onClose={handleClosePanel}
           />
         ) : null}
-      </div>
     </div>
   );
 });
 
 GenogramCanvas.displayName = 'GenogramCanvas';
 
-export const GenogramPage = React.forwardRef<GenogramPageHandle>(
-  (_props, ref) => {
-    return (
-      <ReactFlowProvider>
-        <GenogramCanvas ref={ref} />
-      </ReactFlowProvider>
-    );
-  }
-);
+export const GenogramPage = React.forwardRef<
+  GenogramPageHandle,
+  GenogramPageProps
+>((props, ref) => {
+  return (
+    <ReactFlowProvider>
+      <GenogramCanvas ref={ref} {...props} />
+    </ReactFlowProvider>
+  );
+});
 
 GenogramPage.displayName = 'GenogramPage';
 
