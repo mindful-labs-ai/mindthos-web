@@ -72,6 +72,7 @@ import type {
 import type { AnnotationUpdate } from '../models/text-annotation';
 import {
   AssetType,
+  ConnectionType,
   Gender as GenderEnum,
   Illness,
   ParentChildStatus as ParentChildStatusEnum,
@@ -763,6 +764,83 @@ export class GenogramEditor {
     childStatus: ParentChildStatus
   ): UUID {
     return this.addParentChildConnection(parentRef, childId, childStatus);
+  }
+
+  /**
+   * 형제자매 추가: 선택된 Subject의 부모 연결을 찾아 형제를 추가합니다.
+   * - 부모 연결(Children_Parents_Line)이 있으면 그 parentRef로 자녀 추가
+   * - 부모 연결이 없으면 먼저 부모 쌍을 생성한 후 형제 추가
+   */
+  addSibling(subjectId: UUID): { siblingId: UUID } {
+    // 1. 해당 Subject를 childRef로 참조하는 Children_Parents_Line 찾기
+    const connIds = this.state.connectionIndex.getBySubject(subjectId);
+    let parentRef: UUID | null = null;
+
+    for (const connId of connIds) {
+      const conn = this.state.genogram.connections.get(connId);
+      if (!conn) continue;
+      if (conn.entity.type !== ConnectionType.Children_Parents_Line) continue;
+      const attr = conn.entity.attribute as { parentRef: UUID; childRef: UUID | [UUID, UUID] };
+      // childRef가 이 subject를 포함하는지 확인
+      const childRef = attr.childRef;
+      const isChild = Array.isArray(childRef)
+        ? childRef.includes(subjectId)
+        : childRef === subjectId;
+      if (isChild) {
+        parentRef = attr.parentRef;
+        break;
+      }
+    }
+
+    if (parentRef) {
+      // 부모 연결이 있으면 그 parentRef로 형제 추가
+      const result = this.addChildToParentRef(
+        parentRef,
+        ParentChildStatusEnum.Biological_Child
+      );
+      return { siblingId: result.childIds[0] };
+    }
+
+    // 부모 연결이 없으면 부모 쌍 + 형제를 한 트랜잭션으로 생성 (undo 1회)
+    const childLayout = this.state.layout.nodes.get(subjectId);
+    if (!childLayout) {
+      throw new Error(`Subject layout not found: ${subjectId}`);
+    }
+    const gap = GRID_GAP;
+    const childPos = childLayout.position;
+
+    // 어머니를 기존보다 4칸 오른쪽으로 → 형제가 자연스럽게 원래 자녀 옆에 배치
+    const fatherPos = { x: childPos.x - 3 * gap, y: childPos.y - 5 * gap };
+    const motherPos = { x: childPos.x + 7 * gap, y: childPos.y - 5 * gap };
+    const siblingPos = { x: childPos.x + 4 * gap, y: childPos.y };
+
+    const fatherCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Male, fatherPos), fatherPos, 0
+    );
+    const motherCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Female, motherPos), motherPos, 0
+    );
+    const partnerCmd = new AddConnectionCommand(
+      createPartnerConnection(
+        fatherCmd.getSubjectId(), motherCmd.getSubjectId(), PartnerStatus.Marriage
+      )
+    );
+    const childLineCmd = new AddConnectionCommand(
+      createParentChildConnection(
+        partnerCmd.getConnectionId(), subjectId, ParentChildStatusEnum.Biological_Child
+      )
+    );
+    const siblingCmd = this.createAddSubjectCmd(
+      createPersonSubject(GenderEnum.Male, siblingPos), siblingPos, 0
+    );
+    const siblingLineCmd = new AddConnectionCommand(
+      createParentChildConnection(
+        partnerCmd.getConnectionId(), siblingCmd.getSubjectId(), ParentChildStatusEnum.Biological_Child
+      )
+    );
+
+    this.executeMultiple([fatherCmd, motherCmd, partnerCmd, childLineCmd, siblingCmd, siblingLineCmd]);
+    return { siblingId: siblingCmd.getSubjectId() };
   }
 
   // Annotation Operations

@@ -77,6 +77,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     addFamily,
     addAnimal,
     addParentPair,
+    addSibling,
     addPartnerAtPosition,
     convertSubjectType,
     addChildToParentRef,
@@ -364,20 +365,16 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
             addParentPair(context.subjectId);
           }
           break;
+        case 'add-sibling':
+          if (context.type === 'single-subject') {
+            addSibling(context.subjectId);
+          }
+          break;
         case 'add-partner':
           if (context.type === 'single-subject') {
             // 파트너 연결 모드 진입: 소스 설정 + Create_Connection_Tool + partner kind
             setFabSourceId(context.subjectId);
             setPendingConnectionKind('partner');
-            setToolMode(ToolMode.Create_Connection_Tool);
-          }
-          break;
-        case 'add-relation':
-          if (context.type === 'single-subject' && extra?.relationStatus) {
-            // 관계선 연결 모드 진입: 소스 설정 + Create_Connection_Tool + relation kind
-            setFabSourceId(context.subjectId);
-            setPendingConnectionKind('relation');
-            setPendingRelationStatus(extra.relationStatus);
             setToolMode(ToolMode.Create_Connection_Tool);
           }
           break;
@@ -439,11 +436,11 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     },
     [
       addParentPair,
+      addSibling,
       addChildToParentRef,
       addGroupConnection,
       nodes,
       setPendingConnectionKind,
-      setPendingRelationStatus,
       setToolMode,
     ]
   );

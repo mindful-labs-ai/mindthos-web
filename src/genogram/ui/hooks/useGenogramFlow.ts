@@ -464,6 +464,19 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // 형제자매 추가 (부모 없으면 부모 생성 후 추가)
+  const addSibling = useCallback(
+    (subjectId: string) => {
+      const editor = getEditor();
+      if (!editor) return null;
+
+      const result = editor.addSibling(subjectId);
+      editor.select([result.siblingId], true);
+      return result;
+    },
+    [getEditor]
+  );
+
   // 파트너 Subject 생성 + 파트너선 연결 (성별 자동 선택)
   const addPartnerAtPosition = useCallback(
     (sourceId: string, position: { x: number; y: number }) => {
@@ -675,6 +688,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     addFamily,
     addAnimal,
     addParentPair,
+    addSibling,
     addPartnerAtPosition,
     convertSubjectType,
     addChildToParentRef,

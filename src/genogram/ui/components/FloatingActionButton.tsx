@@ -6,13 +6,9 @@ import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
 import {
   AssetType,
   ParentChildStatus,
-  RelationStatus,
 } from '@/genogram/core/types/enums';
 
-import {
-  PARENT_CHILD_STATUS_LABELS,
-  RELATION_STATUS_LABELS,
-} from '../constants/labels';
+import { PARENT_CHILD_STATUS_LABELS } from '../constants/labels';
 
 // ── 선택 컨텍스트 ──
 
@@ -45,8 +41,8 @@ export function deriveSelectionContext(
 export type FloatingActionType =
   | 'add-parent'
   | 'add-child'
+  | 'add-sibling'
   | 'add-partner'
-  | 'add-relation'
   | 'add-group';
 
 // ── 메뉴 아이콘 ──
@@ -99,27 +95,19 @@ const PartnerMenuIcon: React.FC = () => (
   </svg>
 );
 
-const RelationMenuIcon: React.FC = () => (
+const SiblingMenuIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
-    <path
-      d="M3 17.5156L17.5185 2.99711"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-    <path
-      d="M12 28.5938L28.5926 12.0012"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeDasharray="4 4"
-    />
-    <path
-      d="M6 22H8.30303H11.1818V19.5V17H13.4848H15.7879V14.5V12H18.0909H20.3939V9.5V7H22.697H25"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
+    <g clipPath="url(#fab-sibling-clip)">
+      <path
+        d="M27.999 15.5C27.9989 16.3881 27.6613 17.2429 27.0545 17.8913C26.4477 18.5397 25.6171 18.9332 24.731 18.992C23.7204 21.1065 22.0631 22.8443 19.999 23.954V27C19.999 27.2652 19.8936 27.5196 19.7061 27.7071C19.5185 27.8947 19.2642 28 18.999 28H12.999C12.7338 28 12.4794 27.8947 12.2919 27.7071C12.1043 27.5196 11.999 27.2652 11.999 27V23.953C10.072 22.9039 8.49339 21.3149 7.45697 19.381C7.33498 19.1455 7.31153 18.8712 7.3918 18.6184C7.47206 18.3656 7.64946 18.155 7.88497 18.033C8.12049 17.911 8.39482 17.8876 8.64762 17.9678C8.90042 18.0481 9.11098 18.2255 9.23298 18.461C10.399 20.717 13.099 23 15.999 23C19.128 23 22.211 20.221 23.127 17.624C23.2049 17.4001 23.3604 17.2115 23.5652 17.0921C23.77 16.9727 24.0107 16.9305 24.244 16.973C24.3281 16.9888 24.4134 16.9978 24.499 17C24.8702 16.9956 25.2266 16.8537 25.4992 16.6017C25.7718 16.3497 25.9413 16.0056 25.9749 15.6358C26.0085 15.2661 25.9038 14.8971 25.681 14.6001C25.4583 14.3031 25.1333 14.0993 24.769 14.028C24.5564 13.9895 24.3619 13.8831 24.2148 13.7248C24.0677 13.5666 23.9759 13.3649 23.953 13.15C23.8207 11.8851 23.3873 10.6703 22.6891 9.60726C21.9909 8.54423 21.0482 7.66392 19.94 7.04002C19.6573 7.92547 19.2791 8.77749 18.812 9.58102C17.514 11.4212 15.8206 12.9475 13.856 14.048C14.1555 14.1214 14.4252 14.2853 14.6283 14.5174C14.8313 14.7496 14.9579 15.0387 14.9907 15.3453C15.0235 15.652 14.961 15.9613 14.8117 16.2312C14.6624 16.5011 14.4335 16.7183 14.1562 16.8534C13.879 16.9885 13.5668 17.0349 13.2623 16.9862C12.9577 16.9374 12.6756 16.796 12.4543 16.5812C12.233 16.3663 12.0834 16.0885 12.0257 15.7855C11.968 15.4825 12.0051 15.1691 12.132 14.888C9.8328 15.8191 7.34678 16.1959 4.87498 15.988C4.66895 15.9604 4.47664 15.8693 4.32481 15.7273C4.17298 15.5853 4.06917 15.3996 4.02781 15.1959C3.98645 14.9921 4.0096 14.7806 4.09404 14.5907C4.17849 14.4007 4.32003 14.2418 4.49898 14.136C5.10351 13.4501 5.55336 12.6422 5.81798 11.767C7.12297 8.67403 9.09897 4.00002 15.999 4.00002C18.3534 3.99481 20.6337 4.82254 22.4365 6.33677C24.2394 7.85101 25.4485 9.95412 25.85 12.274C26.4862 12.5402 27.0295 12.9884 27.4118 13.5624C27.7942 14.1363 27.9984 14.8104 27.999 15.5ZM19.999 15.5C19.999 15.2034 19.911 14.9133 19.7462 14.6667C19.5814 14.42 19.3471 14.2277 19.073 14.1142C18.7989 14.0007 18.4973 13.971 18.2063 14.0288C17.9154 14.0867 17.6481 14.2296 17.4383 14.4394C17.2285 14.6491 17.0857 14.9164 17.0278 15.2074C16.9699 15.4984 16.9996 15.8 17.1132 16.0741C17.2267 16.3481 17.4189 16.5824 17.6656 16.7472C17.9123 16.9121 18.2023 17 18.499 17C18.8968 17 19.2783 16.842 19.5596 16.5607C19.8409 16.2794 19.999 15.8979 19.999 15.5Z"
+        fill="currentColor"
+      />
+    </g>
+    <defs>
+      <clipPath id="fab-sibling-clip">
+        <rect width="24" height="24" fill="white" transform="translate(4 4)" />
+      </clipPath>
+    </defs>
   </svg>
 );
 
@@ -146,8 +134,8 @@ interface MenuItem {
 const SINGLE_SUBJECT_MENU: MenuItem[] = [
   { icon: ParentMenuIcon, label: '부모', action: 'add-parent' },
   { icon: ChildMenuIcon, label: '자녀', action: 'add-child' },
+  { icon: SiblingMenuIcon, label: '형제자매', action: 'add-sibling' },
   { icon: PartnerMenuIcon, label: '파트너', action: 'add-partner' },
-  { icon: RelationMenuIcon, label: '관계', action: 'add-relation' },
 ];
 
 const PARTNER_CONNECTION_MENU: MenuItem[] = [
@@ -161,7 +149,6 @@ const MULTI_SUBJECT_MENU: MenuItem[] = [
 // ── Props ──
 
 export interface FloatingActionExtra {
-  relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   parentChildStatus?: (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
 }
 
@@ -190,7 +177,6 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         : selectionContext.type;
   const [openForKey, setOpenForKey] = useState<string | null>(null);
   const isOpen = openForKey === contextKey;
-  const [showRelationSub, setShowRelationSub] = useState(false);
   const [showChildSub, setShowChildSub] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -198,7 +184,6 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     (value: boolean) => {
       setOpenForKey(value ? contextKey : null);
       if (!value) {
-        setShowRelationSub(false);
         setShowChildSub(false);
       }
     },
@@ -226,23 +211,11 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
 
   const handleItemClick = useCallback(
     (action: FloatingActionType) => {
-      if (action === 'add-relation') {
-        setShowRelationSub(true);
-        return;
-      }
       if (action === 'add-child') {
         setShowChildSub(true);
         return;
       }
       onAction(action, selectionContext);
-      setOpen(false);
-    },
-    [onAction, selectionContext, setOpen]
-  );
-
-  const handleRelationSelect = useCallback(
-    (status: (typeof RelationStatus)[keyof typeof RelationStatus]) => {
-      onAction('add-relation', selectionContext, { relationStatus: status });
       setOpen(false);
     },
     [onAction, selectionContext, setOpen]
@@ -307,31 +280,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
           className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-xl border border-border bg-white p-2 py-1.5 shadow-lg"
           style={{ minWidth: 'max-content' }}
         >
-          {showRelationSub ? (
-            <>
-              <button
-                type="button"
-                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors hover:bg-surface-contrast"
-                onClick={() => setShowRelationSub(false)}
-              >
-                ← 관계 선택
-              </button>
-              {Object.entries(RELATION_STATUS_LABELS).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
-                  onClick={() =>
-                    handleRelationSelect(
-                      value as (typeof RelationStatus)[keyof typeof RelationStatus]
-                    )
-                  }
-                >
-                  {label}
-                </button>
-              ))}
-            </>
-          ) : showChildSub ? (
+          {showChildSub ? (
             <>
               <button
                 type="button"
