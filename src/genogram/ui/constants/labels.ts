@@ -102,8 +102,8 @@ export const PARTNER_STATUS_LABELS: Record<string, string> = {
   [PartnerStatus.Marital_Separation]: '별거',
   [PartnerStatus.Divorce]: '이혼',
   [PartnerStatus.Remarriage]: '재결합',
-  [PartnerStatus.Couple_Relationship]: '연애',
-  [PartnerStatus.Secret_Affair]: '비밀 연애',
+  [PartnerStatus.Couple_Relationship]: '동거',
+  [PartnerStatus.Secret_Affair]: '외도',
 };
 
 export const PARTNER_STATUS_ITEMS = Object.entries(PARTNER_STATUS_LABELS).map(
@@ -116,9 +116,9 @@ export const RELATION_STATUS_LABELS: Record<string, string> = {
   [RelationStatus.Close]: '친밀',
   [RelationStatus.Fused]: '융합',
   [RelationStatus.Distant]: '소원',
-  [RelationStatus.Hostile]: '적대',
-  [RelationStatus.Close_Hostile]: '친밀-적대',
-  [RelationStatus.Fused_Hostile]: '융합-적대',
+  [RelationStatus.Hostile]: '갈등',
+  [RelationStatus.Close_Hostile]: '친밀-갈등',
+  [RelationStatus.Fused_Hostile]: '융합-갈등',
   [RelationStatus.Cutoff]: '단절됨',
   [RelationStatus.Cutoff_Repaired]: '단절-회복',
 };

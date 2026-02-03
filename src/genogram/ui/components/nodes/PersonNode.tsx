@@ -21,6 +21,7 @@ export interface PersonNodeData {
   gender?: (typeof Gender)[keyof typeof Gender];
   subjectType?: (typeof SubjectType)[keyof typeof SubjectType];
   age?: number | null;
+  isIP?: boolean;
   isDead?: boolean;
   isSelected?: boolean;
   lifeSpanLabel?: string | null;
@@ -114,6 +115,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
     gender,
     subjectType,
     age,
+    isIP,
     isDead,
     illness,
     lifeSpanLabel,
@@ -592,6 +594,73 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
     }
   };
 
+  const renderIPOutline = () => {
+    if (!isIP) return null;
+    const inset = 4;
+    const c = S / 2;
+    const m = 2;
+
+    if (subjectType === SubjectType.Animal) {
+      const di = inset * Math.SQRT2;
+      return (
+        <polygon
+          points={`${c},${m + di} ${S - m - di},${c} ${c},${S - m - di} ${m + di},${c}`}
+          fill="none"
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+        />
+      );
+    }
+
+    if (subjectType === SubjectType.Fetus) return null;
+
+    switch (gender) {
+      case Gender.Male:
+      case Gender.Gay:
+      case Gender.Transgender_Male:
+        return (
+          <rect
+            x={m + inset}
+            y={m + inset}
+            width={S - (m + inset) * 2}
+            height={S - (m + inset) * 2}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            rx="2"
+          />
+        );
+      case Gender.Nonbinary: {
+        const ri = c - m - inset;
+        const left = m + inset;
+        const right = S - m - inset;
+        const bottom = S - m - inset;
+        return (
+          <path
+            d={`M ${left},${c} A ${ri},${ri} 0 0 1 ${right},${c} V ${bottom} H ${left} Z`}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+          />
+        );
+      }
+      case Gender.Female:
+      case Gender.Lesbian:
+      case Gender.Transgender_Female:
+      default:
+        return (
+          <circle
+            cx={c}
+            cy={c}
+            r={c - m - inset}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+          />
+        );
+    }
+  };
+
   const renderDeceased = () => {
     if (!isDead) return null;
     return (
@@ -641,6 +710,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       >
         <defs>{renderClipPath()}</defs>
         {renderShape()}
+        {renderIPOutline()}
         {renderIllness()}
         {renderDeceased()}
       </svg>

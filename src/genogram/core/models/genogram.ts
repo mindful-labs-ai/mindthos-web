@@ -124,17 +124,37 @@ const LEGACY_SUBJECT_TYPE_TO_FETUS_STATUS: Record<string, FetusStatus> = {
 
 /** 레거시 SubjectType(MISCARRIAGE/ABORTION/PREGNANCY)을 Fetus + FetusStatus로 마이그레이션 */
 function migrateSubject(subject: Subject): Subject {
+  let result = subject;
+
+  // Fetus 마이그레이션
   const fetusStatus =
-    LEGACY_SUBJECT_TYPE_TO_FETUS_STATUS[subject.entity.type as string];
-  if (!fetusStatus) return subject;
-  return {
-    ...subject,
-    entity: {
-      ...subject.entity,
-      type: SubjectType.Fetus,
-      attribute: { name: null, status: fetusStatus } satisfies FetusAttribute,
-    },
-  };
+    LEGACY_SUBJECT_TYPE_TO_FETUS_STATUS[result.entity.type as string];
+  if (fetusStatus) {
+    result = {
+      ...result,
+      entity: {
+        ...result.entity,
+        type: SubjectType.Fetus,
+        attribute: { name: null, status: fetusStatus } satisfies FetusAttribute,
+      },
+    };
+  }
+
+  // isIP 필드 마이그레이션 (레거시 데이터에 없을 수 있음)
+  if (
+    result.entity.type === SubjectType.Person &&
+    !('isIP' in result.entity.attribute)
+  ) {
+    result = {
+      ...result,
+      entity: {
+        ...result.entity,
+        attribute: { ...result.entity.attribute, isIP: false },
+      },
+    };
+  }
+
+  return result;
 }
 
 export function deserializeGenogram(data: SerializedGenogram): Genogram {

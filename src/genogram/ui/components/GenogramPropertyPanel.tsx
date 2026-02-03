@@ -504,6 +504,21 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           />
         </section>
 
+        {/* IP (Identified Patient) — Person 전용 */}
+        {isPerson && (
+          <div className="flex items-center justify-between">
+            <span className="text-base font-medium text-fg">
+              IP(Identified Patient)
+            </span>
+            <input
+              type="checkbox"
+              checked={attr!.isIP ?? false}
+              onChange={(e) => updateAttribute('isIP', e.target.checked)}
+              className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-border bg-surface after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-fg checked:bg-fg checked:after:opacity-100"
+            />
+          </div>
+        )}
+
         {/* 사망 여부 (공통) */}
         <div className="flex items-center justify-between">
           <span className="text-base font-medium text-fg">사망 여부</span>

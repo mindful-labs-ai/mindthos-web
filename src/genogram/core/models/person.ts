@@ -25,6 +25,7 @@ export interface PersonExtraInfo {
 export interface PersonAttribute {
   gender: Gender;
   name: string | null;
+  isIP: boolean;
   isDead: boolean;
   lifeSpan: PersonLifeSpan;
   age: number | null;
@@ -83,6 +84,7 @@ export function createPersonSubject(
       attribute: {
         gender,
         name: null,
+        isIP: false,
         isDead: false,
         lifeSpan: { birth: null, death: null },
         age: null,

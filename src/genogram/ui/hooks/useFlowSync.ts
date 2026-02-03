@@ -111,6 +111,7 @@ export const useFlowSync = (
           gender: personAttr?.gender,
           subjectType: subject.entity.type,
           age: visibility.age ? personAttr?.age : null,
+          isIP: personAttr?.isIP ?? false,
           isDead: 'isDead' in attr ? attr.isDead : false,
           illness: visibility.illness ? personAttr?.illness : undefined,
           isSelected: nodeLayout.isSelected,

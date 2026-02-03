@@ -134,15 +134,44 @@ export const RelationIcon: React.FC<{ value: string }> = ({ value }) => {
           </>
         );
 
+      // 융합-적대
+      case RelationStatus.Fused_Hostile:
+        return (
+          <>
+            <DiagLine offset={-5} />
+            <DiagLine />
+            <DiagLine offset={5} />
+            <ZigzagLine amp={3} />
+          </>
+        );
+
       // 단절
       case RelationStatus.Cutoff: {
         const len = 5;
         const cx = S / 2;
         const cy = S / 2;
         const d = 2;
+        const gap = 3;
         return (
           <>
-            <DiagLine />
+            <line
+              x1={SX}
+              y1={SY}
+              x2={cx - gap * P}
+              y2={cy + gap * P}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+            />
+            <line
+              x1={cx + gap * P}
+              y1={cy - gap * P}
+              x2={EX}
+              y2={EY}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+            />
             <line
               x1={cx - d * P - len * P}
               y1={cy + d * P - len * P}
@@ -160,6 +189,64 @@ export const RelationIcon: React.FC<{ value: string }> = ({ value }) => {
               stroke={stroke}
               strokeWidth={sw}
               strokeLinecap="round"
+            />
+          </>
+        );
+      }
+
+      // 단절-회복
+      case RelationStatus.Cutoff_Repaired: {
+        const len2 = 5;
+        const cx2 = S / 2;
+        const cy2 = S / 2;
+        const d2 = 2;
+        const circleR = 3;
+        const gap2 = 3 + circleR;
+        return (
+          <>
+            <line
+              x1={SX}
+              y1={SY}
+              x2={cx2 - gap2 * P}
+              y2={cy2 + gap2 * P}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+            />
+            <line
+              x1={cx2 + gap2 * P}
+              y1={cy2 - gap2 * P}
+              x2={EX}
+              y2={EY}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+            />
+            <line
+              x1={cx2 - d2 * P - len2 * P}
+              y1={cy2 + d2 * P - len2 * P}
+              x2={cx2 - d2 * P + len2 * P}
+              y2={cy2 + d2 * P + len2 * P}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+            />
+            <line
+              x1={cx2 + d2 * P - len2 * P}
+              y1={cy2 - d2 * P - len2 * P}
+              x2={cx2 + d2 * P + len2 * P}
+              y2={cy2 - d2 * P + len2 * P}
+              stroke={stroke}
+              strokeWidth={sw}
+              strokeLinecap="round"
+            />
+            <circle
+              cx={cx2}
+              cy={cy2}
+              r={circleR}
+              stroke={stroke}
+              strokeWidth={sw}
+              fill="none"
             />
           </>
         );
