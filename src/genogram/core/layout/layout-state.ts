@@ -16,7 +16,7 @@ export function createCanvasState(): CanvasState {
     offset: { x: 0, y: 0 },
     gridSnap: false,
     gridSize: 30,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#FEFEFE',
   };
 }
 

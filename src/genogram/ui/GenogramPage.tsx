@@ -78,6 +78,10 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     addAnimal,
     addParentPair,
     addSibling,
+    addPartnerConnection,
+    addRelationConnection,
+    isParentChildRelated,
+    isPartnerConnected,
     addPartnerAtPosition,
     convertSubjectType,
     addChildToParentRef,
@@ -278,8 +282,12 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     if (ctx.type === 'single-subject') {
       ctx.isSpecialChild = isFetusSubject(ctx.subjectId);
     }
+    if (ctx.type === 'dual-subject') {
+      ctx.isParentChild = isParentChildRelated(ctx.ids[0], ctx.ids[1]);
+      ctx.isPartner = isPartnerConnected(ctx.ids[0], ctx.ids[1]);
+    }
     return ctx;
-  }, [selectedItems, isFetusSubject]);
+  }, [selectedItems, isFetusSubject, isParentChildRelated, isPartnerConnected]);
 
   const { flowToScreenPosition } = useReactFlow();
   const viewport = useViewport();
@@ -320,7 +328,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
           targetNode.position.y + tgtSizePx / 2
         ) + 40; // PARTNER_OFFSET
       flowPoint = { x: midX, y: bottomY + 20 };
-    } else if (selectionContext.type === 'multi') {
+    } else if (selectionContext.type === 'dual-subject' || selectionContext.type === 'multi') {
       // 다중 선택: 선택된 노드들의 가장 오른쪽 + 12px, 평균 Y
       const selectedNodes = nodes.filter(
         (n) => n.selected && !n.id.startsWith('group-boundary-')
@@ -376,15 +384,26 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
             setFabSourceId(context.subjectId);
             setPendingConnectionKind('partner');
             setToolMode(ToolMode.Create_Connection_Tool);
+          } else if (context.type === 'dual-subject') {
+            addPartnerConnection(context.ids[0], context.ids[1]);
           }
           break;
-        case 'add-group':
-          if (context.type === 'multi') {
-            // 선택된 Subject 노드들의 ID와 현재 위치를 스냅샷으로 저장
+        case 'add-relation':
+          if (context.type === 'dual-subject' && extra?.relationStatus) {
+            addRelationConnection(context.ids[0], context.ids[1], extra.relationStatus);
+          }
+          break;
+        case 'add-group': {
+          const ids = context.type === 'multi'
+            ? context.ids
+            : context.type === 'dual-subject'
+              ? context.ids
+              : null;
+          if (ids) {
             const memberIds: string[] = [];
             const memberPositions: { x: number; y: number; sizePx: number }[] =
               [];
-            for (const nid of context.ids) {
+            for (const nid of ids) {
               const node = nodes.find(
                 (n) => n.id === nid && !n.id.startsWith('group-boundary-')
               );
@@ -402,6 +421,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
             }
           }
           break;
+        }
         case 'add-child':
           if (extra?.parentChildStatus) {
             const status = extra.parentChildStatus;
@@ -437,6 +457,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
     [
       addParentPair,
       addSibling,
+      addPartnerConnection,
+      addRelationConnection,
       addChildToParentRef,
       addGroupConnection,
       nodes,
@@ -485,7 +507,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle>((_props, ref) => {
             <Background
               variant={BackgroundVariant.Dots}
               gap={GRID_GAP}
-              size={2}
+              size={1}
             />
           )}
           <Controls position="bottom-left" />

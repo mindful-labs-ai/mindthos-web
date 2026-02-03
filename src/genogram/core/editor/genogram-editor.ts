@@ -843,6 +843,71 @@ export class GenogramEditor {
     return { siblingId: siblingCmd.getSubjectId() };
   }
 
+  /**
+   * 두 Subject가 부모-자녀 관계인지 판별합니다.
+   * 직접 자녀선(parentRef가 subject ID인 경우)과
+   * 파트너선을 통한 간접 관계(parentRef → 파트너선 → subject)를 모두 검사합니다.
+   */
+  isParentChildRelated(id1: UUID, id2: UUID): boolean {
+    const connIds1 = this.state.connectionIndex.getBySubject(id1);
+    const connIds2 = this.state.connectionIndex.getBySubject(id2);
+    const commonIds = new Set<UUID>();
+    for (const cid of connIds1) {
+      if (connIds2.has(cid)) commonIds.add(cid);
+    }
+
+    // 직접 연결: Children_Parents_Line에 둘 다 참조됨 (하나가 childRef, 하나가 parentRef인 경우)
+    for (const cid of commonIds) {
+      const conn = this.state.genogram.connections.get(cid);
+      if (!conn) continue;
+      if (conn.entity.type === ConnectionType.Children_Parents_Line) {
+        return true;
+      }
+    }
+
+    // 간접 연결: id1이 파트너선의 subject이고, 그 파트너선을 parentRef로 하는 자녀선에 id2가 있는 경우 (또는 반대)
+    for (const cid of connIds1) {
+      const conn = this.state.genogram.connections.get(cid);
+      if (!conn || conn.entity.type !== ConnectionType.Partner_Line) continue;
+      // 이 파트너선을 parentRef로 가진 자녀선 조회
+      const childLineIds = this.state.connectionIndex.getByParentRef(cid);
+      for (const clId of childLineIds) {
+        const childLine = this.state.genogram.connections.get(clId);
+        if (!childLine) continue;
+        const attr = childLine.entity.attribute as { childRef: UUID | [UUID, UUID] };
+        const childRef = attr.childRef;
+        const hasId2 = Array.isArray(childRef) ? childRef.includes(id2) : childRef === id2;
+        if (hasId2) return true;
+      }
+    }
+    for (const cid of connIds2) {
+      const conn = this.state.genogram.connections.get(cid);
+      if (!conn || conn.entity.type !== ConnectionType.Partner_Line) continue;
+      const childLineIds = this.state.connectionIndex.getByParentRef(cid);
+      for (const clId of childLineIds) {
+        const childLine = this.state.genogram.connections.get(clId);
+        if (!childLine) continue;
+        const attr = childLine.entity.attribute as { childRef: UUID | [UUID, UUID] };
+        const childRef = attr.childRef;
+        const hasId1 = Array.isArray(childRef) ? childRef.includes(id1) : childRef === id1;
+        if (hasId1) return true;
+      }
+    }
+
+    return false;
+  }
+
+  isPartnerConnected(id1: UUID, id2: UUID): boolean {
+    const connIds1 = this.state.connectionIndex.getBySubject(id1);
+    const connIds2 = this.state.connectionIndex.getBySubject(id2);
+    for (const cid of connIds1) {
+      if (!connIds2.has(cid)) continue;
+      const conn = this.state.genogram.connections.get(cid);
+      if (conn && conn.entity.type === ConnectionType.Partner_Line) return true;
+    }
+    return false;
+  }
+
   // Annotation Operations
   addAnnotation(text: string, position: Point): UUID {
     const cmd = new AddAnnotationCommand(text, position);

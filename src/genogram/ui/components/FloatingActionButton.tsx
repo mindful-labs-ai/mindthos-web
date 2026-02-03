@@ -6,9 +6,15 @@ import type { SelectedItem } from '@/genogram/core/editor/interaction-state';
 import {
   AssetType,
   ParentChildStatus,
+  RelationStatus,
 } from '@/genogram/core/types/enums';
 
-import { PARENT_CHILD_STATUS_LABELS } from '../constants/labels';
+import {
+  PARENT_CHILD_STATUS_LABELS,
+  RELATION_STATUS_LABELS,
+} from '../constants/labels';
+import { ParentChildIcon } from './icons/ParentChildIcon';
+import { RelationIcon } from './icons/RelationIcon';
 
 // ── 선택 컨텍스트 ──
 
@@ -16,6 +22,7 @@ export type SelectionContext =
   | { type: 'none' }
   | { type: 'single-subject'; subjectId: string; isSpecialChild?: boolean }
   | { type: 'single-connection'; connectionId: string }
+  | { type: 'dual-subject'; ids: [string, string]; isParentChild?: boolean; isPartner?: boolean }
   | { type: 'multi'; ids: string[] };
 
 export function deriveSelectionContext(
@@ -33,6 +40,16 @@ export function deriveSelectionContext(
       return { type: 'single-connection', connectionId: item.id };
     }
   }
+  // 정확히 2개의 Subject 노드만 선택된 경우 dual-subject
+  if (
+    filtered.length === 2 &&
+    filtered.every((i) => i.type === AssetType.Node)
+  ) {
+    return {
+      type: 'dual-subject',
+      ids: [filtered[0].id, filtered[1].id],
+    };
+  }
   return { type: 'multi', ids: filtered.map((i) => i.id) };
 }
 
@@ -43,6 +60,7 @@ export type FloatingActionType =
   | 'add-child'
   | 'add-sibling'
   | 'add-partner'
+  | 'add-relation'
   | 'add-group';
 
 // ── 메뉴 아이콘 ──
@@ -111,6 +129,36 @@ const SiblingMenuIcon: React.FC = () => (
   </svg>
 );
 
+const RelationMenuIcon: React.FC = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M3 17.5156L17.5185 2.99711"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M12 28.5938L28.5926 12.0012"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeDasharray="4 4"
+    />
+    <path
+      d="M6 22H8.30303H11.1818V19.5V17H13.4848H15.7879V14.5V12H18.0909H20.3939V9.5V7H22.697H25"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
 const GroupMenuIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
     <path
@@ -142,6 +190,17 @@ const PARTNER_CONNECTION_MENU: MenuItem[] = [
   { icon: ChildMenuIcon, label: '자녀', action: 'add-child' },
 ];
 
+const DUAL_SUBJECT_MENU: MenuItem[] = [
+  { icon: PartnerMenuIcon, label: '파트너', action: 'add-partner' },
+  { icon: RelationMenuIcon, label: '관계', action: 'add-relation' },
+  { icon: GroupMenuIcon, label: '그룹으로 연결하기', action: 'add-group' },
+];
+
+const DUAL_SUBJECT_NO_PARTNER_MENU: MenuItem[] = [
+  { icon: RelationMenuIcon, label: '관계', action: 'add-relation' },
+  { icon: GroupMenuIcon, label: '그룹으로 연결하기', action: 'add-group' },
+];
+
 const MULTI_SUBJECT_MENU: MenuItem[] = [
   { icon: GroupMenuIcon, label: '그룹으로 연결하기', action: 'add-group' },
 ];
@@ -150,6 +209,7 @@ const MULTI_SUBJECT_MENU: MenuItem[] = [
 
 export interface FloatingActionExtra {
   parentChildStatus?: (typeof ParentChildStatus)[keyof typeof ParentChildStatus];
+  relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
 }
 
 interface FloatingActionButtonProps {
@@ -174,10 +234,13 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       ? selectionContext.subjectId
       : selectionContext.type === 'single-connection'
         ? selectionContext.connectionId
-        : selectionContext.type;
+        : selectionContext.type === 'dual-subject'
+          ? selectionContext.ids.join(',')
+          : selectionContext.type;
   const [openForKey, setOpenForKey] = useState<string | null>(null);
   const isOpen = openForKey === contextKey;
   const [showChildSub, setShowChildSub] = useState(false);
+  const [showRelationSub, setShowRelationSub] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const setOpen = useCallback(
@@ -185,6 +248,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       setOpenForKey(value ? contextKey : null);
       if (!value) {
         setShowChildSub(false);
+        setShowRelationSub(false);
       }
     },
     [contextKey]
@@ -215,6 +279,10 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         setShowChildSub(true);
         return;
       }
+      if (action === 'add-relation') {
+        setShowRelationSub(true);
+        return;
+      }
       onAction(action, selectionContext);
       setOpen(false);
     },
@@ -229,10 +297,19 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     [onAction, selectionContext, setOpen]
   );
 
-  // 표시 조건: single-subject, single-connection, multi (특수 자녀 제외)
+  const handleRelationSelect = useCallback(
+    (status: (typeof RelationStatus)[keyof typeof RelationStatus]) => {
+      onAction('add-relation', selectionContext, { relationStatus: status });
+      setOpen(false);
+    },
+    [onAction, selectionContext, setOpen]
+  );
+
+  // 표시 조건: single-subject, single-connection, dual-subject, multi (특수 자녀 제외)
   if (
     (selectionContext.type !== 'single-subject' &&
       selectionContext.type !== 'single-connection' &&
+      selectionContext.type !== 'dual-subject' &&
       selectionContext.type !== 'multi') ||
     !position
   ) {
@@ -245,12 +322,18 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     return null;
   }
 
-  const menuItems =
-    selectionContext.type === 'multi'
-      ? MULTI_SUBJECT_MENU
-      : selectionContext.type === 'single-connection'
-        ? PARTNER_CONNECTION_MENU
-        : SINGLE_SUBJECT_MENU;
+  let menuItems: MenuItem[];
+  if (selectionContext.type === 'dual-subject') {
+    menuItems = (selectionContext.isParentChild || selectionContext.isPartner)
+      ? DUAL_SUBJECT_NO_PARTNER_MENU
+      : DUAL_SUBJECT_MENU;
+  } else if (selectionContext.type === 'multi') {
+    menuItems = MULTI_SUBJECT_MENU;
+  } else if (selectionContext.type === 'single-connection') {
+    menuItems = PARTNER_CONNECTION_MENU;
+  } else {
+    menuItems = SINGLE_SUBJECT_MENU;
+  }
 
   return (
     <div
@@ -301,6 +384,34 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
                       )
                     }
                   >
+                    <ParentChildIcon value={value} />
+                    {label}
+                  </button>
+                )
+              )}
+            </>
+          ) : showRelationSub ? (
+            <>
+              <button
+                type="button"
+                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors hover:bg-surface-contrast"
+                onClick={() => setShowRelationSub(false)}
+              >
+                ← 관계 선택
+              </button>
+              {Object.entries(RELATION_STATUS_LABELS).map(
+                ([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                    onClick={() =>
+                      handleRelationSelect(
+                        value as (typeof RelationStatus)[keyof typeof RelationStatus]
+                      )
+                    }
+                  >
+                    <RelationIcon value={value} />
                     {label}
                   </button>
                 )

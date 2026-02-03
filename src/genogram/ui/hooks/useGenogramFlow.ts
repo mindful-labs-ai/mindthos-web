@@ -647,6 +647,42 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // 두 Subject 간 부모-자녀 관계 판별
+  const isParentChildRelated = useCallback(
+    (id1: string, id2: string) => {
+      return getEditor()?.isParentChildRelated(id1, id2) ?? false;
+    },
+    [getEditor]
+  );
+
+  // 두 Subject 간 파트너 연결 여부 판별
+  const isPartnerConnected = useCallback(
+    (id1: string, id2: string) => {
+      return getEditor()?.isPartnerConnected(id1, id2) ?? false;
+    },
+    [getEditor]
+  );
+
+  // 두 Subject 간 파트너 연결
+  const addPartnerConnection = useCallback(
+    (id1: string, id2: string) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.addPartnerConnection(id1, id2);
+    },
+    [getEditor]
+  );
+
+  // 두 Subject 간 관계 연결
+  const addRelationConnection = useCallback(
+    (id1: string, id2: string, status: string) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.addRelationConnection(id1, id2, status as Parameters<typeof editor.addRelationConnection>[2]);
+    },
+    [getEditor]
+  );
+
   // Multi_Select_Tool: 특정 노드를 현재 선택에서 제거
   const deselectNode = useCallback(
     (nodeId: string) => {
@@ -689,6 +725,10 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     addAnimal,
     addParentPair,
     addSibling,
+    addPartnerConnection,
+    addRelationConnection,
+    isParentChildRelated,
+    isPartnerConnected,
     addPartnerAtPosition,
     convertSubjectType,
     addChildToParentRef,
