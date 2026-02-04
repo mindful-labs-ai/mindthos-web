@@ -33,6 +33,12 @@ export const useGenogramEditor = (options: UseGenogramEditorOptions = {}) => {
       },
     });
 
+    editorRef.current = editor;
+
+    const unsubscribe = editor.on((eventType) => {
+      onEventRef.current?.(eventType);
+    });
+
     if (options.initialData) {
       try {
         editor.fromJSON(options.initialData);
@@ -40,12 +46,6 @@ export const useGenogramEditor = (options: UseGenogramEditorOptions = {}) => {
         console.error('Failed to load initial data:', e);
       }
     }
-
-    editorRef.current = editor;
-
-    const unsubscribe = editor.on((eventType) => {
-      onEventRef.current?.(eventType);
-    });
 
     return () => {
       unsubscribe();
