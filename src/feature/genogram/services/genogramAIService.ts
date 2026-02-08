@@ -87,7 +87,9 @@ export type GenerateFamilySummaryResult =
  * Vercel API Route를 호출하여 AI 분석 결과 받기 (원본 JSON)
  * @param clientId 내담자 UUID
  */
-async function fetchAIOutput(clientId: string): Promise<GenerateAIOutputResult> {
+async function fetchAIOutput(
+  clientId: string
+): Promise<GenerateAIOutputResult> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -255,6 +257,8 @@ export async function fetchRawAIOutput(
  * AI JSON을 캔버스 형식으로 변환 (저장 없이)
  * 미리보기 등에 사용
  */
-export function convertToCanvas(aiOutput: AIGenogramOutput): SerializedGenogram {
+export function convertToCanvas(
+  aiOutput: AIGenogramOutput
+): SerializedGenogram {
   return convertAIJsonToCanvas(aiOutput);
 }

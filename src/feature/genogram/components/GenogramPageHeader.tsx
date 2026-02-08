@@ -130,7 +130,7 @@ export function GenogramPageHeader({
               <button
                 onClick={handleAIImport}
                 title="AI JSON Import (후처리)"
-                className="rounded-md p-2 text-primary transition-colors hover:bg-primary/10"
+                className="hover:bg-primary/10 rounded-md p-2 text-primary transition-colors"
               >
                 <Sparkles className="h-[18px] w-[18px]" />
               </button>

@@ -262,9 +262,19 @@ JSON만 출력.`;
 // 타입 정의 - AI 출력용 (좌표 없음)
 // ─────────────────────────────────────────────────────────────────────────────
 
-type AIPartnerStatus = 'marriage' | 'divorced' | 'separated' | 'cohabiting' | 'engaged';
+type AIPartnerStatus =
+  | 'marriage'
+  | 'divorced'
+  | 'separated'
+  | 'cohabiting'
+  | 'engaged';
 type AIChildStatus = 'biological' | 'adopted' | 'foster';
-type AIInfluenceStatus = 'physical_abuse' | 'emotional_abuse' | 'sexual_abuse' | 'focused_on' | 'focused_on_negatively';
+type AIInfluenceStatus =
+  | 'physical_abuse'
+  | 'emotional_abuse'
+  | 'sexual_abuse'
+  | 'focused_on'
+  | 'focused_on_negatively';
 
 /** 형제자매 그룹 (같은 부모를 공유) */
 interface AISiblingGroup {
@@ -384,7 +394,9 @@ async function callGPTForJSON<T>(prompt: string): Promise<T> {
   try {
     return JSON.parse(content) as T;
   } catch (e) {
-    console.log(`[callGPTForJSON] parseError=${e instanceof Error ? e.message : e}`);
+    console.log(
+      `[callGPTForJSON] parseError=${e instanceof Error ? e.message : e}`
+    );
     const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[1]) as T;
@@ -499,7 +511,9 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
   for (const [parentCoupleKey, siblingIds] of siblingGroupMap) {
     const nf = nuclearFamilyMap.get(parentCoupleKey);
     if (!nf) {
-      errors.push(`siblingGroups의 parentCoupleKey="${parentCoupleKey}"에 해당하는 nuclearFamily가 없습니다.`);
+      errors.push(
+        `siblingGroups의 parentCoupleKey="${parentCoupleKey}"에 해당하는 nuclearFamily가 없습니다.`
+      );
       continue;
     }
 
@@ -507,7 +521,9 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
     const nfChildrenSet = new Set(nf.childrenIds);
     for (const siblingId of siblingIds) {
       if (!nfChildrenSet.has(siblingId)) {
-        warnings.push(`siblingId=${siblingId}가 nuclearFamily(${parentCoupleKey})의 childrenIds에 없습니다. 추가합니다.`);
+        warnings.push(
+          `siblingId=${siblingId}가 nuclearFamily(${parentCoupleKey})의 childrenIds에 없습니다. 추가합니다.`
+        );
         nf.childrenIds.push(siblingId);
       }
     }
@@ -525,7 +541,9 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
       const key1 = `${nf.husbandId}-${nf.wifeId}`;
       const key2 = `${nf.wifeId}-${nf.husbandId}`;
       if (!partnerSet.has(key1) && !partnerSet.has(key2)) {
-        warnings.push(`nuclearFamily의 부부(${nf.husbandId}, ${nf.wifeId})가 partners에 없습니다. 추가합니다.`);
+        warnings.push(
+          `nuclearFamily의 부부(${nf.husbandId}, ${nf.wifeId})가 partners에 없습니다. 추가합니다.`
+        );
         fixed.partners.push([nf.husbandId, nf.wifeId, 'marriage']);
         partnerSet.add(key1);
         partnerSet.add(key2);
@@ -573,7 +591,9 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
     const [fatherId, motherId] = sg.parentCoupleKey.split('-').map(Number);
     for (const childId of sg.siblingIds) {
       if (!childrenInArray.has(childId)) {
-        warnings.push(`siblingGroups의 자녀(id=${childId})가 children 배열에 없습니다. 추가합니다.`);
+        warnings.push(
+          `siblingGroups의 자녀(id=${childId})가 children 배열에 없습니다. 추가합니다.`
+        );
         fixed.children.push([fatherId, motherId, childId, 'biological']);
         childrenInArray.add(childId);
       }
@@ -595,7 +615,9 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
 // AI 분석 함수
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function analyzeTranscripts(transcripts: TranscriptInfo[]): Promise<AIGenogramOutput> {
+async function analyzeTranscripts(
+  transcripts: TranscriptInfo[]
+): Promise<AIGenogramOutput> {
   console.log(`[analyzeTranscripts] START, count=${transcripts.length}`);
 
   if (transcripts.length === 0) {
@@ -615,9 +637,14 @@ async function analyzeTranscripts(transcripts: TranscriptInfo[]): Promise<AIGeno
     .map((t, i) => `[세션 ${i + 1}]\n${t.contents}`)
     .join('\n\n---\n\n');
 
-  console.log(`[analyzeTranscripts] Combined transcripts length: ${allTranscriptsText.length}`);
+  console.log(
+    `[analyzeTranscripts] Combined transcripts length: ${allTranscriptsText.length}`
+  );
 
-  const prompt = GENOGRAM_JSON_PROMPT.replace('{transcripts}', allTranscriptsText);
+  const prompt = GENOGRAM_JSON_PROMPT.replace(
+    '{transcripts}',
+    allTranscriptsText
+  );
   const aiOutput = await callGPTForJSON<AIGenogramOutput>(prompt);
 
   console.log(
@@ -699,7 +726,9 @@ export default async function handler(
     // 축어록 조회
     console.log('[genogram/summary] 축어록 조회 시작');
     const transcripts = await getClientTranscripts(supabase, body.client_id);
-    console.log('[genogram/summary] 축어록 조회 완료:', { count: transcripts.length });
+    console.log('[genogram/summary] 축어록 조회 완료:', {
+      count: transcripts.length,
+    });
 
     if (transcripts.length === 0) {
       res.status(404).json({
@@ -725,7 +754,10 @@ export default async function handler(
       .eq('id', body.client_id);
 
     if (updateError) {
-      console.error('[genogram/summary] family_summary 저장 실패:', updateError);
+      console.error(
+        '[genogram/summary] family_summary 저장 실패:',
+        updateError
+      );
       // 저장 실패해도 응답은 반환 (warning만 로깅)
     } else {
       console.log('[genogram/summary] family_summary 저장 완료');

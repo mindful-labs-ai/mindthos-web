@@ -29,7 +29,10 @@ export const getEdgeStyle = (
   partnerStatus?: (typeof PartnerStatus)[keyof typeof PartnerStatus],
   relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus]
 ): EdgeStyle => {
-  const baseStyle: EdgeStyle = { stroke: DEFAULT_FG, strokeWidth: STROKE_WIDTH_DEFAULT };
+  const baseStyle: EdgeStyle = {
+    stroke: DEFAULT_FG,
+    strokeWidth: STROKE_WIDTH_DEFAULT,
+  };
 
   if (connectionType === ConnectionType.Partner_Line) {
     switch (partnerStatus) {

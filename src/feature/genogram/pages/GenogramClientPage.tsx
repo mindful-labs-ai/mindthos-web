@@ -174,39 +174,45 @@ export function GenogramClientPage() {
   }, []);
 
   // Canvas JSON Import (이미 렌더링 가능한 형식)
-  const handleImportCanvasJson = useCallback((jsonStr: string) => {
-    try {
-      JSON.parse(jsonStr); // 유효한 JSON인지 확인
-      genogramRef.current?.loadJSON(jsonStr);
-      updateGenogramState();
-    } catch (e) {
-      console.error('Invalid Canvas JSON:', e);
-      alert('유효하지 않은 JSON 형식입니다.');
-    }
-  }, [updateGenogramState]);
+  const handleImportCanvasJson = useCallback(
+    (jsonStr: string) => {
+      try {
+        JSON.parse(jsonStr); // 유효한 JSON인지 확인
+        genogramRef.current?.loadJSON(jsonStr);
+        updateGenogramState();
+      } catch (e) {
+        console.error('Invalid Canvas JSON:', e);
+        alert('유효하지 않은 JSON 형식입니다.');
+      }
+    },
+    [updateGenogramState]
+  );
 
   // AI Raw JSON Import (후처리 후 렌더링)
-  const handleImportAIJson = useCallback((jsonStr: string) => {
-    try {
-      const aiOutput = JSON.parse(jsonStr);
+  const handleImportAIJson = useCallback(
+    (jsonStr: string) => {
+      try {
+        const aiOutput = JSON.parse(jsonStr);
 
-      if (!isValidAIJson(aiOutput)) {
-        alert('유효하지 않은 AI JSON 형식입니다.\npeople 배열이 필요합니다.');
-        return;
+        if (!isValidAIJson(aiOutput)) {
+          alert('유효하지 않은 AI JSON 형식입니다.\npeople 배열이 필요합니다.');
+          return;
+        }
+
+        // AI JSON → Canvas 형식으로 변환
+        const canvasData = convertAIJsonToCanvas(aiOutput);
+        const canvasJson = JSON.stringify(canvasData);
+
+        // 캔버스에 로드
+        genogramRef.current?.loadJSON(canvasJson);
+        updateGenogramState();
+      } catch (e) {
+        console.error('AI JSON Import Error:', e);
+        alert('AI JSON 변환 중 오류가 발생했습니다.');
       }
-
-      // AI JSON → Canvas 형식으로 변환
-      const canvasData = convertAIJsonToCanvas(aiOutput);
-      const canvasJson = JSON.stringify(canvasData);
-
-      // 캔버스에 로드
-      genogramRef.current?.loadJSON(canvasJson);
-      updateGenogramState();
-    } catch (e) {
-      console.error('AI JSON Import Error:', e);
-      alert('AI JSON 변환 중 오류가 발생했습니다.');
-    }
-  }, [updateGenogramState]);
+    },
+    [updateGenogramState]
+  );
 
   // 수동 저장
   const handleSave = useCallback(() => {
