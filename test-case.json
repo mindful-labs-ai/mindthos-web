@@ -1,0 +1,5051 @@
+케이스 1 : 
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T09:52:32.877Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 735,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 585,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618494534-faa1cec",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "언니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618494661-32dc219",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 675,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 465,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618520284-4503a79",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 525,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618494534-69af5cb",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618494534-faa1cec"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618494661-7c6a35e",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618494661-32dc219"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618520284-ac34d95",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618513817-cfe58b4",
+          "childRef": "person-26020618520284-4503a79"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+케이스 2 :
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T09:59:20.257Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618520284-4503a79",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 525,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 195,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618494661-32dc219",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 675,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618494534-faa1cec",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "언니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 585,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 735,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-0f30167",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": -45,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-241fe69",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 315,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618560648-cf522e9",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "남편 누나",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 105,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618562138-f1ba429",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남편 형",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 15,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618563564-8151abc",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남편 남동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 285,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618584799-506d681",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "남편 형 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 135,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618590559-1da3e89",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남편 형 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 75,
+          "y": 855
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618520284-ac34d95",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618513817-cfe58b4",
+          "childRef": "person-26020618520284-4503a79"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618494534-69af5cb",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618494534-faa1cec"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618494661-7c6a35e",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618494661-32dc219"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618555716-1949800",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618555716-0f30167",
+            "person-26020618555716-241fe69"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618555716-fd020f1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618513817-4dc96b4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618560648-14f0834",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618560648-cf522e9"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618562138-27d4500",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618562138-f1ba429"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618563564-209a762",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618563564-8151abc"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618584799-05257eb",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618562138-f1ba429",
+            "person-26020618584799-506d681"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618590559-98ce171",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618584799-05257eb",
+          "childRef": "person-26020618590559-1da3e89"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+케이스 3 :
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T10:07:57.269Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618520284-4503a79",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 375,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 165,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618494661-32dc219",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 675,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618494534-faa1cec",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "언니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 585,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 735,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-0f30167",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": -75,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-241fe69",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 315,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618560648-cf522e9",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "남편 누나",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 75,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618562138-f1ba429",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남편 형",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": -15,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618563564-8151abc",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남편 남동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 255,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618584799-506d681",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "남편 형 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 105,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618590559-1da3e89",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남편 형 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 45,
+          "y": 855
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619004514-4521dc0",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "할아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 375,
+          "y": -45
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619004514-276c26b",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "할머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 675,
+          "y": -45
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619032856-85b9c51",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "고모",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 525,
+          "y": 105
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619072985-e860f5d",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "삼촌",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 615,
+          "y": 105
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618520284-ac34d95",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618513817-cfe58b4",
+          "childRef": "person-26020618520284-4503a79"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618494534-69af5cb",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618494534-faa1cec"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618494661-7c6a35e",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618494661-32dc219"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618555716-1949800",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618555716-0f30167",
+            "person-26020618555716-241fe69"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618555716-fd020f1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618513817-4dc96b4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618560648-14f0834",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618560648-cf522e9"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618562138-27d4500",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618562138-f1ba429"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618563564-209a762",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618563564-8151abc"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618584799-05257eb",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618562138-f1ba429",
+            "person-26020618584799-506d681"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618590559-98ce171",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618584799-05257eb",
+          "childRef": "person-26020618590559-1da3e89"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619004514-f56d892",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619004514-4521dc0",
+            "person-26020619004514-276c26b"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619004514-2cef71d",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619004514-f56d892",
+          "childRef": "person-26020618485809-12ad942"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619032856-2872dac",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619004514-f56d892",
+          "childRef": "person-26020619032856-85b9c51"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619072985-f8bbe87",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619004514-f56d892",
+          "childRef": "person-26020619072985-e860f5d"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+케이스 4 :
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T10:09:27.300Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 255,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 555,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-0f30167",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 195,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-241fe69",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 315,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618555716-1949800",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618555716-0f30167",
+            "person-26020618555716-241fe69"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618555716-fd020f1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618513817-4dc96b4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+케이스 5 :
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T10:10:52.116Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 255,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 555,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-0f30167",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 195,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-241fe69",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 315,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619101938-94b674f",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 375,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619103263-0676f93",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "자녀 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619104333-64e62d2",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "손자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618555716-1949800",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618555716-0f30167",
+            "person-26020618555716-241fe69"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618555716-fd020f1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618513817-4dc96b4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619101938-06529e5",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618513817-cfe58b4",
+          "childRef": "person-26020619101938-94b674f"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619103263-905ca96",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619101938-94b674f",
+            "person-26020619103263-0676f93"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619104333-4ff19dd",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619103263-905ca96",
+          "childRef": "person-26020619104333-64e62d2"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+케이스 6 :
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T10:15:49.602Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 75,
+          "y": 855
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 855
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 555,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-0f30167",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": -75,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-241fe69",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 315,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619101938-94b674f",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 285,
+          "y": 1005
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619103263-0676f93",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "자녀 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 405,
+          "y": 1005
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619104333-64e62d2",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "손자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 345,
+          "y": 1155
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619122413-4e9111a",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시형",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": -15,
+          "y": 1305
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619123346-5c9e545",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시형 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 105,
+          "y": 1305
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619123956-bff5098",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시형 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 45,
+          "y": 1455
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619144006-3ad2fcc",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 165,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619144894-b1edcef",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시동생 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 285,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619145939-0c04567",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시누이",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 255,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619154506-43ff40d",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시동생 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 225,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618555716-1949800",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618555716-0f30167",
+            "person-26020618555716-241fe69"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618555716-fd020f1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618513817-4dc96b4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619101938-06529e5",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618513817-cfe58b4",
+          "childRef": "person-26020619101938-94b674f"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619103263-905ca96",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619101938-94b674f",
+            "person-26020619103263-0676f93"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619104333-4ff19dd",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619103263-905ca96",
+          "childRef": "person-26020619104333-64e62d2"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619122413-30b0d81",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020619122413-4e9111a"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619123346-2386d11",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619122413-4e9111a",
+            "person-26020619123346-5c9e545"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619123956-f1c7606",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619123346-2386d11",
+          "childRef": "person-26020619123956-bff5098"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619144006-1fe7a79",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020619144006-3ad2fcc"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619144894-3f21fa9",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619144006-3ad2fcc",
+            "person-26020619144894-b1edcef"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619145939-23385d1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020619145939-0c04567"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619154506-f595929",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619144894-3f21fa9",
+          "childRef": "person-26020619154506-43ff40d"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+케이스 6-1 :
+{
+  "id": "genogram-26020618484798-8c324ba",
+  "version": "v1",
+  "metadata": {
+    "title": "Untitled",
+    "createdAt": "2026-02-06T09:48:47.989Z",
+    "updatedAt": "2026-02-06T10:24:30.310Z"
+  },
+  "subjects": [
+    {
+      "id": "person-26020618513817-4dc96b4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "IP 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 75,
+          "y": 1305
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-edc8018",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "IP",
+          "isIP": true,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 495,
+          "y": 1305
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-f09afbe",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 645,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618485809-12ad942",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 255,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-0f30167",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "시아버지",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 15,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020618555716-241fe69",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "시어머니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 135,
+          "y": 255
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619101938-94b674f",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 285,
+          "y": 1455
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619185316-e76972e",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "오빠",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 315,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619190243-54170af",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "언니",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 405,
+          "y": 855
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619195456-1b949e4",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "남동생",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 585,
+          "y": 405
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619203578-bc828b0",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "오빠 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 435,
+          "y": 555
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619204247-1b6dda6",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "오빠 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 375,
+          "y": 705
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619214399-b659db0",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "언니 남편",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 282.08378809130045,
+          "y": 854.6860305240339
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619214971-de3d437",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "언니 자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 345,
+          "y": 1005
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619103263-0676f93",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "자녀 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 405,
+          "y": 1455
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619104333-64e62d2",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "손자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 345,
+          "y": 1605
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619240934-f96bead",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Female",
+          "name": "언니 자녀 아내",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 469.06076669453785,
+          "y": 1002.8497361822396
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    },
+    {
+      "id": "person-26020619241456-48be1a6",
+      "entity": {
+        "type": "PERSON",
+        "attribute": {
+          "gender": "Male",
+          "name": "언니 손자녀",
+          "isIP": false,
+          "isDead": false,
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "age": null,
+          "illness": "None",
+          "extraInfo": {
+            "enable": false,
+            "job": null,
+            "education": null,
+            "region": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "center": {
+          "x": 405,
+          "y": 1155
+        },
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-26020618513817-cfe58b4",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-edc8018",
+            "person-26020618513817-4dc96b4"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618485809-453f16a",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618485809-12ad942",
+            "person-26020618485809-f09afbe"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618485809-8e5f455",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020618485809-edc8018"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020618555716-1949800",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020618555716-0f30167",
+            "person-26020618555716-241fe69"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619101938-06529e5",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618513817-cfe58b4",
+          "childRef": "person-26020619101938-94b674f"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020618555716-fd020f1",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618555716-1949800",
+          "childRef": "person-26020618513817-4dc96b4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619185316-f6c5a2e",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020619185316-e76972e"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619190243-a4111cd",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020619190243-54170af"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619195456-0781452",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020618485809-453f16a",
+          "childRef": "person-26020619195456-1b949e4"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619203578-ad4e282",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619185316-e76972e",
+            "person-26020619203578-bc828b0"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619204248-8c1b789",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619203578-ad4e282",
+          "childRef": "person-26020619204247-1b6dda6"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619214399-87f0814",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619190243-54170af",
+            "person-26020619214399-b659db0"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619214971-adff20e",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619214399-87f0814",
+          "childRef": "person-26020619214971-de3d437"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619103263-905ca96",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619101938-94b674f",
+            "person-26020619103263-0676f93"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619104333-4ff19dd",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619103263-905ca96",
+          "childRef": "person-26020619104333-64e62d2"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "partner-26020619240934-0c87063",
+      "entity": {
+        "type": "Partner_Line",
+        "attribute": {
+          "status": "Marriage",
+          "subjects": [
+            "person-26020619214971-de3d437",
+            "person-26020619240934-f96bead"
+          ],
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          }
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    },
+    {
+      "id": "parentchild-26020619241456-c4b30d0",
+      "entity": {
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "parentRef": "partner-26020619240934-0c87063",
+          "childRef": "person-26020619241456-48be1a6"
+        },
+        "memo": null
+      },
+      "layout": {
+        "strokeWidth": "DEFAULT",
+        "strokeColor": "#3C3C3C",
+        "textColor": "#3C3C3C"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "center": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 1
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}

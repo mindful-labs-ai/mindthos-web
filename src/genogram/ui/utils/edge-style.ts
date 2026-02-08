@@ -8,6 +8,11 @@ import {
   RELATION_HOSTILE,
 } from '@/genogram/core/constants/colors';
 import {
+  STROKE_WIDTH_DEFAULT,
+  STROKE_WIDTH_THICK,
+  STROKE_WIDTH_THIN,
+} from '@/genogram/core/constants/strokes';
+import {
   ConnectionType,
   PartnerStatus,
   RelationStatus,
@@ -24,12 +29,12 @@ export const getEdgeStyle = (
   partnerStatus?: (typeof PartnerStatus)[keyof typeof PartnerStatus],
   relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus]
 ): EdgeStyle => {
-  const baseStyle: EdgeStyle = { stroke: DEFAULT_FG, strokeWidth: 2 };
+  const baseStyle: EdgeStyle = { stroke: DEFAULT_FG, strokeWidth: STROKE_WIDTH_DEFAULT };
 
   if (connectionType === ConnectionType.Partner_Line) {
     switch (partnerStatus) {
       case PartnerStatus.Marriage:
-        return { ...baseStyle, strokeWidth: 2 };
+        return { ...baseStyle, strokeWidth: STROKE_WIDTH_DEFAULT };
       case PartnerStatus.Divorce:
         return { ...baseStyle, strokeDasharray: '5,5' };
       case PartnerStatus.Marital_Separation:
@@ -48,27 +53,27 @@ export const getEdgeStyle = (
   if (connectionType === ConnectionType.Relation_Line) {
     switch (relationStatus) {
       case RelationStatus.Close:
-        return { stroke: RELATION_CLOSE, strokeWidth: 2 };
+        return { stroke: RELATION_CLOSE, strokeWidth: STROKE_WIDTH_DEFAULT };
       case RelationStatus.Fused:
-        return { stroke: RELATION_CLOSE, strokeWidth: 3 };
+        return { stroke: RELATION_CLOSE, strokeWidth: STROKE_WIDTH_THICK };
       case RelationStatus.Distant:
         return {
           stroke: RELATION_DISTANT,
-          strokeWidth: 1,
+          strokeWidth: STROKE_WIDTH_THIN,
           strokeDasharray: '5,5',
         };
       case RelationStatus.Hostile:
         return {
           stroke: RELATION_HOSTILE,
-          strokeWidth: 2,
+          strokeWidth: STROKE_WIDTH_DEFAULT,
           strokeDasharray: '8,4',
         };
       case RelationStatus.Close_Hostile:
-        return { stroke: RELATION_HOSTILE, strokeWidth: 2 };
+        return { stroke: RELATION_HOSTILE, strokeWidth: STROKE_WIDTH_DEFAULT };
       case RelationStatus.Cutoff:
         return {
           stroke: RELATION_CUTOFF,
-          strokeWidth: 2,
+          strokeWidth: STROKE_WIDTH_DEFAULT,
           strokeDasharray: '2,6',
         };
       default:
@@ -77,7 +82,7 @@ export const getEdgeStyle = (
   }
 
   if (connectionType === ConnectionType.Influence_Line) {
-    return { stroke: INFLUENCE_STROKE, strokeWidth: 3 };
+    return { stroke: INFLUENCE_STROKE, strokeWidth: STROKE_WIDTH_THICK };
   }
 
   return baseStyle;

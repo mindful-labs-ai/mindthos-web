@@ -7,6 +7,11 @@ import {
   SELECTION_BORDER,
   SELECTION_INNER,
 } from '@/genogram/core/constants/colors';
+import {
+  getStrokeWidthPx,
+  STROKE_WIDTH_DEFAULT,
+  STROKE_WIDTH_SUB,
+} from '@/genogram/core/constants/strokes';
 import type { NodeShape } from '@/genogram/core/models/person';
 import type { PartnerDetail } from '@/genogram/core/models/relationship';
 import { getPartnerDateVisibility } from '@/genogram/core/models/relationship';
@@ -16,7 +21,6 @@ import {
   ParentChildStatus,
   PartnerStatus,
   RelationStatus,
-  StrokeWidth,
 } from '@/genogram/core/types/enums';
 
 import { DEFAULT_NODE_SIZE } from '../../constants/grid';
@@ -49,23 +53,17 @@ export interface RelationshipEdgeData {
 
 const TEXT_COLOR = DEFAULT_FG;
 const STROKE = DEFAULT_FG;
-const SW = 2;
-const SW_SUB = 1.5;
+const SW = STROKE_WIDTH_DEFAULT;
+const SW_SUB = STROKE_WIDTH_SUB;
 
-/** StrokeWidth enum → px 변환 */
-const STROKE_WIDTH_PX: Record<string, number> = {
-  [StrokeWidth.Thin]: 1,
-  [StrokeWidth.Default]: 2,
-  [StrokeWidth.Thick]: 3,
-};
 const PARTNER_OFFSET = 40;
-const ZIGZAG_AMP = 10;
+const ZIGZAG_AMP = 15;
 const ZIGZAG_PERIOD = 8;
-const PARALLEL_GAP = 3;
+const PARALLEL_GAP = 5;
 const CUTOFF_LEN = 8;
 const CUTOFF_GAP = 3;
 const SLASH_LEN = 10;
-const ARROW_INSET = 14; // 화살표 머리 크기만큼 지그재그 끝점 축소
+const ARROW_INSET = 20; // 화살표 머리 크기만큼 지그재그 끝점 축소
 const HIT_WIDTH = 16; // 클릭 가능 히트 영역 두께
 const HIT_BORDER = SELECTION_BORDER; // 선택 하이라이트 테두리
 const HIT_INNER = SELECTION_INNER; // 선택 하이라이트 내부 (거의 흰색에 가까운 연두)
@@ -543,8 +541,8 @@ const renderInfluenceEdge = (
       viewBox="0 0 10 10"
       refX="9"
       refY="5"
-      markerWidth="16"
-      markerHeight="16"
+      markerWidth="24"
+      markerHeight="24"
       markerUnits="userSpaceOnUse"
       orient="auto-start-reverse"
     >
@@ -558,8 +556,8 @@ const renderInfluenceEdge = (
       viewBox="-1 -1 13 12"
       refX="10"
       refY="5"
-      markerWidth="16"
-      markerHeight="16"
+      markerWidth="24"
+      markerHeight="24 "
       markerUnits="userSpaceOnUse"
       orient="auto-start-reverse"
     >
@@ -1031,7 +1029,7 @@ export const RelationshipEdge = memo(
     const ct = connectionType || ConnectionType.Partner_Line;
 
     const baseColor = dataStrokeColor || STROKE;
-    const baseSw = STROKE_WIDTH_PX[dataStrokeWidth ?? ''] ?? SW;
+    const baseSw = getStrokeWidthPx(dataStrokeWidth);
     const baseTxtColor = dataTextColor || TEXT_COLOR;
 
     let renderResult: EdgeRenderResult;

@@ -1,0 +1,1653 @@
+{
+  "id": "genogram-1770374545912-ej5gxzx",
+  "version": "v1",
+  "metadata": {
+    "title": "AI 생성 가계도",
+    "createdAt": "2026-02-06T10:42:25.912Z",
+    "updatedAt": "2026-02-06T10:42:25.912Z"
+  },
+  "subjects": [
+    {
+      "id": "person-1770374603314-aukp3gd",
+      "entity": {
+        "memo": "7남매 중 장남. 효심이 깊고 가족 내 리더 역할. 최근 은퇴 예정. 술 문제로 가족 내 갈등이 있었음. 감정 표현에 어려움이 있음.",
+        "type": "PERSON",
+        "attribute": {
+          "age": 59,
+          "isIP": true,
+          "name": "최낙환",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "Alcohol_Or_Drug_Abuse",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 75,
+          "y": 1155
+        }
+      }
+    },
+    {
+      "id": "person-1770374603314-zjzk321",
+      "entity": {
+        "memo": "내담자 아내. 장애 자녀 부모회 활동 및 상담사. 자기표현 강해짐. 가족 내 정서적 지지와 안전망을 원함.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "정미경",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 255,
+          "y": 1155
+        }
+      }
+    },
+    {
+      "id": "person-1770374603314-5mcoi1l",
+      "entity": {
+        "memo": "경계성 장애. 성인. 독립적 생활 어려움. 부모의 돌봄 필요.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "장녀(딸)",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "Psychological_Or_Physical_Problem",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 105,
+          "y": 1305
+        }
+      }
+    },
+    {
+      "id": "person-1770374603314-cwkxzr2",
+      "entity": {
+        "memo": "발달장애. 성인. 부모의 돌봄 필요.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "차남(아들)",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "Psychological_Or_Physical_Problem",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 195,
+          "y": 1305
+        }
+      }
+    },
+    {
+      "id": "person-1770374603314-uinov9y",
+      "entity": {
+        "memo": "요양원 거주. 온화하고 유순한 성격. 가족 모임의 중심.",
+        "type": "PERSON",
+        "attribute": {
+          "age": 94,
+          "isIP": false,
+          "name": "어머니",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 555,
+          "y": 255
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-zrm31dv",
+      "entity": {
+        "memo": "10여 년 전 사망. 가족 내 권위자.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "아버지",
+          "gender": "Male",
+          "isDead": true,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": -75,
+          "y": 255
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-buehz3u",
+      "entity": {
+        "memo": "7남매 중 첫째. 가족 내 영향력 큼. 내담자 아내와 갈등 경험.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "큰누나",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": -45,
+          "y": 555
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-j7rasfs",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "큰누나 남편",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 45,
+          "y": 555
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-vs3c00r",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "둘째누나",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 75,
+          "y": 705
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-bk3kgxj",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "둘째누나 남편",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 165,
+          "y": 705
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-pw8ch8v",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "셋째누나",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 165,
+          "y": 855
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-bibz6se",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "셋째누나 남편",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 255,
+          "y": 855
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-letl7yk",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "넷째누나",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 255,
+          "y": 1005
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-d7z3gpw",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "넷째누나 남편",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 345,
+          "y": 1005
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-yrr8rln",
+      "entity": {
+        "memo": "미국 거주 경험. 영화 관련 일. 최근 귀국.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "남동생",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 405,
+          "y": 1455
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-4ropnyu",
+      "entity": {
+        "memo": "영화 관련 대학원 졸업.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "남동생 아내(제수씨)",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 495,
+          "y": 1455
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-db2w6bp",
+      "entity": {
+        "memo": "미혼. 독립 거주. 오빠(내담자)에게 의존적. 심리적 어려움 경험.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "여동생",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 495,
+          "y": 405
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-pe8jjto",
+      "entity": {
+        "memo": "정미경의 친언니. 정서적 의지 대상. 최근 긍정적으로 변화 중.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "정미경 언니",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 345,
+          "y": -135
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-hk6dzml",
+      "entity": {
+        "memo": "정신적 어려움 호소. 자괴감, 우울감 경험.",
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "정미경 남동생",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "Psychological_Or_Physical_Problem",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "DEFAULT",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 435,
+          "y": -135
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-m3uzsry",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "정미경 어머니",
+          "gender": "Female",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 465,
+          "y": -285
+        }
+      }
+    },
+    {
+      "id": "person-1770374603315-0lybgw4",
+      "entity": {
+        "memo": null,
+        "type": "PERSON",
+        "attribute": {
+          "age": null,
+          "isIP": false,
+          "name": "정미경 아버지",
+          "gender": "Male",
+          "isDead": false,
+          "illness": "None",
+          "lifeSpan": {
+            "birth": null,
+            "death": null
+          },
+          "extraInfo": {
+            "job": null,
+            "enable": false,
+            "region": null,
+            "education": null
+          }
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 225,
+          "y": -285
+        }
+      }
+    },
+    {
+      "id": "fetus-1770374603315-79qgiog",
+      "entity": {
+        "memo": "유산",
+        "type": "FETUS",
+        "attribute": {
+          "name": null,
+          "status": "Miscarriage"
+        }
+      },
+      "layout": {
+        "style": {
+          "size": "SMALL",
+          "bgColor": "#FFFFFF",
+          "textColor": "#3C3C3C"
+        },
+        "center": {
+          "x": 165,
+          "y": 1305
+        }
+      }
+    }
+  ],
+  "connections": [
+    {
+      "id": "partner-1770374603315-oaee98g",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603314-zjzk321"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-qtb3n7u",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-zrm31dv", "person-1770374603314-uinov9y"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-5wmcn2f",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-buehz3u", "person-1770374603315-j7rasfs"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-tk41hwj",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-vs3c00r", "person-1770374603315-bk3kgxj"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-xnqxv2i",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-pw8ch8v", "person-1770374603315-bibz6se"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-n9nj52p",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-letl7yk", "person-1770374603315-d7z3gpw"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-p9kdxm9",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-yrr8rln", "person-1770374603315-4ropnyu"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "partner-1770374603315-8owt0wc",
+      "entity": {
+        "memo": null,
+        "type": "Partner_Line",
+        "attribute": {
+          "detail": {
+            "marriedDate": null,
+            "divorcedDate": null,
+            "reunitedDate": null,
+            "relationshipStartDate": null
+          },
+          "status": "Marriage",
+          "subjects": ["person-1770374603315-0lybgw4", "person-1770374603315-m3uzsry"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-kbydqrr",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-buehz3u",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-v3jvroy",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-vs3c00r",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-r9m9khr",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-pw8ch8v",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-chexdid",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-letl7yk",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-or6a34y",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603314-aukp3gd",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-nvh9kr8",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-yrr8rln",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-d8jj159",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-db2w6bp",
+          "parentRef": "partner-1770374603315-qtb3n7u"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-h0nd8kq",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-pe8jjto",
+          "parentRef": "partner-1770374603315-8owt0wc"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-us7haoy",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603315-hk6dzml",
+          "parentRef": "partner-1770374603315-8owt0wc"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-9jy3xkz",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603314-5mcoi1l",
+          "parentRef": "partner-1770374603315-oaee98g"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-ep5yvvh",
+      "entity": {
+        "memo": null,
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Biological_Child",
+          "childRef": "person-1770374603314-cwkxzr2",
+          "parentRef": "partner-1770374603315-oaee98g"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "parentchild-1770374603315-nhpgi54",
+      "entity": {
+        "memo": "유산",
+        "type": "Children_Parents_Line",
+        "attribute": {
+          "status": "Miscarriage",
+          "childRef": "fetus-1770374603315-79qgiog",
+          "parentRef": "partner-1770374603315-oaee98g"
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-f2wcp61",
+      "entity": {
+        "memo": "최근 갈등과 소원, 상호 이해와 공감의 회복",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Distant",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603314-zjzk321"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-33n35r3",
+      "entity": {
+        "memo": "부모-자녀, 돌봄과 책임",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603314-5mcoi1l"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-zvdec4t",
+      "entity": {
+        "memo": "부모-자녀, 돌봄과 책임",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603314-cwkxzr2"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-eon3147",
+      "entity": {
+        "memo": "모-자녀, 돌봄과 책임",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-zjzk321", "person-1770374603314-5mcoi1l"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-1y96ex3",
+      "entity": {
+        "memo": "모-자녀, 돌봄과 책임",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-zjzk321", "person-1770374603314-cwkxzr2"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-v1m26vp",
+      "entity": {
+        "memo": "정서적 의지, 친밀",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Close",
+          "subjects": ["person-1770374603314-zjzk321", "person-1770374603315-pe8jjto"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-c3q7tla",
+      "entity": {
+        "memo": "효심, 충성심, 책임감",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603314-uinov9y"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-xk60ag9",
+      "entity": {
+        "memo": "큰누나와 갈등, 과거 스트레스",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Hostile",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603315-buehz3u"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-t58v7g1",
+      "entity": {
+        "memo": "시누이와 갈등, 원가족 이슈",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Hostile",
+          "subjects": ["person-1770374603314-zjzk321", "person-1770374603315-buehz3u"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603315-4th5dm3",
+      "entity": {
+        "memo": "여동생에 대한 보호, 의존",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603315-db2w6bp"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603316-24f9orn",
+      "entity": {
+        "memo": "남동생과 우애, 미국 거주 경험 공유",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-aukp3gd", "person-1770374603315-yrr8rln"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    },
+    {
+      "id": "relation-1770374603316-dhzw32c",
+      "entity": {
+        "memo": "남동생의 심리적 어려움에 대한 걱정",
+        "type": "Relation_Line",
+        "attribute": {
+          "status": "Connected",
+          "subjects": ["person-1770374603314-zjzk321", "person-1770374603315-hk6dzml"]
+        }
+      },
+      "layout": {
+        "textColor": "#3C3C3C",
+        "strokeColor": "#3C3C3C",
+        "strokeWidth": "DEFAULT"
+      }
+    }
+  ],
+  "annotations": [],
+  "view": {
+    "viewPoint": {
+      "zoom": 1,
+      "center": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "visibility": {
+      "name": true,
+      "age": true,
+      "birthDate": true,
+      "deathDate": true,
+      "extraInfo": true,
+      "illness": true,
+      "relationLine": true,
+      "groupLine": true,
+      "grid": true,
+      "memo": true
+    }
+  }
+}
+
+raw_output : 
+{
+  "subjects": [
+    {
+      "id": 1,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "홍길동",
+      "isIP": true,
+      "isDead": false,
+      "illness": "Alcohol_Or_Drug_Abuse",
+      "x": 105,
+      "y": 15,
+      "size": "DEFAULT",
+      "birthOrder": 2,
+      "spouseId": 3,
+      "birthYear": 2000,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "알코올 의존증 치료 중"
+    },
+    {
+      "id": 2,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "형",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 15,
+      "y": 15,
+      "size": "DEFAULT",
+      "birthOrder": 1,
+      "spouseId": 4,
+      "birthYear": 1996,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": null
+    },
+    {
+      "id": 3,
+      "type": "PERSON",
+      "gender": "Female",
+      "name": "아내",
+      "isIP": false,
+      "isDead": false,
+      "illness": "Psychological_Or_Physical_Problem",
+      "x": 285,
+      "y": 15,
+      "size": "DEFAULT",
+      "birthOrder": null,
+      "spouseId": 1,
+      "birthYear": 2000,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "한 쪽 다리가 기능하지 않음"
+    },
+    {
+      "id": 4,
+      "type": "PERSON",
+      "gender": "Female",
+      "name": "형의 아내",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 195,
+      "y": 15,
+      "size": "SMALL",
+      "birthOrder": null,
+      "spouseId": 2,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": null
+    },
+    {
+      "id": 5,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "아버지",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 45,
+      "y": -135,
+      "size": "DEFAULT",
+      "birthOrder": 2,
+      "spouseId": 6,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "2남 2녀 중 둘째"
+    },
+    {
+      "id": 6,
+      "type": "PERSON",
+      "gender": "Female",
+      "name": "어머니",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 255,
+      "y": -135,
+      "size": "DEFAULT",
+      "birthOrder": 2,
+      "spouseId": 5,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "3녀 1남 중 둘째"
+    },
+    {
+      "id": 7,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "첫째 자녀",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 165,
+      "y": 165,
+      "size": "DEFAULT",
+      "birthOrder": 1,
+      "spouseId": 8,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "외도를 저지르고 있는 것으로 추정"
+    },
+    {
+      "id": 8,
+      "type": "PERSON",
+      "gender": "Female",
+      "name": "첫째의 배우자",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 255,
+      "y": 165,
+      "size": "SMALL",
+      "birthOrder": null,
+      "spouseId": 7,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": null
+    },
+    {
+      "id": 9,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "둘째 자녀",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 345,
+      "y": 165,
+      "size": "DEFAULT",
+      "birthOrder": 2,
+      "spouseId": 10,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "게이, 동성 결혼"
+    },
+    {
+      "id": 10,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "둘째의 배우자",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 435,
+      "y": 165,
+      "size": "SMALL",
+      "birthOrder": null,
+      "spouseId": 9,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": null
+    },
+    {
+      "id": 11,
+      "type": "PERSON",
+      "gender": "Female",
+      "name": "장모",
+      "isIP": false,
+      "isDead": false,
+      "illness": "Psychological_Or_Physical_Problem",
+      "x": 375,
+      "y": -135,
+      "size": "DEFAULT",
+      "birthOrder": null,
+      "spouseId": 12,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": "두 번의 유산 후 아내를 입양, 아내에게 의존, 하루 한 번 전화"
+    },
+    {
+      "id": 12,
+      "type": "PERSON",
+      "gender": "Male",
+      "name": "아내의 아버지",
+      "isIP": false,
+      "isDead": false,
+      "illness": "None",
+      "x": 465,
+      "y": -135,
+      "size": "SMALL",
+      "birthOrder": null,
+      "spouseId": 11,
+      "birthYear": null,
+      "age": null,
+      "job": null,
+      "education": null,
+      "region": null,
+      "memo": null
+    }
+  ],
+  "couples": [
+    [5, 6, "marriage"],
+    [2, 4, "marriage"],
+    [1, 3, "marriage"],
+    [7, 8, "marriage"],
+    [9, 10, "marriage"],
+    [12, 11, "marriage"]
+  ],
+  "children": [
+    [5, 6, 2, "biological"],
+    [5, 6, 1, "biological"],
+    [1, 3, 7, "biological"],
+    [1, 3, 9, "biological"],
+    [12, 11, 3, "adopted"]
+  ],
+  "fetus": [
+    [12, 11, "유산", 555, -15],
+    [12, 11, "유산", 645, -15]
+  ],
+  "relations": [
+    [3, 11, "의존적, 정서적으로 밀착됨"]
+  ]
+}
