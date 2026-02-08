@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 // ICON 변경: Search는 Lucide 직접 사용 중
-import { Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 
 import { Button } from '@/components/ui/atoms/Button';
 import type { Client } from '@/feature/client/types';
@@ -11,12 +11,18 @@ interface ClientDropdownProps {
   clients: Client[];
   selectedClient: Client | null;
   onSelect: (client: Client) => void;
+  /** 클라이언트 추가 버튼 클릭 핸들러 */
+  onAddClient?: () => void;
+  /** 클라이언트 없이 캔버스만 사용 중인 모드 */
+  isTemporaryMode?: boolean;
 }
 
 export function ClientDropdown({
   clients,
   selectedClient,
   onSelect,
+  onAddClient,
+  isTemporaryMode = false,
 }: ClientDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -78,6 +84,20 @@ export function ClientDropdown({
     setIsOpen(false);
     setSearchQuery('');
   };
+
+  // 클라이언트가 없고 임시 모드일 때: 클라이언트 추가 버튼
+  if (isTemporaryMode && activeClients.length === 0) {
+    return (
+      <Button
+        variant="outline"
+        className="gap-2 bg-white shadow-sm"
+        onClick={onAddClient}
+      >
+        <Plus className="h-[18px] w-[18px]" />
+        <span>클라이언트 추가</span>
+      </Button>
+    );
+  }
 
   return (
     <div ref={containerRef} className="relative">

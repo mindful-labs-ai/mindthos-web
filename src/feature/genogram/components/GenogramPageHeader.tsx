@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // ICON 변경: Download, Check, Save, Loader2는 Lucide 직접 사용 중
-import { Check, Download, Loader2, Save } from 'lucide-react';
+import { Check, Download, Loader2, Save, Sparkles, Upload } from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';
@@ -26,6 +26,14 @@ interface GenogramPageHeaderProps {
   isPanelOpen?: boolean;
   isSaving?: boolean;
   lastSavedAt?: Date | null;
+  /** 클라이언트 추가 핸들러 */
+  onAddClient?: () => void;
+  /** 클라이언트 없이 임시 캔버스 모드 */
+  isTemporaryMode?: boolean;
+  /** Canvas JSON 직접 Import */
+  onImportCanvasJson?: (json: string) => void;
+  /** AI Raw JSON Import (후처리 후 렌더링) */
+  onImportAIJson?: (json: string) => void;
 }
 
 export function GenogramPageHeader({
@@ -42,6 +50,10 @@ export function GenogramPageHeader({
   isPanelOpen = false,
   isSaving = false,
   lastSavedAt = null,
+  onAddClient,
+  isTemporaryMode = false,
+  onImportCanvasJson,
+  onImportAIJson,
 }: GenogramPageHeaderProps) {
   const [isExported, setIsExported] = useState(false);
   const showSaved = useSavedIndicator(lastSavedAt);
@@ -52,6 +64,22 @@ export function GenogramPageHeader({
     setTimeout(() => setIsExported(false), 2000);
   };
 
+  const handleCanvasImport = () => {
+    if (!onImportCanvasJson) return;
+    const input = window.prompt('Canvas JSON을 붙여넣으세요:');
+    if (input) {
+      onImportCanvasJson(input);
+    }
+  };
+
+  const handleAIImport = () => {
+    if (!onImportAIJson) return;
+    const input = window.prompt('AI Raw JSON을 붙여넣으세요:');
+    if (input) {
+      onImportAIJson(input);
+    }
+  };
+
   return (
     <>
       {/* 좌측 상단: 클라이언트 드롭다운 */}
@@ -60,6 +88,8 @@ export function GenogramPageHeader({
           clients={clients}
           selectedClient={selectedClient}
           onSelect={onClientSelect}
+          onAddClient={onAddClient}
+          isTemporaryMode={isTemporaryMode}
         />
       </div>
 
@@ -86,6 +116,31 @@ export function GenogramPageHeader({
 
           {/* 액션 버튼들 */}
           <div className="flex items-center gap-2 rounded-lg border border-border bg-white p-3 shadow-sm">
+            {/* Import 버튼들 */}
+            {onImportCanvasJson && (
+              <button
+                onClick={handleCanvasImport}
+                title="Canvas JSON Import"
+                className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong"
+              >
+                <Upload className="h-[18px] w-[18px]" />
+              </button>
+            )}
+            {onImportAIJson && (
+              <button
+                onClick={handleAIImport}
+                title="AI JSON Import (후처리)"
+                className="rounded-md p-2 text-primary transition-colors hover:bg-primary/10"
+              >
+                <Sparkles className="h-[18px] w-[18px]" />
+              </button>
+            )}
+
+            {/* 구분선 */}
+            {(onImportCanvasJson || onImportAIJson) && (
+              <div className="mx-1 h-5 w-px bg-border" />
+            )}
+
             <button
               onClick={onUndo}
               title="실행 취소"
