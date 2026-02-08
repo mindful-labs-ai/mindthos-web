@@ -7,6 +7,12 @@ import {
   DEFAULT_FG,
   SELECTION_HALO,
 } from '@/genogram/core/constants/colors';
+import { STROKE_WIDTH_NODE } from '@/genogram/core/constants/strokes';
+import {
+  FONT_SIZE_SYMBOL,
+  FONT_SIZE_XS,
+  FONT_SIZE_XXS,
+} from '@/genogram/core/constants/typography';
 import {
   FetusStatus,
   Gender,
@@ -126,7 +132,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
   const fillColor = nodeData.bgColor || COLORS.fill;
   const textColor = nodeData.textColor || COLORS.text;
   const strokeColor = COLORS.stroke;
-  const strokeWidth = 1.5;
+  const strokeWidth = STROKE_WIDTH_NODE;
 
   const renderShape = () => {
     const c = S / 2; // 중심
@@ -347,7 +353,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               x={c}
               y={c + 5}
               textAnchor="middle"
-              fontSize="18"
+              fontSize={FONT_SIZE_SYMBOL}
               fill={textColor}
             >
               ?
@@ -694,8 +700,13 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 상단: 생몰연도 */}
       {lifeSpanLabel && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-[10px] text-fg"
-          style={{ bottom: S + 2 }}
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-fg"
+          style={{
+            bottom: S + 2,
+            fontSize: FONT_SIZE_XXS,
+            textShadow:
+              '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
+          }}
         >
           {lifeSpanLabel}
         </div>
@@ -719,8 +730,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {age != null && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
           <span
-            className="text-xs font-bold"
+            className="font-bold"
             style={{
+              fontSize: FONT_SIZE_XS,
               color: textColor,
               textShadow:
                 '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
@@ -734,8 +746,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 오른쪽: 상세정보 */}
       {hasDetail && (
         <div
-          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-medium text-fg"
+          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-medium text-fg"
           style={{
+            fontSize: FONT_SIZE_XS,
             left: S + 8,
             color: textColor,
             textShadow:
@@ -750,8 +763,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
 
       {/* 아래: 이름 */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-xs font-medium text-fg"
+        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-medium text-fg"
         style={{
+          fontSize: FONT_SIZE_XS,
           top: S + 4,
           textShadow:
             '-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, -1px -2px 0 #fff, 1px -2px 0 #fff, -1px 2px 0 #fff, 1px 2px 0 #fff, -2px -1px 0 #fff, 2px -1px 0 #fff, -2px 1px 0 #fff, 2px 1px 0 #fff',

@@ -6,6 +6,8 @@ import {
   SELECTION_BORDER,
   SELECTION_INNER,
 } from '@/genogram/core/constants/colors';
+import { STROKE_WIDTH_DEFAULT } from '@/genogram/core/constants/strokes';
+import { FONT_SIZE_XS } from '@/genogram/core/constants/typography';
 
 export interface GroupBoundaryNodeData {
   connectionId: string;
@@ -163,7 +165,7 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
 
   if (width <= 0 || height <= 0 || !pathD) return null;
 
-  const sw = 2;
+  const sw = STROKE_WIDTH_DEFAULT;
   const HIT_BORDER = SELECTION_BORDER;
   const HIT_INNER = SELECTION_INNER;
   const hitW = 16;
@@ -232,7 +234,7 @@ export const GroupBoundaryNode = memo(({ data, selected }: NodeProps) => {
             left: '50%',
             transform: 'translateX(-50%)',
             whiteSpace: 'nowrap',
-            fontSize: 12,
+            fontSize: FONT_SIZE_XS,
             color: strokeColor,
             pointerEvents: 'auto',
             cursor: 'pointer',

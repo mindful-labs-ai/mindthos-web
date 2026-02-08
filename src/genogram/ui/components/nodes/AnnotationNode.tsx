@@ -2,6 +2,11 @@ import { memo } from 'react';
 
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 
+import {
+  FONT_SIZE_ANNOTATION,
+  LINE_HEIGHT_ANNOTATION,
+} from '@/genogram/core/constants/typography';
+
 export interface AnnotationNodeData {
   annotationId: string;
   text: string;
@@ -15,8 +20,6 @@ export interface AnnotationNodeData {
 
 const MIN_WIDTH = 80;
 const MIN_HEIGHT = 32;
-const TEXT_FONT_SIZE = 13;
-const TEXT_LINE_HEIGHT = 1.4;
 
 export const AnnotationNode = memo(
   ({ data, selected }: NodeProps & { data: AnnotationNodeData }) => {
@@ -47,8 +50,8 @@ export const AnnotationNode = memo(
       >
         <div
           style={{
-            fontSize: TEXT_FONT_SIZE,
-            lineHeight: TEXT_LINE_HEIGHT,
+            fontSize: FONT_SIZE_ANNOTATION,
+            lineHeight: LINE_HEIGHT_ANNOTATION,
             whiteSpace: 'pre-wrap',
           }}
         >
