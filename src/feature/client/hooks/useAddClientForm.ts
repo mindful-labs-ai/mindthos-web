@@ -199,7 +199,12 @@ export const useAddClientForm = (initialData?: Client | null) => {
 
     // mutation 실행
     try {
-      await mutation.mutateAsync(requestBody);
+      const response = await mutation.mutateAsync(requestBody);
+      // 생성 모드일 때 클라이언트 ID 반환
+      if (!isEditMode && 'client' in response) {
+        const createResponse = response as CreateClientResponse;
+        return createResponse.client?.id || true;
+      }
       return true;
     } catch {
       // onError에서 이미 로깅되므로 추가 처리 불필요
