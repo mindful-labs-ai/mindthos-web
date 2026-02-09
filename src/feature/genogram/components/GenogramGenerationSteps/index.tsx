@@ -1,0 +1,148 @@
+import { cn } from '@/lib/cn';
+
+import type { AIGenogramOutput } from '../../utils/aiJsonConverter';
+
+import { ConfirmStep } from './ConfirmStep';
+import { FamilyMemberListStep } from './FamilyMemberListStep';
+import { RenderStep } from './RenderStep';
+import { stepToIndex, type GenogramStep } from './types';
+
+interface GenogramGenerationStepsProps {
+  currentStep: GenogramStep;
+  isLoading: boolean;
+  error: string | null;
+  aiOutput: AIGenogramOutput | null;
+
+  // 콜백
+  onConfirm: () => void;
+  onAiOutputChange: (data: AIGenogramOutput) => void;
+  onNextToRender: () => void;
+  onComplete: () => void;
+}
+
+export function GenogramGenerationSteps({
+  currentStep,
+  isLoading,
+  error,
+  aiOutput,
+  onConfirm,
+  onAiOutputChange,
+  onNextToRender,
+  onComplete,
+}: GenogramGenerationStepsProps) {
+  const stepIndex = stepToIndex(currentStep);
+
+  // render 단계: 캔버스 위에 플로팅 모달로 표시
+  if (currentStep === 'render') {
+    return (
+      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+        <div className="pointer-events-auto rounded-xl border border-border bg-surface p-8 shadow-lg">
+          <RenderStep error={error} onComplete={onComplete} />
+        </div>
+      </div>
+    );
+  }
+
+  // confirm 또는 analyze 단계의 콘텐츠
+  const renderStepContent = () => {
+    // confirm 단계
+    if (currentStep === 'confirm') {
+      return <ConfirmStep onConfirm={onConfirm} />;
+    }
+
+    // analyze 단계 - 로딩 중
+    if (isLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="mt-4 text-sm text-fg-muted">
+            AI가 가족 구성원을 분석하고 있습니다...
+          </p>
+        </div>
+      );
+    }
+
+    // analyze 단계 - 데이터 있음
+    if (aiOutput) {
+      return (
+        <FamilyMemberListStep
+          data={aiOutput}
+          onChange={onAiOutputChange}
+          onNext={onNextToRender}
+        />
+      );
+    }
+
+    // analyze 단계 - 대기 중
+    return (
+      <div className="py-8 text-center text-fg-muted">
+        데이터를 불러오는 중...
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
+      <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-lg">
+        <h2 className="mb-4 shrink-0 text-xl font-semibold text-fg">
+          AI 가계도 생성
+        </h2>
+
+        {/* 커스텀 스테퍼 */}
+        <div className="flex shrink-0 select-none flex-col items-center py-4">
+          {/* 원형 배지 + 연결선 */}
+          <div className="flex items-center">
+            {/* Step 1 배지 */}
+            <div
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold',
+                stepIndex >= 0
+                  ? 'bg-primary text-white'
+                  : 'border-2 border-border text-fg-muted'
+              )}
+            >
+              1
+            </div>
+
+            {/* 연결선 */}
+            <div
+              className={cn(
+                'h-0.5 w-52',
+                stepIndex >= 1 ? 'bg-primary' : 'bg-border'
+              )}
+            />
+
+            {/* Step 2 배지 */}
+            <div
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold',
+                stepIndex >= 1
+                  ? 'bg-primary text-white'
+                  : 'border-2 border-border text-fg-muted'
+              )}
+            >
+              2
+            </div>
+          </div>
+
+          {/* 라벨 */}
+          <div className="mt-2 flex items-start">
+            <span className="w-40 text-center text-sm text-fg">
+              1단계 : 가족 구성원 분석
+            </span>
+            <div className="w-24" />
+            <span className="w-40 text-center text-sm text-fg">
+              2단계 : 가계도 그리기
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 min-h-0 flex-1 overflow-hidden">
+          {renderStepContent()}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export { type GenogramStep } from './types';

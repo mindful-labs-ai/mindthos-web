@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { AddClientModal } from '@/feature/client/components/AddClientModal';
@@ -9,18 +10,25 @@ import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import { useAuthStore } from '@/stores/authStore';
 
 import { GenogramEmptyState } from '../components/GenogramEmptyState';
+import { GenogramGenerationSteps } from '../components/GenogramGenerationSteps';
 import { GenogramPageHeader } from '../components/GenogramPageHeader';
+import { useClientFamilySummary } from '../hooks/useClientFamilySummary';
 import { useClientHasRecords } from '../hooks/useClientHasRecords';
 import { useGenogramData } from '../hooks/useGenogramData';
-import { useGenogramGeneration } from '../hooks/useGenogramGeneration';
+import { useGenogramSteps } from '../hooks/useGenogramSteps';
+import { fetchRawAIOutput } from '../services/genogramAIService';
 import { genogramService } from '../services/genogramService';
-import { convertAIJsonToCanvas, isValidAIJson } from '../utils/aiJsonConverter';
+import {
+  convertAIJsonToCanvas,
+  isValidAIJson,
+} from '../utils/aiJsonConverter';
 
 export function GenogramClientPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
 
   const userId = useAuthStore((s) => s.userId);
+  const queryClient = useQueryClient();
   const { clients, isLoading: isClientsLoading } = useClientList();
   const genogramRef = useRef<GenogramPageHandle>(null);
 
@@ -39,6 +47,13 @@ export function GenogramClientPage() {
 
   // 클라이언트의 상담 기록 유무 확인
   const { hasRecords } = useClientHasRecords(clientId ?? '');
+
+  // 클라이언트의 family_summary 조회 (AI 분석 결과)
+  const { familySummary, isLoading: isFamilySummaryLoading } =
+    useClientFamilySummary(clientId ?? '');
+
+  // 스텝 상태
+  const steps = useGenogramSteps();
 
   const {
     initialData,
@@ -77,6 +92,10 @@ export function GenogramClientPage() {
 
   // 직접 가계도 그리기
   const [isStarting, setIsStarting] = useState(false);
+  // render 단계에서 로드할 캔버스 JSON (타이밍 이슈 해결용)
+  const [pendingCanvasJson, setPendingCanvasJson] = useState<string | null>(
+    null
+  );
   const handleStartEmpty = useCallback(async () => {
     if (!clientId || !userId) return;
     setIsStarting(true);
@@ -91,23 +110,119 @@ export function GenogramClientPage() {
     }
   }, [clientId, userId]);
 
-  // AI로 가계도 생성하기
-  // API가 이미 genograms 테이블에 저장하므로 리로드만 수행
-  const { generate: generateGenogram, isGenerating } = useGenogramGeneration({
-    onSuccess: () => {
-      // API에서 이미 저장 완료됨, 리로드하여 캔버스 표시
-      window.location.reload();
-    },
-    onError: (error) => {
-      console.error('Failed to generate genogram:', error);
-      alert(error.message || '가계도 생성에 실패했습니다.');
-    },
-  });
-
+  // AI로 가계도 생성하기 - confirm 단계로 시작
   const handleStartFromRecords = useCallback(() => {
+    if (!clientId) return;
+    steps.open('confirm');
+  }, [clientId, steps]);
+
+  // confirm 단계에서 확인 버튼 클릭 시 - analyze 단계로 이동 + API 호출
+  const handleConfirm = useCallback(async () => {
+    if (!clientId) return;
+
+    // analyze 단계로 이동
+    steps.setStep('analyze');
+
+    // family_summary가 있으면 바로 사용
+    if (familySummary) {
+      steps.setAiOutput(familySummary);
+      steps.setEditedJson(JSON.stringify(familySummary, null, 2));
+      return;
+    }
+
+    // family_summary가 없으면 API 호출
+    steps.setLoading(true);
+    steps.setError(null);
+
+    try {
+      const result = await fetchRawAIOutput(clientId);
+
+      if (!result.success) {
+        steps.setError(result.error.message);
+        return;
+      }
+
+      steps.setAiOutput(result.data.ai_output);
+      steps.setEditedJson(JSON.stringify(result.data.ai_output, null, 2));
+    } catch (error) {
+      steps.setError(
+        (error as Error).message || '알 수 없는 오류가 발생했습니다.'
+      );
+    } finally {
+      steps.setLoading(false);
+    }
+  }, [clientId, familySummary, steps]);
+
+  // 가족 구성원 분석 -> 가계도 그리기
+  const handleNextToRender = useCallback(() => {
+    if (!steps.aiOutput) {
+      steps.setError('데이터가 없습니다.');
+      return;
+    }
+
+    try {
+      // aiJsonConverter로 변환
+      const canvasData = convertAIJsonToCanvas(steps.aiOutput);
+      const canvasJson = JSON.stringify(canvasData);
+
+      // 캔버스 JSON을 pending 상태에 저장 (useEffect에서 로드)
+      setPendingCanvasJson(canvasJson);
+
+      // 가계도 그리기 단계로 이동
+      steps.setStep('render');
+    } catch {
+      steps.setError('JSON 변환 중 오류가 발생했습니다.');
+    }
+  }, [steps]);
+
+  // render 단계에서 캔버스에 JSON 로드 (타이밍 이슈 해결)
+  useEffect(() => {
+    if (steps.currentStep === 'render' && pendingCanvasJson) {
+      let cancelled = false;
+      let rafId: number;
+
+      // GenogramPage 마운트 후 ref가 할당될 때까지 대기
+      const loadCanvas = () => {
+        if (cancelled) return;
+        if (genogramRef.current) {
+          genogramRef.current.loadJSON(pendingCanvasJson);
+          updateGenogramState();
+          setPendingCanvasJson(null);
+        } else {
+          // ref가 아직 없으면 다음 프레임에 재시도
+          rafId = requestAnimationFrame(loadCanvas);
+        }
+      };
+      rafId = requestAnimationFrame(loadCanvas);
+
+      return () => {
+        cancelled = true;
+        cancelAnimationFrame(rafId);
+      };
+    }
+  }, [steps.currentStep, pendingCanvasJson, updateGenogramState]);
+
+  // 가계도 그리기 완료 및 DB 저장
+  const handleStepsComplete = useCallback(async () => {
     if (!clientId || !userId) return;
-    generateGenogram({ clientId, userId });
-  }, [clientId, userId, generateGenogram]);
+
+    // DB 저장
+    const json = genogramRef.current?.toJSON();
+    if (json) {
+      try {
+        await genogramService.save(clientId, userId, json);
+        // 쿼리 캐시 업데이트 → hasData가 true가 됨
+        queryClient.setQueryData(['genogram', clientId], json);
+        // 상태 리셋 → 캔버스 유지
+        steps.reset();
+      } catch (e) {
+        console.error('Failed to save genogram:', e);
+        steps.reset();
+      }
+    } else {
+      steps.reset();
+    }
+  }, [clientId, userId, queryClient, steps]);
 
   // 클라이언트 변경
   const handleClientSelect = useCallback(
@@ -222,8 +337,11 @@ export function GenogramClientPage() {
     }
   }, [saveNow]);
 
-  // 로딩 상태
-  const isLoading = isClientsLoading || (clientId && isDataLoading);
+  // 로딩 상태 (family_summary 로딩 포함)
+  const isLoading =
+    isClientsLoading ||
+    (clientId && isDataLoading) ||
+    (clientId && isFamilySummaryLoading);
   const showCanvas = (clientId && hasData) || isTemporaryMode;
 
   return (
@@ -272,12 +390,47 @@ export function GenogramClientPage() {
           <span className="text-fg-muted">클라이언트를 선택해주세요</span>
         </div>
       ) : !hasData ? (
-        <GenogramEmptyState
-          onStartEmpty={handleStartEmpty}
-          onStartFromRecords={handleStartFromRecords}
-          isGenerating={isGenerating}
-          hasRecords={hasRecords}
-        />
+        steps.isOpen ? (
+          steps.currentStep === 'render' ? (
+            // render 단계: 캔버스 + 완료 오버레이
+            <>
+              <GenogramPage
+                key={`${clientId}-render`}
+                ref={genogramRef}
+                onChange={updateGenogramState}
+              />
+              <GenogramGenerationSteps
+                currentStep={steps.currentStep}
+                isLoading={steps.isLoading}
+                error={steps.error}
+                aiOutput={steps.aiOutput}
+                onConfirm={handleConfirm}
+                onAiOutputChange={steps.updateAiOutput}
+                onNextToRender={handleNextToRender}
+                onComplete={handleStepsComplete}
+              />
+            </>
+          ) : (
+            // confirm 또는 analyze 단계: 스텝 UI만
+            <GenogramGenerationSteps
+              currentStep={steps.currentStep}
+              isLoading={steps.isLoading}
+              error={steps.error}
+              aiOutput={steps.aiOutput}
+              onConfirm={handleConfirm}
+              onAiOutputChange={steps.updateAiOutput}
+              onNextToRender={handleNextToRender}
+              onComplete={handleStepsComplete}
+            />
+          )
+        ) : (
+          <GenogramEmptyState
+            onStartEmpty={handleStartEmpty}
+            onStartFromRecords={handleStartFromRecords}
+            isGenerating={false}
+            hasRecords={hasRecords}
+          />
+        )
       ) : (
         <GenogramPage
           key={clientId}

@@ -70,6 +70,17 @@ export type AIInfluenceStatus =
   | 'focused_on'
   | 'focused_on_negatively';
 
+export type AIRelationStatus =
+  | 'Connected'
+  | 'Close'
+  | 'Fused'
+  | 'Distant'
+  | 'Hostile'
+  | 'Close_Hostile'
+  | 'Fused_Hostile'
+  | 'Cutoff'
+  | 'Cutoff_Repaired';
+
 /** 형제자매 그룹 (같은 부모를 공유) */
 export interface AISiblingGroup {
   parentCoupleKey: string; // "fatherId-motherId" 형식
@@ -127,7 +138,7 @@ export interface AIGenogramOutput {
   partners: [number, number, AIPartnerStatus?, string?][]; // [id1, id2, status?, memo?]
   children: [number | null, number | null, number, AIChildStatus?, string?][]; // [fatherId, motherId, childId, status?, memo?]
   fetus: [number | null, number | null, string][]; // [fatherId, motherId, status]
-  relations: [number, number, string][]; // [id1, id2, description]
+  relations: [number, number, AIRelationStatus, string][]; // [id1, id2, status, description]
   influences: [number, number, AIInfluenceStatus, string?][]; // [fromId, toId, status, memo?]
   siblingGroups: AISiblingGroup[];
   nuclearFamilies: AINuclearFamily[];
@@ -288,35 +299,6 @@ function mapFetusToChildStatus(
   if (lower.includes('낙태') || lower.includes('abortion'))
     return ParentChildStatus.Abortion;
   return ParentChildStatus.Miscarriage;
-}
-
-function mapRelationStatus(
-  description: string
-): (typeof RelationStatus)[keyof typeof RelationStatus] {
-  const lower = description.toLowerCase();
-  if (
-    lower.includes('친밀') ||
-    lower.includes('가까') ||
-    lower.includes('close')
-  )
-    return RelationStatus.Close;
-  if (lower.includes('융합') || lower.includes('fused'))
-    return RelationStatus.Fused;
-  if (
-    lower.includes('소원') ||
-    lower.includes('distant') ||
-    lower.includes('거리')
-  )
-    return RelationStatus.Distant;
-  if (
-    lower.includes('적대') ||
-    lower.includes('갈등') ||
-    lower.includes('hostile')
-  )
-    return RelationStatus.Hostile;
-  if (lower.includes('단절') || lower.includes('cutoff'))
-    return RelationStatus.Cutoff;
-  return RelationStatus.Connected;
 }
 
 function mapInfluenceStatus(
@@ -1172,7 +1154,7 @@ export function convertAIJsonToCanvas(
   });
 
   // Relation Lines 생성
-  for (const [id1, id2, description] of aiOutput.relations) {
+  for (const [id1, id2, status, description] of aiOutput.relations) {
     const realId1 = idMap.get(id1);
     const realId2 = idMap.get(id2);
 
@@ -1183,7 +1165,7 @@ export function convertAIJsonToCanvas(
       entity: {
         type: ConnectionType.Relation_Line,
         attribute: {
-          status: mapRelationStatus(description),
+          status: RelationStatus[status as keyof typeof RelationStatus] || RelationStatus.Connected,
           subjects: [realId1, realId2],
         },
         memo: description,
