@@ -38,6 +38,7 @@
     "@xyflow/react": "^12.10.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
+    "jsonrepair": "^3.13.2",
     "lucide-react": "^0.553.0",
     "mixpanel-browser": "^2.72.0",
     "openai": "^6.17.0",

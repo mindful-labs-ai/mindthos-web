@@ -25,7 +25,6 @@ const BASE_X = 15; // X 좌표 기준점
 const BASE_Y = 15; // Y 좌표 기준점 (IP 세대)
 const Y_GENERATION_GAP = 150; // 세대 간 Y 간격
 const X_SIBLING_GAP = 90; // 형제 간 X 간격
-const _X_TREE_GAP = 180; // 트리 간 X 간격 (reserved)
 const MIN_COUPLE_GAP = 90; // 부부 간 최소 X 간격
 const COUPLE_SLOT_COUNT = 2; // 부부가 차지하는 슬롯 수
 const SINGLE_SLOT_COUNT = 1; // 개인이 차지하는 슬롯 수
@@ -459,38 +458,52 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // IP가 여성인 경우 siblingGroups 순서 조정 (파트너 가족 트리를 왼쪽으로)
+  // siblingGroups를 세대 순서로 정렬 (조부모 → 부모 → IP → 자녀)
   // ─────────────────────────────────────────────────────────────────────────
   const ipSubject = subjects.find((s) => s.isIP);
   const ipIsFemale = ipSubject?.gender === 'Female';
   const ipId = ipSubject?.id;
   const ipSpouseId = ipId ? spouseMap.get(ipId) : undefined;
 
-  // IP가 여성이고 junction couple인 경우, siblingGroups 순서 재배치
-  let orderedSiblingGroups = [...siblingGroups];
+  // 각 siblingGroup의 세대 계산 (자녀들의 세대)
+  const getSiblingGroupGeneration = (sg: AISiblingGroup): number => {
+    // siblingGroup의 첫 번째 멤버의 세대를 기준으로
+    const firstSiblingId = sg.siblingIds[0];
+    if (firstSiblingId !== undefined) {
+      return generations.get(firstSiblingId) ?? DEFAULT_GENERATION;
+    }
+    return DEFAULT_GENERATION;
+  };
+
+  // siblingGroups를 세대 순서로 정렬 (낮은 세대 = 윗 세대가 먼저)
+  const orderedSiblingGroups = [...siblingGroups].sort((a, b) => {
+    const genA = getSiblingGroupGeneration(a);
+    const genB = getSiblingGroupGeneration(b);
+    return genA - genB;
+  });
+
+  // IP가 여성이고 junction couple인 경우, 같은 세대 내에서 배우자 가족을 앞으로
   if (ipIsFemale && ipId && ipSpouseId && junctionCouples.has(ipId)) {
-    // IP가 속한 siblingGroup과 배우자가 속한 siblingGroup 찾기
-    const ipSiblingGroupIndex = siblingGroups.findIndex((sg) =>
+    // 같은 세대의 siblingGroups만 필터링하여 순서 조정
+    const ipSiblingGroupIndex = orderedSiblingGroups.findIndex((sg) =>
       sg.siblingIds.includes(ipId)
     );
-    const spouseSiblingGroupIndex = siblingGroups.findIndex((sg) =>
+    const spouseSiblingGroupIndex = orderedSiblingGroups.findIndex((sg) =>
       sg.siblingIds.includes(ipSpouseId)
     );
 
-    // 배우자 siblingGroup을 IP siblingGroup보다 앞으로 이동
+    // 배우자 siblingGroup을 IP siblingGroup보다 앞으로 이동 (같은 세대 내에서만)
     if (
       ipSiblingGroupIndex !== -1 &&
       spouseSiblingGroupIndex !== -1 &&
-      spouseSiblingGroupIndex > ipSiblingGroupIndex
+      spouseSiblingGroupIndex > ipSiblingGroupIndex &&
+      getSiblingGroupGeneration(orderedSiblingGroups[ipSiblingGroupIndex]) ===
+        getSiblingGroupGeneration(orderedSiblingGroups[spouseSiblingGroupIndex])
     ) {
-      // 배우자 그룹을 IP 그룹 위치로 이동, IP 그룹을 뒤로
-      orderedSiblingGroups = siblingGroups.map((sg, idx) => {
-        if (idx === ipSiblingGroupIndex)
-          return siblingGroups[spouseSiblingGroupIndex];
-        if (idx === spouseSiblingGroupIndex)
-          return siblingGroups[ipSiblingGroupIndex];
-        return sg;
-      });
+      const temp = orderedSiblingGroups[ipSiblingGroupIndex];
+      orderedSiblingGroups[ipSiblingGroupIndex] =
+        orderedSiblingGroups[spouseSiblingGroupIndex];
+      orderedSiblingGroups[spouseSiblingGroupIndex] = temp;
     }
   }
 
@@ -926,7 +939,50 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 7. X 좌표 정규화 (최소 X를 BASE_X로)
+  // 7. 좌표 충돌 검사 및 이동 (같은 Y에서 같은 X를 가진 인물 처리)
+  // ─────────────────────────────────────────────────────────────────────────
+  // Y 좌표별로 인물들을 그룹화
+  const positionsByY = new Map<number, Map<number, number[]>>(); // Y -> (X -> [ids])
+
+  for (const [id, x] of xPositions) {
+    const y = yPositions.get(id);
+    if (y === undefined) continue;
+
+    if (!positionsByY.has(y)) {
+      positionsByY.set(y, new Map());
+    }
+    const xMap = positionsByY.get(y)!;
+    if (!xMap.has(x)) {
+      xMap.set(x, []);
+    }
+    xMap.get(x)!.push(id);
+  }
+
+  // 충돌하는 인물들 이동 (같은 X, Y에 여러 명이 있는 경우)
+  for (const [_y, xMap] of positionsByY) {
+    for (const [x, ids] of xMap) {
+      if (ids.length <= 1) continue;
+
+      // 충돌 발생! 두 번째 인물부터 오른쪽으로 이동
+      for (let i = 1; i < ids.length; i++) {
+        const id = ids[i];
+        const newX = x + i * MIN_COUPLE_GAP;
+        xPositions.set(id, newX);
+
+        // 배우자도 함께 이동
+        const spouseId = spouseMap.get(id);
+        if (spouseId) {
+          const spouseX = xPositions.get(spouseId);
+          if (spouseX !== undefined) {
+            xPositions.set(spouseId, spouseX + i * MIN_COUPLE_GAP);
+          }
+        }
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 8. X 좌표 정규화 (최소 X를 BASE_X로)
   // ─────────────────────────────────────────────────────────────────────────
   let globalMinX = Infinity;
   for (const x of xPositions.values()) {
@@ -942,7 +998,7 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
       : DEFAULT_COUPLE_OFFSET;
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 8. 결과 생성 (고아 노드는 제외)
+  // 9. 결과 생성 (고아 노드는 제외)
   // ─────────────────────────────────────────────────────────────────────────
   const subjectsWithCoords: SubjectWithCoords[] = subjects
     .filter((s) => processedIds.has(s.id)) // 처리된 인물만 포함 (고아 노드 제외)

@@ -8,6 +8,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { jsonrepair } from 'jsonrepair';
 import OpenAI from 'openai';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -125,6 +126,50 @@ memo에는 위 속성으로 분리할 수 없는 서술적 정보만:
 - size: "SMALL"
 - name: 관계로 표기 (예: "형의 아내", "첫째의 배우자")
 
+### ⚠️⚠️⚠️ 형제자매 관계 해석 규칙 (절대 위반 금지!)
+"XX의 언니/형/누나/오빠/동생/남동생/여동생"은 **형제자매 관계**입니다!
+- "정미경의 언니" = 정미경과 언니는 **같은 부모의 자녀** (형제자매)
+- "철수의 형" = 철수와 형은 **같은 부모의 자녀** (형제자매)
+- ❌ 절대 틀리면 안 됨: "정미경의 언니"가 정미경의 **부모**가 아님!
+- ❌ 절대 틀리면 안 됨: 언니의 배우자가 정미경의 **부모**가 아님!
+
+**올바른 해석 예시:**
+- "정미경의 언니"와 "정미경" → 둘 다 "정미경의 부모"의 자녀
+- siblingGroups: { parentCoupleKey: "정미경아버지id-정미경어머니id", siblingIds: [언니id, 정미경id] }
+
+**틀린 해석 예시 (절대 금지!):**
+- ❌ children: [언니id, 언니남편id, 정미경id] (언니가 정미경의 부모로 잘못 해석!)
+
+### ⚠️⚠️⚠️ 부모의 형제자매 = 조부모의 자녀 (절대 위반 금지!)
+"아버지의 남동생/여동생/형/누나"는 아버지와 **같은 부모(조부모)의 자녀**입니다!
+- "아버지의 남동생" = 아버지와 남동생은 **같은 조부모의 자녀** (형제자매)
+- "아버지의 여동생" = 아버지와 여동생은 **같은 조부모의 자녀** (형제자매)
+
+**올바른 예시:**
+- 아버지(5), 아버지의 남동생(9), 아버지의 여동생(10) → 모두 조부모(8-7)의 자녀
+- siblingGroups: { parentCoupleKey: "8-7", siblingIds: [5, 9, 10] }
+- children: [8, 7, 5], [8, 7, 9], [8, 7, 10] 모두 포함!
+
+**틀린 예시 (절대 금지!):**
+- ❌ siblingGroups: { parentCoupleKey: "8-7", siblingIds: [5] } (9, 10 누락!)
+- ❌ 아버지만 조부모의 자녀로 등록하고, 아버지의 형제자매는 별도 트리로 처리
+
+### ⚠️⚠️⚠️ 배우자는 siblingGroup에 포함하지 않음 (절대 위반 금지!)
+**siblingGroups에는 혈연관계인 형제자매만 포함!** 배우자는 절대 포함하지 않습니다!
+- "아버지의 남동생의 배우자"는 조부모의 자녀가 **아닙니다!**
+- "아버지의 여동생의 배우자"는 조부모의 자녀가 **아닙니다!**
+- 배우자는 partners 배열에만 등록하고, siblingGroups/children에는 포함하지 않습니다.
+
+**올바른 예시:**
+- 아버지의 남동생(9)과 그 배우자(14)
+- siblingGroups: { parentCoupleKey: "8-7", siblingIds: [5, 9, 10] } ← 14는 미포함!
+- children: [8, 7, 5], [8, 7, 9], [8, 7, 10] ← [8, 7, 14]는 없음!
+- partners: [9, 14, "marriage"] ← 배우자 관계만 등록
+
+**틀린 예시 (절대 금지!):**
+- ❌ siblingGroups: { parentCoupleKey: "8-7", siblingIds: [5, 9, 10, 14, 15] } (배우자 14, 15 포함!)
+- ❌ children: [8, 7, 14] (배우자가 조부모의 자녀로 잘못 등록!)
+
 ### 임의 부모 생성 규칙 ⚠️ 매우 중요!
 형제자매는 반드시 부모를 통해 연결해야 함:
 - 형제자매끼리 직접 연결하지 않음
@@ -149,12 +194,14 @@ memo에는 위 속성으로 분리할 수 없는 서술적 정보만:
 - 형식: [아버지id, 어머니id, 상태설명]
 - 상태설명: "유산", "임신", "낙태" 등
 
-## relations 규칙 (최소화!)
+## relations 규칙 (엄격히 제한!)
 - 형식: [id1, id2, 관계설명]
-- 감정적 관계만: 친밀, 갈등, 소원, 적대, 단절 등
+- ⚠️ **최대 3개까지만 기록** (가장 핵심적인 관계만 선별)
+- ⚠️ **일반적인 관계는 제외** - 단순히 "친밀함", "사이가 좋음" 정도는 기록하지 않음
+- **기록할 관계**: 갈등, 적대, 단절, 융합(과도한 밀착), 삼각관계 등 **문제적 관계만**
 - 구조적 관계(형제, 부모, 자녀)는 포함하지 말 것
 - ⚠️ **반복적으로 언급된 관계만 기록** (1회 언급은 무시)
-- 축어록에서 여러 번 강조된 핵심 관계만 추출
+- 축어록에서 여러 번 강조된 핵심 문제 관계만 추출
 
 ## influences 규칙 (최소화!)
 - 형식: [fromId, toId, 상태, memo?]
@@ -188,11 +235,23 @@ memo에는 위 속성으로 분리할 수 없는 서술적 정보만:
 - wifeId: 아내 id (없으면 null)
 - childrenIds: 자녀 id 배열 (birthOrder순 정렬, 없으면 빈 배열)
 - generation: 세대 번호
-  - 0: IP가 속한 세대 (IP 본인 또는 IP의 배우자가 부부인 경우)
-  - -1: IP의 부모 세대
-  - -2: IP의 조부모 세대
-  - 1: IP의 자녀 세대
-  - 2: IP의 손자녀 세대
+
+### ⚠️⚠️⚠️ husbandId/wifeId 성별 규칙 (절대 위반 금지!)
+- **husbandId는 반드시 Male 성별의 id**
+- **wifeId는 반드시 Female 성별의 id**
+- 예: 아버지(id=5, Male)와 어머니(id=6, Female) → { husbandId: 5, wifeId: 6 } ✓
+- ❌ 틀린 예시: { husbandId: 6, wifeId: 5 } (성별이 반대!)
+
+**엣지케이스:**
+- Gay 커플: 두 명 모두 Male → 먼저 언급된 사람이 husbandId
+- Lesbian 커플: 두 명 모두 Female → 먼저 언급된 사람이 husbandId (편의상)
+- Transgender: 원래 성별이 아닌 현재 정체성 기준 (Transgender_Male → Male 취급, Transgender_Female → Female 취급)
+- Nonbinary: 배우자 성별에 따라 반대 역할 배정, 둘 다 Nonbinary면 먼저 언급된 사람이 husbandId
+
+**siblingGroups의 parentCoupleKey도 동일 규칙:**
+- parentCoupleKey: "부id-모id" 형식 (husbandId-wifeId 순서)
+- 예: 아버지(5)-어머니(6) → "5-6" ✓
+- ❌ 틀린 예시: "6-5" (성별 순서가 반대!)
 
 ### ⚠️⚠️⚠️ 세대 판별 핵심 규칙 (절대 위반 금지!)
 
@@ -200,6 +259,13 @@ memo에는 위 속성으로 분리할 수 없는 서술적 정보만:
 - IP의 형, 누나, 동생 등 모든 형제자매 → generation=0
 - IP 형제자매의 배우자 → generation=0 (부모 세대 아님!)
 - 예: IP의 형(id=3)과 형수(id=4) 부부 → { husbandId: 3, wifeId: 4, childrenIds: [...], generation: 0 }
+
+**규칙 1-2: IP 배우자의 형제자매와 그 배우자도 반드시 generation=0**
+- IP의 배우자가 있는 경우, 배우자의 형제자매도 모두 → generation=0
+- IP 배우자의 형제자매가 결혼해서 만든 nuclearFamily → generation=0
+- 예: IP(id=1)의 배우자(id=2)가 있고, 배우자의 형(id=3)이 있는 경우
+  → 배우자의 형 부부 { husbandId: 3, wifeId: 4, childrenIds: [...], generation: 0 }
+- ❌ 틀린 예시: IP 배우자의 형제자매 nuclearFamily를 generation=-1로 설정
 
 **규칙 2: generation은 "부부" 기준으로 결정**
 - nuclearFamily의 generation은 husbandId/wifeId 부부의 세대
@@ -397,9 +463,29 @@ async function callGPTForJSON<T>(prompt: string): Promise<T> {
     console.log(
       `[callGPTForJSON] parseError=${e instanceof Error ? e.message : e}`
     );
+
+    // jsonrepair로 손상된 JSON 복구 시도
+    try {
+      const repairedContent = jsonrepair(content);
+      console.log(`[callGPTForJSON] JSON repaired successfully`);
+      return JSON.parse(repairedContent) as T;
+    } catch (repairError) {
+      console.log(
+        `[callGPTForJSON] jsonrepair failed=${repairError instanceof Error ? repairError.message : repairError}`
+      );
+    }
+
+    // ```json``` 블록에서 추출 시도
     const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[1]) as T;
+      try {
+        return JSON.parse(jsonMatch[1]) as T;
+      } catch {
+        // 추출된 JSON도 손상된 경우 jsonrepair 시도
+        const repairedExtracted = jsonrepair(jsonMatch[1]);
+        console.log(`[callGPTForJSON] Extracted JSON repaired successfully`);
+        return JSON.parse(repairedExtracted) as T;
+      }
     }
     throw new Error(`JSON 파싱 실패: ${content.substring(0, 500)}`);
   }
@@ -484,15 +570,157 @@ interface ValidationResult {
   fixed: AIGenogramOutput;
 }
 
+/**
+ * 성별을 Male/Female 기준으로 정규화
+ * Transgender_Male → Male, Transgender_Female → Female
+ * Gay → Male, Lesbian → Female
+ */
+function normalizeGenderForRole(
+  gender: AISubject['gender']
+): 'Male' | 'Female' | 'Nonbinary' | undefined {
+  if (!gender) return undefined;
+
+  switch (gender) {
+    case 'Male':
+    case 'Gay':
+    case 'Transgender_Male':
+      return 'Male';
+    case 'Female':
+    case 'Lesbian':
+    case 'Transgender_Female':
+      return 'Female';
+    case 'Nonbinary':
+      return 'Nonbinary';
+    default:
+      return undefined;
+  }
+}
+
 function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const fixed = JSON.parse(JSON.stringify(output)) as AIGenogramOutput;
 
+  // subjects를 id로 빠르게 조회할 수 있도록 Map 생성
+  const subjectById = new Map<number, AISubject>();
+  for (const s of fixed.subjects) {
+    subjectById.set(s.id, s);
+  }
+
   // 1. IP 찾기
   const ipSubject = fixed.subjects.find((s) => s.isIP);
   if (!ipSubject) {
     errors.push('IP(isIP=true)가 subjects에 없습니다.');
+  }
+
+  // 1.5. husbandId/wifeId 성별 검증 및 자동 스왑
+  for (const nf of fixed.nuclearFamilies) {
+    if (nf.husbandId === null || nf.wifeId === null) continue;
+
+    const husband = subjectById.get(nf.husbandId);
+    const wife = subjectById.get(nf.wifeId);
+
+    if (!husband || !wife) continue;
+
+    const husbandNormalizedGender = normalizeGenderForRole(husband.gender);
+    const wifeNormalizedGender = normalizeGenderForRole(wife.gender);
+
+    // 두 사람 모두 같은 성별이면 스왑하지 않음 (먼저 언급된 순서 유지)
+    if (husbandNormalizedGender === wifeNormalizedGender) {
+      continue;
+    }
+
+    // husbandId가 Female이고 wifeId가 Male이면 스왑 필요
+    if (
+      husbandNormalizedGender === 'Female' &&
+      wifeNormalizedGender === 'Male'
+    ) {
+      warnings.push(
+        `nuclearFamily(husband=${nf.husbandId}, wife=${nf.wifeId})의 husbandId/wifeId 성별이 반대입니다. 스왑합니다.`
+      );
+      const temp = nf.husbandId;
+      nf.husbandId = nf.wifeId;
+      nf.wifeId = temp;
+    }
+
+    // Nonbinary 처리: 배우자가 Male이면 Nonbinary를 wife로, Female이면 husband로
+    if (husbandNormalizedGender === 'Nonbinary') {
+      if (wifeNormalizedGender === 'Male') {
+        // 스왑 필요: Nonbinary를 wife로, Male을 husband로
+        warnings.push(
+          `nuclearFamily(husband=${nf.husbandId}, wife=${nf.wifeId}): Nonbinary를 wife로, Male을 husband로 스왑합니다.`
+        );
+        const temp = nf.husbandId;
+        nf.husbandId = nf.wifeId;
+        nf.wifeId = temp;
+      }
+      // wifeNormalizedGender가 Female이면 현재 상태 유지 (Nonbinary가 husband)
+    } else if (wifeNormalizedGender === 'Nonbinary') {
+      if (husbandNormalizedGender === 'Female') {
+        // 스왑 필요: Female을 wife로, Nonbinary를 husband로
+        warnings.push(
+          `nuclearFamily(husband=${nf.husbandId}, wife=${nf.wifeId}): Female을 wife로, Nonbinary를 husband로 스왑합니다.`
+        );
+        const temp = nf.husbandId;
+        nf.husbandId = nf.wifeId;
+        nf.wifeId = temp;
+      }
+      // husbandNormalizedGender가 Male이면 현재 상태 유지 (Nonbinary가 wife)
+    }
+  }
+
+  // 1.6. siblingGroups의 parentCoupleKey와 children 배열도 동일하게 수정
+  // nuclearFamilies의 수정된 husbandId-wifeId 순서와 일치시킴
+  const updatedNuclearFamilyKeys = new Map<string, string>();
+  // 스왑된 부부 쌍 기록: "wrongKey" -> [correctFatherId, correctMotherId]
+  const swappedCouples = new Map<string, [number, number]>();
+
+  for (const nf of fixed.nuclearFamilies) {
+    if (nf.husbandId !== null && nf.wifeId !== null) {
+      // 원래 키 (둘 다 방향)
+      const key1 = `${nf.husbandId}-${nf.wifeId}`;
+      const key2 = `${nf.wifeId}-${nf.husbandId}`;
+      // 수정된 키 (husbandId-wifeId 순서)
+      const correctKey = key1;
+      updatedNuclearFamilyKeys.set(key1, correctKey);
+      updatedNuclearFamilyKeys.set(key2, correctKey);
+      // 스왑된 쌍 기록 (양방향)
+      swappedCouples.set(key1, [nf.husbandId, nf.wifeId]);
+      swappedCouples.set(key2, [nf.husbandId, nf.wifeId]);
+    }
+  }
+
+  for (const sg of fixed.siblingGroups) {
+    const correctKey = updatedNuclearFamilyKeys.get(sg.parentCoupleKey);
+    if (correctKey && correctKey !== sg.parentCoupleKey) {
+      warnings.push(
+        `siblingGroups의 parentCoupleKey "${sg.parentCoupleKey}"를 "${correctKey}"로 수정합니다.`
+      );
+      sg.parentCoupleKey = correctKey;
+    }
+  }
+
+  // 1.7. children 배열의 [fatherId, motherId, ...] 순서도 수정
+  // children: [fatherId, motherId, childId, status?, memo?]
+  for (const child of fixed.children) {
+    const fatherId = child[0];
+    const motherId = child[1];
+    if (fatherId === null || motherId === null) continue;
+
+    const currentKey = `${fatherId}-${motherId}`;
+    const correctParents = swappedCouples.get(currentKey);
+
+    if (correctParents) {
+      const [correctFatherId, correctMotherId] = correctParents;
+      // 현재 순서가 올바른 순서와 다르면 스왑
+      if (fatherId !== correctFatherId || motherId !== correctMotherId) {
+        warnings.push(
+          `children 배열의 부모 순서 [${fatherId}, ${motherId}]를 [${correctFatherId}, ${correctMotherId}]로 수정합니다.`
+        );
+        child[0] = correctFatherId;
+        child[1] = correctMotherId;
+      }
+    }
   }
 
   // 2. siblingGroups와 nuclearFamilies 교차 검증
@@ -508,7 +736,7 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
   }
 
   // 2-1. siblingGroups의 parentCoupleKey가 nuclearFamilies에 존재하는지 확인
-  for (const [parentCoupleKey, siblingIds] of siblingGroupMap) {
+  for (const [parentCoupleKey, siblingIds] of Array.from(siblingGroupMap)) {
     const nf = nuclearFamilyMap.get(parentCoupleKey);
     if (!nf) {
       errors.push(
@@ -552,8 +780,9 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
   }
 
   // 4. 세대 검증 - IP 형제자매의 nuclearFamily가 올바른 세대인지 확인
+  // ipSiblingGroup을 넓은 스코프에서 정의 (6번 검증에서도 사용)
+  let ipSiblingGroup: AISiblingGroup | undefined;
   if (ipSubject) {
-    let ipSiblingGroup: AISiblingGroup | undefined;
     for (const sg of fixed.siblingGroups) {
       if (sg.siblingIds.includes(ipSubject.id)) {
         ipSiblingGroup = sg;
@@ -596,6 +825,281 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
         );
         fixed.children.push([fatherId, motherId, childId, 'biological']);
         childrenInArray.add(childId);
+      }
+    }
+  }
+
+  // 6. ⚠️ 형제자매가 부모로 잘못 설정된 경우 감지 (심각한 에러!)
+  // "XX의 언니/형/누나/오빠/동생" 패턴이 있는 사람이 XX의 부모로 설정되었는지 확인
+  if (ipSubject) {
+    const siblingPatterns = [
+      /의\s*(언니|형|누나|오빠|동생|남동생|여동생|형제|자매)/,
+    ];
+
+    // IP의 형제자매로 추정되는 사람들 찾기 (이름 패턴으로)
+    const ipName = ipSubject.name || '';
+    const potentialSiblings = new Set<number>();
+
+    for (const subject of fixed.subjects) {
+      if (subject.id === ipSubject.id) continue;
+      const name = subject.name || '';
+
+      // "IP이름의 언니/형/동생" 패턴 확인
+      if (ipName && name.includes(ipName)) {
+        for (const pattern of siblingPatterns) {
+          if (pattern.test(name)) {
+            potentialSiblings.add(subject.id);
+            break;
+          }
+        }
+      }
+
+      // "XX의 언니/형" 형태에서 XX가 IP인지 확인
+      for (const pattern of siblingPatterns) {
+        if (pattern.test(name)) {
+          potentialSiblings.add(subject.id);
+          break;
+        }
+      }
+    }
+
+    // 형제자매로 추정되는 사람이 IP의 부모로 설정되었는지 확인
+    for (const nf of fixed.nuclearFamilies) {
+      const isParentOfIP = nf.childrenIds.includes(ipSubject.id);
+      if (!isParentOfIP) continue;
+
+      const parentIds = [nf.husbandId, nf.wifeId].filter(
+        (id) => id !== null
+      ) as number[];
+
+      for (const parentId of parentIds) {
+        if (potentialSiblings.has(parentId)) {
+          const parentSubject = subjectById.get(parentId);
+          const parentName = parentSubject?.name || `id=${parentId}`;
+          errors.push(
+            `⚠️ 심각한 에러: "${parentName}"이(가) IP의 부모로 설정되었지만, 이름 패턴상 형제자매로 보입니다! ` +
+              `"XX의 언니/형/동생"은 XX와 형제자매 관계이지, XX의 부모가 아닙니다. ` +
+              `nuclearFamily(husband=${nf.husbandId}, wife=${nf.wifeId})를 확인하세요.`
+          );
+        }
+      }
+    }
+
+    // IP와 같은 siblingGroup에 있는 사람의 배우자가 IP의 부모로 설정되었는지 확인
+    if (ipSiblingGroup) {
+      const ipSiblingIds = new Set(ipSiblingGroup.siblingIds);
+
+      // IP 형제자매의 배우자 ID 수집
+      const siblingSpouseIds = new Set<number>();
+      for (const siblingId of Array.from(ipSiblingIds)) {
+        if (siblingId === ipSubject.id) continue;
+        const sibling = subjectById.get(siblingId);
+        if (sibling?.spouseId) {
+          siblingSpouseIds.add(sibling.spouseId);
+        }
+      }
+
+      // 형제자매 또는 그 배우자가 IP의 부모로 설정되었는지 확인
+      for (const nf of fixed.nuclearFamilies) {
+        const isParentOfIP = nf.childrenIds.includes(ipSubject.id);
+        if (!isParentOfIP) continue;
+
+        const parentIds = [nf.husbandId, nf.wifeId].filter(
+          (id) => id !== null
+        ) as number[];
+
+        for (const parentId of parentIds) {
+          // 형제자매가 부모로 설정됨
+          if (ipSiblingIds.has(parentId) && parentId !== ipSubject.id) {
+            const parentSubject = subjectById.get(parentId);
+            const parentName = parentSubject?.name || `id=${parentId}`;
+            errors.push(
+              `⚠️ 심각한 에러: "${parentName}"(id=${parentId})이(가) IP의 부모로 설정되었지만, ` +
+                `같은 siblingGroup에 있는 형제자매입니다! ` +
+                `형제자매는 부모가 될 수 없습니다. nuclearFamily를 수정하세요.`
+            );
+          }
+
+          // 형제자매의 배우자가 부모로 설정됨
+          if (siblingSpouseIds.has(parentId)) {
+            const parentSubject = subjectById.get(parentId);
+            const parentName = parentSubject?.name || `id=${parentId}`;
+            errors.push(
+              `⚠️ 심각한 에러: "${parentName}"(id=${parentId})이(가) IP의 부모로 설정되었지만, ` +
+                `IP 형제자매의 배우자입니다! ` +
+                `형제자매의 배우자는 IP의 부모가 될 수 없습니다.`
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // 7. ⚠️ 배우자가 siblingGroup에 잘못 포함된 경우 제거
+  // AI가 "아버지의 남동생의 배우자" 같은 배우자를 조부모의 자녀로 잘못 포함시키는 경우 수정
+  for (const sg of fixed.siblingGroups) {
+    const invalidSpouseIds: number[] = [];
+
+    for (const siblingId of sg.siblingIds) {
+      const subject = subjectById.get(siblingId);
+      const name = subject?.name || '';
+
+      // 배우자 패턴 체크: "~의 배우자", "~의 아내", "~의 남편" 등
+      if (/배우자|의\s*아내|의\s*남편|의\s*처$|의\s*부$/.test(name)) {
+        invalidSpouseIds.push(siblingId);
+      }
+    }
+
+    // 잘못된 배우자 ID들을 siblingIds에서 제거
+    if (invalidSpouseIds.length > 0) {
+      for (const invalidId of invalidSpouseIds) {
+        const idx = sg.siblingIds.indexOf(invalidId);
+        if (idx !== -1) {
+          const subject = subjectById.get(invalidId);
+          warnings.push(
+            `siblingGroup(${sg.parentCoupleKey})에서 배우자 "${subject?.name || invalidId}"(id=${invalidId})을(를) 제거했습니다.`
+          );
+          sg.siblingIds.splice(idx, 1);
+        }
+      }
+
+      // children 배열에서도 해당 배우자를 조부모의 자녀로 등록한 항목 제거
+      const [parentFatherId, parentMotherId] = sg.parentCoupleKey
+        .split('-')
+        .map(Number);
+
+      fixed.children = fixed.children.filter((child) => {
+        const [fId, mId, cId] = child;
+        if (
+          fId === parentFatherId &&
+          mId === parentMotherId &&
+          invalidSpouseIds.includes(cId)
+        ) {
+          const subject = subjectById.get(cId);
+          warnings.push(
+            `children 배열에서 배우자 [${fId}, ${mId}, ${cId}] ("${subject?.name || cId}")을(를) 제거했습니다.`
+          );
+          return false;
+        }
+        return true;
+      });
+    }
+  }
+
+  // 8. ⚠️ 부모의 형제자매가 조부모의 자녀로 등록되어 있는지 검증
+  // "아버지의 남동생/여동생/형/누나", "어머니의 형제" 등의 패턴 확인
+  // 주의: "아버지의 남동생의 배우자" 같은 패턴은 제외해야 함!
+  if (ipSubject) {
+    // 배우자 패턴 - 이 패턴에 매치되면 부모의 형제자매가 아님!
+    const spouseExcludePattern = /배우자|의\s*아내|의\s*남편|의\s*처|의\s*부/;
+
+    // 부모의 형제자매 패턴 (배우자/자녀 등이 뒤에 오면 제외)
+    const parentSiblingPattern =
+      /^(아버지|아빠|부친|어머니|엄마|모친)의?\s*(남동생|여동생|동생|형|오빠|누나|언니|형제|자매|삼촌|고모|이모|외삼촌)$/;
+
+    // IP의 부모 찾기
+    let ipFatherId: number | null = null;
+    let ipMotherId: number | null = null;
+
+    for (const nf of fixed.nuclearFamilies) {
+      if (nf.childrenIds.includes(ipSubject.id)) {
+        ipFatherId = nf.husbandId;
+        ipMotherId = nf.wifeId;
+        break;
+      }
+    }
+
+    // 부모의 형제자매로 추정되는 사람들 찾기
+    const parentSiblings: {
+      subjectId: number;
+      subjectName: string;
+      relatedParentType: 'father' | 'mother';
+    }[] = [];
+
+    for (const subject of fixed.subjects) {
+      const name = subject.name || '';
+
+      // "~의 배우자", "~의 자녀" 등이 포함되면 스킵
+      if (/배우자|자녀|아들|딸/.test(name) || spouseExcludePattern.test(name)) {
+        continue;
+      }
+
+      const match = parentSiblingPattern.exec(name);
+
+      if (match) {
+        const parentType = match[1]; // 아버지, 어머니 등
+        const isFatherSide = ['아버지', '아빠', '부친'].includes(parentType);
+        parentSiblings.push({
+          subjectId: subject.id,
+          subjectName: name,
+          relatedParentType: isFatherSide ? 'father' : 'mother',
+        });
+      }
+    }
+
+    // 각 부모의 형제자매에 대해 검증
+    for (const ps of parentSiblings) {
+      const relatedParentId =
+        ps.relatedParentType === 'father' ? ipFatherId : ipMotherId;
+
+      if (!relatedParentId) {
+        warnings.push(
+          `"${ps.subjectName}"은(는) ${ps.relatedParentType === 'father' ? '아버지' : '어머니'}의 형제자매로 보이지만, ` +
+            `IP의 ${ps.relatedParentType === 'father' ? '아버지' : '어머니'}를 찾을 수 없습니다.`
+        );
+        continue;
+      }
+
+      // 해당 부모가 속한 siblingGroup 찾기 (부모의 형제자매 그룹 = 조부모의 자녀들)
+      let parentSiblingGroup: AISiblingGroup | undefined;
+      for (const sg of fixed.siblingGroups) {
+        if (sg.siblingIds.includes(relatedParentId)) {
+          parentSiblingGroup = sg;
+          break;
+        }
+      }
+
+      if (!parentSiblingGroup) {
+        // 부모의 siblingGroup이 없으면 생성 필요할 수 있음
+        warnings.push(
+          `"${ps.subjectName}"(id=${ps.subjectId})은(는) ${ps.relatedParentType === 'father' ? '아버지' : '어머니'}의 형제자매이지만, ` +
+            `부모(id=${relatedParentId})의 siblingGroup이 존재하지 않습니다. ` +
+            `조부모의 자녀 그룹을 확인하세요.`
+        );
+        continue;
+      }
+
+      // 부모의 형제자매가 같은 siblingGroup에 있는지 확인
+      if (!parentSiblingGroup.siblingIds.includes(ps.subjectId)) {
+        errors.push(
+          `⚠️ 심각한 에러: "${ps.subjectName}"(id=${ps.subjectId})은(는) ` +
+            `${ps.relatedParentType === 'father' ? '아버지' : '어머니'}(id=${relatedParentId})의 형제자매이지만, ` +
+            `같은 siblingGroup(parentCoupleKey=${parentSiblingGroup.parentCoupleKey})에 포함되어 있지 않습니다! ` +
+            `부모의 형제자매는 조부모의 자녀로 등록되어야 합니다.`
+        );
+
+        // 자동 수정: siblingGroup에 추가
+        parentSiblingGroup.siblingIds.push(ps.subjectId);
+        warnings.push(
+          `siblingGroup(${parentSiblingGroup.parentCoupleKey})에 "${ps.subjectName}"(id=${ps.subjectId})을(를) 추가했습니다.`
+        );
+
+        // children 배열에도 추가
+        const [grandpaFatherId, grandpaMotherId] = parentSiblingGroup.parentCoupleKey
+          .split('-')
+          .map(Number);
+        if (!childrenInArray.has(ps.subjectId)) {
+          fixed.children.push([
+            grandpaFatherId,
+            grandpaMotherId,
+            ps.subjectId,
+            'biological',
+          ]);
+          childrenInArray.add(ps.subjectId);
+          warnings.push(
+            `children 배열에 [${grandpaFatherId}, ${grandpaMotherId}, ${ps.subjectId}]을(를) 추가했습니다.`
+          );
+        }
       }
     }
   }
