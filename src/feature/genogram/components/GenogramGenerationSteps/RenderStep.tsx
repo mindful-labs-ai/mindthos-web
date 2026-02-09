@@ -53,9 +53,7 @@ export function RenderStep({ error, onComplete }: RenderStepProps) {
       )}
 
       {status === 'error' && (
-        <Alert tone="danger">
-          {error || '렌더링 중 오류가 발생했습니다.'}
-        </Alert>
+        <Alert tone="danger">{error || '렌더링 중 오류가 발생했습니다.'}</Alert>
       )}
 
       {/* 완료 버튼 */}

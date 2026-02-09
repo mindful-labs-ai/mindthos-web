@@ -15,7 +15,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center">
-      <div className="flex w-full max-w-[500px] flex-col items-center rounded-2xl border border-primary/20 bg-primary/5 p-8">
+      <div className="border-primary/20 bg-primary/5 flex w-full max-w-[500px] flex-col items-center rounded-2xl border p-8">
         {/* 프리뷰 일러스트레이션 */}
         <div className="mb-6">
           <GenogramPreviewIllustration />
@@ -30,7 +30,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
 
         {/* 크레딧 배지 + 버튼 */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+          <div className="bg-primary/10 flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-primary">
             <CreditIcon />
             <span>{CREDIT_COST}C 사용</span>
           </div>
@@ -38,7 +38,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
           {isLoadingCredits ? (
             <button
               disabled
-              className="rounded-lg bg-primary/50 px-8 py-3 font-medium text-white"
+              className="bg-primary/50 rounded-lg px-8 py-3 font-medium text-white"
             >
               크레딧 확인 중...
             </button>
@@ -59,7 +59,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
               onClick={onConfirm}
               className={cn(
                 'rounded-lg bg-primary px-8 py-3 font-medium text-white',
-                'transition-colors hover:bg-primary/90',
+                'hover:bg-primary/90 transition-colors',
                 'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
               )}
             >

@@ -18,10 +18,7 @@ import { useGenogramData } from '../hooks/useGenogramData';
 import { useGenogramSteps } from '../hooks/useGenogramSteps';
 import { fetchRawAIOutput } from '../services/genogramAIService';
 import { genogramService } from '../services/genogramService';
-import {
-  convertAIJsonToCanvas,
-  isValidAIJson,
-} from '../utils/aiJsonConverter';
+import { convertAIJsonToCanvas, isValidAIJson } from '../utils/aiJsonConverter';
 
 export function GenogramClientPage() {
   const [searchParams, setSearchParams] = useSearchParams();

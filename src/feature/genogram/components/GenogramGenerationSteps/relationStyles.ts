@@ -63,7 +63,8 @@ export function createZigzagPath(
   const points: string[] = [`M 0 ${midY}`];
 
   for (let x = 0; x <= width; x += period) {
-    const y = midY + (Math.floor(x / period) % 2 === 0 ? -amplitude : amplitude);
+    const y =
+      midY + (Math.floor(x / period) % 2 === 0 ? -amplitude : amplitude);
     points.push(`L ${x} ${y}`);
   }
   points.push(`L ${width} ${midY}`);

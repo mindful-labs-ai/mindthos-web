@@ -1221,7 +1221,9 @@ export function convertAIJsonToCanvas(
       entity: {
         type: ConnectionType.Relation_Line,
         attribute: {
-          status: RelationStatus[status as keyof typeof RelationStatus] || RelationStatus.Connected,
+          status:
+            RelationStatus[status as keyof typeof RelationStatus] ||
+            RelationStatus.Connected,
           subjects: [realId1, realId2],
         },
         memo: description,

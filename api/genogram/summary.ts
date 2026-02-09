@@ -1085,9 +1085,8 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
         );
 
         // children 배열에도 추가
-        const [grandpaFatherId, grandpaMotherId] = parentSiblingGroup.parentCoupleKey
-          .split('-')
-          .map(Number);
+        const [grandpaFatherId, grandpaMotherId] =
+          parentSiblingGroup.parentCoupleKey.split('-').map(Number);
         if (!childrenInArray.has(ps.subjectId)) {
           fixed.children.push([
             grandpaFatherId,

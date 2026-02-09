@@ -420,7 +420,10 @@ export function FamilyMemberListStep({
               />
             ))}
             {/* 구성원 추가 더미 카드 */}
-            <AddMemberCard onClick={handleAddSubject} disabled={isAddDisabled} />
+            <AddMemberCard
+              onClick={handleAddSubject}
+              disabled={isAddDisabled}
+            />
           </div>
         </div>
 
