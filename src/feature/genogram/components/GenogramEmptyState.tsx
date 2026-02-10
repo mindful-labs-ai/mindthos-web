@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { GenogramLoadingAnimationLoop } from './GenogramLoadingAnimation';
 
 interface GenogramEmptyStateProps {
   onStartEmpty: () => void;
@@ -15,6 +15,9 @@ export function GenogramEmptyState({
 }: GenogramEmptyStateProps) {
   const canGenerateFromRecords = hasRecords && onStartFromRecords;
 
+  const genogramButtonStyle =
+    'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-white px-6 pb-[36px] shadow-sm transition-all hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50';
+
   return (
     <div className="flex h-full items-center justify-center bg-surface">
       <div className="flex gap-6">
@@ -22,52 +25,77 @@ export function GenogramEmptyState({
         <button
           onClick={onStartEmpty}
           disabled={isGenerating}
-          className="flex w-[280px] flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-white p-6 shadow-sm transition-all hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+          className={genogramButtonStyle}
         >
-          <div className="flex h-[160px] w-full items-center justify-center">
+          <div className="flex h-[198px] w-full items-center justify-center">
             <GenogramIllustration />
           </div>
           <h3 className="font-semibold text-fg">직접 가계도 그리기</h3>
         </button>
 
         {/* 상담기록으로 자동 생성하기 */}
-        {canGenerateFromRecords ? (
-          <button
-            onClick={onStartFromRecords}
-            disabled={isGenerating}
-            className="flex w-[280px] flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-white p-6 shadow-sm transition-all hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <div className="flex h-[160px] w-full items-center justify-center">
-              {isGenerating ? (
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <span className="text-sm text-fg-muted">
-                    가계도 생성 중...
-                  </span>
-                </div>
-              ) : (
-                <AIGenogramIllustration />
-              )}
+        <button
+          onClick={canGenerateFromRecords ? onStartFromRecords : undefined}
+          disabled={!canGenerateFromRecords || isGenerating}
+          className={genogramButtonStyle}
+        >
+          {canGenerateFromRecords && (
+            <div className="rounded-md bg-primary px-[15px] py-[7px] text-base font-bold text-surface">
+              AI 자동 생성
             </div>
-            <h3 className="font-semibold text-fg">
-              상담기록으로 자동 생성하기
-            </h3>
-          </button>
-        ) : (
-          <div className="flex w-[280px] cursor-not-allowed flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-white p-6 opacity-50 shadow-sm">
-            <div className="flex h-[160px] w-full items-center justify-center">
+          )}
+          <div className="flex h-[198px] w-full items-center justify-center gap-4">
+            {isGenerating ? (
+              <GenogramLoadingAnimationLoop />
+            ) : (
               <AIGenogramIllustration />
-            </div>
-            <h3 className="font-semibold text-fg">
-              상담기록으로 자동 생성하기
-            </h3>
+            )}
+          </div>
+          <h3 className="flex gap-0.5 font-semibold text-fg">
+            <SparkleIcon />
+            상담기록으로 자동 생성하기
+          </h3>
+          {!canGenerateFromRecords && (
             <div className="rounded-lg bg-surface-strong px-1.5 py-1 text-sm">
               {hasRecords ? '준비 중' : '상담 기록 없음'}
             </div>
-          </div>
-        )}
+          )}
+        </button>
       </div>
     </div>
+  );
+}
+
+/** AI 스파클 아이콘 */
+function SparkleIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g clipPath="url(#clip0_5397_74958)">
+        <path
+          d="M11.4824 4.75586C11.6094 4.75586 11.6777 4.67773 11.6973 4.56055C11.9902 2.97852 11.9609 2.90039 13.6602 2.59766C13.7773 2.56836 13.8555 2.5 13.8555 2.37305C13.8555 2.25586 13.7773 2.17773 13.6602 2.1582C11.9609 1.85547 11.9902 1.77734 11.6973 0.195312C11.6777 0.078125 11.6094 0 11.4824 0C11.3555 0 11.2871 0.078125 11.2676 0.195312C10.9746 1.77734 11.0039 1.85547 9.30469 2.1582C9.17774 2.17773 9.10938 2.25586 9.10938 2.37305C9.10938 2.5 9.17774 2.56836 9.30469 2.59766C11.0039 2.90039 10.9746 2.97852 11.2676 4.56055C11.2871 4.67773 11.3555 4.75586 11.4824 4.75586Z"
+          fill="#44CE4B"
+        />
+        <path
+          d="M6.75977 11.4707C6.94531 11.4707 7.07227 11.3438 7.0918 11.168C7.44336 8.56055 7.53125 8.56055 10.2266 8.04298C10.3926 8.01368 10.5195 7.89649 10.5195 7.71094C10.5195 7.53516 10.3926 7.40821 10.2266 7.38868C7.53125 7.00782 7.43359 6.91993 7.0918 4.27344C7.07227 4.0879 6.94531 3.96094 6.75977 3.96094C6.58398 3.96094 6.45703 4.0879 6.42773 4.28321C6.11523 6.89063 5.96875 6.88087 3.29297 7.38868C3.12695 7.41798 3 7.53516 3 7.71094C3 7.90626 3.12695 8.01368 3.33203 8.04298C5.98828 8.47266 6.11523 8.54102 6.42773 11.1484C6.45703 11.3438 6.58398 11.4707 6.75977 11.4707Z"
+          fill="#44CE4B"
+        />
+        <path
+          d="M13.3809 22.2754C13.6348 22.2754 13.8203 22.0898 13.8691 21.8262C14.5625 16.4844 15.3145 15.6641 20.6074 15.0781C20.8809 15.0488 21.0664 14.8535 21.0664 14.5898C21.0664 14.3359 20.8809 14.1406 20.6074 14.1113C15.3145 13.5254 14.5625 12.7051 13.8691 7.35352C13.8203 7.08984 13.6348 6.91406 13.3809 6.91406C13.127 6.91406 12.9414 7.08984 12.9023 7.35352C12.209 12.7051 11.4473 13.5254 6.16406 14.1113C5.88086 14.1406 5.69531 14.3359 5.69531 14.5898C5.69531 14.8535 5.88086 15.0488 6.16406 15.0781C11.4375 15.7715 12.1699 16.4844 12.9023 21.8262C12.9414 22.0898 13.127 22.2754 13.3809 22.2754Z"
+          fill="#44CE4B"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_5397_74958">
+          <rect width="24" height="24" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
   );
 }
 

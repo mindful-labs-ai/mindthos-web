@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 
-import { Check, Loader2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 import { Alert } from '@/components/ui/atoms/Alert';
 import { Button } from '@/components/ui/atoms/Button';
+
+import { GenogramLoadingAnimation } from '../GenogramLoadingAnimation';
+
+// 2단계 애니메이션 지속 시간 (GenogramLoadingAnimation의 총 재생 시간과 일치)
+const RENDER_ANIMATION_DURATION = 3200;
 
 interface RenderStepProps {
   error: string | null;
@@ -15,17 +20,15 @@ export function RenderStep({ error, onComplete }: RenderStepProps) {
     error ? 'error' : 'processing'
   );
 
-  // 렌더링은 부모에서 처리, 여기서는 완료 UI만 표시
+  // 고정 시간 후 성공 표시 (애니메이션 완료 시점)
   useEffect(() => {
-    // 에러가 있으면 초기 상태에서 이미 'error'로 설정됨
     if (error) {
       return;
     }
 
-    // 짧은 딜레이 후 성공 표시 (UX 개선)
     const timer = setTimeout(() => {
       setStatus('success');
-    }, 500);
+    }, RENDER_ANIMATION_DURATION);
     return () => clearTimeout(timer);
   }, [error]);
 
@@ -33,8 +36,7 @@ export function RenderStep({ error, onComplete }: RenderStepProps) {
     <div className="space-y-6 py-8">
       {status === 'processing' && (
         <div className="flex flex-col items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-fg-muted">가계도를 렌더링하는 중...</p>
+          <GenogramLoadingAnimation />
         </div>
       )}
 
