@@ -391,7 +391,7 @@ export function FamilyMemberListStep({
         className="relative min-h-0 flex-1 overflow-y-auto rounded-lg bg-surface-contrast pl-6 pr-[18px]"
       >
         {/* 구성원 섹션 */}
-        <div className="mb-6">
+        <div className="my-6">
           <h3 className="mb-3 text-sm font-medium text-fg">
             가족 구성원 ({data.subjects.length}명)
           </h3>

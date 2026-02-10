@@ -640,7 +640,7 @@ export function FamilyMemberCard({
                   'rounded-lg'
               )}
             >
-              {subject.age ?? '?'}
+              {subject.age ?? ''}
             </div>
             {isEditing ? (
               <input
