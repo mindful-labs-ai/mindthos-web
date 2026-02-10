@@ -34,17 +34,6 @@ export function GenogramClientPage() {
   const { clients, isLoading: isClientsLoading } = useClientList();
   const genogramRef = useRef<GenogramPageHandle>(null);
 
-  // 첫 번째 클라이언트 자동 선택
-  useEffect(() => {
-    if (!clientId && clients.length > 0 && !isClientsLoading) {
-      // counsel_done이 아닌 첫 번째 클라이언트 선택
-      const firstClient = clients.find((c) => !c.counsel_done);
-      if (firstClient) {
-        setSearchParams({ clientId: firstClient.id }, { replace: true });
-      }
-    }
-  }, [clientId, clients, isClientsLoading, setSearchParams]);
-
   const selectedClient = clients.find((c) => c.id === clientId) ?? null;
 
   // 클라이언트의 상담 기록 유무 확인
@@ -400,9 +389,20 @@ export function GenogramClientPage() {
           onChange={updateGenogramState}
         />
       ) : !clientId ? (
-        <div className="flex h-full items-center justify-center">
-          <span className="text-fg-muted">클라이언트를 선택해주세요</span>
-        </div>
+        // 클라이언트 미선택: 캔버스 + 중앙 안내 카드
+        <>
+          <GenogramPage
+            key="no-client"
+            ref={genogramRef}
+            onChange={updateGenogramState}
+            hideToolbar
+          />
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            <div className="rounded-xl bg-white px-12 py-8 shadow-sm">
+              <span className="text-fg-muted">클라이언트를 선택해주세요.</span>
+            </div>
+          </div>
+        </>
       ) : !hasData ? (
         steps.isOpen ? (
           steps.currentStep === 'render' ? (

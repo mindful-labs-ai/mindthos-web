@@ -29,7 +29,6 @@ import {
 import { AnnotationPropertyPanel } from './components/AnnotationPropertyPanel';
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
-import { EmptyStatePanel } from './components/EmptyStatePanel';
 import {
   deriveSelectionContext,
   FloatingActionButton,
@@ -64,6 +63,8 @@ export interface GenogramPageProps {
   initialData?: string;
   /** 데이터 변경 시 콜백 (JSON string) */
   onChange?: (json: string) => void;
+  /** 하단 툴바 숨김 여부 */
+  hideToolbar?: boolean;
 }
 
 export interface GenogramPageHandle {
@@ -554,24 +555,23 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
               size={1}
             />
           )}
-          <Controls position="bottom-left" />
+          {!props.hideToolbar && <Controls position="bottom-left" />}
 
           {/* 하단 중앙 툴바 */}
-          <Panel position="bottom-center" className="mb-4">
-            <GenogramToolbar
-              toolMode={toolMode}
-              onToolModeChange={setToolMode}
-              onDelete={deleteSelected}
-              hasSelection={selectedItems.length > 0}
-              onSubjectSubToolSelect={handleSubjectSubToolSelect}
-              onConnectionSubToolSelect={handleConnectionSubToolSelect}
-              visibility={visibility}
-              onToggleVisibility={toggleVisibility}
-            />
-          </Panel>
-
-          {/* 빈 상태 안내 */}
-          {nodes.length === 0 && <EmptyStatePanel />}
+          {!props.hideToolbar && (
+            <Panel position="bottom-center" className="mb-4">
+              <GenogramToolbar
+                toolMode={toolMode}
+                onToolModeChange={setToolMode}
+                onDelete={deleteSelected}
+                hasSelection={selectedItems.length > 0}
+                onSubjectSubToolSelect={handleSubjectSubToolSelect}
+                onConnectionSubToolSelect={handleConnectionSubToolSelect}
+                visibility={visibility}
+                onToggleVisibility={toggleVisibility}
+              />
+            </Panel>
+          )}
 
           {/* 클릭 기반 연결 미리보기 선 */}
           {connectionPreview && (

@@ -108,7 +108,7 @@ export function ClientDropdown({
         onClick={() => setIsOpen(!isOpen)}
       >
         <GenogramIcon size={18} />
-        <span>{selectedClient?.name || '클라이언트 선택'}</span>
+        <span>{selectedClient?.name || '선택 안됨'}</span>
       </Button>
 
       {/* 드롭다운 패널 */}
