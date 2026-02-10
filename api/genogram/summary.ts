@@ -195,7 +195,17 @@ memo에는 위 속성으로 분리할 수 없는 서술적 정보만:
 - 상태설명: "유산", "임신", "낙태" 등
 
 ## relations 규칙 (엄격히 제한!)
-- 형식: [id1, id2, 관계설명]
+- 형식: [id1, id2, status, 관계설명]
+- status 값: "Connected" | "Close" | "Fused" | "Distant" | "Hostile" | "Close_Hostile" | "Fused_Hostile" | "Cutoff" | "Cutoff_Repaired"
+  - Connected: 일반적 연결
+  - Close: 친밀함
+  - Fused: 융합(과도한 밀착)
+  - Distant: 거리감/소원함
+  - Hostile: 적대/갈등
+  - Close_Hostile: 친밀하지만 갈등 있음
+  - Fused_Hostile: 융합적이면서 갈등
+  - Cutoff: 단절
+  - Cutoff_Repaired: 단절 후 회복
 - ⚠️ **최대 3개까지만 기록** (가장 핵심적인 관계만 선별)
 - ⚠️ **일반적인 관계는 제외** - 단순히 "친밀함", "사이가 좋음" 정도는 기록하지 않음
 - **기록할 관계**: 갈등, 적대, 단절, 융합(과도한 밀착), 삼각관계 등 **문제적 관계만**
@@ -342,6 +352,17 @@ type AIInfluenceStatus =
   | 'focused_on'
   | 'focused_on_negatively';
 
+type AIRelationStatus =
+  | 'Connected'
+  | 'Close'
+  | 'Fused'
+  | 'Distant'
+  | 'Hostile'
+  | 'Close_Hostile'
+  | 'Fused_Hostile'
+  | 'Cutoff'
+  | 'Cutoff_Repaired';
+
 /** 형제자매 그룹 (같은 부모를 공유) */
 interface AISiblingGroup {
   parentCoupleKey: string; // "fatherId-motherId" 형식
@@ -399,7 +420,7 @@ export interface AIGenogramOutput {
   partners: [number, number, AIPartnerStatus?, string?][]; // [id1, id2, status?, memo?]
   children: [number | null, number | null, number, AIChildStatus?, string?][]; // [fatherId, motherId, childId, status?, memo?]
   fetus: [number | null, number | null, string][]; // [fatherId, motherId, status]
-  relations: [number, number, string][]; // [id1, id2, description]
+  relations: [number, number, AIRelationStatus, string][]; // [id1, id2, status, description]
   influences: [number, number, AIInfluenceStatus, string?][]; // [fromId, toId, status, memo?]
   siblingGroups: AISiblingGroup[];
   nuclearFamilies: AINuclearFamily[];
@@ -600,6 +621,53 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
   const errors: string[] = [];
   const warnings: string[] = [];
   const fixed = JSON.parse(JSON.stringify(output)) as AIGenogramOutput;
+
+  // 0. 배열 전처리: AI가 잘못된 형식의 데이터를 섞어넣는 경우 필터링
+  // children: [fatherId, motherId, childId, status?, memo?] 형식이어야 함
+  const originalChildrenCount = fixed.children.length;
+  fixed.children = fixed.children.filter((child) => {
+    // 배열이 아니면 제거 (예: {"note": "..."} 같은 객체)
+    if (!Array.isArray(child)) return false;
+    // childId(세 번째 요소)가 null이거나 숫자가 아니면 제거
+    if (child[2] === null || typeof child[2] !== 'number') return false;
+    return true;
+  });
+  if (fixed.children.length < originalChildrenCount) {
+    warnings.push(
+      `children 배열에서 잘못된 형식의 항목 ${originalChildrenCount - fixed.children.length}개를 제거했습니다.`
+    );
+  }
+
+  // relations: [id1, id2, status, description] 형식이어야 함
+  // 3개 요소 형식([id1, id2, description])도 4개로 변환
+  const originalRelationsCount = fixed.relations.length;
+  // AI 출력이 3개 또는 4개 요소일 수 있으므로 unknown[]로 캐스팅
+  const rawRelations = fixed.relations as unknown as unknown[][];
+  fixed.relations = rawRelations
+    .filter((rel): rel is unknown[] => {
+      if (!Array.isArray(rel)) return false;
+      if (typeof rel[0] !== 'number' || typeof rel[1] !== 'number') return false;
+      return true;
+    })
+    .map((rel): [number, number, AIRelationStatus, string] => {
+      // 3개 요소면 status를 description에서 추론하여 4개로 변환
+      if (rel.length === 3) {
+        const description = String(rel[2] || '');
+        let status: AIRelationStatus = 'Connected';
+        if (/단절|끊|연락.*(안|없)/.test(description)) status = 'Cutoff';
+        else if (/갈등|적대|충돌|다툼|싸움/.test(description)) status = 'Hostile';
+        else if (/융합|밀착|과도.*친밀/.test(description)) status = 'Fused';
+        else if (/소원|거리|멀어/.test(description)) status = 'Distant';
+        else if (/친밀/.test(description)) status = 'Close';
+        return [rel[0] as number, rel[1] as number, status, description];
+      }
+      return [rel[0] as number, rel[1] as number, rel[2] as AIRelationStatus, String(rel[3] || '')];
+    });
+  if (fixed.relations.length < originalRelationsCount) {
+    warnings.push(
+      `relations 배열에서 잘못된 형식의 항목 ${originalRelationsCount - fixed.relations.length}개를 제거했습니다.`
+    );
+  }
 
   // subjects를 id로 빠르게 조회할 수 있도록 Map 생성
   const subjectById = new Map<number, AISubject>();
