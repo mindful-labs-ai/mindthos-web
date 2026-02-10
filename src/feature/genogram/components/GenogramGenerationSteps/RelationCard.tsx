@@ -1034,9 +1034,7 @@ export function RelationCard({
     <div
       className={cn(
         'relative flex h-[169px] w-full justify-center gap-4 rounded-xl border bg-white p-4 transition-colors',
-        showWarning
-          ? 'animate-shake border-2 border-danger'
-          : 'border-border'
+        showWarning ? 'animate-shake border-2 border-danger' : 'border-border'
       )}
     >
       {/* 경고 메시지 */}

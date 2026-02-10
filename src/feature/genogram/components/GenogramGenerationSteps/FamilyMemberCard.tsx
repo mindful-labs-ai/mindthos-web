@@ -595,7 +595,8 @@ export function FamilyMemberCard({
   };
 
   // 공통 필드 값 스타일 (편집/보기 모드 레이아웃 일치)
-  const fieldValueClass = 'flex h-8 w-full items-center rounded-md px-2 text-sm';
+  const fieldValueClass =
+    'flex h-8 w-full items-center rounded-md px-2 text-sm';
   const inputClassName = cn(
     fieldValueClass,
     'bg-primary-50 text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-primary'

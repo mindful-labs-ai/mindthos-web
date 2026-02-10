@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import {
-  Check,
-  Download,
-  Loader2,
-  MoreVertical,
-  Save,
-} from 'lucide-react';
+import { Check, Download, Loader2, MoreVertical, Save } from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';

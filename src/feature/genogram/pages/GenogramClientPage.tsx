@@ -175,7 +175,6 @@ export function GenogramClientPage() {
     }
   }, [steps]);
 
-
   // 가계도 그리기 완료 및 DB 저장
   const handleStepsComplete = useCallback(async () => {
     if (!clientId || !userId) return;
