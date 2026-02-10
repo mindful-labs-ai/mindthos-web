@@ -23,12 +23,14 @@ import {
   ConnectionType,
   Gender,
   ParentChildStatus,
+  SubjectType,
   ToolMode,
 } from '@/genogram/core/types/enums';
 
 import { AnnotationPropertyPanel } from './components/AnnotationPropertyPanel';
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
+import { EmptyStatePanel } from './components/EmptyStatePanel';
 import {
   deriveSelectionContext,
   FloatingActionButton,
@@ -43,12 +45,17 @@ import {
   type SubjectSubTool,
 } from './components/GenogramToolbar';
 import { GhostPreview } from './components/GhostPreview';
+import { HorizontalGridLines } from './components/HorizontalGridLines';
 import { AnnotationNode } from './components/nodes/AnnotationNode';
 import { GroupBoundaryNode } from './components/nodes/GroupBoundaryNode';
 import { PersonNode } from './components/nodes/PersonNode';
-import { GRID_GAP } from './constants/grid';
+import { GRID_DOT_COLOR, GRID_GAP } from './constants/grid';
 import { useCanvasInteraction } from './hooks/useCanvasInteraction';
 import { useGenogramFlow } from './hooks/useGenogramFlow';
+import {
+  KEYBOARD_DISABLED_PROPS,
+  useGenogramKeyboard,
+} from './hooks/useGenogramKeyboard';
 
 // 커스텀 노드/엣지 타입 등록
 const nodeTypes = {
@@ -148,12 +155,19 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       onChangeRef.current(toJSONRef.current());
     }, [nodes]);
 
-    // 속성 패널 열림 상태
+    // 속성 패널 열림 상태 (Fetus는 패널이 렌더링되지 않으므로 제외)
     const isPanelOpen = !!(
-      selectedSubject ||
+      (selectedSubject && selectedSubject.entity.type !== SubjectType.Fetus) ||
       selectedConnection ||
       selectedAnnotation
     );
+
+    // 키보드 단축키 훅: Backspace 삭제, Cmd+Z Undo, Cmd+Shift+Z Redo
+    useGenogramKeyboard({
+      deleteSelected,
+      undo,
+      redo,
+    });
 
     useImperativeHandle(
       ref,
@@ -546,14 +560,20 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
           snapToGrid={false}
           defaultEdgeOptions={{ type: 'relationship', interactionWidth: 20 }}
           proOptions={{ hideAttribution: true }}
+          style={{ backgroundColor: '#F4F5FA' }}
           {...flowInteraction}
+          {...KEYBOARD_DISABLED_PROPS}
         >
           {visibility.grid && (
-            <Background
-              variant={BackgroundVariant.Dots}
-              gap={GRID_GAP}
-              size={1}
-            />
+            <>
+              <Background
+                variant={BackgroundVariant.Dots}
+                gap={GRID_GAP}
+                size={2}
+                color={GRID_DOT_COLOR}
+              />
+              <HorizontalGridLines gap={180} color={GRID_DOT_COLOR} />
+            </>
           )}
           {!props.hideToolbar && <Controls position="bottom-left" />}
 
@@ -572,6 +592,9 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
               />
             </Panel>
           )}
+
+          {/* 빈 상태 안내 */}
+          {nodes.length === 0 && <EmptyStatePanel />}
 
           {/* 클릭 기반 연결 미리보기 선 */}
           {connectionPreview && (

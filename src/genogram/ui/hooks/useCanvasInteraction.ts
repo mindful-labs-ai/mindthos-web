@@ -347,7 +347,7 @@ export const useCanvasInteraction = ({
         return {
           panOnDrag: false,
           selectionOnDrag: true,
-          selectionMode: SelectionMode.Full,
+          selectionMode: SelectionMode.Partial,
           nodesDraggable: false,
           nodesConnectable: false,
           elementsSelectable: true,

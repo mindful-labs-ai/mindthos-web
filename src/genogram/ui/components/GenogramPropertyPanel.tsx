@@ -380,9 +380,8 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
               );
             })()}
 
-          {/* 역방향 — 방향성이 있는 타입만 표시 */}
-          {(type === ConnectionType.Influence_Line ||
-            type === ConnectionType.Children_Parents_Line) && (
+          {/* 역방향 — 영향선만 표시 */}
+          {type === ConnectionType.Influence_Line && (
             <div className="flex items-center justify-between">
               <span className="text-base font-medium text-fg">역방향</span>
               <button
@@ -396,9 +395,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             </div>
           )}
 
-          {/* 부가 설명 */}
+          {/* 메모 */}
           <section>
-            <h3 className="mb-2 text-base font-medium text-fg">부가 설명</h3>
+            <h3 className="mb-2 text-base font-medium text-fg">메모</h3>
             <textarea
               value={connMemoValue}
               onChange={handleConnMemoChange}
@@ -719,9 +718,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
         <hr className="border-border" />
 
-        {/* 부가 설명 */}
+        {/* 메모 */}
         <section>
-          <h3 className="mb-2 text-base font-medium text-fg">부가 설명</h3>
+          <h3 className="mb-2 text-base font-medium text-fg">메모</h3>
           <textarea
             value={memoValue}
             onChange={handleMemoChange}

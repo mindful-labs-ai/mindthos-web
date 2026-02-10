@@ -9,8 +9,9 @@ import {
 } from '@/genogram/core/constants/colors';
 import { STROKE_WIDTH_NODE } from '@/genogram/core/constants/strokes';
 import {
+  FONT_SIZE_DETAIL,
+  FONT_SIZE_NAME,
   FONT_SIZE_SYMBOL,
-  FONT_SIZE_XS,
   FONT_SIZE_XXS,
 } from '@/genogram/core/constants/typography';
 import {
@@ -732,7 +733,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
           <span
             className="font-bold"
             style={{
-              fontSize: FONT_SIZE_XS,
+              fontSize: FONT_SIZE_DETAIL,
               color: textColor,
               textShadow:
                 '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
@@ -748,7 +749,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
         <div
           className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-medium text-fg"
           style={{
-            fontSize: FONT_SIZE_XS,
+            fontSize: FONT_SIZE_DETAIL,
             left: S + 8,
             color: textColor,
             textShadow:
@@ -765,7 +766,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       <div
         className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-medium text-fg"
         style={{
-          fontSize: FONT_SIZE_XS,
+          fontSize: FONT_SIZE_NAME,
           top: S + 4,
           textShadow:
             '-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, -1px -2px 0 #fff, 1px -2px 0 #fff, -1px 2px 0 #fff, 1px 2px 0 #fff, -2px -1px 0 #fff, 2px -1px 0 #fff, -2px 1px 0 #fff, 2px 1px 0 #fff',

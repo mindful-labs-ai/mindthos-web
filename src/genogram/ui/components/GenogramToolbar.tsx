@@ -310,7 +310,7 @@ const VISIBILITY_ITEMS: { key: keyof Visibility; label: string }[] = [
   { key: 'extraInfo', label: '인적 사항' },
   { key: 'deathDate', label: '사망일' },
   { key: 'illness', label: '임상적 상태' },
-  { key: 'memo', label: '부가설명' },
+  { key: 'memo', label: '텍스트' },
 ];
 
 export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({

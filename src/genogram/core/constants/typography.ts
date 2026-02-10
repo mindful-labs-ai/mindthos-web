@@ -5,8 +5,14 @@
 
 // ── 폰트 크기 (px) ──
 
-/** 노드 이름, 상세 텍스트, 나이 등 기본 라벨 */
+/** 기본 라벨 */
 export const FONT_SIZE_XS = 20;
+
+/** 노드 이름 라벨 */
+export const FONT_SIZE_NAME = 20;
+
+/** 노드 상세 텍스트, 나이 등 기본 라벨 */
+export const FONT_SIZE_DETAIL = 18;
 
 /** 생몰연도 라벨 */
 export const FONT_SIZE_XXS = 16;

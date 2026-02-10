@@ -136,6 +136,15 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   nodesRef.current = nodes;
   edgesRef.current = edges;
 
+  // Multi_Select_Tool 드래그 선택 감지: 노드가 선택되는 동안 엣지 선택을 필터링
+  // 같은 이벤트 사이클에서 노드가 선택되면 드래그로 간주하고 엣지 선택 차단
+  const isDragSelectingNodesRef = useRef(false);
+
+  // Multi_Select_Tool additive 선택: 어떤 요소든 선택되면 다른 요소의 deselect를 막음
+  // 플래그는 핸들러 시작 시 설정, rAF에서 리셋 (양쪽 핸들러 모두 실행된 후)
+  const isAnyElementSelectingRef = useRef(false);
+  const selectionFlagResetScheduledRef = useRef(false);
+
   // 선택 동기화 배치: onNodesChange/onEdgesChange가 같은 이벤트 사이클에
   // 동시에 호출될 수 있으므로, rAF로 한 프레임 뒤에 한 번만 처리.
   // 이렇게 하면 엣지 해제 + 노드 선택이 동시에 일어나도 최종 상태를 반영.
@@ -208,8 +217,29 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     (changes: NodeChange<Node>[]) => {
       // Multi_Select_Tool 모드: 클릭 선택을 additive + toggle로 변환
       if (toolMode === ToolMode.Multi_Select_Tool) {
-        const hasSelect = changes.some((c) => c.type === 'select');
+        const selectChanges = changes.filter(
+          (c) => c.type === 'select' && c.selected
+        );
+        const deselectChanges = changes.filter(
+          (c) => c.type === 'select' && !c.selected
+        );
+        const hasSelect = selectChanges.length > 0;
+        const hasOnlyDeselect = deselectChanges.length > 0 && !hasSelect;
+
         if (hasSelect) {
+          // 노드가 선택되고 있음 → 플래그 설정 (엣지 핸들러에서 deselect 방지)
+          isDragSelectingNodesRef.current = true;
+          isAnyElementSelectingRef.current = true;
+          // rAF에서 플래그 리셋 (한 번만 스케줄)
+          if (!selectionFlagResetScheduledRef.current) {
+            selectionFlagResetScheduledRef.current = true;
+            requestAnimationFrame(() => {
+              isDragSelectingNodesRef.current = false;
+              isAnyElementSelectingRef.current = false;
+              selectionFlagResetScheduledRef.current = false;
+            });
+          }
+
           const filtered: NodeChange<Node>[] = [];
           for (const c of changes) {
             if (c.type !== 'select') {
@@ -229,6 +259,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
           }
           changes = filtered;
         }
+        // hasOnlyDeselect 케이스는 state updater에서 처리 (플래그 확인을 위해)
       }
 
       // 드래그 중인 변경이 있으면 선택 동기화보다 먼저 isDraggingRef를 설정
@@ -240,8 +271,20 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         isDraggingRef.current = true;
       }
 
+      // Multi_Select_Tool에서 deselect 전용 변경인지 확인
+      const isMultiSelectOnlyDeselect =
+        toolMode === ToolMode.Multi_Select_Tool &&
+        changes.some((c) => c.type === 'select') &&
+        !changes.some((c) => c.type === 'select' && c.selected);
+
       setNodes((nds) => {
-        const next = applyNodeChanges(changes, nds);
+        // state updater 내에서 플래그 확인 (양쪽 핸들러 실행 후)
+        let changesToApply = changes;
+        if (isMultiSelectOnlyDeselect && isAnyElementSelectingRef.current) {
+          // 다른 요소가 선택 중 → 노드 deselect 무시
+          changesToApply = changes.filter((c) => c.type !== 'select');
+        }
+        const next = applyNodeChanges(changesToApply, nds);
         const editor = getEditor();
         if (!editor) return next;
 
@@ -312,34 +355,76 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
   // 엣지 변경 핸들러 (선택 변경 포함)
   const onEdgesChange = useCallback(
     (changes: EdgeChange<Edge<RelationshipEdgeData>>[]) => {
-      // Multi_Select_Tool 모드: 클릭 선택을 additive + toggle로 변환
+      // Multi_Select_Tool 모드: 드래그 선택 시 엣지 선택 차단, 개별 클릭은 toggle 허용
       if (toolMode === ToolMode.Multi_Select_Tool) {
-        const hasSelect = changes.some((c) => c.type === 'select');
-        if (hasSelect) {
-          const filtered: EdgeChange<Edge<RelationshipEdgeData>>[] = [];
-          for (const c of changes) {
-            if (c.type !== 'select') {
-              filtered.push(c);
-              continue;
-            }
-            if (c.selected) {
-              const edge = edgesRef.current.find((e) => e.id === c.id);
-              if (edge?.selected) {
-                filtered.push({ ...c, selected: false });
-              } else {
-                filtered.push(c);
-              }
+        const selectChanges = changes.filter((c) => c.type === 'select');
+        if (selectChanges.length > 0) {
+          const selectingTrue = selectChanges.filter((c) => c.selected);
+
+          // 엣지가 선택되고 있으면 플래그 설정 (노드 deselect 방지용)
+          if (selectingTrue.length === 1) {
+            isAnyElementSelectingRef.current = true;
+            // rAF에서 플래그 리셋 (한 번만 스케줄)
+            if (!selectionFlagResetScheduledRef.current) {
+              selectionFlagResetScheduledRef.current = true;
+              requestAnimationFrame(() => {
+                isAnyElementSelectingRef.current = false;
+                selectionFlagResetScheduledRef.current = false;
+              });
             }
           }
-          changes = filtered;
+
+          // 드래그 선택 감지:
+          // 1. 노드가 동시에 선택되고 있음 (isDragSelectingNodesRef)
+          // 2. 여러 엣지가 동시에 선택됨 (드래그 박스에 여러 엣지 포함)
+          const isDragSelection =
+            isDragSelectingNodesRef.current || selectingTrue.length > 1;
+
+          if (isDragSelection) {
+            // 드래그 선택 → 엣지 선택 차단 (기존 선택 유지, 새 선택 무시)
+            changes = changes.filter((c) => c.type !== 'select');
+          } else if (selectingTrue.length === 1) {
+            // 개별 엣지 클릭: additive + toggle 로직
+            const filtered: EdgeChange<Edge<RelationshipEdgeData>>[] = [];
+            for (const c of changes) {
+              if (c.type !== 'select') {
+                filtered.push(c);
+                continue;
+              }
+              if (c.selected) {
+                const edge = edgesRef.current.find((e) => e.id === c.id);
+                if (edge?.selected) {
+                  // 이미 선택된 엣지 클릭 → 선택 해제 (toggle)
+                  filtered.push({ ...c, selected: false });
+                } else {
+                  filtered.push(c);
+                }
+              }
+              // selected: false는 무시 (다른 엣지 선택 유지 - additive)
+            }
+            changes = filtered;
+          }
+          // hasOnlyDeselect 케이스는 state updater에서 처리 (플래그 확인을 위해)
         }
       }
 
+      // Multi_Select_Tool에서 deselect 전용 변경인지 확인
+      const isMultiSelectOnlyDeselect =
+        toolMode === ToolMode.Multi_Select_Tool &&
+        changes.some((c) => c.type === 'select') &&
+        !changes.some((c) => c.type === 'select' && c.selected);
+
       setEdges((eds) => {
-        const next = applyEdgeChanges(changes, eds);
+        // state updater 내에서 플래그 확인 (양쪽 핸들러 실행 후)
+        let changesToApply = changes;
+        if (isMultiSelectOnlyDeselect && isAnyElementSelectingRef.current) {
+          // 다른 요소가 선택 중 → 엣지 deselect 무시
+          changesToApply = changes.filter((c) => c.type !== 'select');
+        }
+        const next = applyEdgeChanges(changesToApply, eds);
 
         // 선택 변경 → 다음 프레임에 배치 처리
-        const hasSelectChange = changes.some((c) => c.type === 'select');
+        const hasSelectChange = changesToApply.some((c) => c.type === 'select');
         if (hasSelectChange) {
           edgesRef.current = next;
           scheduleSelectionSync();
