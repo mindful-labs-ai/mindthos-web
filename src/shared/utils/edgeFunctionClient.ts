@@ -51,6 +51,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 가계도 관련
   GENOGRAM: {
     INIT: 'generate-family-summary/init',
+    SUMMARY: 'generate-family-summary/summary',
   },
 } as const;
 

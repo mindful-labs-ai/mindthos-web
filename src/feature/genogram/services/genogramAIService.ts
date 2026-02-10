@@ -1,9 +1,9 @@
 /**
  * Genogram AI 생성 서비스
- * Vercel API Route를 통해 상담 기록으로부터 가계도 생성
+ * Supabase Edge Function을 통해 상담 기록으로부터 가계도 생성
  *
  * 파이프라인:
- * 1. API(summary.ts) 호출 → AI 원본 JSON 응답 받기
+ * 1. Edge Function 호출 → AI 원본 JSON 응답 받기
  * 2. aiJsonConverter로 좌표 계산 및 캔버스 변환
  * 3. DB 저장 및 프론트 렌더링
  */
@@ -88,51 +88,50 @@ export type GenerateFamilySummaryResult =
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Vercel API Route를 호출하여 AI 분석 결과 받기 (원본 JSON)
+ * Edge Function을 호출하여 AI 분석 결과 받기 (원본 JSON)
  * @param clientId 내담자 UUID
+ * @param forceRefresh 캐시 무시하고 재생성 여부
  */
 async function fetchAIOutput(
-  clientId: string
+  clientId: string,
+  forceRefresh = false
 ): Promise<GenerateAIOutputResult> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  try {
+    const result = await callEdgeFunction<GenerateAIOutputResponse>(
+      EDGE_FUNCTION_ENDPOINTS.GENOGRAM.SUMMARY,
+      {
+        client_id: clientId,
+        force_refresh: forceRefresh,
+      }
+    );
 
-  if (!session?.access_token) {
+    return result;
+  } catch (error) {
+    console.error('[genogramAIService] fetchAIOutput error:', error);
+
+    const err = error as { message?: string; code?: string; status?: number };
+
+    // 인증 오류 처리
+    if (err.status === 401) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: '로그인이 필요합니다.',
+        },
+      };
+    }
+
     return {
       success: false,
       error: {
-        code: 'UNAUTHORIZED',
-        message: '로그인이 필요합니다.',
+        code:
+          (err.code as GenerateAIOutputError['error']['code']) ||
+          'PIPELINE_ERROR',
+        message: err.message || 'AI 분석 중 오류가 발생했습니다.',
       },
     };
   }
-
-  const response = await fetch('/api/genogram/summary', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${session.access_token}`,
-    },
-    body: JSON.stringify({
-      client_id: clientId,
-    }),
-  });
-
-  const contentType = response.headers.get('content-type');
-  if (!contentType?.includes('application/json')) {
-    const text = await response.text();
-    console.error('[genogramAIService] Non-JSON response:', text);
-    return {
-      success: false,
-      error: {
-        code: 'PIPELINE_ERROR',
-        message: `서버 응답 오류 (${response.status}): ${text.substring(0, 200)}`,
-      },
-    };
-  }
-
-  return (await response.json()) as GenerateAIOutputResult;
 }
 
 /**
