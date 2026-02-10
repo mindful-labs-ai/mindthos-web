@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
   AIGenogramOutput,
@@ -45,6 +45,11 @@ export function FamilyMemberListStep({
 
   // 현재 편집 중인 관계 카드 인덱스 (null이면 편집 중 아님)
   const [editingRelationIndex, setEditingRelationIndex] = useState<
+    number | null
+  >(null);
+
+  // 관계 카드 경고 상태 (저장 불가능한 카드 전환 시도 시)
+  const [relationWarningIndex, setRelationWarningIndex] = useState<
     number | null
   >(null);
 
@@ -368,9 +373,10 @@ export function FamilyMemberListStep({
         ? Math.max(...relationDataList.map((r) => r.order))
         : -1;
 
+    // 빈 상태로 시작 (id1=0, id2=0은 선택되지 않음을 의미)
     const newRelation: RelationData = {
-      id1: data.subjects[0].id,
-      id2: data.subjects[1].id,
+      id1: 0,
+      id2: 0,
       description: '',
       status: 'Connected',
       order: maxOrder + 1,
@@ -382,6 +388,37 @@ export function FamilyMemberListStep({
     // 새로 추가된 카드를 편집 모드로 설정
     setEditingRelationIndex(relationDataList.length);
   }, [data, onChange, relationDataList, convertToSeparateArrays]);
+
+  // 관계 카드 편집 상태 변경 핸들러 (저장 가능 여부 검증)
+  const handleRelationEditChange = useCallback(
+    (index: number, isEditing: boolean) => {
+      if (isEditing) {
+        // 편집 모드로 전환 시: 현재 편집 중인 카드가 저장 가능한지 확인
+        if (editingRelationIndex !== null && editingRelationIndex !== index) {
+          const currentRel = relationDataList[editingRelationIndex];
+          if (currentRel && (currentRel.id1 <= 0 || currentRel.id2 <= 0)) {
+            // 현재 편집 중인 카드가 저장 불가능하면 경고 표시
+            setRelationWarningIndex(editingRelationIndex);
+            return;
+          }
+        }
+        setEditingRelationIndex(index);
+      } else {
+        // 편집 모드 종료 시: 저장 가능 여부 확인은 RelationCard에서 처리
+        setEditingRelationIndex(null);
+      }
+    },
+    [editingRelationIndex, relationDataList]
+  );
+
+  // 경고 중인 카드의 데이터가 유효해지면 경고 해제
+  useEffect(() => {
+    if (relationWarningIndex === null) return;
+    const rel = relationDataList[relationWarningIndex];
+    if (rel && rel.id1 > 0 && rel.id2 > 0) {
+      setRelationWarningIndex(null);
+    }
+  }, [relationWarningIndex, relationDataList]);
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -448,8 +485,9 @@ export function FamilyMemberListStep({
                 }}
                 isEditing={editingRelationIndex === index}
                 onEditChange={(isEditing) =>
-                  setEditingRelationIndex(isEditing ? index : null)
+                  handleRelationEditChange(index, isEditing)
                 }
+                showWarning={relationWarningIndex === index}
               />
             ))}
             {/* 관계 추가 더미 카드 (구성원 2명 이상일 때만) */}

@@ -108,6 +108,8 @@ interface RelationCardProps {
   /** 외부에서 편집 상태 제어 */
   isEditing?: boolean;
   onEditChange?: (isEditing: boolean) => void;
+  /** 저장 필요 경고 표시 */
+  showWarning?: boolean;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -319,7 +321,7 @@ function DeleteConfirmModal({
 
 function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center rounded-md border border-border bg-surface-contrast px-2 py-0.5 text-xs text-fg">
+    <span className="inline-flex h-8 items-center rounded-md border border-border bg-surface-contrast px-2 text-xs text-fg">
       {children}
     </span>
   );
@@ -418,7 +420,7 @@ function PersonCard({
     top: 0,
     left: 0,
   });
-  const cardRef = useRef<HTMLButtonElement>(null);
+  const cardRef = useRef<HTMLButtonElement & HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 드롭다운 위치 계산
@@ -466,112 +468,102 @@ function PersonCard({
 
   const name = person?.name || `인물 ${personId}`;
 
-  // 편집 모드에서 빈 카드 또는 선택 가능한 카드
-  if (isEditing) {
-    return (
-      <>
-        <button
-          ref={cardRef}
-          type="button"
-          onClick={handleCardClick}
-          className={cn(
-            'relative flex h-[137px] w-[137px] flex-col items-center justify-center rounded-2xl border bg-white transition-colors',
-            person
-              ? 'border-border hover:border-fg-muted'
-              : 'border-dashed border-fg-muted hover:border-fg'
-          )}
-        >
-          {person ? (
-            <>
-              {/* 순서 배지 */}
-              <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast text-xs font-medium text-fg-muted">
-                {personId}
-              </div>
-              {/* 아바타 */}
-              <div
-                className={cn(
-                  'flex h-16 w-16 items-center justify-center border-2 text-xl font-semibold',
-                  person.gender === 'Female' && 'rounded-full',
-                  person.gender === 'Male' && 'rounded-none',
-                  (!person.gender ||
-                    (person.gender !== 'Male' && person.gender !== 'Female')) &&
-                    'rounded-lg'
-                )}
-                style={{ borderColor: DEFAULT_FG }}
-              >
-                {person.age ?? '?'}
-              </div>
-              {/* 이름 */}
-              <span className="mt-2 text-sm font-medium text-fg">{name}</span>
-            </>
-          ) : (
-            // 빈 카드 - Plus 아이콘
-            <Plus className="h-8 w-8 text-fg-muted" />
-          )}
-        </button>
-
-        {/* 드롭다운 */}
-        {showDropdown &&
-          createPortal(
-            <div
-              ref={dropdownRef}
-              style={{
-                position: 'fixed',
-                top: dropdownPosition.top,
-                left: dropdownPosition.left,
-                zIndex: 9999,
-              }}
-              className="max-h-[200px] min-w-[140px] overflow-y-auto rounded-xl bg-white py-2 shadow-lg"
-            >
-              {allSubjects.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => handleSelectPerson(s.id)}
-                  className={cn(
-                    'flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-surface-contrast',
-                    s.id === personId ? 'font-medium text-fg' : 'text-fg-muted'
-                  )}
-                >
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast text-xs">
-                    {s.id}
-                  </span>
-                  {s.name || `인물 ${s.id}`}
-                </button>
-              ))}
-            </div>,
-            document.body
-          )}
-      </>
-    );
-  }
-
-  // 보기 모드 - 기존 카드
-  return (
-    <div className="relative flex h-[137px] w-[137px] flex-col items-center justify-center rounded-2xl border border-border bg-white">
-      {/* 순서 배지 */}
-      <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast text-xs font-medium text-fg-muted">
-        {personId}
-      </div>
-
-      {/* 아바타 */}
-      <div
-        className={cn(
-          'flex h-16 w-16 items-center justify-center border-2 text-xl font-semibold',
-          person?.gender === 'Female' && 'rounded-full',
-          person?.gender === 'Male' && 'rounded-none',
-          (!person?.gender ||
-            (person?.gender !== 'Male' && person?.gender !== 'Female')) &&
-            'rounded-lg'
-        )}
-        style={{ borderColor: DEFAULT_FG }}
-      >
-        {person?.age ?? '?'}
-      </div>
-
-      {/* 이름 */}
-      <span className="mt-2 text-sm font-medium text-fg">{name}</span>
+  // 아바타 렌더링 (공통)
+  const renderAvatar = () => (
+    <div
+      className={cn(
+        'flex h-16 w-16 items-center justify-center border-2 text-xl font-semibold',
+        person?.gender === 'Female' && 'rounded-full',
+        person?.gender === 'Male' && 'rounded-none',
+        (!person?.gender ||
+          (person?.gender !== 'Male' && person?.gender !== 'Female')) &&
+          'rounded-lg'
+      )}
+      style={{ borderColor: DEFAULT_FG }}
+    >
+      {person?.age ?? ''}
     </div>
+  );
+
+  // 카드 내용 렌더링 (공통)
+  const renderCardContent = () =>
+    person ? (
+      <>
+        {renderAvatar()}
+        <span className="mt-2 text-sm font-medium text-fg">{name}</span>
+      </>
+    ) : (
+      <Plus className="h-8 w-8 text-fg-muted" />
+    );
+
+  // 드롭다운 렌더링 (편집 모드에서만)
+  const renderDropdown = () =>
+    showDropdown &&
+    createPortal(
+      <div
+        ref={dropdownRef}
+        style={{
+          position: 'fixed',
+          top: dropdownPosition.top,
+          left: dropdownPosition.left,
+          zIndex: 9999,
+        }}
+        className="max-h-[200px] min-w-[140px] overflow-y-auto rounded-xl bg-white py-2 shadow-lg"
+      >
+        {allSubjects.map((s) => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => handleSelectPerson(s.id)}
+            className={cn(
+              'flex w-full items-center gap-2 px-4 py-2 text-sm hover:bg-surface-contrast',
+              s.id === personId ? 'font-medium text-fg' : 'text-fg-muted'
+            )}
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast text-xs">
+              {s.id}
+            </span>
+            {s.name || `인물 ${s.id}`}
+          </button>
+        ))}
+      </div>,
+      document.body
+    );
+
+  // 공통 카드 스타일
+  const baseCardClass =
+    'relative flex h-[137px] w-[137px] flex-col items-center justify-center rounded-2xl border bg-white';
+
+  // 순서 배지 위치 (편집: 좌상단, 보기: 우상단)
+  const badgeClass =
+    'absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast text-xs font-medium text-fg-muted';
+
+  const Wrapper = isEditing ? 'button' : 'div';
+  const wrapperProps = isEditing
+    ? {
+        type: 'button' as const,
+        onClick: handleCardClick,
+        className: cn(
+          baseCardClass,
+          'transition-colors',
+          person
+            ? 'border-border hover:border-fg-muted'
+            : 'border-dashed border-fg-muted hover:border-fg'
+        ),
+      }
+    : {
+        className: cn(baseCardClass, 'border-border'),
+      };
+
+  return (
+    <>
+      <Wrapper ref={cardRef} {...wrapperProps}>
+        {/* 순서 배지 (선택된 경우에만 표시) */}
+        {personId > 0 && <div className={badgeClass}>{personId}</div>}
+        {renderCardContent()}
+      </Wrapper>
+      {isEditing && renderDropdown()}
+    </>
   );
 }
 
@@ -989,6 +981,7 @@ export function RelationCard({
   onDelete,
   isEditing: controlledIsEditing,
   onEditChange,
+  showWarning = false,
 }: RelationCardProps) {
   // 외부 제어 또는 내부 상태 사용
   const [internalIsEditing, setInternalIsEditing] = useState(false);
@@ -1002,8 +995,12 @@ export function RelationCard({
   };
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const person1 = subjectMap.get(data.id1);
-  const person2 = subjectMap.get(data.id2);
+  // id=0은 선택되지 않음을 의미
+  const person1 = data.id1 > 0 ? subjectMap.get(data.id1) : undefined;
+  const person2 = data.id2 > 0 ? subjectMap.get(data.id2) : undefined;
+
+  // 저장 가능 여부: 두 인물 모두 선택되어야 함
+  const canSave = data.id1 > 0 && data.id2 > 0;
 
   const handleFieldChange = useCallback(
     <K extends keyof RelationData>(field: K, value: RelationData[K]) => {
@@ -1036,9 +1033,18 @@ export function RelationCard({
   return (
     <div
       className={cn(
-        'relative flex h-[169px] w-full justify-center gap-4 rounded-xl border border-border bg-white p-4'
+        'relative flex h-[169px] w-full justify-center gap-4 rounded-xl border bg-white p-4 transition-colors',
+        showWarning
+          ? 'animate-shake border-2 border-danger'
+          : 'border-border'
       )}
     >
+      {/* 경고 메시지 */}
+      {showWarning && (
+        <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-danger px-3 py-1 text-xs font-medium text-white">
+          두 인물을 모두 선택해주세요
+        </div>
+      )}
       {/* 왼쪽: 관계 시각화 */}
       <div className="flex flex-1 shrink-0 items-center justify-center gap-2">
         <PersonCard
@@ -1062,54 +1068,38 @@ export function RelationCard({
 
       {/* 오른쪽: 정보 영역 */}
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 pl-2">
-        {isEditing ? (
-          <>
-            {/* 관계 유형 선택 */}
-            <div className="flex items-center gap-3">
-              <span className="w-8 shrink-0 text-xs text-fg-muted">관계</span>
-              <CustomSelect
-                value={data.status}
-                options={ALL_STATUS_OPTIONS}
-                onChange={(v) =>
-                  handleFieldChange('status', v as RelationStatus)
-                }
-                className="flex-1"
-              />
-            </div>
-            {/* 메모 입력 */}
-            <div className="flex items-start gap-3">
-              <span className="w-8 shrink-0 pt-2 text-xs text-fg-muted">
-                메모
-              </span>
-              <textarea
-                value={data.description || ''}
-                onChange={(e) =>
-                  handleFieldChange('description', e.target.value)
-                }
-                placeholder="관계에 대한 메모를 입력하세요"
-                rows={2}
-                className="flex-1 resize-none rounded-md bg-primary-50 px-2 py-1.5 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-          </>
-        ) : (
-          <>
-            {/* 관계 유형 표시 */}
-            <div className="flex items-center gap-3">
-              <span className="w-8 shrink-0 text-xs text-fg-muted">관계</span>
-              <Chip>{statusLabel}</Chip>
-            </div>
-            {/* 메모 표시 */}
-            <div className="flex items-start gap-3">
-              <span className="w-8 shrink-0 pt-0.5 text-xs text-fg-muted">
-                메모
-              </span>
-              <span className="flex-1 break-all text-sm text-fg">
-                {data.description || '-'}
-              </span>
-            </div>
-          </>
-        )}
+        {/* 관계 유형 */}
+        <div className="flex h-8 items-center gap-3">
+          <span className="w-8 shrink-0 text-xs text-fg-muted">관계</span>
+          {isEditing ? (
+            <CustomSelect
+              value={data.status}
+              options={ALL_STATUS_OPTIONS}
+              onChange={(v) => handleFieldChange('status', v as RelationStatus)}
+              className="flex-1"
+            />
+          ) : (
+            <Chip>{statusLabel}</Chip>
+          )}
+        </div>
+
+        {/* 메모 */}
+        <div className="flex items-start gap-3">
+          <span className="w-8 shrink-0 pt-2 text-xs text-fg-muted">메모</span>
+          {isEditing ? (
+            <textarea
+              value={data.description || ''}
+              onChange={(e) => handleFieldChange('description', e.target.value)}
+              placeholder="관계에 대한 메모를 입력하세요"
+              rows={2}
+              className="flex-1 resize-none rounded-md bg-primary-50 px-2 py-2 text-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          ) : (
+            <span className="min-h-[52px] flex-1 break-all rounded-md px-2 py-2 text-sm text-fg">
+              {data.description || '-'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 삭제 버튼 (편집 모드에서만) */}
@@ -1127,7 +1117,13 @@ export function RelationCard({
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}
-            className="flex h-[27px] w-[50px] items-center justify-center rounded-md bg-primary text-sm text-white hover:bg-primary-600"
+            disabled={!canSave}
+            className={cn(
+              'flex h-[27px] w-[50px] items-center justify-center rounded-md text-sm text-white',
+              canSave
+                ? 'bg-primary hover:bg-primary-600'
+                : 'cursor-not-allowed bg-fg-muted'
+            )}
           >
             저장
           </button>

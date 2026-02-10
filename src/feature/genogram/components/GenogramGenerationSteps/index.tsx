@@ -43,11 +43,11 @@ export function GenogramGenerationSteps({
 }: GenogramGenerationStepsProps) {
   const stepIndex = stepToIndex(currentStep);
 
-  // render 단계: 캔버스 위에 플로팅 모달로 표시
+  // render 단계: 전체 화면 모달로 표시
   if (currentStep === 'render') {
     return (
-      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-        <div className="pointer-events-auto rounded-xl border border-border bg-surface p-8 shadow-lg">
+      <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
+        <div className="flex w-full max-w-md flex-col rounded-xl border border-border bg-surface p-8 shadow-lg">
           <RenderStep
             error={error}
             isPending={isRenderPending}

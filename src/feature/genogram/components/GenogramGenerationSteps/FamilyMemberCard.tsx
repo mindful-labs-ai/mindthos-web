@@ -47,7 +47,7 @@ function AutoResizeTextarea({
       value={value}
       onChange={onChange}
       className={cn(
-        'resize-none rounded-md bg-primary-50 px-2 py-1.5 text-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+        'resize-none rounded-md bg-primary-50 px-2 py-2 text-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
         className
       )}
       {...props}
@@ -139,7 +139,7 @@ function CustomSelect({
         type="button"
         onClick={handleOpen}
         className={cn(
-          'flex h-[26px] w-full items-center justify-between rounded-md border border-border bg-white px-[6px] text-xs text-fg',
+          'flex h-[22px] w-full items-center justify-between rounded-md border border-border bg-white px-[6px] text-xs text-fg',
           className
         )}
       >
@@ -346,7 +346,7 @@ function Chip({
   return (
     <span
       className={cn(
-        'items-center truncate rounded-md border border-border bg-surface-contrast px-1.5 py-1 text-xs text-fg',
+        'h-[22px] items-center truncate rounded-md border border-border bg-surface-contrast px-1.5 py-1 text-xs text-fg',
         className
       )}
     >
@@ -497,7 +497,7 @@ export function FamilyMemberCard({
         {relations.map((rel, idx) => (
           <span
             key={`${rel.type}-${rel.targetId}-${idx}`}
-            className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-contrast px-2 py-0.5 text-xs text-fg"
+            className="inline-flex h-[22px] items-center gap-1 rounded-md border border-border bg-surface-contrast px-2 text-xs text-fg"
           >
             {rel.targetId}-{RELATION_TYPE_LABELS[rel.type] || rel.type}
             <button
@@ -594,9 +594,13 @@ export function FamilyMemberCard({
     );
   };
 
-  // 공통 input 스타일
-  const inputClassName =
-    'h-8 w-full rounded-md bg-primary-50 text-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
+  // 공통 필드 값 스타일 (편집/보기 모드 레이아웃 일치)
+  const fieldValueClass = 'flex h-8 w-full items-center rounded-md px-2 text-sm';
+  const inputClassName = cn(
+    fieldValueClass,
+    'bg-primary-50 text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-primary'
+  );
+  const displayClassName = cn(fieldValueClass, 'font-medium text-fg');
 
   return (
     <div
@@ -695,14 +699,11 @@ export function FamilyMemberCard({
           ref={internalScrollRef}
           className="relative min-w-0 flex-1 overflow-y-auto pt-[3px]"
         >
-          {isEditing ? (
-            // ─────────────────────────────────────────────────────────────────
-            // 편집 모드
-            // ─────────────────────────────────────────────────────────────────
-            <div className="space-y-2">
-              {/* 나이 */}
-              <div className="flex items-center gap-2">
-                <span className="w-8 shrink-0 text-xs text-fg-muted">나이</span>
+          <div className="space-y-2">
+            {/* 나이 */}
+            <div className="flex items-center gap-2">
+              <span className="w-8 shrink-0 text-xs text-fg-muted">나이</span>
+              {isEditing ? (
                 <input
                   type="number"
                   value={subject.age ?? ''}
@@ -713,35 +714,53 @@ export function FamilyMemberCard({
                     )
                   }
                   placeholder="나이"
-                  className={cn(inputClassName, '')}
+                  className={inputClassName}
                 />
-              </div>
+              ) : (
+                <span className={displayClassName}>{subject.age ?? '-'}</span>
+              )}
+            </div>
 
-              {/* 직업 */}
-              <div className="flex items-center gap-2">
-                <span className="w-8 shrink-0 text-xs text-fg-muted">직업</span>
+            {/* 직업 */}
+            <div className="flex items-center gap-2">
+              <span className="w-8 shrink-0 text-xs text-fg-muted">직업</span>
+              {isEditing ? (
                 <input
                   type="text"
                   value={subject.job || ''}
                   onChange={(e) => handleFieldChange('job', e.target.value)}
                   placeholder="직업"
-                  className={cn(inputClassName, 'flex-1')}
+                  className={inputClassName}
                 />
-              </div>
-
-              {/* 관계 (편집 모드) */}
-              <div className="flex items-start gap-2">
-                <span className="w-8 shrink-0 pt-1 text-xs text-fg-muted">
-                  관계
+              ) : (
+                <span className={cn(displayClassName, 'truncate')}>
+                  {subject.job || '-'}
                 </span>
-                <div className="flex-1">{renderEditableRelationChips()}</div>
-              </div>
+              )}
+            </div>
 
-              {/* 메모 */}
-              <div className="flex items-start gap-2">
-                <span className="w-8 shrink-0 pt-1 text-xs text-fg-muted">
-                  메모
-                </span>
+            {/* 관계 */}
+            <div className="flex items-start gap-2">
+              <span className="w-8 shrink-0 pt-1 text-xs text-fg-muted">
+                관계
+              </span>
+              <div className="flex-1">
+                {isEditing ? (
+                  renderEditableRelationChips()
+                ) : relations.length > 0 ? (
+                  renderRelationChips()
+                ) : (
+                  <span className="text-sm text-fg-muted">-</span>
+                )}
+              </div>
+            </div>
+
+            {/* 메모 */}
+            <div className="flex items-start gap-2">
+              <span className="w-8 shrink-0 pt-2 text-xs text-fg-muted">
+                메모
+              </span>
+              {isEditing ? (
                 <AutoResizeTextarea
                   value={subject.memo || ''}
                   onChange={(e) => handleFieldChange('memo', e.target.value)}
@@ -750,54 +769,13 @@ export function FamilyMemberCard({
                   maxRows={5}
                   className="flex-1"
                 />
-              </div>
-            </div>
-          ) : (
-            // ─────────────────────────────────────────────────────────────────
-            // 보기 모드
-            // ─────────────────────────────────────────────────────────────────
-            <div className="space-y-2">
-              {/* 나이 */}
-              <div className="flex h-8 items-center gap-2">
-                <span className="w-8 shrink-0 text-xs text-fg-muted">나이</span>
-                <span className="text-sm font-medium">
-                  {subject.age ?? '-'}
-                </span>
-              </div>
-
-              {/* 직업 */}
-              <div className="flex h-8 items-center gap-2">
-                <span className="w-8 shrink-0 text-xs text-fg-muted">직업</span>
-                <span className="truncate text-sm font-medium">
-                  {subject.job || '-'}
-                </span>
-              </div>
-
-              {/* 관계 */}
-              <div className="flex items-start gap-2">
-                <span className="w-8 shrink-0 pt-1 text-xs text-fg-muted">
-                  관계
-                </span>
-                <div className="flex-1">
-                  {relations.length > 0 ? (
-                    renderRelationChips()
-                  ) : (
-                    <span className="text-sm text-fg-muted">-</span>
-                  )}
-                </div>
-              </div>
-
-              {/* 메모 */}
-              <div className="flex items-start gap-2">
-                <span className="w-8 shrink-0 pt-1 text-xs text-fg-muted">
-                  메모
-                </span>
-                <span className="flex-1 break-all text-sm text-fg">
+              ) : (
+                <span className="min-h-[40px] flex-1 break-all rounded-md px-2 py-2 text-sm text-fg">
                   {subject.memo || '-'}
                 </span>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

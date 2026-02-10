@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { createPortal } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 
 import { UpdateNoteModal } from '@/components/UpdateNoteModal';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
@@ -27,6 +28,8 @@ import { useUpdateStore } from '@/stores/updateStore';
 export const GlobalModalContainer = () => {
   const { currentLevel, completeNextStep } = useQuestStore();
   const user = useAuthStore((state) => state.user);
+  const location = useLocation();
+  const isGenogramRoute = location.pathname.includes('/genogram');
 
   // 업데이트 노트 초기화
   const initializeUpdate = useUpdateStore((state) => state.initialize);
@@ -68,8 +71,10 @@ export const GlobalModalContainer = () => {
       <QuestMissionModal />
       <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
 
-      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) */}
-      <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
+      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram 라우트에서는 숨김 */}
+      {!isGenogramRoute && (
+        <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
+      )}
 
       {/* 사용자 정보 수정 모달 */}
       <UserEditModal

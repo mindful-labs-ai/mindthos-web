@@ -93,10 +93,8 @@ export function GenogramClientPage() {
 
   // 직접 가계도 그리기
   const [isStarting, setIsStarting] = useState(false);
-  // render 단계에서 로드할 캔버스 JSON (타이밍 이슈 해결용)
-  const [pendingCanvasJson, setPendingCanvasJson] = useState<string | null>(
-    null
-  );
+  // render 단계에서 로드할 캔버스 JSON (확인하기 버튼 클릭 시 로드)
+  const preparedCanvasJsonRef = useRef<string | null>(null);
   const handleStartEmpty = useCallback(async () => {
     if (!clientId || !userId) return;
     setIsStarting(true);
@@ -167,8 +165,8 @@ export function GenogramClientPage() {
       const canvasData = convertAIJsonToCanvas(steps.aiOutput);
       const canvasJson = JSON.stringify(canvasData);
 
-      // 캔버스 JSON을 pending 상태에 저장 (useEffect에서 로드)
-      setPendingCanvasJson(canvasJson);
+      // 캔버스 JSON을 ref에 저장 (확인하기 버튼 클릭 시 로드)
+      preparedCanvasJsonRef.current = canvasJson;
 
       // 가계도 그리기 단계로 이동
       steps.setStep('render');
@@ -177,51 +175,28 @@ export function GenogramClientPage() {
     }
   }, [steps]);
 
-  // render 단계에서 캔버스에 JSON 로드 (타이밍 이슈 해결)
-  useEffect(() => {
-    if (steps.currentStep === 'render' && pendingCanvasJson) {
-      let cancelled = false;
-      let rafId: number;
-
-      // GenogramPage 마운트 후 ref가 할당될 때까지 대기
-      const loadCanvas = () => {
-        if (cancelled) return;
-        if (genogramRef.current) {
-          genogramRef.current.loadJSON(pendingCanvasJson);
-          updateGenogramState();
-          setPendingCanvasJson(null);
-        } else {
-          // ref가 아직 없으면 다음 프레임에 재시도
-          rafId = requestAnimationFrame(loadCanvas);
-        }
-      };
-      rafId = requestAnimationFrame(loadCanvas);
-
-      return () => {
-        cancelled = true;
-        cancelAnimationFrame(rafId);
-      };
-    }
-  }, [steps.currentStep, pendingCanvasJson, updateGenogramState]);
 
   // 가계도 그리기 완료 및 DB 저장
   const handleStepsComplete = useCallback(async () => {
     if (!clientId || !userId) return;
 
-    // DB 저장
-    const json = genogramRef.current?.toJSON();
-    if (json) {
-      try {
-        await genogramService.save(clientId, userId, json);
-        // 쿼리 캐시 업데이트 → hasData가 true가 됨
-        queryClient.setQueryData(['genogram', clientId], json);
-        // 상태 리셋 → 캔버스 유지
-        steps.reset();
-      } catch (e) {
-        console.error('Failed to save genogram:', e);
-        steps.reset();
-      }
-    } else {
+    const canvasJson = preparedCanvasJsonRef.current;
+    if (!canvasJson) {
+      steps.reset();
+      return;
+    }
+
+    try {
+      // DB 저장
+      await genogramService.save(clientId, userId, canvasJson);
+      // 쿼리 캐시 업데이트 → hasData가 true가 됨
+      queryClient.setQueryData(['genogram', clientId], canvasJson);
+      // ref 초기화
+      preparedCanvasJsonRef.current = null;
+      // 상태 리셋 → 캔버스 유지
+      steps.reset();
+    } catch (e) {
+      console.error('Failed to save genogram:', e);
       steps.reset();
     }
   }, [clientId, userId, queryClient, steps]);
@@ -398,51 +373,29 @@ export function GenogramClientPage() {
             hideToolbar
           />
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-            <div className="rounded-xl bg-white px-12 py-8 shadow-sm">
-              <span className="text-fg-muted">클라이언트를 선택해주세요.</span>
+            <div className="flex h-[200px] w-[280px] flex-col justify-center rounded-lg border border-dashed border-border bg-white p-8 text-center backdrop-blur-sm">
+              <p className="text-lg font-medium text-fg-muted">
+                클라이언트를 선택해주세요
+              </p>
             </div>
           </div>
         </>
       ) : !hasData ? (
         steps.isOpen ? (
-          steps.currentStep === 'render' ? (
-            // render 단계: 캔버스 + 완료 오버레이
-            <>
-              <GenogramPage
-                key={`${clientId}-render`}
-                ref={genogramRef}
-                onChange={updateGenogramState}
-              />
-              <GenogramGenerationSteps
-                currentStep={steps.currentStep}
-                isLoading={steps.isLoading}
-                error={steps.error}
-                aiOutput={steps.aiOutput}
-                clientName={selectedClient?.name}
-                isRenderPending={!!pendingCanvasJson}
-                onConfirm={handleConfirm}
-                onAiOutputChange={steps.updateAiOutput}
-                onNextToRender={handleNextToRender}
-                onComplete={handleStepsComplete}
-                onCancel={steps.reset}
-              />
-            </>
-          ) : (
-            // confirm 또는 analyze 단계: 스텝 UI만
-            <GenogramGenerationSteps
-              currentStep={steps.currentStep}
-              isLoading={steps.isLoading}
-              error={steps.error}
-              aiOutput={steps.aiOutput}
-              clientName={selectedClient?.name}
-              isRenderPending={false}
-              onConfirm={handleConfirm}
-              onAiOutputChange={steps.updateAiOutput}
-              onNextToRender={handleNextToRender}
-              onComplete={handleStepsComplete}
-              onCancel={steps.reset}
-            />
-          )
+          // confirm, analyze, render 단계: 스텝 UI
+          <GenogramGenerationSteps
+            currentStep={steps.currentStep}
+            isLoading={steps.isLoading}
+            error={steps.error}
+            aiOutput={steps.aiOutput}
+            clientName={selectedClient?.name}
+            isRenderPending={false}
+            onConfirm={handleConfirm}
+            onAiOutputChange={steps.updateAiOutput}
+            onNextToRender={handleNextToRender}
+            onComplete={handleStepsComplete}
+            onCancel={steps.reset}
+          />
         ) : (
           <GenogramEmptyState
             onStartEmpty={handleStartEmpty}
