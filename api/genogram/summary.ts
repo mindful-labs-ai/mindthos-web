@@ -646,7 +646,8 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
   fixed.relations = rawRelations
     .filter((rel): rel is unknown[] => {
       if (!Array.isArray(rel)) return false;
-      if (typeof rel[0] !== 'number' || typeof rel[1] !== 'number') return false;
+      if (typeof rel[0] !== 'number' || typeof rel[1] !== 'number')
+        return false;
       return true;
     })
     .map((rel): [number, number, AIRelationStatus, string] => {
@@ -655,13 +656,19 @@ function validateAndFixAIOutput(output: AIGenogramOutput): ValidationResult {
         const description = String(rel[2] || '');
         let status: AIRelationStatus = 'Connected';
         if (/단절|끊|연락.*(안|없)/.test(description)) status = 'Cutoff';
-        else if (/갈등|적대|충돌|다툼|싸움/.test(description)) status = 'Hostile';
+        else if (/갈등|적대|충돌|다툼|싸움/.test(description))
+          status = 'Hostile';
         else if (/융합|밀착|과도.*친밀/.test(description)) status = 'Fused';
         else if (/소원|거리|멀어/.test(description)) status = 'Distant';
         else if (/친밀/.test(description)) status = 'Close';
         return [rel[0] as number, rel[1] as number, status, description];
       }
-      return [rel[0] as number, rel[1] as number, rel[2] as AIRelationStatus, String(rel[3] || '')];
+      return [
+        rel[0] as number,
+        rel[1] as number,
+        rel[2] as AIRelationStatus,
+        String(rel[3] || ''),
+      ];
     });
   if (fixed.relations.length < originalRelationsCount) {
     warnings.push(

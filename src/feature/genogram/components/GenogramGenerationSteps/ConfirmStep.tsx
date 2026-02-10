@@ -60,7 +60,9 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
           </div>
 
           <button
-            onClick={hasEnoughCredits && !isLoadingCredits ? onConfirm : undefined}
+            onClick={
+              hasEnoughCredits && !isLoadingCredits ? onConfirm : undefined
+            }
             disabled={isLoadingCredits || !hasEnoughCredits}
             className={cn(
               'rounded-lg px-8 py-3 font-medium transition-colors',
@@ -68,7 +70,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
               isLoadingCredits
                 ? 'bg-primary/50 text-white'
                 : hasEnoughCredits
-                  ? 'bg-primary text-white hover:bg-primary/90'
+                  ? 'hover:bg-primary/90 bg-primary text-white'
                   : 'bg-gray-300 text-gray-500'
             )}
           >
