@@ -10,6 +10,10 @@
 
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { supabase } from '@/lib/supabase';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/utils/edgeFunctionClient';
 
 import {
   type AIGenogramOutput,
@@ -261,4 +265,64 @@ export function convertToCanvas(
   aiOutput: AIGenogramOutput
 ): SerializedGenogram {
   return convertAIJsonToCanvas(aiOutput);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 초기화 API
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface InitFamilySummaryResponse {
+  success: true;
+  data: {
+    client_id: string;
+    deleted_genogram: boolean;
+    cleared_client_family_summary: boolean;
+    cleared_transcript_summaries: number;
+  };
+}
+
+interface InitFamilySummaryError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+type InitFamilySummaryResult =
+  | InitFamilySummaryResponse
+  | InitFamilySummaryError;
+
+/**
+ * 가계도 및 family_summary 초기화
+ * @param clientId 내담자 UUID
+ * @param clearTranscriptSummaries 축어록의 family_summary도 초기화 여부 (기본값: true)
+ */
+export async function initFamilySummary(
+  clientId: string,
+  clearTranscriptSummaries = true
+): Promise<InitFamilySummaryResult> {
+  try {
+    const result = await callEdgeFunction<InitFamilySummaryResponse>(
+      EDGE_FUNCTION_ENDPOINTS.GENOGRAM.INIT,
+      {
+        client_id: clientId,
+        clear_transcript_summaries: clearTranscriptSummaries,
+      }
+    );
+
+    return result;
+  } catch (error) {
+    console.error('[genogramAIService] initFamilySummary error:', error);
+
+    // callEdgeFunction에서 throw된 에러 처리
+    const err = error as { message?: string; code?: string };
+    return {
+      success: false,
+      error: {
+        code: err.code || 'EDGE_FUNCTION_ERROR',
+        message: err.message || '초기화 중 오류가 발생했습니다.',
+      },
+    };
+  }
 }

@@ -1,7 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-// ICON 변경: Download, Check, Save, Loader2는 Lucide 직접 사용 중
-import { Check, Download, Loader2, Save, Sparkles, Upload } from 'lucide-react';
+import {
+  Check,
+  Download,
+  Loader2,
+  MoreVertical,
+  Save,
+} from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';
@@ -30,10 +35,10 @@ interface GenogramPageHeaderProps {
   onAddClient?: () => void;
   /** 클라이언트 없이 임시 캔버스 모드 */
   isTemporaryMode?: boolean;
-  /** Canvas JSON 직접 Import */
-  onImportCanvasJson?: (json: string) => void;
-  /** AI Raw JSON Import (후처리 후 렌더링) */
-  onImportAIJson?: (json: string) => void;
+  /** 가계도 초기화 핸들러 */
+  onReset?: () => void;
+  /** 초기화 진행 중 */
+  isResetting?: boolean;
 }
 
 export function GenogramPageHeader({
@@ -52,32 +57,32 @@ export function GenogramPageHeader({
   lastSavedAt = null,
   onAddClient,
   isTemporaryMode = false,
-  onImportCanvasJson,
-  onImportAIJson,
+  onReset,
+  isResetting = false,
 }: GenogramPageHeaderProps) {
   const [isExported, setIsExported] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const showSaved = useSavedIndicator(lastSavedAt);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
 
   const handleExport = () => {
     onExport();
     setIsExported(true);
     setTimeout(() => setIsExported(false), 2000);
-  };
-
-  const handleCanvasImport = () => {
-    if (!onImportCanvasJson) return;
-    const input = window.prompt('Canvas JSON을 붙여넣으세요:');
-    if (input) {
-      onImportCanvasJson(input);
-    }
-  };
-
-  const handleAIImport = () => {
-    if (!onImportAIJson) return;
-    const input = window.prompt('AI Raw JSON을 붙여넣으세요:');
-    if (input) {
-      onImportAIJson(input);
-    }
   };
 
   return (
@@ -116,31 +121,6 @@ export function GenogramPageHeader({
 
           {/* 액션 버튼들 */}
           <div className="flex items-center gap-2 rounded-lg border border-border bg-white p-3 shadow-sm">
-            {/* Import 버튼들 */}
-            {onImportCanvasJson && (
-              <button
-                onClick={handleCanvasImport}
-                title="Canvas JSON Import"
-                className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong"
-              >
-                <Upload className="h-[18px] w-[18px]" />
-              </button>
-            )}
-            {onImportAIJson && (
-              <button
-                onClick={handleAIImport}
-                title="AI JSON Import (후처리)"
-                className="hover:bg-primary/10 rounded-md p-2 text-primary transition-colors"
-              >
-                <Sparkles className="h-[18px] w-[18px]" />
-              </button>
-            )}
-
-            {/* 구분선 */}
-            {(onImportCanvasJson || onImportAIJson) && (
-              <div className="mx-1 h-5 w-px bg-border" />
-            )}
-
             <button
               onClick={onUndo}
               title="실행 취소"
@@ -177,6 +157,37 @@ export function GenogramPageHeader({
             >
               <Save className="h-[18px] w-[18px]" />
             </button>
+
+            {/* 더보기 메뉴 */}
+            {onReset && (
+              <>
+                <div className="mx-1 h-5 w-px bg-border" />
+                <div ref={menuRef} className="relative">
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    title="더보기"
+                    className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong"
+                  >
+                    <MoreVertical className="h-[18px] w-[18px]" />
+                  </button>
+
+                  {isMenuOpen && (
+                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[128px] rounded-lg border border-border bg-white py-1 shadow-lg">
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onReset();
+                        }}
+                        disabled={isResetting}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      >
+                        <span>가계도 초기화</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -1,3 +1,6 @@
+import { AlertCircle } from 'lucide-react';
+
+import { Button } from '@/components/ui/atoms/Button';
 import { cn } from '@/lib/cn';
 
 import type { AIGenogramOutput } from '../../utils/aiJsonConverter';
@@ -14,12 +17,15 @@ interface GenogramGenerationStepsProps {
   error: string | null;
   aiOutput: AIGenogramOutput | null;
   clientName?: string;
+  /** render 단계에서 캔버스 로딩 중 여부 */
+  isRenderPending?: boolean;
 
   // 콜백
   onConfirm: () => void;
   onAiOutputChange: (data: AIGenogramOutput) => void;
   onNextToRender: () => void;
   onComplete: () => void;
+  onCancel?: () => void;
 }
 
 export function GenogramGenerationSteps({
@@ -28,10 +34,12 @@ export function GenogramGenerationSteps({
   error,
   aiOutput,
   clientName,
+  isRenderPending = false,
   onConfirm,
   onAiOutputChange,
   onNextToRender,
   onComplete,
+  onCancel,
 }: GenogramGenerationStepsProps) {
   const stepIndex = stepToIndex(currentStep);
 
@@ -40,7 +48,12 @@ export function GenogramGenerationSteps({
     return (
       <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
         <div className="pointer-events-auto rounded-xl border border-border bg-surface p-8 shadow-lg">
-          <RenderStep error={error} onComplete={onComplete} />
+          <RenderStep
+            error={error}
+            isPending={isRenderPending}
+            onComplete={onComplete}
+            onCancel={onCancel}
+          />
         </div>
       </div>
     );
@@ -48,6 +61,24 @@ export function GenogramGenerationSteps({
 
   // confirm 또는 analyze 단계의 콘텐츠
   const renderStepContent = () => {
+    // 에러 발생 시 - 첫 화면으로 돌아가기
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <AlertCircle className="h-12 w-12 text-red-500" />
+          <p className="mt-4 text-center text-lg font-medium text-fg">
+            오류가 발생했습니다
+          </p>
+          <p className="mt-2 text-center text-sm text-fg-muted">{error}</p>
+          {onCancel && (
+            <Button variant="outline" className="mt-6" onClick={onCancel}>
+              돌아가기
+            </Button>
+          )}
+        </div>
+      );
+    }
+
     // confirm 단계
     if (currentStep === 'confirm') {
       return <ConfirmStep onConfirm={onConfirm} />;
@@ -86,7 +117,7 @@ export function GenogramGenerationSteps({
       <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-lg">
         <h2 className="mb-4 shrink-0 text-xl font-semibold text-fg">
           {clientName
-            ? `${clientName}님의 상담기록으로 자동 생성하기 `
+            ? `${clientName}님의 상담기록으로 자동 생성하기`
             : '상담기록으로 자동 생성하기'}
         </h2>
 

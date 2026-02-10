@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { AddClientModal } from '@/feature/client/components/AddClientModal';
+import { clientQueryKeys } from '@/feature/client/constants/queryKeys';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
@@ -12,13 +13,17 @@ import { useAuthStore } from '@/stores/authStore';
 import { GenogramEmptyState } from '../components/GenogramEmptyState';
 import { GenogramGenerationSteps } from '../components/GenogramGenerationSteps';
 import { GenogramPageHeader } from '../components/GenogramPageHeader';
+import { ResetConfirmModal } from '../components/ResetConfirmModal';
 import { useClientFamilySummary } from '../hooks/useClientFamilySummary';
 import { useClientHasRecords } from '../hooks/useClientHasRecords';
 import { useGenogramData } from '../hooks/useGenogramData';
 import { useGenogramSteps } from '../hooks/useGenogramSteps';
-import { fetchRawAIOutput } from '../services/genogramAIService';
+import {
+  fetchRawAIOutput,
+  initFamilySummary,
+} from '../services/genogramAIService';
 import { genogramService } from '../services/genogramService';
-import { convertAIJsonToCanvas, isValidAIJson } from '../utils/aiJsonConverter';
+import { convertAIJsonToCanvas } from '../utils/aiJsonConverter';
 
 export function GenogramClientPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -79,6 +84,10 @@ export function GenogramClientPage() {
   // 사용자가 명시적으로 임시 모드를 종료했는지 추적
   const [exitedTemporaryMode, setExitedTemporaryMode] = useState(false);
 
+  // 가계도 초기화 상태
+  const [isResetting, setIsResetting] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
   // 활성 클라이언트 (counsel_done 제외)
   const activeClients = clients.filter((c) => !c.counsel_done);
   const hasNoClients = !isClientsLoading && activeClients.length === 0;
@@ -105,13 +114,14 @@ export function GenogramClientPage() {
     try {
       // 빈 genogram 데이터 저장
       await genogramService.save(clientId, userId, '{}');
-      // 리로드하여 hasData가 true가 되도록 함
-      window.location.reload();
+      // 쿼리 캐시 업데이트 → hasData가 true가 됨
+      queryClient.setQueryData(['genogram', clientId], '{}');
     } catch (e) {
       console.error('Failed to create empty genogram:', e);
+    } finally {
       setIsStarting(false);
     }
-  }, [clientId, userId]);
+  }, [clientId, userId, queryClient]);
 
   // AI로 가계도 생성하기 - confirm 단계로 시작
   const handleStartFromRecords = useCallback(() => {
@@ -267,20 +277,22 @@ export function GenogramClientPage() {
       if (temporaryData) {
         try {
           await genogramService.save(newClientId, userId, temporaryData);
+          // 쿼리 캐시 업데이트
+          queryClient.setQueryData(['genogram', newClientId], temporaryData);
           setTemporaryData(null);
         } catch (e) {
           console.error('Failed to save genogram to new client:', e);
         }
       }
 
+      // 클라이언트 목록 갱신
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+
       // 새 클라이언트로 이동
       setSearchParams({ clientId: newClientId });
       setExitedTemporaryMode(true);
-
-      // 데이터 갱신을 위해 리로드
-      window.location.reload();
     },
-    [temporaryData, userId, setSearchParams]
+    [temporaryData, userId, setSearchParams, queryClient]
   );
 
   // Export (클립보드 복사)
@@ -291,47 +303,6 @@ export function GenogramClientPage() {
     }
   }, []);
 
-  // Canvas JSON Import (이미 렌더링 가능한 형식)
-  const handleImportCanvasJson = useCallback(
-    (jsonStr: string) => {
-      try {
-        JSON.parse(jsonStr); // 유효한 JSON인지 확인
-        genogramRef.current?.loadJSON(jsonStr);
-        updateGenogramState();
-      } catch (e) {
-        console.error('Invalid Canvas JSON:', e);
-        alert('유효하지 않은 JSON 형식입니다.');
-      }
-    },
-    [updateGenogramState]
-  );
-
-  // AI Raw JSON Import (후처리 후 렌더링)
-  const handleImportAIJson = useCallback(
-    (jsonStr: string) => {
-      try {
-        const aiOutput = JSON.parse(jsonStr);
-
-        if (!isValidAIJson(aiOutput)) {
-          alert('유효하지 않은 AI JSON 형식입니다.\npeople 배열이 필요합니다.');
-          return;
-        }
-
-        // AI JSON → Canvas 형식으로 변환
-        const canvasData = convertAIJsonToCanvas(aiOutput);
-        const canvasJson = JSON.stringify(canvasData);
-
-        // 캔버스에 로드
-        genogramRef.current?.loadJSON(canvasJson);
-        updateGenogramState();
-      } catch (e) {
-        console.error('AI JSON Import Error:', e);
-        alert('AI JSON 변환 중 오류가 발생했습니다.');
-      }
-    },
-    [updateGenogramState]
-  );
-
   // 수동 저장
   const handleSave = useCallback(() => {
     const json = genogramRef.current?.toJSON();
@@ -339,6 +310,46 @@ export function GenogramClientPage() {
       saveNow(json);
     }
   }, [saveNow]);
+
+  // 가계도 초기화 모달 열기
+  const handleReset = useCallback(() => {
+    setIsResetModalOpen(true);
+  }, []);
+
+  // 가계도 초기화 실행
+  const handleResetConfirm = useCallback(async () => {
+    if (!clientId || !userId) return;
+
+    setIsResetting(true);
+    try {
+      const result = await initFamilySummary(clientId, true);
+
+      if (!result.success) {
+        alert(`초기화 실패: ${result.error.message}`);
+        return;
+      }
+
+      // 쿼리 캐시 즉시 초기화 → hasData가 false가 됨
+      queryClient.setQueryData(['genogram', clientId], null);
+      queryClient.setQueryData(['clientFamilySummary', clientId], null);
+
+      // 쿼리 캐시 무효화 (백그라운드 refetch)
+      queryClient.invalidateQueries({ queryKey: ['genogram', clientId] });
+      queryClient.invalidateQueries({
+        queryKey: ['clientFamilySummary', clientId],
+      });
+      // 클라이언트 목록 갱신 (family_summary 필드 반영)
+      queryClient.invalidateQueries({
+        queryKey: clientQueryKeys.list(userId),
+      });
+    } catch (e) {
+      console.error('Failed to reset genogram:', e);
+      alert('초기화 중 오류가 발생했습니다.');
+    } finally {
+      setIsResetting(false);
+      setIsResetModalOpen(false);
+    }
+  }, [clientId, userId, queryClient]);
 
   // 로딩 상태 (family_summary 로딩 포함)
   const isLoading =
@@ -372,8 +383,8 @@ export function GenogramClientPage() {
         lastSavedAt={lastSavedAt}
         onAddClient={handleOpenAddClientModal}
         isTemporaryMode={isTemporaryMode}
-        onImportCanvasJson={showCanvas ? handleImportCanvasJson : undefined}
-        onImportAIJson={showCanvas ? handleImportAIJson : undefined}
+        onReset={showCanvas && clientId ? handleReset : undefined}
+        isResetting={isResetting}
       />
 
       {/* 콘텐츠 영역 */}
@@ -408,10 +419,12 @@ export function GenogramClientPage() {
                 error={steps.error}
                 aiOutput={steps.aiOutput}
                 clientName={selectedClient?.name}
+                isRenderPending={!!pendingCanvasJson}
                 onConfirm={handleConfirm}
                 onAiOutputChange={steps.updateAiOutput}
                 onNextToRender={handleNextToRender}
                 onComplete={handleStepsComplete}
+                onCancel={steps.reset}
               />
             </>
           ) : (
@@ -422,10 +435,12 @@ export function GenogramClientPage() {
               error={steps.error}
               aiOutput={steps.aiOutput}
               clientName={selectedClient?.name}
+              isRenderPending={false}
               onConfirm={handleConfirm}
               onAiOutputChange={steps.updateAiOutput}
               onNextToRender={handleNextToRender}
               onComplete={handleStepsComplete}
+              onCancel={steps.reset}
             />
           )
         ) : (
@@ -453,6 +468,15 @@ export function GenogramClientPage() {
         open={isAddClientModalOpen}
         onOpenChange={handleAddClientModalClose}
         onClientCreated={handleClientCreated}
+      />
+
+      {/* 가계도 초기화 확인 모달 */}
+      <ResetConfirmModal
+        open={isResetModalOpen}
+        onOpenChange={setIsResetModalOpen}
+        clientName={selectedClient?.name ?? ''}
+        onConfirm={handleResetConfirm}
+        isLoading={isResetting}
       />
     </div>
   );

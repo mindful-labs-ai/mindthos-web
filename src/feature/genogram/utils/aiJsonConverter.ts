@@ -1282,7 +1282,7 @@ export function convertAIJsonToCanvas(
         deathDate: true,
         extraInfo: true,
         illness: true,
-        relationLine: false,
+        relationLine: true,
         groupLine: true,
         grid: true,
         memo: true,
