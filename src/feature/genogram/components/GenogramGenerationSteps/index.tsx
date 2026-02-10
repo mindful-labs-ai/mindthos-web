@@ -1,6 +1,7 @@
 import { cn } from '@/lib/cn';
 
 import type { AIGenogramOutput } from '../../utils/aiJsonConverter';
+import { AnalyzeLoadingAnimation } from '../GenogramLoadingAnimation';
 
 import { ConfirmStep } from './ConfirmStep';
 import { FamilyMemberListStep } from './FamilyMemberListStep';
@@ -12,6 +13,7 @@ interface GenogramGenerationStepsProps {
   isLoading: boolean;
   error: string | null;
   aiOutput: AIGenogramOutput | null;
+  clientName?: string;
 
   // 콜백
   onConfirm: () => void;
@@ -25,6 +27,7 @@ export function GenogramGenerationSteps({
   isLoading,
   error,
   aiOutput,
+  clientName,
   onConfirm,
   onAiOutputChange,
   onNextToRender,
@@ -54,10 +57,7 @@ export function GenogramGenerationSteps({
     if (isLoading) {
       return (
         <div className="flex flex-col items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="mt-4 text-sm text-fg-muted">
-            AI가 가족 구성원을 분석하고 있습니다...
-          </p>
+          <AnalyzeLoadingAnimation />
         </div>
       );
     }
@@ -85,7 +85,9 @@ export function GenogramGenerationSteps({
     <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
       <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-lg">
         <h2 className="mb-4 shrink-0 text-xl font-semibold text-fg">
-          AI 가계도 생성
+          {clientName
+            ? `${clientName}님의 상담기록으로 자동 생성하기 `
+            : '상담기록으로 자동 생성하기'}
         </h2>
 
         {/* 커스텀 스테퍼 */}

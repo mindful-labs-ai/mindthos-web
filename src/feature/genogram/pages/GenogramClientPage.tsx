@@ -52,6 +52,12 @@ export function GenogramClientPage() {
   // 스텝 상태
   const steps = useGenogramSteps();
 
+  // 클라이언트 변경 시 스텝 초기화
+  useEffect(() => {
+    steps.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientId]);
+
   const {
     initialData,
     hasData,
@@ -401,6 +407,7 @@ export function GenogramClientPage() {
                 isLoading={steps.isLoading}
                 error={steps.error}
                 aiOutput={steps.aiOutput}
+                clientName={selectedClient?.name}
                 onConfirm={handleConfirm}
                 onAiOutputChange={steps.updateAiOutput}
                 onNextToRender={handleNextToRender}
@@ -414,6 +421,7 @@ export function GenogramClientPage() {
               isLoading={steps.isLoading}
               error={steps.error}
               aiOutput={steps.aiOutput}
+              clientName={selectedClient?.name}
               onConfirm={handleConfirm}
               onAiOutputChange={steps.updateAiOutput}
               onNextToRender={handleNextToRender}
