@@ -85,12 +85,16 @@ export function useGenogramData(clientId: string) {
     return () => window.removeEventListener('beforeunload', handler);
   }, [isSaving]);
 
-  // cleanup timer
+  // clientId 변경 시 pending 저장 취소 (다른 클라이언트에 저장되는 것 방지)
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      pendingDataRef.current = null;
     };
-  }, []);
+  }, [clientId]);
 
   return {
     initialData: initialData ?? null,
