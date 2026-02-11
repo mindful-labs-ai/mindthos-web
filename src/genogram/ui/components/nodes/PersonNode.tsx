@@ -747,7 +747,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 오른쪽: 상세정보 */}
       {hasDetail && (
         <div
-          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-medium text-fg"
+          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-normal italic text-fg"
           style={{
             fontSize: FONT_SIZE_DETAIL,
             left: S + 8,
@@ -764,7 +764,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
 
       {/* 아래: 이름 */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-medium text-fg"
+        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-semibold text-fg"
         style={{
           fontSize: FONT_SIZE_NAME,
           top: S + 4,

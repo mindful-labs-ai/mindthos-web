@@ -29,7 +29,6 @@ import type {
 } from '@/feature/session/types';
 import { calculateTotalCredit } from '@/feature/session/utils/creditCalculator';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
-import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
   calculateDaysUntilReset,
@@ -49,6 +48,7 @@ import {
 } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 
 import { useSessionRecords } from '../hooks/useMobileSession';
 
@@ -97,7 +97,7 @@ const MobileView = () => {
     open: false,
     message: '',
   });
-  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] = useState(false);
+  const openModal = useModalStore((state) => state.openModal);
 
   // iOS 파일 위치 안내 모달
   const [isIosGuideModalOpen, setIsIosGuideModalOpen] = useState(false);
@@ -796,13 +796,11 @@ const MobileView = () => {
         onOpenChange={(open) =>
           setCreditErrorSnackBar((prev) => ({ ...prev, open }))
         }
+        action={{
+          label: '플랜 업그레이드',
+          onClick: () => openModal('planChange'),
+        }}
         duration={8000}
-      />
-
-      {/* 플랜 변경 모달 */}
-      <PlanChangeModal
-        open={isPlanChangeModalOpen}
-        onOpenChange={setIsPlanChangeModalOpen}
       />
     </div>
   );

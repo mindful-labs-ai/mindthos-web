@@ -800,6 +800,29 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor, syncFromEditor]
   );
 
+  // Viewport 동기화: ReactFlow viewport → Editor 데이터 모델
+  const syncViewportToEditor = useCallback(
+    (viewport: { x: number; y: number; zoom: number }) => {
+      const editor = getEditor();
+      if (!editor) return;
+
+      // Editor의 offset과 zoom 업데이트
+      editor.setOffset({ x: viewport.x, y: viewport.y });
+      editor.setZoom(viewport.zoom);
+    },
+    [getEditor]
+  );
+
+  // Editor에서 viewport 가져오기
+  const getEditorViewport = useCallback(() => {
+    const editor = getEditor();
+    if (!editor) return { x: 0, y: 0, zoom: 1 };
+
+    const offset = editor.getOffset();
+    const zoom = editor.getZoom();
+    return { x: offset.x, y: offset.y, zoom };
+  }, [getEditor]);
+
   return {
     nodes,
     edges,
@@ -848,5 +871,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     selectedAnnotation,
     updateAnnotation,
     deselectNode,
+    syncViewportToEditor,
+    getEditorViewport,
   };
 };

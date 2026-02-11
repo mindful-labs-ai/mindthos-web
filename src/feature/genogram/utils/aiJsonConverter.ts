@@ -464,28 +464,70 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
     return genA - genB;
   });
 
-  // IP가 여성이고 junction couple인 경우, 같은 세대 내에서 배우자 가족을 앞으로
+  // IP가 여성이고 junction couple인 경우, 배우자 가족 전체(하위 트리 포함)를 앞으로
   if (ipIsFemale && ipId && ipSpouseId && junctionCouples.has(ipId)) {
-    // 같은 세대의 siblingGroups만 필터링하여 순서 조정
-    const ipSiblingGroupIndex = orderedSiblingGroups.findIndex((sg) =>
-      sg.siblingIds.includes(ipId)
-    );
-    const spouseSiblingGroupIndex = orderedSiblingGroups.findIndex((sg) =>
+    // 배우자가 속한 siblingGroup 찾기
+    const spouseSiblingGroup = orderedSiblingGroups.find((sg) =>
       sg.siblingIds.includes(ipSpouseId)
     );
 
-    // 배우자 siblingGroup을 IP siblingGroup보다 앞으로 이동 (같은 세대 내에서만)
-    if (
-      ipSiblingGroupIndex !== -1 &&
-      spouseSiblingGroupIndex !== -1 &&
-      spouseSiblingGroupIndex > ipSiblingGroupIndex &&
-      getSiblingGroupGeneration(orderedSiblingGroups[ipSiblingGroupIndex]) ===
-        getSiblingGroupGeneration(orderedSiblingGroups[spouseSiblingGroupIndex])
-    ) {
-      const temp = orderedSiblingGroups[ipSiblingGroupIndex];
-      orderedSiblingGroups[ipSiblingGroupIndex] =
-        orderedSiblingGroups[spouseSiblingGroupIndex];
-      orderedSiblingGroups[spouseSiblingGroupIndex] = temp;
+    if (spouseSiblingGroup) {
+      // 배우자 가족의 모든 siblingGroup 찾기 (하위 트리 포함)
+      const spouseFamilyMemberIds = new Set<number>(
+        spouseSiblingGroup.siblingIds
+      );
+      const spouseFamilySiblingGroups = new Set<AISiblingGroup>();
+      spouseFamilySiblingGroups.add(spouseSiblingGroup);
+
+      // 배우자 siblingGroup 멤버들의 자손 siblingGroup 찾기
+      const findDescendantSiblingGroups = (memberIds: number[]) => {
+        for (const memberId of memberIds) {
+          // memberId가 부모인 siblingGroup 찾기
+          for (const sg of orderedSiblingGroups) {
+            const [parentId1, parentId2] = sg.parentCoupleKey
+              .split('-')
+              .map(Number);
+            // IP와의 공통 자녀는 제외 (IP가 부모인 경우)
+            const isIPChild = parentId1 === ipId || parentId2 === ipId;
+            if (
+              !isIPChild &&
+              (parentId1 === memberId || parentId2 === memberId)
+            ) {
+              if (!spouseFamilySiblingGroups.has(sg)) {
+                spouseFamilySiblingGroups.add(sg);
+                // 자손의 배우자도 가족으로 포함
+                for (const childId of sg.siblingIds) {
+                  spouseFamilyMemberIds.add(childId);
+                  const childSpouseId = spouseMap.get(childId);
+                  if (childSpouseId) {
+                    spouseFamilyMemberIds.add(childSpouseId);
+                  }
+                }
+                findDescendantSiblingGroups(sg.siblingIds);
+              }
+            }
+          }
+        }
+      };
+
+      findDescendantSiblingGroups(spouseSiblingGroup.siblingIds);
+
+      // orderedSiblingGroups 재정렬:
+      // 배우자 가족 siblingGroups를 앞으로, 나머지는 뒤로
+      const spouseFamilyGroups = orderedSiblingGroups
+        .filter((sg) => spouseFamilySiblingGroups.has(sg))
+        .sort(
+          (a, b) => getSiblingGroupGeneration(a) - getSiblingGroupGeneration(b)
+        );
+      const otherGroups = orderedSiblingGroups
+        .filter((sg) => !spouseFamilySiblingGroups.has(sg))
+        .sort(
+          (a, b) => getSiblingGroupGeneration(a) - getSiblingGroupGeneration(b)
+        );
+
+      // 재정렬
+      orderedSiblingGroups.length = 0;
+      orderedSiblingGroups.push(...spouseFamilyGroups, ...otherGroups);
     }
   }
 
@@ -758,21 +800,27 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
     );
   }
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 좌표 보정 로직
+  // ═══════════════════════════════════════════════════════════════════════════
+  //
+  // 주의: 기존 로직은 수정하지 않고, 새로운 보정 단계를 추가하는 방식으로 개선합니다.
+  // 각 단계는 독립적으로 작동하며, 이전 단계의 결과를 기반으로 보정합니다.
+  //
+  // ═══════════════════════════════════════════════════════════════════════════
+
   // ─────────────────────────────────────────────────────────────────────────
   // 5. 후처리: 부모 위치를 자녀 기준으로 조정
   // ─────────────────────────────────────────────────────────────────────────
   //
-  // 일반 부부:
-  //   자녀들의 X 좌표에서 minX, maxX 계산
-  //   아버지 X = minX - 90
-  //   어머니 X = maxX + 90
-  //
-  // Junction couple (양쪽 다 siblingGroup에 속한 부부):
-  //   각자 siblingGroup 위치 유지
-  //   자녀들을 부모 중간 지점 아래에 배치
+  // 순서:
+  // 5-1. 일반 부부의 wrap adjustment (자녀 기준)
+  // 5-2. Junction couple의 자녀 위치 조정 (부모의 최종 위치 기준)
   //
 
-  // 먼저 junction couple의 자녀 위치 조정
+  // ─────────────────────────────────────────────────────────────────────────
+  // 5-1. 일반 부부의 wrap adjustment (자녀 기준)
+  // ─────────────────────────────────────────────────────────────────────────
   for (const nf of nuclearFamilies) {
     const { husbandId, wifeId, childrenIds } = nf;
 
@@ -783,74 +831,7 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
       (husbandId && junctionCouples.has(husbandId)) ||
       (wifeId && junctionCouples.has(wifeId));
 
-    if (isJunctionFamily) {
-      // Junction couple: 자녀를 부모 중간 지점 아래에 배치
-      const husbandX = husbandId ? xPositions.get(husbandId) : undefined;
-      const wifeX = wifeId ? xPositions.get(wifeId) : undefined;
-
-      if (husbandX !== undefined && wifeX !== undefined) {
-        const parentMidX = (husbandX + wifeX) / 2;
-        const childCount = childrenIds.length;
-
-        // 자녀들을 중간 지점 주변에 배치 (birthOrder 순서)
-        const sortedChildren = [...childrenIds].sort((a, b) => {
-          const aSubject = subjectById.get(a);
-          const bSubject = subjectById.get(b);
-          return (
-            (aSubject?.birthOrder ?? DEFAULT_BIRTH_ORDER) -
-            (bSubject?.birthOrder ?? DEFAULT_BIRTH_ORDER)
-          );
-        });
-
-        sortedChildren.forEach((childId, index) => {
-          // 자녀 중앙을 parentMidX에 맞춤
-          const childOffset = index - (childCount - 1) / 2;
-          const childX = parentMidX + childOffset * X_SIBLING_GAP;
-
-          // 자녀의 배우자도 함께 이동
-          const childSpouseId = spouseMap.get(childId);
-          const childSubject = subjectById.get(childId);
-          const childIsMale = childSubject?.gender === 'Male';
-
-          if (childSpouseId && !junctionCouples.has(childId)) {
-            if (childIsMale) {
-              xPositions.set(childId, childX);
-              xPositions.set(childSpouseId, childX + MIN_COUPLE_GAP);
-            } else {
-              xPositions.set(childSpouseId, childX);
-              xPositions.set(childId, childX + MIN_COUPLE_GAP);
-            }
-          } else {
-            xPositions.set(childId, childX);
-          }
-        });
-
-        // Fetus도 자녀 뒤에 배치
-        const coupleKey = `${husbandId}-${wifeId}`;
-        const relatedFetuses = fetusInfoList.filter(
-          (f) => `${f.fatherId}-${f.motherId}` === coupleKey
-        );
-        relatedFetuses.forEach((f, fIndex) => {
-          const fetusOffset =
-            childCount + fIndex - (childCount + relatedFetuses.length - 1) / 2;
-          fetusXPositions.set(f.id, parentMidX + fetusOffset * X_SIBLING_GAP);
-        });
-      }
-    }
-  }
-
-  // 일반 부부의 위치 조정 (자녀 기준으로 wrap)
-  for (const nf of nuclearFamilies) {
-    const { husbandId, wifeId, childrenIds } = nf;
-
-    // 자녀가 없으면 스킵
-    if (childrenIds.length === 0) continue;
-
-    const isJunctionFamily =
-      (husbandId && junctionCouples.has(husbandId)) ||
-      (wifeId && junctionCouples.has(wifeId));
-
-    // Junction couple은 이미 처리됨
+    // Junction couple은 5-3에서 처리
     if (isJunctionFamily) continue;
 
     // 자녀들의 X 좌표 수집
@@ -897,7 +878,84 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 6. 부부 X 좌표 검증 및 교환 (부 X > 모 X 이면 교환)
+  // 5-2. Junction couple의 자녀 위치 조정 (부모의 최종 위치 기준)
+  // ─────────────────────────────────────────────────────────────────────────
+  for (const nf of nuclearFamilies) {
+    const { husbandId, wifeId, childrenIds } = nf;
+
+    // 자녀가 없으면 스킵
+    if (childrenIds.length === 0) continue;
+
+    const isJunctionFamily =
+      (husbandId && junctionCouples.has(husbandId)) ||
+      (wifeId && junctionCouples.has(wifeId));
+
+    if (isJunctionFamily) {
+      // Junction couple: 자녀를 부모 중간 지점 아래에 배치
+      const husbandX = husbandId ? xPositions.get(husbandId) : undefined;
+      const wifeX = wifeId ? xPositions.get(wifeId) : undefined;
+
+      if (husbandX !== undefined && wifeX !== undefined) {
+        const parentMidX = (husbandX + wifeX) / 2;
+        const childCount = childrenIds.length;
+
+        // 부모들의 X 좌표 (충돌 방지용)
+        const parentXSet = new Set<number>([husbandX, wifeX]);
+
+        // 자녀들을 중간 지점 주변에 배치 (birthOrder 순서)
+        const sortedChildren = [...childrenIds].sort((a, b) => {
+          const aSubject = subjectById.get(a);
+          const bSubject = subjectById.get(b);
+          return (
+            (aSubject?.birthOrder ?? DEFAULT_BIRTH_ORDER) -
+            (bSubject?.birthOrder ?? DEFAULT_BIRTH_ORDER)
+          );
+        });
+
+        sortedChildren.forEach((childId, index) => {
+          // 자녀 중앙을 parentMidX에 맞춤
+          const childOffset = index - (childCount - 1) / 2;
+          let childX = parentMidX + childOffset * X_SIBLING_GAP;
+
+          // 부모 X좌표와 겹치면 오른쪽으로 이동
+          while (parentXSet.has(childX)) {
+            childX += X_SIBLING_GAP;
+          }
+
+          // 자녀의 배우자도 함께 이동
+          const childSpouseId = spouseMap.get(childId);
+          const childSubject = subjectById.get(childId);
+          const childIsMale = childSubject?.gender === 'Male';
+
+          if (childSpouseId && !junctionCouples.has(childId)) {
+            if (childIsMale) {
+              xPositions.set(childId, childX);
+              xPositions.set(childSpouseId, childX + MIN_COUPLE_GAP);
+            } else {
+              xPositions.set(childSpouseId, childX);
+              xPositions.set(childId, childX + MIN_COUPLE_GAP);
+            }
+          } else {
+            xPositions.set(childId, childX);
+          }
+        });
+
+        // Fetus도 자녀 뒤에 배치
+        const coupleKey = `${husbandId}-${wifeId}`;
+        const relatedFetuses = fetusInfoList.filter(
+          (f) => `${f.fatherId}-${f.motherId}` === coupleKey
+        );
+        relatedFetuses.forEach((f, fIndex) => {
+          const fetusOffset =
+            childCount + fIndex - (childCount + relatedFetuses.length - 1) / 2;
+          fetusXPositions.set(f.id, parentMidX + fetusOffset * X_SIBLING_GAP);
+        });
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 6-1. 부부 X 좌표 검증 및 교환 (부 X > 모 X 이면 교환)
   // ─────────────────────────────────────────────────────────────────────────
   for (const [id1, id2] of partners) {
     const subject1 = subjectById.get(id1);
@@ -921,34 +979,127 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 7. 좌표 충돌 검사 및 이동 (같은 Y에서 같은 X를 가진 인물 처리)
+  // 6-2. 부부 영역 겹침 해결
   // ─────────────────────────────────────────────────────────────────────────
-  // Y 좌표별로 인물들을 그룹화
-  const positionsByY = new Map<number, Map<number, number[]>>(); // Y -> (X -> [ids])
+  // 부부1: H1 --- W1, 부부2: H2 --- W2
+  // 겹침 상태: H1 < H2 < W1 < W2 → H1 < W1 < H2 < W2 로 재배치
+  // 즉, 부부2를 부부1 오른쪽으로 이동
+  const processedPairs = new Set<string>();
+
+  for (const [p1Id1, p1Id2] of partners) {
+    const p1Gen = generations.get(p1Id1) ?? DEFAULT_GENERATION;
+    const p1X1 = xPositions.get(p1Id1);
+    const p1X2 = xPositions.get(p1Id2);
+
+    if (p1X1 === undefined || p1X2 === undefined) continue;
+
+    const p1MinX = Math.min(p1X1, p1X2);
+    const p1MaxX = Math.max(p1X1, p1X2);
+
+    for (const [p2Id1, p2Id2] of partners) {
+      // 같은 부부 스킵
+      if (p1Id1 === p2Id1 || p1Id1 === p2Id2) continue;
+
+      // 이미 처리된 쌍 스킵
+      const pairKey = [p1Id1, p1Id2, p2Id1, p2Id2].sort().join('-');
+      if (processedPairs.has(pairKey)) continue;
+      processedPairs.add(pairKey);
+
+      // 다른 세대 스킵
+      const p2Gen = generations.get(p2Id1) ?? DEFAULT_GENERATION;
+      if (p1Gen !== p2Gen) continue;
+
+      const p2X1 = xPositions.get(p2Id1);
+      const p2X2 = xPositions.get(p2Id2);
+
+      if (p2X1 === undefined || p2X2 === undefined) continue;
+
+      const p2MinX = Math.min(p2X1, p2X2);
+      const p2MaxX = Math.max(p2X1, p2X2);
+
+      // 겹침 확인: 부부1 범위와 부부2 범위가 교차하는지
+      // 케이스 1: p1MinX < p2MinX < p1MaxX < p2MaxX (부부2가 부부1에 끼어있음)
+      if (p1MinX < p2MinX && p2MinX < p1MaxX && p1MaxX < p2MaxX) {
+        // 부부2를 부부1 오른쪽으로 이동
+        const offset = p1MaxX - p2MinX + MIN_COUPLE_GAP;
+        xPositions.set(p2Id1, (p2X1 ?? 0) + offset);
+        xPositions.set(p2Id2, (p2X2 ?? 0) + offset);
+      }
+      // 케이스 2: p2MinX < p1MinX < p2MaxX < p1MaxX (부부1이 부부2에 끼어있음)
+      else if (p2MinX < p1MinX && p1MinX < p2MaxX && p2MaxX < p1MaxX) {
+        // 부부1을 부부2 오른쪽으로 이동
+        const offset = p2MaxX - p1MinX + MIN_COUPLE_GAP;
+        xPositions.set(p1Id1, (p1X1 ?? 0) + offset);
+        xPositions.set(p1Id2, (p1X2 ?? 0) + offset);
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 7. 좌표 충돌 검사 및 이동 (파트너 좌표 기반)
+  // ─────────────────────────────────────────────────────────────────────────
+  //
+  // 충돌 해결 전략:
+  // 1. 파트너가 왼쪽에 있으면 → 왼쪽으로 이동 (-)
+  // 2. 파트너가 오른쪽에 있으면 → 오른쪽으로 이동 (+)
+  // 3. 파트너가 없으면 → 오른쪽으로 이동 (기본값)
+  //
+  // 세대(generation)별로 인물들을 그룹화 (Y 좌표가 아닌 세대로 그룹화)
+  // Junction couple과 일반 형제는 같은 세대지만 Y가 다를 수 있음
+  const positionsByGen = new Map<number, Map<number, number[]>>(); // gen -> (X -> [ids])
 
   for (const [id, x] of xPositions) {
-    const y = yPositions.get(id);
-    if (y === undefined) continue;
+    const gen = generations.get(id) ?? DEFAULT_GENERATION;
 
-    if (!positionsByY.has(y)) {
-      positionsByY.set(y, new Map());
+    if (!positionsByGen.has(gen)) {
+      positionsByGen.set(gen, new Map());
     }
-    const xMap = positionsByY.get(y)!;
+    const xMap = positionsByGen.get(gen)!;
     if (!xMap.has(x)) {
       xMap.set(x, []);
     }
     xMap.get(x)!.push(id);
   }
 
-  // 충돌하는 인물들 이동 (같은 X, Y에 여러 명이 있는 경우)
-  for (const [_y, xMap] of positionsByY) {
-    for (const [x, ids] of xMap) {
+  // 이동 방향 결정 함수
+  const getMovementDirection = (
+    id: number,
+    collisionX: number
+  ): 'left' | 'right' => {
+    const spouseId = spouseMap.get(id);
+    if (!spouseId) return 'right'; // 파트너 없으면 기본 오른쪽
+
+    const spouseX = xPositions.get(spouseId);
+    if (spouseX === undefined) return 'right';
+
+    // 파트너가 왼쪽에 있으면 왼쪽으로, 오른쪽에 있으면 오른쪽으로
+    return spouseX < collisionX ? 'left' : 'right';
+  };
+
+  // 충돌하는 인물들 이동 (파트너 좌표 기반)
+  for (const [_gen, xMap] of positionsByGen) {
+    for (const [collisionX, ids] of xMap) {
       if (ids.length <= 1) continue;
 
-      // 충돌 발생! 두 번째 인물부터 오른쪽으로 이동
-      for (let i = 1; i < ids.length; i++) {
-        const id = ids[i];
-        const newX = x + i * MIN_COUPLE_GAP;
+      // 충돌 발생! 각 인물의 이동 방향 결정
+      const leftMovers: number[] = []; // 왼쪽으로 이동할 인물들
+      const rightMovers: number[] = []; // 오른쪽으로 이동할 인물들
+
+      for (const id of ids) {
+        const direction = getMovementDirection(id, collisionX);
+        if (direction === 'left') {
+          leftMovers.push(id);
+        } else {
+          rightMovers.push(id);
+        }
+      }
+
+      // 왼쪽 이동 인물들 처리 (첫 번째는 제자리, 나머지는 왼쪽으로)
+      leftMovers.forEach((id, index) => {
+        if (index === 0) return; // 첫 번째는 제자리
+
+        const offset = index * MIN_COUPLE_GAP;
+        const newX = collisionX - offset;
         xPositions.set(id, newX);
 
         // 배우자도 함께 이동
@@ -956,42 +1107,46 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
         if (spouseId) {
           const spouseX = xPositions.get(spouseId);
           if (spouseX !== undefined) {
-            xPositions.set(spouseId, spouseX + i * MIN_COUPLE_GAP);
+            xPositions.set(spouseId, spouseX - offset);
           }
         }
-      }
+      });
+
+      // 오른쪽 이동 인물들 처리
+      // 왼쪽 이동자가 있으면 첫 번째 오른쪽 이동자는 제자리
+      const rightStartIndex = leftMovers.length > 0 ? 0 : 1;
+      rightMovers.forEach((id, index) => {
+        if (index < rightStartIndex) return;
+
+        const offset = (index - rightStartIndex + 1) * MIN_COUPLE_GAP;
+        const newX = collisionX + offset;
+        xPositions.set(id, newX);
+
+        // 배우자도 함께 이동
+        const spouseId = spouseMap.get(id);
+        if (spouseId) {
+          const spouseX = xPositions.get(spouseId);
+          if (spouseX !== undefined) {
+            xPositions.set(spouseId, spouseX + offset);
+          }
+        }
+      });
     }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 8. X 좌표 정규화 (최소 X를 BASE_X로)
-  // ─────────────────────────────────────────────────────────────────────────
-  let globalMinX = Infinity;
-  for (const x of xPositions.values()) {
-    globalMinX = Math.min(globalMinX, x);
-  }
-  for (const x of fetusXPositions.values()) {
-    globalMinX = Math.min(globalMinX, x);
-  }
-
-  const xShift =
-    globalMinX !== Infinity && globalMinX < BASE_X
-      ? BASE_X - globalMinX
-      : DEFAULT_COUPLE_OFFSET;
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // 9. 결과 생성 (고아 노드는 제외)
+  // 8. 결과 생성 (고아 노드는 제외)
   // ─────────────────────────────────────────────────────────────────────────
   const subjectsWithCoords: SubjectWithCoords[] = subjects
     .filter((s) => processedIds.has(s.id)) // 처리된 인물만 포함 (고아 노드 제외)
     .map((s) => {
-      const x = snapToGrid((xPositions.get(s.id) ?? BASE_X) + xShift);
+      const x = snapToGrid(xPositions.get(s.id) ?? BASE_X);
       const y = snapToGrid(yPositions.get(s.id) ?? BASE_Y);
       return { ...s, x, y };
     });
 
   const fetusesWithCoords: FetusWithCoords[] = fetusInfoList.map((f) => {
-    const x = snapToGrid((fetusXPositions.get(f.id) ?? BASE_X) + xShift);
+    const x = snapToGrid(fetusXPositions.get(f.id) ?? BASE_X);
     const y = snapToGrid(
       fetusYPositions.get(f.id) ?? BASE_Y + Y_GENERATION_GAP
     );

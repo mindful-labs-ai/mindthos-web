@@ -10,6 +10,7 @@ import type { Client } from '@/feature/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import { useAuthStore } from '@/stores/authStore';
 
+import { GenogramExportModal } from '../components/export';
 import { GenogramEmptyState } from '../components/GenogramEmptyState';
 import { GenogramGenerationSteps } from '../components/GenogramGenerationSteps';
 import { GenogramPageHeader } from '../components/GenogramPageHeader';
@@ -76,6 +77,10 @@ export function GenogramClientPage() {
   // 가계도 초기화 상태
   const [isResetting, setIsResetting] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+  // 이미지 내보내기 상태
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportImageData, setExportImageData] = useState<string | null>(null);
 
   // 활성 클라이언트 (counsel_done 제외)
   const activeClients = clients.filter((c) => !c.counsel_done);
@@ -258,11 +263,12 @@ export function GenogramClientPage() {
     [temporaryData, userId, setSearchParams, queryClient]
   );
 
-  // Export (클립보드 복사)
-  const handleExport = useCallback(() => {
-    const json = genogramRef.current?.toJSON();
-    if (json) {
-      navigator.clipboard.writeText(json);
+  // Export (이미지 내보내기)
+  const handleExport = useCallback(async () => {
+    const imageData = await genogramRef.current?.captureImage();
+    if (imageData) {
+      setExportImageData(imageData);
+      setIsExportModalOpen(true);
     }
   }, []);
 
@@ -430,6 +436,18 @@ export function GenogramClientPage() {
         onConfirm={handleResetConfirm}
         isLoading={isResetting}
       />
+
+      {/* 이미지 내보내기 모달 */}
+      {isExportModalOpen && (
+        <GenogramExportModal
+          key={exportImageData?.slice(0, 50)}
+          open={isExportModalOpen}
+          onOpenChange={setIsExportModalOpen}
+          imageData={exportImageData}
+          defaultFileName={`${selectedClient?.name ?? '가계도'}_${new Date().toISOString().slice(2, 10).replace(/-/g, '')}`}
+          watermarkSrc="/genogram/genogram-export-watermark.png"
+        />
+      )}
     </div>
   );
 }

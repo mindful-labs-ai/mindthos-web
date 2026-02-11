@@ -458,9 +458,13 @@ export function GenogramLoadingAnimation() {
 
 /**
  * 무한 반복 버전의 로딩 애니메이션
- * 전체 애니메이션이 끝나면 다시 시작
+ * 원본 GenogramLoadingAnimation과 동일한 스타일 (U자 연결선 + 체크)
  */
 export function GenogramLoadingAnimationLoop() {
+  // 경로 길이
+  const parentLinePath = 220; // 부모 연결선 U자 (30+160+30)
+  const childLinePath = 22; // 자녀 수직선 (80→102)
+
   return (
     <div className="flex flex-col items-center gap-4">
       <svg
@@ -470,77 +474,10 @@ export function GenogramLoadingAnimationLoop() {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="overflow-visible"
-        style={{ animation: 'resetAnimation 4s linear infinite' }}
       >
-        {/* 부모 연결선 (가로) */}
-        <line
-          x1="60"
-          y1="30"
-          x2="140"
-          y2="30"
-          stroke="#3C3C3C"
-          strokeWidth="2"
-          className="genogram-line-h"
-        />
-
-        {/* 부모-자녀 연결선 (세로) */}
-        <line
-          x1="100"
-          y1="30"
-          x2="100"
-          y2="70"
-          stroke="#3C3C3C"
-          strokeWidth="2"
-          className="genogram-line-v1"
-        />
-
-        {/* 자녀 연결선 (가로) */}
-        <line
-          x1="50"
-          y1="70"
-          x2="150"
-          y2="70"
-          stroke="#3C3C3C"
-          strokeWidth="2"
-          className="genogram-line-children"
-        />
-
-        {/* 자녀1 연결선 */}
-        <line
-          x1="50"
-          y1="70"
-          x2="50"
-          y2="100"
-          stroke="#3C3C3C"
-          strokeWidth="2"
-          className="genogram-line-child1"
-        />
-
-        {/* 자녀2 연결선 */}
-        <line
-          x1="100"
-          y1="70"
-          x2="100"
-          y2="100"
-          stroke="#3C3C3C"
-          strokeWidth="2"
-          className="genogram-line-child2"
-        />
-
-        {/* 자녀3 연결선 */}
-        <line
-          x1="150"
-          y1="70"
-          x2="150"
-          y2="100"
-          stroke="#3C3C3C"
-          strokeWidth="2"
-          className="genogram-line-child3"
-        />
-
         {/* 아버지 (사각형) */}
         <rect
-          x="40"
+          x="0"
           y="10"
           width="40"
           height="40"
@@ -548,18 +485,70 @@ export function GenogramLoadingAnimationLoop() {
           fill="white"
           stroke="#3C3C3C"
           strokeWidth="2"
-          className="genogram-father"
+          className="genogram-loop-father"
         />
 
         {/* 어머니 (원) */}
         <circle
-          cx="140"
+          cx="180"
           cy="30"
           r="20"
           fill="white"
           stroke="#3C3C3C"
           strokeWidth="2"
-          className="genogram-mother"
+          className="genogram-loop-mother"
+        />
+
+        {/* 부모 연결선 (U자) */}
+        <path
+          d="M 20 50 L 20 80 L 180 80 L 180 50"
+          stroke="#3C3C3C"
+          strokeWidth="2"
+          fill="none"
+          className="genogram-loop-parent-line"
+          style={{
+            // @ts-expect-error CSS custom property
+            '--dash-length': parentLinePath,
+          }}
+        />
+
+        {/* 자녀1 수직선 */}
+        <path
+          d="M 50 80 L 50 102"
+          stroke="#3C3C3C"
+          strokeWidth="2"
+          fill="none"
+          className="genogram-loop-child1-line"
+          style={{
+            // @ts-expect-error CSS custom property
+            '--dash-length': childLinePath,
+          }}
+        />
+
+        {/* 자녀2 수직선 */}
+        <path
+          d="M 100 80 L 100 102"
+          stroke="#3C3C3C"
+          strokeWidth="2"
+          fill="none"
+          className="genogram-loop-child2-line"
+          style={{
+            // @ts-expect-error CSS custom property
+            '--dash-length': childLinePath,
+          }}
+        />
+
+        {/* 자녀3 수직선 */}
+        <path
+          d="M 150 80 L 150 102"
+          stroke="#3C3C3C"
+          strokeWidth="2"
+          fill="none"
+          className="genogram-loop-child3-line"
+          style={{
+            // @ts-expect-error CSS custom property
+            '--dash-length': childLinePath,
+          }}
         />
 
         {/* 자녀1 (원 - 딸) */}
@@ -570,11 +559,11 @@ export function GenogramLoadingAnimationLoop() {
           fill="white"
           stroke="#3C3C3C"
           strokeWidth="2"
-          className="genogram-child1"
+          className="genogram-loop-child1"
         />
 
         {/* 자녀2 (사각형 - 아들, IP) */}
-        <g className="genogram-child2-ip">
+        <g className="genogram-loop-child2-ip">
           <rect
             x="82"
             y="102"
@@ -606,7 +595,7 @@ export function GenogramLoadingAnimationLoop() {
           fill="white"
           stroke="#3C3C3C"
           strokeWidth="2"
-          className="genogram-child3"
+          className="genogram-loop-child3"
         />
       </svg>
 
@@ -614,101 +603,75 @@ export function GenogramLoadingAnimationLoop() {
         가계도를 그리는 중입니다.
       </span>
 
-      {/* CSS 애니메이션 정의 - 무한 반복 */}
+      {/* CSS 애니메이션 정의 - 무한 반복 (4초 사이클) */}
       <style>{`
-        @keyframes resetAnimation {
-          0%, 100% { opacity: 1; }
+        @keyframes genogramLoopFadeIn {
+          0%, 5% { opacity: 0; transform: scale(0.8); }
+          12%, 75% { opacity: 1; transform: scale(1); }
+          90%, 100% { opacity: 0; transform: scale(0.8); }
         }
 
-        @keyframes drawLineLoop {
-          0%, 100% { stroke-dashoffset: var(--dash-length); }
-          25%, 90% { stroke-dashoffset: 0; }
-          95% { stroke-dashoffset: 0; opacity: 1; }
-          98% { opacity: 0; }
+        @keyframes genogramLoopDrawPath {
+          0%, 5% { stroke-dashoffset: var(--dash-length); }
+          20%, 75% { stroke-dashoffset: 0; }
+          90%, 100% { stroke-dashoffset: var(--dash-length); }
         }
 
-        @keyframes fadeInLoop {
-          0%, 100% { opacity: 0; transform: scale(0.8); }
-          20%, 85% { opacity: 1; transform: scale(1); }
-          95% { opacity: 0; transform: scale(0.8); }
-        }
-
-        .genogram-father {
+        .genogram-loop-father {
           opacity: 0;
-          animation: fadeInLoop 4s ease-in-out infinite;
-          animation-delay: 0s;
+          animation: genogramLoopFadeIn 4s ease-in-out infinite;
         }
 
-        .genogram-mother {
+        .genogram-loop-mother {
           opacity: 0;
-          animation: fadeInLoop 4s ease-in-out infinite;
-          animation-delay: 0.2s;
+          animation: genogramLoopFadeIn 4s ease-in-out infinite;
+          animation-delay: 0.15s;
         }
 
-        .genogram-line-h {
-          --dash-length: 80;
-          stroke-dasharray: 80;
-          stroke-dashoffset: 80;
-          animation: drawLineLoop 4s ease-in-out infinite;
-          animation-delay: 0.4s;
+        .genogram-loop-parent-line {
+          stroke-dasharray: 220;
+          stroke-dashoffset: 220;
+          animation: genogramLoopDrawPath 4s ease-in-out infinite;
+          animation-delay: 0.3s;
         }
 
-        .genogram-line-v1 {
-          --dash-length: 40;
-          stroke-dasharray: 40;
-          stroke-dashoffset: 40;
-          animation: drawLineLoop 4s ease-in-out infinite;
+        .genogram-loop-child1-line {
+          stroke-dasharray: 22;
+          stroke-dashoffset: 22;
+          animation: genogramLoopDrawPath 4s ease-in-out infinite;
+          animation-delay: 0.6s;
+        }
+
+        .genogram-loop-child2-line {
+          stroke-dasharray: 22;
+          stroke-dashoffset: 22;
+          animation: genogramLoopDrawPath 4s ease-in-out infinite;
           animation-delay: 0.7s;
         }
 
-        .genogram-line-children {
-          --dash-length: 100;
-          stroke-dasharray: 100;
-          stroke-dashoffset: 100;
-          animation: drawLineLoop 4s ease-in-out infinite;
+        .genogram-loop-child3-line {
+          stroke-dasharray: 22;
+          stroke-dashoffset: 22;
+          animation: genogramLoopDrawPath 4s ease-in-out infinite;
+          animation-delay: 0.8s;
+        }
+
+        .genogram-loop-child1 {
+          opacity: 0;
+          animation: genogramLoopFadeIn 4s ease-in-out infinite;
           animation-delay: 0.9s;
         }
 
-        .genogram-line-child1 {
-          --dash-length: 30;
-          stroke-dasharray: 30;
-          stroke-dashoffset: 30;
-          animation: drawLineLoop 4s ease-in-out infinite;
-          animation-delay: 1.2s;
-        }
-
-        .genogram-line-child2 {
-          --dash-length: 30;
-          stroke-dasharray: 30;
-          stroke-dashoffset: 30;
-          animation: drawLineLoop 4s ease-in-out infinite;
-          animation-delay: 1.3s;
-        }
-
-        .genogram-line-child3 {
-          --dash-length: 30;
-          stroke-dasharray: 30;
-          stroke-dashoffset: 30;
-          animation: drawLineLoop 4s ease-in-out infinite;
-          animation-delay: 1.4s;
-        }
-
-        .genogram-child1 {
+        .genogram-loop-child2-ip {
           opacity: 0;
-          animation: fadeInLoop 4s ease-in-out infinite;
-          animation-delay: 1.5s;
+          animation: genogramLoopFadeIn 4s ease-in-out infinite;
+          animation-delay: 0.8s;
         }
 
-        .genogram-child2-ip {
+        .genogram-loop-child3 {
           opacity: 0;
-          animation: fadeInLoop 4s ease-in-out infinite;
-          animation-delay: 1.7s;
-        }
-
-        .genogram-child3 {
-          opacity: 0;
-          animation: fadeInLoop 4s ease-in-out infinite;
-          animation-delay: 1.9s;
+          animation: genogramLoopFadeIn 4s ease-in-out infinite;
+          animation-delay: 1.0s;
         }
       `}</style>
     </div>

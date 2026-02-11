@@ -1231,6 +1231,11 @@ export class GenogramEditor {
     this.state.genogram.view.visibility = {
       ...this.viewSettings.getSettings(),
     };
+    // layout.canvas → genogram.view.viewPoint 동기화
+    this.state.genogram.view.viewPoint = {
+      center: { ...this.state.layout.canvas.offset },
+      zoom: this.state.layout.canvas.zoomLevel,
+    };
     return JSON.stringify(serializeGenogram(this.state.genogram), null, 2);
   }
 
@@ -1250,6 +1255,12 @@ export class GenogramEditor {
     genogram.annotations.forEach((annotation, id) => {
       layout.texts.set(id, createTextLayout(id, annotation.layout.center));
     });
+
+    // genogram.view.viewPoint → layout.canvas 동기화
+    if (genogram.view.viewPoint) {
+      layout.canvas.offset = { ...genogram.view.viewPoint.center };
+      layout.canvas.zoomLevel = genogram.view.viewPoint.zoom;
+    }
 
     this.state = { genogram, layout, connectionIndex };
     // genogram.view.visibility → ViewSettings 동기화

@@ -55,22 +55,39 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <mask id="path-1-inside-1_5497_51436" fill="white">
+          <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
+        </mask>
         <rect
           x="1"
           y="1"
           width="8.88889"
           height="8.88889"
           rx="1.11111"
-          fill="currentColor"
+          stroke="#3C3C3C"
+          stroke-width="3"
+          mask="url(#path-1-inside-1_5497_51436)"
         />
-        <circle cx="18.9444" cy="5.44444" r="4.44444" fill="currentColor" />
-        <circle cx="11.9444" cy="18.4444" r="4.44444" fill="currentColor" />
+        <circle
+          cx="18.9444"
+          cy="5.44444"
+          r="3.69444"
+          stroke="#3C3C3C"
+          stroke-width="1.5"
+        />
+        <circle
+          cx="11.9444"
+          cy="18.4444"
+          r="3.69444"
+          stroke="#3C3C3C"
+          stroke-width="1.5"
+        />
         <path
           d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
-          stroke="currentColor"
-          strokeWidth="1.5"
+          stroke="#3C3C3C"
+          stroke-width="1.5"
         />
-        <path d="M12 12.1094V14.3316" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M12 12.1094V14.3316" stroke="#3C3C3C" stroke-width="1.5" />
       </svg>
     ),
   },

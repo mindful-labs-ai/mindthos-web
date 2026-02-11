@@ -18,6 +18,7 @@ import {
   useViewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { toPng } from 'html-to-image';
 
 import {
   ConnectionType,
@@ -89,6 +90,8 @@ export interface GenogramPageHandle {
   canRedo: () => boolean;
   /** 우측 속성 패널이 열려있는지 여부 */
   isPanelOpen: () => boolean;
+  /** 캔버스를 이미지 데이터 URL로 캡처 */
+  captureImage: () => Promise<string | null>;
 }
 
 const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
@@ -140,6 +143,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       selectedAnnotation,
       updateAnnotation,
       deselectNode,
+      syncViewportToEditor,
+      getEditorViewport,
     } = useGenogramFlow({ initialData: props.initialData });
 
     // onChange 호출: state-change 이벤트 시 toJSON으로 데이터 전달
@@ -169,18 +174,105 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       redo,
     });
 
+    const { getNodes, getViewport, setViewport, getNodesBounds } =
+      useReactFlow();
+
+    const captureImage = useCallback(async (): Promise<string | null> => {
+      const paneEl = canvasRef.current?.querySelector(
+        '.react-flow__pane'
+      ) as HTMLElement | null;
+      if (!paneEl) return null;
+
+      const currentNodes = getNodes();
+      if (currentNodes.length === 0) return null;
+
+      // 현재 뷰포트 저장
+      const originalViewport = getViewport();
+
+      // 모든 노드의 bounds 계산
+      const bounds = getNodesBounds(currentNodes);
+      const containerEl = canvasRef.current;
+      if (!containerEl) return null;
+
+      const containerWidth = containerEl.clientWidth;
+      const containerHeight = containerEl.clientHeight;
+
+      // padding을 포함한 zoom 계산
+      const padding = 0.1;
+      const paddedWidth = bounds.width * (1 + padding * 2);
+      const paddedHeight = bounds.height * (1 + padding * 2);
+
+      const zoomX = containerWidth / paddedWidth;
+      const zoomY = containerHeight / paddedHeight;
+      const zoom = Math.min(zoomX, zoomY, 1); // 최대 zoom 1로 제한
+
+      // bounds 중심을 화면 중심으로 이동
+      const centerX = bounds.x + bounds.width / 2;
+      const centerY = bounds.y + bounds.height / 2;
+
+      const newViewport = {
+        x: containerWidth / 2 - centerX * zoom,
+        y: containerHeight / 2 - centerY * zoom,
+        zoom,
+      };
+
+      // viewport 직접 설정
+      setViewport(newViewport, { duration: 0 });
+
+      // DOM 업데이트 대기
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      try {
+        const dataUrl = await toPng(paneEl, {
+          backgroundColor: undefined,
+          pixelRatio: 4,
+        });
+
+        // 원래 뷰포트로 복원
+        setViewport(originalViewport, { duration: 0 });
+
+        return dataUrl;
+      } catch {
+        // 에러 시에도 뷰포트 복원
+        setViewport(originalViewport, { duration: 0 });
+        return null;
+      }
+    }, [getNodes, getViewport, setViewport, getNodesBounds]);
+
+    // JSON 로드 + ReactFlow viewport 동기화
+    const loadJSON = useCallback(
+      (json: string) => {
+        fromJSON(json);
+        // Editor에서 저장된 viewport를 ReactFlow에 적용
+        const editorViewport = getEditorViewport();
+        setViewport(editorViewport, { duration: 0 });
+      },
+      [fromJSON, getEditorViewport, setViewport]
+    );
+
     useImperativeHandle(
       ref,
       () => ({
-        loadJSON: fromJSON,
+        loadJSON,
         toJSON,
         undo,
         redo,
         canUndo: () => canUndo,
         canRedo: () => canRedo,
         isPanelOpen: () => isPanelOpen,
+        captureImage,
       }),
-      [fromJSON, toJSON, undo, redo, canUndo, canRedo, isPanelOpen]
+      [
+        loadJSON,
+        toJSON,
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+        isPanelOpen,
+        captureImage,
+      ]
     );
 
     // Subject 서브툴 상태: 어떤 모드로 캔버스 클릭을 처리할지
@@ -350,6 +442,17 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
     const { flowToScreenPosition } = useReactFlow();
     const viewport = useViewport();
     const canvasRef = useRef<HTMLDivElement>(null);
+
+    // ReactFlow viewport 변경 시 Editor 데이터 모델과 동기화
+    const handleViewportChange = useCallback(
+      (
+        _event: unknown,
+        newViewport: { x: number; y: number; zoom: number }
+      ) => {
+        syncViewportToEditor(newViewport);
+      },
+      [syncViewportToEditor]
+    );
 
     // 선택된 노드/엣지의 화면 좌표 계산 (캔버스 컨테이너 기준 상대 좌표)
     const fabPosition = useMemo<{ x: number; y: number } | null>(() => {
@@ -557,6 +660,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
           onInit={(instance) => {
             if (nodes.length > 0) instance.fitView();
           }}
+          onMove={handleViewportChange}
           snapToGrid={false}
           defaultEdgeOptions={{ type: 'relationship', interactionWidth: 20 }}
           proOptions={{ hideAttribution: true }}
