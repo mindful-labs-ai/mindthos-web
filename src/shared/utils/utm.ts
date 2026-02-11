@@ -18,9 +18,7 @@ const UTM_PARAMS = [
  * @param search - location.search 또는 URLSearchParams
  * @returns UTM 파라미터만 포함된 쿼리스트링 (앞에 ? 없음)
  */
-export function extractUtmParams(
-  search: string | URLSearchParams
-): string {
+export function extractUtmParams(search: string | URLSearchParams): string {
   const params =
     typeof search === 'string' ? new URLSearchParams(search) : search;
   const utmParams = new URLSearchParams();
@@ -46,7 +44,9 @@ export function mergeUtmParams(
   utmSearch: string | URLSearchParams
 ): string {
   const baseParams =
-    typeof baseSearch === 'string' ? new URLSearchParams(baseSearch) : baseSearch;
+    typeof baseSearch === 'string'
+      ? new URLSearchParams(baseSearch)
+      : baseSearch;
   const utmParams =
     typeof utmSearch === 'string' ? new URLSearchParams(utmSearch) : utmSearch;
 
