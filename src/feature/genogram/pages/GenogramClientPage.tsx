@@ -13,6 +13,11 @@ import { useAuthStore } from '@/stores/authStore';
 import { GenogramExportModal } from '../components/export';
 import { GenogramEmptyState } from '../components/GenogramEmptyState';
 import { GenogramGenerationSteps } from '../components/GenogramGenerationSteps';
+import {
+  DEFAULT_GUIDE_STEPS,
+  GenogramGuideModal,
+  GUIDE_DONT_SHOW_AGAIN_KEY,
+} from '../components/GenogramGuideModal';
 import { GenogramPageHeader } from '../components/GenogramPageHeader';
 import { ResetConfirmModal } from '../components/ResetConfirmModal';
 import { useClientFamilySummary } from '../hooks/useClientFamilySummary';
@@ -81,6 +86,9 @@ export function GenogramClientPage() {
   // 이미지 내보내기 상태
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [exportImageData, setExportImageData] = useState<string | null>(null);
+
+  // 가계도 안내 모달 상태
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
 
   // 활성 클라이언트 (counsel_done 제외)
   const activeClients = clients.filter((c) => !c.counsel_done);
@@ -199,6 +207,12 @@ export function GenogramClientPage() {
       preparedCanvasJsonRef.current = null;
       // 상태 리셋 → 캔버스 유지
       steps.reset();
+
+      // "다시 보지 않기"를 선택하지 않았으면 안내 모달 표시
+      const dontShowAgain = localStorage.getItem(GUIDE_DONT_SHOW_AGAIN_KEY);
+      if (dontShowAgain !== 'true') {
+        setIsGuideModalOpen(true);
+      }
     } catch (e) {
       console.error('Failed to save genogram:', e);
       steps.reset();
@@ -448,6 +462,16 @@ export function GenogramClientPage() {
           watermarkSrc="/genogram/genogram-export-watermark.png"
         />
       )}
+
+      {/* 가계도 안내 모달 */}
+      <GenogramGuideModal
+        open={isGuideModalOpen}
+        onOpenChange={setIsGuideModalOpen}
+        steps={DEFAULT_GUIDE_STEPS}
+        onDontShowAgain={() => {
+          localStorage.setItem(GUIDE_DONT_SHOW_AGAIN_KEY, 'true');
+        }}
+      />
     </div>
   );
 }
