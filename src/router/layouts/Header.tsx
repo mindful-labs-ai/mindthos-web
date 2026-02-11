@@ -2,7 +2,6 @@ import React from 'react';
 
 import { useLocation, useSearchParams } from 'react-router-dom';
 
-import { Button } from '@/components/ui';
 import {
   BreadCrumb,
   type BreadCrumbItem,
@@ -94,21 +93,8 @@ export const Header: React.FC = () => {
   const breadcrumbItems = getBreadcrumbItems();
 
   return (
-    <header className="sticky top-0 hidden h-14 items-center justify-between border-b border-border bg-bg px-6 py-4 sm:flex lg:px-8">
+    <header className="sticky top-0 hidden h-14 items-center justify-start border-b border-border bg-bg px-6 py-4 sm:flex lg:px-8">
       <BreadCrumb items={breadcrumbItems} />
-      <Button
-        variant="outline"
-        className="w-fit"
-        onClick={() =>
-          window.open(
-            'https://legacy.mindthos.com/',
-            '_blank',
-            'noopener,noreferrer'
-          )
-        }
-      >
-        구버전 기록 열람하기
-      </Button>
     </header>
   );
 };

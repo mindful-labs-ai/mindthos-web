@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { extractUtmParams } from '@/shared/utils/utm';
+
 import { useDevice } from './useDevice';
 
 /**
@@ -18,9 +20,10 @@ export const useMobileRouteGuard = () => {
   const isRouteLocked = isMobile;
 
   useEffect(() => {
-    // 데스크톱이 아니고 현재 경로가 "/"가 아니면 "/"로 리다이렉트
+    // 데스크톱이 아니고 현재 경로가 "/"가 아니면 "/"로 리다이렉트 (UTM만 유지)
     if (isRouteLocked && location.pathname !== '/') {
-      navigate('/', { replace: true });
+      const utmSearch = extractUtmParams(location.search);
+      navigate({ pathname: '/', search: utmSearch }, { replace: true });
     }
-  }, [isRouteLocked, location.pathname, navigate]);
+  }, [isRouteLocked, location.pathname, location.search, navigate]);
 };

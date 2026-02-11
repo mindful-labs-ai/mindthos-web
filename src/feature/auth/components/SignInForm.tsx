@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { FormField } from '@/components/ui/composites/FormField';
 import { trackEvent } from '@/lib/mixpanel';
 import { ROUTES } from '@/router/constants';
+import { extractUtmParams } from '@/shared/utils/utm';
 import { useAuthStore } from '@/stores/authStore';
 
 const SignInForm = () => {
@@ -17,6 +18,7 @@ const SignInForm = () => {
 
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +28,9 @@ const SignInForm = () => {
     try {
       await login(email, password);
       trackEvent('login_success', { method: 'email' });
-      // 로그인 성공 시 홈으로 리다이렉트
-      navigate(ROUTES.ROOT);
+      // 로그인 성공 시 홈으로 리다이렉트 (UTM 파라미터만 유지)
+      const utmSearch = extractUtmParams(location.search);
+      navigate({ pathname: ROUTES.ROOT, search: utmSearch });
     } catch (err) {
       trackEvent('login_failed', {
         method: 'email',

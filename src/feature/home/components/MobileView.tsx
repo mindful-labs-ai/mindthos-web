@@ -77,16 +77,19 @@ const MobileView = () => {
       ? depthParam
       : 'home';
 
-  // depth 변경 함수 (URL 업데이트)
+  // depth 변경 함수 (URL 업데이트, UTM 파라미터 유지)
   const setDepth = useCallback(
     (newDepth: MobileViewDepth) => {
+      const newParams = new URLSearchParams(searchParams);
       if (newDepth === 'home') {
-        navigate('/', { replace: false });
+        newParams.delete('depth');
       } else {
-        navigate(`/?depth=${newDepth}`, { replace: false });
+        newParams.set('depth', newDepth);
       }
+      const queryString = newParams.toString();
+      navigate(queryString ? `/?${queryString}` : '/', { replace: false });
     },
-    [navigate]
+    [navigate, searchParams]
   );
 
   // 크레딧 정보
