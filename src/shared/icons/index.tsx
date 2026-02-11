@@ -210,6 +210,110 @@ export const TextAlignJustifySolid: IconComponent = (props) => (
   <TextAlignJustify {...props} fill="currentColor" />
 );
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom Icons (Lucide에 없는 커스텀 아이콘)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface CustomIconProps {
+  size?: number;
+  className?: string;
+}
+
+/** Undo 아이콘 - 왼쪽 화살표 + 곡선 */
+export const UndoIcon: React.FC<CustomIconProps> = ({
+  size = 18,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M9.33333 17.3307L4 11.9974M4 11.9974L9.33333 6.66406M4 11.9974H21.3333C25.0152 11.9974 28 14.9822 28 18.6641C28 22.346 25.0152 25.3307 21.3333 25.3307H14.6667"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/** Redo 아이콘 - 오른쪽 화살표 + 곡선 (Undo 좌우대칭) */
+export const RedoIcon: React.FC<CustomIconProps> = ({
+  size = 18,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M22.6667 17.3307L28 11.9974M28 11.9974L22.6667 6.66406M28 11.9974H10.6667C6.98477 11.9974 4 14.9822 4 18.6641C4 22.346 6.98477 25.3307 10.6667 25.3307H17.3333"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/** 가계도 아이콘 - 사각형 + 원 2개 + 연결선 */
+export const GenogramIcon: React.FC<CustomIconProps> = ({
+  size = 18,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <mask id="path-1-inside-1_5497_51436" fill="white">
+      <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
+    </mask>
+    <rect
+      x="1"
+      y="1"
+      width="8.88889"
+      height="8.88889"
+      rx="1.11111"
+      stroke="#3C3C3C"
+      stroke-width="3"
+      mask="url(#path-1-inside-1_5497_51436)"
+    />
+    <circle
+      cx="18.9444"
+      cy="5.44444"
+      r="3.69444"
+      stroke="#3C3C3C"
+      stroke-width="1.5"
+    />
+    <circle
+      cx="11.9444"
+      cy="18.4444"
+      r="3.69444"
+      stroke="#3C3C3C"
+      stroke-width="1.5"
+    />
+    <path
+      d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
+      stroke="#3C3C3C"
+      stroke-width="1.5"
+    />
+    <path d="M12 12.1094V14.3316" stroke="#3C3C3C" stroke-width="1.5" />
+  </svg>
+);
+
 // 편의를 위한 네임스페이스 export
 export const Icons = {
   // Stroke 버전
@@ -281,4 +385,9 @@ export const Icons = {
   UsersSolid: UsersIconSolid,
   XSolid: XIconSolid,
   TextAlignJustifySolid: TextAlignJustifySolid,
+
+  // Custom Icons
+  Undo: UndoIcon,
+  Redo: RedoIcon,
+  Genogram: GenogramIcon,
 } as const;

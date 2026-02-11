@@ -11,7 +11,6 @@ import {
 } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CreateHandWrittenSessionModal } from '@/feature/session/components/CreateHandWrittenSessionModal';
-import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
@@ -20,6 +19,7 @@ import {
 } from '@/feature/settings/utils/planUtils';
 import { cn } from '@/lib/cn';
 import { Edit3Icon, PlusIcon, UploadIcon } from '@/shared/icons';
+import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 import {
@@ -33,10 +33,11 @@ export const SideTab = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
-  const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
-    React.useState(false);
   const [isHandWrittenModalOpen, setIsHandWrittenModalOpen] =
     React.useState(false);
+
+  // 전역 모달 스토어 사용
+  const openModal = useModalStore((state) => state.openModal);
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
@@ -79,7 +80,7 @@ export const SideTab = () => {
 
   const handleAudioUploadClick = () => {
     setIsNewRecordMenuOpen(false);
-    setIsCreateSessionModalOpen(true);
+    openModal('createMultiSession');
   };
 
   const handleDirectInputClick = () => {
@@ -205,12 +206,6 @@ export const SideTab = () => {
           />
         </div>
       </div>
-
-      {/* 세션 생성 모달 */}
-      <CreateMultiSessionModal
-        open={isCreateSessionModalOpen}
-        onOpenChange={setIsCreateSessionModalOpen}
-      />
 
       {/* 직접 입력 세션 생성 모달 */}
       <CreateHandWrittenSessionModal

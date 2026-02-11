@@ -44,6 +44,54 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     icon: <LayersIcon size={18} />,
   },
   {
+    path: ROUTES.GENOGRAM,
+    label: '가계도',
+    value: 'genogram',
+    icon: (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <mask id="path-1-inside-1_5497_51436" fill="white">
+          <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
+        </mask>
+        <rect
+          x="1"
+          y="1"
+          width="8.88889"
+          height="8.88889"
+          rx="1.11111"
+          stroke="#3C3C3C"
+          stroke-width="3"
+          mask="url(#path-1-inside-1_5497_51436)"
+        />
+        <circle
+          cx="18.9444"
+          cy="5.44444"
+          r="3.69444"
+          stroke="#3C3C3C"
+          stroke-width="1.5"
+        />
+        <circle
+          cx="11.9444"
+          cy="18.4444"
+          r="3.69444"
+          stroke="#3C3C3C"
+          stroke-width="1.5"
+        />
+        <path
+          d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
+          stroke="#3C3C3C"
+          stroke-width="1.5"
+        />
+        <path d="M12 12.1094V14.3316" stroke="#3C3C3C" stroke-width="1.5" />
+      </svg>
+    ),
+  },
+  {
     path: ROUTES.SETTINGS,
     label: '설정',
     value: 'settings',
@@ -85,9 +133,9 @@ export const getRouteLabel = (path: string): string => {
   return item?.label || path;
 };
 
-// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿)
+// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿, 가계도)
 export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['home', 'client', 'sessions', 'template'].includes(item.value)
+  ['home', 'client', 'sessions', 'template', 'genogram'].includes(item.value)
 ).map((item) => ({
   icon: item.icon,
   label: item.label,

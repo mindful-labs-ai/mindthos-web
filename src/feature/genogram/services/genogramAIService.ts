@@ -1,0 +1,327 @@
+/**
+ * Genogram AI 생성 서비스
+ * Supabase Edge Function을 통해 상담 기록으로부터 가계도 생성
+ *
+ * 파이프라인:
+ * 1. Edge Function 호출 → AI 원본 JSON 응답 받기
+ * 2. aiJsonConverter로 좌표 계산 및 캔버스 변환
+ * 3. DB 저장 및 프론트 렌더링
+ */
+
+import type { SerializedGenogram } from '@/genogram/core/models/genogram';
+import { supabase } from '@/lib/supabase';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/utils/edgeFunctionClient';
+
+import {
+  type AIGenogramOutput,
+  convertAIJsonToCanvas,
+  isValidAIJson,
+} from '../utils/aiJsonConverter';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 타입 정의
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** API가 반환하는 AI 원본 응답 */
+export interface GenerateAIOutputResponse {
+  success: true;
+  data: {
+    client_id: string;
+    ai_output: AIGenogramOutput;
+    stats: {
+      total_transcripts: number;
+    };
+  };
+}
+
+export interface GenerateAIOutputError {
+  success: false;
+  error: {
+    code:
+      | 'VALIDATION_ERROR'
+      | 'NO_TRANSCRIPTS'
+      | 'PIPELINE_ERROR'
+      | 'UNAUTHORIZED';
+    message: string;
+  };
+}
+
+export type GenerateAIOutputResult =
+  | GenerateAIOutputResponse
+  | GenerateAIOutputError;
+
+/** 최종 반환 타입 (캔버스 변환 후) */
+export interface GenerateFamilySummaryResponse {
+  success: true;
+  data: {
+    client_id: string;
+    genogram: SerializedGenogram;
+    ai_output: AIGenogramOutput; // 디버깅용 원본 데이터
+    stats: {
+      total_transcripts: number;
+    };
+  };
+}
+
+export interface GenerateFamilySummaryError {
+  success: false;
+  error: {
+    code:
+      | 'VALIDATION_ERROR'
+      | 'NO_TRANSCRIPTS'
+      | 'PIPELINE_ERROR'
+      | 'UNAUTHORIZED'
+      | 'CONVERSION_ERROR';
+    message: string;
+  };
+}
+
+export type GenerateFamilySummaryResult =
+  | GenerateFamilySummaryResponse
+  | GenerateFamilySummaryError;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API 함수
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Edge Function을 호출하여 AI 분석 결과 받기 (원본 JSON)
+ * @param clientId 내담자 UUID
+ * @param forceRefresh 캐시 무시하고 재생성 여부
+ */
+async function fetchAIOutput(
+  clientId: string,
+  forceRefresh = false
+): Promise<GenerateAIOutputResult> {
+  try {
+    const result = await callEdgeFunction<GenerateAIOutputResponse>(
+      EDGE_FUNCTION_ENDPOINTS.GENOGRAM.SUMMARY,
+      {
+        client_id: clientId,
+        force_refresh: forceRefresh,
+      }
+    );
+
+    return result;
+  } catch (error) {
+    console.error('[genogramAIService] fetchAIOutput error:', error);
+
+    const err = error as { message?: string; code?: string; status?: number };
+
+    // 인증 오류 처리
+    if (err.status === 401) {
+      return {
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: '로그인이 필요합니다.',
+        },
+      };
+    }
+
+    return {
+      success: false,
+      error: {
+        code:
+          (err.code as GenerateAIOutputError['error']['code']) ||
+          'PIPELINE_ERROR',
+        message: err.message || 'AI 분석 중 오류가 발생했습니다.',
+      },
+    };
+  }
+}
+
+/**
+ * Genograms 테이블에 저장
+ * @param userId users 테이블의 bigint ID (string으로 전달)
+ */
+async function saveGenogramToDatabase(
+  clientId: string,
+  userId: string,
+  genogram: SerializedGenogram
+): Promise<void> {
+  const { error } = await supabase.from('genograms').upsert(
+    {
+      client_id: clientId,
+      user_id: parseInt(userId, 10),
+      data: genogram,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: 'client_id',
+    }
+  );
+
+  if (error) {
+    throw new Error(`가계도 저장 실패: ${error.message}`);
+  }
+}
+
+/**
+ * 가계도 생성 메인 함수
+ *
+ * 1. API 호출 → AI 원본 JSON 받기
+ * 2. aiJsonConverter로 좌표 계산 및 캔버스 변환
+ * 3. DB 저장
+ *
+ * @param clientId 내담자 UUID
+ * @param userId users 테이블의 bigint ID (string으로 전달, DB 저장 시 필요)
+ * @param saveToDb true면 DB에 저장 (기본값: true)
+ */
+export async function generateFamilySummary(
+  clientId: string,
+  userId: string,
+  saveToDb = true
+): Promise<GenerateFamilySummaryResult> {
+  try {
+    console.log('[genogramAIService] 시작:', clientId);
+
+    // 1. API 호출하여 AI 분석 결과 받기
+    console.log('[genogramAIService] AI 분석 요청...');
+    const apiResult = await fetchAIOutput(clientId);
+
+    if (!apiResult.success) {
+      return apiResult;
+    }
+
+    const { ai_output, stats } = apiResult.data;
+
+    // 2. AI 응답 유효성 검사
+    if (!isValidAIJson(ai_output)) {
+      console.error('[genogramAIService] Invalid AI output:', ai_output);
+      return {
+        success: false,
+        error: {
+          code: 'CONVERSION_ERROR',
+          message: 'AI 응답 형식이 올바르지 않습니다.',
+        },
+      };
+    }
+
+    console.log('[genogramAIService] AI 분석 완료:', {
+      subjects: ai_output.subjects.length,
+      partners: ai_output.partners.length,
+      influences: ai_output.influences.length,
+      nuclearFamilies: ai_output.nuclearFamilies.length,
+    });
+
+    // 3. aiJsonConverter로 좌표 계산 및 캔버스 변환
+    console.log('[genogramAIService] 좌표 계산 및 캔버스 변환...');
+    const genogram = convertAIJsonToCanvas(ai_output);
+
+    console.log('[genogramAIService] 변환 완료:', {
+      subjects: genogram.subjects.length,
+      connections: genogram.connections.length,
+    });
+
+    // 4. DB 저장 (옵션)
+    if (saveToDb) {
+      console.log('[genogramAIService] DB 저장...');
+      await saveGenogramToDatabase(clientId, userId, genogram);
+      console.log('[genogramAIService] DB 저장 완료');
+    }
+
+    return {
+      success: true,
+      data: {
+        client_id: clientId,
+        genogram,
+        ai_output, // 디버깅용
+        stats,
+      },
+    };
+  } catch (error) {
+    const err = error as { message?: string };
+    console.error('[genogramAIService] 오류:', err);
+    return {
+      success: false,
+      error: {
+        code: 'PIPELINE_ERROR',
+        message: err.message || '가계도 생성 중 오류가 발생했습니다.',
+      },
+    };
+  }
+}
+
+/**
+ * AI 원본 JSON만 가져오기 (변환 없이)
+ * 디버깅 및 테스트용
+ */
+export async function fetchRawAIOutput(
+  clientId: string
+): Promise<GenerateAIOutputResult> {
+  return fetchAIOutput(clientId);
+}
+
+/**
+ * AI JSON을 캔버스 형식으로 변환 (저장 없이)
+ * 미리보기 등에 사용
+ */
+export function convertToCanvas(
+  aiOutput: AIGenogramOutput
+): SerializedGenogram {
+  return convertAIJsonToCanvas(aiOutput);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 초기화 API
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface InitFamilySummaryResponse {
+  success: true;
+  data: {
+    client_id: string;
+    deleted_genogram: boolean;
+    cleared_client_family_summary: boolean;
+    cleared_transcript_summaries: number;
+  };
+}
+
+interface InitFamilySummaryError {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+}
+
+type InitFamilySummaryResult =
+  | InitFamilySummaryResponse
+  | InitFamilySummaryError;
+
+/**
+ * 가계도 및 family_summary 초기화
+ * @param clientId 내담자 UUID
+ * @param clearTranscriptSummaries 축어록의 family_summary도 초기화 여부 (기본값: true)
+ */
+export async function initFamilySummary(
+  clientId: string,
+  clearTranscriptSummaries = true
+): Promise<InitFamilySummaryResult> {
+  try {
+    const result = await callEdgeFunction<InitFamilySummaryResponse>(
+      EDGE_FUNCTION_ENDPOINTS.GENOGRAM.INIT,
+      {
+        client_id: clientId,
+        clear_transcript_summaries: clearTranscriptSummaries,
+      }
+    );
+
+    return result;
+  } catch (error) {
+    console.error('[genogramAIService] initFamilySummary error:', error);
+
+    // callEdgeFunction에서 throw된 에러 처리
+    const err = error as { message?: string; code?: string };
+    return {
+      success: false,
+      error: {
+        code: err.code || 'EDGE_FUNCTION_ERROR',
+        message: err.message || '초기화 중 오류가 발생했습니다.',
+      },
+    };
+  }
+}

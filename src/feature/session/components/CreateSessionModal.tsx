@@ -14,10 +14,10 @@ import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 import { isFileSizeExceeded } from '../constants/fileUpload';
@@ -83,9 +83,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     isCreditError: false,
   });
 
-  // Plan upgrade modal state
-  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] =
-    React.useState(false);
+  // Plan upgrade modal
+  const openModal = useModalStore((state) => state.openModal);
 
   // 세션 처리 상태 폴링
   useSessionStatus({
@@ -371,18 +370,11 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           errorSnackBar.isCreditError
             ? {
                 label: '플랜 업그레이드',
-                onClick: () => {
-                  setIsPlanChangeModalOpen(true);
-                },
+                onClick: () => openModal('planChange'),
               }
             : undefined
         }
         duration={8000}
-      />
-
-      <PlanChangeModal
-        open={isPlanChangeModalOpen}
-        onOpenChange={setIsPlanChangeModalOpen}
       />
     </>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 
+// ICON 변경: ChevronRightIcon은 Lucide 직접 사용 중
 import { ChevronRightIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/atoms/Button';

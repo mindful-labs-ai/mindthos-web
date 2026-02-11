@@ -17,7 +17,11 @@ export const ROUTES = {
   PAYMENT_FAIL: '/payment/fail',
   ERROR_TEST: '/error-test',
   NOT_FOUND: '*',
+  GENOGRAM: '/genogram',
 } as const;
+
+export const getGenogramRoute = (clientId?: string) =>
+  clientId ? `/genogram?clientId=${clientId}` : '/genogram';
 
 export const TERMS_TYPES = {
   SERVICE: 'service',

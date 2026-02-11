@@ -1,11 +1,14 @@
 import { useEffect } from 'react';
 
 import { createPortal } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 
 import { UpdateNoteModal } from '@/components/UpdateNoteModal';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
 import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
+import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
+import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
@@ -27,6 +30,8 @@ import { useUpdateStore } from '@/stores/updateStore';
 export const GlobalModalContainer = () => {
   const { currentLevel, completeNextStep } = useQuestStore();
   const user = useAuthStore((state) => state.user);
+  const location = useLocation();
+  const isGenogramRoute = location.pathname.includes('/genogram');
 
   // 업데이트 노트 초기화
   const initializeUpdate = useUpdateStore((state) => state.initialize);
@@ -40,6 +45,12 @@ export const GlobalModalContainer = () => {
   const isUserEditOpen = useModalStore((state) =>
     state.openModals.includes('userEdit')
   );
+  const isPlanChangeOpen = useModalStore((state) =>
+    state.openModals.includes('planChange')
+  );
+  const isCreateMultiSessionOpen = useModalStore((state) =>
+    state.openModals.includes('createMultiSession')
+  );
 
   const handleOpenUserEdit = () => {
     openModal('userEdit');
@@ -48,6 +59,18 @@ export const GlobalModalContainer = () => {
   const handleCloseUserEdit = (open: boolean) => {
     if (!open) {
       closeModal('userEdit');
+    }
+  };
+
+  const handleClosePlanChange = (open: boolean) => {
+    if (!open) {
+      closeModal('planChange');
+    }
+  };
+
+  const handleCloseCreateMultiSession = (open: boolean) => {
+    if (!open) {
+      closeModal('createMultiSession');
     }
   };
 
@@ -68,14 +91,28 @@ export const GlobalModalContainer = () => {
       <QuestMissionModal />
       <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
 
-      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) */}
-      <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
+      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram 라우트에서는 숨김 */}
+      {!isGenogramRoute && (
+        <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
+      )}
 
       {/* 사용자 정보 수정 모달 */}
       <UserEditModal
         open={isUserEditOpen}
         onOpenChange={handleCloseUserEdit}
         onSuccess={handleUserEditSuccess}
+      />
+
+      {/* 플랜 변경 모달 */}
+      <PlanChangeModal
+        open={isPlanChangeOpen}
+        onOpenChange={handleClosePlanChange}
+      />
+
+      {/* 다중 세션 생성 모달 */}
+      <CreateMultiSessionModal
+        open={isCreateMultiSessionOpen}
+        onOpenChange={handleCloseCreateMultiSession}
       />
     </>,
     document.body
