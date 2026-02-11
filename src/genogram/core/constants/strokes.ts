@@ -8,10 +8,10 @@ import { StrokeWidth } from '../types/enums';
 // ── 기본 선 굵기 (px) ──
 
 /** 기본 선 굵기 */
-export const STROKE_WIDTH_DEFAULT = 3;
+export const STROKE_WIDTH_DEFAULT = 2;
 
 /** 가는 선 굵기 */
-export const STROKE_WIDTH_THIN = 2;
+export const STROKE_WIDTH_THIN = 1;
 
 /** 굵은 선 굵기 */
 export const STROKE_WIDTH_THICK = 3;

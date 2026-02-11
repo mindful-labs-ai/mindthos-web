@@ -13,8 +13,8 @@ import type { AISubject, AIInfluenceStatus } from '../../utils/aiJsonConverter';
 
 // 관계 상태 옵션 (genogram Relation 타입)
 const RELATION_OPTIONS = [
-  { value: 'Connected', label: '연결' },
-  { value: 'Close', label: '친밀' },
+  { value: 'Connected', label: '친밀' },
+  { value: 'Close', label: '밀착' },
   { value: 'Fused', label: '융합' },
   { value: 'Distant', label: '소원' },
   { value: 'Hostile', label: '갈등' },

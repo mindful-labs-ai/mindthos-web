@@ -112,12 +112,12 @@ export const PARTNER_STATUS_ITEMS = Object.entries(PARTNER_STATUS_LABELS).map(
 
 // 관계 상태 라벨
 export const RELATION_STATUS_LABELS: Record<string, string> = {
-  [RelationStatus.Connected]: '연결',
-  [RelationStatus.Close]: '친밀',
+  [RelationStatus.Connected]: '친밀',
+  [RelationStatus.Close]: '밀착',
   [RelationStatus.Fused]: '융합',
   [RelationStatus.Distant]: '소원',
   [RelationStatus.Hostile]: '갈등',
-  [RelationStatus.Close_Hostile]: '친밀-갈등',
+  [RelationStatus.Close_Hostile]: '밀착-갈등',
   [RelationStatus.Fused_Hostile]: '융합-갈등',
   [RelationStatus.Cutoff]: '단절됨',
   [RelationStatus.Cutoff_Repaired]: '단절-회복',
