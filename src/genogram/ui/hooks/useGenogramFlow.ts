@@ -220,11 +220,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
         const selectChanges = changes.filter(
           (c) => c.type === 'select' && c.selected
         );
-        const deselectChanges = changes.filter(
-          (c) => c.type === 'select' && !c.selected
-        );
         const hasSelect = selectChanges.length > 0;
-        const hasOnlyDeselect = deselectChanges.length > 0 && !hasSelect;
 
         if (hasSelect) {
           // 노드가 선택되고 있음 → 플래그 설정 (엣지 핸들러에서 deselect 방지)
@@ -259,7 +255,6 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
           }
           changes = filtered;
         }
-        // hasOnlyDeselect 케이스는 state updater에서 처리 (플래그 확인을 위해)
       }
 
       // 드래그 중인 변경이 있으면 선택 동기화보다 먼저 isDraggingRef를 설정
