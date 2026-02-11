@@ -137,8 +137,8 @@ export interface AIGenogramOutput {
   partners: [number, number, AIPartnerStatus?, string?][]; // [id1, id2, status?, memo?]
   children: [number | null, number | null, number, AIChildStatus?, string?][]; // [fatherId, motherId, childId, status?, memo?]
   fetus: [number | null, number | null, string][]; // [fatherId, motherId, status]
-  relations: [number, number, AIRelationStatus, string][]; // [id1, id2, status, description]
-  influences: [number, number, AIInfluenceStatus, string?][]; // [fromId, toId, status, memo?]
+  relations: [number, number, AIRelationStatus, string, number?][]; // [id1, id2, status, description, order?]
+  influences: [number, number, AIInfluenceStatus, string?, number?][]; // [fromId, toId, status, memo?, order?]
   siblingGroups: AISiblingGroup[];
   nuclearFamilies: AINuclearFamily[];
 }

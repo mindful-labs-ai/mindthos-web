@@ -286,44 +286,53 @@ export function FamilyMemberListStep({
   // Relations와 Influences를 통합된 RelationData 형식으로 변환 (단일 소스: data)
   const relationDataList = useMemo<RelationData[]>(() => {
     const list: RelationData[] = [];
-    let orderCounter = 0;
 
-    // Relations → [id1, id2, status, description]
-    data.relations.forEach(([id1, id2, status, description]) => {
+    // Relations → [id1, id2, status, description, order?]
+    data.relations.forEach(([id1, id2, status, description, order]) => {
       list.push({
         id1,
         id2,
         status,
         description,
-        order: orderCounter++,
+        order: order ?? -1, // order가 없으면 -1 (나중에 정렬)
       });
     });
 
-    // Influences → [fromId, toId, status, memo]
-    data.influences.forEach(([fromId, toId, status, memo]) => {
+    // Influences → [fromId, toId, status, memo, order?]
+    data.influences.forEach(([fromId, toId, status, memo, order]) => {
       list.push({
         id1: fromId,
         id2: toId,
         status,
         description: memo || '',
-        order: orderCounter++,
+        order: order ?? -1, // order가 없으면 -1 (나중에 정렬)
       });
     });
 
-    return list;
+    // order 기준 정렬 (-1인 항목은 기존 순서 유지)
+    // order가 없는 항목(-1)은 현재 인덱스 기반으로 order 부여
+    let maxOrder = Math.max(-1, ...list.map((r) => r.order));
+    list.forEach((item) => {
+      if (item.order === -1) {
+        item.order = ++maxOrder;
+      }
+    });
+
+    return list.sort((a, b) => a.order - b.order);
   }, [data.relations, data.influences]);
 
-  // 통합 리스트 → 분리된 relations/influences 배열로 변환 (order 기준 정렬 후 분리)
+  // 통합 리스트 → 분리된 relations/influences 배열로 변환 (order 포함)
   const convertToSeparateArrays = useCallback((list: RelationData[]) => {
-    const relations: [number, number, AIRelationStatus, string][] = [];
+    const relations: [number, number, AIRelationStatus, string, number][] = [];
     const influences: [
       number,
       number,
       AIInfluenceStatus,
       string | undefined,
+      number,
     ][] = [];
 
-    // order 기준 정렬 후 분리
+    // order 기준 정렬 후 분리 (order 값도 저장)
     const sorted = [...list].sort((a, b) => a.order - b.order);
     sorted.forEach((item) => {
       if (isInfluenceStatus(item.status)) {
@@ -332,6 +341,7 @@ export function FamilyMemberListStep({
           item.id2,
           item.status as AIInfluenceStatus,
           item.description || undefined,
+          item.order,
         ]);
       } else {
         relations.push([
@@ -339,6 +349,7 @@ export function FamilyMemberListStep({
           item.id2,
           item.status as AIRelationStatus,
           item.description,
+          item.order,
         ]);
       }
     });
