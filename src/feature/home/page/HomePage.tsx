@@ -10,7 +10,6 @@ import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
 import { NewRecordButtonTooltip } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -44,8 +43,6 @@ const HomePage = () => {
   const user = useAuthStore((state) => state.user);
   const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
     React.useState(true);
-  const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
-    React.useState(false);
 
   const { isMobile } = useDevice();
 
@@ -112,7 +109,7 @@ const HomePage = () => {
 
   const handleUploadClick = () => {
     // 바로 모달 열기 (오디오 파일 업로드만)
-    setIsCreateSessionModalOpen(true);
+    openModal('createMultiSession');
   };
 
   const handleAddCustomerClick = () => {
@@ -362,12 +359,6 @@ const HomePage = () => {
           </div>
         )}
       </div>
-
-      {/* 다중 세션 생성 모달 */}
-      <CreateMultiSessionModal
-        open={isCreateSessionModalOpen}
-        onOpenChange={setIsCreateSessionModalOpen}
-      />
     </div>
   );
 };

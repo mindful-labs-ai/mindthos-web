@@ -10,11 +10,11 @@ import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { CloudUploadIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 import { MULTI_UPLOAD_LIMITS } from '../constants/fileUpload';
@@ -56,7 +56,7 @@ export const CreateMultiSessionModal: React.FC<
     open: false,
     message: '',
   });
-  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] = useState(false);
+  const openModal = useModalStore((state) => state.openModal);
 
   // 파일 관리
   const {
@@ -529,15 +529,9 @@ export const CreateMultiSessionModal: React.FC<
         }
         action={{
           label: '플랜 업그레이드',
-          onClick: () => setIsPlanChangeModalOpen(true),
+          onClick: () => openModal('planChange'),
         }}
         duration={8000}
-      />
-
-      {/* 플랜 변경 모달 */}
-      <PlanChangeModal
-        open={isPlanChangeModalOpen}
-        onOpenChange={setIsPlanChangeModalOpen}
       />
     </Modal>
   );

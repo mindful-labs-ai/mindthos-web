@@ -32,7 +32,6 @@ import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
 import { CardInfo } from '../components/CardInfo';
-import { PlanChangeModal } from '../components/PlanChangeModal';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -46,7 +45,6 @@ export const SettingsPage: React.FC = () => {
   // 카드 정보 가져오기
   const { cardInfo } = useCardInfo();
 
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = React.useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
@@ -102,7 +100,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const handleUpgradePlan = () => {
-    setIsUpgradeModalOpen(true);
+    openModal('planChange');
   };
 
   const handleCancelSubscription = () => {
@@ -415,11 +413,6 @@ export const SettingsPage: React.FC = () => {
           )}
         </div>
       </div>
-
-      <PlanChangeModal
-        open={isUpgradeModalOpen}
-        onOpenChange={setIsUpgradeModalOpen}
-      />
 
       {creditInfo && isPaidPlan && (
         <CancelSubscriptionModal

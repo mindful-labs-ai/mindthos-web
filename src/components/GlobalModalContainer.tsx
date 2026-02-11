@@ -7,6 +7,8 @@ import { UpdateNoteModal } from '@/components/UpdateNoteModal';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
 import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
+import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
+import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
@@ -43,6 +45,12 @@ export const GlobalModalContainer = () => {
   const isUserEditOpen = useModalStore((state) =>
     state.openModals.includes('userEdit')
   );
+  const isPlanChangeOpen = useModalStore((state) =>
+    state.openModals.includes('planChange')
+  );
+  const isCreateMultiSessionOpen = useModalStore((state) =>
+    state.openModals.includes('createMultiSession')
+  );
 
   const handleOpenUserEdit = () => {
     openModal('userEdit');
@@ -51,6 +59,18 @@ export const GlobalModalContainer = () => {
   const handleCloseUserEdit = (open: boolean) => {
     if (!open) {
       closeModal('userEdit');
+    }
+  };
+
+  const handleClosePlanChange = (open: boolean) => {
+    if (!open) {
+      closeModal('planChange');
+    }
+  };
+
+  const handleCloseCreateMultiSession = (open: boolean) => {
+    if (!open) {
+      closeModal('createMultiSession');
     }
   };
 
@@ -81,6 +101,18 @@ export const GlobalModalContainer = () => {
         open={isUserEditOpen}
         onOpenChange={handleCloseUserEdit}
         onSuccess={handleUserEditSuccess}
+      />
+
+      {/* 플랜 변경 모달 */}
+      <PlanChangeModal
+        open={isPlanChangeOpen}
+        onOpenChange={handleClosePlanChange}
+      />
+
+      {/* 다중 세션 생성 모달 */}
+      <CreateMultiSessionModal
+        open={isCreateMultiSessionOpen}
+        onOpenChange={handleCloseCreateMultiSession}
       />
     </>,
     document.body
