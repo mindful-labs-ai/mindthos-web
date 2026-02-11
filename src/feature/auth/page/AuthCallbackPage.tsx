@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
-
 import { ROUTES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
-import { extractUtmParams } from '@/shared/utils/utm';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 
 /**
@@ -12,8 +10,7 @@ import { useAuthStore } from '@/stores/authStore';
  * Google OAuth 인증 후 리다이렉트되는 페이지
  */
 const AuthCallbackPage = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const initialize = useAuthStore((state) => state.initialize);
 
   useEffect(() => {
@@ -25,25 +22,21 @@ const AuthCallbackPage = () => {
         if (session) {
           // 세션이 있으면 사용자 정보 초기화
           await initialize();
-          // 홈으로 리다이렉트 (UTM 파라미터만 유지)
-          const utmSearch = extractUtmParams(location.search);
-          navigate(
-            { pathname: ROUTES.ROOT, search: utmSearch },
-            { replace: true }
-          );
+          // 홈으로 리다이렉트 (UTM 파라미터 자동 유지)
+          navigateWithUtm(ROUTES.ROOT, { replace: true });
         } else {
-          // 세션이 없으면 로그인 페이지로
-          navigate(ROUTES.AUTH, { replace: true });
+          // 세션이 없으면 로그인 페이지로 (UTM 파라미터 유지)
+          navigateWithUtm(ROUTES.AUTH, { replace: true });
         }
       } catch (error) {
         console.error('OAuth callback error:', error);
-        // 에러 발생 시 로그인 페이지로
-        navigate(ROUTES.AUTH, { replace: true });
+        // 에러 발생 시 로그인 페이지로 (UTM 파라미터 유지)
+        navigateWithUtm(ROUTES.AUTH, { replace: true });
       }
     };
 
     handleCallback();
-  }, [initialize, navigate, location.search]);
+  }, [initialize, navigateWithUtm]);
 
   return (
     <div className="flex h-screen items-center justify-center">

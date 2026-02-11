@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
@@ -20,6 +20,7 @@ import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
@@ -39,7 +40,7 @@ type TabType = 'history' | 'analyze';
 
 export const ClientDetailPage: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const [activeTab, setActiveTab] = React.useState<TabType>('history');
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
@@ -376,7 +377,7 @@ export const ClientDetailPage: React.FC = () => {
                         record={record}
                         isReadOnly={isReadOnly}
                         onClick={(record) =>
-                          navigate(getSessionDetailRoute(record.session_id))
+                          navigateWithUtm(getSessionDetailRoute(record.session_id))
                         }
                       />
                     ))}

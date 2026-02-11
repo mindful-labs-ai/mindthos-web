@@ -1,16 +1,16 @@
 import { useEffect } from 'react';
 
 import { type AuthChangeEvent } from '@supabase/supabase-js';
-import { useNavigate } from 'react-router-dom';
 
 import { useToast } from '@/components/ui/composites/Toast';
 import { ROUTES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
   const { initialize, clear } = useAuthStore.getState();
   const initializeQuest = useQuestStore((state) => state.initializeQuest);
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           case 'SIGNED_OUT':
             clear();
             clearQuest();
-            navigate(ROUTES.AUTH);
+            navigateWithUtm(ROUTES.AUTH);
             break;
 
           default:
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       unsubscribe();
     };
-  }, [navigate, toast, initializeQuest, clearQuest, initialize, clear]);
+  }, [navigateWithUtm, toast, initializeQuest, clearQuest, initialize, clear]);
 
   return <>{children}</>;
 }

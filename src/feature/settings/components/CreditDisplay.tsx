@@ -1,11 +1,10 @@
 import React from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import { Button } from '@/components/ui';
 import { ProgressCircle } from '@/components/ui/atoms/ProgressCircle';
 import { Text } from '@/components/ui/atoms/Text';
 import { ROUTES } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useModalStore } from '@/stores/modalStore';
 
 import { CreditPricingTooltip } from './CreditPricingTooltip';
@@ -32,11 +31,11 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
     totalCredit > 0 ? Math.floor((remaining / totalCredit) * 100) : 0;
   const isFree = planType.toLowerCase() === 'free';
 
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const openModal = useModalStore((state) => state.openModal);
 
   const handleClick = () => {
-    navigate(ROUTES.SETTINGS);
+    navigateWithUtm(ROUTES.SETTINGS);
   };
 
   if (variant === 'detailed') {

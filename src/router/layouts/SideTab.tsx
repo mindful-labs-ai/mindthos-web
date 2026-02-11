@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { Button, Sidebar, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
@@ -18,6 +18,7 @@ import {
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
 import { cn } from '@/lib/cn';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Edit3Icon, PlusIcon, UploadIcon } from '@/shared/icons';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -30,7 +31,7 @@ import {
 } from '../navigationConfig';
 
 export const SideTab = () => {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const location = useLocation();
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
   const [isHandWrittenModalOpen, setIsHandWrittenModalOpen] =
@@ -68,12 +69,12 @@ export const SideTab = () => {
     if (path) {
       if (value === 'sessions' && checkIsTutorialActive(1, 1)) {
         // 레벨 1 튜토리얼: 상담 기록 탭 클릭
-        handleTutorialAction(() => navigate(path), 1, { targetLevel: 1 });
+        handleTutorialAction(() => navigateWithUtm(path), 1, { targetLevel: 1 });
       } else if (value === 'client' && checkIsTutorialActive(1, 2)) {
         // 레벨 2 튜토리얼: 클라이언트 탭 클릭
-        handleTutorialAction(() => navigate(path), 1, { targetLevel: 2 });
+        handleTutorialAction(() => navigateWithUtm(path), 1, { targetLevel: 2 });
       } else {
-        navigate(path);
+        navigateWithUtm(path);
       }
     }
   };
@@ -101,7 +102,7 @@ export const SideTab = () => {
       {/* Logo Section */}
       <div className="flex h-14 items-center justify-between border-b border-border p-4">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigateWithUtm('/')}
           className="flex items-center gap-2 rounded hover:opacity-80"
         >
           <img

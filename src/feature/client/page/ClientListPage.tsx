@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import { Button } from '@/components/ui/atoms/Button';
 import { Input } from '@/components/ui/atoms/Input';
 import { Text } from '@/components/ui/atoms/Text';
@@ -12,6 +10,7 @@ import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { dummyClient } from '@/feature/session/constants/dummySessions';
 import { useSessionList } from '@/feature/session/hooks/useSessionList';
 import { getClientDetailRoute } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { SearchIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -24,7 +23,7 @@ import { useClientSearch } from '../hooks/useClientSearch';
 import type { Client } from '../types';
 
 export const ClientListPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const [searchQuery, setSearchQuery] = React.useState('');
   const { clients, isLoading, error } = useClientList();
   const userId = useAuthStore((state) => state.userId);
@@ -65,11 +64,11 @@ export const ClientListPage: React.FC = () => {
 
   const handleClientClick = (client: Client) => {
     if (checkIsTutorialActive(2, 2) && client.id === dummyClient.id) {
-      handleTutorialAction(() => navigate(getClientDetailRoute(client.id)), 2, {
+      handleTutorialAction(() => navigateWithUtm(getClientDetailRoute(client.id)), 2, {
         targetLevel: 2,
       });
     } else {
-      navigate(getClientDetailRoute(client.id));
+      navigateWithUtm(getClientDetailRoute(client.id));
     }
   };
 

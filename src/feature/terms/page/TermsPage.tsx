@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { Accordion } from '@/components/ui/composites/Accordion';
 import { TERMS_TYPES, type TermsType } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 
 import { privacyPolicyItems, serviceTermsItems } from '../constant/TermList';
 
@@ -15,14 +16,14 @@ const isValidTermsType = (value: string | null): value is TermsType => {
 
 const TermsPage = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const type = searchParams.get('type');
 
   useEffect(() => {
     if (!isValidTermsType(type)) {
-      navigate('*', { replace: true });
+      navigateWithUtm('*', { replace: true });
     }
-  }, [type, navigate]);
+  }, [type, navigateWithUtm]);
 
   if (!isValidTermsType(type)) {
     return null;
