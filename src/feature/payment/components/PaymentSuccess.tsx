@@ -1,20 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Title } from '@/components/ui/atoms/Title';
 import { Card } from '@/components/ui/composites/Card';
 import { useToast } from '@/components/ui/composites/Toast';
+import { trackEvent } from '@/lib/mixpanel';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 
 import { billingService } from '../services/billingService';
 
 export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +41,7 @@ export const PaymentSuccess = () => {
           title: '잘못된 요청',
           description: '필수 파라미터가 누락되었습니다.',
         });
-        navigate('/settings');
+        navigateWithUtm('/settings');
         return;
       }
 
@@ -51,7 +53,7 @@ export const PaymentSuccess = () => {
           title: '사용자 정보 오류',
           description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
         });
-        navigate('/settings');
+        navigateWithUtm('/settings');
         return;
       }
 
@@ -86,12 +88,13 @@ export const PaymentSuccess = () => {
               }
             }
 
+            trackEvent('plan_upgrade_success', { plan_id: planId });
+
             toast({
               title: '플랜 업그레이드 완료',
               description: '플랜이 성공적으로 업그레이드되었습니다.',
             });
-            // 설정 페이지로 이동
-            navigate('/settings');
+            navigateWithUtm('/settings');
           } else {
             throw new Error(
               response.message || '플랜 업그레이드에 실패했습니다.'
@@ -118,8 +121,16 @@ export const PaymentSuccess = () => {
         }
 
         // 설정 페이지로 이동
-        navigate('/settings');
+        navigateWithUtm('/settings');
       } catch (error) {
+        if (planId) {
+          trackEvent('plan_upgrade_failed', {
+            plan_id: planId,
+            error_message:
+              error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+
         toast({
           title: planId ? '플랜 업그레이드 실패' : '카드 등록 실패',
           description:
@@ -127,7 +138,7 @@ export const PaymentSuccess = () => {
               ? error.message
               : `${planId ? '플랜 업그레이드' : '카드 등록'} 중 오류가 발생했습니다.`,
         });
-        navigate('/settings');
+        navigateWithUtm('/settings');
       } finally {
         setIsLoading(false);
       }
@@ -169,7 +180,7 @@ export const PaymentSuccess = () => {
           </div>
 
           <Button
-            onClick={() => navigate('/settings')}
+            onClick={() => navigateWithUtm('/settings')}
             disabled={isLoading}
             className="w-full"
           >

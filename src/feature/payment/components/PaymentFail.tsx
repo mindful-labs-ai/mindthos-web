@@ -1,13 +1,14 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { Card } from '@/components/ui/composites/Card';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 
 export const PaymentFail = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
 
   const errorCode = searchParams.get('code');
   const errorMessage = searchParams.get('message');
@@ -45,12 +46,15 @@ export const PaymentFail = () => {
           <div className="flex w-full gap-3">
             <Button
               variant="outline"
-              onClick={() => navigate('/settings')}
+              onClick={() => navigateWithUtm('/settings')}
               className="flex-1"
             >
               취소
             </Button>
-            <Button onClick={() => navigate('/settings')} className="flex-1">
+            <Button
+              onClick={() => navigateWithUtm('/settings')}
+              className="flex-1"
+            >
               다시 시도
             </Button>
           </div>

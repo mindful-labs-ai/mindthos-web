@@ -1,3 +1,4 @@
+// ICON 변경: Check는 Lucide 직접 사용 중
 import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui';

@@ -153,12 +153,20 @@ export const PopUp: React.FC<PopUpProps> = ({
       // 외부 클릭 비활성화 시 무시
       if (disableOutsideClick) return;
 
+      const target = e.target as Node;
+
       if (
         triggerRef.current &&
         contentRef.current &&
-        !triggerRef.current.contains(e.target as Node) &&
-        !contentRef.current.contains(e.target as Node)
+        !triggerRef.current.contains(target) &&
+        !contentRef.current.contains(target)
       ) {
+        // 중첩 PopUp의 portal 콘텐츠 클릭인지 확인 — portal로 body에 렌더링된 자식 PopUp 영역 클릭 시 무시
+        const targetEl = target as HTMLElement;
+        if (targetEl.closest?.('[data-popup-portal]')) {
+          return;
+        }
+
         // 외부 클릭 시 이벤트 전파 중단 (외부 요소의 이벤트 실행 방지)
         e.preventDefault();
         e.stopPropagation();
@@ -205,6 +213,7 @@ export const PopUp: React.FC<PopUpProps> = ({
         createPortal(
           <div
             role="presentation"
+            data-popup-portal
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >

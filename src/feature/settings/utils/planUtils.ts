@@ -10,6 +10,44 @@ export const getPlanLabel = (planType: string): string => {
   return PLAN_LABELS[planType.toLowerCase()] || planType;
 };
 
+/**
+ * 프로 플랜 여부 확인 (pro, pro_year)
+ */
+export const isProPlan = (planType: string | undefined): boolean => {
+  if (!planType) return false;
+  const type = planType.toLowerCase();
+  return type === 'pro' || type === 'pro_year';
+};
+
+/**
+ * 플러스 플랜 이상 여부 확인 (plus, plus_year, pro, pro_year)
+ */
+export const isPlusOrAbove = (planType: string | undefined): boolean => {
+  if (!planType) return false;
+  const type = planType.toLowerCase();
+  return (
+    type === 'plus' ||
+    type === 'plus_year' ||
+    type === 'pro' ||
+    type === 'pro_year'
+  );
+};
+
+/**
+ * 무료 플랜 여부 확인
+ */
+export const isFreePlan = (planType: string | undefined): boolean => {
+  if (!planType) return true;
+  return planType.toLowerCase() === 'free';
+};
+
+/**
+ * 유료 플랜 여부 확인 (free가 아닌 모든 플랜)
+ */
+export const isPaidPlan = (planType: string | undefined): boolean => {
+  return !isFreePlan(planType);
+};
+
 export const calculateDaysUntilReset = (
   resetAt: string | null
 ): number | undefined => {

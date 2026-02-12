@@ -1,11 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import {
-  createSearchParams,
-  Link,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+import { createSearchParams, Link, useSearchParams } from 'react-router-dom';
 
 import { Button, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
@@ -29,7 +24,6 @@ import type {
 } from '@/feature/session/types';
 import { calculateTotalCredit } from '@/feature/session/utils/creditCalculator';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
-import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import {
   calculateDaysUntilReset,
@@ -37,6 +31,7 @@ import {
 } from '@/feature/settings/utils/planUtils';
 import { trackEvent } from '@/lib/mixpanel';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   ChevronLeftIcon,
   UserIcon,
@@ -49,6 +44,7 @@ import {
 } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 
 import { useSessionRecords } from '../hooks/useMobileSession';
 
@@ -61,7 +57,7 @@ type MobileViewDepth = 'home' | 'upload' | 'config' | 'setting';
 
 const MobileView = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const { navigateWithUtm, setSearchParamsWithUtm } = useNavigateWithUtm();
   const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const userName = useAuthStore((state) => state.userName);
@@ -77,16 +73,19 @@ const MobileView = () => {
       ? depthParam
       : 'home';
 
-  // depth 변경 함수 (URL 업데이트)
+  // depth 변경 함수 (URL 업데이트, UTM 파라미터 자동 유지)
   const setDepth = useCallback(
     (newDepth: MobileViewDepth) => {
-      if (newDepth === 'home') {
-        navigate('/', { replace: false });
-      } else {
-        navigate(`/?depth=${newDepth}`, { replace: false });
-      }
+      setSearchParamsWithUtm((prev) => {
+        if (newDepth === 'home') {
+          prev.delete('depth');
+        } else {
+          prev.set('depth', newDepth);
+        }
+        return prev;
+      });
     },
-    [navigate]
+    [setSearchParamsWithUtm]
   );
 
   // 크레딧 정보
@@ -97,7 +96,7 @@ const MobileView = () => {
     open: false,
     message: '',
   });
-  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] = useState(false);
+  const openModal = useModalStore((state) => state.openModal);
 
   // iOS 파일 위치 안내 모달
   const [isIosGuideModalOpen, setIsIosGuideModalOpen] = useState(false);
@@ -239,7 +238,7 @@ const MobileView = () => {
       setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
       setFileConfigs([]);
     }
-    navigate(-1);
+    navigateWithUtm(-1);
   };
 
   // 로그아웃
@@ -796,13 +795,11 @@ const MobileView = () => {
         onOpenChange={(open) =>
           setCreditErrorSnackBar((prev) => ({ ...prev, open }))
         }
+        action={{
+          label: '플랜 업그레이드',
+          onClick: () => openModal('planChange'),
+        }}
         duration={8000}
-      />
-
-      {/* 플랜 변경 모달 */}
-      <PlanChangeModal
-        open={isPlanChangeModalOpen}
-        onOpenChange={setIsPlanChangeModalOpen}
       />
     </div>
   );
