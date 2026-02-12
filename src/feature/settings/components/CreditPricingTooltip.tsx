@@ -53,15 +53,14 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           </div>
         </div>
 
+        {/* 직접 입력 */}
         <div className="space-y-2">
           <Text className="text-xs font-medium text-fg-muted">직접 입력</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
               <Text className="text-xs text-fg">직접 입력</Text>
               <div>
-                <Text className="text-xs font-semibold text-fg">
-                  30크레딧 (고정)
-                </Text>
+                <Text className="text-xs font-semibold text-fg">30크레딧</Text>
               </div>
             </div>
           </div>
@@ -80,6 +79,19 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
             <div className="flex gap-2">
               <Text className="text-xs text-fg">다회기 분석</Text>
               <Text className="text-xs font-semibold text-fg">50 크레딧</Text>
+            </div>
+          </div>
+        </div>
+
+        {/* 가계도 */}
+        <div className="space-y-2">
+          <Text className="text-xs font-medium text-fg-muted">가계도</Text>
+          <div className="space-y-1">
+            <div className="flex gap-2">
+              <Text className="text-xs text-fg">가계도 자동 생성</Text>
+              <div>
+                <Text className="text-xs font-semibold text-fg">50크레딧</Text>
+              </div>
             </div>
           </div>
         </div>
