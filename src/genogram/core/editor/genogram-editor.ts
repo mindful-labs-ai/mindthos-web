@@ -604,6 +604,7 @@ export class GenogramEditor {
                 job: null,
                 education: null,
                 region: null,
+                shortNote: null,
               },
             },
             memo: currentMemo,
@@ -618,6 +619,75 @@ export class GenogramEditor {
           },
         });
       }
+    }
+  }
+
+  /**
+   * Connection의 타입(Relation_Line↔Influence_Line)을 변환합니다.
+   * 선택한 status가 RelationStatus이면 Relation_Line으로,
+   * InfluenceStatus이면 Influence_Line으로 자동 변환됩니다.
+   */
+  convertConnectionType(connectionId: UUID, targetStatus: string): void {
+    const connection = this.state.genogram.connections.get(connectionId);
+    if (!connection) return;
+
+    const { type, attribute, memo } = connection.entity;
+
+    // Relation_Line 또는 Influence_Line만 변환 가능
+    if (
+      type !== ConnectionType.Relation_Line &&
+      type !== ConnectionType.Influence_Line
+    ) {
+      return;
+    }
+
+    // targetStatus가 RelationStatus에 속하는지 확인
+    const isRelationStatus = Object.values(RelationStatus).includes(
+      targetStatus as (typeof RelationStatus)[keyof typeof RelationStatus]
+    );
+
+    // 현재 연결된 두 Subject의 ID 추출
+    let subjectId1: UUID;
+    let subjectId2: UUID;
+
+    if (type === ConnectionType.Relation_Line && 'subjects' in attribute) {
+      [subjectId1, subjectId2] = attribute.subjects as [UUID, UUID];
+    } else if (
+      type === ConnectionType.Influence_Line &&
+      'startRef' in attribute
+    ) {
+      subjectId1 = attribute.startRef as UUID;
+      subjectId2 = attribute.endRef as UUID;
+    } else {
+      return;
+    }
+
+    if (isRelationStatus) {
+      // → Relation_Line으로 변환
+      this.updateConnectionEntity(connectionId, {
+        entity: {
+          type: ConnectionType.Relation_Line,
+          attribute: {
+            status:
+              targetStatus as (typeof RelationStatus)[keyof typeof RelationStatus],
+            subjects: [subjectId1, subjectId2],
+          },
+          memo,
+        },
+      });
+    } else {
+      // → Influence_Line으로 변환
+      this.updateConnectionEntity(connectionId, {
+        entity: {
+          type: ConnectionType.Influence_Line,
+          attribute: {
+            status: targetStatus as InfluenceStatus,
+            startRef: subjectId1,
+            endRef: subjectId2,
+          },
+          memo,
+        },
+      });
     }
   }
 

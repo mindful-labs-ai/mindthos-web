@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
 import { ROUTES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { MailIcon } from '@/shared/icons';
 
 export default function EmailVerificationPage() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const email = (location.state as { email?: string })?.email;
 
   const [isResending, setIsResending] = useState(false);
@@ -20,12 +21,12 @@ export default function EmailVerificationPage() {
   useEffect(() => {
     if (!email) {
       const timer = setTimeout(
-        () => navigate(ROUTES.AUTH, { replace: true }),
+        () => navigateWithUtm(ROUTES.AUTH, { replace: true }),
         3000
       );
       return () => clearTimeout(timer);
     }
-  }, [email, navigate]);
+  }, [email, navigateWithUtm]);
 
   const handleResendEmail = async () => {
     if (!email) return;
@@ -118,7 +119,7 @@ export default function EmailVerificationPage() {
             )}
 
             <Button
-              onClick={() => navigate(ROUTES.AUTH)}
+              onClick={() => navigateWithUtm(ROUTES.AUTH)}
               variant="ghost"
               tone="neutral"
               className="w-full"

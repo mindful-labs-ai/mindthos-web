@@ -8,6 +8,7 @@ import { clientQueryKeys } from '@/feature/client/constants/queryKeys';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 
 import { GenogramExportModal } from '../components/export';
@@ -32,8 +33,9 @@ import { genogramService } from '../services/genogramService';
 import { convertAIJsonToCanvas } from '../utils/aiJsonConverter';
 
 export function GenogramClientPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
+  const { setSearchParamsWithUtm } = useNavigateWithUtm();
 
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
@@ -223,14 +225,14 @@ export function GenogramClientPage() {
   const handleClientSelect = useCallback(
     (client: Client | null) => {
       if (client) {
-        setSearchParams({ clientId: client.id });
+        setSearchParamsWithUtm({ clientId: client.id });
         // 클라이언트 선택 시 임시 모드 종료
         setExitedTemporaryMode(true);
       } else {
-        setSearchParams({});
+        setSearchParamsWithUtm({});
       }
     },
-    [setSearchParams]
+    [setSearchParamsWithUtm]
   );
 
   // 클라이언트 추가 모달 열기
@@ -271,10 +273,10 @@ export function GenogramClientPage() {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
 
       // 새 클라이언트로 이동
-      setSearchParams({ clientId: newClientId });
+      setSearchParamsWithUtm({ clientId: newClientId });
       setExitedTemporaryMode(true);
     },
-    [temporaryData, userId, setSearchParams, queryClient]
+    [temporaryData, userId, setSearchParamsWithUtm, queryClient]
   );
 
   // Export (이미지 내보내기)

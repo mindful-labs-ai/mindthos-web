@@ -17,11 +17,10 @@ import {
   CONNECTION_TYPE_LABELS,
   GENDER_TYPE_ITEMS,
   ILLNESS_ITEMS,
-  INFLUENCE_STATUS_ITEMS,
   NODE_SIZE_ITEMS,
   PARENT_CHILD_STATUS_ITEMS,
   PARTNER_STATUS_ITEMS,
-  RELATION_STATUS_ITEMS,
+  RELATION_INFLUENCE_STATUS_ITEMS,
   STROKE_WIDTH_ITEMS,
 } from '../constants/labels';
 import { usePropertyPanel } from '../hooks/usePropertyPanel';
@@ -47,6 +46,10 @@ interface GenogramPropertyPanelProps {
     connectionId: string,
     updates: Partial<Connection>
   ) => void;
+  onConvertConnectionType?: (
+    connectionId: string,
+    targetStatus: string
+  ) => void;
   onClose: () => void;
 }
 
@@ -56,6 +59,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   onConvertType,
   connection,
   onConnectionUpdate,
+  onConvertConnectionType,
   onClose: _onClose,
 }) => {
   // ── Subject 관련 훅 ──
@@ -70,6 +74,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     nameValue,
     setNameValue,
     memoValue,
+    shortNoteValue,
     nameInputRef,
     updateAttribute,
     updateGenderOrType,
@@ -77,6 +82,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     updateExtraInfo,
     updateStyle,
     handleMemoChange,
+    handleShortNoteChange,
     commitName,
   } = usePropertyPanel({ subject, onUpdate, onConvertType });
 
@@ -116,6 +122,19 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   const updateStatus = useCallback(
     (status: string) => {
       if (!connection || !onConnectionUpdate) return;
+
+      const { type } = connection.entity;
+
+      // 관계선/영향선은 타입 변환이 필요할 수 있음
+      if (
+        (type === ConnectionType.Relation_Line ||
+          type === ConnectionType.Influence_Line) &&
+        onConvertConnectionType
+      ) {
+        onConvertConnectionType(connection.id, status);
+        return;
+      }
+
       onConnectionUpdate(connection.id, {
         entity: {
           ...connection.entity,
@@ -126,7 +145,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
         },
       });
     },
-    [connection, onConnectionUpdate]
+    [connection, onConnectionUpdate, onConvertConnectionType]
   );
 
   const updateConnLayout = useCallback(
@@ -268,11 +287,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
         statusIconRenderer = renderPartnerIcon;
         break;
       case ConnectionType.Relation_Line:
-        statusItems = RELATION_STATUS_ITEMS;
-        statusIconRenderer = renderRelationIcon;
-        break;
       case ConnectionType.Influence_Line:
-        statusItems = INFLUENCE_STATUS_ITEMS;
+        // 관계선과 영향선은 통합 드롭다운 사용
+        statusItems = RELATION_INFLUENCE_STATUS_ITEMS;
         statusIconRenderer = renderRelationIcon;
         break;
       case ConnectionType.Children_Parents_Line:
@@ -383,14 +400,14 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {/* 역방향 — 영향선만 표시 */}
           {type === ConnectionType.Influence_Line && (
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-fg">역방향</span>
+              <span className="text-base font-medium text-fg">방향</span>
               <button
                 type="button"
-                className="flex h-6 w-11 items-center rounded-full bg-surface-contrast px-0.5 transition-colors"
+                className="flex h-6 w-14 items-center justify-center rounded-full bg-surface-strong px-0.5 transition-colors active:bg-surface-contrast"
                 onClick={handleReverse}
                 title="방향 반전"
               >
-                <span className="text-xs text-fg-muted">전환</span>
+                <span className="text-xs text-fg">바꾸기</span>
               </button>
             </div>
           )}
@@ -646,7 +663,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             {/* 인적 사항 정보 */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-base font-medium text-fg">인적 사항</span>
+                <span className="text-base font-medium text-fg">부가 설명</span>
                 <input
                   type="checkbox"
                   checked={attr.extraInfo.enable}
@@ -708,6 +725,23 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                       }
                       placeholder="메모를 추가하세요."
                       className="h-10 w-full rounded-md border-2 border-border bg-surface px-4 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="mb-1 block text-xs text-fg-muted"
+                      htmlFor="shortNote"
+                    >
+                      짧은 메모
+                    </label>
+                    <input
+                      id="shortNote"
+                      type="text"
+                      value={shortNoteValue}
+                      onChange={handleShortNoteChange}
+                      placeholder="메모를 추가하세요."
+                      maxLength={30}
+                      className="h-10 w-full rounded-md border-2 border-border bg-surface px-4 text-sm outline-none transition-colors placeholder:text-fg-muted focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </div>
                 </div>

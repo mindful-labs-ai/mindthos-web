@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
-import { Button, Sidebar, Text } from '@/components/ui';
+import { Button, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
 import {
@@ -18,19 +18,87 @@ import {
   getPlanLabel,
 } from '@/feature/settings/utils/planUtils';
 import { cn } from '@/lib/cn';
-import { Edit3Icon, PlusIcon, UploadIcon } from '@/shared/icons';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { Edit3Icon, PlusIcon, SideLockIcon, UploadIcon } from '@/shared/icons';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 import {
+  AI_ANALYSIS_ITEMS,
   BOTTOM_NAV_ITEMS,
-  MAIN_NAV_ITEMS,
+  SESSION_MANAGEMENT_ITEMS,
   getNavValueFromPath,
   getPathFromNavValue,
 } from '../navigationConfig';
 
+interface NavItemProps {
+  icon?: React.ReactNode;
+  label: string;
+  value: string;
+  badge?: 'beta' | 'comingSoon';
+  disabled?: boolean;
+  isActive: boolean;
+  onSelect: (value: string) => void;
+  onDisabledClick?: () => void;
+}
+
+const NavItem: React.FC<NavItemProps> = ({
+  icon,
+  label,
+  value,
+  badge,
+  disabled,
+  isActive,
+  onSelect,
+  onDisabledClick,
+}) => {
+  const handleClick = () => {
+    if (disabled) {
+      onDisabledClick?.();
+    } else {
+      onSelect(value);
+    }
+  };
+
+  return (
+    <button
+      data-value={value}
+      type="button"
+      onClick={handleClick}
+      className={cn(
+        'flex w-full items-center justify-between rounded-lg px-3 py-2.5',
+        'text-left text-sm font-medium',
+        'transition-colors duration-200',
+        isActive
+          ? 'bg-surface-contrast text-fg'
+          : 'text-[#BABAC0] opacity-90 hover:bg-surface-contrast'
+      )}
+    >
+      <div className="flex items-center gap-3">
+        {icon && <span className={cn('flex-shrink-0')}>{icon}</span>}
+        <div className="flex items-center gap-1">
+          <span>{label}</span>
+          {disabled && <SideLockIcon size={14} className="text-[#BABAC0]" />}
+        </div>
+      </div>
+      {badge && (
+        <span
+          className={cn(
+            'rounded-md px-1 py-0.5 text-xs font-bold',
+            badge === 'beta'
+              ? 'bg-primary text-white'
+              : 'bg-[#BABAC0] text-surface'
+          )}
+        >
+          {badge === 'beta' ? 'Beta' : '준비 중'}
+        </span>
+      )}
+    </button>
+  );
+};
+
 export const SideTab = () => {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const location = useLocation();
   const [isNewRecordMenuOpen, setIsNewRecordMenuOpen] = React.useState(false);
   const [isHandWrittenModalOpen, setIsHandWrittenModalOpen] =
@@ -68,12 +136,16 @@ export const SideTab = () => {
     if (path) {
       if (value === 'sessions' && checkIsTutorialActive(1, 1)) {
         // 레벨 1 튜토리얼: 상담 기록 탭 클릭
-        handleTutorialAction(() => navigate(path), 1, { targetLevel: 1 });
+        handleTutorialAction(() => navigateWithUtm(path), 1, {
+          targetLevel: 1,
+        });
       } else if (value === 'client' && checkIsTutorialActive(1, 2)) {
         // 레벨 2 튜토리얼: 클라이언트 탭 클릭
-        handleTutorialAction(() => navigate(path), 1, { targetLevel: 2 });
+        handleTutorialAction(() => navigateWithUtm(path), 1, {
+          targetLevel: 2,
+        });
       } else {
-        navigate(path);
+        navigateWithUtm(path);
       }
     }
   };
@@ -101,7 +173,7 @@ export const SideTab = () => {
       {/* Logo Section */}
       <div className="flex h-14 items-center justify-between border-b border-border p-4">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigateWithUtm('/')}
           className="flex items-center gap-2 rounded hover:opacity-80"
         >
           <img
@@ -124,7 +196,7 @@ export const SideTab = () => {
               variant="outline"
               tone="primary"
               size="md"
-              className="w-full justify-start"
+              className="w-full justify-center"
               icon={<PlusIcon size={18} />}
               onClick={async () => {
                 setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
@@ -155,32 +227,73 @@ export const SideTab = () => {
         />
       </div>
 
-      {/* Main Navigation - Integrated with Spotlight Selector */}
+      {/* Main Navigation */}
       <div className="flex-1 overflow-y-auto px-3">
-        <Spotlight
-          isActive={
-            (currentLevel === 1 && checkIsTutorialActive(1, 1)) ||
-            (currentLevel === 2 && checkIsTutorialActive(1, 2))
-          }
-          onClose={() => endTutorial()}
-          tooltip={
-            currentLevel === 1 ? <SessionTabTooltip /> : <ClientTabTooltip />
-          }
-          tooltipPosition="right"
-          selector={
-            currentLevel === 1
-              ? '[data-value="sessions"]'
-              : '[data-value="client"]'
-          }
-          className="w-full"
-        >
-          <Sidebar
-            items={MAIN_NAV_ITEMS}
-            activeValue={activeNav}
-            onSelect={handleNavSelect}
-            className="min-w-0 border-none bg-transparent py-2"
-          />
-        </Spotlight>
+        {/* 상담 관리 섹션 */}
+        <div className="mb-4">
+          <Text className="mb-2 px-1.5 text-sm font-medium text-fg">
+            상담 관리
+          </Text>
+          <Spotlight
+            isActive={
+              (currentLevel === 1 && checkIsTutorialActive(1, 1)) ||
+              (currentLevel === 2 && checkIsTutorialActive(1, 2))
+            }
+            onClose={() => endTutorial()}
+            tooltip={
+              currentLevel === 1 ? <SessionTabTooltip /> : <ClientTabTooltip />
+            }
+            tooltipPosition="right"
+            selector={
+              currentLevel === 1
+                ? '[data-value="sessions"]'
+                : '[data-value="client"]'
+            }
+            className="w-full"
+          >
+            <nav className="flex flex-col gap-1">
+              {SESSION_MANAGEMENT_ITEMS.map((item) => (
+                <NavItem
+                  key={item.value}
+                  icon={item.icon}
+                  label={item.label}
+                  value={item.value}
+                  badge={item.badge}
+                  disabled={item.disabled}
+                  isActive={activeNav === item.value}
+                  onSelect={handleNavSelect}
+                  onDisabledClick={() =>
+                    openModal('comingSoon', { source: `sidebar_${item.value}` })
+                  }
+                />
+              ))}
+            </nav>
+          </Spotlight>
+        </div>
+
+        {/* AI 분석 섹션 */}
+        <div>
+          <Text className="mb-2 px-1.5 text-sm font-medium text-fg">
+            AI 분석
+          </Text>
+          <nav className="flex flex-col gap-1">
+            {AI_ANALYSIS_ITEMS.map((item) => (
+              <NavItem
+                key={item.value}
+                icon={item.icon}
+                label={item.label}
+                value={item.value}
+                badge={item.badge}
+                disabled={item.disabled}
+                isActive={activeNav === item.value}
+                onSelect={handleNavSelect}
+                onDisabledClick={() =>
+                  openModal('comingSoon', { source: `sidebar_${item.value}` })
+                }
+              />
+            ))}
+          </nav>
+        </div>
       </div>
 
       <div>
@@ -198,12 +311,23 @@ export const SideTab = () => {
           />
         )}
         <div className="border-t border-border px-3 py-3">
-          <Sidebar
-            items={BOTTOM_NAV_ITEMS}
-            activeValue={activeNav}
-            onSelect={handleNavSelect}
-            className="min-w-0 border-none bg-transparent p-0"
-          />
+          <nav className="flex flex-col gap-1">
+            {BOTTOM_NAV_ITEMS.map((item) => (
+              <NavItem
+                key={item.value}
+                icon={item.icon}
+                label={item.label}
+                value={item.value}
+                badge={item.badge}
+                disabled={item.disabled}
+                isActive={activeNav === item.value}
+                onSelect={handleNavSelect}
+                onDisabledClick={() =>
+                  openModal('comingSoon', { source: `sidebar_${item.value}` })
+                }
+              />
+            ))}
+          </nav>
         </div>
       </div>
 

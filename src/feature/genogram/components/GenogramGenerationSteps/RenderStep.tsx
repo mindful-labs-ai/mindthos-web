@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 
 import { Alert } from '@/components/ui/atoms/Alert';
 import { Button } from '@/components/ui/atoms/Button';
+import { trackEvent } from '@/lib/mixpanel';
 
 import { GenogramLoadingAnimationLoop } from '../GenogramLoadingAnimation';
 
@@ -90,7 +91,13 @@ export function RenderStep({
       {/* 완료 버튼 */}
       {showSuccessUI && (
         <div className="flex justify-center">
-          <Button onClick={onComplete} tone="primary">
+          <Button
+            onClick={() => {
+              trackEvent('genogram_creation_complete_click');
+              onComplete();
+            }}
+            tone="primary"
+          >
             가계도 확인하기
           </Button>
         </div>

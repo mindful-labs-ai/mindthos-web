@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
+import { ComingSoonModal } from '@/components/common/ComingSoonModal';
 import { UpdateNoteModal } from '@/components/UpdateNoteModal';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
@@ -19,14 +20,7 @@ import { useUpdateStore } from '@/stores/updateStore';
  * 전역 모달 컨테이너
  * 모든 모달을 Portal을 통해 document.body에 렌더링하여
  * DOM 계층과 독립적으로 관리
- *
- * 책임:
- * - 인증된 사용자의 전역 모달 렌더링
- * - 업데이트 노트 초기화 및 표시
- * - 온보딩 관련 모달 (QuestMission, CompleteMission)
- * - 사용자 정보 수정 모달
- * - 미션 플로팅 버튼
- */
+ * */
 export const GlobalModalContainer = () => {
   const { currentLevel, completeNextStep } = useQuestStore();
   const user = useAuthStore((state) => state.user);
@@ -51,6 +45,12 @@ export const GlobalModalContainer = () => {
   const isCreateMultiSessionOpen = useModalStore((state) =>
     state.openModals.includes('createMultiSession')
   );
+  const isComingSoonOpen = useModalStore((state) =>
+    state.openModals.includes('comingSoon')
+  );
+  const comingSoonData = useModalStore(
+    (state) => state.modalData.comingSoon as { source: string } | undefined
+  );
 
   const handleOpenUserEdit = () => {
     openModal('userEdit');
@@ -71,6 +71,12 @@ export const GlobalModalContainer = () => {
   const handleCloseCreateMultiSession = (open: boolean) => {
     if (!open) {
       closeModal('createMultiSession');
+    }
+  };
+
+  const handleCloseComingSoon = (open: boolean) => {
+    if (!open) {
+      closeModal('comingSoon');
     }
   };
 
@@ -113,6 +119,13 @@ export const GlobalModalContainer = () => {
       <CreateMultiSessionModal
         open={isCreateMultiSessionOpen}
         onOpenChange={handleCloseCreateMultiSession}
+      />
+
+      {/* 출시 예정 모달 */}
+      <ComingSoonModal
+        open={isComingSoonOpen}
+        onOpenChange={handleCloseComingSoon}
+        source={comingSoonData?.source}
       />
     </>,
     document.body

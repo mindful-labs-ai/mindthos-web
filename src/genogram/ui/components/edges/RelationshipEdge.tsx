@@ -57,13 +57,17 @@ const SW = STROKE_WIDTH_DEFAULT;
 const SW_SUB = STROKE_WIDTH_SUB;
 
 const PARTNER_OFFSET = 40;
-const ZIGZAG_AMP = 15;
+const ZIGZAG_AMP = 10;
 const ZIGZAG_PERIOD = 8;
 const PARALLEL_GAP = 5;
+// 지그재그+직선 조합 관계선별 gap (ZIGZAG_AMP 내부에 위치)
+const CLOSE_HOSTILE_GAP = 6; // 밀착-갈등: 지그재그 + 2직선
+const FUSED_HOSTILE_GAP = 5; // 융합-갈등: 지그재그 + 3직선
+const SEXUAL_ABUSE_GAP = 6; // 성적 학대: 지그재그 + 2직선 + 화살표
 const CUTOFF_LEN = 8;
 const CUTOFF_GAP = 3;
 const SLASH_LEN = 10;
-const ARROW_INSET = 20; // 화살표 머리 크기만큼 지그재그 끝점 축소
+const ARROW_INSET = 18; // 화살표 머리 크기만큼 지그재그 끝점 축소
 const HIT_WIDTH = 16; // 클릭 가능 히트 영역 두께
 const HIT_BORDER = SELECTION_BORDER; // 선택 하이라이트 테두리
 const HIT_INNER = SELECTION_INNER; // 선택 하이라이트 내부 (거의 흰색에 가까운 연두)
@@ -367,27 +371,32 @@ const renderRelationEdge = (
       return {
         content: (
           <>
-            <path d={offsetLine(sx, sy, tx, ty, -PARALLEL_GAP * 2)} {...base} />
+            <path
+              d={offsetLine(sx, sy, tx, ty, -CLOSE_HOSTILE_GAP)}
+              {...base}
+            />
             <polyline
               points={buildZigzagPoints(sx, sy, tx, ty)}
               {...base}
               strokeLinejoin="round"
             />
-            <path d={offsetLine(sx, sy, tx, ty, PARALLEL_GAP * 2)} {...base} />
+            <path d={offsetLine(sx, sy, tx, ty, CLOSE_HOSTILE_GAP)} {...base} />
           </>
         ),
         hitPaths: [straight],
-        spreadWidth: PARALLEL_GAP * 4 + sw,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
 
     case RelationStatus.Fused_Hostile: {
-      const fOff = PARALLEL_GAP * 2;
       return {
         content: (
           <>
-            <path d={offsetLine(sx, sy, tx, ty, -fOff)} {...base} />
+            <path
+              d={offsetLine(sx, sy, tx, ty, -FUSED_HOSTILE_GAP)}
+              {...base}
+            />
             <path d={straight} {...base} />
-            <path d={offsetLine(sx, sy, tx, ty, fOff)} {...base} />
+            <path d={offsetLine(sx, sy, tx, ty, FUSED_HOSTILE_GAP)} {...base} />
             <polyline
               points={buildZigzagPoints(sx, sy, tx, ty)}
               {...base}
@@ -396,7 +405,7 @@ const renderRelationEdge = (
           </>
         ),
         hitPaths: [straight],
-        spreadWidth: fOff * 2 + ZIGZAG_AMP * 2 + sw,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
     }
 
@@ -538,11 +547,11 @@ const renderInfluenceEdge = (
   const filledMarker = (
     <marker
       id={filledMarkerId}
-      viewBox="0 0 10 10"
-      refX="9"
+      viewBox="0 0 13 10"
+      refX="10"
       refY="5"
-      markerWidth="24"
-      markerHeight="24"
+      markerWidth="26"
+      markerHeight="26"
       markerUnits="userSpaceOnUse"
       orient="auto-start-reverse"
     >
@@ -557,7 +566,7 @@ const renderInfluenceEdge = (
       refX="10"
       refY="5"
       markerWidth="24"
-      markerHeight="24 "
+      markerHeight="24"
       markerUnits="userSpaceOnUse"
       orient="auto-start-reverse"
     >
@@ -565,8 +574,7 @@ const renderInfluenceEdge = (
         d="M 0 0 L 10 5 L 0 10 z"
         fill="#ffffff"
         stroke={color}
-        strokeWidth={sw}
-        strokeLinejoin="round"
+        strokeWidth={sw / 2}
       />
     </marker>
   );
@@ -643,7 +651,7 @@ const renderInfluenceEdge = (
         content: (
           <>
             <defs>{filledMarker}</defs>
-            <path d={offsetLine(x1, y1, x2, y2, -PARALLEL_GAP * 2)} {...base} />
+            <path d={offsetLine(x1, y1, x2, y2, -SEXUAL_ABUSE_GAP)} {...base} />
             <polyline
               points={buildZigzagPoints(
                 x1,
@@ -657,7 +665,7 @@ const renderInfluenceEdge = (
               {...base}
               strokeLinejoin="round"
             />
-            <path d={offsetLine(x1, y1, x2, y2, PARALLEL_GAP * 2)} {...base} />
+            <path d={offsetLine(x1, y1, x2, y2, SEXUAL_ABUSE_GAP)} {...base} />
             <path
               d={guideLine}
               fill="none"
@@ -669,7 +677,7 @@ const renderInfluenceEdge = (
           </>
         ),
         hitPaths: [guideLine],
-        spreadWidth: PARALLEL_GAP * 4 + sw,
+        spreadWidth: ZIGZAG_AMP * 2 + sw,
       };
 
     case InfluenceStatus.Focused_On:

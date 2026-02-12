@@ -582,6 +582,16 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     [getEditor]
   );
 
+  // Connection 타입 변환 (Relation_Line↔Influence_Line)
+  const convertConnectionType = useCallback(
+    (connectionId: string, targetStatus: string) => {
+      const editor = getEditor();
+      if (!editor) return;
+      editor.convertConnectionType(connectionId, targetStatus);
+    },
+    [getEditor]
+  );
+
   // 태아 타입 판별
   const isFetusSubject = useCallback(
     (subjectId: string): boolean => {
@@ -840,6 +850,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     isPartnerConnected,
     addPartnerAtPosition,
     convertSubjectType,
+    convertConnectionType,
     addChildToParentRef,
     addChildConnectionToParentRef,
     addGroupConnection,

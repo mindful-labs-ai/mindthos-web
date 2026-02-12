@@ -113,6 +113,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       isPartnerConnected,
       addPartnerAtPosition,
       convertSubjectType,
+      convertConnectionType,
       addChildToParentRef,
       addChildConnectionToParentRef,
       addGroupConnection,
@@ -736,6 +737,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             onConvertType={convertSubjectType}
             connection={selectedConnection}
             onConnectionUpdate={updateConnection}
+            onConvertConnectionType={convertConnectionType}
             onClose={handleClosePanel}
           />
         ) : null}

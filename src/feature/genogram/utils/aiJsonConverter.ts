@@ -1210,6 +1210,7 @@ export function convertAIJsonToCanvas(
             job: subject.job ?? null,
             education: subject.education ?? null,
             region: subject.region ?? null,
+            shortNote: null,
           },
         },
         memo: subject.memo ?? null,

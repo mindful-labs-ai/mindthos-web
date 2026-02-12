@@ -227,6 +227,7 @@ export const useCanvasInteraction = ({
         onPartnerCreateAtPosition?.(effectiveSourceId, position);
         setPendingSourceId(null);
         setConnectionPreview(null);
+        onFabComplete?.();
         return;
       }
 

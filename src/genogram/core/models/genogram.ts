@@ -2,7 +2,7 @@ import { FetusStatus, SubjectType } from '../types/enums';
 import type { UUID } from '../types/types';
 import { generateId } from '../types/types';
 
-import type { FetusAttribute, Subject } from './person';
+import type { FetusAttribute, PersonAttribute, Subject } from './person';
 import type { Connection } from './relationship';
 import type { Annotation } from './text-annotation';
 
@@ -152,6 +152,33 @@ function migrateSubject(subject: Subject): Subject {
         attribute: { ...result.entity.attribute, isIP: false },
       },
     };
+  }
+
+  // extraInfo.shortNote 필드 마이그레이션 (레거시 데이터에 없을 수 있음)
+  if (result.entity.type === SubjectType.Person) {
+    const personAttr = result.entity.attribute as PersonAttribute;
+    const extraInfo = personAttr.extraInfo as unknown as Record<
+      string,
+      unknown
+    >;
+    if (extraInfo && extraInfo.shortNote === undefined) {
+      result = {
+        ...result,
+        entity: {
+          ...result.entity,
+          attribute: {
+            ...personAttr,
+            extraInfo: {
+              enable: Boolean(extraInfo.enable),
+              job: (extraInfo.job as string) ?? null,
+              education: (extraInfo.education as string) ?? null,
+              region: (extraInfo.region as string) ?? null,
+              shortNote: null,
+            },
+          },
+        },
+      };
+    }
   }
 
   return result;

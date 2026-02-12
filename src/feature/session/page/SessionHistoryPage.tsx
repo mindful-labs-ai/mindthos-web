@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
 import { Button } from '@/components/ui/atoms/Button';
@@ -24,6 +24,7 @@ import type { SessionRecord } from '@/feature/session/types';
 import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { getSessionDetailRoute } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -32,7 +33,7 @@ import { useSessionStore } from '@/stores/sessionStore';
 import { TabChangeConfirmModal } from '../components/TabChangeConfirmModal';
 
 export const SessionHistoryPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const { sessionId } = useParams<{ sessionId: string }>();
   const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
     useTutorial({
@@ -262,7 +263,7 @@ export const SessionHistoryPage: React.FC = () => {
       setIsSessionChangeModalOpen(true);
       return;
     }
-    navigate(getSessionDetailRoute(record.session_id));
+    navigateWithUtm(getSessionDetailRoute(record.session_id));
   };
 
   const handleSessionClick = (selectedSessionId: string) => {
@@ -272,7 +273,7 @@ export const SessionHistoryPage: React.FC = () => {
       setIsSessionChangeModalOpen(true);
       return;
     }
-    navigate(getSessionDetailRoute(selectedSessionId));
+    navigateWithUtm(getSessionDetailRoute(selectedSessionId));
   };
 
   // 세션 이동 확인
@@ -281,11 +282,11 @@ export const SessionHistoryPage: React.FC = () => {
     cancelEditHandler?.();
     // 세션 이동
     if (pendingSessionId) {
-      navigate(getSessionDetailRoute(pendingSessionId));
+      navigateWithUtm(getSessionDetailRoute(pendingSessionId));
     }
     setIsSessionChangeModalOpen(false);
     setPendingSessionId(null);
-  }, [cancelEditHandler, pendingSessionId, navigate]);
+  }, [cancelEditHandler, pendingSessionId, navigateWithUtm]);
 
   // 세션 이동 취소
   const handleCancelSessionChange = React.useCallback(() => {

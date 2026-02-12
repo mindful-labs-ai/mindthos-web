@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { GlobalModalContainer } from '@/components/GlobalModalContainer';
 import { useMobileRouteGuard } from '@/shared/hooks/useMobileRouteGuard';
 import { useAuthStore } from '@/stores/authStore';
+import { useUtmStore } from '@/stores/utmStore';
 
 import { ROUTES } from '../constants';
 
@@ -21,6 +22,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const utmParams = useUtmStore((state) => state.utmParams);
 
   // 모바일/태블릿에서 "/" 외 라우트 접근 시 자동 리다이렉트
   useMobileRouteGuard();
@@ -37,7 +39,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.AUTH} replace />;
+    const search = utmParams ? `?${utmParams}` : '';
+    return <Navigate to={{ pathname: ROUTES.AUTH, search }} replace />;
   }
 
   return (

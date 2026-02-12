@@ -20,6 +20,7 @@ export interface PersonExtraInfo {
   job: string | null;
   education: string | null;
   region: string | null;
+  shortNote: string | null;
 }
 
 export interface PersonAttribute {
@@ -94,6 +95,7 @@ export function createPersonSubject(
           job: null,
           education: null,
           region: null,
+          shortNote: null,
         },
       } satisfies PersonAttribute,
       memo: null,

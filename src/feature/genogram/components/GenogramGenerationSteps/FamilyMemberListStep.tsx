@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+
 import type {
   AIGenogramOutput,
   AISubject,
@@ -84,6 +86,8 @@ export function FamilyMemberListStep({
   );
 
   const handleAddSubject = useCallback(() => {
+    trackEvent('genogram_family_member_add');
+
     const maxId = Math.max(0, ...data.subjects.map((s) => s.id));
     const newSubject: AISubject = {
       id: maxId + 1,
@@ -101,6 +105,8 @@ export function FamilyMemberListStep({
 
   const handleDeleteSubject = useCallback(
     (id: number) => {
+      trackEvent('genogram_family_member_delete');
+
       // 해당 구성원과 관련된 모든 관계도 제거
       const newSubjects = data.subjects.filter((s) => s.id !== id);
       const newPartners = data.partners.filter(
@@ -369,6 +375,8 @@ export function FamilyMemberListStep({
 
   const handleRelationDelete = useCallback(
     (index: number) => {
+      trackEvent('genogram_relation_delete');
+
       const newList = relationDataList.filter((_, i) => i !== index);
       const { relations, influences } = convertToSeparateArrays(newList);
       onChange({ ...data, relations, influences });
@@ -378,6 +386,8 @@ export function FamilyMemberListStep({
 
   const handleAddRelation = useCallback(() => {
     if (data.subjects.length < 2) return;
+
+    trackEvent('genogram_relation_add');
 
     const maxOrder =
       relationDataList.length > 0
@@ -528,6 +538,10 @@ export function FamilyMemberListStep({
         hasUnsavedChanges={hasUnsavedChanges}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={() => {
+          trackEvent('genogram_generation_confirm_click', {
+            member_count: data.subjects.length,
+            relation_count: relationDataList.length,
+          });
           setShowConfirmModal(false);
           onNext();
         }}

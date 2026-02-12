@@ -140,12 +140,22 @@ export class UpdateConnectionEntityCommand extends BaseCommand {
     }
 
     const newEntity = { ...conn.entity };
-    if (this.updates.attribute) {
+
+    // type 변경 시 완전 교체 (Relation_Line ↔ Influence_Line 변환 등)
+    if (this.updates.type !== undefined) {
+      newEntity.type = this.updates.type;
+      // type이 변경되면 attribute도 완전 교체 (병합하지 않음)
+      if (this.updates.attribute) {
+        newEntity.attribute = this.updates.attribute;
+      }
+    } else if (this.updates.attribute) {
+      // type 변경 없이 attribute만 업데이트하는 경우 병합
       newEntity.attribute = {
         ...conn.entity.attribute,
         ...this.updates.attribute,
       };
     }
+
     if (this.updates.memo !== undefined) {
       newEntity.memo = this.updates.memo;
     }

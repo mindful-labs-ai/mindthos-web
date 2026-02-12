@@ -307,7 +307,7 @@ const VISIBILITY_ITEMS: { key: keyof Visibility; label: string }[] = [
   { key: 'groupLine', label: '그룹선' },
   { key: 'birthDate', label: '출생일' },
   { key: 'grid', label: '배경 격자' },
-  { key: 'extraInfo', label: '인적 사항' },
+  { key: 'extraInfo', label: '부가 설명' },
   { key: 'deathDate', label: '사망일' },
   { key: 'illness', label: '임상적 상태' },
   { key: 'memo', label: '텍스트' },

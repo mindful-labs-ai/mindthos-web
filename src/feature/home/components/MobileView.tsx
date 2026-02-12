@@ -1,11 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
-import {
-  createSearchParams,
-  Link,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+import { createSearchParams, Link, useSearchParams } from 'react-router-dom';
 
 import { Button, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
@@ -36,6 +31,7 @@ import {
 } from '@/feature/settings/utils/planUtils';
 import { trackEvent } from '@/lib/mixpanel';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   ChevronLeftIcon,
   UserIcon,
@@ -61,7 +57,7 @@ type MobileViewDepth = 'home' | 'upload' | 'config' | 'setting';
 
 const MobileView = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const { navigateWithUtm, setSearchParamsWithUtm } = useNavigateWithUtm();
   const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const userName = useAuthStore((state) => state.userName);
@@ -77,19 +73,19 @@ const MobileView = () => {
       ? depthParam
       : 'home';
 
-  // depth 변경 함수 (URL 업데이트, UTM 파라미터 유지)
+  // depth 변경 함수 (URL 업데이트, UTM 파라미터 자동 유지)
   const setDepth = useCallback(
     (newDepth: MobileViewDepth) => {
-      const newParams = new URLSearchParams(searchParams);
-      if (newDepth === 'home') {
-        newParams.delete('depth');
-      } else {
-        newParams.set('depth', newDepth);
-      }
-      const queryString = newParams.toString();
-      navigate(queryString ? `/?${queryString}` : '/', { replace: false });
+      setSearchParamsWithUtm((prev) => {
+        if (newDepth === 'home') {
+          prev.delete('depth');
+        } else {
+          prev.set('depth', newDepth);
+        }
+        return prev;
+      });
     },
-    [navigate, searchParams]
+    [setSearchParamsWithUtm]
   );
 
   // 크레딧 정보
@@ -242,7 +238,7 @@ const MobileView = () => {
       setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
       setFileConfigs([]);
     }
-    navigate(-1);
+    navigateWithUtm(-1);
   };
 
   // 로그아웃
