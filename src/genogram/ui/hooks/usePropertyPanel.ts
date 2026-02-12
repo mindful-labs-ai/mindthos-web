@@ -29,9 +29,9 @@ export const usePropertyPanel = ({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
   );
-  const shortNoteDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
-  );
+  const shortNoteDebounceRef = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
 
   const isPerson = subject?.entity.type === SubjectType.Person;
   const isAnimal = subject?.entity.type === SubjectType.Animal;
@@ -149,7 +149,8 @@ export const usePropertyPanel = ({
       const val = e.target.value;
       setShortNoteValue(val);
 
-      if (shortNoteDebounceRef.current) clearTimeout(shortNoteDebounceRef.current);
+      if (shortNoteDebounceRef.current)
+        clearTimeout(shortNoteDebounceRef.current);
       shortNoteDebounceRef.current = setTimeout(() => {
         if (!subject || !attr) return;
         onUpdate(subject.id, {

@@ -410,9 +410,25 @@ export const SideGenogramIcon: React.FC<CustomIconProps> = ({
       strokeWidth="3"
       mask="url(#side-genogram-mask)"
     />
-    <circle cx="18.9444" cy="5.44444" r="3.69444" stroke="currentColor" strokeWidth="1.5" />
-    <circle cx="11.9444" cy="18.4444" r="3.69444" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9" stroke="currentColor" strokeWidth="1.5" />
+    <circle
+      cx="18.9444"
+      cy="5.44444"
+      r="3.69444"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <circle
+      cx="11.9444"
+      cy="18.4444"
+      r="3.69444"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
     <path d="M12 12.1094V14.3316" stroke="currentColor" strokeWidth="1.5" />
   </svg>
 );
@@ -539,9 +555,25 @@ export const GenogramIcon: React.FC<CustomIconProps> = ({
       strokeWidth="3"
       mask="url(#path-1-inside-1_5497_51436)"
     />
-    <circle cx="18.9444" cy="5.44444" r="3.69444" stroke="currentColor" strokeWidth="1.5" />
-    <circle cx="11.9444" cy="18.4444" r="3.69444" stroke="currentColor" strokeWidth="1.5" />
-    <path d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9" stroke="currentColor" strokeWidth="1.5" />
+    <circle
+      cx="18.9444"
+      cy="5.44444"
+      r="3.69444"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <circle
+      cx="11.9444"
+      cy="18.4444"
+      r="3.69444"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
+    <path
+      d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    />
     <path d="M12 12.1094V14.3316" stroke="currentColor" strokeWidth="1.5" />
   </svg>
 );

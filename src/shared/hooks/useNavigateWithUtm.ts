@@ -102,7 +102,10 @@ export function useNavigateWithUtm() {
         : newParams.toString();
 
       navigate(
-        { pathname: location.pathname, search: mergedSearch ? `?${mergedSearch}` : '' },
+        {
+          pathname: location.pathname,
+          search: mergedSearch ? `?${mergedSearch}` : '',
+        },
         options
       );
     },

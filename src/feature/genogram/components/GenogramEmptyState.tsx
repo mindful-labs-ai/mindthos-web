@@ -23,7 +23,9 @@ export function GenogramEmptyState({
   };
 
   const handleStartFromRecords = () => {
-    trackEvent('genogram_empty_state_click', { action: 'generate_from_records' });
+    trackEvent('genogram_empty_state_click', {
+      action: 'generate_from_records',
+    });
     onStartFromRecords?.();
   };
 

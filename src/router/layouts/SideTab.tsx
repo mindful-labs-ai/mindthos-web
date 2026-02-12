@@ -288,8 +288,8 @@ export const SideTab = () => {
                 isActive={activeNav === item.value}
                 onSelect={handleNavSelect}
                 onDisabledClick={() =>
-                    openModal('comingSoon', { source: `sidebar_${item.value}` })
-                  }
+                  openModal('comingSoon', { source: `sidebar_${item.value}` })
+                }
               />
             ))}
           </nav>
@@ -323,8 +323,8 @@ export const SideTab = () => {
                 isActive={activeNav === item.value}
                 onSelect={handleNavSelect}
                 onDisabledClick={() =>
-                    openModal('comingSoon', { source: `sidebar_${item.value}` })
-                  }
+                  openModal('comingSoon', { source: `sidebar_${item.value}` })
+                }
               />
             ))}
           </nav>

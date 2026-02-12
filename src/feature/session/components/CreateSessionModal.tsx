@@ -112,7 +112,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           description: '축어록 및 상담노트가 성공적으로 작성되었습니다.',
           action: {
             label: '확인하기',
-            onClick: () => navigateWithUtm(getSessionDetailRoute(data.session_id)),
+            onClick: () =>
+              navigateWithUtm(getSessionDetailRoute(data.session_id)),
           },
           duration: 10000,
         });

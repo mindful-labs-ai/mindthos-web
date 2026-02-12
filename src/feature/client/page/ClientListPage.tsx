@@ -64,9 +64,13 @@ export const ClientListPage: React.FC = () => {
 
   const handleClientClick = (client: Client) => {
     if (checkIsTutorialActive(2, 2) && client.id === dummyClient.id) {
-      handleTutorialAction(() => navigateWithUtm(getClientDetailRoute(client.id)), 2, {
-        targetLevel: 2,
-      });
+      handleTutorialAction(
+        () => navigateWithUtm(getClientDetailRoute(client.id)),
+        2,
+        {
+          targetLevel: 2,
+        }
+      );
     } else {
       navigateWithUtm(getClientDetailRoute(client.id));
     }

@@ -668,7 +668,8 @@ export class GenogramEditor {
         entity: {
           type: ConnectionType.Relation_Line,
           attribute: {
-            status: targetStatus as (typeof RelationStatus)[keyof typeof RelationStatus],
+            status:
+              targetStatus as (typeof RelationStatus)[keyof typeof RelationStatus],
             subjects: [subjectId1, subjectId2],
           },
           memo,

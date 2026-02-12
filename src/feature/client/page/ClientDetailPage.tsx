@@ -377,7 +377,9 @@ export const ClientDetailPage: React.FC = () => {
                         record={record}
                         isReadOnly={isReadOnly}
                         onClick={(record) =>
-                          navigateWithUtm(getSessionDetailRoute(record.session_id))
+                          navigateWithUtm(
+                            getSessionDetailRoute(record.session_id)
+                          )
                         }
                       />
                     ))}
