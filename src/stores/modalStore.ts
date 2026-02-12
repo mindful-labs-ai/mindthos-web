@@ -11,7 +11,8 @@ export type ModalType =
   | 'userEdit'
   | 'missionPanel'
   | 'planChange'
-  | 'createMultiSession';
+  | 'createMultiSession'
+  | 'comingSoon';
 
 /**
  * 모달별 데이터 타입 정의
@@ -23,6 +24,7 @@ export interface ModalData {
   missionPanel: undefined;
   planChange: undefined;
   createMultiSession: undefined;
+  comingSoon: { source: string };
 }
 
 interface ModalState {
