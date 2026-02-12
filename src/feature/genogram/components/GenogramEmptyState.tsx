@@ -1,3 +1,5 @@
+import { trackEvent } from '@/lib/mixpanel';
+
 import { GenogramLoadingAnimationLoop } from './GenogramLoadingAnimation';
 
 interface GenogramEmptyStateProps {
@@ -15,6 +17,16 @@ export function GenogramEmptyState({
 }: GenogramEmptyStateProps) {
   const canGenerateFromRecords = hasRecords && onStartFromRecords;
 
+  const handleStartEmpty = () => {
+    trackEvent('genogram_empty_state_click', { action: 'draw_manually' });
+    onStartEmpty();
+  };
+
+  const handleStartFromRecords = () => {
+    trackEvent('genogram_empty_state_click', { action: 'generate_from_records' });
+    onStartFromRecords?.();
+  };
+
   const genogramButtonStyle =
     'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-white px-6 pb-[36px] shadow-sm transition-all hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50';
 
@@ -23,7 +35,7 @@ export function GenogramEmptyState({
       <div className="flex gap-6">
         {/* 직접 가계도 그리기 */}
         <button
-          onClick={onStartEmpty}
+          onClick={handleStartEmpty}
           disabled={isGenerating}
           className={genogramButtonStyle}
         >
@@ -35,7 +47,7 @@ export function GenogramEmptyState({
 
         {/* 상담기록으로 자동 생성하기 */}
         <button
-          onClick={canGenerateFromRecords ? onStartFromRecords : undefined}
+          onClick={canGenerateFromRecords ? handleStartFromRecords : undefined}
           disabled={!canGenerateFromRecords || isGenerating}
           className={genogramButtonStyle}
         >
