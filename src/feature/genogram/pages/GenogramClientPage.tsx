@@ -394,37 +394,35 @@ export function GenogramClientPage() {
             hideToolbar
           />
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-            <div className="flex h-[200px] w-[280px] flex-col justify-center rounded-lg border border-dashed border-border bg-white p-8 text-center backdrop-blur-sm">
+            <div className="flex h-[200px] w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-white p-8 text-center backdrop-blur-sm">
               <p className="text-lg font-medium text-fg-muted">
                 클라이언트를 선택해주세요
               </p>
             </div>
           </div>
         </>
+      ) : steps.isOpen ? (
+        // confirm, analyze, render 단계: 스텝 UI (hasData 여부와 무관하게 우선)
+        <GenogramGenerationSteps
+          currentStep={steps.currentStep}
+          isLoading={steps.isLoading}
+          error={steps.error}
+          aiOutput={steps.aiOutput}
+          clientName={selectedClient?.name}
+          isRenderPending={false}
+          onConfirm={handleConfirm}
+          onAiOutputChange={steps.updateAiOutput}
+          onNextToRender={handleNextToRender}
+          onComplete={handleStepsComplete}
+          onCancel={steps.reset}
+        />
       ) : !hasData ? (
-        steps.isOpen ? (
-          // confirm, analyze, render 단계: 스텝 UI
-          <GenogramGenerationSteps
-            currentStep={steps.currentStep}
-            isLoading={steps.isLoading}
-            error={steps.error}
-            aiOutput={steps.aiOutput}
-            clientName={selectedClient?.name}
-            isRenderPending={false}
-            onConfirm={handleConfirm}
-            onAiOutputChange={steps.updateAiOutput}
-            onNextToRender={handleNextToRender}
-            onComplete={handleStepsComplete}
-            onCancel={steps.reset}
-          />
-        ) : (
-          <GenogramEmptyState
-            onStartEmpty={handleStartEmpty}
-            onStartFromRecords={handleStartFromRecords}
-            isGenerating={false}
-            hasRecords={hasRecords}
-          />
-        )
+        <GenogramEmptyState
+          onStartEmpty={handleStartEmpty}
+          onStartFromRecords={handleStartFromRecords}
+          isGenerating={false}
+          hasRecords={hasRecords}
+        />
       ) : (
         <GenogramPage
           key={clientId}
@@ -434,6 +432,21 @@ export function GenogramClientPage() {
             onChange(json);
             updateGenogramState();
           }}
+          emptyStateActions={
+            hasRecords && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-fg-muted">
+                  혹시 처음부터 그리는게 어렵나요?
+                </span>
+                <button
+                  onClick={handleStartFromRecords}
+                  className="rounded-md border border-border bg-white px-3 py-1.5 font-medium text-fg transition-colors hover:bg-surface-strong"
+                >
+                  AI로 자동 생성하기
+                </button>
+              </div>
+            )
+          }
         />
       )}
 

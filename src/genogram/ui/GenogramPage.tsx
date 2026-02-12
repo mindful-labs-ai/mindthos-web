@@ -73,6 +73,8 @@ export interface GenogramPageProps {
   onChange?: (json: string) => void;
   /** 하단 툴바 숨김 여부 */
   hideToolbar?: boolean;
+  /** 빈 상태 패널 하단에 표시할 커스텀 액션 */
+  emptyStateActions?: React.ReactNode;
 }
 
 export interface GenogramPageHandle {
@@ -699,7 +701,9 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
           )}
 
           {/* 빈 상태 안내 */}
-          {nodes.length === 0 && <EmptyStatePanel />}
+          {nodes.length === 0 && (
+            <EmptyStatePanel actions={props.emptyStateActions} />
+          )}
 
           {/* 클릭 기반 연결 미리보기 선 */}
           {connectionPreview && (
