@@ -33,6 +33,7 @@ export interface PersonNodeData {
   isSelected?: boolean;
   lifeSpanLabel?: string | null;
   detailTexts?: string[];
+  shortNote?: string | null;
   illness?: Illness;
   fetusStatus?: (typeof FetusStatus)[keyof typeof FetusStatus];
   sizePx?: number;
@@ -127,6 +128,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
     illness,
     lifeSpanLabel,
     detailTexts,
+    shortNote,
   } = nodeData;
   const S = nodeData.sizePx ?? DEFAULT_NODE_SIZE;
   const haloSize = S + 48;
@@ -744,14 +746,14 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
         </div>
       )}
 
-      {/* 오른쪽: 상세정보 */}
+      {/* 오른쪽: 상세정보 (수직 중앙 고정) */}
       {hasDetail && (
         <div
           className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-normal italic text-fg"
           style={{
-            fontSize: FONT_SIZE_DETAIL,
             left: S + 8,
             color: textColor,
+            fontSize: FONT_SIZE_DETAIL,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
@@ -759,6 +761,26 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
           {detailTexts.map((text) => (
             <div key={text}>{text}</div>
           ))}
+        </div>
+      )}
+
+      {/* 오른쪽 하단: 짧은 메모 (상세정보 아래로 확장) */}
+      {shortNote && (
+        <div
+          className="absolute whitespace-normal font-normal italic text-fg"
+          style={{
+            left: S + 8,
+            top: hasDetail
+              ? `calc(50% + ${(detailTexts.length * 20) / 2 + 4}px)`
+              : '50%',
+            color: textColor,
+            fontSize: FONT_SIZE_DETAIL - 2,
+            maxWidth: 120,
+            textShadow:
+              '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
+          }}
+        >
+          {shortNote}
         </div>
       )}
 

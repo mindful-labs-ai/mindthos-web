@@ -87,7 +87,7 @@ export const NODE_SIZE_ITEMS = Object.entries(NODE_SIZE_LABELS).map(
 export const CONNECTION_TYPE_LABELS: Record<string, string> = {
   [ConnectionType.Partner_Line]: '파트너선',
   [ConnectionType.Relation_Line]: '관계선',
-  [ConnectionType.Influence_Line]: '영향선',
+  [ConnectionType.Influence_Line]: '관계선',
   [ConnectionType.Children_Parents_Line]: '부모-자녀선',
   [ConnectionType.Group_Line]: '그룹선',
 };
@@ -112,12 +112,12 @@ export const PARTNER_STATUS_ITEMS = Object.entries(PARTNER_STATUS_LABELS).map(
 
 // 관계 상태 라벨
 export const RELATION_STATUS_LABELS: Record<string, string> = {
-  [RelationStatus.Connected]: '친밀',
-  [RelationStatus.Close]: '밀착',
+  [RelationStatus.Connected]: '연결',
+  [RelationStatus.Close]: '친밀',
   [RelationStatus.Fused]: '융합',
   [RelationStatus.Distant]: '소원',
   [RelationStatus.Hostile]: '갈등',
-  [RelationStatus.Close_Hostile]: '밀착-갈등',
+  [RelationStatus.Close_Hostile]: '친밀-갈등',
   [RelationStatus.Fused_Hostile]: '융합-갈등',
   [RelationStatus.Cutoff]: '단절됨',
   [RelationStatus.Cutoff_Repaired]: '단절-회복',
@@ -140,16 +140,22 @@ export const INFLUENCE_STATUS_ITEMS = Object.entries(
   INFLUENCE_STATUS_LABELS
 ).map(([value, label]) => ({ value, label }));
 
+/** 관계선 + 영향선 통합 드롭다운 아이템 (상태 선택 시 ConnectionType도 변환) */
+export const RELATION_INFLUENCE_STATUS_ITEMS = [
+  ...RELATION_STATUS_ITEMS,
+  ...INFLUENCE_STATUS_ITEMS,
+];
+
 // 부모-자녀 상태 라벨
 export const PARENT_CHILD_STATUS_LABELS: Record<string, string> = {
   [ParentChildStatus.Biological_Child]: '친자녀',
-  [ParentChildStatus.Miscarriage]: '유산',
-  [ParentChildStatus.Abortion]: '낙태',
-  [ParentChildStatus.Pregnancy]: '임신',
-  [ParentChildStatus.Twins]: '쌍둥이',
-  [ParentChildStatus.Identical_Twins]: '일란성 쌍둥이',
   [ParentChildStatus.Adopted_Child]: '입양자녀',
   [ParentChildStatus.Foster_Child]: '위탁자녀',
+  [ParentChildStatus.Twins]: '쌍둥이',
+  [ParentChildStatus.Identical_Twins]: '일란성 쌍둥이',
+  [ParentChildStatus.Pregnancy]: '임신',
+  [ParentChildStatus.Abortion]: '낙태',
+  [ParentChildStatus.Miscarriage]: '유산',
 };
 
 export const PARENT_CHILD_STATUS_ITEMS = Object.entries(

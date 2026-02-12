@@ -24,8 +24,12 @@ export const usePropertyPanel = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
   const [memoValue, setMemoValue] = useState('');
+  const [shortNoteValue, setShortNoteValue] = useState('');
   const nameInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
+  const shortNoteDebounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined
   );
 
@@ -44,6 +48,7 @@ export const usePropertyPanel = ({
     if (subject) {
       setNameValue(attr?.name ?? '');
       setMemoValue(subject.entity.memo ?? '');
+      setShortNoteValue(attr?.extraInfo?.shortNote ?? '');
       setIsEditingName(false);
     }
   }, [subject?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -138,6 +143,29 @@ export const usePropertyPanel = ({
     [subject, onUpdate]
   );
 
+  // 짧은 메모 업데이트 (debounced)
+  const handleShortNoteChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const val = e.target.value;
+      setShortNoteValue(val);
+
+      if (shortNoteDebounceRef.current) clearTimeout(shortNoteDebounceRef.current);
+      shortNoteDebounceRef.current = setTimeout(() => {
+        if (!subject || !attr) return;
+        onUpdate(subject.id, {
+          entity: {
+            ...subject.entity,
+            attribute: {
+              ...attr,
+              extraInfo: { ...attr.extraInfo, shortNote: val || null },
+            },
+          },
+        });
+      }, 300);
+    },
+    [subject, attr, onUpdate]
+  );
+
   // style 업데이트 헬퍼
   const updateStyle = useCallback(
     (field: keyof SubjectStyle, value: unknown) => {
@@ -170,6 +198,7 @@ export const usePropertyPanel = ({
     nameValue,
     setNameValue,
     memoValue,
+    shortNoteValue,
     nameInputRef,
     updateAttribute,
     updateGenderOrType,
@@ -177,6 +206,7 @@ export const usePropertyPanel = ({
     updateExtraInfo,
     updateStyle,
     handleMemoChange,
+    handleShortNoteChange,
     commitName,
   };
 };
