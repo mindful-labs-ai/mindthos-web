@@ -58,9 +58,13 @@ export function useGenogramSteps(): UseGenogramStepsReturn {
     setEditedJson('');
   }, []);
 
-  // 생성 중 브라우저 새로고침/이탈 방지
+  // 이탈 방지 조건: 로딩 중 또는 analyze 단계에서 데이터가 있을 때
+  const shouldBlockNavigation =
+    isLoading || (currentStep === 'analyze' && aiOutput !== null);
+
+  // 브라우저 새로고침/이탈 방지
   useEffect(() => {
-    if (!isLoading) return;
+    if (!shouldBlockNavigation) return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -69,10 +73,10 @@ export function useGenogramSteps(): UseGenogramStepsReturn {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isLoading]);
+  }, [shouldBlockNavigation]);
 
-  // 생성 중 라우팅 이동/뒤로가기 방지
-  const blocker = useBlocker(isLoading);
+  // 라우팅 이동/뒤로가기 방지
+  const blocker = useBlocker(shouldBlockNavigation);
 
   useEffect(() => {
     if (blocker.state === 'blocked') {
