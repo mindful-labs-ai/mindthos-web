@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+import { useBlocker } from 'react-router-dom';
 
 import type { AIGenogramOutput } from '../utils/aiJsonConverter';
 
@@ -55,6 +57,35 @@ export function useGenogramSteps(): UseGenogramStepsReturn {
     setAiOutput(null);
     setEditedJson('');
   }, []);
+
+  // 생성 중 브라우저 새로고침/이탈 방지
+  useEffect(() => {
+    if (!isLoading) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isLoading]);
+
+  // 생성 중 라우팅 이동/뒤로가기 방지
+  const blocker = useBlocker(isLoading);
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      const confirmed = window.confirm(
+        '가계도 생성 중입니다. 페이지를 떠나시겠습니까?'
+      );
+      if (confirmed) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
 
   // aiOutput과 editedJson을 동시에 업데이트 (카드 UI에서 사용)
   const updateAiOutput = useCallback((output: AIGenogramOutput) => {

@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { useMutation } from '@tanstack/react-query';
 
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
@@ -44,6 +46,19 @@ export function useGenogramGeneration(options?: UseGenogramGenerationOptions) {
       options?.onError?.(error);
     },
   });
+
+  // 생성 중 브라우저 새로고침/이탈 방지
+  useEffect(() => {
+    if (!mutation.isPending) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      return '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [mutation.isPending]);
 
   return {
     generate: mutation.mutate,
