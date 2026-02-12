@@ -18,6 +18,8 @@ export const ROUTES = {
   ERROR_TEST: '/error-test',
   NOT_FOUND: '*',
   GENOGRAM: '/genogram',
+  CALENDAR: '/calendar',
+  ANALYSIS: '/analysis',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>
