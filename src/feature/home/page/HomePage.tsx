@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import { Spotlight, Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
 import { useToast } from '@/components/ui/composites/Toast';
@@ -10,7 +8,6 @@ import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
 import { NewRecordButtonTooltip } from '@/feature/onboarding/components/TutorialTooltips';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -27,6 +24,7 @@ import { getSpeakerDisplayName } from '@/feature/session/utils/speakerUtils';
 import { getTranscriptData } from '@/feature/session/utils/transcriptParser';
 import { ROUTES, getSessionDetailRoute } from '@/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
@@ -38,14 +36,12 @@ import { GreetingSection } from '../components/GreetingSection';
 import MobileView from '../components/MobileView';
 
 const HomePage = () => {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
   const user = useAuthStore((state) => state.user);
   const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
     React.useState(true);
-  const [isCreateSessionModalOpen, setIsCreateSessionModalOpen] =
-    React.useState(false);
 
   const { isMobile } = useDevice();
 
@@ -112,19 +108,19 @@ const HomePage = () => {
 
   const handleUploadClick = () => {
     // 바로 모달 열기 (오디오 파일 업로드만)
-    setIsCreateSessionModalOpen(true);
+    openModal('createMultiSession');
   };
 
   const handleAddCustomerClick = () => {
-    navigate(ROUTES.CLIENTS);
+    navigateWithUtm(ROUTES.CLIENTS);
   };
 
   const handleViewAllRecordsClick = () => {
-    navigate(ROUTES.SESSIONS);
+    navigateWithUtm(ROUTES.SESSIONS);
   };
 
   const handleSessionClick = (record: SessionRecord) => {
-    navigate(getSessionDetailRoute(record.session_id));
+    navigateWithUtm(getSessionDetailRoute(record.session_id));
   };
 
   // 전사 내용을 SessionRecord용 텍스트로 변환 (처음 몇 줄만)
@@ -362,12 +358,6 @@ const HomePage = () => {
           </div>
         )}
       </div>
-
-      {/* 다중 세션 생성 모달 */}
-      <CreateMultiSessionModal
-        open={isCreateSessionModalOpen}
-        onOpenChange={setIsCreateSessionModalOpen}
-      />
     </div>
   );
 };

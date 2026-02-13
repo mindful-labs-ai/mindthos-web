@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { Tab } from '@/components/ui/atoms/Tab';
 import { Spotlight } from '@/components/ui/composites/Spotlight';
@@ -23,6 +23,7 @@ import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
 import { trackError } from '@/lib/mixpanel';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
@@ -59,7 +60,7 @@ import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
 export const SessionDetailPage: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const {
@@ -464,9 +465,9 @@ export const SessionDetailPage: React.FC = () => {
         description: '상담 데이터를 찾을 수 없습니다.',
         duration: 3000,
       });
-      navigate('/sessions');
+      navigateWithUtm('/sessions');
     }
-  }, [isLoading, session, sessionId, navigate]);
+  }, [isLoading, session, sessionId, navigateWithUtm, toast]);
 
   // 편집 상태를 sessionStore에 동기화 (사이드바 세션 이동 시 확인용)
   const setIsEditingGlobal = useSessionStore((state) => state.setIsEditing);

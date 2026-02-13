@@ -13,12 +13,15 @@ interface AddClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Client | null;
+  /** 클라이언트 생성 완료 시 콜백 (생성된 클라이언트 ID 전달) */
+  onClientCreated?: (clientId: string) => void;
 }
 
 export const AddClientModal: React.FC<AddClientModalProps> = ({
   open,
   onOpenChange,
   initialData = null,
+  onClientCreated,
 }) => {
   const isEditMode = !!initialData;
   const form = useAddClientForm(initialData);
@@ -29,8 +32,12 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const success = await form.handleSubmit(e);
-    if (success) {
+    const result = await form.handleSubmit(e);
+    if (result) {
+      // 생성 모드이고 클라이언트 ID가 있으면 콜백 호출
+      if (!isEditMode && typeof result === 'string' && onClientCreated) {
+        onClientCreated(result);
+      }
       handleClose();
     }
   };

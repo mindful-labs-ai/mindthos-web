@@ -1,5 +1,6 @@
 import React from 'react';
 
+// ICON 변경: Check, Gift는 Lucide 직접 사용 중
 import { Check, Gift } from 'lucide-react';
 
 import { Button } from '@/components/ui/atoms/Button';
