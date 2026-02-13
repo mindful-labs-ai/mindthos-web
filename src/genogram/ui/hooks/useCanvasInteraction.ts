@@ -12,6 +12,9 @@ import { ToolMode } from '@/genogram/core/types/enums';
 
 import { snapToDotCenter } from '../utils/snap';
 
+// 파트너선 중심점 Y 오프셋 (파트너 노드 중 Y가 큰 값 기준으로 오프셋 적용)
+const PARTNER_LINE_Y_OFFSET = 70;
+
 export interface UseCanvasInteractionOptions {
   toolMode: (typeof ToolMode)[keyof typeof ToolMode];
   addPerson: (
@@ -52,6 +55,8 @@ export interface UseCanvasInteractionOptions {
   onAnnotationCreate?: (position: { x: number; y: number }) => void;
   /** Multi_Select_Tool에서 노드 클릭 시 toggle select */
   onMultiSelectToggle?: (nodeId: string) => void;
+  /** 현재 엣지 목록 (자녀 모드에서 파트너선 중심 계산용) */
+  edges?: Edge[];
 }
 
 /** 연결 미리보기에 필요한 정보 */
@@ -92,6 +97,7 @@ export const useCanvasInteraction = ({
   onFabComplete,
   onAnnotationCreate,
   onMultiSelectToggle,
+  edges = [],
 }: UseCanvasInteractionOptions) => {
   const { screenToFlowPosition, flowToScreenPosition, getZoom, getNode } =
     useReactFlow();
@@ -122,6 +128,34 @@ export const useCanvasInteraction = ({
     [getNode]
   );
 
+  // 엣지(파트너선) 중심 좌표 가져오기
+  const getEdgeCenter = useCallback(
+    (edgeId: string): { x: number; y: number } | null => {
+      const edge = edges.find((e) => e.id === edgeId);
+      if (!edge) return null;
+      const sourceNode = getNode(edge.source);
+      const targetNode = getNode(edge.target);
+      if (!sourceNode || !targetNode) return null;
+      return {
+        x: (sourceNode.position.x + targetNode.position.x) / 2,
+        y: Math.max(sourceNode.position.y, targetNode.position.y) + PARTNER_LINE_Y_OFFSET,
+      };
+    },
+    [edges, getNode]
+  );
+
+  // 소스 위치 가져오기 (노드 또는 엣지)
+  const getSourcePosition = useCallback(
+    (sourceId: string): { x: number; y: number } | null => {
+      // 먼저 노드로 시도
+      const nodePos = getNodeCenter(sourceId);
+      if (nodePos) return nodePos;
+      // 노드가 없으면 엣지로 시도
+      return getEdgeCenter(sourceId);
+    },
+    [getNodeCenter, getEdgeCenter]
+  );
+
   // 마우스 이동 핸들러
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -144,7 +178,8 @@ export const useCanvasInteraction = ({
 
       // connection preview line
       if (isConnectionMode && effectiveSourceId) {
-        const sourcePos = getNodeCenter(effectiveSourceId);
+        // 노드 또는 엣지(파트너선) 중심 좌표 가져오기
+        const sourcePos = getSourcePosition(effectiveSourceId);
         if (!sourcePos) return;
 
         const mouseFlowPos = screenToFlowPosition({
@@ -175,7 +210,7 @@ export const useCanvasInteraction = ({
       screenToFlowPosition,
       flowToScreenPosition,
       getZoom,
-      getNodeCenter,
+      getSourcePosition,
     ]
   );
 

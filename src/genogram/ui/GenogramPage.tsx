@@ -229,7 +229,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       try {
         const dataUrl = await toPng(paneEl, {
           backgroundColor: undefined,
-          pixelRatio: 4,
+          pixelRatio: 2,
         });
 
         // 원래 뷰포트로 복원
@@ -416,6 +416,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       }, [setToolMode]),
       onAnnotationCreate: addAnnotation,
       onMultiSelectToggle: deselectNode,
+      edges,
     });
 
     // 속성 패널 닫기
