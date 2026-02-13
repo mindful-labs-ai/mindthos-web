@@ -775,7 +775,8 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               : '50%',
             color: textColor,
             fontSize: FONT_SIZE_DETAIL - 2,
-            maxWidth: 120,
+            width: 160,
+            maxWidth: 160,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
