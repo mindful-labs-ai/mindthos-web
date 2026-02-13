@@ -13,10 +13,10 @@ export interface ExportOptions {
 }
 
 // 워터마크 타일 설정
-const WATERMARK_TILE_WIDTH = 1200;
+const WATERMARK_TILE_WIDTH = 400;
 const WATERMARK_ROTATION_DEG = -30;
-const WATERMARK_GAP_X = 750;
-const WATERMARK_GAP_Y = 500;
+const WATERMARK_GAP_X = 300;
+const WATERMARK_GAP_Y = 200;
 
 /**
  * ReactFlow 컨테이너를 캡처하여 이미지 데이터 URL로 반환

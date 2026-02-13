@@ -48,7 +48,7 @@ export function GenogramClientPage() {
   const { hasRecords } = useClientHasRecords(clientId ?? '');
 
   // 클라이언트의 family_summary 조회 (AI 분석 결과)
-  const { familySummary, isLoading: isFamilySummaryLoading } =
+  const { familySummary: _familySummary, isLoading: isFamilySummaryLoading } =
     useClientFamilySummary(clientId ?? '');
 
   // 스텝 상태
@@ -87,6 +87,9 @@ export function GenogramClientPage() {
 
   // 이미지 내보내기 상태
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // 빈 캔버스에서 AI 생성 시작 여부 (forceRefresh용)
+  const [shouldForceRefresh, setShouldForceRefresh] = useState(false);
   const [exportImageData, setExportImageData] = useState<string | null>(null);
 
   // 가계도 안내 모달 상태
@@ -126,10 +129,14 @@ export function GenogramClientPage() {
   }, [clientId, userId, queryClient]);
 
   // AI로 가계도 생성하기 - confirm 단계로 시작
-  const handleStartFromRecords = useCallback(() => {
-    if (!clientId) return;
-    steps.open('confirm');
-  }, [clientId, steps]);
+  const handleStartFromRecords = useCallback(
+    (forceRefresh = false) => {
+      if (!clientId) return;
+      setShouldForceRefresh(forceRefresh);
+      steps.open('confirm');
+    },
+    [clientId, steps]
+  );
 
   // confirm 단계에서 확인 버튼 클릭 시 - analyze 단계로 이동 + API 호출
   const handleConfirm = useCallback(async () => {
@@ -138,19 +145,12 @@ export function GenogramClientPage() {
     // analyze 단계로 이동
     steps.setStep('analyze');
 
-    // family_summary가 있으면 바로 사용
-    if (familySummary) {
-      steps.setAiOutput(familySummary);
-      steps.setEditedJson(JSON.stringify(familySummary, null, 2));
-      return;
-    }
-
-    // family_summary가 없으면 API 호출
+    // API 호출 (빈 캔버스에서 시작 시 forceRefresh)
     steps.setLoading(true);
     steps.setError(null);
 
     try {
-      const result = await fetchRawAIOutput(clientId);
+      const result = await fetchRawAIOutput(clientId, shouldForceRefresh);
 
       if (!result.success) {
         steps.setError(result.error.message);
@@ -165,8 +165,9 @@ export function GenogramClientPage() {
       );
     } finally {
       steps.setLoading(false);
+      setShouldForceRefresh(false);
     }
-  }, [clientId, familySummary, steps]);
+  }, [clientId, steps, shouldForceRefresh]);
 
   // 가족 구성원 분석 -> 가계도 그리기
   const handleNextToRender = useCallback(() => {
@@ -439,7 +440,7 @@ export function GenogramClientPage() {
                   혹시 처음부터 그리는게 어렵나요?
                 </span>
                 <button
-                  onClick={handleStartFromRecords}
+                  onClick={() => handleStartFromRecords(true)}
                   className="rounded-md border border-border bg-white px-3 py-1.5 font-medium text-fg transition-colors hover:bg-surface-strong"
                 >
                   AI로 자동 생성하기

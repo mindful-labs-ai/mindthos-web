@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
+import DOMPurify from 'dompurify';
+
 import { useUpdateStore, type PatchContentItem } from '@/stores/updateStore';
 
 import { Button, Modal } from './ui';
 
-/** 마크다운 볼드(**text**) -> HTML strong 태그 변환 */
+/** 마크다운 볼드(**text**) -> HTML strong 태그 변환 (sanitized) */
 const formatBold = (text: string) =>
-  text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  DOMPurify.sanitize(text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'));
 
 interface UpdateContentProps {
   item: PatchContentItem;

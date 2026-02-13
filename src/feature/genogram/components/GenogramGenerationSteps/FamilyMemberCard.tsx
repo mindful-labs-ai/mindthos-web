@@ -394,16 +394,42 @@ export function FamilyMemberCard({
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const internalScrollRef = useRef<HTMLDivElement>(null);
 
-  // 팝오버 위치 업데이트 함수
+  // 팝오버 위치 업데이트 함수 (컨테이너 경계 고려)
+  const POPOVER_WIDTH = 260;
+  const POPOVER_HEIGHT = 200; // 대략적인 팝오버 높이
+
   const updatePopoverPosition = useCallback(() => {
     if (addButtonRef.current && portalContainer) {
       const buttonRect = addButtonRef.current.getBoundingClientRect();
       const containerRect = portalContainer.getBoundingClientRect();
-      setPopoverPosition({
-        top:
-          buttonRect.bottom - containerRect.top + portalContainer.scrollTop + 8,
-        left: buttonRect.left - containerRect.left + portalContainer.scrollLeft,
-      });
+
+      let left =
+        buttonRect.left - containerRect.left + portalContainer.scrollLeft;
+      let top =
+        buttonRect.bottom - containerRect.top + portalContainer.scrollTop + 8;
+
+      // 오른쪽 경계 체크: 팝오버가 컨테이너를 벗어나면 왼쪽으로 조정
+      const rightOverflow = left + POPOVER_WIDTH - portalContainer.clientWidth;
+      if (rightOverflow > 0) {
+        left = Math.max(0, left - rightOverflow - 8);
+      }
+
+      // 하단 경계 체크: 팝오버가 컨테이너를 벗어나면 버튼 위로 표시
+      const bottomOverflow =
+        top +
+        POPOVER_HEIGHT -
+        portalContainer.scrollTop -
+        portalContainer.clientHeight;
+      if (bottomOverflow > 0) {
+        top =
+          buttonRect.top -
+          containerRect.top +
+          portalContainer.scrollTop -
+          POPOVER_HEIGHT -
+          8;
+      }
+
+      setPopoverPosition({ top, left });
     }
   }, [portalContainer]);
 
@@ -450,16 +476,8 @@ export function FamilyMemberCard({
     }
     setNewRelationType('parent');
 
-    // 버튼 위치 기준으로 팝오버 위치 계산 (컨테이너 상대 좌표)
-    if (addButtonRef.current && portalContainer) {
-      const buttonRect = addButtonRef.current.getBoundingClientRect();
-      const containerRect = portalContainer.getBoundingClientRect();
-      setPopoverPosition({
-        top:
-          buttonRect.bottom - containerRect.top + portalContainer.scrollTop + 8,
-        left: buttonRect.left - containerRect.left + portalContainer.scrollLeft,
-      });
-    }
+    // 버튼 위치 기준으로 팝오버 위치 계산 (컨테이너 경계 고려)
+    updatePopoverPosition();
 
     setShowAddPopover(true);
   };

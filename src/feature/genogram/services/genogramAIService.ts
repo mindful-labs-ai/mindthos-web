@@ -251,9 +251,10 @@ export async function generateFamilySummary(
  * 디버깅 및 테스트용
  */
 export async function fetchRawAIOutput(
-  clientId: string
+  clientId: string,
+  forceRefresh = false
 ): Promise<GenerateAIOutputResult> {
-  return fetchAIOutput(clientId);
+  return fetchAIOutput(clientId, forceRefresh);
 }
 
 /**
