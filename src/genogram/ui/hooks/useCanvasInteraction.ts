@@ -138,7 +138,9 @@ export const useCanvasInteraction = ({
       if (!sourceNode || !targetNode) return null;
       return {
         x: (sourceNode.position.x + targetNode.position.x) / 2,
-        y: Math.max(sourceNode.position.y, targetNode.position.y) + PARTNER_LINE_Y_OFFSET,
+        y:
+          Math.max(sourceNode.position.y, targetNode.position.y) +
+          PARTNER_LINE_Y_OFFSET,
       };
     },
     [edges, getNode]

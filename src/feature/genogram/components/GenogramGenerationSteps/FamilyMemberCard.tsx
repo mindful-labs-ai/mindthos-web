@@ -403,8 +403,10 @@ export function FamilyMemberCard({
       const buttonRect = addButtonRef.current.getBoundingClientRect();
       const containerRect = portalContainer.getBoundingClientRect();
 
-      let left = buttonRect.left - containerRect.left + portalContainer.scrollLeft;
-      let top = buttonRect.bottom - containerRect.top + portalContainer.scrollTop + 8;
+      let left =
+        buttonRect.left - containerRect.left + portalContainer.scrollLeft;
+      let top =
+        buttonRect.bottom - containerRect.top + portalContainer.scrollTop + 8;
 
       // 오른쪽 경계 체크: 팝오버가 컨테이너를 벗어나면 왼쪽으로 조정
       const rightOverflow = left + POPOVER_WIDTH - portalContainer.clientWidth;
@@ -413,9 +415,18 @@ export function FamilyMemberCard({
       }
 
       // 하단 경계 체크: 팝오버가 컨테이너를 벗어나면 버튼 위로 표시
-      const bottomOverflow = top + POPOVER_HEIGHT - portalContainer.scrollTop - portalContainer.clientHeight;
+      const bottomOverflow =
+        top +
+        POPOVER_HEIGHT -
+        portalContainer.scrollTop -
+        portalContainer.clientHeight;
       if (bottomOverflow > 0) {
-        top = buttonRect.top - containerRect.top + portalContainer.scrollTop - POPOVER_HEIGHT - 8;
+        top =
+          buttonRect.top -
+          containerRect.top +
+          portalContainer.scrollTop -
+          POPOVER_HEIGHT -
+          8;
       }
 
       setPopoverPosition({ top, left });
