@@ -157,8 +157,8 @@ export function AnalyzeLoadingAnimation() {
       </svg>
 
       <span className="text-center text-base text-fg-muted">
-        상담기록을 기반으로 내담자의 <br />
-        가족 구성원을 분석합니다.
+        정밀 분석 중... <br />
+        완성까지 최대 2분 정도 소요될 수 있습니다.
       </span>
 
       {/* CSS 애니메이션 정의 */}

@@ -807,8 +807,7 @@ function ConnectionSvg({ status, id }: ConnectionSvgProps) {
           d="M 0 0 L 10 5 L 0 10 z"
           fill="#ffffff"
           stroke={infColor}
-          strokeWidth={SW}
-          strokeLinejoin="round"
+          strokeWidth={SW / 2}
         />
       </marker>
     );
