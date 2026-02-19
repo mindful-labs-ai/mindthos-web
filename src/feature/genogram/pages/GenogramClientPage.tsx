@@ -213,8 +213,9 @@ export function GenogramClientPage() {
     }
   }, [steps]);
 
-  // 가족 구성원 정보 편집 -> 가계도에 적용 (edit 단계용)
-  const handleEditNextToRender = useCallback(() => {
+  // 가족 구성원 정보 편집 -> 가계도에 적용 (edit 단계용, render 단계 스킵)
+  const handleEditApply = useCallback(async () => {
+    if (!clientId || !userId) return;
     if (!steps.aiOutput) {
       steps.setError('데이터가 없습니다.');
       return;
@@ -232,14 +233,28 @@ export function GenogramClientPage() {
       });
       const canvasJson = JSON.stringify(canvasData);
 
-      preparedCanvasJsonRef.current = canvasJson;
-      originalCanvasRef.current = null; // 사용 후 초기화
-      isEditModeRef.current = true; // 애니메이션 스킵을 위해 edit 모드 표시
-      steps.setStep('render');
+      // 1. 캔버스 데이터를 genograms 테이블에 저장
+      await genogramService.save(clientId, userId, canvasJson);
+
+      // 2. AI output을 clients.family_summary에 저장
+      await saveFamilySummary(clientId, steps.aiOutput);
+      queryClient.setQueryData(
+        ['clientFamilySummary', clientId],
+        steps.aiOutput
+      );
+
+      // 쿼리 캐시 업데이트 → hasData가 true가 됨
+      queryClient.setQueryData(['genogram', clientId], canvasJson);
+
+      // ref 초기화
+      originalCanvasRef.current = null;
+
+      // 상태 리셋 → 캔버스로 바로 전환
+      steps.reset();
     } catch {
       steps.setError('JSON 변환 중 오류가 발생했습니다.');
     }
-  }, [steps]);
+  }, [clientId, userId, steps, queryClient]);
 
   // 가족 구성원 정보 버튼 클릭 (캔버스 → AI JSON 역변환)
   const handleShowBasicInfo = useCallback(async () => {
@@ -299,16 +314,21 @@ export function GenogramClientPage() {
 
       // 쿼리 캐시 업데이트 → hasData가 true가 됨
       queryClient.setQueryData(['genogram', clientId], canvasJson);
-      // ref 초기화
+
+      // edit 모드 여부 저장 후 ref 초기화
+      const wasEditMode = isEditModeRef.current;
       preparedCanvasJsonRef.current = null;
       isEditModeRef.current = false;
+
       // 상태 리셋 → 캔버스 유지
       steps.reset();
 
-      // "다시 보지 않기"를 선택하지 않았으면 안내 모달 표시
-      const dontShowAgain = localStorage.getItem(GUIDE_DONT_SHOW_AGAIN_KEY);
-      if (dontShowAgain !== 'true') {
-        setIsGuideModalOpen(true);
+      // edit 모드가 아닐 때만 안내 모달 표시 ("다시 보지 않기" 미선택 시)
+      if (!wasEditMode) {
+        const dontShowAgain = localStorage.getItem(GUIDE_DONT_SHOW_AGAIN_KEY);
+        if (dontShowAgain !== 'true') {
+          setIsGuideModalOpen(true);
+        }
       }
     } catch (e) {
       console.error('Failed to save genogram:', e);
@@ -515,7 +535,7 @@ export function GenogramClientPage() {
           onAiOutputChange={steps.updateAiOutput}
           onNextToRender={
             steps.currentStep === 'edit'
-              ? handleEditNextToRender
+              ? handleEditApply
               : handleNextToRender
           }
           onComplete={handleStepsComplete}
