@@ -11,6 +11,7 @@ const getPageDomain = (pathname: string): string => {
   if (pathname.startsWith('/sessions/')) return 'session_detail';
   if (pathname === '/sessions') return 'session_history';
   if (pathname === '/template') return 'template';
+  if (pathname === '/genogram') return 'genogram';
   if (pathname === '/settings') return 'settings';
   if (pathname === '/auth/callback') return 'auth_callback';
   if (pathname === '/auth/verify-email') return 'email_verification';

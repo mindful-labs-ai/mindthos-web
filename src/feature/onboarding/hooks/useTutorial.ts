@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useQuestStore } from '@/stores/questStore';
 
 interface UseTutorialOptions {
@@ -9,7 +8,7 @@ interface UseTutorialOptions {
 }
 
 export function useTutorial({ currentLevel }: UseTutorialOptions) {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
 
   const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
   const tutorialStep = useQuestStore((state) => state.tutorialStep);
@@ -59,17 +58,17 @@ export function useTutorial({ currentLevel }: UseTutorialOptions) {
         }
 
         if (options?.nextRoute) {
-          navigate(options.nextRoute);
+          navigateWithUtm(options.nextRoute);
         }
       }
     },
-    [checkIsTutorialActive, nextTutorialStep, resetTutorial, navigate]
+    [checkIsTutorialActive, nextTutorialStep, resetTutorial, navigateWithUtm]
   );
 
   const endTutorial = useCallback(() => {
     resetTutorial();
-    navigate('/');
-  }, [resetTutorial, navigate]);
+    navigateWithUtm('/');
+  }, [resetTutorial, navigateWithUtm]);
 
   const startTutorial = useCallback(() => {
     setTutorialActive(true);

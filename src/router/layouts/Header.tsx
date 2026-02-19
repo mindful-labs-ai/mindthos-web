@@ -1,8 +1,7 @@
 import React from 'react';
 
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
-import { Button } from '@/components/ui';
 import {
   BreadCrumb,
   type BreadCrumbItem,
@@ -15,6 +14,7 @@ import { routeNameMap } from '../navigationConfig';
 
 export const Header: React.FC = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const { clients } = useClientList();
   const { data: sessionsData } = useSessionList({
@@ -61,6 +61,23 @@ export const Header: React.FC = () => {
           label,
           href: currentPath,
         });
+      }
+      // /genogram 경로에서 쿼리스트링 clientId로 클라이언트 이름 표시
+      else if (name === 'genogram') {
+        const label = routeNameMap[currentPath] || '가계도';
+        items.push({ label, href: currentPath });
+
+        // 쿼리스트링에 clientId가 있으면 클라이언트 이름 추가
+        const clientId = searchParams.get('clientId');
+        if (clientId) {
+          const client = clients.find((c) => c.id === clientId);
+          if (client) {
+            items.push({
+              label: client.name,
+              href: `${currentPath}?clientId=${clientId}`,
+            });
+          }
+        }
       } else {
         const label = routeNameMap[currentPath] || name;
         items.push({
@@ -76,21 +93,8 @@ export const Header: React.FC = () => {
   const breadcrumbItems = getBreadcrumbItems();
 
   return (
-    <header className="sticky top-0 hidden h-14 items-center justify-between border-b border-border bg-bg px-6 py-4 sm:flex lg:px-8">
+    <header className="sticky top-0 hidden h-14 items-center justify-start border-b border-border bg-bg px-6 py-4 sm:flex lg:px-8">
       <BreadCrumb items={breadcrumbItems} />
-      <Button
-        variant="outline"
-        className="w-fit"
-        onClick={() =>
-          window.open(
-            'https://legacy.mindthos.com/',
-            '_blank',
-            'noopener,noreferrer'
-          )
-        }
-      >
-        구버전 기록 열람하기
-      </Button>
     </header>
   );
 };

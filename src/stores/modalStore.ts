@@ -9,7 +9,10 @@ export type ModalType =
   | 'questMission'
   | 'completeMission'
   | 'userEdit'
-  | 'missionPanel';
+  | 'missionPanel'
+  | 'planChange'
+  | 'createMultiSession'
+  | 'comingSoon';
 
 /**
  * 모달별 데이터 타입 정의
@@ -19,6 +22,9 @@ export interface ModalData {
   completeMission: undefined;
   userEdit: undefined;
   missionPanel: undefined;
+  planChange: undefined;
+  createMultiSession: undefined;
+  comingSoon: { source: string };
 }
 
 interface ModalState {

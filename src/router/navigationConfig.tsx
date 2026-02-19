@@ -1,12 +1,15 @@
 import React from 'react';
 
 import {
-  FileTextIcon,
-  HelpCircleIcon,
-  HomeIcon,
-  LayersIcon,
-  SettingsIcon,
-  UsersIcon,
+  // SideAnalysisIcon,
+  // SideCalendarIcon,
+  SideClientIcon,
+  SideGenogramIcon,
+  SideHelpIcon,
+  SideHomeIcon,
+  SideSessionIcon,
+  SideSettingsIcon,
+  SideTemplateIcon,
 } from '@/shared/icons';
 
 import { ROUTES } from './constants';
@@ -16,6 +19,8 @@ export interface NavigationItem {
   label: string;
   value: string;
   icon?: React.ReactNode;
+  badge?: 'beta' | 'comingSoon';
+  disabled?: boolean;
 }
 
 export const NAVIGATION_ITEMS: NavigationItem[] = [
@@ -23,37 +28,60 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     path: ROUTES.ROOT,
     label: '홈',
     value: 'home',
-    icon: <HomeIcon size={18} />,
+    icon: <SideHomeIcon size={24} />,
   },
+  // {
+  //   path: ROUTES.CALENDAR,
+  //   label: '일정',
+  //   value: 'calendar',
+  //   icon: <SideCalendarIcon size={24} />,
+  //   badge: 'comingSoon',
+  //   disabled: true,
+  // },
   {
     path: ROUTES.CLIENTS,
     label: '클라이언트',
     value: 'client',
-    icon: <UsersIcon size={18} />,
+    icon: <SideClientIcon size={24} />,
   },
   {
     path: ROUTES.SESSIONS,
     label: '상담 기록',
     value: 'sessions',
-    icon: <FileTextIcon size={18} />,
+    icon: <SideSessionIcon size={24} />,
   },
   {
     path: ROUTES.TEMPLATE,
     label: '템플릿',
     value: 'template',
-    icon: <LayersIcon size={18} />,
+    icon: <SideTemplateIcon size={24} />,
   },
+  {
+    path: ROUTES.GENOGRAM,
+    label: '가계도',
+    value: 'genogram',
+    icon: <SideGenogramIcon size={24} />,
+    badge: 'beta',
+  },
+  // {
+  //   path: ROUTES.ANALYSIS,
+  //   label: '심리검사 분석',
+  //   value: 'analysis',
+  //   icon: <SideAnalysisIcon size={24} />,
+  //   badge: 'comingSoon',
+  //   disabled: true,
+  // },
   {
     path: ROUTES.SETTINGS,
     label: '설정',
     value: 'settings',
-    icon: <SettingsIcon size={18} />,
+    icon: <SideSettingsIcon size={24} />,
   },
   {
     path: '/help',
     label: '도움말 및 지원',
     value: 'help',
-    icon: <HelpCircleIcon size={18} />,
+    icon: <SideHelpIcon size={24} />,
   },
 ];
 
@@ -85,13 +113,33 @@ export const getRouteLabel = (path: string): string => {
   return item?.label || path;
 };
 
-// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿)
+// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿, 가계도)
 export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['home', 'client', 'sessions', 'template'].includes(item.value)
+  ['home', 'client', 'sessions', 'template', 'genogram'].includes(item.value)
 ).map((item) => ({
   icon: item.icon,
   label: item.label,
   value: item.value,
+}));
+
+export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
+  ['home', 'calendar', 'client', 'sessions', 'template'].includes(item.value)
+).map((item) => ({
+  icon: item.icon,
+  label: item.label,
+  value: item.value,
+  badge: item.badge,
+  disabled: item.disabled,
+}));
+
+export const AI_ANALYSIS_ITEMS = NAVIGATION_ITEMS.filter((item) =>
+  ['genogram', 'analysis'].includes(item.value)
+).map((item) => ({
+  icon: item.icon,
+  label: item.label,
+  value: item.value,
+  badge: item.badge,
+  disabled: item.disabled,
 }));
 
 // 하단 네비게이션 아이템 (설정, 도움말)
@@ -101,6 +149,8 @@ export const BOTTOM_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
   icon: item.icon,
   label: item.label,
   value: item.value,
+  badge: item.badge,
+  disabled: item.disabled,
 }));
 
 // 레거시 함수 (호환성 유지)

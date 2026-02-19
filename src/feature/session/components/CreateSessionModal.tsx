@@ -2,7 +2,6 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 
 import { Title } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
@@ -14,10 +13,11 @@ import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
-import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 import { isFileSizeExceeded } from '../constants/fileUpload';
@@ -41,7 +41,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   onOpenChange,
   type,
 }) => {
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -83,9 +83,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     isCreditError: false,
   });
 
-  // Plan upgrade modal state
-  const [isPlanChangeModalOpen, setIsPlanChangeModalOpen] =
-    React.useState(false);
+  // Plan upgrade modal
+  const openModal = useModalStore((state) => state.openModal);
 
   // 세션 처리 상태 폴링
   useSessionStatus({
@@ -113,7 +112,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           description: '축어록 및 상담노트가 성공적으로 작성되었습니다.',
           action: {
             label: '확인하기',
-            onClick: () => navigate(getSessionDetailRoute(data.session_id)),
+            onClick: () =>
+              navigateWithUtm(getSessionDetailRoute(data.session_id)),
           },
           duration: 10000,
         });
@@ -371,18 +371,11 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           errorSnackBar.isCreditError
             ? {
                 label: '플랜 업그레이드',
-                onClick: () => {
-                  setIsPlanChangeModalOpen(true);
-                },
+                onClick: () => openModal('planChange'),
               }
             : undefined
         }
         duration={8000}
-      />
-
-      <PlanChangeModal
-        open={isPlanChangeModalOpen}
-        onOpenChange={setIsPlanChangeModalOpen}
       />
     </>
   );

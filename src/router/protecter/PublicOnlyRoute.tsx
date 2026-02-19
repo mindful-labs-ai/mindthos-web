@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
 import { useAuthStore } from '@/stores/authStore';
+import { useUtmStore } from '@/stores/utmStore';
 
 import { ROUTES } from '../constants';
 
@@ -13,6 +14,7 @@ export const PublicOnlyRoute: React.FC<PublicOnlyRouteProps> = ({
 }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const utmParams = useUtmStore((state) => state.utmParams);
 
   if (isLoading) {
     return (
@@ -26,7 +28,8 @@ export const PublicOnlyRoute: React.FC<PublicOnlyRouteProps> = ({
   }
 
   if (isAuthenticated) {
-    return <Navigate to={ROUTES.ROOT} replace />;
+    const search = utmParams ? `?${utmParams}` : '';
+    return <Navigate to={{ pathname: ROUTES.ROOT, search }} replace />;
   }
 
   return <>{children}</>;

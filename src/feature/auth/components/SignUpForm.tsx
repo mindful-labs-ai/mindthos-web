@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import { HyperLink } from '@/components/ui';
 import { Button } from '@/components/ui/atoms/Button';
 import { CheckBox } from '@/components/ui/atoms/CheckBox';
@@ -9,6 +7,7 @@ import { Input } from '@/components/ui/atoms/Input';
 import { FormField } from '@/components/ui/composites/FormField';
 import { trackEvent } from '@/lib/mixpanel';
 import { getTermsRoute, ROUTES, TERMS_TYPES } from '@/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 
 const SignUpForm = () => {
@@ -20,7 +19,7 @@ const SignUpForm = () => {
   const [error, setError] = React.useState('');
 
   const signup = useAuthStore((state) => state.signup);
-  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +40,7 @@ const SignUpForm = () => {
 
       trackEvent('signup_success', { method: 'email' });
 
-      navigate(ROUTES.EMAIL_VERIFICATION, {
+      navigateWithUtm(ROUTES.EMAIL_VERIFICATION, {
         state: { email },
       });
     } catch (err) {
