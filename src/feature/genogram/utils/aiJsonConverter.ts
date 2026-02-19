@@ -1225,7 +1225,8 @@ function calculateCoordinates(
     orphanSubjects.forEach((s, index) => {
       // 기존 좌표가 있으면 사용 (사용자가 이동한 경우 유지)
       const existingPos = existingPositions?.subjects.get(s.id);
-      const x = existingPos?.x ?? snapToGrid(orphanStartX + index * X_SIBLING_GAP);
+      const x =
+        existingPos?.x ?? snapToGrid(orphanStartX + index * X_SIBLING_GAP);
       const y = existingPos?.y ?? snapToGrid(orphanY);
       orphanSubjectsWithCoords.push({ ...s, x, y });
     });
@@ -1779,7 +1780,9 @@ export function convertCanvasToAIJson(
           partnerLineSubjects.set(connection.id, [aiId1, aiId2]);
         }
       }
-    } else if (connection.entity.type === ConnectionType.Children_Parents_Line) {
+    } else if (
+      connection.entity.type === ConnectionType.Children_Parents_Line
+    ) {
       const attr = connection.entity.attribute as {
         status?: string;
         parentRef?: string;
@@ -1822,16 +1825,10 @@ export function convertCanvasToAIJson(
       }
 
       // Fetus인지 확인
-      const childSubject = canvas.subjects.find(
-        (s) => s.id === attr.childRef
-      );
+      const childSubject = canvas.subjects.find((s) => s.id === attr.childRef);
       if (childSubject?.entity.type === SubjectType.Fetus) {
         const fetusAttr = childSubject.entity.attribute as { status?: string };
-        fetus.push([
-          fatherId,
-          motherId,
-          fetusAttr.status ?? 'pregnancy',
-        ]);
+        fetus.push([fatherId, motherId, fetusAttr.status ?? 'pregnancy']);
       } else if (childAiId) {
         children.push([
           fatherId,
