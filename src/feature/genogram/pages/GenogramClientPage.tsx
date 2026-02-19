@@ -123,6 +123,8 @@ export function GenogramClientPage() {
   const preparedCanvasJsonRef = useRef<string | null>(null);
   // 가족 구성원 정보 수정 시 원본 캔버스 데이터 (좌표 유지용)
   const originalCanvasRef = useRef<SerializedGenogram | null>(null);
+  // edit 모드에서 render 단계로 전환했는지 추적 (애니메이션 스킵용)
+  const isEditModeRef = useRef(false);
   const handleStartEmpty = useCallback(async () => {
     if (!clientId || !userId) return;
     setIsStarting(true);
@@ -179,7 +181,7 @@ export function GenogramClientPage() {
     }
   }, [clientId, steps, shouldForceRefresh]);
 
-  // 가족 구성원 분석 -> 가계도 그리기
+  // 가족 구성원 분석 -> 가계도 그리기 (analyze 단계용)
   const handleNextToRender = useCallback(() => {
     if (!steps.aiOutput) {
       steps.setError('데이터가 없습니다.');
@@ -211,6 +213,66 @@ export function GenogramClientPage() {
     }
   }, [steps]);
 
+  // 가족 구성원 정보 편집 -> 가계도에 적용 (edit 단계용)
+  const handleEditNextToRender = useCallback(() => {
+    if (!steps.aiOutput) {
+      steps.setError('데이터가 없습니다.');
+      return;
+    }
+
+    try {
+      // 원본 캔버스에서 기존 좌표 추출 (좌표 보존)
+      const existingPositions = originalCanvasRef.current
+        ? extractPositionsFromCanvas(originalCanvasRef.current, steps.aiOutput)
+        : undefined;
+
+      // aiJsonConverter로 변환 (기존 좌표 유지)
+      const canvasData = convertAIJsonToCanvas(steps.aiOutput, {
+        existingPositions,
+      });
+      const canvasJson = JSON.stringify(canvasData);
+
+      preparedCanvasJsonRef.current = canvasJson;
+      originalCanvasRef.current = null; // 사용 후 초기화
+      isEditModeRef.current = true; // 애니메이션 스킵을 위해 edit 모드 표시
+      steps.setStep('render');
+    } catch {
+      steps.setError('JSON 변환 중 오류가 발생했습니다.');
+    }
+  }, [steps]);
+
+  // 가족 구성원 정보 버튼 클릭 (캔버스 → AI JSON 역변환)
+  const handleShowBasicInfo = useCallback(async () => {
+    const canvasJson = genogramRef.current?.toJSON();
+    if (!canvasJson) {
+      return;
+    }
+
+    // edit 모드 열고 로딩 시작
+    steps.open('edit');
+    steps.setLoading(true);
+    steps.setError(null);
+
+    try {
+      // 실제 변환 로직 (처리 시간 반영)
+      const canvasData = JSON.parse(canvasJson) as SerializedGenogram;
+      originalCanvasRef.current = canvasData; // 좌표 보존용 저장
+      const aiOutput = convertCanvasToAIJson(canvasData);
+      steps.updateAiOutput(aiOutput);
+    } catch {
+      steps.setError('가계도 데이터 변환 중 오류가 발생했습니다.');
+    } finally {
+      steps.setLoading(false);
+    }
+  }, [steps]);
+
+  // edit 모드 취소
+  const handleEditCancel = useCallback(() => {
+    originalCanvasRef.current = null;
+    isEditModeRef.current = false;
+    steps.reset();
+  }, [steps]);
+
   // 가계도 그리기 완료 및 DB 저장
   const handleStepsComplete = useCallback(async () => {
     if (!clientId || !userId) return;
@@ -239,6 +301,7 @@ export function GenogramClientPage() {
       queryClient.setQueryData(['genogram', clientId], canvasJson);
       // ref 초기화
       preparedCanvasJsonRef.current = null;
+      isEditModeRef.current = false;
       // 상태 리셋 → 캔버스 유지
       steps.reset();
 
@@ -368,35 +431,6 @@ export function GenogramClientPage() {
     }
   }, [clientId, userId, queryClient, toast]);
 
-  // 가계도 기본 정보 보기 핸들러 (현재 캔버스를 역변환하여 analyze 단계로 이동)
-  const handleShowBasicInfo = useCallback(() => {
-    if (!clientId) return;
-
-    try {
-      // 현재 캔버스 데이터 가져오기
-      const canvasJson = genogramRef.current?.toJSON();
-      if (!canvasJson) {
-        toast({ title: '가계도 데이터를 불러올 수 없습니다.' });
-        return;
-      }
-
-      // Canvas JSON → SerializedGenogram → AI JSON 역변환
-      const canvasData = JSON.parse(canvasJson) as SerializedGenogram;
-
-      // 원본 캔버스 데이터 저장 (좌표 유지용)
-      originalCanvasRef.current = canvasData;
-
-      const aiOutput = convertCanvasToAIJson(canvasData);
-
-      // analyze 단계로 이동하면서 AI output 설정
-      steps.updateAiOutput(aiOutput);
-      steps.open('analyze');
-    } catch (e) {
-      console.error('Failed to convert canvas to AI JSON:', e);
-      toast({ title: '가계도 데이터 변환 중 오류가 발생했습니다.' });
-    }
-  }, [clientId, steps, toast]);
-
   // 로딩 상태 (family_summary 로딩 포함)
   const isLoading =
     isClientsLoading ||
@@ -421,7 +455,9 @@ export function GenogramClientPage() {
         }}
         onExport={handleExport}
         onSave={handleSave}
-        showActions={!!showCanvas}
+        showActions={
+          !!showCanvas && !(steps.isOpen && steps.currentStep === 'edit')
+        }
         canUndo={canUndo}
         canRedo={canRedo}
         isPanelOpen={isPanelOpen}
@@ -466,7 +502,7 @@ export function GenogramClientPage() {
           </div>
         </>
       ) : steps.isOpen ? (
-        // confirm, analyze, render 단계: 스텝 UI (hasData 여부와 무관하게 우선)
+        // confirm, analyze, edit, render 단계: 스텝 UI (hasData 여부와 무관하게 우선)
         <GenogramGenerationSteps
           currentStep={steps.currentStep}
           isLoading={steps.isLoading}
@@ -474,11 +510,17 @@ export function GenogramClientPage() {
           aiOutput={steps.aiOutput}
           clientName={selectedClient?.name}
           isRenderPending={false}
+          isEditMode={isEditModeRef.current}
           onConfirm={handleConfirm}
           onAiOutputChange={steps.updateAiOutput}
-          onNextToRender={handleNextToRender}
+          onNextToRender={
+            steps.currentStep === 'edit'
+              ? handleEditNextToRender
+              : handleNextToRender
+          }
           onComplete={handleStepsComplete}
           onCancel={steps.reset}
+          onEditCancel={handleEditCancel}
         />
       ) : !hasData ? (
         <GenogramEmptyState

@@ -9,7 +9,7 @@ import { trackEvent } from '@/lib/mixpanel';
 import { GenogramLoadingAnimationLoop } from '../GenogramLoadingAnimation';
 
 // 애니메이션 1회 사이클 시간 (4초 - GenogramLoadingAnimationLoop 기준)
-const ANIMATION_CYCLE_DURATION = 4000;
+const ANIMATION_CYCLE_DURATION = 3200;
 // 최소 애니메이션 반복 횟수
 const MIN_ANIMATION_CYCLES = 3;
 
@@ -18,6 +18,8 @@ interface RenderStepProps {
   isPending: boolean;
   onComplete: () => void;
   onCancel?: () => void;
+  /** 편집 모드일 때 애니메이션 대기 건너뛰기 */
+  isEditMode?: boolean;
 }
 
 export function RenderStep({
@@ -25,13 +27,16 @@ export function RenderStep({
   isPending,
   onComplete,
   onCancel,
+  isEditMode = false,
 }: RenderStepProps) {
-  // 최소 애니메이션 사이클 완료 여부
-  const [animationComplete, setAnimationComplete] = useState(false);
+  // 최소 애니메이션 사이클 완료 여부 (edit 모드면 바로 완료)
+  const [animationComplete, setAnimationComplete] = useState(isEditMode);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 컴포넌트 마운트 시 애니메이션 타이머 시작
+  // 컴포넌트 마운트 시 애니메이션 타이머 시작 (edit 모드가 아닐 때만)
   useEffect(() => {
+    if (isEditMode) return;
+
     const totalDuration = ANIMATION_CYCLE_DURATION * MIN_ANIMATION_CYCLES;
     timerRef.current = setTimeout(() => {
       setAnimationComplete(true);
@@ -42,7 +47,7 @@ export function RenderStep({
         clearTimeout(timerRef.current);
       }
     };
-  }, []);
+  }, [isEditMode]);
 
   // props에서 직접 상태 계산
   const status = error ? 'error' : isPending ? 'processing' : 'success';

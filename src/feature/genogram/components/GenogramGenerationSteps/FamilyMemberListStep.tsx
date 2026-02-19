@@ -30,12 +30,18 @@ interface FamilyMemberListStepProps {
   data: AIGenogramOutput;
   onChange: (data: AIGenogramOutput) => void;
   onNext: () => void;
+  /** 버튼 텍스트 (기본값: '가계도 자동 생성하기') */
+  buttonText?: string;
+  /** 편집 모드 여부 (확인 모달 스킵) */
+  isEditMode?: boolean;
 }
 
 export function FamilyMemberListStep({
   data,
   onChange,
   onNext,
+  buttonText = '가계도 자동 생성하기',
+  isEditMode = false,
 }: FamilyMemberListStepProps) {
   // 스크롤 컨테이너 ref (팝오버 Portal 대상)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -525,10 +531,21 @@ export function FamilyMemberListStep({
       {/* 하단 고정 버튼 */}
       <div className="mt-4 flex shrink-0 justify-center pt-4">
         <button
-          onClick={() => setShowConfirmModal(true)}
+          onClick={() => {
+            if (isEditMode) {
+              // 편집 모드: 확인 모달 없이 바로 진행
+              trackEvent('genogram_edit_apply_click', {
+                member_count: data.subjects.length,
+                relation_count: relationDataList.length,
+              });
+              onNext();
+            } else {
+              setShowConfirmModal(true);
+            }
+          }}
           className="h-12 w-full max-w-[500px] rounded-xl bg-primary text-lg font-medium text-white transition-colors hover:bg-primary-600"
         >
-          가계도 자동 생성하기
+          {buttonText}
         </button>
       </div>
 
