@@ -104,7 +104,7 @@ export function ClientDropdown({
       {/* Trigger 버튼 */}
       <Button
         variant="outline"
-        className="gap-2 bg-white shadow-sm"
+        className="gap-2 bg-white"
         onClick={() => setIsOpen(!isOpen)}
       >
         <GenogramIcon size={18} />

@@ -33,6 +33,8 @@ interface GenogramPageHeaderProps {
   onReset?: () => void;
   /** 초기화 진행 중 */
   isResetting?: boolean;
+  /** 가계도 기본 정보 보기 핸들러 (역변환) */
+  onShowBasicInfo?: () => void;
 }
 
 export function GenogramPageHeader({
@@ -53,6 +55,7 @@ export function GenogramPageHeader({
   isTemporaryMode = false,
   onReset,
   isResetting = false,
+  onShowBasicInfo,
 }: GenogramPageHeaderProps) {
   const [isExported, setIsExported] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -81,8 +84,8 @@ export function GenogramPageHeader({
 
   return (
     <>
-      {/* 좌측 상단: 클라이언트 드롭다운 */}
-      <div className="absolute left-4 top-4 z-10">
+      {/* 좌측 상단: 클라이언트 드롭다운 + 기본 정보 버튼 */}
+      <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         <ClientDropdown
           clients={clients}
           selectedClient={selectedClient}
@@ -90,6 +93,14 @@ export function GenogramPageHeader({
           onAddClient={onAddClient}
           isTemporaryMode={isTemporaryMode}
         />
+        {onShowBasicInfo && selectedClient && (
+          <button
+            onClick={onShowBasicInfo}
+            className="flex h-10 items-center rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+          >
+            가족 구성원 정보
+          </button>
+        )}
       </div>
 
       {/* 우측 상단: 저장 상태 + 액션 버튼들 */}

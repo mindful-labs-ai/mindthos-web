@@ -149,6 +149,12 @@ interface SubjectWithCoords extends AISubject {
   y: number;
 }
 
+/** 기존 좌표 정보 (AI 재생성 시 좌표 유지용) */
+export interface ExistingPositions {
+  /** AI subject ID → 좌표 */
+  subjects: Map<number, { x: number; y: number }>;
+}
+
 /** 좌표가 계산된 Fetus */
 interface FetusWithCoords {
   fatherId: number | null;
@@ -328,6 +334,11 @@ interface LayoutResult {
   fetuses: FetusWithCoords[];
 }
 
+interface CalculateCoordinatesOptions {
+  /** 기존 좌표 (있으면 해당 좌표 사용, 없으면 자동 계산) */
+  existingPositions?: ExistingPositions;
+}
+
 /**
  * 공식 기반 좌표 계산
  *
@@ -351,7 +362,11 @@ interface LayoutResult {
  * Y = BASE_Y + generation × GENERATION_GAP
  *
  */
-function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
+function calculateCoordinates(
+  aiOutput: AIGenogramOutput,
+  options: CalculateCoordinatesOptions = {}
+): LayoutResult {
+  const { existingPositions } = options;
   const { subjects, partners, fetus, nuclearFamilies, siblingGroups } =
     aiOutput;
 
@@ -1135,15 +1150,92 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // 8. 결과 생성 (고아 노드는 제외)
+  // 8. 새 형제의 위치 조정 (기존 형제들 우측에 배치)
   // ─────────────────────────────────────────────────────────────────────────
-  const subjectsWithCoords: SubjectWithCoords[] = subjects
-    .filter((s) => processedIds.has(s.id)) // 처리된 인물만 포함 (고아 노드 제외)
+  if (existingPositions && existingPositions.subjects.size > 0) {
+    for (const sibGroup of siblingGroups) {
+      const siblings = sibGroup.siblingIds;
+      if (siblings.length <= 1) continue;
+
+      // 기존 위치가 있는 형제와 새 형제 분리
+      const existingSiblings = siblings.filter((id) =>
+        existingPositions.subjects.has(id)
+      );
+      const newSiblings = siblings.filter(
+        (id) => !existingPositions.subjects.has(id)
+      );
+
+      if (existingSiblings.length > 0 && newSiblings.length > 0) {
+        // 기존 형제들 중 최우측 X 좌표 및 Y 좌표 찾기
+        let maxX = -Infinity;
+        let siblingY: number | undefined;
+        for (const id of existingSiblings) {
+          const pos = existingPositions.subjects.get(id);
+          if (pos) {
+            if (pos.x > maxX) maxX = pos.x;
+            if (siblingY === undefined) siblingY = pos.y;
+          }
+        }
+
+        // 새 형제들을 기존 형제들의 우측에 배치 (Y 좌표도 동일하게)
+        let newX = maxX + X_SIBLING_GAP;
+        for (const id of newSiblings) {
+          xPositions.set(id, newX);
+          if (siblingY !== undefined) {
+            yPositions.set(id, siblingY);
+          }
+          newX += X_SIBLING_GAP;
+        }
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 9. 결과 생성 (고아 노드도 별도 영역에 포함)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // 처리된 노드들의 좌표 계산
+  const processedSubjects: SubjectWithCoords[] = subjects
+    .filter((s) => processedIds.has(s.id))
     .map((s) => {
-      const x = snapToGrid(xPositions.get(s.id) ?? BASE_X);
-      const y = snapToGrid(yPositions.get(s.id) ?? BASE_Y);
+      const existingPos = existingPositions?.subjects.get(s.id);
+      const x = existingPos?.x ?? snapToGrid(xPositions.get(s.id) ?? BASE_X);
+      const y = existingPos?.y ?? snapToGrid(yPositions.get(s.id) ?? BASE_Y);
       return { ...s, x, y };
     });
+
+  // 고아 노드 처리 (가족 구조에 포함되지 않은 인물)
+  const orphanSubjects = subjects.filter((s) => !processedIds.has(s.id));
+
+  // 고아 노드가 있으면 오른쪽 별도 영역에 배치
+  const orphanSubjectsWithCoords: SubjectWithCoords[] = [];
+  if (orphanSubjects.length > 0) {
+    // 처리된 노드들의 최대 X 좌표 찾기
+    let maxProcessedX = BASE_X;
+    for (const s of processedSubjects) {
+      if (s.x > maxProcessedX) maxProcessedX = s.x;
+    }
+
+    // 고아 노드 영역 시작 X (기존 영역에서 간격 추가)
+    const ORPHAN_AREA_GAP = 180; // 고아 영역과 기존 영역 사이 간격
+    const orphanStartX = snapToGrid(maxProcessedX + ORPHAN_AREA_GAP);
+    const orphanY = BASE_Y; // 최상단에 배치
+
+    // 고아 노드들을 가로로 배치
+    orphanSubjects.forEach((s, index) => {
+      // 기존 좌표가 있으면 사용 (사용자가 이동한 경우 유지)
+      const existingPos = existingPositions?.subjects.get(s.id);
+      const x = existingPos?.x ?? snapToGrid(orphanStartX + index * X_SIBLING_GAP);
+      const y = existingPos?.y ?? snapToGrid(orphanY);
+      orphanSubjectsWithCoords.push({ ...s, x, y });
+    });
+  }
+
+  // 처리된 노드 + 고아 노드 합치기
+  const subjectsWithCoords: SubjectWithCoords[] = [
+    ...processedSubjects,
+    ...orphanSubjectsWithCoords,
+  ];
 
   const fetusesWithCoords: FetusWithCoords[] = fetusInfoList.map((f) => {
     const x = snapToGrid(fetusXPositions.get(f.id) ?? BASE_X);
@@ -1167,16 +1259,42 @@ function calculateCoordinates(aiOutput: AIGenogramOutput): LayoutResult {
 // 메인 변환 함수
 // ─────────────────────────────────────────────────────────────────────────────
 
+export interface ConvertOptions {
+  /** 기존 좌표 (있으면 해당 좌표 유지, 새 노드만 자동 배치) */
+  existingPositions?: ExistingPositions;
+}
+
 /**
  * AI 출력 JSON을 Canvas SerializedGenogram으로 변환
  * 인접 리스트(nuclearFamilies, siblingGroups)를 기반으로 좌표를 계산합니다.
+ *
+ * @param aiOutput AI가 생성한 가계도 데이터
+ * @param options 변환 옵션 (기존 좌표 유지 등)
  */
 export function convertAIJsonToCanvas(
-  aiOutput: AIGenogramOutput
+  aiOutput: AIGenogramOutput,
+  options: ConvertOptions = {}
 ): SerializedGenogram {
-  // 좌표 계산
+  // siblingGroups와 nuclearFamilies를 children 배열로부터 재생성
+  // (FamilyCard UI에서 children만 수정되고 siblingGroups/nuclearFamilies가 업데이트되지 않는 문제 해결)
+  const { nuclearFamilies, siblingGroups } = buildFamilyStructures(
+    aiOutput.subjects,
+    aiOutput.partners,
+    aiOutput.children
+  );
+
+  // 재생성된 데이터로 AI output 업데이트
+  const normalizedAiOutput: AIGenogramOutput = {
+    ...aiOutput,
+    nuclearFamilies,
+    siblingGroups,
+  };
+
+  // 좌표 계산 (기존 좌표가 있으면 유지)
   const { subjects: subjectsWithCoords, fetuses: fetusesWithCoords } =
-    calculateCoordinates(aiOutput);
+    calculateCoordinates(normalizedAiOutput, {
+      existingPositions: options.existingPositions,
+    });
 
   const now = new Date();
   const subjects: SerializedGenogram['subjects'] = [];
@@ -1469,4 +1587,468 @@ export function isValidAIJson(json: unknown): json is AIGenogramOutput {
   }
 
   return true;
+}
+
+/**
+ * Canvas 데이터에서 AI JSON ID 기반 좌표 맵 추출
+ *
+ * @param canvas 기존 Canvas 데이터
+ * @param aiOutput 새로운 AI JSON (ID 매칭용)
+ * @returns 기존 좌표 맵 (AI subject ID → 좌표)
+ *
+ * 매칭 우선순위:
+ * 1. name + gender 일치
+ * 2. name 일치
+ * 3. isIP 일치 (내담자)
+ */
+export function extractPositionsFromCanvas(
+  canvas: SerializedGenogram,
+  aiOutput: AIGenogramOutput
+): ExistingPositions {
+  const positions: ExistingPositions = {
+    subjects: new Map(),
+  };
+
+  // Canvas subject를 name + gender로 인덱싱
+  const canvasSubjectsByNameGender = new Map<
+    string,
+    { id: string; x: number; y: number; isIP: boolean }
+  >();
+  const canvasSubjectsByName = new Map<
+    string,
+    { id: string; x: number; y: number; isIP: boolean }
+  >();
+  let canvasIP: { id: string; x: number; y: number } | null = null;
+
+  for (const subject of canvas.subjects) {
+    if (subject.entity.type !== SubjectType.Person) continue;
+
+    const attr = subject.entity.attribute as {
+      name?: string | null;
+      gender?: string;
+      isIP?: boolean;
+    };
+    const name = attr.name?.trim();
+    const gender = attr.gender;
+    const isIP = attr.isIP ?? false;
+    const pos = {
+      id: subject.id,
+      x: subject.layout.center.x,
+      y: subject.layout.center.y,
+      isIP,
+    };
+
+    if (name && gender) {
+      canvasSubjectsByNameGender.set(`${name}-${gender}`, pos);
+    }
+    if (name) {
+      canvasSubjectsByName.set(name, pos);
+    }
+    if (isIP) {
+      canvasIP = pos;
+    }
+  }
+
+  // AI subject와 매칭
+  for (const aiSubject of aiOutput.subjects) {
+    const name = aiSubject.name?.trim();
+    const gender = aiSubject.gender;
+
+    // 1. name + gender 일치
+    if (name && gender) {
+      const match = canvasSubjectsByNameGender.get(`${name}-${gender}`);
+      if (match) {
+        positions.subjects.set(aiSubject.id, { x: match.x, y: match.y });
+        continue;
+      }
+    }
+
+    // 2. name 일치
+    if (name) {
+      const match = canvasSubjectsByName.get(name);
+      if (match) {
+        positions.subjects.set(aiSubject.id, { x: match.x, y: match.y });
+        continue;
+      }
+    }
+
+    // 3. isIP 일치
+    if (aiSubject.isIP && canvasIP) {
+      positions.subjects.set(aiSubject.id, { x: canvasIP.x, y: canvasIP.y });
+    }
+  }
+
+  return positions;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 역변환 함수 (Canvas → AI JSON)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Canvas SerializedGenogram을 AI JSON 형식으로 역변환
+ *
+ * @param canvas Canvas 데이터
+ * @returns AI JSON 형식 데이터
+ *
+ * 주의: 일부 정보는 손실될 수 있음:
+ * - Sibling_Line (AI JSON에 없음)
+ * - 일부 세부 스타일 정보
+ */
+export function convertCanvasToAIJson(
+  canvas: SerializedGenogram
+): AIGenogramOutput {
+  const subjects: AISubject[] = [];
+  const partners: AIGenogramOutput['partners'] = [];
+  const children: AIGenogramOutput['children'] = [];
+  const fetus: AIGenogramOutput['fetus'] = [];
+  const relations: AIGenogramOutput['relations'] = [];
+  const influences: AIGenogramOutput['influences'] = [];
+
+  // Canvas ID → AI ID 매핑
+  const canvasToAiId = new Map<string, number>();
+  let nextId = 1;
+
+  // 1. Subjects 변환
+  for (const subject of canvas.subjects) {
+    if (subject.entity.type === SubjectType.Person) {
+      const aiId = nextId++;
+      canvasToAiId.set(subject.id, aiId);
+
+      const attr = subject.entity.attribute as {
+        gender?: string;
+        name?: string | null;
+        isIP?: boolean;
+        isDead?: boolean;
+        illness?: string;
+        age?: number | null;
+        lifeSpan?: { birth?: string | null; death?: string | null };
+        extraInfo?: {
+          job?: string | null;
+          education?: string | null;
+          region?: string | null;
+        };
+      };
+
+      subjects.push({
+        id: aiId,
+        type: 'PERSON',
+        gender: attr.gender as AISubject['gender'],
+        name: attr.name ?? undefined,
+        isIP: attr.isIP,
+        isDead: attr.isDead,
+        illness: attr.illness as AISubject['illness'],
+        memo: subject.entity.memo ?? undefined,
+        age: attr.age ?? undefined,
+        birthYear: attr.lifeSpan?.birth
+          ? parseInt(attr.lifeSpan.birth.substring(0, 4), 10)
+          : undefined,
+        deathYear: attr.lifeSpan?.death
+          ? parseInt(attr.lifeSpan.death.substring(0, 4), 10)
+          : undefined,
+        job: attr.extraInfo?.job,
+        education: attr.extraInfo?.education,
+        region: attr.extraInfo?.region,
+      });
+    } else if (subject.entity.type === SubjectType.Fetus) {
+      // Fetus는 children 변환 시 처리
+    }
+  }
+
+  // 2. Connections 변환
+  // Partner Line ID → [subject1, subject2] 매핑 (children 변환 시 사용)
+  const partnerLineSubjects = new Map<string, [number, number]>();
+
+  for (const connection of canvas.connections) {
+    if (connection.entity.type === ConnectionType.Partner_Line) {
+      const attr = connection.entity.attribute as {
+        status?: string;
+        subjects?: string[];
+      };
+      const subjectIds = attr.subjects ?? [];
+      if (subjectIds.length === 2) {
+        const aiId1 = canvasToAiId.get(subjectIds[0]);
+        const aiId2 = canvasToAiId.get(subjectIds[1]);
+        if (aiId1 && aiId2) {
+          partners.push([
+            aiId1,
+            aiId2,
+            reverseMapPartnerStatus(attr.status),
+            connection.entity.memo ?? undefined,
+          ]);
+          partnerLineSubjects.set(connection.id, [aiId1, aiId2]);
+        }
+      }
+    } else if (connection.entity.type === ConnectionType.Children_Parents_Line) {
+      const attr = connection.entity.attribute as {
+        status?: string;
+        parentRef?: string;
+        childRef?: string;
+      };
+
+      const childAiId = attr.childRef
+        ? canvasToAiId.get(attr.childRef)
+        : undefined;
+
+      // parentRef가 Partner Line ID인지 Subject ID인지 확인
+      let fatherId: number | null = null;
+      let motherId: number | null = null;
+
+      if (attr.parentRef) {
+        const partnerSubjects = partnerLineSubjects.get(attr.parentRef);
+        if (partnerSubjects) {
+          // Partner Line 참조
+          const [id1, id2] = partnerSubjects;
+          const s1 = subjects.find((s) => s.id === id1);
+          if (s1?.gender === 'Male' || s1?.gender === 'Female') {
+            fatherId = s1.gender === 'Male' ? id1 : id2;
+            motherId = s1.gender === 'Male' ? id2 : id1;
+          } else {
+            fatherId = id1;
+            motherId = id2;
+          }
+        } else {
+          // 단일 부모 참조
+          const parentAiId = canvasToAiId.get(attr.parentRef);
+          if (parentAiId) {
+            const parent = subjects.find((s) => s.id === parentAiId);
+            if (parent?.gender === 'Male') {
+              fatherId = parentAiId;
+            } else {
+              motherId = parentAiId;
+            }
+          }
+        }
+      }
+
+      // Fetus인지 확인
+      const childSubject = canvas.subjects.find(
+        (s) => s.id === attr.childRef
+      );
+      if (childSubject?.entity.type === SubjectType.Fetus) {
+        const fetusAttr = childSubject.entity.attribute as { status?: string };
+        fetus.push([
+          fatherId,
+          motherId,
+          fetusAttr.status ?? 'pregnancy',
+        ]);
+      } else if (childAiId) {
+        children.push([
+          fatherId,
+          motherId,
+          childAiId,
+          reverseMapChildStatus(attr.status),
+          connection.entity.memo ?? undefined,
+        ]);
+      }
+    } else if (connection.entity.type === ConnectionType.Relation_Line) {
+      const attr = connection.entity.attribute as {
+        status?: string;
+        subjects?: string[];
+      };
+      const subjectIds = attr.subjects ?? [];
+      if (subjectIds.length === 2) {
+        const aiId1 = canvasToAiId.get(subjectIds[0]);
+        const aiId2 = canvasToAiId.get(subjectIds[1]);
+        if (aiId1 && aiId2) {
+          relations.push([
+            aiId1,
+            aiId2,
+            (attr.status as AIRelationStatus) ?? 'Connected',
+            connection.entity.memo ?? '',
+          ]);
+        }
+      }
+    } else if (connection.entity.type === ConnectionType.Influence_Line) {
+      const attr = connection.entity.attribute as {
+        status?: string;
+        startRef?: string;
+        endRef?: string;
+      };
+      const fromAiId = attr.startRef
+        ? canvasToAiId.get(attr.startRef)
+        : undefined;
+      const toAiId = attr.endRef ? canvasToAiId.get(attr.endRef) : undefined;
+      if (fromAiId && toAiId) {
+        influences.push([
+          fromAiId,
+          toAiId,
+          reverseMapInfluenceStatus(attr.status),
+          connection.entity.memo ?? undefined,
+        ]);
+      }
+    }
+  }
+
+  // 3. nuclearFamilies 및 siblingGroups 생성
+  const { nuclearFamilies, siblingGroups } = buildFamilyStructures(
+    subjects,
+    partners,
+    children
+  );
+
+  return {
+    subjects,
+    partners,
+    children,
+    fetus,
+    relations,
+    influences,
+    siblingGroups,
+    nuclearFamilies,
+  };
+}
+
+// 역변환 헬퍼 함수들
+function reverseMapPartnerStatus(status?: string): AIPartnerStatus | undefined {
+  switch (status) {
+    case PartnerStatus.Divorce:
+      return 'divorced';
+    case PartnerStatus.Marital_Separation:
+      return 'separated';
+    case PartnerStatus.Couple_Relationship:
+      return 'cohabiting';
+    case PartnerStatus.Marriage:
+    default:
+      return 'marriage';
+  }
+}
+
+function reverseMapChildStatus(status?: string): AIChildStatus | undefined {
+  switch (status) {
+    case ParentChildStatus.Adopted_Child:
+      return 'adopted';
+    case ParentChildStatus.Foster_Child:
+      return 'foster';
+    default:
+      return 'biological';
+  }
+}
+
+function reverseMapInfluenceStatus(status?: string): AIInfluenceStatus {
+  switch (status) {
+    case InfluenceStatus.Physical_Abuse:
+      return 'physical_abuse';
+    case InfluenceStatus.Emotional_Abuse:
+      return 'emotional_abuse';
+    case InfluenceStatus.Sexual_Abuse:
+      return 'sexual_abuse';
+    case InfluenceStatus.Focused_On_Negatively:
+      return 'focused_on_negatively';
+    case InfluenceStatus.Focused_On:
+    default:
+      return 'focused_on';
+  }
+}
+
+/**
+ * subjects, partners, children으로부터 nuclearFamilies와 siblingGroups 생성
+ */
+function buildFamilyStructures(
+  subjects: AISubject[],
+  partners: AIGenogramOutput['partners'],
+  children: AIGenogramOutput['children']
+): { nuclearFamilies: AINuclearFamily[]; siblingGroups: AISiblingGroup[] } {
+  const nuclearFamilies: AINuclearFamily[] = [];
+  const siblingGroups: AISiblingGroup[] = [];
+
+  // 부부별 자녀 그룹화
+  const coupleChildrenMap = new Map<string, number[]>();
+
+  for (const [fatherId, motherId, childId] of children) {
+    const key = `${fatherId ?? 'null'}-${motherId ?? 'null'}`;
+    if (!coupleChildrenMap.has(key)) {
+      coupleChildrenMap.set(key, []);
+    }
+    coupleChildrenMap.get(key)!.push(childId);
+  }
+
+  // IP 찾기
+  const ipSubject = subjects.find((s) => s.isIP);
+  const ipGeneration = 0;
+
+  // 간단한 세대 추론 (IP 기준)
+  const generations = new Map<number, number>();
+  if (ipSubject) {
+    generations.set(ipSubject.id, ipGeneration);
+
+    // IP의 배우자도 같은 세대
+    for (const [id1, id2] of partners) {
+      if (id1 === ipSubject.id) generations.set(id2, ipGeneration);
+      if (id2 === ipSubject.id) generations.set(id1, ipGeneration);
+    }
+  }
+
+  // 부모-자녀 관계로 세대 전파
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [fatherId, motherId, childId] of children) {
+      const parentGen =
+        (fatherId ? generations.get(fatherId) : undefined) ??
+        (motherId ? generations.get(motherId) : undefined);
+
+      if (parentGen !== undefined && !generations.has(childId)) {
+        generations.set(childId, parentGen + 1);
+        changed = true;
+      }
+
+      if (parentGen === undefined) {
+        const childGen = generations.get(childId);
+        if (childGen !== undefined) {
+          if (fatherId && !generations.has(fatherId)) {
+            generations.set(fatherId, childGen - 1);
+            changed = true;
+          }
+          if (motherId && !generations.has(motherId)) {
+            generations.set(motherId, childGen - 1);
+            changed = true;
+          }
+        }
+      }
+    }
+
+    // 배우자 세대 동기화
+    for (const [id1, id2] of partners) {
+      const gen1 = generations.get(id1);
+      const gen2 = generations.get(id2);
+      if (gen1 !== undefined && gen2 === undefined) {
+        generations.set(id2, gen1);
+        changed = true;
+      }
+      if (gen2 !== undefined && gen1 === undefined) {
+        generations.set(id1, gen2);
+        changed = true;
+      }
+    }
+  }
+
+  // NuclearFamilies 생성
+  for (const [coupleKey, childrenIds] of coupleChildrenMap) {
+    const [fatherStr, motherStr] = coupleKey.split('-');
+    const fatherId = fatherStr !== 'null' ? parseInt(fatherStr, 10) : null;
+    const motherId = motherStr !== 'null' ? parseInt(motherStr, 10) : null;
+
+    const parentGen =
+      (fatherId ? generations.get(fatherId) : undefined) ??
+      (motherId ? generations.get(motherId) : undefined) ??
+      0;
+
+    nuclearFamilies.push({
+      husbandId: fatherId,
+      wifeId: motherId,
+      childrenIds,
+      generation: parentGen,
+    });
+
+    // SiblingGroups 생성
+    if (childrenIds.length > 0) {
+      siblingGroups.push({
+        parentCoupleKey: `${fatherId ?? 'null'}-${motherId ?? 'null'}`,
+        siblingIds: childrenIds,
+      });
+    }
+  }
+
+  return { nuclearFamilies, siblingGroups };
 }

@@ -3,11 +3,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
+import { useToast } from '@/components/ui/composites/Toast';
 import { AddClientModal } from '@/feature/client/components/AddClientModal';
 import { clientQueryKeys } from '@/feature/client/constants/queryKeys';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
+import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -28,14 +30,20 @@ import { useGenogramSteps } from '../hooks/useGenogramSteps';
 import {
   fetchRawAIOutput,
   initFamilySummary,
+  saveFamilySummary,
 } from '../services/genogramAIService';
 import { genogramService } from '../services/genogramService';
-import { convertAIJsonToCanvas } from '../utils/aiJsonConverter';
+import {
+  convertAIJsonToCanvas,
+  convertCanvasToAIJson,
+  extractPositionsFromCanvas,
+} from '../utils/aiJsonConverter';
 
 export function GenogramClientPage() {
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
   const { setSearchParamsWithUtm } = useNavigateWithUtm();
+  const { toast } = useToast();
 
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
@@ -113,6 +121,8 @@ export function GenogramClientPage() {
   const [isStarting, setIsStarting] = useState(false);
   // render 단계에서 로드할 캔버스 JSON (확인하기 버튼 클릭 시 로드)
   const preparedCanvasJsonRef = useRef<string | null>(null);
+  // 가족 구성원 정보 수정 시 원본 캔버스 데이터 (좌표 유지용)
+  const originalCanvasRef = useRef<SerializedGenogram | null>(null);
   const handleStartEmpty = useCallback(async () => {
     if (!clientId || !userId) return;
     setIsStarting(true);
@@ -177,12 +187,22 @@ export function GenogramClientPage() {
     }
 
     try {
-      // aiJsonConverter로 변환
-      const canvasData = convertAIJsonToCanvas(steps.aiOutput);
+      // 원본 캔버스에서 기존 좌표 추출 (있는 경우)
+      const existingPositions = originalCanvasRef.current
+        ? extractPositionsFromCanvas(originalCanvasRef.current, steps.aiOutput)
+        : undefined;
+
+      // aiJsonConverter로 변환 (기존 좌표 유지)
+      const canvasData = convertAIJsonToCanvas(steps.aiOutput, {
+        existingPositions,
+      });
       const canvasJson = JSON.stringify(canvasData);
 
       // 캔버스 JSON을 ref에 저장 (확인하기 버튼 클릭 시 로드)
       preparedCanvasJsonRef.current = canvasJson;
+
+      // 원본 캔버스 ref 초기화
+      originalCanvasRef.current = null;
 
       // 가계도 그리기 단계로 이동
       steps.setStep('render');
@@ -202,8 +222,19 @@ export function GenogramClientPage() {
     }
 
     try {
-      // DB 저장
+      // 1. 캔버스 데이터를 genograms 테이블에 저장
       await genogramService.save(clientId, userId, canvasJson);
+
+      // 2. AI output을 clients.family_summary에 저장
+      if (steps.aiOutput) {
+        await saveFamilySummary(clientId, steps.aiOutput);
+        // family_summary 캐시 업데이트
+        queryClient.setQueryData(
+          ['clientFamilySummary', clientId],
+          steps.aiOutput
+        );
+      }
+
       // 쿼리 캐시 업데이트 → hasData가 true가 됨
       queryClient.setQueryData(['genogram', clientId], canvasJson);
       // ref 초기화
@@ -311,7 +342,7 @@ export function GenogramClientPage() {
       const result = await initFamilySummary(clientId, true);
 
       if (!result.success) {
-        alert(`초기화 실패: ${result.error.message}`);
+        toast({ title: '초기화 실패' });
         return;
       }
 
@@ -330,12 +361,41 @@ export function GenogramClientPage() {
       });
     } catch (e) {
       console.error('Failed to reset genogram:', e);
-      alert('초기화 중 오류가 발생했습니다.');
+      toast({ title: '초기화 중 오류가 발생했습니다.' });
     } finally {
       setIsResetting(false);
       setIsResetModalOpen(false);
     }
-  }, [clientId, userId, queryClient]);
+  }, [clientId, userId, queryClient, toast]);
+
+  // 가계도 기본 정보 보기 핸들러 (현재 캔버스를 역변환하여 analyze 단계로 이동)
+  const handleShowBasicInfo = useCallback(() => {
+    if (!clientId) return;
+
+    try {
+      // 현재 캔버스 데이터 가져오기
+      const canvasJson = genogramRef.current?.toJSON();
+      if (!canvasJson) {
+        toast({ title: '가계도 데이터를 불러올 수 없습니다.' });
+        return;
+      }
+
+      // Canvas JSON → SerializedGenogram → AI JSON 역변환
+      const canvasData = JSON.parse(canvasJson) as SerializedGenogram;
+
+      // 원본 캔버스 데이터 저장 (좌표 유지용)
+      originalCanvasRef.current = canvasData;
+
+      const aiOutput = convertCanvasToAIJson(canvasData);
+
+      // analyze 단계로 이동하면서 AI output 설정
+      steps.updateAiOutput(aiOutput);
+      steps.open('analyze');
+    } catch (e) {
+      console.error('Failed to convert canvas to AI JSON:', e);
+      toast({ title: '가계도 데이터 변환 중 오류가 발생했습니다.' });
+    }
+  }, [clientId, steps, toast]);
 
   // 로딩 상태 (family_summary 로딩 포함)
   const isLoading =
@@ -371,6 +431,9 @@ export function GenogramClientPage() {
         isTemporaryMode={isTemporaryMode}
         onReset={showCanvas && clientId ? handleReset : undefined}
         isResetting={isResetting}
+        onShowBasicInfo={
+          showCanvas && clientId ? handleShowBasicInfo : undefined
+        }
       />
 
       {/* 콘텐츠 영역 */}
