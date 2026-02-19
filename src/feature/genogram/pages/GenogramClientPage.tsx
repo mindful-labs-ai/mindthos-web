@@ -534,9 +534,7 @@ export function GenogramClientPage() {
           onConfirm={handleConfirm}
           onAiOutputChange={steps.updateAiOutput}
           onNextToRender={
-            steps.currentStep === 'edit'
-              ? handleEditApply
-              : handleNextToRender
+            steps.currentStep === 'edit' ? handleEditApply : handleNextToRender
           }
           onComplete={handleStepsComplete}
           onCancel={steps.reset}
