@@ -1,8 +1,8 @@
 import React from 'react';
 
 import {
-  SideAnalysisIcon,
-  SideCalendarIcon,
+  // SideAnalysisIcon,
+  // SideCalendarIcon,
   SideClientIcon,
   SideGenogramIcon,
   SideHelpIcon,
