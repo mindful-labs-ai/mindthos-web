@@ -1,4 +1,8 @@
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
+import type {
+  GroupMemberPosition,
+  PartnerDetail,
+} from '@/genogram/core/models/relationship';
 import {
   ConnectionType,
   FetusStatus,
@@ -58,7 +62,9 @@ export type AIPartnerStatus =
   | 'divorced'
   | 'separated'
   | 'cohabiting'
-  | 'engaged';
+  | 'engaged'
+  | 'secret_affair'
+  | 'remarriage';
 
 export type AIChildStatus = 'biological' | 'adopted' | 'foster';
 
@@ -149,10 +155,41 @@ interface SubjectWithCoords extends AISubject {
   y: number;
 }
 
-/** 기존 좌표 정보 (AI 재생성 시 좌표 유지용) */
+/** Connection 스타일 및 상세 정보 (relationship.ts Connection 구조 반영) */
+interface ConnectionInfo {
+  // layout 필드 (ConnectionLayout)
+  strokeWidth?: (typeof StrokeWidth)[keyof typeof StrokeWidth];
+  strokeColor?: string;
+  textColor?: string;
+  // entity.memo
+  memo?: string | null;
+  // Partner Line 전용 (PartnerAttribute.detail)
+  partnerDetail?: PartnerDetail;
+  // Group Line 전용 (GroupAttribute)
+  groupMemberIds?: string[];
+  groupMemberPositions?: GroupMemberPosition[];
+}
+
+/** Subject 스타일 정보 (person.ts SubjectStyle + extraInfo.shortNote 반영) */
+interface SubjectStyleInfo {
+  x: number;
+  y: number;
+  // layout.style 필드 (SubjectStyle)
+  size?: (typeof NodeSize)[keyof typeof NodeSize];
+  bgColor?: string;
+  textColor?: string;
+  // entity.attribute.extraInfo.shortNote (PersonAttribute)
+  shortNote?: string | null;
+}
+
+/** 기존 레이아웃 정보 (AI 재생성 시 좌표/스타일 유지용) */
 export interface ExistingPositions {
-  /** AI subject ID → 좌표 */
-  subjects: Map<number, { x: number; y: number }>;
+  /** AI subject ID → 좌표 및 스타일 */
+  subjects: Map<number, SubjectStyleInfo>;
+  /** Connection key → 스타일 및 상세 정보 */
+  connections?: Map<string, ConnectionInfo>;
+  /** Group Line 데이터 (Canvas ID 기준, AI JSON에 없는 데이터) */
+  groupLines?: ConnectionInfo[];
 }
 
 /** 좌표가 계산된 Fetus */
@@ -266,6 +303,10 @@ function mapPartnerStatus(
       return PartnerStatus.Couple_Relationship;
     case 'engaged':
       return PartnerStatus.Couple_Relationship;
+    case 'secret_affair':
+      return PartnerStatus.Secret_Affair;
+    case 'remarriage':
+      return PartnerStatus.Remarriage;
     default:
       return PartnerStatus.Marriage;
   }
@@ -1304,10 +1345,16 @@ export function convertAIJsonToCanvas(
   // AI 숫자 ID → 실제 ID 매핑
   const idMap = new Map<number, string>();
 
+  // 기존 스타일 정보 조회 헬퍼
+  const existingPositions = options.existingPositions;
+
   // PERSON subjects 처리
   for (const subject of subjectsWithCoords) {
     const realId = generateId('person');
     idMap.set(subject.id, realId);
+
+    // 기존 스타일 정보 가져오기
+    const existingStyle = existingPositions?.subjects.get(subject.id);
 
     subjects.push({
       id: realId,
@@ -1325,11 +1372,16 @@ export function convertAIJsonToCanvas(
           age: subject.age ?? null,
           illness: mapIllness(subject.illness),
           extraInfo: {
-            enable: !!(subject.job || subject.education || subject.region),
+            enable: !!(
+              subject.job ||
+              subject.education ||
+              subject.region ||
+              existingStyle?.shortNote
+            ),
             job: subject.job ?? null,
             education: subject.education ?? null,
             region: subject.region ?? null,
-            shortNote: null,
+            shortNote: existingStyle?.shortNote ?? null,
           },
         },
         memo: subject.memo ?? null,
@@ -1337,9 +1389,11 @@ export function convertAIJsonToCanvas(
       layout: {
         center: { x: subject.x, y: subject.y },
         style: {
-          size: subject.size === 'SMALL' ? NodeSize.Small : NodeSize.Default,
-          bgColor: DEFAULT_BG,
-          textColor: DEFAULT_FG,
+          size:
+            (existingStyle?.size as (typeof NodeSize)[keyof typeof NodeSize]) ??
+            (subject.size === 'SMALL' ? NodeSize.Small : NodeSize.Default),
+          bgColor: existingStyle?.bgColor ?? DEFAULT_BG,
+          textColor: existingStyle?.textColor ?? DEFAULT_FG,
         },
       },
     });
@@ -1376,6 +1430,7 @@ export function convertAIJsonToCanvas(
 
   // Partner Lines 생성
   const partnerLineMap = new Map<string, string>();
+  const existingConnections = existingPositions?.connections;
 
   for (const [id1, id2, status] of aiOutput.partners) {
     const realId1 = idMap.get(id1);
@@ -1387,6 +1442,9 @@ export function convertAIJsonToCanvas(
     partnerLineMap.set(`${id1}-${id2}`, connectionId);
     partnerLineMap.set(`${id2}-${id1}`, connectionId);
 
+    // 기존 스타일 정보 가져오기
+    const existingStyle = existingConnections?.get(`partner-${id1}-${id2}`);
+
     connections.push({
       id: connectionId,
       entity: {
@@ -1395,18 +1453,21 @@ export function convertAIJsonToCanvas(
           status: mapPartnerStatus(status),
           subjects: [realId1, realId2],
           detail: {
-            marriedDate: null,
-            divorcedDate: null,
-            reunitedDate: null,
-            relationshipStartDate: null,
+            marriedDate: existingStyle?.partnerDetail?.marriedDate ?? null,
+            divorcedDate: existingStyle?.partnerDetail?.divorcedDate ?? null,
+            reunitedDate: existingStyle?.partnerDetail?.reunitedDate ?? null,
+            relationshipStartDate:
+              existingStyle?.partnerDetail?.relationshipStartDate ?? null,
           },
         },
-        memo: null,
+        memo: existingStyle?.memo ?? null,
       },
       layout: {
-        strokeWidth: StrokeWidth.Default,
-        strokeColor: DEFAULT_FG,
-        textColor: DEFAULT_FG,
+        strokeWidth:
+          (existingStyle?.strokeWidth as (typeof StrokeWidth)[keyof typeof StrokeWidth]) ??
+          StrokeWidth.Default,
+        strokeColor: existingStyle?.strokeColor ?? DEFAULT_FG,
+        textColor: existingStyle?.textColor ?? DEFAULT_FG,
       },
     });
   }
@@ -1428,6 +1489,9 @@ export function convertAIJsonToCanvas(
 
     if (!parentRef) continue;
 
+    // 기존 스타일 정보 가져오기
+    const existingStyle = existingConnections?.get(`children-${childId}`);
+
     connections.push({
       id: generateId('parentchild'),
       entity: {
@@ -1437,12 +1501,14 @@ export function convertAIJsonToCanvas(
           parentRef,
           childRef: realChildId,
         },
-        memo: null,
+        memo: existingStyle?.memo ?? null,
       },
       layout: {
-        strokeWidth: StrokeWidth.Default,
-        strokeColor: DEFAULT_FG,
-        textColor: DEFAULT_FG,
+        strokeWidth:
+          (existingStyle?.strokeWidth as (typeof StrokeWidth)[keyof typeof StrokeWidth]) ??
+          StrokeWidth.Default,
+        strokeColor: existingStyle?.strokeColor ?? DEFAULT_FG,
+        textColor: existingStyle?.textColor ?? DEFAULT_FG,
       },
     });
   }
@@ -1491,6 +1557,9 @@ export function convertAIJsonToCanvas(
 
     if (!realId1 || !realId2) continue;
 
+    // 기존 스타일 정보 가져오기
+    const existingStyle = existingConnections?.get(`relation-${id1}-${id2}`);
+
     connections.push({
       id: generateId('relation'),
       entity: {
@@ -1501,22 +1570,27 @@ export function convertAIJsonToCanvas(
             RelationStatus.Connected,
           subjects: [realId1, realId2],
         },
-        memo: description,
+        memo: existingStyle?.memo ?? description,
       },
       layout: {
-        strokeWidth: StrokeWidth.Default,
-        strokeColor: DEFAULT_FG,
-        textColor: DEFAULT_FG,
+        strokeWidth:
+          (existingStyle?.strokeWidth as (typeof StrokeWidth)[keyof typeof StrokeWidth]) ??
+          StrokeWidth.Default,
+        strokeColor: existingStyle?.strokeColor ?? DEFAULT_FG,
+        textColor: existingStyle?.textColor ?? DEFAULT_FG,
       },
     });
   }
 
   // Influence Lines 생성 (방향성 있는 관계)
-  for (const [fromId, toId, status, memo] of aiOutput.influences) {
+  for (const [fromId, toId, status, aiMemo] of aiOutput.influences) {
     const realFromId = idMap.get(fromId);
     const realToId = idMap.get(toId);
 
     if (!realFromId || !realToId) continue;
+
+    // 기존 스타일 정보 가져오기
+    const existingStyle = existingConnections?.get(`influence-${fromId}-${toId}`);
 
     connections.push({
       id: generateId('influence'),
@@ -1527,14 +1601,51 @@ export function convertAIJsonToCanvas(
           startRef: realFromId,
           endRef: realToId,
         },
-        memo: memo ?? null,
+        memo: existingStyle?.memo ?? aiMemo ?? null,
       },
       layout: {
-        strokeWidth: StrokeWidth.Default,
-        strokeColor: DEFAULT_FG,
-        textColor: DEFAULT_FG,
+        strokeWidth:
+          (existingStyle?.strokeWidth as (typeof StrokeWidth)[keyof typeof StrokeWidth]) ??
+          StrokeWidth.Default,
+        strokeColor: existingStyle?.strokeColor ?? DEFAULT_FG,
+        textColor: existingStyle?.textColor ?? DEFAULT_FG,
       },
     });
+  }
+
+  // Group Lines 복원 (AI JSON에 없는 데이터이므로 기존 캔버스에서 복원)
+  // Group Line의 memberIds는 Canvas ID 기준이므로, 새로운 ID로 매핑 필요
+  // 현재는 AI ID → Canvas ID 매핑이 없으므로, 그대로 보존 (name 기반 매핑 고려 가능)
+  if (existingPositions?.groupLines) {
+    for (const groupInfo of existingPositions.groupLines) {
+      // memberIds가 없으면 건너뜀
+      if (
+        !groupInfo.groupMemberIds ||
+        groupInfo.groupMemberIds.length === 0 ||
+        !groupInfo.groupMemberPositions
+      ) {
+        continue;
+      }
+
+      connections.push({
+        id: generateId('group'),
+        entity: {
+          type: ConnectionType.Group_Line,
+          attribute: {
+            memberIds: groupInfo.groupMemberIds,
+            memberPositions: groupInfo.groupMemberPositions,
+          },
+          memo: groupInfo.memo ?? null,
+        },
+        layout: {
+          strokeWidth:
+            (groupInfo.strokeWidth as (typeof StrokeWidth)[keyof typeof StrokeWidth]) ??
+            StrokeWidth.Default,
+          strokeColor: groupInfo.strokeColor ?? DEFAULT_FG,
+          textColor: groupInfo.textColor ?? DEFAULT_FG,
+        },
+      });
+    }
   }
 
   return {
@@ -1610,33 +1721,53 @@ export function extractPositionsFromCanvas(
     subjects: new Map(),
   };
 
-  // Canvas subject를 name + gender로 인덱싱
-  const canvasSubjectsByNameGender = new Map<
-    string,
-    { id: string; x: number; y: number; isIP: boolean }
-  >();
-  const canvasSubjectsByName = new Map<
-    string,
-    { id: string; x: number; y: number; isIP: boolean }
-  >();
-  let canvasIP: { id: string; x: number; y: number } | null = null;
+  // Canvas subject 레이아웃 정보 타입
+  interface CanvasSubjectInfo {
+    id: string;
+    x: number;
+    y: number;
+    isIP: boolean;
+    size?: (typeof NodeSize)[keyof typeof NodeSize];
+    bgColor?: string;
+    textColor?: string;
+    shortNote?: string | null;
+  }
 
+  // Canvas subject를 name + gender로 인덱싱
+  const canvasSubjectsByNameGender = new Map<string, CanvasSubjectInfo>();
+  const canvasSubjectsByName = new Map<string, CanvasSubjectInfo>();
+  // 이름 없는 캔버스 노드를 순서(인덱스)로 인덱싱
+  const unnamedCanvasSubjects: CanvasSubjectInfo[] = [];
+  let canvasIP: CanvasSubjectInfo | null = null;
+
+  let canvasIndex = 0;
   for (const subject of canvas.subjects) {
     if (subject.entity.type !== SubjectType.Person) continue;
+    canvasIndex++;
 
     const attr = subject.entity.attribute as {
       name?: string | null;
       gender?: string;
       isIP?: boolean;
+      extraInfo?: { shortNote?: string | null };
     };
     const name = attr.name?.trim();
     const gender = attr.gender;
     const isIP = attr.isIP ?? false;
-    const pos = {
+    const style = subject.layout.style as {
+      size?: (typeof NodeSize)[keyof typeof NodeSize];
+      bgColor?: string;
+      textColor?: string;
+    };
+    const pos: CanvasSubjectInfo = {
       id: subject.id,
       x: subject.layout.center.x,
       y: subject.layout.center.y,
       isIP,
+      size: style?.size,
+      bgColor: style?.bgColor,
+      textColor: style?.textColor,
+      shortNote: attr.extraInfo?.shortNote,
     };
 
     if (name && gender) {
@@ -1644,11 +1775,18 @@ export function extractPositionsFromCanvas(
     }
     if (name) {
       canvasSubjectsByName.set(name, pos);
+    } else {
+      // 이름 없는 노드: "인물 {canvasIndex}" 키로도 저장
+      canvasSubjectsByName.set(`인물 ${canvasIndex}`, pos);
+      unnamedCanvasSubjects.push(pos);
     }
     if (isIP) {
       canvasIP = pos;
     }
   }
+
+  // 매칭된 캔버스 노드 ID 추적 (중복 매칭 방지)
+  const matchedCanvasIds = new Set<string>();
 
   // AI subject와 매칭
   for (const aiSubject of aiOutput.subjects) {
@@ -1658,24 +1796,183 @@ export function extractPositionsFromCanvas(
     // 1. name + gender 일치
     if (name && gender) {
       const match = canvasSubjectsByNameGender.get(`${name}-${gender}`);
-      if (match) {
-        positions.subjects.set(aiSubject.id, { x: match.x, y: match.y });
+      if (match && !matchedCanvasIds.has(match.id)) {
+        matchedCanvasIds.add(match.id);
+        positions.subjects.set(aiSubject.id, {
+          x: match.x,
+          y: match.y,
+          size: match.size,
+          bgColor: match.bgColor,
+          textColor: match.textColor,
+          shortNote: match.shortNote,
+        });
         continue;
       }
     }
 
-    // 2. name 일치
+    // 2. name 일치 (이름 없는 노드의 "인물 n" 키도 포함)
     if (name) {
       const match = canvasSubjectsByName.get(name);
-      if (match) {
-        positions.subjects.set(aiSubject.id, { x: match.x, y: match.y });
+      if (match && !matchedCanvasIds.has(match.id)) {
+        matchedCanvasIds.add(match.id);
+        positions.subjects.set(aiSubject.id, {
+          x: match.x,
+          y: match.y,
+          size: match.size,
+          bgColor: match.bgColor,
+          textColor: match.textColor,
+          shortNote: match.shortNote,
+        });
         continue;
       }
     }
 
     // 3. isIP 일치
-    if (aiSubject.isIP && canvasIP) {
-      positions.subjects.set(aiSubject.id, { x: canvasIP.x, y: canvasIP.y });
+    if (aiSubject.isIP && canvasIP && !matchedCanvasIds.has(canvasIP.id)) {
+      matchedCanvasIds.add(canvasIP.id);
+      positions.subjects.set(aiSubject.id, {
+        x: canvasIP.x,
+        y: canvasIP.y,
+        size: canvasIP.size,
+        bgColor: canvasIP.bgColor,
+        textColor: canvasIP.textColor,
+        shortNote: canvasIP.shortNote,
+      });
+      continue;
+    }
+
+    // 4. 이름 없는 캔버스 노드와 순차 매칭 (아직 매칭 안 된 것 중 첫 번째)
+    const unmatchedUnnamed = unnamedCanvasSubjects.find(
+      (u) => !matchedCanvasIds.has(u.id)
+    );
+    if (unmatchedUnnamed) {
+      matchedCanvasIds.add(unmatchedUnnamed.id);
+      positions.subjects.set(aiSubject.id, {
+        x: unmatchedUnnamed.x,
+        y: unmatchedUnnamed.y,
+        size: unmatchedUnnamed.size,
+        bgColor: unmatchedUnnamed.bgColor,
+        textColor: unmatchedUnnamed.textColor,
+        shortNote: unmatchedUnnamed.shortNote,
+      });
+    }
+  }
+
+  // Connection 스타일 추출
+  positions.connections = new Map();
+
+  // Canvas ID → AI ID 역매핑 (매칭된 subject 기준)
+  const canvasIdToAiId = new Map<string, number>();
+  for (const [aiId, info] of positions.subjects) {
+    // 매칭된 canvas subject 찾기
+    for (const subject of canvas.subjects) {
+      if (
+        subject.layout.center.x === info.x &&
+        subject.layout.center.y === info.y
+      ) {
+        canvasIdToAiId.set(subject.id, aiId);
+        break;
+      }
+    }
+  }
+
+  for (const connection of canvas.connections) {
+    const layout = connection.layout as {
+      strokeWidth?: (typeof StrokeWidth)[keyof typeof StrokeWidth];
+      strokeColor?: string;
+      textColor?: string;
+    };
+
+    if (connection.entity.type === ConnectionType.Partner_Line) {
+      const attr = connection.entity.attribute as {
+        subjects?: string[];
+        detail?: PartnerDetail;
+      };
+      const subjectIds = attr.subjects ?? [];
+      if (subjectIds.length === 2) {
+        const aiId1 = canvasIdToAiId.get(subjectIds[0]);
+        const aiId2 = canvasIdToAiId.get(subjectIds[1]);
+        if (aiId1 !== undefined && aiId2 !== undefined) {
+          const connectionInfo: ConnectionInfo = {
+            strokeWidth: layout?.strokeWidth,
+            strokeColor: layout?.strokeColor,
+            textColor: layout?.textColor,
+            memo: connection.entity.memo,
+            partnerDetail: attr.detail,
+          };
+          // 양방향 키 저장
+          positions.connections.set(`partner-${aiId1}-${aiId2}`, connectionInfo);
+          positions.connections.set(`partner-${aiId2}-${aiId1}`, connectionInfo);
+        }
+      }
+    } else if (
+      connection.entity.type === ConnectionType.Children_Parents_Line
+    ) {
+      const attr = connection.entity.attribute as {
+        childRef?: string;
+      };
+      const childAiId = attr.childRef
+        ? canvasIdToAiId.get(attr.childRef)
+        : undefined;
+      if (childAiId !== undefined) {
+        positions.connections.set(`children-${childAiId}`, {
+          strokeWidth: layout?.strokeWidth,
+          strokeColor: layout?.strokeColor,
+          textColor: layout?.textColor,
+          memo: connection.entity.memo,
+        });
+      }
+    } else if (connection.entity.type === ConnectionType.Relation_Line) {
+      const attr = connection.entity.attribute as { subjects?: string[] };
+      const subjectIds = attr.subjects ?? [];
+      if (subjectIds.length === 2) {
+        const aiId1 = canvasIdToAiId.get(subjectIds[0]);
+        const aiId2 = canvasIdToAiId.get(subjectIds[1]);
+        if (aiId1 !== undefined && aiId2 !== undefined) {
+          const connectionInfo: ConnectionInfo = {
+            strokeWidth: layout?.strokeWidth,
+            strokeColor: layout?.strokeColor,
+            textColor: layout?.textColor,
+            memo: connection.entity.memo,
+          };
+          positions.connections.set(`relation-${aiId1}-${aiId2}`, connectionInfo);
+          positions.connections.set(`relation-${aiId2}-${aiId1}`, connectionInfo);
+        }
+      }
+    } else if (connection.entity.type === ConnectionType.Influence_Line) {
+      const attr = connection.entity.attribute as {
+        startRef?: string;
+        endRef?: string;
+      };
+      const fromAiId = attr.startRef
+        ? canvasIdToAiId.get(attr.startRef)
+        : undefined;
+      const toAiId = attr.endRef ? canvasIdToAiId.get(attr.endRef) : undefined;
+      if (fromAiId !== undefined && toAiId !== undefined) {
+        positions.connections.set(`influence-${fromAiId}-${toAiId}`, {
+          strokeWidth: layout?.strokeWidth,
+          strokeColor: layout?.strokeColor,
+          textColor: layout?.textColor,
+          memo: connection.entity.memo,
+        });
+      }
+    } else if (connection.entity.type === ConnectionType.Group_Line) {
+      // Group Line은 AI JSON에 없으므로 별도 배열에 저장
+      const attr = connection.entity.attribute as {
+        memberIds?: string[];
+        memberPositions?: GroupMemberPosition[];
+      };
+      if (!positions.groupLines) {
+        positions.groupLines = [];
+      }
+      positions.groupLines.push({
+        strokeWidth: layout?.strokeWidth,
+        strokeColor: layout?.strokeColor,
+        textColor: layout?.textColor,
+        memo: connection.entity.memo,
+        groupMemberIds: attr.memberIds,
+        groupMemberPositions: attr.memberPositions,
+      });
     }
   }
 
@@ -1731,11 +2028,14 @@ export function convertCanvasToAIJson(
         };
       };
 
+      // 이름이 없으면 "인물 {aiId}" 할당 (고유 ID 기반)
+      const name = attr.name?.trim() || `인물 ${aiId}`;
+
       subjects.push({
         id: aiId,
         type: 'PERSON',
         gender: attr.gender as AISubject['gender'],
-        name: attr.name ?? undefined,
+        name,
         isIP: attr.isIP,
         isDead: attr.isDead,
         illness: attr.illness as AISubject['illness'],
@@ -1905,6 +2205,10 @@ function reverseMapPartnerStatus(status?: string): AIPartnerStatus | undefined {
       return 'separated';
     case PartnerStatus.Couple_Relationship:
       return 'cohabiting';
+    case PartnerStatus.Secret_Affair:
+      return 'secret_affair';
+    case PartnerStatus.Remarriage:
+      return 'remarriage';
     case PartnerStatus.Marriage:
     default:
       return 'marriage';
