@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Plus, Trash2 } from 'lucide-react';
+
 import { Spotlight } from '@/components/ui/composites/Spotlight';
 
 import type { Speaker, TranscribeSegment } from '../types';
@@ -40,6 +42,10 @@ interface TranscriptSegmentProps {
   onGuideComplete?: () => void;
   /** 첫 번째 세그먼트 여부 (Spotlight은 첫 번째만) */
   isFirstSegment?: boolean;
+  /** 세그먼트 추가 콜백 (편집 모드에서만) */
+  onAddSegment?: (afterSegmentId: number, speaker: number) => void;
+  /** 세그먼트 삭제 콜백 (편집 모드에서만) */
+  onDeleteSegment?: (segmentId: number) => void;
 }
 
 const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
@@ -61,6 +67,8 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   onGuideNext,
   onGuideComplete,
   isFirstSegment = false,
+  onAddSegment,
+  onDeleteSegment,
 }) => {
   const [editedText, setEditedText] = React.useState(segment.text);
   const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
@@ -171,21 +179,44 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
     return labelElement;
   };
 
+  const handleAddSegment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddSegment?.(segment.id, segment.speaker);
+  };
+
+  const handleDeleteSegment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDeleteSegment?.(segment.id);
+  };
+
   return (
     <div
       ref={segmentRef}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
-      className={`group flex gap-4 rounded-lg p-4 text-left transition-all duration-200 ${
+      className={`group/segment group relative flex gap-4 rounded-lg p-4 text-left transition-all duration-200 ${
         isClickable ? 'cursor-pointer' : ''
       } ${
         isActive
           ? 'bg-surface-contrast'
-          : `${isClickable ? 'hover:border-border hover:bg-surface-contrast' : ''}`
+          : isEditable
+            ? 'hover:bg-surface-contrast'
+            : `${isClickable ? 'hover:border-border hover:bg-surface-contrast' : ''}`
       }`}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
     >
+      {/* 편집 모드 삭제 버튼 (우측 상단) */}
+      {isEditable && onDeleteSegment && (
+        <button
+          onClick={handleDeleteSegment}
+          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-red-500 opacity-0 transition-all hover:text-red-600 group-hover/segment:pointer-events-auto group-hover/segment:opacity-100"
+          aria-label="세그먼트 삭제"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
+
       {!isAnonymized && (
         <>
           {onSpeakerChange ? (
@@ -235,12 +266,14 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
           {isAnonymized && (
             <span className="text-sm font-semibold text-fg">익명화됨</span>
           )}
-          {showTimestampDisplay && segment.start !== null && (
-            <span className="text-xs text-fg-muted">
-              {formatTime(segment.start)}
-            </span>
-          )}
-          {!showTimestampDisplay && speakerUtteranceIndex !== undefined && (
+          {showTimestampDisplay &&
+            segment.start != null &&
+            segment.start > 0 && (
+              <span className="text-xs text-fg-muted">
+                {formatTime(segment.start)}
+              </span>
+            )}
+          {!showTimestamp && speakerUtteranceIndex !== undefined && (
             <span className="text-xs text-fg-muted">
               {speakerUtteranceIndex}
             </span>
@@ -248,12 +281,13 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
         </div>
         {isEditable ? (
           <textarea
+            placeholder="대화 내용을 입력해주세요."
             ref={textareaRef}
             value={editedText}
             onChange={handleTextareaChange}
             onClick={(e) => e.stopPropagation()}
             rows={1}
-            className={`m-0 block w-full resize-none overflow-hidden border-0 bg-transparent p-0 leading-relaxed outline-none ${
+            className={`m-0 block w-full resize-none overflow-hidden border-0 bg-transparent p-0 leading-relaxed outline-none placeholder:text-[#CFCED3] ${
               isActive ? 'font-medium text-fg' : 'text-fg-muted'
             }`}
             style={{
@@ -274,6 +308,17 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
           </p>
         )}
       </div>
+
+      {/* 편집 모드 세그먼트 추가 버튼 (중앙 하단) */}
+      {isEditable && onAddSegment && (
+        <button
+          onClick={handleAddSegment}
+          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-50 p-2 text-primary-600 opacity-0 shadow-sm transition-all hover:scale-105 hover:border-primary group-hover/segment:pointer-events-auto group-hover/segment:opacity-100"
+          aria-label="세그먼트 추가"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 };
