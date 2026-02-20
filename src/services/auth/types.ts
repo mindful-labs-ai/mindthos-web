@@ -12,6 +12,8 @@ export interface UserDbRecord {
   email_verified_at: string | null;
   organization: string | null;
   default_template_id: number | null;
+  terms_agreed_at: string | null;
+  terms_version: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -22,6 +24,8 @@ export interface UserData {
   phoneNumber: string | null;
   organization: string | null;
   defaultTemplateId: number | null;
+  termsAgreedAt: string | null;
+  termsVersion: string | null;
 }
 
 export interface LoginCredentials {

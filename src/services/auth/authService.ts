@@ -124,6 +124,8 @@ export const authService = {
         phoneNumber: data.phone_number,
         defaultTemplateId: data.default_template_id,
         organization: data.organization,
+        termsAgreedAt: data.terms_agreed_at ?? null,
+        termsVersion: data.terms_version ?? null,
       };
     } catch (error) {
       console.error('getUserDataByEmail exception:', error);

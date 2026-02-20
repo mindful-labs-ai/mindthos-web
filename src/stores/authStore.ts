@@ -13,6 +13,8 @@ interface AuthState {
   userPhoneNumber: string | null;
   organization: string | null;
   defaultTemplateId: number | null;
+  termsAgreedAt: string | null;
+  termsVersion: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   isInitialized: boolean;
@@ -53,6 +55,8 @@ export const useAuthStore = create<AuthStore>()(
       userPhoneNumber: null,
       organization: null,
       defaultTemplateId: null,
+      termsAgreedAt: null,
+      termsVersion: null,
       isLoading: true,
       isAuthenticated: false,
       isInitialized: false,
@@ -66,6 +70,8 @@ export const useAuthStore = create<AuthStore>()(
             userPhoneNumber: userData?.phoneNumber ?? null,
             organization: userData?.organization ?? null,
             defaultTemplateId: userData?.defaultTemplateId ?? null,
+            termsAgreedAt: userData?.termsAgreedAt ?? null,
+            termsVersion: userData?.termsVersion ?? null,
             isAuthenticated: user !== null,
             isInitialized: true,
           },
@@ -120,6 +126,8 @@ export const useAuthStore = create<AuthStore>()(
             userPhoneNumber: null,
             organization: null,
             defaultTemplateId: null,
+            termsAgreedAt: null,
+            termsVersion: null,
             isAuthenticated: false,
             isLoading: false,
           },
