@@ -4,7 +4,7 @@ import { useBlocker } from 'react-router-dom';
 
 import type { AIGenogramOutput } from '../utils/aiJsonConverter';
 
-export type GenogramStep = 'confirm' | 'analyze' | 'render';
+export type GenogramStep = 'confirm' | 'analyze' | 'edit' | 'render';
 
 interface UseGenogramStepsReturn {
   // 상태
@@ -58,9 +58,11 @@ export function useGenogramSteps(): UseGenogramStepsReturn {
     setEditedJson('');
   }, []);
 
-  // 이탈 방지 조건: 로딩 중 또는 analyze 단계에서 데이터가 있을 때
+  // 이탈 방지 조건: 로딩 중 또는 analyze/edit 단계에서 데이터가 있을 때
   const shouldBlockNavigation =
-    isLoading || (currentStep === 'analyze' && aiOutput !== null);
+    isLoading ||
+    ((currentStep === 'analyze' || currentStep === 'edit') &&
+      aiOutput !== null);
 
   // 브라우저 새로고침/이탈 방지
   useEffect(() => {

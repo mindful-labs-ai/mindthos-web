@@ -1,6 +1,6 @@
 import type { AIGenogramOutput } from '../../utils/aiJsonConverter';
 
-export type GenogramStep = 'confirm' | 'analyze' | 'render';
+export type GenogramStep = 'confirm' | 'analyze' | 'edit' | 'render';
 
 export interface GenogramStepModalState {
   isOpen: boolean;
@@ -24,6 +24,8 @@ export function stepToIndex(step: GenogramStep): number {
       return -1; // confirm은 스테퍼에 표시되지 않음
     case 'analyze':
       return 0;
+    case 'edit':
+      return -1; // edit은 편집 플로우이므로 스테퍼에 표시되지 않음
     case 'render':
       return 1;
   }

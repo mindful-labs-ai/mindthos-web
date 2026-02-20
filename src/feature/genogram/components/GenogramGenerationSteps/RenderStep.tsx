@@ -6,10 +6,13 @@ import { Alert } from '@/components/ui/atoms/Alert';
 import { Button } from '@/components/ui/atoms/Button';
 import { trackEvent } from '@/lib/mixpanel';
 
-import { GenogramLoadingAnimationLoop } from '../GenogramLoadingAnimation';
+import {
+  GenogramLoadingAnimation,
+  GenogramLoadingAnimationLoop,
+} from '../GenogramLoadingAnimation';
 
 // 애니메이션 1회 사이클 시간 (4초 - GenogramLoadingAnimationLoop 기준)
-const ANIMATION_CYCLE_DURATION = 4000;
+const ANIMATION_CYCLE_DURATION = 3200;
 // 최소 애니메이션 반복 횟수
 const MIN_ANIMATION_CYCLES = 3;
 
@@ -18,6 +21,8 @@ interface RenderStepProps {
   isPending: boolean;
   onComplete: () => void;
   onCancel?: () => void;
+  /** 편집 모드일 때 애니메이션 대기 건너뛰기 */
+  isEditMode?: boolean;
 }
 
 export function RenderStep({
@@ -25,13 +30,16 @@ export function RenderStep({
   isPending,
   onComplete,
   onCancel,
+  isEditMode = false,
 }: RenderStepProps) {
-  // 최소 애니메이션 사이클 완료 여부
-  const [animationComplete, setAnimationComplete] = useState(false);
+  // 최소 애니메이션 사이클 완료 여부 (edit 모드면 바로 완료)
+  const [animationComplete, setAnimationComplete] = useState(isEditMode);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 컴포넌트 마운트 시 애니메이션 타이머 시작
+  // 컴포넌트 마운트 시 애니메이션 타이머 시작 (edit 모드가 아닐 때만)
   useEffect(() => {
+    if (isEditMode) return;
+
     const totalDuration = ANIMATION_CYCLE_DURATION * MIN_ANIMATION_CYCLES;
     timerRef.current = setTimeout(() => {
       setAnimationComplete(true);
@@ -42,22 +50,39 @@ export function RenderStep({
         clearTimeout(timerRef.current);
       }
     };
-  }, []);
+  }, [isEditMode]);
+
+  // edit 모드에서 성공 시 바로 완료 처리 (성공 UI 스킵)
+  useEffect(() => {
+    if (isEditMode && !isPending && !error) {
+      timerRef.current = setTimeout(() => {
+        onComplete();
+      }, 1500);
+    }
+  }, [isEditMode, isPending, error, onComplete]);
 
   // props에서 직접 상태 계산
   const status = error ? 'error' : isPending ? 'processing' : 'success';
 
   // 애니메이션 완료 전이거나 아직 처리 중이면 로딩 표시
+  // edit 모드에서는 성공 상태에서도 스피너 표시 (자동 완료 처리됨)
   const showLoading =
-    status === 'processing' || (status === 'success' && !animationComplete);
-  // 버튼 활성화: 성공 상태이면서 애니메이션 완료
-  const showSuccessUI = status === 'success' && animationComplete;
+    status === 'processing' ||
+    (status === 'success' && !animationComplete) ||
+    (status === 'success' && isEditMode);
+  // 버튼 활성화: 성공 상태이면서 애니메이션 완료 (edit 모드에서는 표시 안 함)
+  const showSuccessUI =
+    status === 'success' && animationComplete && !isEditMode;
 
   return (
     <div className="space-y-6 py-8">
       {showLoading && (
         <div className="flex flex-col items-center justify-center">
-          <GenogramLoadingAnimationLoop />
+          {isEditMode ? (
+            <GenogramLoadingAnimation />
+          ) : (
+            <GenogramLoadingAnimationLoop />
+          )}
         </div>
       )}
 

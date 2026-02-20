@@ -326,3 +326,37 @@ export async function initFamilySummary(
     };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// family_summary 저장 API
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * AI JSON을 clients.family_summary에 저장
+ * @param clientId 내담자 UUID
+ * @param aiOutput AI JSON 데이터
+ */
+export async function saveFamilySummary(
+  clientId: string,
+  aiOutput: AIGenogramOutput
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('clients')
+      .update({ family_summary: aiOutput })
+      .eq('id', clientId);
+
+    if (error) {
+      console.error('[saveFamilySummary] error:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('[saveFamilySummary] error:', error);
+    return {
+      success: false,
+      error: (error as Error).message || '저장 중 오류가 발생했습니다.',
+    };
+  }
+}
