@@ -7,6 +7,7 @@ export const ROUTES = {
   AUTH_CALLBACK: '/auth/callback',
   EMAIL_VERIFICATION: '/auth/verify-email',
   TERMS: '/terms',
+  TERMS_AGREEMENT: '/terms-agreement',
   CLIENTS: '/clients',
   CLIENT_DETAIL: '/clients/:clientId',
   SESSIONS: '/sessions',
@@ -28,6 +29,7 @@ export const getGenogramRoute = (clientId?: string) =>
 export const TERMS_TYPES = {
   SERVICE: 'service',
   PRIVACY: 'privacy',
+  MARKETING: 'marketing',
 } as const;
 
 export type TermsType = (typeof TERMS_TYPES)[keyof typeof TERMS_TYPES];

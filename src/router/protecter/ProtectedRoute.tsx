@@ -9,6 +9,7 @@ import { ROUTES } from '../constants';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  skipTermsCheck?: boolean;
 }
 
 /**
@@ -16,12 +17,17 @@ interface ProtectedRouteProps {
  *
  * 책임:
  * - 인증 상태 확인 및 미인증 시 리다이렉트
+ * - 약관 동의 여부 확인 및 미동의 시 약관 동의 페이지로 리다이렉트
  * - 모바일 라우트 가드
  * - 전역 모달 컨테이너 렌더링 (Portal 기반, 초기화 로직 포함)
  */
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  skipTermsCheck = false,
+}) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const termsAgreedAt = useAuthStore((state) => state.termsAgreedAt);
   const utmParams = useUtmStore((state) => state.utmParams);
 
   // 모바일/태블릿에서 "/" 외 라우트 접근 시 자동 리다이렉트
@@ -41,6 +47,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!isAuthenticated) {
     const search = utmParams ? `?${utmParams}` : '';
     return <Navigate to={{ pathname: ROUTES.AUTH, search }} replace />;
+  }
+
+  // 약관 미동의 시 약관 동의 페이지로 리다이렉트
+  if (!skipTermsCheck && !termsAgreedAt) {
+    const search = utmParams ? `?${utmParams}` : '';
+    return (
+      <Navigate to={{ pathname: ROUTES.TERMS_AGREEMENT, search }} replace />
+    );
   }
 
   return (

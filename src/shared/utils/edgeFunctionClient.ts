@@ -48,6 +48,12 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     ACCOUNT_DELETE: 'auth/account-delete',
     RESEND_VERIFICATION: 'auth/resend-verification',
   },
+  // 약관 관련
+  TERMS: {
+    LIST: 'terms/list',
+    CHECK: 'terms/check',
+    AGREE: 'terms/agree',
+  },
   // 가계도 관련
   GENOGRAM: {
     INIT: 'generate-family-summary/init',

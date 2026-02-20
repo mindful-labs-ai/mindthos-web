@@ -1,5 +1,137 @@
 import type { AccordionItem } from '@/components/ui/composites/Accordion';
 
+export const marketingTermsItems: AccordionItem[] = [
+  {
+    value: '1',
+    header: '제1조 (수집 및 이용 목적)',
+    content: (
+      <div className="space-y-3">
+        <p>
+          회사는 수집한 개인정보를 다음의 마케팅 및 프로모션 목적으로
+          이용합니다.
+        </p>
+        <div className="ml-4 space-y-2">
+          <div>
+            <p className="font-semibold">서비스 관련 최신 정보 안내</p>
+            <p className="ml-4">
+              - 신규 기능 업데이트, 상담 슈퍼비전 가이드, 뉴스레터 발송
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold">혜택 및 이벤트</p>
+            <p className="ml-4">
+              - 할인 쿠폰 제공, 프로모션 안내, 경품 이벤트 진행, 무료 체험 기회
+              제공
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold">맞춤형 서비스</p>
+            <p className="ml-4">
+              - 서비스 이용 기록 분석을 통한 개인 맞춤형 혜택 추천 및 서비스
+              개선을 위한 설문조사
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    value: '2',
+    header: '제2조 (수집 및 이용 항목)',
+    content: (
+      <div className="space-y-3">
+        <p>마케팅 활용을 위해 아래의 정보를 수집·이용합니다.</p>
+        <div className="ml-4 space-y-2">
+          <div>
+            <p className="font-semibold">기본 정보</p>
+            <p className="ml-4">- 이름, 이메일 주소, 휴대전화번호</p>
+          </div>
+          <div>
+            <p className="font-semibold">서비스 이용 정보</p>
+            <p className="ml-4">
+              - 접속 로그, 쿠키, 서비스 이용 기록, 구매 및 결제 이력 (맞춤형
+              혜택 제공 시 활용)
+            </p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    value: '3',
+    header: '제3조 (보유 및 이용 기간)',
+    content: (
+      <div className="space-y-2">
+        <div className="ml-4 space-y-1">
+          <p>
+            - 보유 기간: <strong>동의 철회 시 또는 회원 탈퇴 시까지</strong>
+          </p>
+          <p>
+            - 단, 관계 법령에 따라 보존할 필요가 있는 경우 해당 법령에서 정한
+            기간 동안 보관합니다.
+          </p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    value: '4',
+    header: '제4조 (전송 매체)',
+    content: (
+      <div className="space-y-3">
+        <p>
+          회사는 귀하가 동의한 연락처로 다음과 같은 매체를 통해 광고성 정보를
+          전송할 수 있습니다.
+        </p>
+        <div className="ml-4 space-y-1">
+          <p>- 전자우편 (E-mail / 뉴스레터)</p>
+          <p>- 문자메시지 (SMS/LMS)</p>
+          <p>- 앱 푸시 (App Push) 알림</p>
+          <p>- 카카오톡 알림톡/친구톡</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    value: '5',
+    header: '제5조 (동의 거부 권리 및 철회 방법)',
+    content: (
+      <div className="space-y-3">
+        <div className="space-y-2">
+          <p>
+            귀하는 본 마케팅 정보 수신 동의를 거부할 권리가 있으며, 동의를
+            거부하더라도 서비스의 필수적인 기능 이용에는 제한이 없습니다.
+          </p>
+          <p>
+            동의 후에도 언제든지 아래의 방법으로 무료로 수신 동의를 철회(수신
+            거부)할 수 있습니다.
+          </p>
+        </div>
+        <div className="ml-4 space-y-1">
+          <p>
+            - <strong>이메일:</strong> 수신된 뉴스레터 하단의 [수신거부] 링크
+            클릭
+          </p>
+          <p>
+            - <strong>서비스 내 설정:</strong> [설정 {'>'} 알림 설정] 메뉴에서
+            마케팅 정보 수신 해제
+          </p>
+          <p>
+            - <strong>고객센터:</strong>{' '}
+            <a
+              href="mailto:privacy@mindfullabs.ai"
+              className="text-primary-500 underline hover:text-primary-600"
+            >
+              privacy@mindfullabs.ai
+            </a>{' '}
+            로 철회 요청
+          </p>
+        </div>
+      </div>
+    ),
+  },
+];
+
 export const serviceTermsItems: AccordionItem[] = [
   {
     value: 'chapter1',

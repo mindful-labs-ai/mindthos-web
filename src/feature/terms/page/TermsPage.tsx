@@ -7,11 +7,19 @@ import { Accordion } from '@/components/ui/composites/Accordion';
 import { TERMS_TYPES, type TermsType } from '@/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 
-import { privacyPolicyItems, serviceTermsItems } from '../constant/TermList';
+import {
+  marketingTermsItems,
+  privacyPolicyItems,
+  serviceTermsItems,
+} from '../constant/TermList';
 
 // 타입 가드: string이 TermsType인지 확인
 const isValidTermsType = (value: string | null): value is TermsType => {
-  return value === TERMS_TYPES.SERVICE || value === TERMS_TYPES.PRIVACY;
+  return (
+    value === TERMS_TYPES.SERVICE ||
+    value === TERMS_TYPES.PRIVACY ||
+    value === TERMS_TYPES.MARKETING
+  );
 };
 
 const TermsPage = () => {
@@ -31,6 +39,7 @@ const TermsPage = () => {
 
   const showServiceTerms = type === TERMS_TYPES.SERVICE;
   const showPrivacyPolicy = type === TERMS_TYPES.PRIVACY;
+  const showMarketingTerms = type === TERMS_TYPES.MARKETING;
 
   return (
     <div className="min-h-screen bg-bg p-8">
@@ -65,6 +74,27 @@ const TermsPage = () => {
             <Accordion
               type="single"
               items={privacyPolicyItems}
+              defaultValue="1"
+            />
+          </section>
+        )}
+
+        {/* 마케팅 정보 제공 동의 */}
+        {showMarketingTerms && (
+          <section>
+            <Title as="h1" className="mb-6 text-2xl">
+              마케팅 정보 제공 동의
+            </Title>
+            <p className="mb-6 text-base text-muted">
+              마인드풀랩스 주식회사(이하 "회사")는 마음토스(Mindthos) 서비스와
+              관련하여 고객님께 유용한 혜택과 최신 정보를 제공하기 위해, 아래와
+              같이 개인정보를 수집·이용하고 광고성 정보를 전송하고자 합니다. 본
+              동의는 선택 사항이며, 동의하지 않으셔도 기본 서비스 이용에는
+              제한이 없습니다.
+            </p>
+            <Accordion
+              type="single"
+              items={marketingTermsItems}
               defaultValue="1"
             />
           </section>

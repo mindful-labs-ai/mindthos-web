@@ -17,6 +17,7 @@ import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
+import TermsAgreementPage from '@/feature/terms-agreement/page/TermsAgreementPage';
 
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';
@@ -93,6 +94,14 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.EMAIL_VERIFICATION,
         element: <EmailVerificationPage />,
+      },
+      {
+        path: ROUTES.TERMS_AGREEMENT,
+        element: (
+          <ProtectedRoute skipTermsCheck>
+            <TermsAgreementPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: ROUTES.TERMS,
