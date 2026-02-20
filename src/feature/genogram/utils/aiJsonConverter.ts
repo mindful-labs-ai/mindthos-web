@@ -1590,7 +1590,9 @@ export function convertAIJsonToCanvas(
     if (!realFromId || !realToId) continue;
 
     // 기존 스타일 정보 가져오기
-    const existingStyle = existingConnections?.get(`influence-${fromId}-${toId}`);
+    const existingStyle = existingConnections?.get(
+      `influence-${fromId}-${toId}`
+    );
 
     connections.push({
       id: generateId('influence'),
@@ -1901,8 +1903,14 @@ export function extractPositionsFromCanvas(
             partnerDetail: attr.detail,
           };
           // 양방향 키 저장
-          positions.connections.set(`partner-${aiId1}-${aiId2}`, connectionInfo);
-          positions.connections.set(`partner-${aiId2}-${aiId1}`, connectionInfo);
+          positions.connections.set(
+            `partner-${aiId1}-${aiId2}`,
+            connectionInfo
+          );
+          positions.connections.set(
+            `partner-${aiId2}-${aiId1}`,
+            connectionInfo
+          );
         }
       }
     } else if (
@@ -1935,8 +1943,14 @@ export function extractPositionsFromCanvas(
             textColor: layout?.textColor,
             memo: connection.entity.memo,
           };
-          positions.connections.set(`relation-${aiId1}-${aiId2}`, connectionInfo);
-          positions.connections.set(`relation-${aiId2}-${aiId1}`, connectionInfo);
+          positions.connections.set(
+            `relation-${aiId1}-${aiId2}`,
+            connectionInfo
+          );
+          positions.connections.set(
+            `relation-${aiId2}-${aiId1}`,
+            connectionInfo
+          );
         }
       }
     } else if (connection.entity.type === ConnectionType.Influence_Line) {

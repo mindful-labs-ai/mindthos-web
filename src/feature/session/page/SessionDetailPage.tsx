@@ -358,14 +358,26 @@ export const SessionDetailPage: React.FC = () => {
 
         let updatedContents;
         if ('segments' in contents && Array.isArray(contents.segments)) {
-          updatedContents = { ...contents, segments: insertSegment(contents.segments) };
+          updatedContents = {
+            ...contents,
+            segments: insertSegment(contents.segments),
+          };
         } else if ('result' in contents && contents.result?.segments) {
-          updatedContents = { ...contents, result: { ...contents.result, segments: insertSegment(contents.result.segments) } };
+          updatedContents = {
+            ...contents,
+            result: {
+              ...contents.result,
+              segments: insertSegment(contents.result.segments),
+            },
+          };
         } else {
           return oldData;
         }
 
-        return { ...oldData, transcribe: { ...oldData.transcribe, contents: updatedContents } };
+        return {
+          ...oldData,
+          transcribe: { ...oldData.transcribe, contents: updatedContents },
+        };
       });
     },
     [isReadOnly, transcribe?.id, segments, queryClient, sessionQueryKey]
@@ -385,14 +397,26 @@ export const SessionDetailPage: React.FC = () => {
 
         let updatedContents;
         if ('segments' in contents && Array.isArray(contents.segments)) {
-          updatedContents = { ...contents, segments: removeSegment(contents.segments) };
+          updatedContents = {
+            ...contents,
+            segments: removeSegment(contents.segments),
+          };
         } else if ('result' in contents && contents.result?.segments) {
-          updatedContents = { ...contents, result: { ...contents.result, segments: removeSegment(contents.result.segments) } };
+          updatedContents = {
+            ...contents,
+            result: {
+              ...contents.result,
+              segments: removeSegment(contents.result.segments),
+            },
+          };
         } else {
           return oldData;
         }
 
-        return { ...oldData, transcribe: { ...oldData.transcribe, contents: updatedContents } };
+        return {
+          ...oldData,
+          transcribe: { ...oldData.transcribe, contents: updatedContents },
+        };
       });
     },
     [isReadOnly, transcribe?.id, queryClient, sessionQueryKey]
