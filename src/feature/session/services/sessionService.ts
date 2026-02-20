@@ -497,6 +497,26 @@ export async function updateMultipleTranscriptSegments(
 }
 
 /**
+ * 전사 contents 전체를 저장 (텍스트 편집 + 세그먼트 추가/삭제를 한 번에)
+ */
+export async function saveTranscriptContents(
+  transcribeId: string,
+  contents: any
+): Promise<void> {
+  const { segments, speakers } = extractSegmentsAndSpeakers(contents);
+  const parsedText = generateParsedText(segments, speakers);
+
+  const { error } = await supabase
+    .from('transcribes')
+    .update({ contents, parsed_text: parsedText })
+    .eq('id', transcribeId);
+
+  if (error) {
+    throw new Error(`축어록 저장 실패: ${error.message}`);
+  }
+}
+
+/**
  * 전사 세그먼트 업데이트 Payload
  */
 export interface TranscriptUpdatePayload {
@@ -589,6 +609,104 @@ export async function updateTranscriptSegments(
 
   if (updateError) {
     throw new Error(`대화 업데이트 실패: ${updateError.message}`);
+  }
+}
+
+/**
+ * 전사 세그먼트 추가 (특정 세그먼트 뒤에 삽입)
+ * Optimistic update는 호출부에서 처리, 이 함수는 DB만 업데이트
+ */
+export async function addTranscriptSegment(
+  transcribeId: string,
+  afterSegmentId: number,
+  newSegment: { id: number; speaker: number; text: string }
+): Promise<void> {
+  const { data: transcribe, error: fetchError } = await supabase
+    .from('transcribes')
+    .select('contents')
+    .eq('id', transcribeId)
+    .single();
+
+  if (fetchError || !transcribe) {
+    throw new Error(
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+    );
+  }
+
+  const contents = transcribe.contents;
+  if (!contents) {
+    throw new Error('전사 결과가 존재하지 않습니다.');
+  }
+
+  const updatedContents = updateSegmentsInContents(contents, (segments) => {
+    const afterIndex = findSegmentIndexById(segments, afterSegmentId);
+    const segmentToInsert = {
+      id: newSegment.id,
+      start: null,
+      end: null,
+      text: newSegment.text,
+      speaker: newSegment.speaker,
+    };
+    segments.splice(afterIndex + 1, 0, segmentToInsert);
+    return segments;
+  });
+
+  const { segments: updatedSegments, speakers } =
+    extractSegmentsAndSpeakers(updatedContents);
+  const parsedText = generateParsedText(updatedSegments, speakers);
+
+  const { error: updateError } = await supabase
+    .from('transcribes')
+    .update({ contents: updatedContents, parsed_text: parsedText })
+    .eq('id', transcribeId);
+
+  if (updateError) {
+    throw new Error(`세그먼트 추가 실패: ${updateError.message}`);
+  }
+}
+
+/**
+ * 전사 세그먼트 삭제
+ * Optimistic update는 호출부에서 처리, 이 함수는 DB만 업데이트
+ */
+export async function deleteTranscriptSegment(
+  transcribeId: string,
+  segmentId: number
+): Promise<void> {
+  const { data: transcribe, error: fetchError } = await supabase
+    .from('transcribes')
+    .select('contents')
+    .eq('id', transcribeId)
+    .single();
+
+  if (fetchError || !transcribe) {
+    throw new Error(
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+    );
+  }
+
+  const contents = transcribe.contents;
+  if (!contents) {
+    throw new Error('전사 결과가 존재하지 않습니다.');
+  }
+
+  const updatedContents = updateSegmentsInContents(contents, (segments) => {
+    const index = findSegmentIndexById(segments, segmentId);
+    segments.splice(index, 1);
+    return segments;
+  });
+
+  const { segments: updatedSegments, speakers } =
+    extractSegmentsAndSpeakers(updatedContents);
+  const parsedText = generateParsedText(updatedSegments, speakers);
+
+  const { error: updateError } = await supabase
+    .from('transcribes')
+    .update({ contents: updatedContents, parsed_text: parsedText })
+    .eq('id', transcribeId);
+
+  if (updateError) {
+    throw new Error(`세그먼트 삭제 실패: ${updateError.message}`);
   }
 }
 

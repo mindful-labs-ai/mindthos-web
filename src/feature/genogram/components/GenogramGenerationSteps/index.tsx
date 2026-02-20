@@ -19,6 +19,8 @@ interface GenogramGenerationStepsProps {
   clientName?: string;
   /** render 단계에서 캔버스 로딩 중 여부 */
   isRenderPending?: boolean;
+  /** 편집 모드 여부 (애니메이션 대기 건너뛰기) */
+  isEditMode?: boolean;
 
   // 콜백
   onConfirm: () => void;
@@ -26,6 +28,8 @@ interface GenogramGenerationStepsProps {
   onNextToRender: () => void;
   onComplete: () => void;
   onCancel?: () => void;
+  /** 편집 모드에서 취소 시 콜백 (edit 단계 전용) */
+  onEditCancel?: () => void;
 }
 
 export function GenogramGenerationSteps({
@@ -35,13 +39,79 @@ export function GenogramGenerationSteps({
   aiOutput,
   clientName,
   isRenderPending = false,
+  isEditMode = false,
   onConfirm,
   onAiOutputChange,
   onNextToRender,
   onComplete,
   onCancel,
+  onEditCancel,
 }: GenogramGenerationStepsProps) {
   const stepIndex = stepToIndex(currentStep);
+
+  // edit 단계: analyze와 동일한 UI (스테퍼 없음)
+  if (currentStep === 'edit') {
+    // 콘텐츠 렌더링
+    const renderEditContent = () => {
+      // 에러 발생 시
+      if (error) {
+        return (
+          <div className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-red-500" />
+            <p className="mt-4 text-center text-lg font-medium text-fg">
+              오류가 발생했습니다
+            </p>
+            <p className="mt-2 text-center text-sm text-fg-muted">{error}</p>
+            {onEditCancel && (
+              <Button variant="outline" className="mt-6" onClick={onEditCancel}>
+                돌아가기
+              </Button>
+            )}
+          </div>
+        );
+      }
+
+      // 로딩 중
+      if (isLoading) {
+        return (
+          <div className="flex flex-col items-center justify-center py-12">
+            <AnalyzeLoadingAnimation />
+          </div>
+        );
+      }
+
+      // 데이터 있음
+      if (aiOutput) {
+        return (
+          <FamilyMemberListStep
+            data={aiOutput}
+            onChange={onAiOutputChange}
+            onNext={onNextToRender}
+            buttonText="가계도에 적용하기"
+            isEditMode
+          />
+        );
+      }
+
+      // 대기 중
+      return (
+        <div className="py-8 text-center text-fg-muted">
+          데이터를 불러오는 중...
+        </div>
+      );
+    };
+
+    return (
+      <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
+        <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-lg">
+          {/* 콘텐츠 (스테퍼 없음) */}
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {renderEditContent()}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // render 단계: 전체 화면 모달로 표시
   if (currentStep === 'render') {
@@ -53,6 +123,7 @@ export function GenogramGenerationSteps({
             isPending={isRenderPending}
             onComplete={onComplete}
             onCancel={onCancel}
+            isEditMode={isEditMode}
           />
         </div>
       </div>

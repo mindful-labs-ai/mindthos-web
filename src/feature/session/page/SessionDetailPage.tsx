@@ -330,6 +330,98 @@ export const SessionDetailPage: React.FC = () => {
     isReadOnly,
   });
 
+  // 세그먼트 추가 핸들러 (로컬 캐시만 업데이트, 편집 완료 시 일괄 저장)
+  const handleAddSegment = React.useCallback(
+    (afterSegmentId: number, speaker: number) => {
+      if (isReadOnly || !transcribe?.id) return;
+
+      const maxId = segments.reduce((max, seg) => Math.max(max, seg.id), 0);
+      const newSegment = {
+        id: maxId + 1,
+        start: null as null,
+        end: null as null,
+        text: '',
+        speaker,
+      };
+
+      queryClient.setQueryData(sessionQueryKey, (oldData: any) => {
+        if (!oldData?.transcribe?.contents) return oldData;
+        const contents = oldData.transcribe.contents;
+
+        const insertSegment = (segs: any[]) => {
+          const idx = segs.findIndex((s: any) => s.id === afterSegmentId);
+          if (idx === -1) return segs;
+          const updated = [...segs];
+          updated.splice(idx + 1, 0, newSegment);
+          return updated;
+        };
+
+        let updatedContents;
+        if ('segments' in contents && Array.isArray(contents.segments)) {
+          updatedContents = {
+            ...contents,
+            segments: insertSegment(contents.segments),
+          };
+        } else if ('result' in contents && contents.result?.segments) {
+          updatedContents = {
+            ...contents,
+            result: {
+              ...contents.result,
+              segments: insertSegment(contents.result.segments),
+            },
+          };
+        } else {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          transcribe: { ...oldData.transcribe, contents: updatedContents },
+        };
+      });
+    },
+    [isReadOnly, transcribe?.id, segments, queryClient, sessionQueryKey]
+  );
+
+  // 세그먼트 삭제 핸들러 (로컬 캐시만 업데이트, 편집 완료 시 일괄 저장)
+  const handleDeleteSegment = React.useCallback(
+    (segmentId: number) => {
+      if (isReadOnly || !transcribe?.id) return;
+
+      queryClient.setQueryData(sessionQueryKey, (oldData: any) => {
+        if (!oldData?.transcribe?.contents) return oldData;
+        const contents = oldData.transcribe.contents;
+
+        const removeSegment = (segs: any[]) =>
+          segs.filter((s: any) => s.id !== segmentId);
+
+        let updatedContents;
+        if ('segments' in contents && Array.isArray(contents.segments)) {
+          updatedContents = {
+            ...contents,
+            segments: removeSegment(contents.segments),
+          };
+        } else if ('result' in contents && contents.result?.segments) {
+          updatedContents = {
+            ...contents,
+            result: {
+              ...contents.result,
+              segments: removeSegment(contents.result.segments),
+            },
+          };
+        } else {
+          return oldData;
+        }
+
+        return {
+          ...oldData,
+          transcribe: { ...oldData.transcribe, contents: updatedContents },
+        };
+      });
+    },
+    [isReadOnly, transcribe?.id, queryClient, sessionQueryKey]
+  );
+
   // 탭 네비게이션 훅
   const {
     isTabChangeModalOpen,
@@ -665,7 +757,7 @@ export const SessionDetailPage: React.FC = () => {
 
       {/* 탭 콘텐츠 */}
       <div
-        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border-2 ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-100 bg-primary-50' : 'border-surface-strong bg-surface'}`}
+        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-500 bg-[#FDFFFE]' : 'border-surface-strong bg-surface'}`}
       >
         <ScrollIndicator
           className="bottom-0 right-1/2 translate-x-1/2"
@@ -746,6 +838,8 @@ export const SessionDetailPage: React.FC = () => {
                 onSeekTo={handleSeekToWithInteraction}
                 onTextEdit={handleTextEdit}
                 onSpeakerChange={handleSpeakerChange}
+                onAddSegment={handleAddSegment}
+                onDeleteSegment={handleDeleteSegment}
                 checkIsGuideLevel={checkIsGuideLevel}
                 nextGuideLevel={nextGuideLevel}
                 endGuide={endTranscriptEditGuide}

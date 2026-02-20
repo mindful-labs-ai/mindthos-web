@@ -1,6 +1,6 @@
 /**
  * 축어록 편집 기능 훅
- * Optimistic Update로 즉각적인 UI 반영 후 백그라운드 서버 업데이트
+ * 텍스트 편집, 세그먼트 추가/삭제를 로컬에서 처리 후 편집 완료 시 일괄 저장
  */
 
 import React from 'react';
@@ -10,7 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/composites/Toast';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 
-import { updateMultipleTranscriptSegments } from '../services/sessionService';
+import { saveTranscriptContents } from '../services/sessionService';
 import type {
   ProgressNote,
   Session,
@@ -112,7 +112,9 @@ export function useTranscriptEdit({
     editedSegmentsRef.current = {};
     setHasEdits(false);
     setIsEditing(false);
-  }, [sessionId]);
+    // 캐시에 적용된 세그먼트 추가/삭제를 되돌리기 위해 서버 데이터로 복원
+    queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+  }, [sessionId, queryClient, sessionQueryKey]);
 
   const handleSaveAllEdits = React.useCallback(async () => {
     if (isReadOnly) {
@@ -138,18 +140,58 @@ export function useTranscriptEdit({
       nextGuideLevel?.();
     }
 
-    if (Object.keys(editedSegmentsRef.current).length === 0) {
-      toast({
-        title: '알림',
-        description: '수정된 내용이 없습니다.',
-        duration: 3000,
-      });
-      setIsEditing(false);
-      return;
-    }
-
     try {
-      // Optimistic update: 캐시를 즉시 업데이트
+      // 캐시에서 현재 contents 가져오기 (세그먼트 추가/삭제가 이미 반영된 상태)
+      const cachedData = queryClient.getQueryData(sessionQueryKey) as
+        | {
+            session: Session;
+            transcribe: Transcribe | null;
+            progressNotes: ProgressNote[];
+          }
+        | undefined;
+
+      if (!cachedData?.transcribe?.contents) {
+        toast({
+          title: '오류',
+          description: '전사 데이터를 찾을 수 없습니다.',
+          duration: 3000,
+        });
+        return;
+      }
+
+      const contents = cachedData.transcribe.contents;
+      const textEdits = editedSegmentsRef.current;
+
+      // 텍스트 편집 내용을 contents에 적용
+      let finalContents;
+      if ('segments' in contents && Array.isArray(contents.segments)) {
+        const updatedSegments = contents.segments.map(
+          (seg: TranscribeSegment) => {
+            if (seg.id in textEdits) {
+              return { ...seg, text: textEdits[seg.id] };
+            }
+            return seg;
+          }
+        );
+        finalContents = { ...contents, segments: updatedSegments };
+      } else if ('result' in contents && contents.result?.segments) {
+        const updatedSegments = contents.result.segments.map(
+          (seg: TranscribeSegment) => {
+            if (seg.id in textEdits) {
+              return { ...seg, text: textEdits[seg.id] };
+            }
+            return seg;
+          }
+        );
+        finalContents = {
+          ...contents,
+          result: { ...contents.result, segments: updatedSegments },
+        };
+      } else {
+        finalContents = contents;
+      }
+
+      // 캐시에 최종 contents 반영
       queryClient.setQueryData(
         sessionQueryKey,
         (
@@ -162,78 +204,24 @@ export function useTranscriptEdit({
             | undefined
         ) => {
           if (!oldData || !oldData.transcribe) return oldData;
-
-          const transcribe = oldData.transcribe;
-          const contents = transcribe.contents;
-
-          if (!contents) return oldData;
-
-          let updatedContents;
-
-          // New format: { stt_model, segments, ... }
-          if ('segments' in contents && Array.isArray(contents.segments)) {
-            const updatedSegments = contents.segments.map(
-              (seg: TranscribeSegment) => {
-                // seg.id를 직접 사용 (index + 1이 아님)
-                if (seg.id in editedSegmentsRef.current) {
-                  return { ...seg, text: editedSegmentsRef.current[seg.id] };
-                }
-                return seg;
-              }
-            );
-
-            updatedContents = {
-              ...contents,
-              segments: updatedSegments,
-            };
-          }
-          // Legacy format: { result: { segments, speakers } }
-          else if ('result' in contents && contents.result?.segments) {
-            const updatedSegments = contents.result.segments.map(
-              (seg: TranscribeSegment) => {
-                // seg.id를 직접 사용 (index + 1이 아님)
-                if (seg.id in editedSegmentsRef.current) {
-                  return { ...seg, text: editedSegmentsRef.current[seg.id] };
-                }
-                return seg;
-              }
-            );
-
-            updatedContents = {
-              ...contents,
-              result: {
-                ...contents.result,
-                segments: updatedSegments,
-              },
-            };
-          } else {
-            return oldData;
-          }
-
           return {
             ...oldData,
-            transcribe: {
-              ...transcribe,
-              contents: updatedContents,
-            },
+            transcribe: { ...oldData.transcribe, contents: finalContents },
           };
         }
       );
-
-      // 저장할 편집 내용 복사 (ref 초기화 전에)
-      const editsToSave = { ...editedSegmentsRef.current };
 
       // 편집 상태 초기화 (UI 즉시 반영)
       editedSegmentsRef.current = {};
       setHasEdits(false);
       setIsEditing(false);
 
-      // 백그라운드에서 서버 업데이트
-      await updateMultipleTranscriptSegments(transcribeId, editsToSave);
+      // 백그라운드에서 서버에 전체 contents 저장
+      await saveTranscriptContents(transcribeId, finalContents);
 
       trackEvent('transcript_edit_complete', {
         session_id: sessionId,
-        edited_segments_count: Object.keys(editsToSave).length,
+        edited_segments_count: Object.keys(textEdits).length,
       });
 
       toast({
