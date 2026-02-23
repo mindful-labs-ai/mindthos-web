@@ -104,8 +104,9 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
     if (!open) return;
     setIsCouponDropdownOpen(false);
     if (coupons.length > 0) {
-      const best = coupons.reduce((max, c) =>
-        c.discount > max.discount ? c : max, coupons[0]
+      const best = coupons.reduce(
+        (max, c) => (c.discount > max.discount ? c : max),
+        coupons[0]
       );
       setSelectedCoupon(best);
     } else {
