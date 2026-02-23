@@ -72,10 +72,10 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     [sessions]
   );
 
-  // 모달이 열릴 때 모든 세션을 기본 선택 (순서 유지)
+  // 모달이 열릴 때 모든 세션을 기본 선택 (최신순)
   React.useEffect(() => {
     if (open) {
-      setOrderedSessionIds(availableSessions.map((s) => s.id));
+      setOrderedSessionIds([...availableSessions].reverse().map((s) => s.id));
     }
   }, [open, availableSessions]);
 

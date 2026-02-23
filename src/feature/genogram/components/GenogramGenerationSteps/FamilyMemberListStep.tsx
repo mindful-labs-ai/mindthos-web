@@ -30,12 +30,18 @@ interface FamilyMemberListStepProps {
   data: AIGenogramOutput;
   onChange: (data: AIGenogramOutput) => void;
   onNext: () => void;
+  /** 버튼 텍스트 (기본값: '가계도 자동 생성하기') */
+  buttonText?: string;
+  /** 편집 모드 여부 (확인 모달 스킵) */
+  isEditMode?: boolean;
 }
 
 export function FamilyMemberListStep({
   data,
   onChange,
   onNext,
+  buttonText = '가계도 자동 생성하기',
+  isEditMode = false,
 }: FamilyMemberListStepProps) {
   // 스크롤 컨테이너 ref (팝오버 Portal 대상)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -163,65 +169,44 @@ export function FamilyMemberListStep({
           ([, , childId]) => childId === subjectId
         );
         if (existingIndex >= 0) {
-          // 기존 항목에 부모 추가
+          // 기존 항목에 부모 추가 (빈 슬롯 순서대로)
           const [fatherId, motherId, childId] = data.children[existingIndex];
-          const target = data.subjects.find((s) => s.id === targetId);
-          const isMale =
-            target?.gender === 'Male' || target?.gender === 'Transgender_Male';
           const newChildren = [...data.children];
-          if (isMale && !fatherId) {
+          if (!fatherId) {
             newChildren[existingIndex] = [targetId, motherId, childId];
-          } else if (!isMale && !motherId) {
+          } else if (!motherId) {
             newChildren[existingIndex] = [fatherId, targetId, childId];
           }
           newData = { ...newData, children: newChildren };
         } else {
-          // 새 항목 추가
-          const target = data.subjects.find((s) => s.id === targetId);
-          const isMale =
-            target?.gender === 'Male' || target?.gender === 'Transgender_Male';
-          if (isMale) {
-            newData = {
-              ...newData,
-              children: [...newData.children, [targetId, null, subjectId]],
-            };
-          } else {
-            newData = {
-              ...newData,
-              children: [...newData.children, [null, targetId, subjectId]],
-            };
-          }
+          // 새 항목 추가 (첫 번째 슬롯에 배치)
+          newData = {
+            ...newData,
+            children: [...newData.children, [targetId, null, subjectId]],
+          };
         }
       } else if (type === 'child') {
         // subjectId의 자녀로 targetId 추가
-        const subject = data.subjects.find((s) => s.id === subjectId);
-        const isMale =
-          subject?.gender === 'Male' || subject?.gender === 'Transgender_Male';
         // 기존에 targetId가 자녀인 항목이 있는지 확인
         const existingIndex = data.children.findIndex(
           ([, , childId]) => childId === targetId
         );
         if (existingIndex >= 0) {
+          // 기존 항목에 부모 추가 (빈 슬롯 순서대로)
           const [fatherId, motherId, childId] = data.children[existingIndex];
           const newChildren = [...data.children];
-          if (isMale && !fatherId) {
+          if (!fatherId) {
             newChildren[existingIndex] = [subjectId, motherId, childId];
-          } else if (!isMale && !motherId) {
+          } else if (!motherId) {
             newChildren[existingIndex] = [fatherId, subjectId, childId];
           }
           newData = { ...newData, children: newChildren };
         } else {
-          if (isMale) {
-            newData = {
-              ...newData,
-              children: [...newData.children, [subjectId, null, targetId]],
-            };
-          } else {
-            newData = {
-              ...newData,
-              children: [...newData.children, [null, subjectId, targetId]],
-            };
-          }
+          // 새 항목 추가 (첫 번째 슬롯에 배치)
+          newData = {
+            ...newData,
+            children: [...newData.children, [subjectId, null, targetId]],
+          };
         }
       }
 
@@ -525,10 +510,21 @@ export function FamilyMemberListStep({
       {/* 하단 고정 버튼 */}
       <div className="mt-4 flex shrink-0 justify-center pt-4">
         <button
-          onClick={() => setShowConfirmModal(true)}
+          onClick={() => {
+            if (isEditMode) {
+              // 편집 모드: 확인 모달 없이 바로 진행
+              trackEvent('genogram_edit_apply_click', {
+                member_count: data.subjects.length,
+                relation_count: relationDataList.length,
+              });
+              onNext();
+            } else {
+              setShowConfirmModal(true);
+            }
+          }}
           className="h-12 w-full max-w-[500px] rounded-xl bg-primary text-lg font-medium text-white transition-colors hover:bg-primary-600"
         >
-          가계도 자동 생성하기
+          {buttonText}
         </button>
       </div>
 

@@ -27,11 +27,12 @@ import {
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
-import { MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
+import { CouponIcon, MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
 import { CardInfo } from '../components/CardInfo';
+import { CreditRenewalModal } from '../components/CreditRenewalModal';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -50,12 +51,12 @@ export const SettingsPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isCreditUsageModalOpen, setIsCreditUsageModalOpen] =
     React.useState(false);
-
   // 전역 모달 스토어 사용
   const openModal = useModalStore((state) => state.openModal);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
   const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
+  const [isRenewalModalOpen, setIsRenewalModalOpen] = React.useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -270,15 +271,29 @@ export const SettingsPage: React.FC = () => {
               <Title as="h2" className="text-lg font-semibold text-fg-muted">
                 사용 정보
               </Title>
-              <Button
-                variant="outline"
-                tone="neutral"
-                size="sm"
-                onClick={handleCreditUsageLog}
-                className="text-fg-muted"
-              >
-                크레딧 사용 내역
-              </Button>
+              <div className="flex gap-4">
+                <Button
+                  variant="outline"
+                  tone="neutral"
+                  size="sm"
+                  onClick={() => openModal('couponModal')}
+                  className="text-fg-muted"
+                >
+                  <span className="flex items-center gap-0.5 text-center">
+                    <CouponIcon />
+                    보유 중인 쿠폰
+                  </span>
+                </Button>
+                <Button
+                  variant="outline"
+                  tone="neutral"
+                  size="sm"
+                  onClick={handleCreditUsageLog}
+                  className="text-fg-muted"
+                >
+                  크레딧 사용 내역
+                </Button>
+              </div>
             </div>
 
             <div className="flex flex-col space-y-3">
@@ -345,7 +360,7 @@ export const SettingsPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex w-full justify-center gap-6">
+                  <div className="flex w-full justify-center gap-6 px-8">
                     <div className="flex flex-1 items-center justify-center">
                       <CreditDisplay
                         totalCredit={creditInfo.plan.total}
@@ -356,6 +371,11 @@ export const SettingsPage: React.FC = () => {
                           creditInfo.subscription.end_at
                         )}
                         variant="detailed"
+                        onRenewal={
+                          isPaidPlan
+                            ? () => setIsRenewalModalOpen(true)
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="flex-1">
@@ -448,6 +468,10 @@ export const SettingsPage: React.FC = () => {
       <CreditUsageModal
         open={isCreditUsageModalOpen}
         onOpenChange={setIsCreditUsageModalOpen}
+      />
+      <CreditRenewalModal
+        open={isRenewalModalOpen}
+        onOpenChange={setIsRenewalModalOpen}
       />
     </div>
   );

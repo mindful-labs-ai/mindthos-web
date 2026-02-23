@@ -9,6 +9,7 @@ import { Spotlight } from '@/components/ui/composites/Spotlight';
 
 import type { Speaker, Transcribe, TranscribeSegment } from '../types';
 
+import { SegmentDeleteConfirmModal } from './SegmentDeleteConfirmModal';
 import { TextEditTooltip } from './TranscriptEditGuideTooltips';
 import { TranscriptSegment } from './TranscriptSegment';
 
@@ -46,6 +47,10 @@ interface TranscriptTabContentProps {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
   }) => Promise<void>;
+  /** 세그먼트 추가 핸들러 */
+  onAddSegment?: (afterSegmentId: number, speaker: number) => void;
+  /** 세그먼트 삭제 핸들러 */
+  onDeleteSegment?: (segmentId: number) => void;
   /** 가이드 레벨 체크 함수 */
   checkIsGuideLevel: (level: number) => boolean;
   /** 다음 가이드 레벨로 이동 */
@@ -76,72 +81,120 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       onSeekTo,
       onTextEdit,
       onSpeakerChange,
+      onAddSegment,
+      onDeleteSegment,
       checkIsGuideLevel,
       nextGuideLevel,
       endGuide,
       onGuideScroll,
       tutorialStep,
     }) => {
+      // 삭제 확인 모달 상태
+      const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(
+        null
+      );
+
+      const handleDeleteRequest = React.useCallback(
+        (segmentId: number) => {
+          const target = segments.find((s) => s.id === segmentId);
+          if (target && !target.text.trim()) {
+            onDeleteSegment?.(segmentId);
+          } else {
+            setDeleteTargetId(segmentId);
+          }
+        },
+        [segments, onDeleteSegment]
+      );
+
+      const handleDeleteConfirm = React.useCallback(() => {
+        if (deleteTargetId !== null && onDeleteSegment) {
+          onDeleteSegment(deleteTargetId);
+        }
+        setDeleteTargetId(null);
+      }, [deleteTargetId, onDeleteSegment]);
+
+      const handleDeleteCancel = React.useCallback(() => {
+        setDeleteTargetId(null);
+      }, []);
+
       // 가이드 Level 2인 경우 Spotlight으로 감싸기
       if (checkIsGuideLevel(2)) {
         return (
-          <Spotlight
-            isActive={true}
-            tooltip={<TextEditTooltip onNext={nextGuideLevel} />}
-            tooltipPosition="left"
-            store="featureGuide"
-          >
-            <TranscriptContent
-              contentScrollRef={contentScrollRef}
-              segments={segments}
-              speakers={speakers}
-              transcribe={transcribe}
-              clientId={clientId}
-              isReadOnly={isReadOnly}
-              isEditing={isEditing}
-              isAnonymized={isAnonymized}
-              enableTimestampFeatures={enableTimestampFeatures}
-              currentSegmentIndex={currentSegmentIndex}
-              activeSegmentRef={activeSegmentRef}
-              transcriptEndRef={transcriptEndRef}
-              onSeekTo={onSeekTo}
-              onTextEdit={onTextEdit}
-              onSpeakerChange={onSpeakerChange}
-              guideLevel={null}
-              nextGuideLevel={nextGuideLevel}
-              endGuide={endGuide}
-              onGuideScroll={onGuideScroll}
-              tutorialStep={tutorialStep}
+          <>
+            <Spotlight
+              isActive={true}
+              tooltip={<TextEditTooltip onNext={nextGuideLevel} />}
+              tooltipPosition="left"
+              store="featureGuide"
+            >
+              <TranscriptContent
+                contentScrollRef={contentScrollRef}
+                segments={segments}
+                speakers={speakers}
+                transcribe={transcribe}
+                clientId={clientId}
+                isReadOnly={isReadOnly}
+                isEditing={isEditing}
+                isAnonymized={isAnonymized}
+                enableTimestampFeatures={enableTimestampFeatures}
+                currentSegmentIndex={currentSegmentIndex}
+                activeSegmentRef={activeSegmentRef}
+                transcriptEndRef={transcriptEndRef}
+                onSeekTo={onSeekTo}
+                onTextEdit={onTextEdit}
+                onSpeakerChange={onSpeakerChange}
+                onAddSegment={onAddSegment}
+                onDeleteSegment={handleDeleteRequest}
+                guideLevel={null}
+                nextGuideLevel={nextGuideLevel}
+                endGuide={endGuide}
+                onGuideScroll={onGuideScroll}
+                tutorialStep={tutorialStep}
+              />
+            </Spotlight>
+            <SegmentDeleteConfirmModal
+              isOpen={deleteTargetId !== null}
+              onClose={handleDeleteCancel}
+              onConfirm={handleDeleteConfirm}
             />
-          </Spotlight>
+          </>
         );
       }
 
       return (
-        <TranscriptContent
-          contentScrollRef={contentScrollRef}
-          segments={segments}
-          speakers={speakers}
-          transcribe={transcribe}
-          clientId={clientId}
-          isReadOnly={isReadOnly}
-          isEditing={isEditing}
-          isAnonymized={isAnonymized}
-          enableTimestampFeatures={enableTimestampFeatures}
-          currentSegmentIndex={currentSegmentIndex}
-          activeSegmentRef={activeSegmentRef}
-          transcriptEndRef={transcriptEndRef}
-          onSeekTo={onSeekTo}
-          onTextEdit={onTextEdit}
-          onSpeakerChange={onSpeakerChange}
-          guideLevel={
-            checkIsGuideLevel(4) ? 4 : checkIsGuideLevel(5) ? 5 : null
-          }
-          nextGuideLevel={nextGuideLevel}
-          endGuide={endGuide}
-          onGuideScroll={onGuideScroll}
-          tutorialStep={tutorialStep}
-        />
+        <>
+          <TranscriptContent
+            contentScrollRef={contentScrollRef}
+            segments={segments}
+            speakers={speakers}
+            transcribe={transcribe}
+            clientId={clientId}
+            isReadOnly={isReadOnly}
+            isEditing={isEditing}
+            isAnonymized={isAnonymized}
+            enableTimestampFeatures={enableTimestampFeatures}
+            currentSegmentIndex={currentSegmentIndex}
+            activeSegmentRef={activeSegmentRef}
+            transcriptEndRef={transcriptEndRef}
+            onSeekTo={onSeekTo}
+            onTextEdit={onTextEdit}
+            onSpeakerChange={onSpeakerChange}
+            onAddSegment={onAddSegment}
+            onDeleteSegment={handleDeleteRequest}
+            guideLevel={
+              checkIsGuideLevel(4) ? 4 : checkIsGuideLevel(5) ? 5 : null
+            }
+            nextGuideLevel={nextGuideLevel}
+            endGuide={endGuide}
+            onGuideScroll={onGuideScroll}
+            tutorialStep={tutorialStep}
+          />
+          <SegmentDeleteConfirmModal
+            isOpen={deleteTargetId !== null}
+            onClose={handleDeleteCancel}
+            onConfirm={handleDeleteConfirm}
+          />
+        </>
       );
     }
   );
@@ -150,8 +203,12 @@ TranscriptTabContent.displayName = 'TranscriptTabContent';
 
 // 내부 렌더링 컴포넌트
 interface TranscriptContentProps
-  extends Omit<TranscriptTabContentProps, 'checkIsGuideLevel'> {
+  extends Omit<
+    TranscriptTabContentProps,
+    'checkIsGuideLevel' | 'onDeleteSegment'
+  > {
   guideLevel: 4 | 5 | null;
+  onDeleteSegment?: (segmentId: number) => void;
 }
 
 const TranscriptContent: React.FC<TranscriptContentProps> = ({
@@ -170,6 +227,8 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
   onSeekTo,
   onTextEdit,
   onSpeakerChange,
+  onAddSegment,
+  onDeleteSegment,
   guideLevel,
   nextGuideLevel,
   endGuide,
@@ -197,7 +256,7 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
 
               return (
                 <TranscriptSegment
-                  key={`segment-${index}-${segment.id}`}
+                  key={segment.id}
                   segment={segment}
                   speakers={speakers}
                   isActive={
@@ -222,6 +281,12 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
                   onGuideNext={nextGuideLevel}
                   onGuideComplete={endGuide}
                   isFirstSegment={index === 0}
+                  onAddSegment={
+                    isEditing && !isReadOnly ? onAddSegment : undefined
+                  }
+                  onDeleteSegment={
+                    isEditing && !isReadOnly ? onDeleteSegment : undefined
+                  }
                 />
               );
             });

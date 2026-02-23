@@ -43,6 +43,7 @@ export const useTossPayments = (customerKey: string) => {
     customerName: string;
     customerEmail: string;
     planId?: string;
+    userCouponId?: string;
   }) => {
     if (!payment) {
       throw new Error('Toss Payments is not initialized');
@@ -51,7 +52,10 @@ export const useTossPayments = (customerKey: string) => {
     try {
       await payment.requestBillingAuth({
         method: 'CARD',
-        successUrl: TOSS_PAYMENTS_CONFIG.getSuccessUrl(params.planId),
+        successUrl: TOSS_PAYMENTS_CONFIG.getSuccessUrl(
+          params.planId,
+          params.userCouponId
+        ),
         failUrl: TOSS_PAYMENTS_CONFIG.failUrl,
         customerEmail: params.customerEmail,
         customerName: params.customerName,
