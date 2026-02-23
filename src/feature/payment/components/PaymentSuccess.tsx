@@ -28,6 +28,7 @@ export const PaymentSuccess = () => {
   const customerKey = searchParams.get('customerKey');
   const authKey = searchParams.get('authKey');
   const planId = searchParams.get('planId');
+  const userCouponId = searchParams.get('userCouponId');
 
   useEffect(() => {
     // 이미 실행된 경우 중복 실행 방지
@@ -72,6 +73,7 @@ export const PaymentSuccess = () => {
             planId,
             customerEmail: user.email,
             customerName: buyerName,
+            ...(userCouponId && { userCouponId }),
           });
 
           if (response.success) {

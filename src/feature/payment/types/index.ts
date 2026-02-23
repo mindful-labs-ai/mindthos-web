@@ -29,6 +29,7 @@ export interface BillingKeyIssueResponse {
 
 export interface UpgradePlanRequest {
   planId: string;
+  userCouponId?: string;
 }
 
 export interface UpgradePlanResponse {
@@ -44,4 +45,5 @@ export interface CompletePlanUpgradeRequest {
   planId: string;
   customerEmail: string;
   customerName: string;
+  userCouponId?: string;
 }
