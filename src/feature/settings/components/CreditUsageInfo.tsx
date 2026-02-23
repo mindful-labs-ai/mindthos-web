@@ -62,25 +62,25 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
           <Text className="text-sm font-medium text-fg-muted">녹음 변환</Text>
           {usageItems.perMinutes.map((item, index) => (
             <div key={index} className="flex gap-6">
-              <Text as="p" className="text-sm font-medium text-fg">
+              <Text as="p" className="truncate text-sm font-medium text-fg">
                 {item.label}
               </Text>
-              <Text as="p" className="text-sm font-bold text-fg">
+              <Text as="p" className="truncate text-sm font-bold text-fg">
                 {item.amount}
               </Text>
             </div>
           ))}
         </div>
         <div className="flex flex-1 flex-col gap-3">
-          <Text className="text-sm font-medium text-fg-muted">
+          <Text className="truncate text-sm font-medium text-fg-muted">
             AI 상담 노트 및 분석
           </Text>
           {usageItems.perCounts.map((item, index) => (
             <div key={index} className="flex gap-6">
-              <Text as="p" className="text-sm font-medium text-fg">
+              <Text as="p" className="truncate text-sm font-medium text-fg">
                 {item.label}
               </Text>
-              <Text as="p" className="text-sm font-bold text-fg">
+              <Text as="p" className="truncate text-sm font-bold text-fg">
                 {item.amount}
               </Text>
             </div>

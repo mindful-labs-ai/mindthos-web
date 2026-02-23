@@ -32,6 +32,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
 import { CardInfo } from '../components/CardInfo';
+import { CreditRenewalModal } from '../components/CreditRenewalModal';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -55,6 +56,7 @@ export const SettingsPage: React.FC = () => {
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [deleteError, setDeleteError] = React.useState('');
   const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
+  const [isRenewalModalOpen, setIsRenewalModalOpen] = React.useState(false);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -358,7 +360,7 @@ export const SettingsPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex w-full justify-center gap-6">
+                  <div className="flex w-full justify-center gap-6 px-8">
                     <div className="flex flex-1 items-center justify-center">
                       <CreditDisplay
                         totalCredit={creditInfo.plan.total}
@@ -369,6 +371,11 @@ export const SettingsPage: React.FC = () => {
                           creditInfo.subscription.end_at
                         )}
                         variant="detailed"
+                        onRenewal={
+                          isPaidPlan
+                            ? () => setIsRenewalModalOpen(true)
+                            : undefined
+                        }
                       />
                     </div>
                     <div className="flex-1">
@@ -461,6 +468,10 @@ export const SettingsPage: React.FC = () => {
       <CreditUsageModal
         open={isCreditUsageModalOpen}
         onOpenChange={setIsCreditUsageModalOpen}
+      />
+      <CreditRenewalModal
+        open={isRenewalModalOpen}
+        onOpenChange={setIsRenewalModalOpen}
       />
     </div>
   );

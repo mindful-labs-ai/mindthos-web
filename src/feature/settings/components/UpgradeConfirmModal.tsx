@@ -38,6 +38,7 @@ export interface UpgradeConfirmModalProps {
   };
   onConfirm: (userCouponId?: string) => Promise<void>;
   onChangeCard?: () => void;
+  title?: string;
 }
 
 // 플랜 타입 → 한글 이름 변환
@@ -88,6 +89,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
   cardInfo,
   onConfirm,
   onChangeCard,
+  title,
 }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -166,7 +168,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         {/* 헤더 */}
         <div className="text-center">
           <Title as="h2" className="text-xl font-bold">
-            마음토스 플랜 업그레이드
+            {title || '마음토스 플랜 업그레이드'}
           </Title>
         </div>
 

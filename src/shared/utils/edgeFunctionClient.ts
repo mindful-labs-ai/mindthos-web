@@ -38,6 +38,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     DELETE_CARD: 'payment/delete-card',
     PREVIEW_UPGRADE: 'payment/preview-upgrade',
     CHANGE_PLAN: 'payment/change-plan',
+    RENEW: 'payment/renew',
     CANCEL: 'payment/cancel',
     CANCEL_UNDO: 'payment/cancel-undo',
     GET_CARD: 'payment/get-card',

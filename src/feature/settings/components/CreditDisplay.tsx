@@ -16,6 +16,7 @@ interface CreditDisplayProps {
   planType: string;
   daysUntilReset?: number;
   variant?: 'sidebar' | 'detailed' | 'mobile';
+  onRenewal?: () => void;
 }
 
 export const CreditDisplay: React.FC<CreditDisplayProps> = ({
@@ -25,6 +26,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
   planType,
   daysUntilReset,
   variant = 'sidebar',
+  onRenewal,
 }) => {
   const remaining = totalCredit - usedCredit;
   const percentage =
@@ -40,51 +42,63 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
 
   if (variant === 'detailed') {
     return (
-      <div className="flex items-center gap-4 rounded-lg p-6">
-        <ProgressCircle
-          value={percentage}
-          size={85}
-          strokeWidth={14}
-          showValue={false}
-        />
-        <div className="flex-1 space-y-2">
-          <div className="flex flex-col content-end gap-2 text-left">
-            <Text className="text-lg font-medium text-fg">마음토스 크레딧</Text>
-            <Text className="flex gap-2 text-lg">
-              <span className="flex items-center gap-1 font-bold text-primary">
-                {remaining.toLocaleString()}{' '}
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10 20C15.5229 20 20 15.5229 20 10C20 4.47715 15.5229 0 10 0C4.47715 0 0 4.47715 0 10C0.00597656 15.5204 4.47961 19.994 10 20ZM5.875 5.875C8.1548 3.60078 11.8452 3.60078 14.125 5.875C14.4447 6.20605 14.4355 6.73359 14.1045 7.05332C13.7816 7.36523 13.2696 7.36523 12.9467 7.05332C11.3193 5.42637 8.68109 5.42668 7.05414 7.0541C5.42719 8.68152 5.4275 11.3197 7.05492 12.9466C8.68203 14.5733 11.3196 14.5733 12.9467 12.9466C13.2778 12.6269 13.8053 12.6361 14.125 12.9671C14.4369 13.2901 14.4369 13.802 14.125 14.125C11.8469 16.4032 8.1532 16.4032 5.87504 14.125C3.59684 11.8468 3.59684 8.15316 5.875 5.875Z"
-                    fill="#44CE4B"
-                  />
-                </svg>
-              </span>
-              /
-              <span className="flex items-center gap-1 font-bold">
-                {totalCredit.toLocaleString()}
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10 20C15.5229 20 20 15.5229 20 10C20 4.47715 15.5229 0 10 0C4.47715 0 0 4.47715 0 10C0.00597656 15.5204 4.47961 19.994 10 20ZM5.875 5.875C8.1548 3.60078 11.8452 3.60078 14.125 5.875C14.4447 6.20605 14.4355 6.73359 14.1045 7.05332C13.7816 7.36523 13.2696 7.36523 12.9467 7.05332C11.3193 5.42637 8.68109 5.42668 7.05414 7.0541C5.42719 8.68152 5.4275 11.3197 7.05492 12.9466C8.68203 14.5733 11.3196 14.5733 12.9467 12.9466C13.2778 12.6269 13.8053 12.6361 14.125 12.9671C14.4369 13.2901 14.4369 13.802 14.125 14.125C11.8469 16.4032 8.1532 16.4032 5.87504 14.125C3.59684 11.8468 3.59684 8.15316 5.875 5.875Z"
-                    fill="#3C3C3C"
-                  />
-                </svg>
-              </span>
-            </Text>
+      <div className="relative flex h-full w-full items-center justify-between gap-4 rounded-lg border border-primary-500 px-9 py-6">
+        <div className="flex items-center gap-6">
+          <ProgressCircle
+            value={percentage}
+            size={85}
+            strokeWidth={14}
+            showValue={false}
+          />
+          <div className="flex-1 space-y-2">
+            <div className="flex flex-col content-end gap-2 text-left">
+              <Text className="text-lg font-medium text-fg">
+                마음토스 크레딧
+              </Text>
+              <Text className="flex gap-2 text-lg">
+                <span className="flex items-center gap-1 font-bold text-primary">
+                  {remaining.toLocaleString()}{' '}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10 20C15.5229 20 20 15.5229 20 10C20 4.47715 15.5229 0 10 0C4.47715 0 0 4.47715 0 10C0.00597656 15.5204 4.47961 19.994 10 20ZM5.875 5.875C8.1548 3.60078 11.8452 3.60078 14.125 5.875C14.4447 6.20605 14.4355 6.73359 14.1045 7.05332C13.7816 7.36523 13.2696 7.36523 12.9467 7.05332C11.3193 5.42637 8.68109 5.42668 7.05414 7.0541C5.42719 8.68152 5.4275 11.3197 7.05492 12.9466C8.68203 14.5733 11.3196 14.5733 12.9467 12.9466C13.2778 12.6269 13.8053 12.6361 14.125 12.9671C14.4369 13.2901 14.4369 13.802 14.125 14.125C11.8469 16.4032 8.1532 16.4032 5.87504 14.125C3.59684 11.8468 3.59684 8.15316 5.875 5.875Z"
+                      fill="#44CE4B"
+                    />
+                  </svg>
+                </span>
+                /
+                <span className="flex items-center gap-1 font-bold">
+                  {totalCredit.toLocaleString()}
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10 20C15.5229 20 20 15.5229 20 10C20 4.47715 15.5229 0 10 0C4.47715 0 0 4.47715 0 10C0.00597656 15.5204 4.47961 19.994 10 20ZM5.875 5.875C8.1548 3.60078 11.8452 3.60078 14.125 5.875C14.4447 6.20605 14.4355 6.73359 14.1045 7.05332C13.7816 7.36523 13.2696 7.36523 12.9467 7.05332C11.3193 5.42637 8.68109 5.42668 7.05414 7.0541C5.42719 8.68152 5.4275 11.3197 7.05492 12.9466C8.68203 14.5733 11.3196 14.5733 12.9467 12.9466C13.2778 12.6269 13.8053 12.6361 14.125 12.9671C14.4369 13.2901 14.4369 13.802 14.125 14.125C11.8469 16.4032 8.1532 16.4032 5.87504 14.125C3.59684 11.8468 3.59684 8.15316 5.875 5.875Z"
+                      fill="#3C3C3C"
+                    />
+                  </svg>
+                </span>
+              </Text>
+            </div>
           </div>
         </div>
+        {!isFree && onRenewal && usedCredit >= totalCredit / 2 && (
+          <button
+            className="absolute bottom-2 right-2.5 px-3.5 py-1.5 text-sm font-medium text-primary-500"
+            onClick={onRenewal}
+          >
+            크레딧 충전
+          </button>
+        )}
       </div>
     );
   }
