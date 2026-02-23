@@ -59,6 +59,12 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     INIT: 'generate-family-summary/init',
     SUMMARY: 'generate-family-summary/summary',
   },
+  // 쿠폰 관련
+  COUPONS: {
+    VALIDATE_ALL: 'coupons/validate',
+    VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
+    REGISTER: 'coupons/register',
+  },
 } as const;
 
 /**
