@@ -206,7 +206,10 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
               {remaining.toLocaleString()} <CreditIcon />
             </Text>
             <Text className="text-sm font-normal text-fg-muted">
-              {formatUsageDate(creditInfo.subscription.end_at ?? creditInfo.subscription.reset_at)}
+              {formatUsageDate(
+                creditInfo.subscription.end_at ??
+                  creditInfo.subscription.reset_at
+              )}
             </Text>
           </div>
 
