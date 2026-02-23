@@ -52,7 +52,10 @@ export const useTossPayments = (customerKey: string) => {
     try {
       await payment.requestBillingAuth({
         method: 'CARD',
-        successUrl: TOSS_PAYMENTS_CONFIG.getSuccessUrl(params.planId, params.userCouponId),
+        successUrl: TOSS_PAYMENTS_CONFIG.getSuccessUrl(
+          params.planId,
+          params.userCouponId
+        ),
         failUrl: TOSS_PAYMENTS_CONFIG.failUrl,
         customerEmail: params.customerEmail,
         customerName: params.customerName,

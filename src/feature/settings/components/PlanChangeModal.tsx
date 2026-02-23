@@ -187,7 +187,10 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     );
 
     try {
-      const response = await billingService.changePlan(selectedPlanId, userCouponId);
+      const response = await billingService.changePlan(
+        selectedPlanId,
+        userCouponId
+      );
 
       if (response.type !== 'upgrade') {
         throw new Error('업그레이드에 실패했습니다. 다시 시도해주세요.');

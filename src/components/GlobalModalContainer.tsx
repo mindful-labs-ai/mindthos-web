@@ -13,7 +13,10 @@ import { CreateMultiSessionModal } from '@/feature/session/components/CreateMult
 import { CouponBox } from '@/feature/settings/components/CouponBox';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
-import { useCoupons, couponQueryKeys } from '@/feature/settings/hooks/useCoupons';
+import {
+  useCoupons,
+  couponQueryKeys,
+} from '@/feature/settings/hooks/useCoupons';
 import { couponService } from '@/feature/settings/services/couponService';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
