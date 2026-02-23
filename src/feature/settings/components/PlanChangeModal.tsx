@@ -156,7 +156,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   };
 
   // 업그레이드 확정 (결제)
-  const handleConfirmUpgrade = async () => {
+  const handleConfirmUpgrade = async (userCouponId?: string) => {
     if (!selectedPlanId || !cardInfo) {
       // 카드가 없으면 카드 등록 플로우
       if (!cardInfo && selectedPlanId && buyerName && user?.email) {
@@ -174,6 +174,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
           customerName: buyerName,
           customerEmail: user.email,
           planId: selectedPlanId,
+          userCouponId,
         });
         return;
       }
@@ -186,7 +187,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     );
 
     try {
-      const response = await billingService.changePlan(selectedPlanId);
+      const response = await billingService.changePlan(selectedPlanId, userCouponId);
 
       if (response.type !== 'upgrade') {
         throw new Error('업그레이드에 실패했습니다. 다시 시도해주세요.');

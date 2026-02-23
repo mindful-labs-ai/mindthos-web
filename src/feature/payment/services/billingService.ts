@@ -157,16 +157,18 @@ export const billingService = {
    * - 업그레이드: 즉시 적용 + 할인
    * - 다운그레이드: 구독 종료 후 적용
    */
-  async changePlan(planId: string): Promise<{
+  async changePlan(planId: string, userCouponId?: string): Promise<{
     type: 'upgrade' | 'downgrade';
     newPlan: string;
     discount?: number;
     finalAmount?: number;
+    couponDiscount?: number;
     appliedAt?: string;
     effectiveAt?: string | null;
   }> {
     return await callEdgeFunction(EDGE_FUNCTION_ENDPOINTS.PAYMENT.CHANGE_PLAN, {
       planId,
+      ...(userCouponId && { userCouponId }),
     });
   },
 
