@@ -256,7 +256,7 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
 
               return (
                 <TranscriptSegment
-                  key={`segment-${index}-${segment.id}`}
+                  key={segment.id}
                   segment={segment}
                   speakers={speakers}
                   isActive={

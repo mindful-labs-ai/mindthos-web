@@ -68,6 +68,14 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
       return '상담노트 생성';
     }
 
+    if (memo.includes('handwritten_session')) {
+      return '직접 입력';
+    }
+
+    if (memo.includes('family_summary_generation')) {
+      return '가계도 생성';
+    }
+
     return log.log_memo || log.use_type;
   };
 
