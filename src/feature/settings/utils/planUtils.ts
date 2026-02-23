@@ -71,3 +71,11 @@ export const formatRenewalDate = (endAt: string | null): string => {
 
   return `${year}.${month}.${day}`;
 };
+
+/** ISO 날짜 → "2026년 3월 23일까지 이용" */
+export const formatUsageDate = (dateStr: string | null): string => {
+  if (!dateStr) return '';
+
+  const date = new Date(dateStr);
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일까지 이용`;
+};

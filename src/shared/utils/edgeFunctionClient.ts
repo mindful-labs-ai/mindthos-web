@@ -38,6 +38,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     DELETE_CARD: 'payment/delete-card',
     PREVIEW_UPGRADE: 'payment/preview-upgrade',
     CHANGE_PLAN: 'payment/change-plan',
+    RENEW: 'payment/renew',
     CANCEL: 'payment/cancel',
     CANCEL_UNDO: 'payment/cancel-undo',
     GET_CARD: 'payment/get-card',
@@ -58,6 +59,12 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   GENOGRAM: {
     INIT: 'generate-family-summary/init',
     SUMMARY: 'generate-family-summary/summary',
+  },
+  // 쿠폰 관련
+  COUPONS: {
+    VALIDATE_ALL: 'coupons/validate',
+    VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
+    REGISTER: 'coupons/register',
   },
 } as const;
 

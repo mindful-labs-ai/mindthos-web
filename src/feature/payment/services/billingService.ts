@@ -157,17 +157,39 @@ export const billingService = {
    * - 업그레이드: 즉시 적용 + 할인
    * - 다운그레이드: 구독 종료 후 적용
    */
-  async changePlan(planId: string): Promise<{
+  async changePlan(
+    planId: string,
+    userCouponId?: string
+  ): Promise<{
     type: 'upgrade' | 'downgrade';
     newPlan: string;
     discount?: number;
     finalAmount?: number;
+    couponDiscount?: number;
     appliedAt?: string;
     effectiveAt?: string | null;
   }> {
     return await callEdgeFunction(EDGE_FUNCTION_ENDPOINTS.PAYMENT.CHANGE_PLAN, {
       planId,
+      ...(userCouponId && { userCouponId }),
     });
+  },
+
+  /**
+   * 플랜 재갱신 (현재 플랜 동일하게 재결제 + 크레딧 초기화)
+   */
+  async renewPlan(userCouponId?: string): Promise<{
+    success: boolean;
+    subscribeId: string;
+    message: string;
+  }> {
+    const response = await callEdgeFunction<{
+      success: boolean;
+      data: { success: boolean; subscribeId: string; message: string };
+    }>(EDGE_FUNCTION_ENDPOINTS.PAYMENT.RENEW, {
+      ...(userCouponId && { userCouponId }),
+    });
+    return response.data;
   },
 
   /**

@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
@@ -9,8 +10,14 @@ import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMi
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
 import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
 import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
+import { CouponBox } from '@/feature/settings/components/CouponBox';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
 import { UserEditModal } from '@/feature/settings/components/UserEditModal';
+import {
+  useCoupons,
+  couponQueryKeys,
+} from '@/feature/settings/hooks/useCoupons';
+import { couponService } from '@/feature/settings/services/couponService';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -51,6 +58,32 @@ export const GlobalModalContainer = () => {
   const comingSoonData = useModalStore(
     (state) => state.modalData.comingSoon as { source: string } | undefined
   );
+  const isCouponModalOpen = useModalStore((state) =>
+    state.openModals.includes('couponModal')
+  );
+
+  // 쿠폰 데이터 (모달에서는 planType 없이 전체 조회)
+  const { coupons, isLoading: isCouponsLoading } = useCoupons();
+  const queryClient = useQueryClient();
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const handleRegisterCoupon = async (code: string): Promise<boolean> => {
+    setRegisterError(null);
+    setIsRegistering(true);
+    try {
+      await couponService.register(code);
+      await queryClient.invalidateQueries({ queryKey: couponQueryKeys.all });
+      return true;
+    } catch (error: unknown) {
+      setRegisterError(
+        (error as { message?: string })?.message ?? '쿠폰 등록에 실패했습니다.'
+      );
+      return false;
+    } finally {
+      setIsRegistering(false);
+    }
+  };
 
   const handleOpenUserEdit = () => {
     openModal('userEdit');
@@ -77,6 +110,12 @@ export const GlobalModalContainer = () => {
   const handleCloseComingSoon = (open: boolean) => {
     if (!open) {
       closeModal('comingSoon');
+    }
+  };
+
+  const handleCloseCouponModal = (open: boolean) => {
+    if (!open) {
+      closeModal('couponModal');
     }
   };
 
@@ -126,6 +165,18 @@ export const GlobalModalContainer = () => {
         open={isComingSoonOpen}
         onOpenChange={handleCloseComingSoon}
         source={comingSoonData?.source}
+      />
+
+      {/* 쿠폰함 모달 */}
+      <CouponBox
+        variant="modal"
+        open={isCouponModalOpen}
+        onOpenChange={handleCloseCouponModal}
+        coupons={coupons}
+        isLoading={isCouponsLoading}
+        onRegister={handleRegisterCoupon}
+        registerError={registerError}
+        isRegistering={isRegistering}
       />
     </>,
     document.body
