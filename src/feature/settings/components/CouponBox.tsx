@@ -244,6 +244,8 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
     setInternalSelected((prev) => (prev === coupon.id ? null : coupon.id));
   };
 
+  const isRemoving = !internalSelected && !!selectedCouponId;
+
   const handleConfirm = () => {
     const selected = coupons.find((c) => c.id === internalSelected) ?? null;
     onSelect(selected);
@@ -297,10 +299,10 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
         tone="neutral"
         size="md"
         onClick={handleConfirm}
-        disabled={!internalSelected}
+        disabled={!internalSelected && !isRemoving}
         className="mt-4 w-full"
       >
-        선택하기
+        {isRemoving ? '해제하기' : '선택하기'}
       </Button>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/atoms/Button';
 import { Text } from '@/components/ui/atoms/Text';
@@ -98,6 +98,20 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
   const { coupons, isLoading: isCouponsLoading } = useCoupons(
     previewData?.newPlan.type
   );
+
+  // 모달 열릴 때 / 쿠폰 목록 변경 시: 드롭다운 닫고, 최대 할인 쿠폰 자동 적용
+  useEffect(() => {
+    if (!open) return;
+    setIsCouponDropdownOpen(false);
+    if (coupons.length > 0) {
+      const best = coupons.reduce((max, c) =>
+        c.discount > max.discount ? c : max, coupons[0]
+      );
+      setSelectedCoupon(best);
+    } else {
+      setSelectedCoupon(null);
+    }
+  }, [open, coupons]);
 
   const handleConfirm = async () => {
     setIsLoading(true);
@@ -231,23 +245,6 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
               </div>
             )}
 
-            {/* 쿠폰 할인 */}
-            {selectedCoupon && (
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <span className="rounded border border-green-500 bg-green-50 px-2 py-0.5 text-xs font-medium text-green-600">
-                    쿠폰
-                  </span>
-                  <Text className="font-medium text-fg">
-                    {selectedCoupon.title} ({selectedCoupon.discount}%)
-                  </Text>
-                </div>
-                <Text className="font-medium text-green-600">
-                  -{formatPrice(couponDiscountAmount)}원
-                </Text>
-              </div>
-            )}
-
             {/* 안내 문구 */}
             {currentPlan.type === 'Free' || (
               <div className="pt-4">
@@ -262,9 +259,35 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
           <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
             <Text className="font-medium">총 결제 금액</Text>
             <Title as="h2" className="text-2xl font-bold">
-              {formatPrice(totalAmount)}원
+              {formatPrice(finalAmount)}원
             </Title>
           </div>
+
+          {/* 쿠폰 할인 */}
+          {selectedCoupon && (
+            <>
+              <div className="mt-4 flex items-center justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Text className="text-sm font-medium text-primary-600">
+                    쿠폰 사용 ({selectedCoupon.title})
+                  </Text>
+                  <span className="rounded-full bg-primary-500 px-2.5 py-0.5 text-xs font-medium text-white">
+                    {selectedCoupon.discount}% 할인
+                  </span>
+                </div>
+                <Text className="font-medium text-primary-500">
+                  -{formatPrice(couponDiscountAmount)}원
+                </Text>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                <Text className="font-medium">할인 적용 결제 금액</Text>
+                <Title as="h2" className="text-2xl font-bold">
+                  {formatPrice(totalAmount)}원
+                </Title>
+              </div>
+            </>
+          )}
 
           {/* 결제 카드 */}
           {displayCardInfo && (
