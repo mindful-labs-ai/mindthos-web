@@ -176,6 +176,23 @@ export const billingService = {
   },
 
   /**
+   * 플랜 재갱신 (현재 플랜 동일하게 재결제 + 크레딧 초기화)
+   */
+  async renewPlan(userCouponId?: string): Promise<{
+    success: boolean;
+    subscribeId: string;
+    message: string;
+  }> {
+    const response = await callEdgeFunction<{
+      success: boolean;
+      data: { success: boolean; subscribeId: string; message: string };
+    }>(EDGE_FUNCTION_ENDPOINTS.PAYMENT.RENEW, {
+      ...(userCouponId && { userCouponId }),
+    });
+    return response.data;
+  },
+
+  /**
    * 구독 해지 (구독 종료 후 FREE 전환)
    */
   async cancelSubscription(): Promise<{
