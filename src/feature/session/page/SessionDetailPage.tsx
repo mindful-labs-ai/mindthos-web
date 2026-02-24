@@ -44,17 +44,20 @@ import {
   sessionDetailQueryKey,
   useSessionDetail,
 } from '../hooks/useSessionDetail';
-import { useSpeakerManagement } from '../hooks/useSpeakerManagement';
 import { useTabNavigation } from '../hooks/useTabNavigation';
 import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
-import { useTranscriptEdit } from '../hooks/useTranscriptEdit';
 import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
+import { useTranscriptEditSession } from '../hooks/useTranscriptEditSession';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
 import {
   getAudioPresignedUrl,
   updateSessionTitle,
 } from '../services/sessionService';
 import type { HandwrittenTranscribe, Transcribe } from '../types';
+import {
+  getSegments as getSnapshotSegments,
+  getSpeakers as getSnapshotSpeakers,
+} from '../utils/contentsEditor';
 import { getTranscriptData } from '../utils/transcriptParser';
 import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
@@ -265,13 +268,43 @@ export const SessionDetailPage: React.FC = () => {
     () => transcriptData?.segments || [],
     [transcriptData]
   );
-  const speakers = React.useMemo(
+  const rawSpeakers = React.useMemo(
     () => transcriptData?.speakers || [],
     [transcriptData]
   );
 
-  // 편집 중인 내용은 각 세그먼트 내부에서 관리하므로 rawSegments를 직접 사용
-  const segments = rawSegments;
+  // 축어록 편집 통합 훅 (텍스트/화자/추가/삭제를 스냅샷 기반으로 관리)
+  const {
+    isEditing,
+    editingContents,
+    handleTextEdit,
+    handleEditStart,
+    handleCancelEdit,
+    handleSaveAllEdits,
+    handleSpeakerChange,
+    handleAddSegment,
+    handleDeleteSegment,
+  } = useTranscriptEditSession({
+    sessionId: sessionId || '',
+    transcribeId: transcribe?.id,
+    isDummySession,
+    isReadOnly,
+    checkIsGuideLevel,
+    nextGuideLevel,
+    scrollToTop: scrollTranscriptToTop,
+  });
+
+  // 편집 중이면 스냅샷에서 segments/speakers를 파생, 아니면 캐시 데이터 사용
+  const segments = React.useMemo(
+    () =>
+      editingContents ? getSnapshotSegments(editingContents) : rawSegments,
+    [editingContents, rawSegments]
+  );
+  const speakers = React.useMemo(
+    () =>
+      editingContents ? getSnapshotSpeakers(editingContents) : rawSpeakers,
+    [editingContents, rawSpeakers]
+  );
 
   // 상담노트 생성에 사용할 전사 텍스트
   const transcribeContents = transcribe?.contents;
@@ -304,123 +337,6 @@ export const SessionDetailPage: React.FC = () => {
     const content = (transcribe as HandwrittenTranscribe)?.contents || '';
     copyHandwrittenFromHook(content);
   }, [copyHandwrittenFromHook, transcribe]);
-
-  // 축어록 편집 훅
-  const {
-    isEditing,
-    handleTextEdit,
-    handleEditStart,
-    handleCancelEdit,
-    handleSaveAllEdits,
-  } = useTranscriptEdit({
-    sessionId: sessionId || '',
-    transcribeId: transcribe?.id,
-    isDummySession,
-    isReadOnly,
-    checkIsGuideLevel,
-    nextGuideLevel,
-    scrollToTop: scrollTranscriptToTop,
-  });
-
-  // 화자 변경 훅
-  const { handleSpeakerChange } = useSpeakerManagement({
-    sessionId: sessionId || '',
-    transcribeId: transcribe?.id,
-    isDummySession,
-    isReadOnly,
-  });
-
-  // 세그먼트 추가 핸들러 (로컬 캐시만 업데이트, 편집 완료 시 일괄 저장)
-  const handleAddSegment = React.useCallback(
-    (afterSegmentId: number, speaker: number) => {
-      if (isReadOnly || !transcribe?.id) return;
-
-      const maxId = segments.reduce((max, seg) => Math.max(max, seg.id), 0);
-      const newSegment = {
-        id: maxId + 1,
-        start: null as null,
-        end: null as null,
-        text: '',
-        speaker,
-      };
-
-      queryClient.setQueryData(sessionQueryKey, (oldData: any) => {
-        if (!oldData?.transcribe?.contents) return oldData;
-        const contents = oldData.transcribe.contents;
-
-        const insertSegment = (segs: any[]) => {
-          const idx = segs.findIndex((s: any) => s.id === afterSegmentId);
-          if (idx === -1) return segs;
-          const updated = [...segs];
-          updated.splice(idx + 1, 0, newSegment);
-          return updated;
-        };
-
-        let updatedContents;
-        if ('segments' in contents && Array.isArray(contents.segments)) {
-          updatedContents = {
-            ...contents,
-            segments: insertSegment(contents.segments),
-          };
-        } else if ('result' in contents && contents.result?.segments) {
-          updatedContents = {
-            ...contents,
-            result: {
-              ...contents.result,
-              segments: insertSegment(contents.result.segments),
-            },
-          };
-        } else {
-          return oldData;
-        }
-
-        return {
-          ...oldData,
-          transcribe: { ...oldData.transcribe, contents: updatedContents },
-        };
-      });
-    },
-    [isReadOnly, transcribe?.id, segments, queryClient, sessionQueryKey]
-  );
-
-  // 세그먼트 삭제 핸들러 (로컬 캐시만 업데이트, 편집 완료 시 일괄 저장)
-  const handleDeleteSegment = React.useCallback(
-    (segmentId: number) => {
-      if (isReadOnly || !transcribe?.id) return;
-
-      queryClient.setQueryData(sessionQueryKey, (oldData: any) => {
-        if (!oldData?.transcribe?.contents) return oldData;
-        const contents = oldData.transcribe.contents;
-
-        const removeSegment = (segs: any[]) =>
-          segs.filter((s: any) => s.id !== segmentId);
-
-        let updatedContents;
-        if ('segments' in contents && Array.isArray(contents.segments)) {
-          updatedContents = {
-            ...contents,
-            segments: removeSegment(contents.segments),
-          };
-        } else if ('result' in contents && contents.result?.segments) {
-          updatedContents = {
-            ...contents,
-            result: {
-              ...contents.result,
-              segments: removeSegment(contents.result.segments),
-            },
-          };
-        } else {
-          return oldData;
-        }
-
-        return {
-          ...oldData,
-          transcribe: { ...oldData.transcribe, contents: updatedContents },
-        };
-      });
-    },
-    [isReadOnly, transcribe?.id, queryClient, sessionQueryKey]
-  );
 
   // 탭 네비게이션 훅
   const {
