@@ -17,6 +17,7 @@ import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
+import { ReportPOCPage } from '@/feature/report/poc/ReportPOCPage';
 import TermsAgreementPage from '@/feature/terms-agreement/page/TermsAgreementPage';
 
 import { ROUTES } from './constants';
@@ -126,6 +127,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.ERROR_TEST,
         element: <ErrorTestPage />,
+      },
+      {
+        path: ROUTES.REPORT_POC,
+        element: <ReportPOCPage />,
       },
       {
         path: ROUTES.NOT_FOUND,
