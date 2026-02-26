@@ -36,6 +36,9 @@ export type ReportSection =
   | InfoTableSection
   | ProfileSelectSection
   | LetterBoxSection
+  | TimelineSection
+  | StageAdaptationSection
+  | RelationPatternSection
   | DividerSection
   | PageBreakSection;
 
@@ -69,7 +72,10 @@ export interface ParagraphSection {
 /** 가계도 이미지 */
 export interface GenogramImageSection {
   type: 'genogram_image';
-  imageData: string; // base64 data URI 또는 URL
+  /** 캡처된 이미지 (base64 data URI). graphData가 있으면 전처리 단계에서 자동 채워짐 */
+  imageData?: string;
+  /** 가계도 JSON 데이터 (SerializedGenogram). 전처리 시 캡처 후 imageData로 변환됨 */
+  graphData?: string;
   caption?: string;
   width?: number; // pt 단위
   height?: number;
@@ -144,6 +150,49 @@ export interface LetterBoxSection {
 export interface SubHeadingSection {
   type: 'sub_heading';
   text: string;
+}
+
+/** 연표 (타임라인) */
+export interface TimelineSection {
+  type: 'timeline';
+  /** 연표 하단 제목 (예: "가족 연표 및 주요 스트레스 사건") */
+  title?: string;
+  /** 사건 목록 (연도순, 균등 배치) */
+  events: {
+    /** 연도 또는 "현재" */
+    year: string;
+    /** 설명 텍스트 (각 줄이 하나의 라인) */
+    descriptions: string[];
+  }[];
+  /** 하단 부가 설명 (bullet point) */
+  notes?: string[];
+}
+
+/** 관계 패턴 해석 (가계도 스냅샷 + 임상적 해석 나란히) */
+export interface RelationPatternSection {
+  type: 'relation_pattern';
+  /** 캡처된 이미지 (base64 data URI). graphData가 있으면 전처리 단계에서 자동 채워짐 */
+  imageData?: string;
+  /** 가계도 JSON 데이터 (SerializedGenogram). 전처리 시 캡처 후 imageData로 변환됨 */
+  graphData?: string;
+  /** 이미지 하단 캡션 (예: "주요 갈등 및 삼각관계 도식") */
+  caption?: string;
+  /** 임상적 해석 내용 */
+  entries: {
+    subtitle: string;
+    contents: string[];
+  }[];
+}
+
+/** 현재 단계 + 적응 수준 (두 카드 나란히) */
+export interface StageAdaptationSection {
+  type: 'stage_adaptation';
+  /** 현재 단계명 (예: "독립기", "신혼기") */
+  stage: string;
+  /** 적응 수준 0~4 (매우 낮음, 낮음, 보통, 높음, 매우 높음) */
+  adaptationLevel: 0 | 1 | 2 | 3 | 4;
+  /** 분석 텍스트 */
+  analysis: string;
 }
 
 /** 강제 페이지 나눔 */

@@ -122,10 +122,10 @@ export const styles = StyleSheet.create({
     objectFit: 'contain',
   },
   imageCaption: {
-    fontSize: fontSize.imageCaption,
-    color: colors.textMuted,
+    fontSize: 8,
+    color: colors.primaryLight,
     textAlign: 'center',
-    marginTop: 6,
+    marginVertical: 11,
   },
 
   // ============================================
