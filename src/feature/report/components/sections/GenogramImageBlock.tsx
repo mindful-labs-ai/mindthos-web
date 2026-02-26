@@ -17,20 +17,24 @@ export const GenogramImageBlock = ({
   section,
 }: {
   section: GenogramImageSection;
-}) => (
-  <View style={styles.imageContainer} wrap={false}>
-    <Image
-      src={section.imageData}
-      style={[
-        styles.image,
-        {
-          width: section.width || 400,
-          height: section.height || 250,
-        },
-      ]}
-    />
-    {section.caption && (
-      <Text style={styles.imageCaption}>{section.caption}</Text>
-    )}
-  </View>
-);
+}) => {
+  if (!section.imageData) return null;
+
+  return (
+    <View style={styles.imageContainer} wrap={false}>
+      <Image
+        src={section.imageData}
+        style={[
+          styles.image,
+          {
+            width: section.width || 547,
+            ...(section.height ? { height: section.height } : {}),
+          },
+        ]}
+      />
+      {section.caption && (
+        <Text style={styles.imageCaption}>{section.caption}</Text>
+      )}
+    </View>
+  );
+};

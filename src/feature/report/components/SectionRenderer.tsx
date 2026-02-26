@@ -23,13 +23,22 @@ import { KeyValueBlock } from './sections/KeyValueBlock';
 import { LetterBoxBlock } from './sections/LetterBoxBlock';
 import { ParagraphBlock } from './sections/ParagraphBlock';
 import { ProfileSelectBlock } from './sections/ProfileSelectBlock';
+import { RelationPatternBlock } from './sections/RelationPatternBlock';
 import { ScoreTableBlock } from './sections/ScoreTableBlock';
+import { StageAdaptationBlock } from './sections/StageAdaptationBlock';
 import { SubHeadingBlock } from './sections/SubHeadingBlock';
+import { TimelineBlock } from './sections/TimelineBlock';
 
-export const SectionRenderer = ({ section }: { section: ReportSection }) => {
+export const SectionRenderer = ({
+  section,
+  headingNumber,
+}: {
+  section: ReportSection;
+  headingNumber?: number;
+}) => {
   switch (section.type) {
     case 'heading':
-      return <HeadingBlock section={section} />;
+      return <HeadingBlock section={section} headingNumber={headingNumber} />;
     case 'sub_heading':
       return <SubHeadingBlock section={section} />;
     case 'paragraph':
@@ -48,6 +57,12 @@ export const SectionRenderer = ({ section }: { section: ReportSection }) => {
       return <ProfileSelectBlock section={section} />;
     case 'letter_box':
       return <LetterBoxBlock section={section} />;
+    case 'timeline':
+      return <TimelineBlock section={section} />;
+    case 'stage_adaptation':
+      return <StageAdaptationBlock section={section} />;
+    case 'relation_pattern':
+      return <RelationPatternBlock section={section} />;
     case 'divider':
       return <DividerBlock />;
     case 'page_break':

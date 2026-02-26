@@ -12,7 +12,13 @@ import type { HeadingSection } from '../../types/reportSchema';
 import { styles } from '../styles';
 import { colors } from '../theme';
 
-export const HeadingBlock = ({ section }: { section: HeadingSection }) => {
+export const HeadingBlock = ({
+  section,
+  headingNumber,
+}: {
+  section: HeadingSection;
+  headingNumber?: number;
+}) => {
   const style =
     section.level === 1
       ? styles.heading1
@@ -40,7 +46,11 @@ export const HeadingBlock = ({ section }: { section: HeadingSection }) => {
   return (
     <View style={s.container}>
       <View style={s.headerHighlight} />
-      <Text style={style}>{section.text}</Text>
+      <Text style={style}>
+        {section.level === 1 && headingNumber
+          ? `${headingNumber}. ${section.text}`
+          : section.text}
+      </Text>
     </View>
   );
 };
