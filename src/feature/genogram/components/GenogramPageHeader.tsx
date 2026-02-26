@@ -35,6 +35,8 @@ interface GenogramPageHeaderProps {
   isResetting?: boolean;
   /** 가계도 기본 정보 보기 핸들러 (역변환) */
   onShowBasicInfo?: () => void;
+  /** 가계도 분석 보고서 핸들러 */
+  onShowReport?: () => void;
 }
 
 export function GenogramPageHeader({
@@ -56,6 +58,7 @@ export function GenogramPageHeader({
   onReset,
   isResetting = false,
   onShowBasicInfo,
+  onShowReport,
 }: GenogramPageHeaderProps) {
   const [isExported, setIsExported] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -99,6 +102,14 @@ export function GenogramPageHeader({
             className="flex h-10 items-center rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
           >
             가족 구성원 정보
+          </button>
+        )}
+        {onShowReport && selectedClient && (
+          <button
+            onClick={onShowReport}
+            className="flex h-10 items-center rounded-md border-2 border-primary bg-white px-4 text-sm text-primary transition-colors hover:bg-primary/5"
+          >
+            가계도 분석 보고서
           </button>
         )}
       </div>

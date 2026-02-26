@@ -8,6 +8,7 @@ import { AddClientModal } from '@/feature/client/components/AddClientModal';
 import { clientQueryKeys } from '@/feature/client/constants/queryKeys';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
+import { ReportPreviewModal } from '@/feature/report/components/ReportPreviewModal';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
@@ -68,16 +69,6 @@ export function GenogramClientPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
 
-  const {
-    initialData,
-    hasData,
-    isLoading: isDataLoading,
-    isSaving,
-    lastSavedAt,
-    onChange,
-    saveNow,
-  } = useGenogramData(clientId ?? '');
-
   // Undo/Redo 및 패널 상태 추적
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
@@ -102,6 +93,28 @@ export function GenogramClientPage() {
 
   // 가계도 안내 모달 상태
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+
+  // 보고서 미리보기 모달 상태
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+  // 모달/스텝이 열려있으면 자동 저장 중지
+  const autoSavePaused =
+    steps.isOpen ||
+    isExportModalOpen ||
+    isReportModalOpen ||
+    isResetModalOpen ||
+    isGuideModalOpen ||
+    isAddClientModalOpen;
+
+  const {
+    initialData,
+    hasData,
+    isLoading: isDataLoading,
+    isSaving,
+    lastSavedAt,
+    onChange,
+    saveNow,
+  } = useGenogramData(clientId ?? '', { paused: autoSavePaused });
 
   // 활성 클라이언트 (counsel_done 제외)
   const activeClients = clients.filter((c) => !c.counsel_done);
@@ -490,6 +503,9 @@ export function GenogramClientPage() {
         onShowBasicInfo={
           showCanvas && clientId ? handleShowBasicInfo : undefined
         }
+        onShowReport={
+          showCanvas && clientId ? () => setIsReportModalOpen(true) : undefined
+        }
       />
 
       {/* 콘텐츠 영역 */}
@@ -610,6 +626,13 @@ export function GenogramClientPage() {
         onDontShowAgain={() => {
           localStorage.setItem(GUIDE_DONT_SHOW_AGAIN_KEY, 'true');
         }}
+      />
+
+      {/* 보고서 미리보기 모달 */}
+      <ReportPreviewModal
+        open={isReportModalOpen}
+        onOpenChange={setIsReportModalOpen}
+        genogramRef={genogramRef}
       />
     </div>
   );
