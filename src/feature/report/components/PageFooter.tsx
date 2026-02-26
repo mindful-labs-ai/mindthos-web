@@ -23,6 +23,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 4,
   },
 
   // ---- 좌: 로고 영역 ----
@@ -34,10 +35,9 @@ const s = StyleSheet.create({
 
   // ---- 구분선 ----
   divider: {
-    width: 0,
+    width: 1,
     height: 46,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.border,
     marginHorizontal: 8,
   },
 

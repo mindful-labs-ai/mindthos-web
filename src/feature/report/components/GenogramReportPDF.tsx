@@ -40,6 +40,16 @@ export const GenogramReportPDF = ({ report }: GenogramReportPDFProps) => {
     | undefined;
   const contentSections = report.sections.filter((s) => s.type !== 'cover');
 
+  // heading level 1 자동 넘버링 맵 (section index → 순번)
+  let h1Counter = 0;
+  const h1NumberMap = new Map<number, number>();
+  contentSections.forEach((section, i) => {
+    if (section.type === 'heading' && section.level === 1) {
+      h1Counter += 1;
+      h1NumberMap.set(i, h1Counter);
+    }
+  });
+
   return (
     <Document>
       {/* 표지 (별도 페이지, 헤더/푸터 없음) */}
@@ -51,7 +61,11 @@ export const GenogramReportPDF = ({ report }: GenogramReportPDFProps) => {
         <PageFooter meta={meta} />
 
         {contentSections.map((section, i) => (
-          <SectionRenderer key={i} section={section} />
+          <SectionRenderer
+            key={i}
+            section={section}
+            headingNumber={h1NumberMap.get(i)}
+          />
         ))}
       </Page>
     </Document>

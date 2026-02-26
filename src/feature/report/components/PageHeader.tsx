@@ -18,9 +18,11 @@ import { colors } from './theme';
 
 const s = StyleSheet.create({
   container: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
+    paddingHorizontal: 4,
     marginTop: 20,
   },
   titleNormal: {
@@ -35,12 +37,10 @@ const s = StyleSheet.create({
   },
   rightLabel: {
     fontSize: 8,
-    fontWeight: 400,
-    color: colors.textMuted,
+    color: colors.text,
   },
   rightValue: {
     fontSize: 8,
-    fontWeight: 800,
     color: colors.text,
     marginLeft: 8,
   },
@@ -55,12 +55,14 @@ export const PageHeader = ({ meta }: PageHeaderProps) => (
     <View style={s.container}>
       {/* 좌: 마음토스 가계도 분석 보고서 */}
       <View style={{ flexDirection: 'row' }}>
-        <Text style={s.titleNormal}>마음토스 가계도 </Text>
-        <Text style={s.titleBold}>분석 보고서</Text>
+        <Text style={s.titleBold}>마음토스 가계도 </Text>
+        <Text style={s.titleNormal}>분석 보고서</Text>
       </View>
 
       {/* 우: 보고서 작성일 + 날짜 */}
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View
+        style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 210 }}
+      >
         <Text style={s.rightLabel}>보고서 작성일</Text>
         <Text style={s.rightValue}>{meta.createdAt}</Text>
       </View>
