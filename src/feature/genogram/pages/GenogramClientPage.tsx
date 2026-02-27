@@ -8,7 +8,7 @@ import { AddClientModal } from '@/feature/client/components/AddClientModal';
 import { clientQueryKeys } from '@/feature/client/constants/queryKeys';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
-import { ReportPreviewModal } from '@/feature/report/components/ReportPreviewModal';
+import { GenogramReportModal } from '@/feature/report/components/GenogramReportModal';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
@@ -628,8 +628,8 @@ export function GenogramClientPage() {
         }}
       />
 
-      {/* 보고서 미리보기 모달 */}
-      <ReportPreviewModal
+      {/* 가계도 분석 보고서 모달 */}
+      <GenogramReportModal
         open={isReportModalOpen}
         onOpenChange={setIsReportModalOpen}
         genogramRef={genogramRef}
