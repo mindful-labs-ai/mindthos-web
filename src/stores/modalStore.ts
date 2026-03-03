@@ -109,7 +109,7 @@ export const useModalStore = create<ModalStore>()(
         }
       },
     }),
-    { name: 'ModalStore' }
+    { name: 'ModalStore', enabled: !import.meta.env.PROD }
   )
 );
 

@@ -7,9 +7,18 @@ import { useAuthStore } from '@/stores/authStore';
 import { genogramService } from '../services/genogramService';
 
 const GENOGRAM_QUERY_KEY = 'genogram';
-const AUTO_SAVE_DELAY = 3000;
+const AUTO_SAVE_DELAY = 5000;
 
-export function useGenogramData(clientId: string) {
+interface UseGenogramDataOptions {
+  /** true이면 자동 저장 타이머를 중지하고 pending 저장을 보류한다 */
+  paused?: boolean;
+}
+
+export function useGenogramData(
+  clientId: string,
+  options: UseGenogramDataOptions = {}
+) {
+  const { paused = false } = options;
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
 
@@ -38,10 +47,19 @@ export function useGenogramData(clientId: string) {
     },
   });
 
+  const pausedRef = useRef(paused);
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+
   const scheduleSave = useCallback(
     (jsonData: string) => {
       pendingDataRef.current = jsonData;
       if (timerRef.current) clearTimeout(timerRef.current);
+
+      // paused 상태이면 타이머를 걸지 않고 pending만 유지
+      if (pausedRef.current) return;
+
       timerRef.current = setTimeout(() => {
         const data = pendingDataRef.current;
         if (data && userId) {
@@ -52,6 +70,17 @@ export function useGenogramData(clientId: string) {
     },
     [saveMutation, userId]
   );
+
+  // paused 해제 시 pending 데이터가 있으면 저장 예약
+  useEffect(() => {
+    if (!paused && pendingDataRef.current) {
+      scheduleSave(pendingDataRef.current);
+    }
+    if (paused && timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [paused, scheduleSave]);
 
   /** 데이터 변경 시 호출 — debounce 자동저장 */
   const onChange = useCallback(

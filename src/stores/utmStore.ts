@@ -101,6 +101,6 @@ export const useUtmStore = create<UtmStore>()(
         },
       }
     ),
-    { name: 'UtmStore' }
+    { name: 'UtmStore', enabled: !import.meta.env.PROD }
   )
 );

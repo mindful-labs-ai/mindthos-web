@@ -50,6 +50,6 @@ export const useThemeStore = create<ThemeStore>()(
         name: 'theme-storage',
       }
     ),
-    { name: 'ThemeStore' }
+    { name: 'ThemeStore', enabled: !import.meta.env.PROD }
   )
 );

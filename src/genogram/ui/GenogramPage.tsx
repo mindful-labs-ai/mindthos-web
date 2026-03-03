@@ -226,16 +226,56 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       await new Promise((resolve) => requestAnimationFrame(resolve));
       await new Promise((resolve) => setTimeout(resolve, 200));
 
+      const pixelRatio = 2;
+
       try {
         const dataUrl = await toPng(paneEl, {
           backgroundColor: undefined,
-          pixelRatio: 2,
+          pixelRatio,
+        });
+
+        // 노드 영역만 crop (패딩 포함)
+        const paddedBoundsX = bounds.x - bounds.width * padding;
+        const paddedBoundsY = bounds.y - bounds.height * padding;
+
+        // 그래프 좌표 → 화면 좌표 변환
+        const cropX = Math.max(0, paddedBoundsX * zoom + newViewport.x);
+        const cropY = Math.max(0, paddedBoundsY * zoom + newViewport.y);
+        const cropW = Math.min(paddedWidth * zoom, containerWidth - cropX);
+        const cropH = Math.min(paddedHeight * zoom, containerHeight - cropY);
+
+        const croppedUrl = await new Promise<string>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = cropW * pixelRatio;
+            canvas.height = cropH * pixelRatio;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('No canvas context'));
+              return;
+            }
+            ctx.drawImage(
+              img,
+              cropX * pixelRatio,
+              cropY * pixelRatio,
+              cropW * pixelRatio,
+              cropH * pixelRatio,
+              0,
+              0,
+              cropW * pixelRatio,
+              cropH * pixelRatio
+            );
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.onerror = reject;
+          img.src = dataUrl;
         });
 
         // 원래 뷰포트로 복원
         setViewport(originalViewport, { duration: 0 });
 
-        return dataUrl;
+        return croppedUrl;
       } catch {
         // 에러 시에도 뷰포트 복원
         setViewport(originalViewport, { duration: 0 });
