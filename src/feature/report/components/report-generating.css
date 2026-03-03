@@ -1,0 +1,152 @@
+/* ============================================
+ * 보고서 생성 대기 화면 애니메이션
+ * ============================================ */
+
+/* ── 키프레임 ── */
+
+@keyframes rptPaperIn {
+  0%, 3% { opacity: 0; transform: translateY(8px) scale(0.96); }
+  10%, 80% { opacity: 1; transform: translateY(0) scale(1); }
+  92%, 100% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
+@keyframes rptLineAppear {
+  0%, 3% { opacity: 0; }
+  12%, 80% { opacity: 1; }
+  92%, 100% { opacity: 0; }
+}
+
+@keyframes rptGenoFadeIn {
+  0%, 3% { opacity: 0; transform: scale(0.6); }
+  12%, 80% { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes rptDrawPath {
+  0%, 3% { stroke-dashoffset: var(--dash-len); }
+  15%, 80% { stroke-dashoffset: 0; }
+  92%, 100% { stroke-dashoffset: var(--dash-len); }
+}
+
+@keyframes rptShimmerSweep {
+  0% { transform: translateX(-80px); }
+  100% { transform: translateX(260px); }
+}
+
+@keyframes rptDotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes rptSuccessPop {
+  0% { opacity: 0; transform: scale(0.5); }
+  60% { transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ── 종이 ── */
+
+.rpt-paper {
+  opacity: 0;
+  animation: rptPaperIn 6s ease-in-out infinite;
+}
+
+/* ── 텍스트 라인 ── */
+
+.rpt-line-1 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 0.3s; }
+.rpt-line-2 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 0.5s; }
+
+/* ── 가계도 심볼 ── */
+
+.rpt-father {
+  opacity: 0;
+  animation: rptGenoFadeIn 6s ease-in-out infinite;
+  animation-delay: 0.8s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.rpt-mother {
+  opacity: 0;
+  animation: rptGenoFadeIn 6s ease-in-out infinite;
+  animation-delay: 1.0s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ── 연결선 draw ── */
+
+.rpt-parent-line {
+  stroke-dasharray: 44;
+  stroke-dashoffset: 44;
+  animation: rptDrawPath 6s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+.rpt-child-stem {
+  stroke-dasharray: 18;
+  stroke-dashoffset: 18;
+  animation: rptDrawPath 6s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+.rpt-child-horiz {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: rptDrawPath 6s ease-in-out infinite;
+  animation-delay: 1.6s;
+}
+.rpt-c1-line {
+  stroke-dasharray: 12;
+  stroke-dashoffset: 12;
+  animation: rptDrawPath 6s ease-in-out infinite;
+  animation-delay: 1.8s;
+}
+.rpt-c2-line {
+  stroke-dasharray: 12;
+  stroke-dashoffset: 12;
+  animation: rptDrawPath 6s ease-in-out infinite;
+  animation-delay: 1.9s;
+}
+
+/* ── 자녀 심볼 ── */
+
+.rpt-child1 {
+  opacity: 0;
+  animation: rptGenoFadeIn 6s ease-in-out infinite;
+  animation-delay: 2.0s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.rpt-child2 {
+  opacity: 0;
+  animation: rptGenoFadeIn 6s ease-in-out infinite;
+  animation-delay: 2.1s;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* ── 본문 라인 ── */
+
+.rpt-body-1 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 2.4s; }
+.rpt-body-2 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 2.6s; }
+.rpt-body-3 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 2.8s; }
+.rpt-body-4 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 3.0s; }
+.rpt-body-5 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 3.2s; }
+.rpt-body-6 { opacity: 0; animation: rptLineAppear 6s ease-in-out infinite; animation-delay: 3.4s; }
+
+/* ── Shimmer ── */
+
+.rpt-shimmer {
+  animation: rptShimmerSweep 2.5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* ── 로딩 dots ── */
+
+.rpt-dot-1 { animation: rptDotPulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.rpt-dot-2 { animation: rptDotPulse 1.4s ease-in-out infinite 0.3s; transform-box: fill-box; transform-origin: center; }
+.rpt-dot-3 { animation: rptDotPulse 1.4s ease-in-out infinite 0.6s; transform-box: fill-box; transform-origin: center; }
+
+/* ── 성공 애니메이션 ── */
+
+.rpt-success-pop {
+  animation: rptSuccessPop 0.5s ease-out forwards;
+}
