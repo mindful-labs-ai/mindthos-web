@@ -29,6 +29,10 @@ export const colors = {
   gradientStart: '#EDF4F1',
   /** 그라데이션 배경 끝색 (하단) */
   gradientEnd: '#FFFFFF',
+  /** 소제목 배경 (primaryLight 연한 버전) */
+  subtitleBg: '#E8F0EA',
+  /** 플랫 타이틀 바 배경 (== gradientStart) */
+  titleBarBg: '#EDF4F1',
 
   // ---- 표지 전용 ----
   /** 표지 배경 */
@@ -90,9 +94,9 @@ export const fontSize = {
   /** h2 */
   heading2: 14,
   /** h3 */
-  heading3: 10,
+  heading3: 11,
   /** 기본 본문 */
-  body: 10,
+  body: 11,
   /** 테이블 셀 */
   tableCell: 8,
   /** 캡션, 헤더/푸터 텍스트 */
@@ -100,7 +104,7 @@ export const fontSize = {
   /** 이미지 캡션 */
   imageCaption: 9,
   /** 이미지 캡션 */
-  profileContent: 10,
+  profileContent: 11,
 };
 
 /** registerFonts.ts에서 등록한 family 이름과 동일해야 함 */

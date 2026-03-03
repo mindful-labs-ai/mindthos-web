@@ -241,4 +241,71 @@ export const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     marginVertical: 16,
   },
+
+  // ============================================
+  // 양쪽 카드 레이아웃
+  // ============================================
+  twoCardRow: {
+    flexDirection: 'row' as const,
+    marginVertical: 12,
+  },
+  twoCard: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 4,
+  },
+  twoCardRight: {
+    marginLeft: 9,
+  },
+
+  // ============================================
+  // 플랫 타이틀 바 (단색 배경)
+  // ============================================
+  flatTitleBar: {
+    backgroundColor: colors.titleBarBg,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+  },
+  flatTitleText: {
+    fontSize: 11,
+    fontWeight: 800,
+    color: colors.primaryLight,
+  },
+
+  // ============================================
+  // Entry 패턴 (소제목 + 불릿)
+  // ============================================
+  entrySubtitle: {
+    fontSize: 8,
+    fontWeight: 800,
+    color: colors.primaryLight,
+    backgroundColor: colors.subtitleBg,
+    padding: 2,
+    alignSelf: 'flex-start' as const,
+    marginBottom: 4,
+  },
+  entryBulletRow: {
+    flexDirection: 'row' as const,
+    marginTop: 2,
+  },
+  entryBulletDot: {
+    width: 10,
+    fontSize: 8,
+    color: colors.primaryLight,
+  },
+  entryBulletText: {
+    flex: 1,
+    fontSize: 8,
+    lineHeight: 1.5,
+    color: colors.text,
+  },
+  entryPlainText: {
+    fontSize: 8,
+    lineHeight: 1.5,
+    color: colors.text,
+    marginTop: 2,
+  },
 });
