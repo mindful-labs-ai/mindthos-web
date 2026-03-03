@@ -108,7 +108,8 @@ export async function exportReport(params: {
       .eq('id', reportId);
 
     if (error) {
-      if (!import.meta.env.PROD) console.error('보고서 제목 업데이트 실패:', error.message);
+      if (!import.meta.env.PROD)
+        console.error('보고서 제목 업데이트 실패:', error.message);
     }
   }
 

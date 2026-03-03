@@ -176,7 +176,11 @@ export function useReportModal({
             numberedBlob
           );
         } catch (uploadError) {
-          if (!import.meta.env.PROD) console.error('PDF 업로드/URL 저장 실패:', uploadError instanceof Error ? uploadError.message : uploadError);
+          if (!import.meta.env.PROD)
+            console.error(
+              'PDF 업로드/URL 저장 실패:',
+              uploadError instanceof Error ? uploadError.message : uploadError
+            );
         }
       }
 
@@ -240,7 +244,11 @@ export function useReportModal({
             await uploadPdfToStorage(userId, clientId, report.id, numberedBlob);
             if (!cancelledRef.current) fetchReports();
           } catch (uploadError) {
-            if (!import.meta.env.PROD) console.error('PDF 업로드/URL 저장 실패:', uploadError instanceof Error ? uploadError.message : uploadError);
+            if (!import.meta.env.PROD)
+              console.error(
+                'PDF 업로드/URL 저장 실패:',
+                uploadError instanceof Error ? uploadError.message : uploadError
+              );
           }
         }
       } catch (error) {
