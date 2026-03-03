@@ -60,6 +60,13 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     INIT: 'generate-family-summary/init',
     SUMMARY: 'generate-family-summary/summary',
   },
+  // 보고서 관련
+  REPORT: {
+    GENERATE: 'report/generate',
+    LIST: 'report/list',
+    RETRY: 'report/retry',
+    PDF_URL: 'report/pdf-url',
+  },
   // 쿠폰 관련
   COUPONS: {
     VALIDATE_ALL: 'coupons/validate',
