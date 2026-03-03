@@ -129,7 +129,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    // TODO: 세미나 신청하기 로직 (기획 미정)
+                    window.open('https://nextgenogram.mindthos.com/', '_blank');
                   }}
                   className="flex-1 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400"
                 >
