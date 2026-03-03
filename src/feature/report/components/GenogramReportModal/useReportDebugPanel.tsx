@@ -50,13 +50,7 @@ export function useReportDebugPanel({
       step: {
         value: step,
         set: setStep,
-        options: [
-          'list',
-          'verify',
-          'input',
-          'generating',
-          'preview',
-        ] as const,
+        options: ['list', 'verify', 'input', 'generating', 'preview'] as const,
       },
       hasAccess: {
         value: hasAccess,

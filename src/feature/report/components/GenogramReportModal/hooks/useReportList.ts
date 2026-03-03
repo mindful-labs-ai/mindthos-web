@@ -1,10 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import type { ReportListItem } from '../../../services/reportService';
-import {
-  listReports,
-  retryReport,
-} from '../../../services/reportService';
+import { listReports, retryReport } from '../../../services/reportService';
 
 type ToastFn = (opts: { title: string; description: string }) => void;
 
@@ -67,25 +64,22 @@ export function useReportList({
     [toast, fetchReports]
   );
 
-  const handleDownloadReport = useCallback(
-    async (report: ReportListItem) => {
-      if (!report.pdf_url) return;
-      try {
-        const res = await fetch(report.pdf_url);
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${report.title}.pdf`;
-        a.click();
-        URL.revokeObjectURL(url);
-      } catch {
-        // fallback: 직접 이동
-        window.open(report.pdf_url, '_blank');
-      }
-    },
-    []
-  );
+  const handleDownloadReport = useCallback(async (report: ReportListItem) => {
+    if (!report.pdf_url) return;
+    try {
+      const res = await fetch(report.pdf_url);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${report.title}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // fallback: 직접 이동
+      window.open(report.pdf_url, '_blank');
+    }
+  }, []);
 
   return {
     reports,

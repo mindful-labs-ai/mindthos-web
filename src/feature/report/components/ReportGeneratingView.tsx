@@ -20,9 +20,7 @@ interface ReportGeneratingViewProps {
   status: GeneratingStatus;
 }
 
-export function ReportGeneratingView({
-  status,
-}: ReportGeneratingViewProps) {
+export function ReportGeneratingView({ status }: ReportGeneratingViewProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-4">
       {status === 'processing' && <ProcessingAnimation />}
@@ -217,12 +215,66 @@ function ProcessingAnimation() {
         />
 
         {/* ── 하단 본문 텍스트 라인들 ── */}
-        <line x1="48" y1="140" x2="164" y2="140" stroke="#E0E0E0" strokeWidth="3" strokeLinecap="round" className="rpt-body-1" />
-        <line x1="48" y1="152" x2="155" y2="152" stroke="#E0E0E0" strokeWidth="3" strokeLinecap="round" className="rpt-body-2" />
-        <line x1="48" y1="164" x2="160" y2="164" stroke="#E0E0E0" strokeWidth="3" strokeLinecap="round" className="rpt-body-3" />
-        <line x1="48" y1="176" x2="130" y2="176" stroke="#E0E0E0" strokeWidth="3" strokeLinecap="round" className="rpt-body-4" />
-        <line x1="48" y1="194" x2="164" y2="194" stroke="#E0E0E0" strokeWidth="3" strokeLinecap="round" className="rpt-body-5" />
-        <line x1="48" y1="206" x2="140" y2="206" stroke="#E0E0E0" strokeWidth="3" strokeLinecap="round" className="rpt-body-6" />
+        <line
+          x1="48"
+          y1="140"
+          x2="164"
+          y2="140"
+          stroke="#E0E0E0"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="rpt-body-1"
+        />
+        <line
+          x1="48"
+          y1="152"
+          x2="155"
+          y2="152"
+          stroke="#E0E0E0"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="rpt-body-2"
+        />
+        <line
+          x1="48"
+          y1="164"
+          x2="160"
+          y2="164"
+          stroke="#E0E0E0"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="rpt-body-3"
+        />
+        <line
+          x1="48"
+          y1="176"
+          x2="130"
+          y2="176"
+          stroke="#E0E0E0"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="rpt-body-4"
+        />
+        <line
+          x1="48"
+          y1="194"
+          x2="164"
+          y2="194"
+          stroke="#E0E0E0"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="rpt-body-5"
+        />
+        <line
+          x1="48"
+          y1="206"
+          x2="140"
+          y2="206"
+          stroke="#E0E0E0"
+          strokeWidth="3"
+          strokeLinecap="round"
+          className="rpt-body-6"
+        />
 
         {/* ── Shimmer 효과 ── */}
         <defs>
@@ -247,8 +299,20 @@ function ProcessingAnimation() {
 
         {/* ── 로딩 dots ── */}
         <circle cx="96" cy="244" r="3.5" fill="#D4D4D4" className="rpt-dot-1" />
-        <circle cx="110" cy="244" r="3.5" fill="#D4D4D4" className="rpt-dot-2" />
-        <circle cx="124" cy="244" r="3.5" fill="#D4D4D4" className="rpt-dot-3" />
+        <circle
+          cx="110"
+          cy="244"
+          r="3.5"
+          fill="#D4D4D4"
+          className="rpt-dot-2"
+        />
+        <circle
+          cx="124"
+          cy="244"
+          r="3.5"
+          fill="#D4D4D4"
+          className="rpt-dot-3"
+        />
       </svg>
 
       <span className="text-center text-base text-fg-muted">

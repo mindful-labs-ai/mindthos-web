@@ -4,7 +4,12 @@ import { Check, Download, Loader2, MoreVertical, Save } from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';
-import { RedoIcon, SideLockIcon, SideSessionIcon, UndoIcon } from '@/shared/icons';
+import {
+  RedoIcon,
+  SideLockIcon,
+  SideSessionIcon,
+  UndoIcon,
+} from '@/shared/icons';
 import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
 import { ClientDropdown } from './ClientDropdown';
