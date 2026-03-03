@@ -177,6 +177,6 @@ export const useAuthStore = create<AuthStore>()(
         _setLoading(false);
       },
     }),
-    { name: 'AuthStore' }
+    { name: 'AuthStore', enabled: !import.meta.env.PROD }
   )
 );

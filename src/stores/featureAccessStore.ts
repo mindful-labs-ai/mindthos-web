@@ -47,7 +47,7 @@ export const useFeatureAccessStore = create<FeatureAccessStore>()(
           });
 
           if (error) {
-            console.error('has_access RPC error:', error);
+            if (!import.meta.env.PROD) console.error('has_access RPC error:', error.message);
             set(
               (s) => ({
                 access: { ...s.access, [type]: false },
@@ -70,7 +70,7 @@ export const useFeatureAccessStore = create<FeatureAccessStore>()(
           );
           return result;
         } catch (e) {
-          console.error('has_access check failed:', e);
+          if (!import.meta.env.PROD) console.error('has_access check failed:', e instanceof Error ? e.message : e);
           set(
             (s) => ({
               access: { ...s.access, [type]: false },
@@ -96,6 +96,6 @@ export const useFeatureAccessStore = create<FeatureAccessStore>()(
 
       resetAll: () => set(initialState, false, 'resetAll'),
     }),
-    { name: 'FeatureAccessStore' }
+    { name: 'FeatureAccessStore', enabled: !import.meta.env.PROD }
   )
 );

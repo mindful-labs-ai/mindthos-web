@@ -35,7 +35,7 @@ export function useReportList({
       const data = await listReports(clientId);
       setReports(data);
     } catch (e) {
-      console.error('보고서 목록 조회 실패:', e);
+      if (!import.meta.env.PROD) console.error('보고서 목록 조회 실패:', e instanceof Error ? e.message : e);
     } finally {
       setIsLoadingReports(false);
     }
