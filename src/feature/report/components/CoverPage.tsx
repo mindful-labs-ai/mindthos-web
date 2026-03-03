@@ -54,7 +54,7 @@ const s = StyleSheet.create({
   badge: {
     position: 'absolute',
     top: 27,
-    left: 438,
+    left: 424,
     paddingHorizontal: 23,
     paddingVertical: 10,
     borderColor: colors.coverBadgeBorder,
@@ -170,13 +170,11 @@ export const CoverPage = ({ section }: CoverPageProps) => (
 
     {/* 임상 분석 보고서 뱃지 */}
     <View style={s.badge}>
-      <Text style={s.badgeText}>임상 분석 보고서</Text>
+      <Text style={s.badgeText}>가계도 분석 보고서</Text>
     </View>
 
     {/* 메인 제목 */}
-    <Text style={s.mainTitle}>
-      체계론적 가족역동 사정 및 평가{'\n'}임상 개입 보고서
-    </Text>
+    <Text style={s.mainTitle}>가족체계 사정 및 평가{'\n'}임상 개입 보고서</Text>
 
     {/* 영문 부제 */}
     <Text style={s.engSubtitle}>

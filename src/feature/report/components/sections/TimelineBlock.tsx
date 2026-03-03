@@ -56,10 +56,20 @@ const BAR_PATH = [
 export const TimelineBlock = ({ section }: { section: TimelineSection }) => {
   const { events, title, notes } = section;
 
+  /** descriptions를 항상 배열로 정규화 (API에서 문자열로 올 수 있음) */
+  const normalizeDescriptions = (desc: unknown): string[] => {
+    if (Array.isArray(desc)) return desc;
+    if (typeof desc === 'string') return [desc];
+    return [];
+  };
+
   /** 이벤트 + 마지막 "현재" 컬럼 (줄기·점 없이 연도만 표시) */
   const columns = [
-    // { year: '', descriptions: [] as string[], isCurrent: true },
-    ...events.map((ev) => ({ ...ev, isCurrent: false })),
+    ...events.map((ev) => ({
+      ...ev,
+      descriptions: normalizeDescriptions(ev.descriptions),
+      isCurrent: false,
+    })),
     { year: '현재', descriptions: [] as string[], isCurrent: true },
   ];
 
@@ -109,13 +119,15 @@ export const TimelineBlock = ({ section }: { section: TimelineSection }) => {
               <Path d={BAR_PATH} fill="url(#barGrad)" />
             </Svg>
 
-            {/* Layer 2: 연도 라벨 (바 내부 중앙) */}
+            {/* Layer 2: 연도 라벨 (바 내부 중앙, year가 있는 컬럼만) */}
             <View style={s.yearRow}>
               {columns.map((col, i) => (
                 <View key={`yr-${i}`} style={s.column}>
-                  <Text style={col.isCurrent ? s.currentLabel : s.yearText}>
-                    {col.year}
-                  </Text>
+                  {col.year ? (
+                    <Text style={col.isCurrent ? s.currentLabel : s.yearText}>
+                      {col.year}
+                    </Text>
+                  ) : null}
                 </View>
               ))}
             </View>

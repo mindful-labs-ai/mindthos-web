@@ -98,7 +98,7 @@ const s = StyleSheet.create({
   },
   // ---- 라벨 ----
   optionLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.text,
     lineHeight: 1,
   },
@@ -110,6 +110,7 @@ const s = StyleSheet.create({
   description: {
     marginVertical: 16,
     fontSize: 8,
+    lineHeight: 1.6,
   },
 });
 

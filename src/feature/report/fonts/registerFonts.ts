@@ -34,17 +34,13 @@ export function registerFonts() {
   // ---- BinggraeII (표지 메인 타이틀) ----
   Font.register({
     family: 'BinggraeII',
-    fonts: [
-      { src: '/pdf/BinggraeⅡ-Bold.ttf', fontWeight: 700 },
-    ],
+    fonts: [{ src: '/pdf/BinggraeⅡ-Bold.ttf', fontWeight: 700 }],
   });
 
   // ---- Open Sans (영문 본문 등) ----
   Font.register({
     family: 'OpenSans',
-    fonts: [
-      { src: '/pdf/OpenSans-Regular.ttf', fontWeight: 400 },
-    ],
+    fonts: [{ src: '/pdf/OpenSans-Regular.ttf', fontWeight: 400 }],
   });
 
   // 하이픈 자동 줄바꿈 비활성화 (한글에서 불필요)

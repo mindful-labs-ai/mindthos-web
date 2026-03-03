@@ -74,6 +74,9 @@ const s = StyleSheet.create({
     fontSize: 8,
     fontWeight: 800,
     color: colors.primaryLight,
+    backgroundColor: colors.subtitleBg,
+    padding: 2,
+    alignSelf: 'flex-start',
     marginBottom: 8,
   },
   text: {

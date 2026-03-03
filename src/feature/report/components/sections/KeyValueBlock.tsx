@@ -13,11 +13,7 @@ import { Text, View } from '@react-pdf/renderer';
 import type { KeyValueSection } from '../../types/reportSchema';
 import { styles } from '../styles';
 
-export const KeyValueBlock = ({
-  section,
-}: {
-  section: KeyValueSection;
-}) => (
+export const KeyValueBlock = ({ section }: { section: KeyValueSection }) => (
   <View style={styles.kvContainer}>
     {section.title && <Text style={styles.kvTitle}>{section.title}</Text>}
     {section.pairs.map((pair, i) => (

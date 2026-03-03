@@ -26,12 +26,12 @@ const s = StyleSheet.create({
     marginTop: 20,
   },
   titleNormal: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 400,
     color: colors.text,
   },
   titleBold: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 800,
     color: colors.text,
   },

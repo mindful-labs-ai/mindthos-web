@@ -157,10 +157,10 @@ export interface TimelineSection {
   type: 'timeline';
   /** 연표 하단 제목 (예: "가족 연표 및 주요 스트레스 사건") */
   title?: string;
-  /** 사건 목록 (연도순, 균등 배치) */
+  /** 사건 목록 (과거→현재 순서, 균등 배치) */
   events: {
-    /** 연도 또는 "현재" */
-    year: string;
+    /** 연도 라벨 (없으면 줄기만 표시, 라벨 생략) */
+    year?: string;
     /** 설명 텍스트 (각 줄이 하나의 라인) */
     descriptions: string[];
   }[];

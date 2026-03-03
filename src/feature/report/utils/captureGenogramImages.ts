@@ -35,7 +35,7 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  */
 export async function captureGenogramImages(
   sections: ReportSection[],
-  genogramRef: RefObject<GenogramPageHandle | null>,
+  genogramRef: RefObject<GenogramPageHandle | null>
 ): Promise<ReportSection[]> {
   const handle = genogramRef.current;
   if (!handle) return sections;
