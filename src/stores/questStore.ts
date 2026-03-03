@@ -359,6 +359,6 @@ export const useQuestStore = create<QuestStore>()(
         }),
       }
     ),
-    { name: 'QuestStore' }
+    { name: 'QuestStore', enabled: !import.meta.env.PROD }
   )
 );

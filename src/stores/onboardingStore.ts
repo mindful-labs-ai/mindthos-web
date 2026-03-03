@@ -152,6 +152,6 @@ export const useOnboardingStore = create<OnboardingStore>()(
           'clear'
         ),
     }),
-    { name: 'OnboardingStore' }
+    { name: 'OnboardingStore', enabled: !import.meta.env.PROD }
   )
 );

@@ -207,6 +207,6 @@ export const useFeatureGuideStore = create<FeatureGuideStore>()(
         set({ spotlightConfig: null }, false, 'featureGuide/clearSpotlight');
       },
     }),
-    { name: 'FeatureGuideStore' }
+    { name: 'FeatureGuideStore', enabled: !import.meta.env.PROD }
   )
 );

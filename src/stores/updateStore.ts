@@ -97,6 +97,6 @@ export const useUpdateStore = create<UpdateStore>()(
         partialize: (state) => ({ dismissedVersion: state.dismissedVersion }),
       }
     ),
-    { name: 'UpdateStore' }
+    { name: 'UpdateStore', enabled: !import.meta.env.PROD }
   )
 );
