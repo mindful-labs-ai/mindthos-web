@@ -40,9 +40,8 @@ export function usePdfPages(pdfUrl: string | null) {
     (async () => {
       try {
         const pdfDoc = await task.promise;
-        if (!import.meta.env.PROD)
-          console.log('[usePdfPages] loaded, numPages:', pdfDoc.numPages);
-        if (cancelled) return;
+        console.log('[usePdfPages] loaded, numPages:', pdfDoc.numPages);
+        if (cancelled) { console.log('[usePdfPages] cancelled after load'); return; }
 
         const pageImages: string[] = [];
 
@@ -58,29 +57,24 @@ export function usePdfPages(pdfUrl: string | null) {
 
           const ctx = canvas.getContext('2d');
           if (!ctx) {
-            if (!import.meta.env.PROD)
-              console.error('[usePdfPages] canvas 2d context null at page', i);
+            console.error('[usePdfPages] canvas 2d context null at page', i);
             continue;
           }
 
           await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-          if (!import.meta.env.PROD)
-            console.log(
-              '[usePdfPages] rendered page',
-              i,
-              `(${canvas.width}x${canvas.height})`
-            );
+          console.log('[usePdfPages] rendered page', i, `(${canvas.width}x${canvas.height})`);
 
           pageImages.push(canvas.toDataURL('image/png'));
         }
 
         if (!cancelled) {
-          if (!import.meta.env.PROD)
-            console.log('[usePdfPages] done, total pages:', pageImages.length);
+          console.log('[usePdfPages] done, total pages:', pageImages.length);
           setPages(pageImages);
+        } else {
+          console.log('[usePdfPages] cancelled during render');
         }
       } catch (err) {
-        if (!import.meta.env.PROD) console.error('[usePdfPages] error:', err);
+        console.error('[usePdfPages] error:', err);
       } finally {
         if (!cancelled) {
           setIsRendering(false);
