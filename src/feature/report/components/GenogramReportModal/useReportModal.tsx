@@ -211,34 +211,40 @@ export function useReportModal({
       setPreviewTitle(report.title);
       setStep('preview');
       setIsLoadingPreview(true);
+      revokePdfUrl();
       setPdfUrl(null);
 
       try {
         if (report.pdf_url) {
           const res = await fetch(report.pdf_url);
+          if (cancelledRef.current) return;
           const blob = await res.blob();
+          if (cancelledRef.current) return;
           setPdfBlobUrl(blob);
           return;
         }
 
         const reportData = await fetchReportDetail(report.id);
+        if (cancelledRef.current) return;
         const numberedBlob = await buildReportPdf(
           reportData,
           genogramRef,
           processReport
         );
+        if (cancelledRef.current) return;
 
         setPdfBlobUrl(numberedBlob);
 
         if (userId && clientId) {
           try {
             await uploadPdfToStorage(userId, clientId, report.id, numberedBlob);
-            fetchReports();
+            if (!cancelledRef.current) fetchReports();
           } catch (uploadError) {
             console.error('PDF 업로드/URL 저장 실패:', uploadError);
           }
         }
       } catch (error) {
+        if (cancelledRef.current) return;
         toast({
           title: '미리보기 실패',
           description:
@@ -246,7 +252,7 @@ export function useReportModal({
         });
         setStep('list');
       } finally {
-        setIsLoadingPreview(false);
+        if (!cancelledRef.current) setIsLoadingPreview(false);
       }
     },
     [
@@ -256,6 +262,7 @@ export function useReportModal({
       processReport,
       fetchReports,
       toast,
+      revokePdfUrl,
       setPdfBlobUrl,
     ]
   );
