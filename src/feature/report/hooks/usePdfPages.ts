@@ -21,12 +21,27 @@ export function usePdfPages(pdfUrl: string | null) {
     let cancelled = false;
     setIsRendering(true);
 
+    //TODO : 배포시 삭제 pdf 이미지 미리보기 관련 로그
+    console.log(
+      '[usePdfPages] pdfUrl type:',
+      typeof pdfUrl,
+      'length:',
+      pdfUrl.length
+    );
+    console.log('[usePdfPages] pdfUrl prefix:', pdfUrl.slice(0, 50));
+    console.log(
+      '[usePdfPages] workerSrc:',
+      pdfjsLib.GlobalWorkerOptions.workerSrc
+    );
+
     const task = pdfjsLib.getDocument(pdfUrl);
     taskRef.current = task;
 
     (async () => {
       try {
         const pdfDoc = await task.promise;
+        if (!import.meta.env.PROD)
+          console.log('[usePdfPages] loaded, numPages:', pdfDoc.numPages);
         if (cancelled) return;
 
         const pageImages: string[] = [];
@@ -41,17 +56,31 @@ export function usePdfPages(pdfUrl: string | null) {
           canvas.width = viewport.width;
           canvas.height = viewport.height;
 
-          const ctx = canvas.getContext('2d')!;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            if (!import.meta.env.PROD)
+              console.error('[usePdfPages] canvas 2d context null at page', i);
+            continue;
+          }
+
           await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+          if (!import.meta.env.PROD)
+            console.log(
+              '[usePdfPages] rendered page',
+              i,
+              `(${canvas.width}x${canvas.height})`
+            );
 
           pageImages.push(canvas.toDataURL('image/png'));
         }
 
         if (!cancelled) {
+          if (!import.meta.env.PROD)
+            console.log('[usePdfPages] done, total pages:', pageImages.length);
           setPages(pageImages);
         }
-      } catch {
-        // cancelled or error — ignore
+      } catch (err) {
+        if (!import.meta.env.PROD) console.error('[usePdfPages] error:', err);
       } finally {
         if (!cancelled) {
           setIsRendering(false);
