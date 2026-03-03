@@ -4,7 +4,8 @@ import { Check, Download, Loader2, MoreVertical, Save } from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';
-import { RedoIcon, UndoIcon } from '@/shared/icons';
+import { RedoIcon, SideLockIcon, SideSessionIcon, UndoIcon } from '@/shared/icons';
+import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
 import { ClientDropdown } from './ClientDropdown';
 
@@ -60,6 +61,8 @@ export function GenogramPageHeader({
   onShowBasicInfo,
   onShowReport,
 }: GenogramPageHeaderProps) {
+  const hasReportAccess =
+    useFeatureAccessStore((s) => s.access.GENOGRAM_SEMINAR) ?? false;
   const [isExported, setIsExported] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const showSaved = useSavedIndicator(lastSavedAt);
@@ -107,8 +110,17 @@ export function GenogramPageHeader({
         {onShowReport && selectedClient && (
           <button
             onClick={onShowReport}
-            className="flex h-10 items-center rounded-md border-2 border-primary bg-white px-4 text-sm text-primary transition-colors hover:bg-primary/5"
+            className={
+              hasReportAccess
+                ? 'flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-50 px-4 text-sm text-primary transition-colors hover:bg-primary-100'
+                : 'flex h-10 items-center gap-1.5 rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast'
+            }
           >
+            {hasReportAccess ? (
+              <SideSessionIcon size={24} className="text-primary" />
+            ) : (
+              <SideLockIcon size={14} className="text-fg-muted" />
+            )}
             가계도 분석 보고서
           </button>
         )}

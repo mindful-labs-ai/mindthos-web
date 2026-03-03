@@ -12,12 +12,12 @@ import { GenogramClientPage } from '@/feature/genogram/pages/GenogramClientPage'
 import HomePage from '@/feature/home/page/HomePage';
 import { PaymentFail } from '@/feature/payment/components/PaymentFail';
 import { PaymentSuccess } from '@/feature/payment/components/PaymentSuccess';
+import { ReportPOCPage } from '@/feature/report/poc/ReportPOCPage';
 import { SessionDetailPage } from '@/feature/session/page/SessionDetailPage';
 import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
 import { TemplateListPage } from '@/feature/template/page/TemplateListPage';
 import TermsPage from '@/feature/terms/page/TermsPage';
-import { ReportPOCPage } from '@/feature/report/poc/ReportPOCPage';
 import TermsAgreementPage from '@/feature/terms-agreement/page/TermsAgreementPage';
 
 import { ROUTES } from './constants';

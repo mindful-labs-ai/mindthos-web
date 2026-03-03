@@ -633,6 +633,8 @@ export function GenogramClientPage() {
         open={isReportModalOpen}
         onOpenChange={setIsReportModalOpen}
         genogramRef={genogramRef}
+        clientId={clientId ?? undefined}
+        clientName={selectedClient?.name}
       />
     </div>
   );

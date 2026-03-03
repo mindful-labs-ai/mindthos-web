@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/components/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
+import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
 import { useGenogramCapture } from '../../hooks/useGenogramCapture';
 import type { ReportListItem } from '../../services/reportService';
@@ -14,7 +15,6 @@ import { buildReportPdf, uploadPdfToStorage } from '../../utils/buildReportPdf';
 import type { GeneratingStatus } from '../ReportGeneratingView';
 
 import { CHECKLIST, GENOGRAM_REPORT_TEMPLATE_KEY } from './constants';
-import { useReportAccess } from './hooks/useReportAccess';
 import { useReportList } from './hooks/useReportList';
 import type {
   GenogramReportModalProps,
@@ -36,14 +36,25 @@ export function useReportModal({
   const organization = useAuthStore((s) => s.organization);
   const { toast } = useToast();
 
-  // ── 서브 훅 ──
+  // ── 기능 접근 권한 (전역 스토어) ──
 
-  const {
-    hasAccess,
-    isChecking,
-    checkAccess,
-    reset: resetAccess,
-  } = useReportAccess({ userId });
+  const hasAccess =
+    useFeatureAccessStore((s) => s.access.GENOGRAM_SEMINAR) ?? null;
+  const isChecking =
+    useFeatureAccessStore((s) => s.checking.GENOGRAM_SEMINAR) ?? false;
+  const storeCheckAccess = useFeatureAccessStore((s) => s.checkAccess);
+  const storeResetAccess = useFeatureAccessStore((s) => s.resetAccess);
+
+  const checkAccess = useCallback(async (): Promise<boolean> => {
+    if (!userId) return false;
+    return storeCheckAccess(userId, 'GENOGRAM_SEMINAR');
+  }, [userId, storeCheckAccess]);
+
+  const resetAccess = useCallback(() => {
+    storeResetAccess('GENOGRAM_SEMINAR');
+  }, [storeResetAccess]);
+
+  // ── 서브 훅 ──
   const {
     reports,
     isLoadingReports,
@@ -158,7 +169,12 @@ export function useReportModal({
       // Storage 업로드
       if (userId && clientId) {
         try {
-          await uploadPdfToStorage(userId, clientId, result.report_id, numberedBlob);
+          await uploadPdfToStorage(
+            userId,
+            clientId,
+            result.report_id,
+            numberedBlob
+          );
         } catch (uploadError) {
           console.error('PDF 업로드/URL 저장 실패:', uploadError);
         }
@@ -233,7 +249,15 @@ export function useReportModal({
         setIsLoadingPreview(false);
       }
     },
-    [userId, clientId, genogramRef, processReport, fetchReports, toast, setPdfBlobUrl]
+    [
+      userId,
+      clientId,
+      genogramRef,
+      processReport,
+      fetchReports,
+      toast,
+      setPdfBlobUrl,
+    ]
   );
 
   // ── Effects ──
@@ -268,7 +292,17 @@ export function useReportModal({
       cancelledRef.current = true;
       revokePdfUrl();
     };
-  }, [open, userName, clientName, organization, checkAccess, resetAccess, fetchReports, setReports, revokePdfUrl]);
+  }, [
+    open,
+    userName,
+    clientName,
+    organization,
+    checkAccess,
+    resetAccess,
+    fetchReports,
+    setReports,
+    revokePdfUrl,
+  ]);
 
   // ESC 키
   useEffect(() => {
