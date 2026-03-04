@@ -21,27 +21,13 @@ export function usePdfPages(pdfUrl: string | null) {
     let cancelled = false;
     setIsRendering(true);
 
-    //TODO : 배포시 삭제 pdf 이미지 미리보기 관련 로그
-    console.log(
-      '[usePdfPages] pdfUrl type:',
-      typeof pdfUrl,
-      'length:',
-      pdfUrl.length
-    );
-    console.log('[usePdfPages] pdfUrl prefix:', pdfUrl.slice(0, 50));
-    console.log(
-      '[usePdfPages] workerSrc:',
-      pdfjsLib.GlobalWorkerOptions.workerSrc
-    );
-
     const task = pdfjsLib.getDocument(pdfUrl);
     taskRef.current = task;
 
     (async () => {
       try {
         const pdfDoc = await task.promise;
-        console.log('[usePdfPages] loaded, numPages:', pdfDoc.numPages);
-        if (cancelled) { console.log('[usePdfPages] cancelled after load'); return; }
+        if (cancelled) return;
 
         const pageImages: string[] = [];
 
@@ -62,16 +48,12 @@ export function usePdfPages(pdfUrl: string | null) {
           }
 
           await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-          console.log('[usePdfPages] rendered page', i, `(${canvas.width}x${canvas.height})`);
 
           pageImages.push(canvas.toDataURL('image/png'));
         }
 
         if (!cancelled) {
-          console.log('[usePdfPages] done, total pages:', pageImages.length);
           setPages(pageImages);
-        } else {
-          console.log('[usePdfPages] cancelled during render');
         }
       } catch (err) {
         console.error('[usePdfPages] error:', err);
