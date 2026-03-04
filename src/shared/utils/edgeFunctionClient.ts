@@ -73,6 +73,10 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
     REGISTER: 'coupons/register',
   },
+  // 공지사항
+  NOTICE: {
+    LIST: 'notice/list',
+  },
 } as const;
 
 /**
