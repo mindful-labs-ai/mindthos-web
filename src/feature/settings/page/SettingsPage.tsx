@@ -33,6 +33,8 @@ import { useModalStore } from '@/stores/modalStore';
 
 import { CardInfo } from '../components/CardInfo';
 import { CreditRenewalModal } from '../components/CreditRenewalModal';
+import { NoticeDetail } from '../components/NoticeDetail';
+import { NoticeList } from '../components/NoticeList';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -57,6 +59,32 @@ export const SettingsPage: React.FC = () => {
   const [deleteError, setDeleteError] = React.useState('');
   const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = React.useState(false);
+  const [view, setView] = React.useState<
+    'settings' | 'noticeList' | 'noticeDetail'
+  >('settings');
+  const [selectedNoticeId, setSelectedNoticeId] = React.useState<string | null>(
+    null
+  );
+
+  const scrollToTop = () => document.querySelector('main')?.scrollTo(0, 0);
+
+  const handleOpenNoticeList = () => {
+    setSelectedNoticeId(null);
+    setView('noticeList');
+    scrollToTop();
+  };
+
+  const handleSelectNotice = (noticeId: string) => {
+    setSelectedNoticeId(noticeId);
+    setView('noticeDetail');
+    scrollToTop();
+  };
+
+  const handleBackToList = () => {
+    setSelectedNoticeId(null);
+    setView('noticeList');
+    scrollToTop();
+  };
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -211,268 +239,307 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[1332px] flex-col px-16 py-[42px]">
-      <div>
-        <Title as="h1" className="text-left text-2xl font-bold">
-          서비스 설정
-        </Title>
-      </div>
+      {view === 'noticeList' && (
+        <>
+          <div>
+            <Title as="h1" className="text-left text-2xl font-bold">
+              마음토스 공지사항
+            </Title>
+          </div>
+          <div className="flex-1 py-[42px]">
+            <NoticeList onSelectNotice={handleSelectNotice} />
+          </div>
+        </>
+      )}
 
-      <div className="flex-1 space-y-6 py-[42px]">
-        <Card>
-          <Card.Body className="space-y-4 p-6">
-            <div className="flex items-center justify-between">
-              <Title as="h2" className="text-lg font-semibold text-fg-muted">
-                상담사 정보
-              </Title>
-              <Button
-                variant="outline"
-                tone="neutral"
-                size="sm"
-                onClick={handleEditInfo}
-                className="text-fg-muted"
-              >
-                정보 수정
-              </Button>
-            </div>
+      {view === 'noticeDetail' && selectedNoticeId && (
+        <NoticeDetail noticeId={selectedNoticeId} onBack={handleBackToList} />
+      )}
 
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <UserIcon size={20} className="text-fg-muted" />
-                <Text className="text-lg font-semibold">
-                  {userName || '이름 없음'}
-                </Text>
-              </div>
-              <div className="flex items-center gap-3">
-                <MailIcon size={20} className="text-fg-muted" />
-                <Text className="text-lg font-semibold">
-                  {user?.email || '이메일 없음'}
-                </Text>
-              </div>
-              <div className="flex items-center gap-3">
-                <MapPinIcon size={20} className="text-fg-muted" />
-                <Text className="text-lg font-semibold">
-                  {organization || '소속 기관 없음'}
-                </Text>
-              </div>
-            </div>
-          </Card.Body>
-        </Card>
+      {view === 'settings' && (
+        <>
+          <div>
+            <Title as="h1" className="text-left text-2xl font-bold">
+              서비스 설정
+            </Title>
+          </div>
 
-        <CardInfo
-          cardType={cardInfo?.type}
-          cardNumber={cardInfo?.number}
-          company={cardInfo?.company}
-          onAdd={handleOpenCardRegistration}
-        />
+          <div className="flex-1 space-y-6 py-[42px]">
+            <Card>
+              <Card.Body className="space-y-4 p-6">
+                <div className="flex items-center justify-between">
+                  <Title
+                    as="h2"
+                    className="text-lg font-semibold text-fg-muted"
+                  >
+                    상담사 정보
+                  </Title>
+                  <Button
+                    variant="outline"
+                    tone="neutral"
+                    size="sm"
+                    onClick={handleEditInfo}
+                    className="text-fg-muted"
+                  >
+                    정보 수정
+                  </Button>
+                </div>
 
-        <Card>
-          <Card.Body className="p-6">
-            <div className="flex items-center justify-between">
-              <Title as="h2" className="text-lg font-semibold text-fg-muted">
-                사용 정보
-              </Title>
-              <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  tone="neutral"
-                  size="sm"
-                  onClick={() => openModal('couponModal')}
-                  className="text-fg-muted"
-                >
-                  <span className="flex items-center gap-0.5 text-center">
-                    <CouponIcon />
-                    보유 중인 쿠폰
-                  </span>
-                </Button>
-                <Button
-                  variant="outline"
-                  tone="neutral"
-                  size="sm"
-                  onClick={handleCreditUsageLog}
-                  className="text-fg-muted"
-                >
-                  크레딧 사용 내역
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-3">
-              {creditInfo && (
-                <>
-                  {creditInfo.plan.type.toLowerCase() === 'free' ? (
-                    <Text className="text-left text-base">
-                      <span className="font-bold text-primary">
-                        {getPlanLabel(creditInfo.plan.type)}
-                      </span>{' '}
-                      이용 중
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <UserIcon size={20} className="text-fg-muted" />
+                    <Text className="text-lg font-semibold">
+                      {userName || '이름 없음'}
                     </Text>
-                  ) : (
-                    <div className="space-y-2">
-                      <Text className="flex gap-3 text-left font-semibold">
-                        <span className="font-bold text-primary">
-                          {getPlanLabel(creditInfo.plan.type)}
-                        </span>
-                        {hasCancellationScheduled ? (
-                          <span className="text-danger">
-                            {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
-                            해지 예정
-                          </span>
-                        ) : (
-                          <>
-                            {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
-                            갱신 예정
-                          </>
-                        )}
-                      </Text>
-                    </div>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MailIcon size={20} className="text-fg-muted" />
+                    <Text className="text-lg font-semibold">
+                      {user?.email || '이메일 없음'}
+                    </Text>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPinIcon size={20} className="text-fg-muted" />
+                    <Text className="text-lg font-semibold">
+                      {organization || '소속 기관 없음'}
+                    </Text>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
 
-                  <div className="flex gap-2">
+            <CardInfo
+              cardType={cardInfo?.type}
+              cardNumber={cardInfo?.number}
+              company={cardInfo?.company}
+              onAdd={handleOpenCardRegistration}
+            />
+
+            <Card>
+              <Card.Body className="p-6">
+                <div className="flex items-center justify-between">
+                  <Title
+                    as="h2"
+                    className="text-lg font-semibold text-fg-muted"
+                  >
+                    사용 정보
+                  </Title>
+                  <div className="flex gap-4">
                     <Button
                       variant="outline"
-                      tone="primary"
+                      tone="neutral"
                       size="sm"
-                      className="w-32"
-                      onClick={handleUpgradePlan}
+                      onClick={() => openModal('couponModal')}
+                      className="text-fg-muted"
                     >
-                      {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
+                      <span className="flex items-center gap-0.5 text-center">
+                        <CouponIcon />
+                        보유 중인 쿠폰
+                      </span>
                     </Button>
-                    {isPaidPlan && !hasCancellationScheduled && (
-                      <Button
-                        variant="ghost"
-                        tone="neutral"
-                        size="sm"
-                        onClick={handleCancelSubscription}
-                        className="text-fg-muted hover:text-danger"
-                      >
-                        구독 해지
-                      </Button>
-                    )}
-                    {hasCancellationScheduled && (
-                      <Button
-                        variant="outline"
-                        tone="neutral"
-                        size="sm"
-                        onClick={handleUndoCancellation}
-                      >
-                        해지 예약 취소
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      tone="neutral"
+                      size="sm"
+                      onClick={handleCreditUsageLog}
+                      className="text-fg-muted"
+                    >
+                      크레딧 사용 내역
+                    </Button>
                   </div>
+                </div>
 
-                  <div className="flex w-full justify-center gap-6 px-8">
-                    <div className="flex flex-1 items-center justify-center">
-                      <CreditDisplay
-                        totalCredit={creditInfo.plan.total}
-                        usedCredit={creditInfo.plan.used}
-                        planLabel={getPlanLabel(creditInfo.plan.type)}
-                        planType={creditInfo.plan.type}
-                        daysUntilReset={calculateDaysUntilReset(
-                          creditInfo.subscription.end_at
+                <div className="flex flex-col space-y-3">
+                  {creditInfo && (
+                    <>
+                      {creditInfo.plan.type.toLowerCase() === 'free' ? (
+                        <Text className="text-left text-base">
+                          <span className="font-bold text-primary">
+                            {getPlanLabel(creditInfo.plan.type)}
+                          </span>{' '}
+                          이용 중
+                        </Text>
+                      ) : (
+                        <div className="space-y-2">
+                          <Text className="flex gap-3 text-left font-semibold">
+                            <span className="font-bold text-primary">
+                              {getPlanLabel(creditInfo.plan.type)}
+                            </span>
+                            {hasCancellationScheduled ? (
+                              <span className="text-danger">
+                                {formatRenewalDate(
+                                  creditInfo.subscription.end_at
+                                )}{' '}
+                                해지 예정
+                              </span>
+                            ) : (
+                              <>
+                                {formatRenewalDate(
+                                  creditInfo.subscription.end_at
+                                )}{' '}
+                                갱신 예정
+                              </>
+                            )}
+                          </Text>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          tone="primary"
+                          size="sm"
+                          className="w-32"
+                          onClick={handleUpgradePlan}
+                        >
+                          {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
+                        </Button>
+                        {isPaidPlan && !hasCancellationScheduled && (
+                          <Button
+                            variant="ghost"
+                            tone="neutral"
+                            size="sm"
+                            onClick={handleCancelSubscription}
+                            className="text-fg-muted hover:text-danger"
+                          >
+                            구독 해지
+                          </Button>
                         )}
-                        variant="detailed"
-                        onRenewal={
-                          isPaidPlan
-                            ? () => setIsRenewalModalOpen(true)
-                            : undefined
-                        }
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <CreditUsageInfo
-                        remainingCredit={creditInfo.plan.remaining}
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </Card.Body>
-        </Card>
+                        {hasCancellationScheduled && (
+                          <Button
+                            variant="outline"
+                            tone="neutral"
+                            size="sm"
+                            onClick={handleUndoCancellation}
+                          >
+                            해지 예약 취소
+                          </Button>
+                        )}
+                      </div>
 
-        <WelcomeBanner
-          title="마음토스 시작하기"
-          description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
-          buttonText="더 알아보기"
-          onButtonClick={handleGuide}
-          className="text-left"
-        />
-      </div>
+                      <div className="flex w-full justify-center gap-6 px-8">
+                        <div className="flex flex-1 items-center justify-center">
+                          <CreditDisplay
+                            totalCredit={creditInfo.plan.total}
+                            usedCredit={creditInfo.plan.used}
+                            planLabel={getPlanLabel(creditInfo.plan.type)}
+                            planType={creditInfo.plan.type}
+                            daysUntilReset={calculateDaysUntilReset(
+                              creditInfo.subscription.end_at
+                            )}
+                            variant="detailed"
+                            onRenewal={
+                              isPaidPlan
+                                ? () => setIsRenewalModalOpen(true)
+                                : undefined
+                            }
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <CreditUsageInfo
+                            remainingCredit={creditInfo.plan.remaining}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Card.Body>
+            </Card>
 
-      <div className="border-t border-border px-8 py-6">
-        <div className="flex items-center justify-center gap-4 text-sm">
-          <Link
-            to={termsTo}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg"
-          >
-            서비스 약관
-          </Link>
-          <span className="text-border">|</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleLogoutClick}
-            className="text-muted transition-colors hover:text-fg"
-          >
-            로그아웃
-          </Button>
-          {!isOAuthUser && (
-            <>
+            <WelcomeBanner
+              title="마음토스 시작하기"
+              description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
+              buttonText="더 알아보기"
+              onButtonClick={handleGuide}
+              className="text-left"
+            />
+          </div>
+
+          <div className="border-t border-border px-8 py-6">
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <button
+                type="button"
+                onClick={handleOpenNoticeList}
+                className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg"
+              >
+                공지사항
+              </button>
+              <span className="text-border">|</span>
+              <Link
+                to={termsTo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-fg"
+              >
+                서비스 약관
+              </Link>
               <span className="text-border">|</span>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={handleDeleteAccount}
-                className="text-fg-muted transition-colors hover:text-danger"
+                onClick={handleLogoutClick}
+                className="text-muted transition-colors hover:text-fg"
               >
-                계정 탈퇴
+                로그아웃
               </Button>
-            </>
+              {!isOAuthUser && (
+                <>
+                  <span className="text-border">|</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleDeleteAccount}
+                    className="text-fg-muted transition-colors hover:text-danger"
+                  >
+                    계정 탈퇴
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {creditInfo && isPaidPlan && (
+            <CancelSubscriptionModal
+              open={isCancelModalOpen}
+              onOpenChange={setIsCancelModalOpen}
+              currentPlanType={creditInfo.plan.type}
+              currentPlanCredit={creditInfo.plan.total}
+              effectiveAt={creditInfo.subscription.end_at}
+              onConfirm={handleConfirmCancelSubscription}
+            />
           )}
-        </div>
-      </div>
 
-      {creditInfo && isPaidPlan && (
-        <CancelSubscriptionModal
-          open={isCancelModalOpen}
-          onOpenChange={setIsCancelModalOpen}
-          currentPlanType={creditInfo.plan.type}
-          currentPlanCredit={creditInfo.plan.total}
-          effectiveAt={creditInfo.subscription.end_at}
-          onConfirm={handleConfirmCancelSubscription}
-        />
+          <LogoutModal
+            open={isLogoutModalOpen}
+            onOpenChange={setIsLogoutModalOpen}
+            onConfirm={handleConfirmLogout}
+          />
+
+          <DeleteAccountModal
+            open={isDeleteModalOpen}
+            onOpenChange={setIsDeleteModalOpen}
+            onConfirm={handleConfirmDelete}
+            isDeleting={isDeleting}
+            error={deleteError}
+          />
+
+          <CardRegistrationModal
+            isOpen={isCardModalOpen}
+            onClose={handleCardRegistrationClose}
+            customerKey={user?.id ? String(user.id) : ''}
+            onSuccess={handleCardRegistrationSuccess}
+          />
+          <CreditUsageModal
+            open={isCreditUsageModalOpen}
+            onOpenChange={setIsCreditUsageModalOpen}
+          />
+          <CreditRenewalModal
+            open={isRenewalModalOpen}
+            onOpenChange={setIsRenewalModalOpen}
+          />
+        </>
       )}
-
-      <LogoutModal
-        open={isLogoutModalOpen}
-        onOpenChange={setIsLogoutModalOpen}
-        onConfirm={handleConfirmLogout}
-      />
-
-      <DeleteAccountModal
-        open={isDeleteModalOpen}
-        onOpenChange={setIsDeleteModalOpen}
-        onConfirm={handleConfirmDelete}
-        isDeleting={isDeleting}
-        error={deleteError}
-      />
-
-      <CardRegistrationModal
-        isOpen={isCardModalOpen}
-        onClose={handleCardRegistrationClose}
-        customerKey={user?.id ? String(user.id) : ''}
-        onSuccess={handleCardRegistrationSuccess}
-      />
-      <CreditUsageModal
-        open={isCreditUsageModalOpen}
-        onOpenChange={setIsCreditUsageModalOpen}
-      />
-      <CreditRenewalModal
-        open={isRenewalModalOpen}
-        onOpenChange={setIsRenewalModalOpen}
-      />
     </div>
   );
 };
