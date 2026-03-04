@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import {
   callEdgeFunction,
   EDGE_FUNCTION_ENDPOINTS,
@@ -56,6 +57,23 @@ export async function createProgressNote(
     throw new Error(
       err.message || `상담 노트 작성 실패: ${err.statusText || ''}`
     );
+  }
+}
+
+/**
+ * 상담 노트 summary 수정
+ */
+export async function updateProgressNoteSummary(
+  progressNoteId: string,
+  summary: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('progress_notes')
+    .update({ summary })
+    .eq('id', progressNoteId);
+
+  if (error) {
+    throw new Error(`상담노트 수정 실패: ${error.message}`);
   }
 }
 

@@ -135,6 +135,28 @@ export const clientAnalysisService = {
   },
 
   /**
+   * 분석 내용 수정
+   */
+  async updateAnalysisContent(
+    analysisId: string,
+    content: string
+  ): Promise<void> {
+    const { error } = await supabase
+      .from('client_analyses')
+      .update({ content })
+      .eq('id', analysisId);
+
+    if (error) {
+      throw {
+        status: 500,
+        success: false,
+        error: 'UPDATE_ERROR',
+        message: error.message || '분석 내용 수정 중 오류가 발생했습니다.',
+      } as ClientAnalysisApiError;
+    }
+  },
+
+  /**
    * 클라이언트의 전체 분석 히스토리 조회 (버전별 그룹화)
    */
   async getClientAnalyses(clientId: string): Promise<ClientAnalysisVersion[]> {
