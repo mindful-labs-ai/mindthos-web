@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
@@ -29,11 +30,13 @@ import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
 import { CreateAnalysisModal } from '../components/CreateAnalysisModal';
 import { dummyClientAnalysisVersions } from '../constants/dummyClientAnalysis';
 import {
+  clientAnalysisQueryKeys,
   useClientAnalyses,
   useClientAnalysisStatus,
   useClientTemplates,
   useCreateClientAnalysis,
 } from '../hooks/useClientAnalysis';
+import { clientAnalysisService } from '../services/clientAnalysisService';
 import { useClientList } from '../hooks/useClientList';
 
 type TabType = 'history' | 'analyze';
@@ -49,6 +52,7 @@ export const ClientDetailPage: React.FC = () => {
   );
   const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
   const userId = useAuthStore((state) => state.userId);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   // 크레딧 정보 조회
@@ -89,6 +93,17 @@ export const ClientDetailPage: React.FC = () => {
 
   // 더미 플로우일 때는 더미 분석 데이터 사용
   const displayAnalyses = isDummyFlow ? dummyClientAnalysisVersions : analyses;
+
+  // 분석 내용 수정 핸들러
+  const handleSaveAnalysisContent = React.useCallback(
+    async (analysisId: string, content: string) => {
+      await clientAnalysisService.updateAnalysisContent(analysisId, content);
+      queryClient.invalidateQueries({
+        queryKey: clientAnalysisQueryKeys.analysesByClient(clientId || ''),
+      });
+    },
+    [clientId, queryClient]
+  );
 
   // 폴링 상태 조회
   useClientAnalysisStatus({
@@ -462,6 +477,8 @@ export const ClientDetailPage: React.FC = () => {
               analyses={displayAnalyses}
               isLoading={isLoadingAnalyses && !isDummyFlow}
               pollingVersion={pollingVersion}
+              isReadOnly={isReadOnly}
+              onSaveContent={handleSaveAnalysisContent}
               onCreateAnalysis={() => {
                 if (isReadOnly) {
                   toast({
