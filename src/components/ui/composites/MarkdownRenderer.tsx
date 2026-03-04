@@ -12,6 +12,8 @@ interface MarkdownRendererProps {
   content: string;
   className?: string;
   disableHeadings?: boolean;
+  /** 인라인 편집 모드 (contentEditable 사용) */
+  editable?: boolean;
 }
 
 /**
@@ -49,141 +51,192 @@ const cleanBrokenMarkdown = (children: React.ReactNode): React.ReactNode => {
   return children;
 };
 
-export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
-  content,
-  className = '',
-  disableHeadings = false,
-}) => {
-  const components = useMemo(() => {
-    const headingComponents = disableHeadings
-      ? {
-          h1: ({ children }: { children?: React.ReactNode }) => (
-            <Text className="mb-4 leading-relaxed text-fg">
+/** 붙여넣기 시 서식 제거 (순수 텍스트만) */
+const handlePaste = (e: React.ClipboardEvent) => {
+  e.preventDefault();
+  const text = e.clipboardData.getData('text/plain');
+  document.execCommand('insertText', false, text);
+};
+
+export const MarkdownRenderer = React.memo(
+  React.forwardRef<HTMLDivElement, MarkdownRendererProps>(
+    ({ content, className = '', disableHeadings = false, editable = false }, ref) => {
+      const components = useMemo(() => {
+        const editableProps = editable
+          ? {
+              contentEditable: true as const,
+              suppressContentEditableWarning: true as const,
+            }
+          : {};
+
+        const editableCellClass = editable
+          ? ' bg-primary-50 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:rounded cursor-text'
+          : '';
+        const headingComponents = disableHeadings
+          ? {
+              h1: ({ children }: { children?: React.ReactNode }) => (
+                <Text
+                  className={`mb-4 leading-relaxed text-fg${editableCellClass}`}
+                  {...editableProps}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Text>
+              ),
+              h2: ({ children }: { children?: React.ReactNode }) => (
+                <Text
+                  className={`mb-4 leading-relaxed text-fg${editableCellClass}`}
+                  {...editableProps}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Text>
+              ),
+              h3: ({ children }: { children?: React.ReactNode }) => (
+                <Text
+                  className={`mb-4 leading-relaxed text-fg${editableCellClass}`}
+                  {...editableProps}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Text>
+              ),
+            }
+          : {
+              h1: ({ children }: { children?: React.ReactNode }) => (
+                <Title
+                  as="h1"
+                  className={`mb-4 mt-8 text-2xl font-bold text-fg first:mt-0${editableCellClass}`}
+                  {...(editable && !disableHeadings ? editableProps : {})}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Title>
+              ),
+              h2: ({ children }: { children?: React.ReactNode }) => (
+                <Title
+                  as="h2"
+                  className={`mb-3 mt-6 text-xl font-semibold text-fg first:mt-0${editableCellClass}`}
+                  {...(editable && !disableHeadings ? editableProps : {})}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Title>
+              ),
+              h3: ({ children }: { children?: React.ReactNode }) => (
+                <Title
+                  as="h3"
+                  className={`mb-2 mt-4 text-lg font-semibold text-fg first:mt-0${editableCellClass}`}
+                  {...(editable && !disableHeadings ? editableProps : {})}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Title>
+              ),
+            };
+
+        return {
+          ...headingComponents,
+          p: ({ children }: { children?: React.ReactNode }) => (
+            <Text
+              className={`mb-4 leading-relaxed text-fg${editableCellClass}`}
+              {...editableProps}
+            >
               {cleanBrokenMarkdown(children)}
             </Text>
           ),
-          h2: ({ children }: { children?: React.ReactNode }) => (
-            <Text className="mb-4 leading-relaxed text-fg">
-              {cleanBrokenMarkdown(children)}
-            </Text>
+          ul: ({ children }: { children?: React.ReactNode }) => (
+            <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">{children}</ul>
           ),
-          h3: ({ children }: { children?: React.ReactNode }) => (
-            <Text className="mb-4 leading-relaxed text-fg">
-              {cleanBrokenMarkdown(children)}
-            </Text>
+          ol: ({ children }: { children?: React.ReactNode }) => (
+            <ol className="mb-4 list-decimal space-y-1 pl-6 text-fg">
+              {children}
+            </ol>
           ),
-        }
-      : {
-          h1: ({ children }: { children?: React.ReactNode }) => (
-            <Title
-              as="h1"
-              className="mb-4 mt-8 text-2xl font-bold text-fg first:mt-0"
+          li: ({ children }: { children?: React.ReactNode }) => (
+            <li
+              className={`leading-relaxed${editableCellClass}`}
+              {...editableProps}
             >
               {cleanBrokenMarkdown(children)}
-            </Title>
+            </li>
           ),
-          h2: ({ children }: { children?: React.ReactNode }) => (
-            <Title
-              as="h2"
-              className="mb-3 mt-6 text-xl font-semibold text-fg first:mt-0"
+          br: () => <span className="block h-4" />,
+          strong: ({ children }: { children?: React.ReactNode }) => (
+            <strong className="font-semibold text-fg">
+              {cleanBrokenMarkdown(children)}
+            </strong>
+          ),
+          em: ({ children }: { children?: React.ReactNode }) => (
+            <em className="italic text-fg">{cleanBrokenMarkdown(children)}</em>
+          ),
+          blockquote: ({ children }: { children?: React.ReactNode }) => (
+            <blockquote className="mb-4 border-l-4 border-primary pl-4 italic text-fg-muted">
+              {cleanBrokenMarkdown(children)}
+            </blockquote>
+          ),
+          code: ({ children }: { children?: React.ReactNode }) => (
+            <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
+              {cleanBrokenMarkdown(children)}
+            </code>
+          ),
+          pre: ({ children }: { children?: React.ReactNode }) => (
+            <pre className="mb-4 overflow-x-auto rounded-lg bg-surface-contrast p-4">
+              {children}
+            </pre>
+          ),
+          table: ({ children }: { children?: React.ReactNode }) => (
+            <div className="mb-4 overflow-x-auto rounded-lg border border-border">
+              <table className="min-w-full divide-y divide-border text-sm">
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children }: { children?: React.ReactNode }) => (
+            <thead className="bg-surface-contrast">{children}</thead>
+          ),
+          tbody: ({ children }: { children?: React.ReactNode }) => (
+            <tbody className="divide-y divide-border bg-surface">{children}</tbody>
+          ),
+          tr: ({ children }: { children?: React.ReactNode }) => (
+            <tr className="hover:bg-surface-contrast/50">{children}</tr>
+          ),
+          th: ({ children }: { children?: React.ReactNode }) => (
+            <th
+              className={`whitespace-nowrap px-4 py-3 text-left font-semibold text-fg${editableCellClass}`}
+              {...editableProps}
             >
               {cleanBrokenMarkdown(children)}
-            </Title>
+            </th>
           ),
-          h3: ({ children }: { children?: React.ReactNode }) => (
-            <Title
-              as="h3"
-              className="mb-2 mt-4 text-lg font-semibold text-fg first:mt-0"
+          td: ({ children }: { children?: React.ReactNode }) => (
+            <td
+              className={`px-4 py-3 text-fg${editableCellClass}`}
+              {...editableProps}
             >
               {cleanBrokenMarkdown(children)}
-            </Title>
+            </td>
           ),
         };
+      }, [disableHeadings, editable]);
 
-    return {
-      ...headingComponents,
-      p: ({ children }: { children?: React.ReactNode }) => (
-        <Text className="mb-4 leading-relaxed text-fg">
-          {cleanBrokenMarkdown(children)}
-        </Text>
-      ),
-      ul: ({ children }: { children?: React.ReactNode }) => (
-        <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">{children}</ul>
-      ),
-      ol: ({ children }: { children?: React.ReactNode }) => (
-        <ol className="mb-4 list-decimal space-y-1 pl-6 text-fg">{children}</ol>
-      ),
-      li: ({ children }: { children?: React.ReactNode }) => (
-        <li className="leading-relaxed">{cleanBrokenMarkdown(children)}</li>
-      ),
-      br: () => <span className="block h-4" />,
-      strong: ({ children }: { children?: React.ReactNode }) => (
-        <strong className="font-semibold text-fg">
-          {cleanBrokenMarkdown(children)}
-        </strong>
-      ),
-      em: ({ children }: { children?: React.ReactNode }) => (
-        <em className="italic text-fg">{cleanBrokenMarkdown(children)}</em>
-      ),
-      blockquote: ({ children }: { children?: React.ReactNode }) => (
-        <blockquote className="mb-4 border-l-4 border-primary pl-4 italic text-fg-muted">
-          {cleanBrokenMarkdown(children)}
-        </blockquote>
-      ),
-      code: ({ children }: { children?: React.ReactNode }) => (
-        <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
-          {cleanBrokenMarkdown(children)}
-        </code>
-      ),
-      pre: ({ children }: { children?: React.ReactNode }) => (
-        <pre className="mb-4 overflow-x-auto rounded-lg bg-surface-contrast p-4">
-          {children}
-        </pre>
-      ),
-      table: ({ children }: { children?: React.ReactNode }) => (
-        <div className="mb-4 overflow-x-auto rounded-lg border border-border">
-          <table className="min-w-full divide-y divide-border text-sm">
-            {children}
-          </table>
+      if (!content) {
+        return null;
+      }
+
+      return (
+        <div
+          ref={ref}
+          className={`prose prose-sm dark:prose-invert max-w-none break-keep ${className} ${editable ? 'cursor-text' : ''}`}
+          onPaste={editable ? handlePaste : undefined}
+        >
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkBreaks]}
+            rehypePlugins={[rehypeSanitize]}
+            components={components}
+          >
+            {preprocessMarkdown(content)}
+          </Markdown>
         </div>
-      ),
-      thead: ({ children }: { children?: React.ReactNode }) => (
-        <thead className="bg-surface-contrast">{children}</thead>
-      ),
-      tbody: ({ children }: { children?: React.ReactNode }) => (
-        <tbody className="divide-y divide-border bg-surface">{children}</tbody>
-      ),
-      tr: ({ children }: { children?: React.ReactNode }) => (
-        <tr className="hover:bg-surface-contrast/50">{children}</tr>
-      ),
-      th: ({ children }: { children?: React.ReactNode }) => (
-        <th className="whitespace-nowrap px-4 py-3 text-left font-semibold text-fg">
-          {cleanBrokenMarkdown(children)}
-        </th>
-      ),
-      td: ({ children }: { children?: React.ReactNode }) => (
-        <td className="px-4 py-3 text-fg">{cleanBrokenMarkdown(children)}</td>
-      ),
-    };
-  }, [disableHeadings]);
+      );
+    }
+  )
+);
 
-  if (!content) {
-    return null;
-  }
-
-  return (
-    <div
-      className={`prose prose-sm dark:prose-invert max-w-none break-keep ${className}`}
-    >
-      <Markdown
-        remarkPlugins={[remarkGfm, remarkBreaks]}
-        rehypePlugins={[rehypeSanitize]}
-        components={components}
-      >
-        {preprocessMarkdown(content)}
-      </Markdown>
-    </div>
-  );
-};
+MarkdownRenderer.displayName = 'MarkdownRenderer';
 
 export default MarkdownRenderer;
