@@ -167,7 +167,8 @@ function processListItems(
       return;
 
     const li = child as HTMLElement;
-    const prefix = listType === 'ul' ? `${indent}- ` : `${indent}${counter++}. `;
+    const prefix =
+      listType === 'ul' ? `${indent}- ` : `${indent}${counter++}. `;
 
     // li 내부에 중첩 리스트가 있는지 확인
     const nestedList = li.querySelector(':scope > ul, :scope > ol');
@@ -181,9 +182,7 @@ function processListItems(
           if (text) textParts.push(text);
         } else if (
           liChild.nodeType === Node.ELEMENT_NODE &&
-          !['ul', 'ol'].includes(
-            (liChild as HTMLElement).tagName.toLowerCase()
-          )
+          !['ul', 'ol'].includes((liChild as HTMLElement).tagName.toLowerCase())
         ) {
           textParts.push(getInlineContent(liChild as HTMLElement));
         }
@@ -206,10 +205,12 @@ function processListItems(
 /** 인용문 처리 */
 function processBlockquote(el: HTMLElement): string {
   const inner = processChildren(el).trim();
-  return inner
-    .split('\n')
-    .map((line) => `> ${line}`)
-    .join('\n') + '\n';
+  return (
+    inner
+      .split('\n')
+      .map((line) => `> ${line}`)
+      .join('\n') + '\n'
+  );
 }
 
 /** 테이블 처리 */

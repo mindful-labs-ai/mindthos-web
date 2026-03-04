@@ -416,7 +416,11 @@ export const SessionDetailPage: React.FC = () => {
       // 캐시에서 해당 노트의 summary 즉시 반영
       queryClient.setQueryData(
         sessionQueryKey,
-        (oldData: { progressNotes?: { id: string; summary: string | null }[] } | undefined) => {
+        (
+          oldData:
+            | { progressNotes?: { id: string; summary: string | null }[] }
+            | undefined
+        ) => {
           if (!oldData?.progressNotes) return oldData;
           return {
             ...oldData,

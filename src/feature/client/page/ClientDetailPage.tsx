@@ -36,8 +36,8 @@ import {
   useClientTemplates,
   useCreateClientAnalysis,
 } from '../hooks/useClientAnalysis';
-import { clientAnalysisService } from '../services/clientAnalysisService';
 import { useClientList } from '../hooks/useClientList';
+import { clientAnalysisService } from '../services/clientAnalysisService';
 
 type TabType = 'history' | 'analyze';
 

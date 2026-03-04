@@ -129,7 +129,10 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
 
         // 편집된 제목 텍스트로 rawHeading 재구성
         const heading = titleRef
-          ? rebuildHeading(section.rawHeading, (titleRef.textContent || '').trim())
+          ? rebuildHeading(
+              section.rawHeading,
+              (titleRef.textContent || '').trim()
+            )
           : section.rawHeading;
 
         return editedContent ? `${heading}\n${editedContent}` : heading;
@@ -422,7 +425,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                           : undefined
                       }
                       as="h3"
-                      className={`text-lg font-semibold text-fg${isEditing ? ' bg-primary-50 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:rounded cursor-text' : ''}`}
+                      className={`text-lg font-semibold text-fg${isEditing ? 'focus:ring-primary/50 cursor-text bg-primary-50 focus:rounded focus:outline-none focus:ring-1' : ''}`}
                       {...(isEditing
                         ? {
                             contentEditable: true,

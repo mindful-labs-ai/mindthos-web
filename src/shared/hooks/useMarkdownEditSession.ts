@@ -103,7 +103,14 @@ export function useMarkdownEditSession({
     if (trackingEvents?.editStart) {
       trackEvent(trackingEvents.editStart, trackingMeta);
     }
-  }, [isReadOnly, originalContent, inlineEdit, trackingEvents, trackingMeta, toast]);
+  }, [
+    isReadOnly,
+    originalContent,
+    inlineEdit,
+    trackingEvents,
+    trackingMeta,
+    toast,
+  ]);
 
   const handleCancelEdit = React.useCallback(() => {
     setEditingContent('');

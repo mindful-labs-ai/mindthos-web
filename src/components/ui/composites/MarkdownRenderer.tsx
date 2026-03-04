@@ -60,7 +60,10 @@ const handlePaste = (e: React.ClipboardEvent) => {
 
 export const MarkdownRenderer = React.memo(
   React.forwardRef<HTMLDivElement, MarkdownRendererProps>(
-    ({ content, className = '', disableHeadings = false, editable = false }, ref) => {
+    (
+      { content, className = '', disableHeadings = false, editable = false },
+      ref
+    ) => {
       const components = useMemo(() => {
         const editableProps = editable
           ? {
@@ -140,7 +143,9 @@ export const MarkdownRenderer = React.memo(
             </Text>
           ),
           ul: ({ children }: { children?: React.ReactNode }) => (
-            <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">{children}</ul>
+            <ul className="mb-4 list-disc space-y-1 pl-6 text-fg">
+              {children}
+            </ul>
           ),
           ol: ({ children }: { children?: React.ReactNode }) => (
             <ol className="mb-4 list-decimal space-y-1 pl-6 text-fg">
@@ -190,7 +195,9 @@ export const MarkdownRenderer = React.memo(
             <thead className="bg-surface-contrast">{children}</thead>
           ),
           tbody: ({ children }: { children?: React.ReactNode }) => (
-            <tbody className="divide-y divide-border bg-surface">{children}</tbody>
+            <tbody className="divide-y divide-border bg-surface">
+              {children}
+            </tbody>
           ),
           tr: ({ children }: { children?: React.ReactNode }) => (
             <tr className="hover:bg-surface-contrast/50">{children}</tr>
