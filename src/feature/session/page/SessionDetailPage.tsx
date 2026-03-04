@@ -49,6 +49,7 @@ import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
 import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
 import { useTranscriptEditSession } from '../hooks/useTranscriptEditSession';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
+import { updateProgressNoteSummary } from '../services/progressNoteService';
 import {
   getAudioPresignedUrl,
   updateSessionTitle,
@@ -407,6 +408,27 @@ export const SessionDetailPage: React.FC = () => {
     activeTab,
     progressNotes: sessionProgressNotes,
   });
+
+  // 상담노트 summary 수정 핸들러
+  const handleSaveProgressNoteSummary = React.useCallback(
+    async (noteId: string, summary: string) => {
+      await updateProgressNoteSummary(noteId, summary);
+      // 캐시에서 해당 노트의 summary 즉시 반영
+      queryClient.setQueryData(
+        sessionQueryKey,
+        (oldData: { progressNotes?: { id: string; summary: string | null }[] } | undefined) => {
+          if (!oldData?.progressNotes) return oldData;
+          return {
+            ...oldData,
+            progressNotes: oldData.progressNotes.map((pn) =>
+              pn.id === noteId ? { ...pn, summary } : pn
+            ),
+          };
+        }
+      );
+    },
+    [queryClient, sessionQueryKey]
+  );
 
   const audioMetadata = session?.audio_meta_data;
   const hasS3Key = !!audioMetadata?.s3_key;
@@ -779,6 +801,7 @@ export const SessionDetailPage: React.FC = () => {
               onTemplateSelect={handleTemplateSelect}
               noteEndRef={noteEndRef}
               tutorialStep={tutorialStep}
+              onSaveSummary={handleSaveProgressNoteSummary}
             />
           )}
         </Spotlight>

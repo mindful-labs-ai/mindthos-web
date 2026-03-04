@@ -47,6 +47,8 @@ interface ProgressNoteTabContentProps {
   noteEndRef: (node?: Element | null) => void;
   /** 튜토리얼 스텝 */
   tutorialStep?: number;
+  /** 상담노트 summary 저장 핸들러 */
+  onSaveSummary?: (noteId: string, summary: string) => Promise<void>;
 }
 
 export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
@@ -66,6 +68,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
       onTemplateSelect,
       noteEndRef,
       tutorialStep,
+      onSaveSummary,
     }) => {
       // 생성 중 또는 템플릿 선택 탭인 경우
       if (activeTab.startsWith('create-note-') || activeCreatingTab) {
@@ -178,6 +181,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
               isRegenerating={isRegenerating}
               isReadOnly={isReadOnly}
               progressNotes={progressNotes}
+              onSaveSummary={onSaveSummary}
             />
             {/* 상담노트용 스크롤 감지 타겟 */}
             <div
