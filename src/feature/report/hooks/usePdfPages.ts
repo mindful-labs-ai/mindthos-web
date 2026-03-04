@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -41,7 +41,12 @@ export function usePdfPages(pdfUrl: string | null) {
           canvas.width = viewport.width;
           canvas.height = viewport.height;
 
-          const ctx = canvas.getContext('2d')!;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            console.error('[usePdfPages] canvas 2d context null at page', i);
+            continue;
+          }
+
           await page.render({ canvas, canvasContext: ctx, viewport }).promise;
 
           pageImages.push(canvas.toDataURL('image/png'));
@@ -50,8 +55,8 @@ export function usePdfPages(pdfUrl: string | null) {
         if (!cancelled) {
           setPages(pageImages);
         }
-      } catch {
-        // cancelled or error — ignore
+      } catch (err) {
+        console.error('[usePdfPages] error:', err);
       } finally {
         if (!cancelled) {
           setIsRendering(false);
