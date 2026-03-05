@@ -7,7 +7,7 @@ import type { GenogramPageHandle } from '@/genogram';
 import { GenogramReportPDF } from '../components/GenogramReportPDF';
 import {
   buildStorageKey,
-  savePdfUrl,
+  savePdfStorageKey,
   uploadReportPdf,
 } from '../services/reportService';
 import type { GenogramReport, ReportSection } from '../types/reportSchema';
@@ -50,7 +50,7 @@ export async function buildReportPdf(
 }
 
 /**
- * PDF blob을 Storage에 업로드하고 signed URL을 DB에 저장
+ * PDF blob을 Storage에 업로드하고 storage key를 DB에 저장
  */
 export async function uploadPdfToStorage(
   userId: string,
@@ -60,5 +60,5 @@ export async function uploadPdfToStorage(
 ): Promise<void> {
   const storageKey = buildStorageKey(userId, clientId);
   await uploadReportPdf(storageKey, blob);
-  await savePdfUrl(reportId, storageKey);
+  await savePdfStorageKey(reportId, storageKey);
 }

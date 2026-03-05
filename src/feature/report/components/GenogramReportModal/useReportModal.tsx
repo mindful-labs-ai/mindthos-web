@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/components/ui/composites/Toast';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
 import { useGenogramCapture } from '../../hooks/useGenogramCapture';
 import type { ReportListItem } from '../../services/reportService';
 import {
+  createSignedPdfUrl,
   exportReport,
   fetchReportDetail,
   generateReport,
@@ -14,7 +16,11 @@ import {
 import { buildReportPdf, uploadPdfToStorage } from '../../utils/buildReportPdf';
 import type { GeneratingStatus } from '../ReportGeneratingView';
 
-import { CHECKLIST, GENOGRAM_REPORT_TEMPLATE_KEY } from './constants';
+import {
+  CHECKLIST,
+  GENOGRAM_REPORT_TEMPLATE_KEY,
+  REPORT_CREDIT_COST,
+} from './constants';
 import { useReportList } from './hooks/useReportList';
 import type {
   GenogramReportModalProps,
@@ -35,6 +41,7 @@ export function useReportModal({
   const userName = useAuthStore((s) => s.userName);
   const organization = useAuthStore((s) => s.organization);
   const { toast } = useToast();
+  const { creditInfo } = useCreditInfo();
 
   // ── 기능 접근 권한 (전역 스토어) ──
 
@@ -95,10 +102,15 @@ export function useReportModal({
     organization: '',
   });
 
+  // ── 크레딧 부족 에러 ──
+
+  const [creditError, setCreditError] = useState<string | null>(null);
+
   // ── Refs ──
 
   const prevPdfUrlRef = useRef<string | null>(null);
   const cancelledRef = useRef(false);
+  const successResolveRef = useRef<(() => void) | null>(null);
 
   // ── PDF URL 관리 ──
 
@@ -144,7 +156,11 @@ export function useReportModal({
       if (cancelledRef.current) return;
       setGeneratingStatus('success');
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise<void>((resolve) => {
+        successResolveRef.current = resolve;
+        setTimeout(resolve, 2000);
+      });
+      successResolveRef.current = null;
       if (cancelledRef.current) return;
 
       const reportData = result.formatted_json;
@@ -219,8 +235,10 @@ export function useReportModal({
       setPdfUrl(null);
 
       try {
-        if (report.pdf_url) {
-          const res = await fetch(report.pdf_url);
+        if (report.pdf_storage_key) {
+          const signedUrl = await createSignedPdfUrl(report.pdf_storage_key);
+          if (cancelledRef.current) return;
+          const res = await fetch(signedUrl);
           if (cancelledRef.current) return;
           const blob = await res.blob();
           if (cancelledRef.current) return;
@@ -275,6 +293,80 @@ export function useReportModal({
     ]
   );
 
+  // ── 인터랙션 핸들러 ──
+
+  const handleCreateReport = useCallback(async () => {
+    const image = await genogramRef.current?.captureImage();
+    setSnapshotImage(image ?? null);
+    setStep('verify');
+  }, [genogramRef]);
+
+  const handleVerifyComplete = useCallback(() => {
+    setStep('input');
+  }, []);
+
+  const handleInputComplete = useCallback(async () => {
+    if (!clientId) return;
+
+    // 크레딧 잔여량 검증
+    const remaining = creditInfo?.plan.remaining ?? 0;
+    if (REPORT_CREDIT_COST > remaining) {
+      setCreditError(
+        `크레딧이 부족합니다. 필요: ${REPORT_CREDIT_COST}, 보유: ${remaining}`
+      );
+      return;
+    }
+
+    setCreditError(null);
+    setGeneratingStatus('processing');
+    setGeneratingError(null);
+    setStep('generating');
+    await runGenerateFlow();
+  }, [clientId, creditInfo, runGenerateFlow]);
+
+  const handleRetryGenerate = useCallback(async () => {
+    setGeneratingStatus('processing');
+    setGeneratingError(null);
+    await runGenerateFlow();
+  }, [runGenerateFlow]);
+
+  const handleDownloadPreviewPdf = useCallback(async () => {
+    if (!pdfUrl) return;
+    await exportReport({
+      reportId: previewReportId,
+      title: previewTitle,
+      pdfUrl,
+      onRefresh: fetchReports,
+    });
+  }, [pdfUrl, previewTitle, previewReportId, fetchReports]);
+
+  const handleSuccessProceed = useCallback(() => {
+    successResolveRef.current?.();
+  }, []);
+
+  const handleBackToList = useCallback(() => {
+    setStep('list');
+  }, []);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const setAnswer = useCallback((index: number, value: number) => {
+    setAnswers((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }, []);
+
+  const setFormField = useCallback(
+    (field: keyof ReportFormData, value: string) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
+
   // ── Effects ──
 
   // 모달 열림/닫힘 동기화
@@ -298,8 +390,12 @@ export function useReportModal({
       setGeneratingStatus('processing');
       setGeneratingError(null);
 
-      checkAccess().then((result) => {
-        if (result) fetchReports();
+      checkAccess().then(async (result) => {
+        if (!result) return;
+        const list = await fetchReports();
+        if (list.length === 0 && !cancelledRef.current) {
+          await handleCreateReport();
+        }
       });
     }
 
@@ -315,6 +411,7 @@ export function useReportModal({
     checkAccess,
     resetAccess,
     fetchReports,
+    handleCreateReport,
     setReports,
     revokePdfUrl,
   ]);
@@ -339,65 +436,6 @@ export function useReportModal({
       };
     }
   }, [open]);
-
-  // ── 인터랙션 핸들러 ──
-
-  const handleCreateReport = useCallback(async () => {
-    const image = await genogramRef.current?.captureImage();
-    setSnapshotImage(image ?? null);
-    setStep('verify');
-  }, [genogramRef]);
-
-  const handleVerifyComplete = useCallback(() => {
-    setStep('input');
-  }, []);
-
-  const handleInputComplete = useCallback(async () => {
-    if (!clientId) return;
-    setGeneratingStatus('processing');
-    setGeneratingError(null);
-    setStep('generating');
-    await runGenerateFlow();
-  }, [clientId, runGenerateFlow]);
-
-  const handleRetryGenerate = useCallback(async () => {
-    setGeneratingStatus('processing');
-    setGeneratingError(null);
-    await runGenerateFlow();
-  }, [runGenerateFlow]);
-
-  const handleDownloadPreviewPdf = useCallback(async () => {
-    if (!pdfUrl) return;
-    await exportReport({
-      reportId: previewReportId,
-      title: previewTitle,
-      pdfUrl,
-      onRefresh: fetchReports,
-    });
-  }, [pdfUrl, previewTitle, previewReportId, fetchReports]);
-
-  const handleBackToList = useCallback(() => {
-    setStep('list');
-  }, []);
-
-  const handleClose = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
-
-  const setAnswer = useCallback((index: number, value: number) => {
-    setAnswers((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  }, []);
-
-  const setFormField = useCallback(
-    (field: keyof ReportFormData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    },
-    []
-  );
 
   // ── 디버그 패널 ──
 
@@ -436,6 +474,8 @@ export function useReportModal({
     previewTitle,
     answers,
     formData,
+    creditError,
+    setCreditError,
     handleCreateReport,
     handleDownloadReport,
     handleRetryReport,
@@ -444,6 +484,7 @@ export function useReportModal({
     handleVerifyComplete,
     handleInputComplete,
     handleRetryGenerate,
+    handleSuccessProceed,
     handleBackToList,
     handleClose,
     debugPanel,
