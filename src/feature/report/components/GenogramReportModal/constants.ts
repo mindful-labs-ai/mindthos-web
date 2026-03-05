@@ -5,24 +5,28 @@ export const CHECKLIST = [
     question: '각 인물(도형)의 위치가 올바른가요?',
     options: ['네', '아니요'],
     correctIndex: 0,
+    warning: '위치를 올바르게 수정해주세요.',
   },
   {
     question:
       '인물의 이름과 성별, 나이, 인적사항 등의 정보가 사실과 다르게 입력된 부분이 있나요?',
     options: ['없습니다', '있습니다'],
     correctIndex: 0,
+    warning: '정보를 올바르게 수정해주세요.',
   },
   {
     question:
       '부모선, 자녀선, 파트너선 등 인물 간의 관계가 올바르게 이어져 있나요?',
     options: ['네', '아니요'],
     correctIndex: 0,
+    warning: '관계를 올바르게 수정해주세요.',
   },
   {
     question:
       '인물 간의 관계에서 핵심이 되는 내용이 모두 관계선으로 반영되어 있나요?',
     options: ['네', '아니요'],
     correctIndex: 0,
+    warning: '내용을 빠짐없이 검토해주세요.',
   },
 ];
 
