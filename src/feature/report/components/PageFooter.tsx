@@ -80,7 +80,7 @@ export const PageFooter = ({ meta: _meta }: PageFooterProps) => (
 
     <View style={s.container}>
       {/* 좌: 마음토스 로고 */}
-      <Image src="/pdf/pdf_footer_logo.png" style={s.logoImage} />
+      <Image src="/pdf/pdf_cover_logo.png" style={s.logoImage} />
 
       {/* 로고 우측 세로 구분선 */}
       <View style={s.divider} />
