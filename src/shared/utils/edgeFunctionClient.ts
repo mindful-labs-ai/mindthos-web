@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { ROUTES } from '@/router/constants';
 
 /**
  * 모든 Supabase Edge Function 엔드포인트를 한 곳에서 관리합니다.
@@ -51,9 +52,9 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   },
   // 약관 관련
   TERMS: {
-    LIST: 'terms/list',
     CHECK: 'terms/check',
     AGREE: 'terms/agree',
+    CONTENT: 'terms/content',
   },
   // 가계도 관련
   GENOGRAM: {
@@ -115,6 +116,13 @@ export async function callEdgeFunction<T>(
       }
     } catch {
       // ignore
+    }
+
+    // 401: 토큰이 만료되었거나 유효하지 않은 경우 강제 로그아웃
+    if (status === 401) {
+      const { useAuthStore } = await import('@/stores/authStore');
+      useAuthStore.getState().clear();
+      window.location.href = ROUTES.AUTH;
     }
 
     throw {

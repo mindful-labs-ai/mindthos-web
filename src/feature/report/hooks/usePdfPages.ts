@@ -56,7 +56,9 @@ export function usePdfPages(pdfUrl: string | null) {
           setPages(pageImages);
         }
       } catch (err) {
-        console.error('[usePdfPages] error:', err);
+        if (!cancelled) {
+          console.error('[usePdfPages] error:', err);
+        }
       } finally {
         if (!cancelled) {
           setIsRendering(false);
@@ -66,7 +68,7 @@ export function usePdfPages(pdfUrl: string | null) {
 
     return () => {
       cancelled = true;
-      task.destroy();
+      task.destroy().catch(() => {});
       taskRef.current = null;
     };
   }, [pdfUrl]);

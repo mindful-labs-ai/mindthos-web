@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react';
 
 import { ArrowLeft, Loader2, X } from 'lucide-react';
 
+import { SnackBar } from '@/components/ui/composites/SnackBar';
+import { useModalStore } from '@/stores/modalStore';
+
 import { CreationFlowButton } from './CreationFlowButton';
 import { PreviewExportButton } from './PreviewExportButton';
 import { GeneratingStep } from './steps/GeneratingStep';
@@ -16,6 +19,7 @@ import { useReportModal } from './useReportModal';
 export function GenogramReportModal(props: GenogramReportModalProps) {
   const modal = useReportModal(props);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const openModal = useModalStore((s) => s.openModal);
 
   // 스텝 변경 시 스크롤 초기화
   useEffect(() => {
@@ -68,7 +72,10 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
 
         {/* ── 본문 ── */}
         {modal.step === 'generating' ? (
-          <GeneratingStep status={modal.generatingStatus} />
+          <GeneratingStep
+            status={modal.generatingStatus}
+            onSuccessProceed={modal.handleSuccessProceed}
+          />
         ) : (
           <div
             ref={scrollRef}
@@ -173,6 +180,20 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
       </div>
 
       {modal.debugPanel}
+
+      {/* 크레딧 부족 SnackBar */}
+      <SnackBar
+        open={!!modal.creditError}
+        message={modal.creditError ?? ''}
+        onOpenChange={(open) => {
+          if (!open) modal.setCreditError(null);
+        }}
+        action={{
+          label: '플랜 업그레이드',
+          onClick: () => openModal('planChange'),
+        }}
+        duration={8000}
+      />
     </div>
   );
 }
