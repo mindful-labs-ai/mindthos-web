@@ -7,12 +7,6 @@ export interface TermItem {
   created_at: string;
 }
 
-export interface TermsListResponse {
-  success: boolean;
-  terms: TermItem[];
-  currentVersion: string;
-}
-
 export interface TermsCheckResponse {
   success: boolean;
   agreedAll: boolean;
@@ -26,7 +20,6 @@ export interface TermAgreement {
 }
 
 export interface TermsAgreeRequest {
-  email: string;
   agreements: TermAgreement[];
 }
 
