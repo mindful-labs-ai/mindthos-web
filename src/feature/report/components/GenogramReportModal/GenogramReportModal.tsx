@@ -68,7 +68,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
 
         {/* ── 본문 ── */}
         {modal.step === 'generating' ? (
-          <GeneratingStep status={modal.generatingStatus} />
+          <GeneratingStep status={modal.generatingStatus} onSuccessProceed={modal.handleSuccessProceed} />
         ) : (
           <div
             ref={scrollRef}

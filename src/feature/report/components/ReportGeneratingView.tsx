@@ -18,13 +18,14 @@ type GeneratingStatus = 'processing' | 'success' | 'error';
 
 interface ReportGeneratingViewProps {
   status: GeneratingStatus;
+  onSuccessProceed?: () => void;
 }
 
-export function ReportGeneratingView({ status }: ReportGeneratingViewProps) {
+export function ReportGeneratingView({ status, onSuccessProceed }: ReportGeneratingViewProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-4">
       {status === 'processing' && <ProcessingAnimation />}
-      {status === 'success' && <SuccessState />}
+      {status === 'success' && <SuccessState onProceed={onSuccessProceed} />}
       {status === 'error' && <ErrorState />}
     </div>
   );
@@ -329,7 +330,7 @@ function ProcessingAnimation() {
 // 성공 상태
 // ============================================
 
-function SuccessState() {
+function SuccessState({ onProceed }: { onProceed?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4">
       <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -339,8 +340,17 @@ function SuccessState() {
         보고서가 생성되었습니다!
       </h3>
       <p className="text-sm text-fg-muted">
-        잠시 후 보고서 목록으로 이동합니다.
+        미리보기로 이동하여 보고서를 확인해보세요.
       </p>
+      {onProceed && (
+        <button
+          type="button"
+          onClick={onProceed}
+          className="mt-2 w-full max-w-[240px] rounded-xl bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primary-400"
+        >
+          보고서 확인하기
+        </button>
+      )}
     </div>
   );
 }

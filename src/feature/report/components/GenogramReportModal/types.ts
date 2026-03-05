@@ -60,6 +60,7 @@ export interface UseReportModalReturn {
   handleVerifyComplete: () => void;
   handleInputComplete: () => Promise<void>;
   handleRetryGenerate: () => Promise<void>;
+  handleSuccessProceed: () => void;
   handleBackToList: () => void;
   handleClose: () => void;
   setAnswer: (index: number, value: number) => void;
