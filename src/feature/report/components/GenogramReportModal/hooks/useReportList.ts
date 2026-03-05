@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+
 import type { ReportListItem } from '../../../services/reportService';
 import {
   createSignedPdfUrl,
@@ -77,6 +79,10 @@ export function useReportList({
   const handleDownloadReport = useCallback(
     async (report: ReportListItem) => {
       if (!report.pdf_storage_key) return;
+      trackEvent('genogram_report_download_click', {
+        client_id: clientId,
+        report_id: report.id,
+      });
       try {
         const signedUrl = await createSignedPdfUrl(report.pdf_storage_key);
         const res = await fetch(signedUrl);
@@ -94,7 +100,7 @@ export function useReportList({
         });
       }
     },
-    [toast]
+    [clientId, toast]
   );
 
   return {
