@@ -51,21 +51,9 @@ export function ReportListStep({
     );
   }
 
+  // 빈 목록이면 useReportModal이 자동으로 verify 단계로 전환
   if (reports.length === 0) {
-    return (
-      <div className="flex h-full flex-col items-center justify-center pb-32">
-        <div className="flex h-52 flex-col items-center justify-center">
-          <p className="text-base text-fg-muted">
-            아직 생성한 가계도 보고서가 없습니다.
-          </p>
-          <p className="mt-1 text-base text-fg-muted">
-            첫 보고서를 만들어보세요.
-          </p>
-        </div>
-
-        <CreateReportButton onClick={onCreateReport} />
-      </div>
-    );
+    return null;
   }
 
   return (

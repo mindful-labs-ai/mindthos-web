@@ -18,7 +18,7 @@ export interface UseReportListReturn {
   reports: ReportListItem[];
   isLoadingReports: boolean;
   retryingId: string | null;
-  fetchReports: () => Promise<void>;
+  fetchReports: () => Promise<ReportListItem[]>;
   handleRetryReport: (reportId: string) => Promise<void>;
   handleDownloadReport: (report: ReportListItem) => Promise<void>;
   setReports: React.Dispatch<React.SetStateAction<ReportListItem[]>>;
@@ -32,18 +32,20 @@ export function useReportList({
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [retryingId, setRetryingId] = useState<string | null>(null);
 
-  const fetchReports = useCallback(async () => {
-    if (!clientId) return;
+  const fetchReports = useCallback(async (): Promise<ReportListItem[]> => {
+    if (!clientId) return [];
     setIsLoadingReports(true);
     try {
       const data = await listReports(clientId);
       setReports(data);
+      return data;
     } catch (e) {
       if (!import.meta.env.PROD)
         console.error(
           '보고서 목록 조회 실패:',
           e instanceof Error ? e.message : e
         );
+      return [];
     } finally {
       setIsLoadingReports(false);
     }
