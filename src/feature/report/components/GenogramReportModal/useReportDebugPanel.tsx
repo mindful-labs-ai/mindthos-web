@@ -96,7 +96,8 @@ export function useReportDebugPanel({
                           ? {
                               ...x,
                               status: s,
-                              pdf_url: s === 'FAILED' ? null : x.pdf_url,
+                              pdf_storage_key:
+                                s === 'FAILED' ? null : x.pdf_storage_key,
                             }
                           : x
                       )
@@ -105,15 +106,17 @@ export function useReportDebugPanel({
                 />
               ))}
               <DebugChip
-                label={r.pdf_url ? 'URL' : 'noURL'}
-                active={!!r.pdf_url}
+                label={r.pdf_storage_key ? 'PDF' : 'noPDF'}
+                active={!!r.pdf_storage_key}
                 onClick={() =>
                   setReports((prev) =>
                     prev.map((x) =>
                       x.id === r.id
                         ? {
                             ...x,
-                            pdf_url: x.pdf_url ? null : 'https://debug',
+                            pdf_storage_key: x.pdf_storage_key
+                              ? null
+                              : 'debug/mock/report.pdf',
                           }
                         : x
                     )

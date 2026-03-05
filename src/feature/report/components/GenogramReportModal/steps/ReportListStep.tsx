@@ -108,7 +108,7 @@ export function ReportListStep({
               >
                 <Eye className="h-5 w-5" />
               </button>
-              {report.pdf_url && (
+              {report.pdf_storage_key && (
                 <button
                   type="button"
                   onClick={() => onDownloadReport(report)}

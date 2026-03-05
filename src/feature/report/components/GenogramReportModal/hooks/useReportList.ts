@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react';
 
 import type { ReportListItem } from '../../../services/reportService';
-import { listReports, retryReport } from '../../../services/reportService';
+import {
+  createSignedPdfUrl,
+  listReports,
+  retryReport,
+} from '../../../services/reportService';
 
 type ToastFn = (opts: { title: string; description: string }) => void;
 
@@ -68,22 +72,28 @@ export function useReportList({
     [toast, fetchReports]
   );
 
-  const handleDownloadReport = useCallback(async (report: ReportListItem) => {
-    if (!report.pdf_url) return;
-    try {
-      const res = await fetch(report.pdf_url);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${report.title}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      // fallback: 직접 이동
-      window.open(report.pdf_url, '_blank');
-    }
-  }, []);
+  const handleDownloadReport = useCallback(
+    async (report: ReportListItem) => {
+      if (!report.pdf_storage_key) return;
+      try {
+        const signedUrl = await createSignedPdfUrl(report.pdf_storage_key);
+        const res = await fetch(signedUrl);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${report.title}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch {
+        toast({
+          title: '다운로드 실패',
+          description: 'PDF 다운로드 중 오류가 발생했습니다.',
+        });
+      }
+    },
+    [toast]
+  );
 
   return {
     reports,

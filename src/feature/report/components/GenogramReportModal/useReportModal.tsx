@@ -7,6 +7,7 @@ import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 import { useGenogramCapture } from '../../hooks/useGenogramCapture';
 import type { ReportListItem } from '../../services/reportService';
 import {
+  createSignedPdfUrl,
   exportReport,
   fetchReportDetail,
   generateReport,
@@ -99,6 +100,7 @@ export function useReportModal({
 
   const prevPdfUrlRef = useRef<string | null>(null);
   const cancelledRef = useRef(false);
+  const successResolveRef = useRef<(() => void) | null>(null);
 
   // ── PDF URL 관리 ──
 
@@ -144,7 +146,11 @@ export function useReportModal({
       if (cancelledRef.current) return;
       setGeneratingStatus('success');
 
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise<void>((resolve) => {
+        successResolveRef.current = resolve;
+        setTimeout(resolve, 2000);
+      });
+      successResolveRef.current = null;
       if (cancelledRef.current) return;
 
       const reportData = result.formatted_json;
@@ -219,8 +225,10 @@ export function useReportModal({
       setPdfUrl(null);
 
       try {
-        if (report.pdf_url) {
-          const res = await fetch(report.pdf_url);
+        if (report.pdf_storage_key) {
+          const signedUrl = await createSignedPdfUrl(report.pdf_storage_key);
+          if (cancelledRef.current) return;
+          const res = await fetch(signedUrl);
           if (cancelledRef.current) return;
           const blob = await res.blob();
           if (cancelledRef.current) return;
@@ -376,6 +384,10 @@ export function useReportModal({
     });
   }, [pdfUrl, previewTitle, previewReportId, fetchReports]);
 
+  const handleSuccessProceed = useCallback(() => {
+    successResolveRef.current?.();
+  }, []);
+
   const handleBackToList = useCallback(() => {
     setStep('list');
   }, []);
@@ -444,6 +456,7 @@ export function useReportModal({
     handleVerifyComplete,
     handleInputComplete,
     handleRetryGenerate,
+    handleSuccessProceed,
     handleBackToList,
     handleClose,
     debugPanel,

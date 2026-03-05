@@ -19,7 +19,7 @@ export interface ReportListItem {
   status: 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED';
   error_code: string | null;
   retry_count: number;
-  pdf_url: string | null;
+  pdf_storage_key: string | null;
   created_at: string;
   last_attempted_at: string | null;
 }
@@ -66,13 +66,26 @@ interface SavePdfUrlResponse {
   success: boolean;
   data: {
     report_id: string;
-    pdf_url: string;
+    storage_key: string;
   };
 }
 
 // ============================================
 // 헬퍼
 // ============================================
+
+/** pdf_storage_key로 10분 유효 signed URL 발급 */
+export async function createSignedPdfUrl(storageKey: string): Promise<string> {
+  const { data, error } = await supabase.storage
+    .from('genogram_report')
+    .createSignedUrl(storageKey, 60 * 10);
+
+  if (error || !data?.signedUrl) {
+    throw new Error('PDF signed URL 발급에 실패했습니다.');
+  }
+
+  return data.signedUrl;
+}
 
 /** Storage 업로드 키 생성 (userId/clientId/yy-MM-dd/uuid.pdf) */
 export function buildStorageKey(userId: string, clientId: string): string {
@@ -203,8 +216,8 @@ export async function uploadReportPdf(
   }
 }
 
-/** signed URL 생성 + DB 저장 */
-export async function savePdfUrl(
+/** storage key를 DB에 저장 */
+export async function savePdfStorageKey(
   reportId: string,
   storageKey: string
 ): Promise<string> {
@@ -215,13 +228,15 @@ export async function savePdfUrl(
     );
 
     if (!data.success) {
-      throw new Error('PDF URL 저장에 실패했습니다.');
+      throw new Error('PDF storage key 저장에 실패했습니다.');
     }
 
-    return data.data.pdf_url;
+    return data.data.storage_key;
   } catch (error: unknown) {
     const err = error as { message?: string };
-    throw new Error(err.message || 'PDF URL 저장 중 오류가 발생했습니다.');
+    throw new Error(
+      err.message || 'PDF storage key 저장 중 오류가 발생했습니다.'
+    );
   }
 }
 
