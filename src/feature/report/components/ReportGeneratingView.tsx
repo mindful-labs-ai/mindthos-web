@@ -21,7 +21,10 @@ interface ReportGeneratingViewProps {
   onSuccessProceed?: () => void;
 }
 
-export function ReportGeneratingView({ status, onSuccessProceed }: ReportGeneratingViewProps) {
+export function ReportGeneratingView({
+  status,
+  onSuccessProceed,
+}: ReportGeneratingViewProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-4">
       {status === 'processing' && <ProcessingAnimation />}

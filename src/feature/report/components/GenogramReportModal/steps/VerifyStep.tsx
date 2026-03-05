@@ -63,8 +63,7 @@ export function VerifyStep({
 
       {/* 체크리스트 */}
       {CHECKLIST.map((item, i) => {
-        const isWrong =
-          answers[i] !== null && answers[i] !== item.correctIndex;
+        const isWrong = answers[i] !== null && answers[i] !== item.correctIndex;
         const isShaking = shakingIndex === i;
 
         return (
@@ -90,7 +89,9 @@ export function VerifyStep({
                   >
                     <span
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                        isSelected ? 'border-primary bg-primary' : 'border-border'
+                        isSelected
+                          ? 'border-primary bg-primary'
+                          : 'border-border'
                       }`}
                     >
                       {isSelected && (

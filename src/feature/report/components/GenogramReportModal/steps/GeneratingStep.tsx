@@ -6,6 +6,11 @@ interface GeneratingStepProps {
   onSuccessProceed?: () => void;
 }
 
-export function GeneratingStep({ status, onSuccessProceed }: GeneratingStepProps) {
-  return <ReportGeneratingView status={status} onSuccessProceed={onSuccessProceed} />;
+export function GeneratingStep({
+  status,
+  onSuccessProceed,
+}: GeneratingStepProps) {
+  return (
+    <ReportGeneratingView status={status} onSuccessProceed={onSuccessProceed} />
+  );
 }

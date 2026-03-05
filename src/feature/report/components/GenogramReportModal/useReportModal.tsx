@@ -16,7 +16,11 @@ import {
 import { buildReportPdf, uploadPdfToStorage } from '../../utils/buildReportPdf';
 import type { GeneratingStatus } from '../ReportGeneratingView';
 
-import { CHECKLIST, GENOGRAM_REPORT_TEMPLATE_KEY, REPORT_CREDIT_COST } from './constants';
+import {
+  CHECKLIST,
+  GENOGRAM_REPORT_TEMPLATE_KEY,
+  REPORT_CREDIT_COST,
+} from './constants';
 import { useReportList } from './hooks/useReportList';
 import type {
   GenogramReportModalProps,
