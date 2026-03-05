@@ -4,17 +4,15 @@ import { Spinner } from '@/components/ui';
 import { useToast } from '@/components/ui/composites/Toast';
 import { ROUTES, getTermsRoute, type TermsType } from '@/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { useAuthStore } from '@/stores/authStore';
 
 import { TermsAgreementCard } from '../components/TermsAgreementCard';
 import { useTermsAgreement } from '../hooks/useTermsAgreement';
-import { useTermsList } from '../hooks/useTermsList';
+import { useTermsCheck } from '../hooks/useTermsCheck';
 
 const TermsAgreementPage = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
-  const termsAgreedAt = useAuthStore((state) => state.termsAgreedAt);
-  const { terms, isLoading, isError } = useTermsList();
+  const { agreedAll, pendingTerms, isLoading, isError } = useTermsCheck();
   const {
     agreements,
     allChecked,
@@ -23,14 +21,14 @@ const TermsAgreementPage = () => {
     toggleOne,
     submit,
     isSubmitting,
-  } = useTermsAgreement(terms);
+  } = useTermsAgreement(pendingTerms);
 
   // 이미 약관 동의 완료된 유저는 홈으로 리다이렉트
   useEffect(() => {
-    if (termsAgreedAt) {
+    if (agreedAll) {
       navigateWithUtm(ROUTES.ROOT, { replace: true });
     }
-  }, [termsAgreedAt, navigateWithUtm]);
+  }, [agreedAll, navigateWithUtm]);
 
   const handleSubmit = async () => {
     try {
@@ -47,7 +45,7 @@ const TermsAgreementPage = () => {
     window.open(getTermsRoute(type), '_blank');
   };
 
-  if (termsAgreedAt) return null;
+  if (agreedAll) return null;
 
   if (isLoading) {
     return (
@@ -74,7 +72,7 @@ const TermsAgreementPage = () => {
         </div>
       ) : (
         <TermsAgreementCard
-          terms={terms}
+          terms={pendingTerms}
           agreements={agreements}
           allChecked={allChecked}
           allRequiredChecked={allRequiredChecked}

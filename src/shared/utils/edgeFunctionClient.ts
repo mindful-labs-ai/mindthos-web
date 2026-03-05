@@ -51,9 +51,9 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   },
   // 약관 관련
   TERMS: {
-    LIST: 'terms/list',
     CHECK: 'terms/check',
     AGREE: 'terms/agree',
+    CONTENT: 'terms/content',
   },
   // 가계도 관련
   GENOGRAM: {
