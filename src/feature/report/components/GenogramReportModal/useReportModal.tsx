@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/components/ui/composites/Toast';
+import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
@@ -15,7 +16,7 @@ import {
 import { buildReportPdf, uploadPdfToStorage } from '../../utils/buildReportPdf';
 import type { GeneratingStatus } from '../ReportGeneratingView';
 
-import { CHECKLIST, GENOGRAM_REPORT_TEMPLATE_KEY } from './constants';
+import { CHECKLIST, GENOGRAM_REPORT_TEMPLATE_KEY, REPORT_CREDIT_COST } from './constants';
 import { useReportList } from './hooks/useReportList';
 import type {
   GenogramReportModalProps,
@@ -36,6 +37,7 @@ export function useReportModal({
   const userName = useAuthStore((s) => s.userName);
   const organization = useAuthStore((s) => s.organization);
   const { toast } = useToast();
+  const { creditInfo } = useCreditInfo();
 
   // ── 기능 접근 권한 (전역 스토어) ──
 
@@ -95,6 +97,10 @@ export function useReportModal({
     endDate: '',
     organization: '',
   });
+
+  // ── 크레딧 부족 에러 ──
+
+  const [creditError, setCreditError] = useState<string | null>(null);
 
   // ── Refs ──
 
@@ -283,71 +289,6 @@ export function useReportModal({
     ]
   );
 
-  // ── Effects ──
-
-  // 모달 열림/닫힘 동기화
-  useEffect(() => {
-    if (open) {
-      cancelledRef.current = false;
-      resetAccess();
-      setStep('list');
-      setSnapshotImage(null);
-      setReports([]);
-      setAnswers(new Array(CHECKLIST.length).fill(null));
-      setFormData({
-        counselorName: userName ?? '',
-        clientName: clientName ?? '',
-        startDate: '',
-        endDate: '',
-        organization: organization ?? '',
-      });
-      setPdfUrl(null);
-      setPreviewTitle('');
-      setGeneratingStatus('processing');
-      setGeneratingError(null);
-
-      checkAccess().then((result) => {
-        if (result) fetchReports();
-      });
-    }
-
-    return () => {
-      cancelledRef.current = true;
-      revokePdfUrl();
-    };
-  }, [
-    open,
-    userName,
-    clientName,
-    organization,
-    checkAccess,
-    resetAccess,
-    fetchReports,
-    setReports,
-    revokePdfUrl,
-  ]);
-
-  // ESC 키
-  useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (step === 'generating' && generatingStatus === 'processing') return;
-      if (e.key === 'Escape') onOpenChange(false);
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, onOpenChange, step, generatingStatus]);
-
-  // 스크롤 잠금
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = '';
-      };
-    }
-  }, [open]);
-
   // ── 인터랙션 핸들러 ──
 
   const handleCreateReport = useCallback(async () => {
@@ -362,11 +303,22 @@ export function useReportModal({
 
   const handleInputComplete = useCallback(async () => {
     if (!clientId) return;
+
+    // 크레딧 잔여량 검증
+    const remaining = creditInfo?.plan.remaining ?? 0;
+    if (REPORT_CREDIT_COST > remaining) {
+      setCreditError(
+        `크레딧이 부족합니다. 필요: ${REPORT_CREDIT_COST}, 보유: ${remaining}`
+      );
+      return;
+    }
+
+    setCreditError(null);
     setGeneratingStatus('processing');
     setGeneratingError(null);
     setStep('generating');
     await runGenerateFlow();
-  }, [clientId, runGenerateFlow]);
+  }, [clientId, creditInfo, runGenerateFlow]);
 
   const handleRetryGenerate = useCallback(async () => {
     setGeneratingStatus('processing');
@@ -411,6 +363,76 @@ export function useReportModal({
     []
   );
 
+  // ── Effects ──
+
+  // 모달 열림/닫힘 동기화
+  useEffect(() => {
+    if (open) {
+      cancelledRef.current = false;
+      resetAccess();
+      setStep('list');
+      setSnapshotImage(null);
+      setReports([]);
+      setAnswers(new Array(CHECKLIST.length).fill(null));
+      setFormData({
+        counselorName: userName ?? '',
+        clientName: clientName ?? '',
+        startDate: '',
+        endDate: '',
+        organization: organization ?? '',
+      });
+      setPdfUrl(null);
+      setPreviewTitle('');
+      setGeneratingStatus('processing');
+      setGeneratingError(null);
+
+      checkAccess().then(async (result) => {
+        if (!result) return;
+        const list = await fetchReports();
+        if (list.length === 0 && !cancelledRef.current) {
+          await handleCreateReport();
+        }
+      });
+    }
+
+    return () => {
+      cancelledRef.current = true;
+      revokePdfUrl();
+    };
+  }, [
+    open,
+    userName,
+    clientName,
+    organization,
+    checkAccess,
+    resetAccess,
+    fetchReports,
+    handleCreateReport,
+    setReports,
+    revokePdfUrl,
+  ]);
+
+  // ESC 키
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (step === 'generating' && generatingStatus === 'processing') return;
+      if (e.key === 'Escape') onOpenChange(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onOpenChange, step, generatingStatus]);
+
+  // 스크롤 잠금
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = '';
+      };
+    }
+  }, [open]);
+
   // ── 디버그 패널 ──
 
   const debugPanel = useReportDebugPanel({
@@ -448,6 +470,8 @@ export function useReportModal({
     previewTitle,
     answers,
     formData,
+    creditError,
+    setCreditError,
     handleCreateReport,
     handleDownloadReport,
     handleRetryReport,

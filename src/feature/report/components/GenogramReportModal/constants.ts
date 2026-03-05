@@ -1,4 +1,5 @@
 export const GENOGRAM_REPORT_TEMPLATE_KEY = 'GENOGRAM_ANALYSIS';
+export const REPORT_CREDIT_COST = 10;
 
 export const CHECKLIST = [
   {

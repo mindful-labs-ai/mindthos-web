@@ -50,6 +50,8 @@ export interface UseReportModalReturn {
   previewTitle: string;
   answers: (number | null)[];
   formData: ReportFormData;
+  creditError: string | null;
+  setCreditError: (error: string | null) => void;
 
   // Actions (인터랙션 기반)
   handleCreateReport: () => Promise<void>;
