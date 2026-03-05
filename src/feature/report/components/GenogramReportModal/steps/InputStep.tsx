@@ -9,7 +9,7 @@ interface InputStepProps {
 
 export function InputStep({ formData, onFormChange }: InputStepProps) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mb-24 flex flex-col gap-6">
       {/* 상단 배너 */}
       <div className="rounded-xl bg-primary-50 px-6 py-5 text-center">
         <p className="text-base font-bold text-fg">
@@ -89,7 +89,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
         </div>
       </div>
       {/* 4. 상담 기관(센터) 이름 */}
-      <div className="mb-32">
+      <div>
         <label
           htmlFor="organization"
           className="mb-2 block text-base font-bold text-fg"
