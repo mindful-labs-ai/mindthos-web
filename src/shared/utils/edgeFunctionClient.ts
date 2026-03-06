@@ -78,6 +78,11 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   NOTICE: {
     LIST: 'notice/list',
   },
+  // 자격 관련
+  QUALIFICATION: {
+    LIST: 'qualifications/list',
+    UPSERT: 'qualifications/upsert',
+  },
 } as const;
 
 /**

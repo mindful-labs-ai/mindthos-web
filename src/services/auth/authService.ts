@@ -133,17 +133,27 @@ export const authService = {
 
   async updateUser(
     userId: string,
-    data: { name?: string; organization?: string; phoneNumber?: string }
+    data: {
+      name?: string;
+      organization?: string;
+      phoneNumber?: string;
+      referralSource?: string;
+    }
   ): Promise<void> {
     try {
+      const updatePayload: Record<string, unknown> = {
+        name: data.name,
+        organization: data.organization,
+        phone_number: data.phoneNumber,
+        updated_at: new Date().toISOString(),
+      };
+      if (data.referralSource !== undefined) {
+        updatePayload.referral_source = data.referralSource;
+      }
+
       const { error } = await supabase
         .from('users')
-        .update({
-          name: data.name,
-          organization: data.organization,
-          phone_number: data.phoneNumber,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', parseInt(userId));
 
       if (error) throw handleAuthError(error);

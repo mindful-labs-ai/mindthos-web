@@ -9,7 +9,6 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { CloudUploadIcon, CreditIcon } from '@/shared/icons';
@@ -45,8 +44,7 @@ export const CreateMultiSessionModal: React.FC<
   const { creditInfo } = useCreditInfo();
 
   // Quest 관련 hooks
-  const { currentLevel, setShowConfetti } = useQuestStore();
-  const { completeNextStep, endTutorial } = useTutorial({ currentLevel });
+  const { currentLevel, setShowConfetti, completeNextStep } = useQuestStore();
 
   // Step 상태
   const [step, setStep] = useState<ModalStep>('upload');
@@ -255,11 +253,10 @@ export const CreateMultiSessionModal: React.FC<
         duration: 5000,
       });
 
-      // 튜토리얼(레벨 4) 진행 중이라면 완료 처리
+      // 퀘스트(레벨 4) 진행 중이라면 완료 처리 (L4→L5)
       if (currentLevel === 4) {
         await completeNextStep(useAuthStore.getState().user?.email || '');
         setShowConfetti(true);
-        endTutorial();
       }
     }
 

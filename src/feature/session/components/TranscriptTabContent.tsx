@@ -37,7 +37,7 @@ interface TranscriptTabContentProps {
   /** 활성 세그먼트 ref */
   activeSegmentRef: React.RefObject<HTMLDivElement | null>;
   /** 스크롤 끝 감지용 ref */
-  transcriptEndRef: (node?: Element | null) => void;
+  transcriptEndRef?: (node?: Element | null) => void;
   /** 세그먼트 클릭 시 오디오 이동 핸들러 */
   onSeekTo: (time: number) => void;
   /** 텍스트 편집 핸들러 */

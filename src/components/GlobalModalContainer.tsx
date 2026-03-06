@@ -8,6 +8,7 @@ import { ComingSoonModal } from '@/components/common/ComingSoonModal';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
 import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
+import { TutorialGuideModal } from '@/feature/onboarding/components/TutorialGuideModal';
 import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { CouponBox } from '@/feature/settings/components/CouponBox';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
@@ -127,6 +128,7 @@ export const GlobalModalContainer = () => {
         <>
           <QuestMissionModal />
           <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
+          <TutorialGuideModal />
         </>
       )}
 
@@ -140,6 +142,7 @@ export const GlobalModalContainer = () => {
         open={isUserEditOpen}
         onOpenChange={handleCloseUserEdit}
         onSuccess={handleUserEditSuccess}
+        isQuestMode={currentLevel === 5}
       />
 
       {/* 플랜 변경 모달 */}

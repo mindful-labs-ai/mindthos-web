@@ -8,8 +8,6 @@ import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
-import { useTutorial } from '../hooks/useTutorial';
-
 const QUESTS = [
   { id: 1, label: '상담기록 예시 보기' },
   { id: 2, label: '다회기 분석 예시 보기' },
@@ -28,12 +26,14 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
   const panelRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-  const { currentLevel, shouldShowOnboarding, startedAt, isLoading } =
-    useQuestStore();
-  const email = useAuthStore((state) => state.user?.email);
-  const { endTutorial, startTutorial, nextTutorialStep } = useTutorial({
+  const {
     currentLevel,
-  });
+    shouldShowOnboarding,
+    startedAt,
+    isLoading,
+    setTutorialGuideLevel,
+  } = useQuestStore();
+  const email = useAuthStore((state) => state.user?.email);
 
   // 외부 클릭 시 닫기
   React.useEffect(() => {
@@ -126,10 +126,8 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
       return;
     }
 
-    // 나머지 퀘스트는 튜토리얼 시작
-    endTutorial();
-    startTutorial();
-    nextTutorialStep();
+    // Quest 1, 2, 3: 가이드 모달 열기
+    setTutorialGuideLevel(questId);
     setIsOpen(false);
   };
 
