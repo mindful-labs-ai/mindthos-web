@@ -2,7 +2,6 @@
 import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -33,10 +32,7 @@ export const QuestStep = ({
 }: QuestStepProps) => {
   const user = useAuthStore((state) => state.user);
   const email = user?.email;
-  const { currentLevel, isLoading } = useQuestStore();
-  const { startTutorial, nextTutorialStep, endTutorial } = useTutorial({
-    currentLevel,
-  });
+  const { currentLevel, isLoading, setTutorialGuideLevel } = useQuestStore();
   // 전체 단계 수
   const totalSteps = QUESTS.length;
   // 실제 완료된 퀘스트 수 계산 (레벨 매핑에 따름)
@@ -207,16 +203,15 @@ export const QuestStep = ({
                                 }
                                 return;
                               }
-                              // 튜토리얼 액션이 필요 없는 단순 미션 처리 (Quest 4 등)
+
+                              // Quest 4: 내 정보 입력하기는 모달 열기
                               if (quest.id === 4) {
                                 onOpenUserEdit?.();
                                 return;
                               }
 
-                              // 튜토리얼 액션 래퍼 사용
-                              endTutorial();
-                              startTutorial();
-                              nextTutorialStep();
+                              // Quest 1, 2, 3: 가이드 모달 열기
+                              setTutorialGuideLevel(quest.id);
                             }}
                           >
                             {isCompleted

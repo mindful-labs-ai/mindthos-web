@@ -10,8 +10,6 @@ import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
-import { useTutorial } from '../hooks/useTutorial';
-
 import { GiftBoxAnimation } from './GiftBoxAnimation';
 
 const MISSION_CONTENT: Record<number, { title: string; description: string }> =
@@ -48,10 +46,8 @@ export const CompleteMissionModal = ({
     getReward,
     isLoading,
     currentLevel,
+    setTutorialGuideLevel,
   } = useQuestStore();
-  const { endTutorial, nextTutorialStep, startTutorial } = useTutorial({
-    currentLevel,
-  });
   const { toast } = useToast();
 
   const isOpen = showCompleteModalStep !== null;
@@ -128,10 +124,15 @@ export const CompleteMissionModal = ({
       return;
     }
 
-    // 그 외의 경우 튜토리얼 시작
-    endTutorial();
-    startTutorial();
-    nextTutorialStep();
+    // 다음 미션에 해당하는 가이드 모달 열기
+    // showCompleteModalStep 1 -> 다음 미션 가이드 2, showCompleteModalStep 2 -> 다음 미션 가이드 3
+    const nextGuideMap: Record<number, number> = { 1: 2, 2: 3 };
+    const nextGuide = showCompleteModalStep
+      ? nextGuideMap[showCompleteModalStep]
+      : null;
+    if (nextGuide) {
+      setTutorialGuideLevel(nextGuide);
+    }
   };
 
   const today = new Date();
