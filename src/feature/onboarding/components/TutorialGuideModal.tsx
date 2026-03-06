@@ -116,6 +116,11 @@ export const TutorialGuideModal: React.FC = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const queryClient = useQueryClient();
   const [currentSlide, setCurrentSlide] = React.useState(0);
+  const [videoProgress, setVideoProgress] = React.useState(0);
+  const [videoAspectRatio, setVideoAspectRatio] = React.useState<number | null>(
+    null
+  );
+  const videoRef = React.useRef<HTMLVideoElement>(null);
 
   const isOpen = tutorialGuideLevel !== null;
   const config = tutorialGuideLevel ? GUIDE_CONFIGS[tutorialGuideLevel] : null;
@@ -127,8 +132,25 @@ export const TutorialGuideModal: React.FC = () => {
   React.useEffect(() => {
     if (isOpen) {
       setCurrentSlide(0);
+      setVideoProgress(0);
+      setVideoAspectRatio(null);
     }
   }, [isOpen]);
+
+  // 영상 진행도 추적
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      if (video.duration) {
+        setVideoProgress((video.currentTime / video.duration) * 100);
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [slide?.media.src]);
 
   const handleClose = () => {
     setTutorialGuideLevel(null);
@@ -187,7 +209,7 @@ export const TutorialGuideModal: React.FC = () => {
       onOpenChange={handleClose}
       className="h-[848px] max-h-[90vh] w-[872px] max-w-[90vw] border-none p-0"
     >
-      <div className="flex h-full flex-col items-center px-14 py-[38px]">
+      <div className="flex h-full flex-col items-center px-0 py-6 sm:px-8 sm:py-8 md:px-14 md:py-[38px]">
         {/* Title */}
         <h2 className="shrink-0 text-xl font-bold text-fg">{config.title}</h2>
 
@@ -197,24 +219,46 @@ export const TutorialGuideModal: React.FC = () => {
         </p>
 
         {/* Media - 남은 공간을 채움 */}
-        <div className="mt-4 min-h-0 w-full flex-1 overflow-hidden rounded-xl bg-surface-contrast">
+        <div className="mt-4 flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
           {slide.media.type === 'video' ? (
-            <video
-              key={slide.media.src}
-              className="h-full w-full object-contain"
-              autoPlay
-              loop
-              muted
-              playsInline
+            <div
+              className="flex max-h-full max-w-full flex-col items-center"
+              style={
+                videoAspectRatio ? { aspectRatio: videoAspectRatio } : undefined
+              }
             >
-              <source src={slide.media.src} type="video/mp4" />
-            </video>
+              <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border-2 border-border">
+                <video
+                  ref={videoRef}
+                  key={slide.media.src}
+                  className="h-full w-full"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  onLoadedMetadata={(e) => {
+                    const v = e.currentTarget;
+                    if (v.videoWidth && v.videoHeight) {
+                      setVideoAspectRatio(v.videoWidth / v.videoHeight);
+                    }
+                  }}
+                >
+                  <source src={slide.media.src} type="video/mp4" />
+                </video>
+              </div>
+              <div className="mt-2 h-1 w-11/12 shrink-0 overflow-hidden rounded-full bg-surface-strong">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-200 ease-linear"
+                  style={{ width: `${videoProgress}%` }}
+                />
+              </div>
+            </div>
           ) : (
             <img
               key={slide.media.src}
               src={slide.media.src}
               alt={slide.subtitle}
-              className="h-full w-full object-contain"
+              className="max-h-full max-w-full object-contain"
             />
           )}
         </div>
