@@ -27,28 +27,28 @@ export const ScoreTableBlock = ({
     <View style={styles.tableHeader}>
       <View style={styles.tableCellLabel}>
         <Text style={styles.tableHeaderText}>
-          {section.columns[0] || '영역'}
+          {(section.columns ?? [])[0] || '영역'}
         </Text>
       </View>
       <View style={styles.tableCellScore}>
         <Text style={styles.tableHeaderText}>
-          {section.columns[1] || '점수'}
+          {(section.columns ?? [])[1] || '점수'}
         </Text>
       </View>
       <View style={styles.tableCellScore}>
         <Text style={styles.tableHeaderText}>
-          {section.columns[2] || '최대'}
+          {(section.columns ?? [])[2] || '최대'}
         </Text>
       </View>
       <View style={styles.tableCellDescription}>
         <Text style={styles.tableHeaderText}>
-          {section.columns[3] || '설명'}
+          {(section.columns ?? [])[3] || '설명'}
         </Text>
       </View>
     </View>
 
     {/* 데이터 행 */}
-    {section.rows.map((row, i) => (
+    {(section.rows ?? []).map((row, i) => (
       <View key={i} style={styles.tableRow}>
         <View style={styles.tableCellLabel}>
           <Text>{row.label}</Text>

@@ -39,25 +39,29 @@ export const RelationPatternBlock = ({
           <Text style={styles.flatTitleText}>임상적 해석</Text>
         </View>
         <View style={s.entryBody}>
-          {entries.map((entry, i) => (
+          {(entries ?? []).map((entry, i) => (
             <View
               key={i}
               style={[
                 s.entry,
-                i === entries.length - 1 ? { marginBottom: 0 } : {},
+                i === (entries ?? []).length - 1 ? { marginBottom: 0 } : {},
               ]}
             >
               <Text style={styles.entrySubtitle}>{entry.subtitle}</Text>
-              {entry.contents.length === 1 ? (
-                <Text style={styles.entryPlainText}>{entry.contents[0]}</Text>
-              ) : (
-                entry.contents.map((content, j) => (
-                  <View key={j} style={styles.entryBulletRow}>
-                    <Text style={styles.entryBulletDot}>•</Text>
-                    <Text style={styles.entryBulletText}>{content}</Text>
-                  </View>
-                ))
-              )}
+              {(() => {
+                const raw = entry.contents;
+                const c = Array.isArray(raw) ? raw : raw ? [raw] : [];
+                return c.length === 1 ? (
+                  <Text style={styles.entryPlainText}>{c[0]}</Text>
+                ) : (
+                  c.map((content, j) => (
+                    <View key={j} style={styles.entryBulletRow}>
+                      <Text style={styles.entryBulletDot}>•</Text>
+                      <Text style={styles.entryBulletText}>{content}</Text>
+                    </View>
+                  ))
+                );
+              })()}
             </View>
           ))}
         </View>

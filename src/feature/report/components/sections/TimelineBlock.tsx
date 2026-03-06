@@ -54,7 +54,7 @@ const BAR_PATH = [
 ].join(' ');
 
 export const TimelineBlock = ({ section }: { section: TimelineSection }) => {
-  const { events, title, notes } = section;
+  const { events = [], title, notes } = section;
 
   /** descriptions를 항상 배열로 정규화 (API에서 문자열로 올 수 있음) */
   const normalizeDescriptions = (desc: unknown): string[] => {
@@ -65,7 +65,7 @@ export const TimelineBlock = ({ section }: { section: TimelineSection }) => {
 
   /** 이벤트 + 마지막 "현재" 컬럼 (줄기·점 없이 연도만 표시) */
   const columns = [
-    ...events.map((ev) => ({
+    ...(events ?? []).map((ev) => ({
       ...ev,
       descriptions: normalizeDescriptions(ev.descriptions),
       isCurrent: false,

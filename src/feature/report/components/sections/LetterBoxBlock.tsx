@@ -139,15 +139,17 @@ export const LetterBoxBlock = ({ section }: { section: LetterBoxSection }) => (
 
     {/* 내용 */}
     <View style={s.body}>
-      {section.entries.map((entry, i) => {
-        const isLast = i === section.entries.length - 1;
+      {(section.entries ?? []).map((entry, i) => {
+        const isLast = i === (section.entries ?? []).length - 1;
+        const raw = entry.contents;
+        const contents = Array.isArray(raw) ? raw : raw ? [raw] : [];
         return (
           <View key={i} style={{ ...s.entry, ...(isLast ? s.entryLast : {}) }}>
             <Text style={s.subtitle}>{entry.subtitle}</Text>
-            {entry.contents.length === 1 ? (
-              <Text style={s.text}>{entry.contents[0]}</Text>
+            {contents.length === 1 ? (
+              <Text style={s.text}>{contents[0]}</Text>
             ) : (
-              entry.contents.map((content, j) => (
+              contents.map((content, j) => (
                 <View key={j} style={s.bulletItem}>
                   <Text style={s.bulletDot}>•</Text>
                   <Text style={s.bulletText}>{content}</Text>

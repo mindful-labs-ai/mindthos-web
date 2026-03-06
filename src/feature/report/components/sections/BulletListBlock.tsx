@@ -22,7 +22,7 @@ export const BulletListBlock = ({
     {section.title && (
       <Text style={styles.bulletListTitle}>{section.title}</Text>
     )}
-    {section.items.map((item, i) => (
+    {(section.items ?? []).map((item, i) => (
       <View key={i} style={styles.bulletItem}>
         <Text style={styles.bulletDot}>•</Text>
         <Text style={styles.bulletText}>{item}</Text>

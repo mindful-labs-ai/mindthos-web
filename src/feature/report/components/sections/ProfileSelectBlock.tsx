@@ -147,9 +147,9 @@ export const ProfileSelectBlock = ({
 
     {/* 옵션 행 */}
     <View style={s.optionRow}>
-      {section.options.map((option, i) => {
+      {(section.options ?? []).map((option, i) => {
         const isSelected = i === section.selectedIndex;
-        const isLast = i === section.options.length - 1;
+        const isLast = i === (section.options ?? []).length - 1;
         return (
           <View
             key={i}
