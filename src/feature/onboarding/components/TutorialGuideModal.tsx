@@ -201,7 +201,7 @@ export const TutorialGuideModal: React.FC = () => {
           {slide.media.type === 'video' ? (
             <video
               key={slide.media.src}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
               autoPlay
               loop
               muted
@@ -214,7 +214,7 @@ export const TutorialGuideModal: React.FC = () => {
               key={slide.media.src}
               src={slide.media.src}
               alt={slide.subtitle}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
           )}
         </div>
