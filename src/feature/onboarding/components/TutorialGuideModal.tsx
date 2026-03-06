@@ -1,8 +1,13 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { Button } from '@/components/ui/atoms/Button';
 import { Modal } from '@/components/ui/composites/Modal';
 import { cn } from '@/lib/cn';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { useAuthStore } from '@/stores/authStore';
+import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 
 interface GuideSlide {
@@ -17,11 +22,14 @@ interface GuideSlide {
 interface GuideConfig {
   title: string;
   slides: GuideSlide[];
+  /** 마지막 슬라이드의 완료 버튼 텍스트 */
+  completeLabel: string;
 }
 
 const GUIDE_CONFIGS: Record<number, GuideConfig> = {
   1: {
     title: '가이드 1단계. 상담 기록',
+    completeLabel: '상담 기록 예시 확인하기',
     slides: [
       {
         subtitle: '마음토스 상담 기록',
@@ -54,6 +62,7 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
   },
   2: {
     title: '가이드 2단계. 다회기 분석',
+    completeLabel: '예시 보러가기',
     slides: [
       {
         subtitle: '다회기 AI 슈퍼비전',
@@ -77,6 +86,7 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
   },
   3: {
     title: '가이드 3단계. 실전! 상담 기록 만들기',
+    completeLabel: '업로드하러 가기',
     slides: [
       {
         subtitle: '새로운 상담 기록 만들기',
@@ -101,13 +111,17 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
 };
 
 export const TutorialGuideModal: React.FC = () => {
-  const { tutorialGuideLevel, setTutorialGuideLevel } = useQuestStore();
+  const { tutorialGuideLevel, setTutorialGuideLevel, completeNextStep } =
+    useQuestStore();
+  const { navigateWithUtm } = useNavigateWithUtm();
+  const queryClient = useQueryClient();
   const [currentSlide, setCurrentSlide] = React.useState(0);
 
   const isOpen = tutorialGuideLevel !== null;
   const config = tutorialGuideLevel ? GUIDE_CONFIGS[tutorialGuideLevel] : null;
   const totalSlides = config?.slides.length ?? 0;
   const slide = config?.slides[currentSlide];
+  const isLastSlide = currentSlide === totalSlides - 1;
 
   // 모달 열릴 때 슬라이드 초기화
   React.useEffect(() => {
@@ -126,11 +140,42 @@ export const TutorialGuideModal: React.FC = () => {
     }
   };
 
+  const handleComplete = async () => {
+    const level = tutorialGuideLevel;
+    handleClose();
+
+    const email = useAuthStore.getState().user?.email;
+
+    if (level === 1) {
+      if (email) completeNextStep(email);
+      navigateWithUtm('/sessions/dummy_session_1');
+    } else if (level === 2) {
+      if (email) completeNextStep(email);
+      navigateWithUtm('/clients/dummy_client_1?tab=analyze');
+    } else if (level === 3 && email) {
+      // L3→L4 (업로드 준비 단계)
+      await completeNextStep(email);
+
+      // 세션이 이미 있으면 바로 L4→L5 완료, 없으면 업로드 모달
+      const userId = useAuthStore.getState().userId;
+      const cachedSessions = queryClient.getQueryData<{
+        sessions: unknown[];
+      }>(['sessions', userId ? Number(userId) : 0]);
+      const hasSession = (cachedSessions?.sessions?.length ?? 0) > 0;
+
+      if (hasSession) {
+        await completeNextStep(email);
+      } else {
+        useModalStore.getState().openModal('createMultiSession');
+      }
+    }
+  };
+
   const handleNext = () => {
     if (currentSlide < totalSlides - 1) {
       setCurrentSlide((prev) => prev + 1);
     } else {
-      handleClose();
+      handleComplete();
     }
   };
 
@@ -140,23 +185,23 @@ export const TutorialGuideModal: React.FC = () => {
     <Modal
       open={isOpen}
       onOpenChange={handleClose}
-      className="max-w-[640px] border-none p-0"
+      className="h-[848px] max-h-[90vh] w-[872px] max-w-[90vw] border-none p-0"
     >
-      <div className="flex flex-col items-center px-8 pb-8 pt-6">
+      <div className="flex h-full flex-col items-center px-14 py-[38px]">
         {/* Title */}
-        <h2 className="text-xl font-bold text-fg">{config.title}</h2>
+        <h2 className="shrink-0 text-xl font-bold text-fg">{config.title}</h2>
 
         {/* Subtitle */}
-        <p className="mt-4 text-base font-semibold text-primary">
+        <p className="mt-4 shrink-0 text-base font-semibold text-primary">
           {slide.subtitle}
         </p>
 
-        {/* Media */}
-        <div className="mt-4 w-full overflow-hidden rounded-xl bg-surface-contrast">
+        {/* Media - 남은 공간을 채움 */}
+        <div className="mt-4 min-h-0 w-full flex-1 overflow-hidden rounded-xl bg-surface-contrast">
           {slide.media.type === 'video' ? (
             <video
               key={slide.media.src}
-              className="aspect-video w-full object-cover"
+              className="h-full w-full object-cover"
               autoPlay
               loop
               muted
@@ -169,18 +214,18 @@ export const TutorialGuideModal: React.FC = () => {
               key={slide.media.src}
               src={slide.media.src}
               alt={slide.subtitle}
-              className="aspect-video w-full object-cover"
+              className="h-full w-full object-cover"
             />
           )}
         </div>
 
         {/* Description */}
-        <p className="mt-5 whitespace-pre-line text-center text-sm leading-relaxed text-fg">
+        <p className="mt-5 shrink-0 whitespace-pre-line text-center text-sm leading-relaxed text-fg">
           {slide.description}
         </p>
 
         {/* Pagination dots */}
-        <div className="mt-5 flex gap-2">
+        <div className="mt-5 flex shrink-0 gap-2">
           {Array.from({ length: totalSlides }).map((_, i) => (
             <button
               key={i}
@@ -195,12 +240,15 @@ export const TutorialGuideModal: React.FC = () => {
         </div>
 
         {/* Buttons */}
-        <div className="mt-6 flex w-full gap-3">
+        <div className="mt-6 flex w-full max-w-[372px] shrink-0 gap-3">
           <Button
             variant="outline"
             tone="neutral"
-            size="lg"
-            className="flex-1 font-semibold"
+            size="md"
+            className={cn(
+              'h-[41px] font-semibold',
+              isLastSlide ? 'w-1/4' : 'flex-1'
+            )}
             onClick={currentSlide > 0 ? handlePrev : handleClose}
           >
             {currentSlide > 0 ? '이전' : '닫기'}
@@ -208,11 +256,14 @@ export const TutorialGuideModal: React.FC = () => {
           <Button
             variant="solid"
             tone="primary"
-            size="lg"
-            className="flex-1 font-bold"
+            size="md"
+            className={cn(
+              'h-[41px] font-bold',
+              isLastSlide ? 'w-3/4' : 'flex-1'
+            )}
             onClick={handleNext}
           >
-            {currentSlide < totalSlides - 1 ? '다음' : '완료'}
+            {isLastSlide ? config.completeLabel : '다음'}
           </Button>
         </div>
       </div>

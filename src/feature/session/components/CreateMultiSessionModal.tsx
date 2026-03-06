@@ -253,7 +253,7 @@ export const CreateMultiSessionModal: React.FC<
         duration: 5000,
       });
 
-      // 퀘스트(레벨 4) 진행 중이라면 완료 처리
+      // 퀘스트(레벨 4) 진행 중이라면 완료 처리 (L4→L5)
       if (currentLevel === 4) {
         await completeNextStep(useAuthStore.getState().user?.email || '');
         setShowConfetti(true);

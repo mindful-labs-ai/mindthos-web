@@ -26,8 +26,13 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
   const panelRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-  const { currentLevel, shouldShowOnboarding, startedAt, isLoading, setTutorialGuideLevel } =
-    useQuestStore();
+  const {
+    currentLevel,
+    shouldShowOnboarding,
+    startedAt,
+    isLoading,
+    setTutorialGuideLevel,
+  } = useQuestStore();
   const email = useAuthStore((state) => state.user?.email);
 
   // 외부 클릭 시 닫기

@@ -111,15 +111,53 @@ export const ClientListPage: React.FC = () => {
         ) : groupedActiveClients.length > 0 ||
           groupedCompletedClients.length > 0 ? (
           <div className="space-y-12">
-              {/* 활성 클라이언트 섹션 */}
-              {groupedActiveClients.length > 0 && (
+            {/* 활성 클라이언트 섹션 */}
+            {groupedActiveClients.length > 0 && (
+              <div className="space-y-8">
+                {groupedActiveClients.map((group) => (
+                  <div key={group.key}>
+                    <div className="mb-4 border-b border-border pb-2 text-left">
+                      <Title
+                        as="h2"
+                        className="text-xl font-bold text-fg-muted"
+                      >
+                        {group.key}
+                      </Title>
+                    </div>
+
+                    <div className="space-y-3">
+                      {group.clients.map((client) => (
+                        <ClientCard
+                          key={client.id}
+                          client={client}
+                          onClick={handleClientClick}
+                          onEditClick={handleEditClient}
+                          isReadOnly={isDummyFlow}
+                          searchQuery={searchQuery}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 종결된 내담자 섹션 */}
+            {groupedCompletedClients.length > 0 && (
+              <div>
+                <div className="mb-6 text-left">
+                  <Title as="h2" className="text-xl font-bold text-fg-muted">
+                    종결된 내담자
+                  </Title>
+                </div>
+
                 <div className="space-y-8">
-                  {groupedActiveClients.map((group) => (
+                  {groupedCompletedClients.map((group) => (
                     <div key={group.key}>
                       <div className="mb-4 border-b border-border pb-2 text-left">
                         <Title
-                          as="h2"
-                          className="text-xl font-bold text-fg-muted"
+                          as="h3"
+                          className="text-lg font-bold text-fg-muted"
                         >
                           {group.key}
                         </Title>
@@ -140,47 +178,9 @@ export const ClientListPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              )}
-
-              {/* 종결된 내담자 섹션 */}
-              {groupedCompletedClients.length > 0 && (
-                <div>
-                  <div className="mb-6 text-left">
-                    <Title as="h2" className="text-xl font-bold text-fg-muted">
-                      종결된 내담자
-                    </Title>
-                  </div>
-
-                  <div className="space-y-8">
-                    {groupedCompletedClients.map((group) => (
-                      <div key={group.key}>
-                        <div className="mb-4 border-b border-border pb-2 text-left">
-                          <Title
-                            as="h3"
-                            className="text-lg font-bold text-fg-muted"
-                          >
-                            {group.key}
-                          </Title>
-                        </div>
-
-                        <div className="space-y-3">
-                          {group.clients.map((client) => (
-                            <ClientCard
-                              key={client.id}
-                              client={client}
-                              onClick={handleClientClick}
-                              onEditClick={handleEditClient}
-                              isReadOnly={isDummyFlow}
-                              searchQuery={searchQuery}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex min-h-[400px] items-center justify-center">
             <Text className="text-lg text-fg-muted">검색 결과 없음</Text>

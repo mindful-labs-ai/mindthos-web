@@ -104,10 +104,8 @@ export const QuestStep = ({
                       };
                     }
                     if (quest.id === 3) {
-                      // 세션이 있으면 미션 완료 가능 상태
-                      const canComplete =
-                        hasSession &&
-                        (currentLevel === 3 || currentLevel === 4);
+                      // 세션이 있고 업로드 대기 단계(L4)일 때만 미션 완료 가능
+                      const canComplete = hasSession && currentLevel === 4;
                       return {
                         isCompleted: currentLevel >= 5,
                         isInProgress: currentLevel === 3 || currentLevel === 4,

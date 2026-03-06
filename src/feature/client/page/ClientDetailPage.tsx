@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
 import { useToast } from '@/components/ui/composites/Toast';
@@ -39,8 +39,10 @@ type TabType = 'history' | 'analyze';
 
 export const ClientDetailPage: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
+  const [searchParams] = useSearchParams();
   const { navigateWithUtm } = useNavigateWithUtm();
-  const [activeTab, setActiveTab] = React.useState<TabType>('history');
+  const initialTab = (searchParams.get('tab') as TabType) || 'history';
+  const [activeTab, setActiveTab] = React.useState<TabType>(initialTab);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(
@@ -63,12 +65,14 @@ export const ClientDetailPage: React.FC = () => {
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
   });
-  // 더미 데이터 노출 조건: 실제 데이터가 없을 때
+  // 더미 데이터 노출 조건: 실제 데이터가 없거나 더미 클라이언트 ID로 직접 접근한 경우
+  const isDummyClientId = clientId === 'dummy_client_1';
   const isDummyFlow =
-    !isLoadingClients &&
-    !isLoadingSessions &&
-    !clients.length &&
-    sessionsData?.sessions.length === 0;
+    isDummyClientId ||
+    (!isLoadingClients &&
+      !isLoadingSessions &&
+      !clients.length &&
+      sessionsData?.sessions.length === 0);
   const isReadOnly = isDummyFlow;
 
   // 클라이언트 분석 관련 hooks
@@ -319,18 +323,18 @@ export const ClientDetailPage: React.FC = () => {
       <div className="flex-shrink-0 px-12">
         <div className="flex justify-center gap-8">
           <button
-              onClick={() => setActiveTab('analyze')}
-              className={`relative px-1 py-4 text-lg font-medium transition-colors ${
-                activeTab === 'analyze'
-                  ? 'text-fg'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              다회기 분석
-              <div
-                className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
-              />
-            </button>
+            onClick={() => setActiveTab('analyze')}
+            className={`relative px-1 py-4 text-lg font-medium transition-colors ${
+              activeTab === 'analyze'
+                ? 'text-fg'
+                : 'text-fg-muted hover:text-fg'
+            }`}
+          >
+            다회기 분석
+            <div
+              className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
+            />
+          </button>
           <button
             onClick={() => setActiveTab('history')}
             className={`relative px-1 py-4 text-lg font-medium transition-colors ${
