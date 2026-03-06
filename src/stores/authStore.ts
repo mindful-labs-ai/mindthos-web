@@ -39,6 +39,7 @@ interface AuthActions {
     name?: string;
     organization?: string;
     phoneNumber?: string;
+    referralSource?: string;
   }) => Promise<void>;
 }
 

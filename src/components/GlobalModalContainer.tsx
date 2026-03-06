@@ -142,6 +142,7 @@ export const GlobalModalContainer = () => {
         open={isUserEditOpen}
         onOpenChange={handleCloseUserEdit}
         onSuccess={handleUserEditSuccess}
+        isQuestMode={currentLevel === 5}
       />
 
       {/* 플랜 변경 모달 */}
