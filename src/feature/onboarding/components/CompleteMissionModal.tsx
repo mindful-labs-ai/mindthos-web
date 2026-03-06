@@ -45,7 +45,6 @@ export const CompleteMissionModal = ({
     setShowCompleteModalStep,
     getReward,
     isLoading,
-    currentLevel,
     setTutorialGuideLevel,
   } = useQuestStore();
   const { toast } = useToast();
