@@ -275,6 +275,7 @@ export const Select: React.FC<SelectProps> = ({
               width: `${dropdownPosition.width}px`,
               maxHeight: `${maxDropdownHeight}px`,
               overflow: 'auto',
+              overscrollBehavior: 'contain',
             }}
             className={cn(
               'z-[9999]',

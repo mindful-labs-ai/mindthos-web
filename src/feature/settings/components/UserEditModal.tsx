@@ -97,6 +97,14 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     staleTime: Infinity,
   });
 
+  // 유저의 보유 자격 조회
+  const { data: userQualifications } = useQuery({
+    queryKey: ['qualifications', 'user'],
+    queryFn: () => qualificationService.user(),
+    enabled: open,
+    staleTime: Infinity,
+  });
+
   const [formData, setFormData] = React.useState<UserEditFormData>({
     name: '',
     organization: '',
@@ -119,13 +127,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         name: userName || '',
         organization: organization || '',
         phoneNumber: userPhoneNumber || '',
-        qualification: [],
+        qualification: userQualifications?.map((q) => q.name) ?? [],
         referralSource: '',
         referralSourceCustom: '',
       });
       setErrors({});
     }
-  }, [open, userName, organization, userPhoneNumber]);
+  }, [open, userName, organization, userPhoneNumber, userQualifications]);
 
   const handleChange = (field: keyof UserEditFormData, value: string) => {
     let processedValue = value;
