@@ -6,11 +6,8 @@ import { Badge } from '@/components/ui/atoms/Badge';
 import { Button } from '@/components/ui/atoms/Button';
 import { Title } from '@/components/ui/atoms/Title';
 import { PopUp } from '@/components/ui/composites/PopUp';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
 import { useClientList } from '@/feature/client/hooks/useClientList';
-import { SessionClickTooltip } from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { FilterMenu } from '@/feature/session/components/FilterMenu';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import { SessionSideList } from '@/feature/session/components/SessionSideList';
@@ -27,7 +24,6 @@ import { getSessionDetailRoute } from '@/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 import { useSessionStore } from '@/stores/sessionStore';
 
 import { TabChangeConfirmModal } from '../components/TabChangeConfirmModal';
@@ -35,10 +31,6 @@ import { TabChangeConfirmModal } from '../components/TabChangeConfirmModal';
 export const SessionHistoryPage: React.FC = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
-    useTutorial({
-      currentLevel: 1,
-    });
   const userId = useAuthStore((state) => state.userId);
   const { clients, isLoading: isLoadingClients } = useClientList();
   const { toast } = useToast();
@@ -80,12 +72,10 @@ export const SessionHistoryPage: React.FC = () => {
     [sessionData?.sessions]
   );
 
-  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때 표시하거나, 튜토리얼이 활성 상태일 때 표시
-  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
+  // 더미 데이터는 세션과 클라이언트가 모두 비어있을 때 표시
   const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
   const isDummyFlow =
-    ((!isLoadingSessions && !isLoadingClients) || isTutorialActive) &&
-    (!hasAnyRealData || isTutorialActive);
+    !isLoadingSessions && !isLoadingClients && !hasAnyRealData;
 
   const sessionsWithData = React.useMemo(
     () => (isDummyFlow ? dummySessionRelations : sessionsFromQuery),
@@ -308,8 +298,6 @@ export const SessionHistoryPage: React.FC = () => {
     setSelectedClientIds([]);
   };
 
-  const sessionClickTooltip = React.useMemo(() => <SessionClickTooltip />, []);
-
   return (
     <div className="flex h-full">
       {/* 왼쪽: 세션 목록 - 항상 렌더링 (언마운트 방지) */}
@@ -428,38 +416,14 @@ export const SessionHistoryPage: React.FC = () => {
                   </div>
                 </div>
               ) : records.length > 0 ? (
-                records.map((record) => {
-                  const isStep2Active =
-                    record.session_id === 'dummy_session_3' &&
-                    checkIsTutorialActive(2);
-
-                  const card = (
-                    <SessionRecordCard
-                      key={record.session_id}
-                      record={record}
-                      isReadOnly={isDummyFlow}
-                      onClick={() =>
-                        handleTutorialAction(() => handleCardClick(record), 2)
-                      }
-                    />
-                  );
-
-                  if (isStep2Active) {
-                    return (
-                      <Spotlight
-                        key={record.session_id}
-                        isActive={isStep2Active}
-                        onClose={() => endTutorial()}
-                        tooltip={sessionClickTooltip}
-                        tooltipPosition="bottom"
-                      >
-                        {card}
-                      </Spotlight>
-                    );
-                  }
-
-                  return card;
-                })
+                records.map((record) => (
+                  <SessionRecordCard
+                    key={record.session_id}
+                    record={record}
+                    isReadOnly={isDummyFlow}
+                    onClick={() => handleCardClick(record)}
+                  />
+                ))
               ) : (
                 <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
                   <div className="text-center">

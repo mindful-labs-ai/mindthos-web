@@ -4,12 +4,6 @@ import { useLocation } from 'react-router-dom';
 
 import { Button, Text } from '@/components/ui';
 import { PopUp } from '@/components/ui/composites/PopUp';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
-import {
-  ClientTabTooltip,
-  SessionTabTooltip,
-} from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { CreateHandWrittenSessionModal } from '@/feature/session/components/CreateHandWrittenSessionModal';
 import { CreditDisplay } from '@/feature/settings/components/CreditDisplay';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
@@ -21,7 +15,6 @@ import { cn } from '@/lib/cn';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Edit3Icon, PlusIcon, SideLockIcon, UploadIcon } from '@/shared/icons';
 import { useModalStore } from '@/stores/modalStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import {
   AI_ANALYSIS_ITEMS,
@@ -109,14 +102,6 @@ export const SideTab = () => {
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
-  // 현재 퀘스트 레벨 가져오기
-  const { currentLevel } = useQuestStore();
-  // 튜토리얼 훅
-  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
-    useTutorial({
-      currentLevel,
-    });
-
   // 현재 경로에 따라 activeNav 자동 설정
   const activeNav: string = React.useMemo(() => {
     return getNavValueFromPath(location.pathname);
@@ -134,19 +119,7 @@ export const SideTab = () => {
 
     const path = getPathFromNavValue(value);
     if (path) {
-      if (value === 'sessions' && checkIsTutorialActive(1, 1)) {
-        // 레벨 1 튜토리얼: 상담 기록 탭 클릭
-        handleTutorialAction(() => navigateWithUtm(path), 1, {
-          targetLevel: 1,
-        });
-      } else if (value === 'client' && checkIsTutorialActive(1, 2)) {
-        // 레벨 2 튜토리얼: 클라이언트 탭 클릭
-        handleTutorialAction(() => navigateWithUtm(path), 1, {
-          targetLevel: 2,
-        });
-      } else {
-        navigateWithUtm(path);
-      }
+      navigateWithUtm(path);
     }
   };
 
@@ -234,24 +207,7 @@ export const SideTab = () => {
           <Text className="mb-2 px-1.5 text-sm font-medium text-fg">
             상담 관리
           </Text>
-          <Spotlight
-            isActive={
-              (currentLevel === 1 && checkIsTutorialActive(1, 1)) ||
-              (currentLevel === 2 && checkIsTutorialActive(1, 2))
-            }
-            onClose={() => endTutorial()}
-            tooltip={
-              currentLevel === 1 ? <SessionTabTooltip /> : <ClientTabTooltip />
-            }
-            tooltipPosition="right"
-            selector={
-              currentLevel === 1
-                ? '[data-value="sessions"]'
-                : '[data-value="client"]'
-            }
-            className="w-full"
-          >
-            <nav className="flex flex-col gap-1">
+          <nav className="flex flex-col gap-1">
               {SESSION_MANAGEMENT_ITEMS.map((item) => (
                 <NavItem
                   key={item.value}
@@ -268,7 +224,6 @@ export const SideTab = () => {
                 />
               ))}
             </nav>
-          </Spotlight>
         </div>
 
         {/* AI 분석 섹션 */}

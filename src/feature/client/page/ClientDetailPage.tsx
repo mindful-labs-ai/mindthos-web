@@ -4,10 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
-import { AnalysisTabTooltip } from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -23,7 +20,6 @@ import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
@@ -59,14 +55,6 @@ export const ClientDetailPage: React.FC = () => {
   const { creditInfo } = useCreditInfo();
   const CLIENT_ANALYSIS_CREDIT = 50; // 다회기 분석 크레딧
 
-  // 현재 퀘스트 레벨 가져오기
-  const { currentLevel } = useQuestStore();
-  // 튜토리얼 훅
-  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
-    useTutorial({
-      currentLevel,
-    });
-
   // 클라이언트 목록 조회
   const { clients, isLoading: isLoadingClients } = useClientList();
 
@@ -75,14 +63,12 @@ export const ClientDetailPage: React.FC = () => {
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
   });
-  // 더미 데이터 노출 조건: 실제 데이터가 없거나 튜토리얼이 활성 상태일 때
-  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
+  // 더미 데이터 노출 조건: 실제 데이터가 없을 때
   const isDummyFlow =
-    (!isLoadingClients &&
-      !isLoadingSessions &&
-      !clients.length &&
-      sessionsData?.sessions.length === 0) ||
-    isTutorialActive;
+    !isLoadingClients &&
+    !isLoadingSessions &&
+    !clients.length &&
+    sessionsData?.sessions.length === 0;
   const isReadOnly = isDummyFlow;
 
   // 클라이언트 분석 관련 hooks
@@ -332,23 +318,8 @@ export const ClientDetailPage: React.FC = () => {
       {/* 탭 */}
       <div className="flex-shrink-0 px-12">
         <div className="flex justify-center gap-8">
-          <Spotlight
-            isActive={checkIsTutorialActive(3, 2)}
-            tooltip={<AnalysisTabTooltip />}
-            tooltipPosition="bottom"
-            onClose={() => endTutorial()}
-            className="h-full"
-          >
-            <button
-              onClick={() => {
-                if (checkIsTutorialActive(3, 2)) {
-                  handleTutorialAction(() => setActiveTab('analyze'), 3, {
-                    targetLevel: 2,
-                  });
-                } else {
-                  setActiveTab('analyze');
-                }
-              }}
+          <button
+              onClick={() => setActiveTab('analyze')}
               className={`relative px-1 py-4 text-lg font-medium transition-colors ${
                 activeTab === 'analyze'
                   ? 'text-fg'
@@ -360,7 +331,6 @@ export const ClientDetailPage: React.FC = () => {
                 className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
               />
             </button>
-          </Spotlight>
           <button
             onClick={() => setActiveTab('history')}
             className={`relative px-1 py-4 text-lg font-medium transition-colors ${
