@@ -80,7 +80,6 @@ export function useTabNavigation({
       if (contentScrollRef.current) {
         contentScrollRef.current.scrollTop = 0;
       }
-
     },
     [
       activeTab,

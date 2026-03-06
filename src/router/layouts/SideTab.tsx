@@ -208,22 +208,22 @@ export const SideTab = () => {
             상담 관리
           </Text>
           <nav className="flex flex-col gap-1">
-              {SESSION_MANAGEMENT_ITEMS.map((item) => (
-                <NavItem
-                  key={item.value}
-                  icon={item.icon}
-                  label={item.label}
-                  value={item.value}
-                  badge={item.badge}
-                  disabled={item.disabled}
-                  isActive={activeNav === item.value}
-                  onSelect={handleNavSelect}
-                  onDisabledClick={() =>
-                    openModal('comingSoon', { source: `sidebar_${item.value}` })
-                  }
-                />
-              ))}
-            </nav>
+            {SESSION_MANAGEMENT_ITEMS.map((item) => (
+              <NavItem
+                key={item.value}
+                icon={item.icon}
+                label={item.label}
+                value={item.value}
+                badge={item.badge}
+                disabled={item.disabled}
+                isActive={activeNav === item.value}
+                onSelect={handleNavSelect}
+                onDisabledClick={() =>
+                  openModal('comingSoon', { source: `sidebar_${item.value}` })
+                }
+              />
+            ))}
+          </nav>
         </div>
 
         {/* AI 분석 섹션 */}
