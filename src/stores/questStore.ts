@@ -61,6 +61,8 @@ interface QuestStoreState {
     rounded?: 'sm' | 'md' | 'lg' | 'full' | number;
   } | null;
   showConfetti: boolean;
+  /** 현재 열려있는 튜토리얼 가이드 모달의 레벨 (1, 2, 3) 또는 null */
+  tutorialGuideLevel: number | null;
 }
 
 interface QuestActions {
@@ -120,6 +122,11 @@ interface QuestActions {
   setShowConfetti: (show: boolean) => void;
 
   /**
+   * 튜토리얼 가이드 모달 레벨 설정
+   */
+  setTutorialGuideLevel: (level: number | null) => void;
+
+  /**
    * 상태 전체 초기화
    */
   clear: () => void;
@@ -142,6 +149,7 @@ export const useQuestStore = create<QuestStore>()(
         showCompleteModalStep: null,
         spotlightConfig: null,
         showConfetti: false,
+        tutorialGuideLevel: null,
 
         initializeQuest: async (email: string) => {
           const { isChecked, currentLevel } = get();
@@ -330,6 +338,14 @@ export const useQuestStore = create<QuestStore>()(
 
         setShowConfetti: (show: boolean) => {
           set({ showConfetti: show }, false, 'quest/set_show_confetti');
+        },
+
+        setTutorialGuideLevel: (level: number | null) => {
+          set(
+            { tutorialGuideLevel: level },
+            false,
+            'quest/set_tutorial_guide_level'
+          );
         },
 
         clear: () =>
