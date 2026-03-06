@@ -13,7 +13,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       {/* 상단 배너 */}
       <div className="rounded-xl bg-primary-50 px-6 py-5 text-center">
         <p className="text-base font-bold text-fg">
-          아래 정보가 보고서에 반영됩니다.
+          아래 정보가 보고서 표지에 반영됩니다.
         </p>
         <p className="mt-2 text-sm text-fg-muted">
           보고서에 기입될 정보를 확인해주세요.
