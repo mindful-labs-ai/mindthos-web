@@ -16,7 +16,7 @@ import { styles } from '../styles';
 export const KeyValueBlock = ({ section }: { section: KeyValueSection }) => (
   <View style={styles.kvContainer}>
     {section.title && <Text style={styles.kvTitle}>{section.title}</Text>}
-    {section.pairs.map((pair, i) => (
+    {(section.pairs ?? []).map((pair, i) => (
       <View key={i} style={styles.kvRow}>
         <Text style={styles.kvKey}>{pair.key}</Text>
         <Text style={styles.kvValue}>{pair.value}</Text>

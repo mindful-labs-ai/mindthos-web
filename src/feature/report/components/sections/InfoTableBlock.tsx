@@ -131,7 +131,7 @@ export const InfoTableBlock = ({ section }: { section: InfoTableSection }) => (
         paddingHorizontal: 12,
       }}
     >
-      {section.rows.map((row, i) => (
+      {(section.rows ?? []).map((row, i) => (
         <View key={i} style={s.row}>
           {/* 좌측 키-값 */}
           <View style={s.cell}>
