@@ -78,47 +78,7 @@ export const CompleteMissionModal = ({
     if (!user?.email || !user?.id) return;
 
     try {
-      const errorCode = await getReward(user.email);
-
-      if (errorCode) {
-        switch (errorCode) {
-          case 'PAID_PLAN_ACTIVE':
-            toast({
-              title: '유료 플랜 이용 중',
-              description:
-                '이미 유료 플랜을 사용 중이므로 온보딩 보상이 적용되지 않습니다.',
-            });
-            handleClose();
-            return;
-          case 'ONBOARDING_ALREADY_REWARDED':
-            toast({
-              title: '이미 보상을 받았습니다',
-              description: '온보딩 보상은 1회만 지급됩니다.',
-            });
-            window.location.reload();
-            return;
-          case 'ONBOARDING_EXPIRED':
-            toast({
-              title: '온보딩 기간 만료',
-              description: '온보딩 기간(7일)이 만료되었습니다.',
-            });
-            handleClose();
-            return;
-          case 'ONBOARDING_NOT_COMPLETED':
-            toast({
-              title: '온보딩 미완료',
-              description: '온보딩 퀘스트를 먼저 완료해주세요.',
-            });
-            handleClose();
-            return;
-          default:
-            toast({
-              title: '보상 수령 실패',
-              description: '잠시 후 다시 시도해주세요.',
-            });
-            return;
-        }
-      }
+      await getReward(user.email);
 
       // 보상 수령 축하 피드백
       toast({
@@ -145,11 +105,48 @@ export const CompleteMissionModal = ({
         }),
       ]);
       handleClose();
-    } catch {
-      toast({
-        title: '보상 수령 실패',
-        description: '잠시 후 다시 시도해주세요.',
-      });
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>;
+      const code = err?.error as string | undefined;
+
+      switch (code) {
+        case 'PAID_PLAN_ACTIVE':
+          toast({
+            title: '유료 플랜 이용 중',
+            description:
+              '이미 유료 플랜을 사용 중이므로 온보딩 보상이 적용되지 않습니다.',
+          });
+          handleClose();
+          break;
+        case 'ONBOARDING_ALREADY_REWARDED':
+          toast({
+            title: '이미 보상을 받았습니다',
+            description: '온보딩 보상은 1회만 지급됩니다.',
+          });
+          window.location.reload();
+          break;
+        case 'ONBOARDING_EXPIRED':
+          toast({
+            title: '온보딩 기간 만료',
+            description: '온보딩 기간(7일)이 만료되었습니다.',
+          });
+          handleClose();
+          break;
+        case 'ONBOARDING_NOT_COMPLETED':
+          toast({
+            title: '온보딩 미완료',
+            description: '온보딩 퀘스트를 먼저 완료해주세요.',
+          });
+          handleClose();
+          break;
+        default:
+          toast({
+            title: '보상 수령 실패',
+            description:
+              (err?.message as string) || '잠시 후 다시 시도해주세요.',
+          });
+          break;
+      }
     }
   };
 

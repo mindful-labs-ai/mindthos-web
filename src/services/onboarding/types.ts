@@ -111,7 +111,7 @@ export type OnboardingErrorCodeType =
 
 export interface OnboardingErrorResponse {
   success: false;
-  code: OnboardingErrorCodeType;
+  error: OnboardingErrorCodeType;
   message: string;
   status?: number;
 }
