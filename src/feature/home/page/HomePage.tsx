@@ -1,13 +1,11 @@
 import React from 'react';
 
-import { Spotlight, Title } from '@/components/ui';
+import { Title } from '@/components/ui';
 import { Badge } from '@/components/ui/atoms/Badge';
 import { useToast } from '@/components/ui/composites/Toast';
 import { WelcomeBanner } from '@/components/ui/composites/WelcomeBanner';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import { QuestStep } from '@/feature/onboarding/components/QuestStep';
-import { NewRecordButtonTooltip } from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -47,10 +45,6 @@ const HomePage = () => {
 
   const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
     useQuestStore();
-
-  const { completeNextStep, endTutorial, checkIsTutorialActive } = useTutorial({
-    currentLevel,
-  });
 
   // 전역 모달 스토어 사용
   const openModal = useModalStore((state) => state.openModal);
@@ -227,37 +221,11 @@ const HomePage = () => {
       <GreetingSection userName={userName!} date={formatKoreanDate()} />
 
       <div className="mb-8 flex max-w-[1200px] flex-row gap-6">
-        <Spotlight
-          isActive={checkIsTutorialActive(1, 3)}
-          onClose={endTutorial}
-          tooltip={
-            <NewRecordButtonTooltip
-              onConfirm={async () => {
-                if (user?.email) {
-                  completeNextStep(user.email);
-                  handleUploadClick();
-                }
-                endTutorial();
-              }}
-            />
-          }
-          tooltipPosition="right"
-          className="w-full"
-        >
-          <ActionCard
-            icon={<UploadIcon size={24} className="text-primary-500" />}
-            title="녹음 파일 업로드하기"
-            onClick={() => {
-              if (checkIsTutorialActive(1, 3) && user?.email) {
-                completeNextStep(user.email);
-                endTutorial();
-                handleUploadClick();
-              } else {
-                handleUploadClick();
-              }
-            }}
-          />
-        </Spotlight>
+        <ActionCard
+          icon={<UploadIcon size={24} className="text-primary-500" />}
+          title="녹음 파일 업로드하기"
+          onClick={handleUploadClick}
+        />
         <ActionCard
           icon={<UserPlusIcon size={24} className="text-danger" />}
           title="클라이언트 추가하기"

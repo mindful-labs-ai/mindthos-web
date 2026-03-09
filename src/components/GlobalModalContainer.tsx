@@ -8,6 +8,7 @@ import { ComingSoonModal } from '@/components/common/ComingSoonModal';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
 import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
+import { TutorialGuideModal } from '@/feature/onboarding/components/TutorialGuideModal';
 import { CreateMultiSessionModal } from '@/feature/session/components/CreateMultiSessionModal';
 import { CouponBox } from '@/feature/settings/components/CouponBox';
 import { PlanChangeModal } from '@/feature/settings/components/PlanChangeModal';
@@ -32,6 +33,7 @@ export const GlobalModalContainer = () => {
   const location = useLocation();
   const isGenogramRoute = location.pathname.includes('/genogram');
   const isTermsAgreementRoute = location.pathname === '/terms-agreement';
+  const isPaymentRoute = location.pathname.startsWith('/payment');
 
   // 모달 스토어에서 상태와 액션 가져오기
   const openModal = useModalStore((state) => state.openModal);
@@ -122,16 +124,17 @@ export const GlobalModalContainer = () => {
   // Portal을 사용하여 body에 직접 렌더링
   return createPortal(
     <>
-      {/* 온보딩 관련 모달 - 약관 동의 페이지에서는 숨김 */}
-      {!isTermsAgreementRoute && (
+      {/* 온보딩 관련 모달 - 약관 동의/결제 페이지에서는 숨김 */}
+      {!isTermsAgreementRoute && !isPaymentRoute && (
         <>
           <QuestMissionModal />
           <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
+          <TutorialGuideModal />
         </>
       )}
 
       {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram/약관 동의 라우트에서는 숨김 */}
-      {!isGenogramRoute && !isTermsAgreementRoute && (
+      {!isGenogramRoute && !isTermsAgreementRoute && !isPaymentRoute && (
         <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
       )}
 
@@ -140,6 +143,7 @@ export const GlobalModalContainer = () => {
         open={isUserEditOpen}
         onOpenChange={handleCloseUserEdit}
         onSuccess={handleUserEditSuccess}
+        isQuestMode={currentLevel === 5}
       />
 
       {/* 플랜 변경 모달 */}

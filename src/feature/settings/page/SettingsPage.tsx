@@ -69,12 +69,14 @@ export const SettingsPage: React.FC = () => {
   const scrollToTop = () => document.querySelector('main')?.scrollTo(0, 0);
 
   const handleOpenNoticeList = () => {
+    trackEvent('notice_list_view');
     setSelectedNoticeId(null);
     setView('noticeList');
     scrollToTop();
   };
 
   const handleSelectNotice = (noticeId: string) => {
+    trackEvent('notice_detail_view', { notice_id: noticeId });
     setSelectedNoticeId(noticeId);
     setView('noticeDetail');
     scrollToTop();

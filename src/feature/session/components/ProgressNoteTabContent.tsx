@@ -44,7 +44,7 @@ interface ProgressNoteTabContentProps {
   /** 템플릿 선택 핸들러 */
   onTemplateSelect: (templateId: number | null) => void;
   /** 노트 스크롤 끝 감지용 ref */
-  noteEndRef: (node?: Element | null) => void;
+  noteEndRef?: (node?: Element | null) => void;
   /** 튜토리얼 스텝 */
   tutorialStep?: number;
   /** 상담노트 summary 저장 핸들러 */

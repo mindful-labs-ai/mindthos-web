@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/atoms/Button';
 import { Modal } from '@/components/ui/composites/Modal';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { useQuestStore } from '@/stores/questStore';
 
 export const QuestMissionModal = () => {
@@ -9,10 +8,8 @@ export const QuestMissionModal = () => {
     hasShownMissionModal,
     setHasShownMissionModal,
     shouldShowOnboarding,
+    setTutorialGuideLevel,
   } = useQuestStore();
-  const { startTutorial, nextTutorialStep, endTutorial } = useTutorial({
-    currentLevel,
-  });
 
   const isOpen =
     currentLevel === 1 && shouldShowOnboarding && !hasShownMissionModal;
@@ -23,9 +20,7 @@ export const QuestMissionModal = () => {
 
   const handleStart = () => {
     setHasShownMissionModal(true);
-    endTutorial();
-    startTutorial();
-    nextTutorialStep();
+    setTutorialGuideLevel(1);
   };
 
   return (

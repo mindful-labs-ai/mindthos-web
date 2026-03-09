@@ -13,17 +13,12 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       {/* 상단 배너 */}
       <div className="rounded-xl bg-primary-50 px-6 py-5 text-center">
         <p className="text-base font-bold text-fg">
-          모든 검수가 끝난 후에
-          <br />
-          보고서 생성이 가능합니다.
+          아래 정보가 보고서 표지에 반영됩니다.
         </p>
         <p className="mt-2 text-sm text-fg-muted">
-          아래 내용을 확인하며 검수를 완료해주세요.
+          보고서에 기입될 정보를 확인해주세요.
         </p>
       </div>
-      <p className="text-base font-medium text-fg">
-        보고서에 기입될 정보를 확인해주세요.
-      </p>
       {/* 1. 상담사님의 성함 */}
       <div>
         <label

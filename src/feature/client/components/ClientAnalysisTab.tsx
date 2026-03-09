@@ -7,20 +7,11 @@ import { Title } from '@/components/ui/atoms/Title';
 import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import type { SelectItem } from '@/components/ui/composites/Select';
 import { Select } from '@/components/ui/composites/Select';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
-import { ScrollIndicator } from '@/feature/onboarding/components/ScrollIndicator';
-import {
-  AnalysisScrollTooltip,
-  MissionCompleteTooltip,
-} from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { trackEvent } from '@/lib/mixpanel';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
 import { CheckIcon, CopyIcon } from '@/shared/icons';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
-import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import { useClientTemplates } from '../hooks/useClientAnalysis';
 import type {
@@ -93,30 +84,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     return analyses[0]?.version || 0;
   }, [analyses, pollingVersion, userSelectedVersion]);
 
-  const { user } = useAuthStore();
-  const { currentLevel } = useQuestStore();
-  const {
-    checkIsTutorialActive,
-    completeNextStep,
-    setShowConfetti,
-    endTutorial,
-    nextTutorialStep,
-  } = useTutorial({
-    currentLevel,
-  });
-
   const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  // 스크롤 감지 핸들러
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (!checkIsTutorialActive(4, 2)) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    // 바닥에서 10px 정도 여유를 두고 감지
-    if (scrollHeight - scrollTop <= clientHeight + 10) {
-      nextTutorialStep();
-    }
-  };
 
   // 선택된 버전의 분석 데이터
   const currentAnalysis = analyses.find((a) => a.version === selectedVersion);
@@ -483,40 +451,15 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       </div>
 
       {/* 분석 내용 */}
-      <Spotlight
-        isActive={checkIsTutorialActive(4, 2) || checkIsTutorialActive(5, 2)}
-        tooltip={
-          checkIsTutorialActive(4, 2) ? (
-            <AnalysisScrollTooltip />
-          ) : (
-            <MissionCompleteTooltip
-              onConfirm={async () => {
-                if (user?.email) {
-                  await completeNextStep(user.email);
-                }
-                setShowConfetti(true);
-                endTutorial();
-              }}
-            />
-          )
-        }
-        tooltipPosition="left"
-        onClose={() => endTutorial()}
-        className="min-h-0 flex-1"
-      >
+      <div className="min-h-0 flex-1">
         <div
           ref={scrollRef}
-          onScroll={handleScroll}
           className="h-full overflow-y-auto rounded-lg border border-border bg-surface p-6"
         >
-          <ScrollIndicator
-            className="bottom-8 right-1/2 translate-x-44"
-            isVisible={checkIsTutorialActive(4, 2)}
-          />
           {currentAnalysis &&
             renderAnalysisContent(currentAnalysis.ai_supervision)}
         </div>
-      </Spotlight>
+      </div>
       <LockedFeatureModal
         open={isLockedModalOpen}
         onOpenChange={setIsLockedModalOpen}

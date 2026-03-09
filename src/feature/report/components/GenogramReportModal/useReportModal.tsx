@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useToast } from '@/components/ui/composites/Toast';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
+import { trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
@@ -154,6 +155,10 @@ export function useReportModal({
       });
 
       if (cancelledRef.current) return;
+      trackEvent('genogram_report_generate_success', {
+        client_id: clientId,
+        report_id: result.report_id,
+      });
       setGeneratingStatus('success');
 
       await new Promise<void>((resolve) => {
@@ -207,9 +212,13 @@ export function useReportModal({
       setStep('preview');
     } catch (error) {
       if (cancelledRef.current) return;
-      setGeneratingError(
-        error instanceof Error ? error.message : '오류가 발생했습니다.'
-      );
+      const errorMsg =
+        error instanceof Error ? error.message : '오류가 발생했습니다.';
+      trackEvent('genogram_report_generate_fail', {
+        client_id: clientId,
+        error: errorMsg,
+      });
+      setGeneratingError(errorMsg);
       setGeneratingStatus('error');
     }
   }, [
@@ -296,14 +305,16 @@ export function useReportModal({
   // ── 인터랙션 핸들러 ──
 
   const handleCreateReport = useCallback(async () => {
+    trackEvent('genogram_report_button_click', { client_id: clientId });
     const image = await genogramRef.current?.captureImage();
     setSnapshotImage(image ?? null);
     setStep('verify');
-  }, [genogramRef]);
+  }, [genogramRef, clientId]);
 
   const handleVerifyComplete = useCallback(() => {
+    trackEvent('genogram_report_verify_complete', { client_id: clientId });
     setStep('input');
-  }, []);
+  }, [clientId]);
 
   const handleInputComplete = useCallback(async () => {
     if (!clientId) return;
@@ -311,6 +322,11 @@ export function useReportModal({
     // 크레딧 잔여량 검증
     const remaining = creditInfo?.plan.remaining ?? 0;
     if (REPORT_CREDIT_COST > remaining) {
+      trackEvent('genogram_report_generate_credit_insufficient', {
+        client_id: clientId,
+        remaining,
+        required: REPORT_CREDIT_COST,
+      });
       setCreditError(
         `크레딧이 부족합니다. 필요: ${REPORT_CREDIT_COST}, 보유: ${remaining}`
       );
@@ -332,13 +348,17 @@ export function useReportModal({
 
   const handleDownloadPreviewPdf = useCallback(async () => {
     if (!pdfUrl) return;
+    trackEvent('genogram_report_export_click', {
+      client_id: clientId,
+      report_id: previewReportId,
+    });
     await exportReport({
       reportId: previewReportId,
       title: previewTitle,
       pdfUrl,
       onRefresh: fetchReports,
     });
-  }, [pdfUrl, previewTitle, previewReportId, fetchReports]);
+  }, [pdfUrl, previewTitle, previewReportId, clientId, fetchReports]);
 
   const handleSuccessProceed = useCallback(() => {
     successResolveRef.current?.();
@@ -391,7 +411,12 @@ export function useReportModal({
       setGeneratingError(null);
 
       checkAccess().then(async (result) => {
-        if (!result) return;
+        if (!result) {
+          trackEvent('genogram_report_seminar_modal_view', {
+            client_id: clientId,
+          });
+          return;
+        }
         const list = await fetchReports();
         if (list.length === 0 && !cancelledRef.current) {
           await handleCreateReport();
@@ -405,6 +430,7 @@ export function useReportModal({
     };
   }, [
     open,
+    clientId,
     userName,
     clientName,
     organization,
