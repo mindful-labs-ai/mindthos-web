@@ -21,10 +21,6 @@ interface UseTabNavigationOptions {
   >;
   /** 스크롤 컨테이너 ref */
   contentScrollRef: React.RefObject<HTMLDivElement | null>;
-  /** 튜토리얼 활성화 체크 함수 */
-  checkIsTutorialActive?: (step: number) => boolean;
-  /** 다음 튜토리얼 스텝으로 이동 */
-  nextTutorialStep?: () => void;
 }
 
 interface UseTabNavigationReturn {
@@ -51,8 +47,6 @@ export function useTabNavigation({
   onCancelEditHandwritten,
   setCreatingTabs,
   contentScrollRef,
-  checkIsTutorialActive,
-  nextTutorialStep,
 }: UseTabNavigationOptions): UseTabNavigationReturn {
   const [isTabChangeModalOpen, setIsTabChangeModalOpen] = React.useState(false);
   const [pendingTabValue, setPendingTabValue] = React.useState<string | null>(
@@ -86,11 +80,6 @@ export function useTabNavigation({
       if (contentScrollRef.current) {
         contentScrollRef.current.scrollTop = 0;
       }
-
-      // 튜토리얼 9단계: 상담 노트 생성 탭 클릭 시 다음 단계로
-      if (value === 'add' && checkIsTutorialActive?.(9)) {
-        nextTutorialStep?.();
-      }
     },
     [
       activeTab,
@@ -99,8 +88,6 @@ export function useTabNavigation({
       setCreatingTabs,
       setActiveTab,
       contentScrollRef,
-      checkIsTutorialActive,
-      nextTutorialStep,
     ]
   );
 

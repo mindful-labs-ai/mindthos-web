@@ -7,22 +7,14 @@ import type {
   TermsAgreeRequest,
   TermsAgreeResponse,
   TermsCheckResponse,
-  TermsListResponse,
 } from '../types';
 
 export const termsAgreementService = {
-  async getTermsList(): Promise<TermsListResponse> {
-    return await callEdgeFunction<TermsListResponse>(
-      EDGE_FUNCTION_ENDPOINTS.TERMS.LIST,
-      undefined,
-      { method: 'GET' }
-    );
-  },
-
-  async checkTerms(email: string): Promise<TermsCheckResponse> {
+  async checkTerms(): Promise<TermsCheckResponse> {
     return await callEdgeFunction<TermsCheckResponse>(
       EDGE_FUNCTION_ENDPOINTS.TERMS.CHECK,
-      { email }
+      undefined,
+      { method: 'GET' }
     );
   },
 

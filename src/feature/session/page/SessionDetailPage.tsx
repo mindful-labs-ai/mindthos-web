@@ -1,24 +1,10 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { useInView } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
 
 import { Tab } from '@/components/ui/atoms/Tab';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
-import { ScrollIndicator } from '@/feature/onboarding/components/ScrollIndicator';
-import {
-  AddNoteButtonTooltip,
-  NoteClickTooltip,
-  NoteCompleteTooltip,
-  NoteScrollTooltip,
-  TotalCompleteTooltip,
-  TranscriptCompleteTooltip,
-  TranscriptScrollTooltip,
-  TranscriptTabTooltip,
-} from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { isDummySessionId } from '@/feature/session/constants/dummySessions';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/feature/template/hooks/useTemplateList';
@@ -44,17 +30,21 @@ import {
   sessionDetailQueryKey,
   useSessionDetail,
 } from '../hooks/useSessionDetail';
-import { useSpeakerManagement } from '../hooks/useSpeakerManagement';
 import { useTabNavigation } from '../hooks/useTabNavigation';
 import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
-import { useTranscriptEdit } from '../hooks/useTranscriptEdit';
 import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
+import { useTranscriptEditSession } from '../hooks/useTranscriptEditSession';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
+import { updateProgressNoteSummary } from '../services/progressNoteService';
 import {
   getAudioPresignedUrl,
   updateSessionTitle,
 } from '../services/sessionService';
 import type { HandwrittenTranscribe, Transcribe } from '../types';
+import {
+  getSegments as getSnapshotSegments,
+  getSpeakers as getSnapshotSpeakers,
+} from '../utils/contentsEditor';
 import { getTranscriptData } from '../utils/transcriptParser';
 import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
@@ -63,61 +53,10 @@ export const SessionDetailPage: React.FC = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const {
-    checkIsTutorialActive,
-    handleTutorialAction,
-    nextTutorialStep,
-    tutorialStep,
-    completeNextStep,
-    endTutorial,
-  } = useTutorial({
-    currentLevel: 1,
-  });
 
   const [isAnonymized, setIsAnonymized] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  // 4단계(축어록) 스크롤 감지
-  const { ref: transcriptEndRef, inView: isTranscriptEnd } = useInView({
-    threshold: 1.0,
-  });
-
-  // 7단계(상담노트) 스크롤 감지
-  const { ref: noteEndRef, inView: isNoteEnd } = useInView({
-    threshold: 1.0,
-  });
-
-  // 스크롤 감지 시 4단계 클리어
-  React.useEffect(() => {
-    if (isTranscriptEnd && checkIsTutorialActive(4)) {
-      nextTutorialStep();
-    }
-  }, [isTranscriptEnd, nextTutorialStep, checkIsTutorialActive]);
-
-  const missionTooltip = React.useMemo(() => {
-    if (checkIsTutorialActive(4)) return <TranscriptScrollTooltip />;
-    if (checkIsTutorialActive(5)) {
-      return <TranscriptCompleteTooltip onConfirm={() => nextTutorialStep()} />;
-    }
-    if (checkIsTutorialActive(7)) return <NoteScrollTooltip />;
-    if (checkIsTutorialActive(8)) {
-      return <NoteCompleteTooltip onConfirm={() => nextTutorialStep()} />;
-    }
-    if (checkIsTutorialActive(10)) {
-      return (
-        <TotalCompleteTooltip
-          onConfirm={async () => {
-            const email = useAuthStore.getState().user?.email;
-            if (email) {
-              await completeNextStep(email);
-            }
-            endTutorial();
-          }}
-        />
-      );
-    }
-    return '';
-  }, [checkIsTutorialActive, nextTutorialStep, endTutorial, completeNextStep]);
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
@@ -244,13 +183,6 @@ export const SessionDetailPage: React.FC = () => {
     }
   }, [activeTab]);
 
-  // 스크롤 감지 시 7단계 클리어 (상담노트 탭)
-  React.useEffect(() => {
-    if (isNoteEnd && checkIsTutorialActive(7) && activeTab !== 'transcript') {
-      nextTutorialStep();
-    }
-  }, [isNoteEnd, nextTutorialStep, checkIsTutorialActive, activeTab]);
-
   // raw_output 파싱 또는 기존 result 사용
   // useMemo로 감싸서 transcribe.contents가 변경되면 재계산
   // HandwrittenTranscribe는 contents가 string이므로 getTranscriptData에 전달하지 않음
@@ -265,13 +197,43 @@ export const SessionDetailPage: React.FC = () => {
     () => transcriptData?.segments || [],
     [transcriptData]
   );
-  const speakers = React.useMemo(
+  const rawSpeakers = React.useMemo(
     () => transcriptData?.speakers || [],
     [transcriptData]
   );
 
-  // 편집 중인 내용은 각 세그먼트 내부에서 관리하므로 rawSegments를 직접 사용
-  const segments = rawSegments;
+  // 축어록 편집 통합 훅 (텍스트/화자/추가/삭제를 스냅샷 기반으로 관리)
+  const {
+    isEditing,
+    editingContents,
+    handleTextEdit,
+    handleEditStart,
+    handleCancelEdit,
+    handleSaveAllEdits,
+    handleSpeakerChange,
+    handleAddSegment,
+    handleDeleteSegment,
+  } = useTranscriptEditSession({
+    sessionId: sessionId || '',
+    transcribeId: transcribe?.id,
+    isDummySession,
+    isReadOnly,
+    checkIsGuideLevel,
+    nextGuideLevel,
+    scrollToTop: scrollTranscriptToTop,
+  });
+
+  // 편집 중이면 스냅샷에서 segments/speakers를 파생, 아니면 캐시 데이터 사용
+  const segments = React.useMemo(
+    () =>
+      editingContents ? getSnapshotSegments(editingContents) : rawSegments,
+    [editingContents, rawSegments]
+  );
+  const speakers = React.useMemo(
+    () =>
+      editingContents ? getSnapshotSpeakers(editingContents) : rawSpeakers,
+    [editingContents, rawSpeakers]
+  );
 
   // 상담노트 생성에 사용할 전사 텍스트
   const transcribeContents = transcribe?.contents;
@@ -305,123 +267,6 @@ export const SessionDetailPage: React.FC = () => {
     copyHandwrittenFromHook(content);
   }, [copyHandwrittenFromHook, transcribe]);
 
-  // 축어록 편집 훅
-  const {
-    isEditing,
-    handleTextEdit,
-    handleEditStart,
-    handleCancelEdit,
-    handleSaveAllEdits,
-  } = useTranscriptEdit({
-    sessionId: sessionId || '',
-    transcribeId: transcribe?.id,
-    isDummySession,
-    isReadOnly,
-    checkIsGuideLevel,
-    nextGuideLevel,
-    scrollToTop: scrollTranscriptToTop,
-  });
-
-  // 화자 변경 훅
-  const { handleSpeakerChange } = useSpeakerManagement({
-    sessionId: sessionId || '',
-    transcribeId: transcribe?.id,
-    isDummySession,
-    isReadOnly,
-  });
-
-  // 세그먼트 추가 핸들러 (로컬 캐시만 업데이트, 편집 완료 시 일괄 저장)
-  const handleAddSegment = React.useCallback(
-    (afterSegmentId: number, speaker: number) => {
-      if (isReadOnly || !transcribe?.id) return;
-
-      const maxId = segments.reduce((max, seg) => Math.max(max, seg.id), 0);
-      const newSegment = {
-        id: maxId + 1,
-        start: null as null,
-        end: null as null,
-        text: '',
-        speaker,
-      };
-
-      queryClient.setQueryData(sessionQueryKey, (oldData: any) => {
-        if (!oldData?.transcribe?.contents) return oldData;
-        const contents = oldData.transcribe.contents;
-
-        const insertSegment = (segs: any[]) => {
-          const idx = segs.findIndex((s: any) => s.id === afterSegmentId);
-          if (idx === -1) return segs;
-          const updated = [...segs];
-          updated.splice(idx + 1, 0, newSegment);
-          return updated;
-        };
-
-        let updatedContents;
-        if ('segments' in contents && Array.isArray(contents.segments)) {
-          updatedContents = {
-            ...contents,
-            segments: insertSegment(contents.segments),
-          };
-        } else if ('result' in contents && contents.result?.segments) {
-          updatedContents = {
-            ...contents,
-            result: {
-              ...contents.result,
-              segments: insertSegment(contents.result.segments),
-            },
-          };
-        } else {
-          return oldData;
-        }
-
-        return {
-          ...oldData,
-          transcribe: { ...oldData.transcribe, contents: updatedContents },
-        };
-      });
-    },
-    [isReadOnly, transcribe?.id, segments, queryClient, sessionQueryKey]
-  );
-
-  // 세그먼트 삭제 핸들러 (로컬 캐시만 업데이트, 편집 완료 시 일괄 저장)
-  const handleDeleteSegment = React.useCallback(
-    (segmentId: number) => {
-      if (isReadOnly || !transcribe?.id) return;
-
-      queryClient.setQueryData(sessionQueryKey, (oldData: any) => {
-        if (!oldData?.transcribe?.contents) return oldData;
-        const contents = oldData.transcribe.contents;
-
-        const removeSegment = (segs: any[]) =>
-          segs.filter((s: any) => s.id !== segmentId);
-
-        let updatedContents;
-        if ('segments' in contents && Array.isArray(contents.segments)) {
-          updatedContents = {
-            ...contents,
-            segments: removeSegment(contents.segments),
-          };
-        } else if ('result' in contents && contents.result?.segments) {
-          updatedContents = {
-            ...contents,
-            result: {
-              ...contents.result,
-              segments: removeSegment(contents.result.segments),
-            },
-          };
-        } else {
-          return oldData;
-        }
-
-        return {
-          ...oldData,
-          transcribe: { ...oldData.transcribe, contents: updatedContents },
-        };
-      });
-    },
-    [isReadOnly, transcribe?.id, queryClient, sessionQueryKey]
-  );
-
   // 탭 네비게이션 훅
   const {
     isTabChangeModalOpen,
@@ -438,8 +283,6 @@ export const SessionDetailPage: React.FC = () => {
     onCancelEditHandwritten: handleCancelHandwrittenEdit,
     setCreatingTabs,
     contentScrollRef,
-    checkIsTutorialActive,
-    nextTutorialStep,
   });
 
   const handleTitleUpdate = async (newTitle: string) => {
@@ -491,6 +334,31 @@ export const SessionDetailPage: React.FC = () => {
     activeTab,
     progressNotes: sessionProgressNotes,
   });
+
+  // 상담노트 summary 수정 핸들러
+  const handleSaveProgressNoteSummary = React.useCallback(
+    async (noteId: string, summary: string) => {
+      await updateProgressNoteSummary(noteId, summary);
+      // 캐시에서 해당 노트의 summary 즉시 반영
+      queryClient.setQueryData(
+        sessionQueryKey,
+        (
+          oldData:
+            | { progressNotes?: { id: string; summary: string | null }[] }
+            | undefined
+        ) => {
+          if (!oldData?.progressNotes) return oldData;
+          return {
+            ...oldData,
+            progressNotes: oldData.progressNotes.map((pn) =>
+              pn.id === noteId ? { ...pn, summary } : pn
+            ),
+          };
+        }
+      );
+    },
+    [queryClient, sessionQueryKey]
+  );
 
   const audioMetadata = session?.audio_meta_data;
   const hasS3Key = !!audioMetadata?.s3_key;
@@ -701,72 +569,21 @@ export const SessionDetailPage: React.FC = () => {
       </div>
 
       <div className="flex flex-shrink-0 select-none justify-start px-6 pt-2">
-        <Spotlight
-          isActive={
-            checkIsTutorialActive(3) ||
-            checkIsTutorialActive(6) ||
-            checkIsTutorialActive(9)
-          }
-          tooltip={
-            checkIsTutorialActive(3) ? (
-              <TranscriptTabTooltip />
-            ) : checkIsTutorialActive(6) ? (
-              <NoteClickTooltip />
-            ) : (
-              <AddNoteButtonTooltip />
-            )
-          }
-          tooltipPosition="bottom"
-          selector={
-            checkIsTutorialActive(9)
-              ? '[data-value="add"]'
-              : checkIsTutorialActive(6)
-                ? '[data-value^="dummy_progress_note"]'
-                : '[data-value="transcript"]'
-          }
-          onClose={() => endTutorial()}
-        >
-          <Tab
-            items={tabItems}
-            value={activeTab}
-            onValueChange={(val) => {
-              if (
-                checkIsTutorialActive(3) ||
-                checkIsTutorialActive(6) ||
-                checkIsTutorialActive(9)
-              ) {
-                handleTutorialAction(
-                  () => handleTabChange(val),
-                  checkIsTutorialActive(3)
-                    ? 3
-                    : checkIsTutorialActive(6)
-                      ? 6
-                      : 9
-                );
-              } else {
-                handleTabChange(val);
-              }
-            }}
-            size="sm"
-            fullWidth
-            className="px-8"
-            variant="underline"
-          />
-        </Spotlight>
+        <Tab
+          items={tabItems}
+          value={activeTab}
+          onValueChange={handleTabChange}
+          size="sm"
+          fullWidth
+          className="px-8"
+          variant="underline"
+        />
       </div>
 
       {/* 탭 콘텐츠 */}
       <div
         className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-500 bg-[#FDFFFE]' : 'border-surface-strong bg-surface'}`}
       >
-        <ScrollIndicator
-          className="bottom-0 right-1/2 translate-x-1/2"
-          isVisible={checkIsTutorialActive(7)}
-        />
-        <ScrollIndicator
-          className="bottom-0 right-1/2 translate-x-1/2"
-          isVisible={checkIsTutorialActive(4)}
-        />
         {/* 직접 입력 세션 버튼 영역 */}
         {activeTab === 'transcript' && isHandwrittenSession && (
           <HandwrittenToolbar
@@ -798,74 +615,57 @@ export const SessionDetailPage: React.FC = () => {
           />
         )}
 
-        {/* 탭 콘텐츠 Spotlight: 4단계(스크롤), 5단계(완료 버튼) */}
-        <Spotlight
-          isActive={
-            checkIsTutorialActive(4) ||
-            checkIsTutorialActive(5) ||
-            checkIsTutorialActive(7) ||
-            checkIsTutorialActive(8) ||
-            checkIsTutorialActive(10)
-          }
-          tooltip={missionTooltip}
-          tooltipPosition="left"
-          onClose={() => endTutorial()}
-        >
-          {activeTab === 'transcript' ? (
-            isHandwrittenSession ? (
-              <HandwrittenTabContent
-                contentScrollRef={contentScrollRef}
-                transcribe={transcribe as HandwrittenTranscribe | null}
-                isEditing={isEditingHandwritten}
-                editContent={handwrittenEditContent}
-                isSaving={isSavingHandwritten}
-                onContentChange={setHandwrittenEditContent}
-              />
-            ) : (
-              <TranscriptTabContent
-                contentScrollRef={contentScrollRef}
-                segments={segments}
-                speakers={speakers}
-                transcribe={transcribe as Transcribe | null}
-                clientId={session?.client_id || null}
-                isReadOnly={isReadOnly}
-                isEditing={isEditing}
-                isAnonymized={isAnonymized}
-                enableTimestampFeatures={enableTimestampFeatures}
-                currentSegmentIndex={currentSegmentIndex}
-                activeSegmentRef={activeSegmentRef}
-                transcriptEndRef={transcriptEndRef}
-                onSeekTo={handleSeekToWithInteraction}
-                onTextEdit={handleTextEdit}
-                onSpeakerChange={handleSpeakerChange}
-                onAddSegment={handleAddSegment}
-                onDeleteSegment={handleDeleteSegment}
-                checkIsGuideLevel={checkIsGuideLevel}
-                nextGuideLevel={nextGuideLevel}
-                endGuide={endTranscriptEditGuide}
-                onGuideScroll={handleGuideScroll}
-                tutorialStep={tutorialStep}
-              />
-            )
-          ) : (
-            <ProgressNoteTabContent
+        {activeTab === 'transcript' ? (
+          isHandwrittenSession ? (
+            <HandwrittenTabContent
               contentScrollRef={contentScrollRef}
-              activeTab={activeTab}
-              activeCreatingTab={activeCreatingTab}
-              creatingTabs={creatingTabs}
-              sessionId={sessionId || ''}
-              transcribedText={transcribedText}
-              progressNotes={sessionProgressNotes}
-              isReadOnly={isReadOnly}
-              isRegenerating={isRegenerating}
-              onCreateProgressNote={handleCreateProgressNote}
-              onRegenerateProgressNote={handleRegenerateProgressNote}
-              onTemplateSelect={handleTemplateSelect}
-              noteEndRef={noteEndRef}
-              tutorialStep={tutorialStep}
+              transcribe={transcribe as HandwrittenTranscribe | null}
+              isEditing={isEditingHandwritten}
+              editContent={handwrittenEditContent}
+              isSaving={isSavingHandwritten}
+              onContentChange={setHandwrittenEditContent}
             />
-          )}
-        </Spotlight>
+          ) : (
+            <TranscriptTabContent
+              contentScrollRef={contentScrollRef}
+              segments={segments}
+              speakers={speakers}
+              transcribe={transcribe as Transcribe | null}
+              clientId={session?.client_id || null}
+              isReadOnly={isReadOnly}
+              isEditing={isEditing}
+              isAnonymized={isAnonymized}
+              enableTimestampFeatures={enableTimestampFeatures}
+              currentSegmentIndex={currentSegmentIndex}
+              activeSegmentRef={activeSegmentRef}
+              onSeekTo={handleSeekToWithInteraction}
+              onTextEdit={handleTextEdit}
+              onSpeakerChange={handleSpeakerChange}
+              onAddSegment={handleAddSegment}
+              onDeleteSegment={handleDeleteSegment}
+              checkIsGuideLevel={checkIsGuideLevel}
+              nextGuideLevel={nextGuideLevel}
+              endGuide={endTranscriptEditGuide}
+              onGuideScroll={handleGuideScroll}
+            />
+          )
+        ) : (
+          <ProgressNoteTabContent
+            contentScrollRef={contentScrollRef}
+            activeTab={activeTab}
+            activeCreatingTab={activeCreatingTab}
+            creatingTabs={creatingTabs}
+            sessionId={sessionId || ''}
+            transcribedText={transcribedText}
+            progressNotes={sessionProgressNotes}
+            isReadOnly={isReadOnly}
+            isRegenerating={isRegenerating}
+            onCreateProgressNote={handleCreateProgressNote}
+            onRegenerateProgressNote={handleRegenerateProgressNote}
+            onTemplateSelect={handleTemplateSelect}
+            onSaveSummary={handleSaveProgressNoteSummary}
+          />
+        )}
       </div>
 
       {activeTab === 'transcript' && !isHandwrittenSession && (

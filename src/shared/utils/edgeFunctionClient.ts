@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { ROUTES } from '@/router/constants';
 
 /**
  * 모든 Supabase Edge Function 엔드포인트를 한 곳에서 관리합니다.
@@ -51,20 +52,37 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   },
   // 약관 관련
   TERMS: {
-    LIST: 'terms/list',
     CHECK: 'terms/check',
     AGREE: 'terms/agree',
+    CONTENT: 'terms/content',
   },
   // 가계도 관련
   GENOGRAM: {
     INIT: 'generate-family-summary/init',
     SUMMARY: 'generate-family-summary/summary',
   },
+  // 보고서 관련
+  REPORT: {
+    GENERATE: 'report/generate',
+    LIST: 'report/list',
+    RETRY: 'report/retry',
+    PDF_URL: 'report/pdf-url',
+  },
   // 쿠폰 관련
   COUPONS: {
     VALIDATE_ALL: 'coupons/validate',
     VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
     REGISTER: 'coupons/register',
+  },
+  // 공지사항
+  NOTICE: {
+    LIST: 'notice/list',
+  },
+  // 자격 관련
+  QUALIFICATION: {
+    LIST: 'qualifications/list',
+    USER: 'qualifications/user',
+    UPSERT: 'qualifications/upsert',
   },
 } as const;
 
@@ -104,6 +122,13 @@ export async function callEdgeFunction<T>(
       }
     } catch {
       // ignore
+    }
+
+    // 401: 토큰이 만료되었거나 유효하지 않은 경우 강제 로그아웃
+    if (status === 401) {
+      const { useAuthStore } = await import('@/stores/authStore');
+      useAuthStore.getState().clear();
+      window.location.href = ROUTES.AUTH;
     }
 
     throw {

@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { trackEvent } from '@/lib/mixpanel';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { billingService } from '../services/billingService';
 
@@ -24,6 +25,7 @@ export const PaymentSuccess = () => {
   const userId = useAuthStore((state) => state.userId);
   const userName = useAuthStore((state) => state.userName);
   const hasExecuted = useRef(false);
+  const initializeQuest = useQuestStore((state) => state.initializeQuest);
 
   const customerKey = searchParams.get('customerKey');
   const authKey = searchParams.get('authKey');
@@ -91,6 +93,11 @@ export const PaymentSuccess = () => {
             }
 
             trackEvent('plan_upgrade_success', { plan_id: planId });
+
+            // 플랜 변경 후 퀘스트 상태 갱신 (온보딩 노출 조건 업데이트)
+            if (user?.email) {
+              await initializeQuest(user.email);
+            }
 
             toast({
               title: '플랜 업그레이드 완료',

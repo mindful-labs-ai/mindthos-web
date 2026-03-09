@@ -12,6 +12,7 @@ import { GenogramClientPage } from '@/feature/genogram/pages/GenogramClientPage'
 import HomePage from '@/feature/home/page/HomePage';
 import { PaymentFail } from '@/feature/payment/components/PaymentFail';
 import { PaymentSuccess } from '@/feature/payment/components/PaymentSuccess';
+import { ReportPOCPage } from '@/feature/report/poc/ReportPOCPage';
 import { SessionDetailPage } from '@/feature/session/page/SessionDetailPage';
 import { SessionHistoryPage } from '@/feature/session/page/SessionHistoryPage';
 import { SettingsPage } from '@/feature/settings/page/SettingsPage';
@@ -126,6 +127,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.ERROR_TEST,
         element: <ErrorTestPage />,
+      },
+      {
+        path: ROUTES.REPORT_POC,
+        element: <ReportPOCPage />,
       },
       {
         path: ROUTES.NOT_FOUND,

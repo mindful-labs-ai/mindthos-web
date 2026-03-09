@@ -41,7 +41,10 @@ export async function createSessionBackground(
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(request),
+    body: JSON.stringify({
+      ...request,
+      title: request.title.slice(0, 50),
+    }),
   });
 
   if (!response.ok) {
@@ -769,7 +772,7 @@ export async function createHandWrittenSession(
   try {
     const data = await callEdgeFunction<CreateHandWrittenSessionResponse>(
       EDGE_FUNCTION_ENDPOINTS.SESSION.HAND_WRITTEN,
-      request
+      { ...request, title: request.title.slice(0, 50) }
     );
 
     if (!data.success) {

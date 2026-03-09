@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
+import { preloadTutorialAssets } from '@/feature/onboarding/components/TutorialGuideModal';
 import { trackEvent } from '@/lib/mixpanel';
 import { onboardingService } from '@/services/onboarding/onboardingService';
 import {
@@ -61,6 +62,8 @@ interface QuestStoreState {
     rounded?: 'sm' | 'md' | 'lg' | 'full' | number;
   } | null;
   showConfetti: boolean;
+  /** 현재 열려있는 튜토리얼 가이드 모달의 레벨 (1, 2, 3) 또는 null */
+  tutorialGuideLevel: number | null;
 }
 
 interface QuestActions {
@@ -120,6 +123,11 @@ interface QuestActions {
   setShowConfetti: (show: boolean) => void;
 
   /**
+   * 튜토리얼 가이드 모달 레벨 설정
+   */
+  setTutorialGuideLevel: (level: number | null) => void;
+
+  /**
    * 상태 전체 초기화
    */
   clear: () => void;
@@ -142,6 +150,7 @@ export const useQuestStore = create<QuestStore>()(
         showCompleteModalStep: null,
         spotlightConfig: null,
         showConfetti: false,
+        tutorialGuideLevel: null,
 
         initializeQuest: async (email: string) => {
           const { isChecked, currentLevel } = get();
@@ -173,6 +182,11 @@ export const useQuestStore = create<QuestStore>()(
                 response.onboarding.state,
                 response.onboarding.step
               );
+            }
+
+            // 퀘스트 진행 중이면 튜토리얼 에셋 preload
+            if (level >= 1 && level <= 5) {
+              preloadTutorialAssets();
             }
 
             set(
@@ -332,6 +346,14 @@ export const useQuestStore = create<QuestStore>()(
           set({ showConfetti: show }, false, 'quest/set_show_confetti');
         },
 
+        setTutorialGuideLevel: (level: number | null) => {
+          set(
+            { tutorialGuideLevel: level },
+            false,
+            'quest/set_tutorial_guide_level'
+          );
+        },
+
         clear: () =>
           set(
             {
@@ -359,6 +381,6 @@ export const useQuestStore = create<QuestStore>()(
         }),
       }
     ),
-    { name: 'QuestStore' }
+    { name: 'QuestStore', enabled: !import.meta.env.PROD }
   )
 );

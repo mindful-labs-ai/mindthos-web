@@ -110,10 +110,17 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
     }
   }, [isEditable]);
 
-  // segment.text가 변경되면 editedText도 업데이트
+  // 편집 모드 진입 시에만 segment.text로 초기화 (편집 중에는 외부 변경 무시)
+  const prevIsEditable = React.useRef(isEditable);
   React.useEffect(() => {
-    setEditedText(segment.text);
-  }, [segment.text]);
+    if (isEditable && !prevIsEditable.current) {
+      setEditedText(segment.text);
+    }
+    if (!isEditable && prevIsEditable.current) {
+      setEditedText(segment.text);
+    }
+    prevIsEditable.current = isEditable;
+  }, [isEditable, segment.text]);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;

@@ -7,19 +7,11 @@ import { Title } from '@/components/ui/atoms/Title';
 import { MarkdownRenderer } from '@/components/ui/composites/MarkdownRenderer';
 import type { SelectItem } from '@/components/ui/composites/Select';
 import { Select } from '@/components/ui/composites/Select';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
-import { ScrollIndicator } from '@/feature/onboarding/components/ScrollIndicator';
-import {
-  AnalysisScrollTooltip,
-  MissionCompleteTooltip,
-} from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { trackEvent } from '@/lib/mixpanel';
-import { CheckIcon } from '@/shared/icons';
+import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
+import { CheckIcon, CopyIcon } from '@/shared/icons';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
-import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import { useClientTemplates } from '../hooks/useClientAnalysis';
 import type {
@@ -35,6 +27,10 @@ interface ClientAnalysisTabProps {
   onCreateAnalysis?: () => void;
   /** 현재 폴링 중인 버전 (새 분석 생성 시 자동 선택용) */
   pollingVersion?: number | null;
+  /** 읽기 전용 여부 */
+  isReadOnly?: boolean;
+  /** 분석 내용 저장 핸들러 */
+  onSaveContent?: (analysisId: string, content: string) => Promise<void>;
 }
 
 export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
@@ -42,6 +38,8 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   isLoading = false,
   onCreateAnalysis,
   pollingVersion,
+  isReadOnly = false,
+  onSaveContent,
 }) => {
   const { toast } = useToast();
   const { data: templates } = useClientTemplates();
@@ -86,33 +84,49 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     return analyses[0]?.version || 0;
   }, [analyses, pollingVersion, userSelectedVersion]);
 
-  const { user } = useAuthStore();
-  const { currentLevel } = useQuestStore();
-  const {
-    checkIsTutorialActive,
-    completeNextStep,
-    setShowConfetti,
-    endTutorial,
-    nextTutorialStep,
-  } = useTutorial({
-    currentLevel,
-  });
-
   const scrollRef = React.useRef<HTMLDivElement>(null);
-
-  // 스크롤 감지 핸들러
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    if (!checkIsTutorialActive(4, 2)) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    // 바닥에서 10px 정도 여유를 두고 감지
-    if (scrollHeight - scrollTop <= clientHeight + 10) {
-      nextTutorialStep();
-    }
-  };
 
   // 선택된 버전의 분석 데이터
   const currentAnalysis = analyses.find((a) => a.version === selectedVersion);
+  const currentAnalysisData = currentAnalysis?.ai_supervision ?? null;
+
+  // 전체 문서 편집 훅
+  const {
+    isEditing,
+    hasEdits,
+    isSaving,
+    handleEditStart,
+    handleCancelEdit,
+    handleSaveEdit,
+    markdownRef,
+  } = useMarkdownEditSession({
+    originalContent: currentAnalysisData?.content ?? null,
+    inlineEdit: true,
+    onSave: async (content) => {
+      if (onSaveContent && currentAnalysisData?.id) {
+        await onSaveContent(currentAnalysisData.id, content);
+      }
+    },
+    isReadOnly: isReadOnly || !onSaveContent,
+    trackingEvents: {
+      editStart: 'analysis_edit_start',
+      editCancel: 'analysis_edit_cancel',
+      editComplete: 'analysis_edit_complete',
+    },
+    trackingMeta: {
+      analysis_id: currentAnalysisData?.id,
+      version: currentAnalysis?.version,
+    },
+  });
+
+  // 버전 변경 시 편집 상태 리셋
+  const prevVersionRef = React.useRef(selectedVersion);
+  React.useEffect(() => {
+    if (prevVersionRef.current !== selectedVersion && isEditing) {
+      handleCancelEdit();
+    }
+    prevVersionRef.current = selectedVersion;
+  }, [selectedVersion, isEditing, handleCancelEdit]);
 
   // 템플릿 이름 조회 헬퍼
   const getTemplateName = (templateId: number | undefined): string => {
@@ -210,54 +224,87 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     if (analysis?.status === 'succeeded' && analysis.content) {
       return (
         <div className="relative">
-          {/* 전체 복사 버튼 */}
-          <div className="mb-6 flex justify-end">
-            {onCreateAnalysis && (
-              <button
-                type="button"
-                onClick={() => {
-                  trackEvent('supervision_retry');
-                  onCreateAnalysis();
-                }}
-                className="flex items-center gap-2 rounded-lg border border-primary bg-primary-100 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
-              >
-                수퍼비전 다시 받기
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => handleCopy(analysis.content || '')}
-              className="group relative flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
-              aria-label="전체 복사"
-            >
-              {copiedKey === 'ai_supervision' ? (
-                <>
-                  <CheckIcon size={18} className="text-success" />
-                  <span className="text-success">복사됨</span>
-                </>
-              ) : (
-                <>
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+          {/* 액션 버튼 영역 */}
+          <div className="mb-6 flex items-center justify-end gap-2">
+            {/* 편집 중이 아닐 때: 수퍼비전 다시 받기 + 편집 + 복사 */}
+            {!isEditing && (
+              <>
+                {onSaveContent && !isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={handleEditStart}
+                    className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-sm text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
+                    aria-label="분석 편집"
                   >
-                    <path
-                      d="M13 4C13 4.26522 13.1054 4.51957 13.2929 4.70711C13.4804 4.89464 13.7348 5 14 5H17.966C17.8924 4.35068 17.6074 3.74354 17.155 3.272L14.871 0.913C14.3714 0.406548 13.7085 0.0933745 13 0.029V4ZM11 4V0H7C5.67441 0.00158786 4.40356 0.528882 3.46622 1.46622C2.52888 2.40356 2.00159 3.67441 2 5V15C2.00159 16.3256 2.52888 17.5964 3.46622 18.5338C4.40356 19.4711 5.67441 19.9984 7 20H13C14.3256 19.9984 15.5964 19.4711 16.5338 18.5338C17.4711 17.5964 17.9984 16.3256 18 15V7H14C13.2044 7 12.4413 6.68393 11.8787 6.12132C11.3161 5.55871 11 4.79565 11 4ZM17 24H8C7.73478 24 7.48043 23.8946 7.29289 23.7071C7.10536 23.5196 7 23.2652 7 23C7 22.7348 7.10536 22.4804 7.29289 22.2929C7.48043 22.1054 7.73478 22 8 22H17C17.7956 22 18.5587 21.6839 19.1213 21.1213C19.6839 20.5587 20 19.7956 20 19V8C20 7.73478 20.1054 7.48043 20.2929 7.29289C20.4804 7.10536 20.7348 7 21 7C21.2652 7 21.5196 7.10536 21.7071 7.29289C21.8946 7.48043 22 7.73478 22 8V19C21.9984 20.3256 21.4711 21.5964 20.5338 22.5338C19.5964 23.4711 18.3256 23.9984 17 24Z"
-                      fill="#BABAC0"
-                    />
-                  </svg>
-                </>
-              )}
-            </button>
+                    <span>편집</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleCopy(analysis.content || '')}
+                  className="group relative flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-sm font-medium text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
+                  aria-label="전체 복사"
+                >
+                  {copiedKey === 'ai_supervision' ? (
+                    <>
+                      <CheckIcon size={18} className="text-success" />
+                      <span className="text-success">복사됨</span>
+                    </>
+                  ) : (
+                    <>
+                      <CopyIcon size={20} />
+                      <span>복사하기</span>
+                    </>
+                  )}
+                </button>
+                {onCreateAnalysis && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      trackEvent('supervision_retry');
+                      onCreateAnalysis();
+                    }}
+                    className="flex items-center gap-1.5 rounded-md border border-primary bg-primary-100 px-3 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
+                  >
+                    수퍼비전 다시 받기
+                  </button>
+                )}
+              </>
+            )}
+
+            {/* 편집 중일 때: 취소 + 저장 */}
+            {isEditing && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="rounded-lg px-4 py-2 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-contrast"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEdit}
+                  disabled={!hasEdits || isSaving}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    hasEdits && !isSaving
+                      ? 'bg-primary text-white hover:bg-primary-600'
+                      : 'cursor-not-allowed bg-surface-contrast text-fg-muted'
+                  }`}
+                >
+                  {isSaving ? '저장 중...' : '저장'}
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* 마크다운 렌더링 */}
+          {/* 마크다운 렌더링 (편집 모드일 때 contentEditable) */}
           <MarkdownRenderer
+            ref={isEditing ? markdownRef : undefined}
             content={removeNonverbalTags(analysis.content)}
             className="text-start"
+            editable={isEditing}
           />
         </div>
       );
@@ -307,18 +354,6 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           <div className="flex items-center rounded-md bg-fg-muted p-1">
             <span className="text-xs font-bold text-surface">준비 중</span>
           </div>
-          {/* <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M11.0827 4.914V4.08332C11.0827 1.82818 9.25452 0 6.99934 0C4.74416 0 2.91602 1.82818 2.91602 4.08332V4.914C1.85437 5.37734 1.16755 6.42499 1.16602 7.58332V11.0833C1.16793 12.6934 2.47264 13.9981 4.08266 14H9.91599C11.526 13.9981 12.8307 12.6934 12.8327 11.0833V7.58332C12.8312 6.42499 12.1443 5.37734 11.0827 4.914ZM7.58266 9.91668C7.58266 10.2388 7.3215 10.5 6.99934 10.5C6.67718 10.5 6.41602 10.2388 6.41602 9.91668V8.75C6.41602 8.42784 6.67718 8.16668 6.99934 8.16668C7.3215 8.16668 7.58266 8.42784 7.58266 8.75V9.91668ZM9.91602 4.66668H4.08266V4.08335C4.08266 2.47253 5.38849 1.16668 6.99934 1.16668C8.61019 1.16668 9.91602 2.4725 9.91602 4.08335V4.66668Z"
-              fill="#C6C5D5"
-            />
-          </svg> */}
         </span>
       ),
       disabled: true,
@@ -416,40 +451,15 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       </div>
 
       {/* 분석 내용 */}
-      <Spotlight
-        isActive={checkIsTutorialActive(4, 2) || checkIsTutorialActive(5, 2)}
-        tooltip={
-          checkIsTutorialActive(4, 2) ? (
-            <AnalysisScrollTooltip />
-          ) : (
-            <MissionCompleteTooltip
-              onConfirm={async () => {
-                if (user?.email) {
-                  await completeNextStep(user.email);
-                }
-                setShowConfetti(true);
-                endTutorial();
-              }}
-            />
-          )
-        }
-        tooltipPosition="left"
-        onClose={() => endTutorial()}
-        className="min-h-0 flex-1"
-      >
+      <div className="min-h-0 flex-1">
         <div
           ref={scrollRef}
-          onScroll={handleScroll}
           className="h-full overflow-y-auto rounded-lg border border-border bg-surface p-6"
         >
-          <ScrollIndicator
-            className="bottom-8 right-1/2 translate-x-44"
-            isVisible={checkIsTutorialActive(4, 2)}
-          />
           {currentAnalysis &&
             renderAnalysisContent(currentAnalysis.ai_supervision)}
         </div>
-      </Spotlight>
+      </div>
       <LockedFeatureModal
         open={isLockedModalOpen}
         onOpenChange={setIsLockedModalOpen}
