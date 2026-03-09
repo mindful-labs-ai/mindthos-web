@@ -93,3 +93,25 @@ export interface OnboardingSuccessResponse {
     freeUntil: string;
   };
 }
+
+export const OnboardingErrorCode = {
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  ONBOARDING_NOT_COMPLETED: 'ONBOARDING_NOT_COMPLETED',
+  ONBOARDING_EXPIRED: 'ONBOARDING_EXPIRED',
+  ONBOARDING_NOT_STARTED: 'ONBOARDING_NOT_STARTED',
+  USER_NOT_FOUND: 'USER_NOT_FOUND',
+  ONBOARDING_NOT_FOUND: 'ONBOARDING_NOT_FOUND',
+  PLAN_NOT_FOUND: 'PLAN_NOT_FOUND',
+  ONBOARDING_ALREADY_REWARDED: 'ONBOARDING_ALREADY_REWARDED',
+  PAID_PLAN_ACTIVE: 'PAID_PLAN_ACTIVE',
+} as const;
+
+export type OnboardingErrorCodeType =
+  (typeof OnboardingErrorCode)[keyof typeof OnboardingErrorCode];
+
+export interface OnboardingErrorResponse {
+  success: false;
+  code: OnboardingErrorCodeType;
+  message: string;
+  status?: number;
+}
