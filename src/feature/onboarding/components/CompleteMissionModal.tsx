@@ -75,42 +75,81 @@ export const CompleteMissionModal = ({
   };
 
   const handleRewardClaim = async () => {
-    if (user?.email && user?.id) {
-      try {
-        await getReward(user.email);
+    if (!user?.email || !user?.id) return;
 
-        // 보상 수령 축하 피드백
-        toast({
-          title: '선물 수령 완료! 🎁',
-          description:
-            '스타터 플랜 한 달 이용권이 지급되었습니다. 지금 바로 사용해보세요!',
-        });
+    try {
+      const errorCode = await getReward(user.email);
 
-        // 한 번 더 화려한 폭죽 효과
-        confetti({
-          particleCount: 200,
-          spread: 100,
-          origin: { y: 0.5 },
-          zIndex: 9999,
-        });
-
-        // 크레딧 정보 갱신
-        await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: ['credit', 'subscription', Number(user.id)],
-          }),
-          queryClient.invalidateQueries({
-            queryKey: ['credit', 'usage', Number(user.id)],
-          }),
-        ]);
-        handleClose();
-      } catch (err) {
-        toast({
-          title: '보상 수령 실패',
-          description: '잠시 후 다시 시도해주세요.',
-        });
-        console.error('Reward claim failed:', err);
+      if (errorCode) {
+        switch (errorCode) {
+          case 'PAID_PLAN_ACTIVE':
+            toast({
+              title: '유료 플랜 이용 중',
+              description:
+                '이미 유료 플랜을 사용 중이므로 온보딩 보상이 적용되지 않습니다.',
+            });
+            handleClose();
+            return;
+          case 'ONBOARDING_ALREADY_REWARDED':
+            toast({
+              title: '이미 보상을 받았습니다',
+              description: '온보딩 보상은 1회만 지급됩니다.',
+            });
+            window.location.reload();
+            return;
+          case 'ONBOARDING_EXPIRED':
+            toast({
+              title: '온보딩 기간 만료',
+              description: '온보딩 기간(7일)이 만료되었습니다.',
+            });
+            handleClose();
+            return;
+          case 'ONBOARDING_NOT_COMPLETED':
+            toast({
+              title: '온보딩 미완료',
+              description: '온보딩 퀘스트를 먼저 완료해주세요.',
+            });
+            handleClose();
+            return;
+          default:
+            toast({
+              title: '보상 수령 실패',
+              description: '잠시 후 다시 시도해주세요.',
+            });
+            return;
+        }
       }
+
+      // 보상 수령 축하 피드백
+      toast({
+        title: '선물 수령 완료! 🎁',
+        description:
+          '스타터 플랜 한 달 이용권이 지급되었습니다. 지금 바로 사용해보세요!',
+      });
+
+      // 한 번 더 화려한 폭죽 효과
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.5 },
+        zIndex: 9999,
+      });
+
+      // 크레딧 정보 갱신
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['credit', 'subscription', Number(user.id)],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['credit', 'usage', Number(user.id)],
+        }),
+      ]);
+      handleClose();
+    } catch {
+      toast({
+        title: '보상 수령 실패',
+        description: '잠시 후 다시 시도해주세요.',
+      });
     }
   };
 
