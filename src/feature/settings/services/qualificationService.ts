@@ -37,7 +37,7 @@ export const qualificationService = {
   /** 현재 유저의 보유 자격 조회 */
   async user(): Promise<Qualification[]> {
     const data = await callEdgeFunction<QualificationListResponse>(
-      EDGE_FUNCTION_ENDPOINTS.QUALIFICATION.USER,
+      EDGE_FUNCTION_ENDPOINTS.QUALIFICATION.USER
     );
     return data.qualifications;
   },
