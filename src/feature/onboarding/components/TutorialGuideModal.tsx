@@ -110,6 +110,26 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
   },
 };
 
+/** 튜토리얼 가이드 에셋 preload */
+export const preloadTutorialAssets = () => {
+  const allMedia = Object.values(GUIDE_CONFIGS).flatMap((config) =>
+    config.slides.map((slide) => slide.media)
+  );
+
+  allMedia.forEach(({ type, src }) => {
+    if (type === 'video') {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'video';
+      link.href = src;
+      document.head.appendChild(link);
+    } else {
+      const img = new Image();
+      img.src = src;
+    }
+  });
+};
+
 export const TutorialGuideModal: React.FC = () => {
   const { tutorialGuideLevel, setTutorialGuideLevel, completeNextStep } =
     useQuestStore();

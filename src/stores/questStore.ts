@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
+import { preloadTutorialAssets } from '@/feature/onboarding/components/TutorialGuideModal';
 import { trackEvent } from '@/lib/mixpanel';
 import { onboardingService } from '@/services/onboarding/onboardingService';
 import {
@@ -181,6 +182,11 @@ export const useQuestStore = create<QuestStore>()(
                 response.onboarding.state,
                 response.onboarding.step
               );
+            }
+
+            // 퀘스트 진행 중이면 튜토리얼 에셋 preload
+            if (level >= 1 && level <= 5) {
+              preloadTutorialAssets();
             }
 
             set(
