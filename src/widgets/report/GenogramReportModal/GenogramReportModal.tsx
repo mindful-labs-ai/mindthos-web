@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { ArrowLeft, Loader2, X } from 'lucide-react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { SnackBar } from '@/shared/ui/composites/SnackBar';
 import { useModalStore } from '@/stores/modalStore';
 
@@ -27,25 +28,28 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   }, [modal.step]);
 
-  if (!props.open) return null;
-
   const isCreationFlow = modal.step === 'verify' || modal.step === 'input';
   const isGenerating =
     modal.step === 'generating' && modal.generatingStatus === 'processing';
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        role="presentation"
-        className="fixed inset-0 animate-[fadeIn_0.2s_ease-out] bg-black/50"
-        onClick={() => {
-          if (!isGenerating) modal.handleClose();
-        }}
-      />
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open && !isGenerating) {
+        modal.handleClose();
+      }
+    },
+    [isGenerating, modal]
+  );
 
-      {/* Modal */}
-      <div className="relative z-10 flex h-[788px] max-h-[90vh] w-11/12 max-w-[512px] flex-col rounded-2xl bg-white shadow-xl">
+  return (
+    <>
+      <Modal
+        open={props.open}
+        onOpenChange={handleOpenChange}
+        closeOnOverlay={!isGenerating}
+        hideCloseButton
+        className="flex h-[788px] max-h-[90vh] w-11/12 max-w-[512px] flex-col rounded-2xl border-none bg-white p-0 shadow-xl"
+      >
         {/* ── 헤더 ── */}
         <div className="relative shrink-0 px-[49px] pb-2 pt-[39px]">
           {modal.step === 'preview' && (
@@ -138,7 +142,10 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                   type="button"
                   onClick={() => {
                     trackEvent('genogram_report_seminar_button_click');
-                    window.open('https://nextgenogram.mindthos.com/', '_blank');
+                    window.open(
+                      'https://nextgenogram.mindthos.com/',
+                      '_blank'
+                    );
                   }}
                   className="flex-1 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400"
                 >
@@ -179,9 +186,9 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
             )}
           </div>
         )}
-      </div>
 
-      {modal.debugPanel}
+        {modal.debugPanel}
+      </Modal>
 
       {/* 크레딧 부족 SnackBar */}
       <SnackBar
@@ -196,6 +203,6 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
         }}
         duration={8000}
       />
-    </div>
+    </>
   );
 }
