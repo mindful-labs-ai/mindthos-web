@@ -56,6 +56,27 @@
   --color-warn: #f59e0b;
   --color-info: #3b82f6;
   --color-success: #10b981;
+
+  /* Z-Index scale */
+  --z-base: 0;
+  --z-sidebar: 10;
+  --z-header: 20;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 500;
+  --z-modal: 1000;
+  --z-popover: 1100;
+  --z-tooltip: 1200;
+  --z-toast: 1300;
+  --z-spotlight: 1400;
+  --z-debug: 1500;
+
+  /* Spacing abstractions */
+  --space-page: 1.5rem;
+  --space-card: 1rem;
+  --space-modal: 1.5rem;
+  --space-section: 1.25rem;
+  --space-inline: 0.5rem;
 }
 
 .dark {

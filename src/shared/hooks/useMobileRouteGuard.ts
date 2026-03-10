@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { useLocation } from 'react-router-dom';
 
-import { ROUTES } from '@/router/constants';
+import { ROUTES } from '@/app/router/constants';
 
 import { useDevice } from './useDevice';
 import { useNavigateWithUtm } from './useNavigateWithUtm';
