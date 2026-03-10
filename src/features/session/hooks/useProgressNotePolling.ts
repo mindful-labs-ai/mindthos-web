@@ -6,7 +6,7 @@ import { useEffect, useRef } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { supabase } from '@/lib/supabase';
+import { fetchProgressNoteById } from '@/shared/api/supabase/progressNoteQueries';
 
 import type { ProgressNote, ProgressNoteStatus } from '../types';
 
@@ -42,18 +42,7 @@ export function useProgressNotePolling({
     queryKey: ['progress-note-status', progressNoteId],
     queryFn: async () => {
       if (!progressNoteId) return null;
-
-      const { data, error } = await supabase
-        .from('progress_notes')
-        .select('*')
-        .eq('id', progressNoteId)
-        .single();
-
-      if (error) {
-        throw new Error(`상담노트 조회 실패: ${error.message}`);
-      }
-
-      return data as ProgressNote;
+      return fetchProgressNoteById(progressNoteId);
     },
     enabled: enabled && !!progressNoteId,
     refetchInterval: (query) => {

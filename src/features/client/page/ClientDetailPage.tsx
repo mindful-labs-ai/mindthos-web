@@ -15,6 +15,7 @@ import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -33,7 +34,6 @@ import {
   useCreateClientAnalysis,
 } from '../hooks/useClientAnalysis';
 import { useClientList } from '../hooks/useClientList';
-import { clientAnalysisService } from '../services/clientAnalysisService';
 
 type TabType = 'history' | 'analyze';
 

@@ -1,3 +1,4 @@
+import type { ProgressNote } from '@/features/session/types';
 import { supabase } from '@/lib/supabase';
 import {
   callEdgeFunction,
@@ -28,6 +29,44 @@ interface AddProgressNoteResponse {
   success: boolean;
   progress_note_id: string;
   message?: string;
+}
+
+/**
+ * 개별 상담노트 조회 (폴링용)
+ */
+export async function fetchProgressNoteById(
+  progressNoteId: string
+): Promise<ProgressNote> {
+  const { data, error } = await supabase
+    .from('progress_notes')
+    .select('*')
+    .eq('id', progressNoteId)
+    .single();
+
+  if (error) {
+    throw new Error(`상담노트 조회 실패: ${error.message}`);
+  }
+
+  return data as ProgressNote;
+}
+
+/**
+ * 세션의 전체 상담노트 목록 조회 (폴링용)
+ */
+export async function fetchSessionProgressNotes(
+  sessionId: string
+): Promise<ProgressNote[]> {
+  const { data, error } = await supabase
+    .from('progress_notes')
+    .select('*')
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    throw new Error(`상담노트 목록 조회 실패: ${error.message}`);
+  }
+
+  return data as ProgressNote[];
 }
 
 /**

@@ -3,13 +3,13 @@ import type { RefObject } from 'react';
 import { pdf } from '@react-pdf/renderer';
 
 import type { GenogramPageHandle } from '@/genogram';
-import { GenogramReportPDF } from '@/widgets/report/GenogramReportPDF';
-
 import {
   buildStorageKey,
   savePdfStorageKey,
   uploadReportPdf,
-} from '../services/reportService';
+} from '@/shared/api/supabase/reportQueries';
+import { GenogramReportPDF } from '@/widgets/report/GenogramReportPDF';
+
 import type { GenogramReport, ReportSection } from '../types/reportSchema';
 
 import { addPageNumbers } from './addPageNumbers';

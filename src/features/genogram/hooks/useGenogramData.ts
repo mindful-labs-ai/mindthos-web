@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { genogramService } from '@/shared/api/supabase/genogramQueries';
 import { useAuthStore } from '@/stores/authStore';
-
-import { genogramService } from '../services/genogramService';
 
 const GENOGRAM_QUERY_KEY = 'genogram';
 const AUTO_SAVE_DELAY = 5000;

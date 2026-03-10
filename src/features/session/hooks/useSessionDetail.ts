@@ -4,8 +4,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { getSessionDetail } from '@/shared/api/supabase/sessionQueries';
+
 import { getDummySessionDetail } from '../constants/dummySessions';
-import { getSessionDetail } from '../services/sessionService';
 
 export interface UseSessionDetailOptions {
   sessionId: string;

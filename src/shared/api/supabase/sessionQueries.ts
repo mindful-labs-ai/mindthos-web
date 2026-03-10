@@ -1,9 +1,3 @@
-import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
-
 import type {
   CreateHandWrittenSessionRequest,
   CreateHandWrittenSessionResponse,
@@ -15,7 +9,12 @@ import type {
   SessionProcessingStatus,
   Speaker,
   Transcribe,
-} from '../types';
+} from '@/features/session/types';
+import { supabase } from '@/lib/supabase';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/api/edgeFunctionClient';
 
 export interface SessionStatusResponse {
   success: boolean;

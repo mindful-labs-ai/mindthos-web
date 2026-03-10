@@ -1,8 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
+import {
+  creditService,
+  type CreditInfo,
+} from '@/shared/api/supabase/creditQueries';
 import { useAuthStore } from '@/stores/authStore';
-
-import { creditService, type CreditInfo } from '../services/creditService';
 
 export const useCreditInfo = () => {
   const userId = useAuthStore((state) => state.userId);

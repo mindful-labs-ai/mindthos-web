@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { planService } from '../services/planService';
+import { planService } from '@/shared/api/supabase/planQueries';
 
 /**
  * 모든 플랜 조회 Hook

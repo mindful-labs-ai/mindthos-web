@@ -8,6 +8,12 @@ import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
+import {
+  fetchRawAIOutput,
+  initFamilySummary,
+  saveFamilySummary,
+} from '@/shared/api/supabase/genogramAIQueries';
+import { genogramService } from '@/shared/api/supabase/genogramQueries';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -28,12 +34,6 @@ import { useClientFamilySummary } from '../hooks/useClientFamilySummary';
 import { useClientHasRecords } from '../hooks/useClientHasRecords';
 import { useGenogramData } from '../hooks/useGenogramData';
 import { useGenogramSteps } from '../hooks/useGenogramSteps';
-import {
-  fetchRawAIOutput,
-  initFamilySummary,
-  saveFamilySummary,
-} from '../services/genogramAIService';
-import { genogramService } from '../services/genogramService';
 import {
   convertAIJsonToCanvas,
   convertCanvasToAIJson,

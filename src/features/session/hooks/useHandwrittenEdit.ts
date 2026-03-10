@@ -6,10 +6,9 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
+import { updateHandwrittenTranscribeContent } from '@/shared/api/supabase/sessionQueries';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
-
-import { updateHandwrittenTranscribeContent } from '../services/sessionService';
 
 import { sessionDetailQueryKey } from './useSessionDetail';
 

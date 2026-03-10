@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useGenogramCapture } from '@/features/report/hooks/useGenogramCapture';
-import type { ReportListItem } from '@/features/report/services/reportService';
-import {
-  createSignedPdfUrl,
-  exportReport,
-  fetchReportDetail,
-  generateReport,
-} from '@/features/report/services/reportService';
 import {
   buildReportPdf,
   uploadPdfToStorage,
 } from '@/features/report/utils/buildReportPdf';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackEvent } from '@/lib/mixpanel';
+import {
+  createSignedPdfUrl,
+  exportReport,
+  fetchReportDetail,
+  generateReport,
+} from '@/shared/api/supabase/reportQueries';
+import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useFeatureAccessStore } from '@/stores/featureAccessStore';

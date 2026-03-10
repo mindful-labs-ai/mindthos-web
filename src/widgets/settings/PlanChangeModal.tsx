@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
-import { billingService } from '@/features/payment/services/billingService';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { usePlansByPeriod } from '@/features/settings/hooks/usePlans';
 import { trackEvent } from '@/lib/mixpanel';
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { Text, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';

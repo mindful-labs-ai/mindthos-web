@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-import type { ReportListItem } from '@/features/report/services/reportService';
+import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 import {
   DebugChip,
   DebugSection,

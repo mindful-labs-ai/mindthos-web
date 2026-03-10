@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { billingService } from '@/features/payment/services/billingService';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { usePlansByPeriod } from '@/features/settings/hooks/usePlans';
 import { formatUsageDate } from '@/features/settings/utils/planUtils';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { ChevronRightIcon, CreditIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { ProgressCircle } from '@/shared/ui/atoms/ProgressCircle';

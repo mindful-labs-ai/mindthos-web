@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { supabase } from '@/lib/supabase';
+import { fetchSessionProgressNotes } from '@/shared/api/supabase/progressNoteQueries';
 
 import type { ProgressNote, Session, Transcribe } from '../types';
 
@@ -55,19 +55,7 @@ export function useSessionProgressNotesPolling({
 
   const query = useQuery<ProgressNote[], Error>({
     queryKey: ['session-progress-notes-polling', sessionId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('progress_notes')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        throw new Error(`상담노트 목록 조회 실패: ${error.message}`);
-      }
-
-      return data as ProgressNote[];
-    },
+    queryFn: () => fetchSessionProgressNotes(sessionId),
     enabled: enabled && !!sessionId,
     refetchInterval: (query) => {
       // 외부에서 처리 중인 노트가 있으면 폴링 강제 활성화

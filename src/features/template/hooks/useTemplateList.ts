@@ -1,9 +1,9 @@
 import { useQueries } from '@tanstack/react-query';
 
+import { templateService } from '@/shared/api/supabase/templateQueries';
 import { useAuthStore } from '@/stores/authStore';
 
 import { templateQueryKeys } from '../constants/queryKeys';
-import { templateService } from '../services/templateService';
 import type { TemplateListItem } from '../types';
 
 export const useTemplateList = () => {

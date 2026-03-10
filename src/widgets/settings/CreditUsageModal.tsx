@@ -3,7 +3,7 @@ import React from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { useCreditLogs } from '@/features/settings/hooks/useCreditLogs';
-import type { CreditLog } from '@/features/settings/services/creditService';
+import type { CreditLog } from '@/shared/api/supabase/creditQueries';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import { supabase } from '@/lib/supabase';
+import { checkFeatureAccess } from '@/shared/api/supabase/featureAccessQueries';
 
 type AccessType = 'GENOGRAM_SEMINAR';
 
@@ -41,26 +41,7 @@ export const useFeatureAccessStore = create<FeatureAccessStore>()(
         );
 
         try {
-          const { data, error } = await supabase.rpc('has_access', {
-            p_user_id: Number(userId),
-            p_access_type: type,
-          });
-
-          if (error) {
-            if (!import.meta.env.PROD)
-              console.error('has_access RPC error:', error.message);
-            set(
-              (s) => ({
-                access: { ...s.access, [type]: false },
-                checking: { ...s.checking, [type]: false },
-              }),
-              false,
-              'checkAccess/error'
-            );
-            return false;
-          }
-
-          const result = !!data;
+          const result = await checkFeatureAccess(userId, type);
           set(
             (s) => ({
               access: { ...s.access, [type]: result },

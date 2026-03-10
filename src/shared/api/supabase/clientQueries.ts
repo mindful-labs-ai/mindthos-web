@@ -1,6 +1,3 @@
-import { supabase } from '@/lib/supabase';
-import { callEdgeFunction } from '@/shared/api/edgeFunctionClient';
-
 import type {
   ClientApiError,
   CreateClientRequest,
@@ -11,7 +8,51 @@ import type {
   GetClientsResponse,
   UpdateClientRequest,
   UpdateClientResponse,
-} from '../types/clientApi.types';
+} from '@/features/client/types/clientApi.types';
+import type { AIGenogramOutput } from '@/features/genogram/utils/aiJsonConverter';
+import { supabase } from '@/lib/supabase';
+import { callEdgeFunction } from '@/shared/api/edgeFunctionClient';
+
+/**
+ * 클라이언트의 family_summary 조회
+ */
+export async function fetchFamilySummary(
+  clientId: string
+): Promise<AIGenogramOutput | null> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('family_summary')
+    .eq('id', clientId)
+    .single();
+
+  if (error) {
+    console.error('Failed to fetch family_summary:', error);
+    return null;
+  }
+
+  return data?.family_summary ?? null;
+}
+
+/**
+ * 클라이언트의 상담 기록 유무 확인
+ */
+export async function checkClientHasRecords(
+  clientId: string
+): Promise<boolean> {
+  if (!clientId) return false;
+
+  const { count, error } = await supabase
+    .from('sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', clientId);
+
+  if (error) {
+    console.error('Failed to check client records:', error);
+    return false;
+  }
+
+  return (count ?? 0) > 0;
+}
 
 export const clientService = {
   async getClients(request: GetClientsRequest): Promise<GetClientsResponse> {

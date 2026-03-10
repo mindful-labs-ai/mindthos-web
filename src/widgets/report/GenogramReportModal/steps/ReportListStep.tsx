@@ -7,7 +7,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-import type { ReportListItem } from '@/features/report/services/reportService';
+import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 
 import { formatDate } from '../constants';
 

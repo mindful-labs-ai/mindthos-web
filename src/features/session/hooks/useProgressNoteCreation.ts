@@ -7,10 +7,10 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { trackError } from '@/lib/mixpanel';
+import { addProgressNote } from '@/shared/api/supabase/progressNoteQueries';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 
-import { addProgressNote } from '../services/progressNoteService';
 import type { ProgressNote } from '../types';
 
 import { sessionDetailQueryKey } from './useSessionDetail';

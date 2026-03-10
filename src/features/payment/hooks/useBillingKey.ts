@@ -1,9 +1,8 @@
 // TODO: 삭제 예정 - 결제 로직 변경으로 사용되지 않음
 import { useQuery } from '@tanstack/react-query';
 
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { useAuthStore } from '@/stores/authStore';
-
-import { billingService } from '../services/billingService';
 
 /**
  * 사용자의 구독 정보(빌링키 포함) 조회 Hook

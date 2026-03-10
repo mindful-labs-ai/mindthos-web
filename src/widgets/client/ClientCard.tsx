@@ -3,9 +3,9 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { clientQueryKeys } from '@/features/client/constants/queryKeys';
-import { clientService } from '@/features/client/services/clientService';
 import type { Client } from '@/features/client/types';
 import { trackEvent } from '@/lib/mixpanel';
+import { clientService } from '@/shared/api/supabase/clientQueries';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';

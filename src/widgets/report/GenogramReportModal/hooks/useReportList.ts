@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
 
-import type { ReportListItem } from '@/features/report/services/reportService';
+import { trackEvent } from '@/lib/mixpanel';
+import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 import {
   createSignedPdfUrl,
   listReports,
   retryReport,
-} from '@/features/report/services/reportService';
-import { trackEvent } from '@/lib/mixpanel';
+} from '@/shared/api/supabase/reportQueries';
 
 type ToastFn = (opts: { title: string; description: string }) => void;
 

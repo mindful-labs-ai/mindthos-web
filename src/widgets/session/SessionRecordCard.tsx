@@ -3,13 +3,13 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
+import type { SessionRecord } from '@/features/session/types';
+import { extractTextOnly } from '@/features/session/utils/parseNonverbalText';
 import {
   assignClientToSession,
   deleteSession,
   updateSessionTitle,
-} from '@/features/session/services/sessionService';
-import type { SessionRecord } from '@/features/session/types';
-import { extractTextOnly } from '@/features/session/utils/parseNonverbalText';
+} from '@/shared/api/supabase/sessionQueries';
 import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Text } from '@/shared/ui/atoms/Text';

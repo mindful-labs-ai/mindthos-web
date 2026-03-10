@@ -15,8 +15,8 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
+import { createSessionBackground } from '@/shared/api/supabase/sessionQueries';
 
-import { createSessionBackground } from '../services/sessionService';
 import type {
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,

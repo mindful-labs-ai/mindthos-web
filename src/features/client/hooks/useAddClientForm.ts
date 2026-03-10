@@ -3,11 +3,11 @@ import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { clientService } from '@/shared/api/supabase/clientQueries';
 import { useAuthStore } from '@/stores/authStore';
 
 import { clientQueryKeys } from '../constants/queryKeys';
 import { addClientSchema } from '../schemas/addClientSchema';
-import { clientService } from '../services/clientService';
 import type { Client } from '../types';
 import type {
   ClientApiError,

@@ -1,10 +1,9 @@
+import type { GenogramReport } from '@/features/report/types/reportSchema';
 import { supabase } from '@/lib/supabase';
 import {
   callEdgeFunction,
   EDGE_FUNCTION_ENDPOINTS,
 } from '@/shared/api/edgeFunctionClient';
-
-import type { GenogramReport } from '../types/reportSchema';
 
 // ============================================
 // 타입 정의

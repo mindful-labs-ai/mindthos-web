@@ -9,8 +9,9 @@ import { useCallback, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
+import { createSessionBackground } from '@/shared/api/supabase/sessionQueries';
+
 import { s3UploadService } from '../services/s3UploadService';
-import { createSessionBackground } from '../services/sessionService';
 import type {
   FileSessionConfig,
   MultiFileInfo,

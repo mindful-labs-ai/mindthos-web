@@ -1,8 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 
+import { creditService } from '@/shared/api/supabase/creditQueries';
 import { useAuthStore } from '@/stores/authStore';
-
-import { creditService } from '../services/creditService';
 
 export const useCreditLogs = () => {
   const userId = useAuthStore((state) => state.userId);

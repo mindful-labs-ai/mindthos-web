@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import { billingService } from '@/features/payment/services/billingService';
 import { trackEvent } from '@/lib/mixpanel';
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';

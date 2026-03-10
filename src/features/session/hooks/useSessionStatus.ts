@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   getSessionStatus,
   type SessionStatusResponse,
-} from '../services/sessionService';
+} from '@/shared/api/supabase/sessionQueries';
 
 export interface UseSessionStatusOptions {
   sessionId: string;

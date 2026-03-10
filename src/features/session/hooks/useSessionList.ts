@@ -6,7 +6,8 @@ import React from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { getSessionList } from '../services/sessionService';
+import { getSessionList } from '@/shared/api/supabase/sessionQueries';
+
 import type {
   HandwrittenTranscribe,
   ProgressNote,

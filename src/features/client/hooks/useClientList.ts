@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { clientService } from '@/shared/api/supabase/clientQueries';
 import { useAuthStore } from '@/stores/authStore';
 
 import { clientQueryKeys } from '../constants/queryKeys';
-import { clientService } from '../services/clientService';
 import type { Client } from '../types';
 
 export const useClientList = () => {

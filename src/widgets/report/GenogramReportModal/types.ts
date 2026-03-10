@@ -1,7 +1,7 @@
 import type { ReactNode, RefObject } from 'react';
 
-import type { ReportListItem } from '@/features/report/services/reportService';
 import type { GenogramPageHandle } from '@/genogram';
+import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 
 import type { GeneratingStatus } from '../ReportGeneratingView';
 

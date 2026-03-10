@@ -4,9 +4,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
-import { createHandWrittenSession } from '@/features/session/services/sessionService';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { createHandWrittenSession } from '@/shared/api/supabase/sessionQueries';
 import { Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';

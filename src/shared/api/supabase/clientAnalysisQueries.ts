@@ -2,25 +2,24 @@
  * 클라이언트 분석 서비스
  */
 
-import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
-
 import type {
   ClientAnalysis,
   ClientAnalysisType,
   ClientAnalysisVersion,
   ClientTemplate,
   ClientTemplateGroups,
-} from '../types/clientAnalysis.types';
+} from '@/features/client/types/clientAnalysis.types';
 import type {
   ClientAnalysisApiError,
   CreateClientAnalysisRequest,
   CreateClientAnalysisResponse,
   GetClientAnalysisStatusResponse,
-} from '../types/clientAnalysisApi.types';
+} from '@/features/client/types/clientAnalysisApi.types';
+import { supabase } from '@/lib/supabase';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/api/edgeFunctionClient';
 
 export const clientAnalysisService = {
   /**

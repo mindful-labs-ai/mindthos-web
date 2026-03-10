@@ -1,16 +1,15 @@
-import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
-
 import type {
   BillingKeyIssueRequest,
   BillingKeyIssueResponse,
   UpgradePlanRequest,
   UpgradePlanResponse,
   CompletePlanUpgradeRequest,
-} from '../types';
+} from '@/features/payment/types';
+import { supabase } from '@/lib/supabase';
+import {
+  callEdgeFunction,
+  EDGE_FUNCTION_ENDPOINTS,
+} from '@/shared/api/edgeFunctionClient';
 
 export const billingService = {
   /**

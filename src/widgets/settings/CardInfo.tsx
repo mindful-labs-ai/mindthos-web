@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { getCardBrandName } from '@/features/payment/constants/card';
-import { billingService } from '@/features/payment/services/billingService';
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';

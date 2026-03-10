@@ -6,9 +6,9 @@ import { useEffect, useRef } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
 import { useAuthStore } from '@/stores/authStore';
 
-import { clientAnalysisService } from '../services/clientAnalysisService';
 import type {
   ClientAnalysisVersion,
   ClientTemplate,

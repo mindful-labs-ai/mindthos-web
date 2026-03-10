@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { billingService } from '@/features/payment/services/billingService';
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { useAuthStore } from '@/stores/authStore';
 
 export const useCardInfo = () => {

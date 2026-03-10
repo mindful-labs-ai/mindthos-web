@@ -3,8 +3,7 @@ import { useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
-
-import { generateFamilySummary } from '../services/genogramAIService';
+import { generateFamilySummary } from '@/shared/api/supabase/genogramAIQueries';
 
 interface UseGenogramGenerationOptions {
   onSuccess?: (data: SerializedGenogram) => void;

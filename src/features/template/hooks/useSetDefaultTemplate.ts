@@ -1,8 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
+import { templateService } from '@/shared/api/supabase/templateQueries';
 import { useAuthStore } from '@/stores/authStore';
-
-import { templateService } from '../services/templateService';
 
 export const useSetDefaultTemplate = () => {
   const userId = useAuthStore((state) => state.userId);

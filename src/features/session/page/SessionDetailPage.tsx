@@ -7,6 +7,11 @@ import { isDummySessionId } from '@/features/session/constants/dummySessions';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
 import { trackError } from '@/lib/mixpanel';
+import { updateProgressNoteSummary } from '@/shared/api/supabase/progressNoteQueries';
+import {
+  getAudioPresignedUrl,
+  updateSessionTitle,
+} from '@/shared/api/supabase/sessionQueries';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Tab } from '@/shared/ui/atoms/Tab';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -35,11 +40,6 @@ import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
 import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
 import { useTranscriptEditSession } from '../hooks/useTranscriptEditSession';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
-import { updateProgressNoteSummary } from '../services/progressNoteService';
-import {
-  getAudioPresignedUrl,
-  updateSessionTitle,
-} from '../services/sessionService';
 import type { HandwrittenTranscribe, Transcribe } from '../types';
 import {
   getSegments as getSnapshotSegments,

@@ -1,5 +1,3 @@
-import { supabase } from '@/lib/supabase';
-
 import type {
   GetTemplatePinsRequest,
   GetTemplatePinsResponse,
@@ -9,7 +7,8 @@ import type {
   TemplateApiError,
   ToggleTemplatePinRequest,
   ToggleTemplatePinResponse,
-} from '../types/templateApi.types';
+} from '@/features/template/types/templateApi.types';
+import { supabase } from '@/lib/supabase';
 
 const createDatabaseError = (
   error: { message?: string },

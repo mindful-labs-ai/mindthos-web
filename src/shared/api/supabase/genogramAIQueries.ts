@@ -8,18 +8,17 @@
  * 3. DB 저장 및 프론트 렌더링
  */
 
+import {
+  type AIGenogramOutput,
+  convertAIJsonToCanvas,
+  isValidAIJson,
+} from '@/features/genogram/utils/aiJsonConverter';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { supabase } from '@/lib/supabase';
 import {
   callEdgeFunction,
   EDGE_FUNCTION_ENDPOINTS,
 } from '@/shared/api/edgeFunctionClient';
-
-import {
-  type AIGenogramOutput,
-  convertAIJsonToCanvas,
-  isValidAIJson,
-} from '../utils/aiJsonConverter';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 타입 정의

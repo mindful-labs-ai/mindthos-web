@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link, createSearchParams } from 'react-router-dom';
 
 import { ROUTES, TERMS_TYPES } from '@/app/router/constants';
-import { billingService } from '@/features/payment/services/billingService';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import {
@@ -14,6 +13,7 @@ import {
 } from '@/features/settings/utils/planUtils';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
+import { billingService } from '@/shared/api/supabase/billingQueries';
 import { CouponIcon, MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';

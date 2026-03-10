@@ -13,12 +13,12 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { trackError, trackEvent } from '@/lib/mixpanel';
-import { useToast } from '@/shared/ui/composites/Toast';
-
 import {
   saveTranscriptContents,
   updateTranscriptSegments,
-} from '../services/sessionService';
+} from '@/shared/api/supabase/sessionQueries';
+import { useToast } from '@/shared/ui/composites/Toast';
+
 import type {
   ProgressNote,
   Session,
