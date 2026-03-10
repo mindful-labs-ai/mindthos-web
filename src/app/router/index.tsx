@@ -49,7 +49,9 @@ const PaymentFail = lazy(() => import('@/widgets/payment/PaymentFail'));
 const ErrorPage = lazy(() => import('@/features/error/page/ErrorPage'));
 const ErrorTestPage = lazy(() => import('@/features/error/page/ErrorTestPage'));
 const NotFoundPage = lazy(() => import('@/features/error/page/NotFoundPage'));
-const ReportPOCPage = lazy(() => import('@/features/report/poc/ReportPOCPage'));
+const DebugShellPage = lazy(
+  () => import('@/features/debug/page/DebugShellPage')
+);
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   <Suspense
@@ -222,12 +224,22 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: ROUTES.REPORT_POC,
+        path: ROUTES.DEBUG_SHELL,
         element: (
-          <SuspenseWrapper>
-            <ReportPOCPage />
-          </SuspenseWrapper>
+          <ProtectedRoute>
+            <SideTabLayout />
+          </ProtectedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: (
+              <SuspenseWrapper>
+                <DebugShellPage />
+              </SuspenseWrapper>
+            ),
+          },
+        ],
       },
       {
         path: ROUTES.NOT_FOUND,
