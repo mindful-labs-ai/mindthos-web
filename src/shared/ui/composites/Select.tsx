@@ -264,70 +264,77 @@ export const Select: React.FC<SelectProps> = ({
       {isOpen &&
         !disabled &&
         createPortal(
-          <ul
-            ref={dropdownRef}
-            role="listbox"
-            aria-multiselectable={multiple}
+          <div
             style={{
               position: 'absolute',
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
               maxHeight: `${maxDropdownHeight}px`,
-              overflow: 'auto',
-              overscrollBehavior: 'contain',
+              overflow: 'hidden',
             }}
             className={cn(
               'z-popover',
-              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
-              'py-1'
+              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg'
             )}
           >
-            {items.map((item, index) => {
-              const selected = isSelected(item.value);
-              return (
-                <li
-                  key={item.value}
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => !item.disabled && handleSelect(item.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      if (!item.disabled) handleSelect(item.value);
-                    }
-                  }}
-                  tabIndex={0}
-                  className={cn(
-                    'flex items-center justify-between px-3 py-2 text-sm',
-                    'cursor-pointer transition-colors duration-200',
-                    'hover:bg-surface-contrast',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-                    item.disabled && 'cursor-not-allowed opacity-50',
-                    focusedIndex === index && 'bg-surface-contrast',
-                    selected && 'font-medium text-primary'
-                  )}
-                >
-                  <span>{item.label}</span>
-                  {selected && (
-                    <svg
-                      className="h-4 w-4 shrink-0 text-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </li>
-              );
-            })}
-          </ul>,
+            <ul
+              ref={dropdownRef}
+              role="listbox"
+              aria-multiselectable={multiple}
+              style={{
+                maxHeight: `${maxDropdownHeight}px`,
+                overflow: 'auto',
+                overscrollBehavior: 'contain',
+              }}
+              className="py-1"
+            >
+              {items.map((item, index) => {
+                const selected = isSelected(item.value);
+                return (
+                  <li
+                    key={item.value}
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => !item.disabled && handleSelect(item.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (!item.disabled) handleSelect(item.value);
+                      }
+                    }}
+                    tabIndex={0}
+                    className={cn(
+                      'flex items-center justify-between px-3 py-2 text-sm',
+                      'cursor-pointer transition-colors duration-200',
+                      'hover:bg-surface-contrast',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
+                      item.disabled && 'cursor-not-allowed opacity-50',
+                      focusedIndex === index && 'bg-surface-contrast',
+                      selected && 'font-medium text-primary'
+                    )}
+                  >
+                    <span>{item.label}</span>
+                    {selected && (
+                      <svg
+                        className="h-4 w-4 shrink-0 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>,
           document.body
         )}
     </div>
