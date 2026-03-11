@@ -4,13 +4,13 @@ import { Check, Download, Loader2, MoreVertical, Save } from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';
+import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
 import {
   RedoIcon,
   SideLockIcon,
   SideSessionIcon,
   UndoIcon,
 } from '@/shared/icons';
-import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
 import { ClientDropdown } from './ClientDropdown';
 
@@ -66,8 +66,7 @@ export function GenogramPageHeader({
   onShowBasicInfo,
   onShowReport,
 }: GenogramPageHeaderProps) {
-  const hasReportAccess =
-    useFeatureAccessStore((s) => s.access.GENOGRAM_SEMINAR) ?? false;
+  const { hasAccess: hasReportAccess } = useFeatureAccess('GENOGRAM_SEMINAR');
   const [isExported, setIsExported] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const showSaved = useSavedIndicator(lastSavedAt);

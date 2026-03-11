@@ -332,14 +332,14 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   const tabItems: TabItem[] = [
     {
       value: 'ai_supervision',
-      label: 'AI 수퍼비전',
+      label: <span className="flex items-center">AI 수퍼비전</span>,
     },
     {
       value: 'profiling',
       label: (
         <span className="flex items-center gap-1.5">
           프로파일링
-          <div className="flex items-center rounded-md bg-fg-muted p-1">
+          <div className="flex items-center rounded-md bg-fg-muted px-1 py-0.5">
             <span className="text-xs font-bold text-surface">준비 중</span>
           </div>
         </span>
@@ -363,7 +363,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   // 빈 상태
   if (analyses.length === 0) {
     return (
-      <div className="">
+      <div className="flex flex-col">
         {/* 탭 + 버전 선택 + 다회기 분석 버튼 */}
         <div className="flex items-center justify-between px-8">
           {/* 탭 영역 */}
