@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
+import { preloadTutorialAssets } from '@/feature/onboarding/components/TutorialGuideModal';
 import { trackEvent } from '@/lib/mixpanel';
 import { onboardingService } from '@/services/onboarding/onboardingService';
 import {
   OnboardingState,
   type OnboardingStateType,
+  type OnboardingSuccessResponse,
 } from '@/services/onboarding/types';
 
 /**
@@ -61,6 +63,8 @@ interface QuestStoreState {
     rounded?: 'sm' | 'md' | 'lg' | 'full' | number;
   } | null;
   showConfetti: boolean;
+  /** 현재 열려있는 튜토리얼 가이드 모달의 레벨 (1, 2, 3) 또는 null */
+  tutorialGuideLevel: number | null;
 }
 
 interface QuestActions {
@@ -76,8 +80,9 @@ interface QuestActions {
 
   /**
    * 온보딩 보상 받기
+   * @returns 성공 시 OnboardingSuccessResponse, 에러 시 OnboardingErrorResponse throw
    */
-  getReward: (email: string) => Promise<void>;
+  getReward: (email: string) => Promise<OnboardingSuccessResponse>;
 
   /**
    * 튜토리얼 활성화 여부 설정
@@ -120,6 +125,11 @@ interface QuestActions {
   setShowConfetti: (show: boolean) => void;
 
   /**
+   * 튜토리얼 가이드 모달 레벨 설정
+   */
+  setTutorialGuideLevel: (level: number | null) => void;
+
+  /**
    * 상태 전체 초기화
    */
   clear: () => void;
@@ -142,6 +152,7 @@ export const useQuestStore = create<QuestStore>()(
         showCompleteModalStep: null,
         spotlightConfig: null,
         showConfetti: false,
+        tutorialGuideLevel: null,
 
         initializeQuest: async (email: string) => {
           const { isChecked, currentLevel } = get();
@@ -173,6 +184,11 @@ export const useQuestStore = create<QuestStore>()(
                 response.onboarding.state,
                 response.onboarding.step
               );
+            }
+
+            // 퀘스트 진행 중이면 튜토리얼 에셋 preload
+            if (level >= 1 && level <= 5) {
+              preloadTutorialAssets();
             }
 
             set(
@@ -261,7 +277,7 @@ export const useQuestStore = create<QuestStore>()(
           set({ isLoading: true }, false, 'quest/reward_start');
 
           try {
-            await onboardingService.success({ email });
+            const successResponse = await onboardingService.success({ email });
 
             // 보상 수령 후 상태 갱신을 위해 initializeQuest 재호출 혹은 직접 레벨 7로 설정
             const response = await onboardingService.check(email);
@@ -278,9 +294,10 @@ export const useQuestStore = create<QuestStore>()(
               false,
               'quest/reward_success'
             );
-          } catch (error) {
-            console.error('Getting reward failed:', error);
+            return successResponse;
+          } catch (error: unknown) {
             set({ isLoading: false }, false, 'quest/reward_error');
+            throw error;
           }
         },
 
@@ -332,6 +349,14 @@ export const useQuestStore = create<QuestStore>()(
           set({ showConfetti: show }, false, 'quest/set_show_confetti');
         },
 
+        setTutorialGuideLevel: (level: number | null) => {
+          set(
+            { tutorialGuideLevel: level },
+            false,
+            'quest/set_tutorial_guide_level'
+          );
+        },
+
         clear: () =>
           set(
             {
@@ -359,6 +384,6 @@ export const useQuestStore = create<QuestStore>()(
         }),
       }
     ),
-    { name: 'QuestStore' }
+    { name: 'QuestStore', enabled: !import.meta.env.PROD }
   )
 );

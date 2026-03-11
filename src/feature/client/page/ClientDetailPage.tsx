@@ -1,12 +1,10 @@
 import React from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { Badge } from '@/components/ui/atoms/Badge';
-import { Spotlight } from '@/components/ui/composites/Spotlight';
 import { useToast } from '@/components/ui/composites/Toast';
-import { AnalysisTabTooltip } from '@/feature/onboarding/components/TutorialTooltips';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { SessionRecordCard } from '@/feature/session/components/SessionRecordCard';
 import {
   dummyClient,
@@ -22,26 +20,29 @@ import { trackError, trackEvent } from '@/lib/mixpanel';
 import { getSessionDetailRoute } from '@/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuestStore } from '@/stores/questStore';
 
 import { AddClientModal } from '../components/AddClientModal';
 import { ClientAnalysisTab } from '../components/ClientAnalysisTab';
 import { CreateAnalysisModal } from '../components/CreateAnalysisModal';
 import { dummyClientAnalysisVersions } from '../constants/dummyClientAnalysis';
 import {
+  clientAnalysisQueryKeys,
   useClientAnalyses,
   useClientAnalysisStatus,
   useClientTemplates,
   useCreateClientAnalysis,
 } from '../hooks/useClientAnalysis';
 import { useClientList } from '../hooks/useClientList';
+import { clientAnalysisService } from '../services/clientAnalysisService';
 
 type TabType = 'history' | 'analyze';
 
 export const ClientDetailPage: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
+  const [searchParams] = useSearchParams();
   const { navigateWithUtm } = useNavigateWithUtm();
-  const [activeTab, setActiveTab] = React.useState<TabType>('history');
+  const initialTab = (searchParams.get('tab') as TabType) || 'history';
+  const [activeTab, setActiveTab] = React.useState<TabType>(initialTab);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(
@@ -49,19 +50,12 @@ export const ClientDetailPage: React.FC = () => {
   );
   const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
   const userId = useAuthStore((state) => state.userId);
+  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   // 크레딧 정보 조회
   const { creditInfo } = useCreditInfo();
   const CLIENT_ANALYSIS_CREDIT = 50; // 다회기 분석 크레딧
-
-  // 현재 퀘스트 레벨 가져오기
-  const { currentLevel } = useQuestStore();
-  // 튜토리얼 훅
-  const { checkIsTutorialActive, handleTutorialAction, endTutorial } =
-    useTutorial({
-      currentLevel,
-    });
 
   // 클라이언트 목록 조회
   const { clients, isLoading: isLoadingClients } = useClientList();
@@ -71,14 +65,14 @@ export const ClientDetailPage: React.FC = () => {
     userId: userId ? Number(userId) : 0,
     enabled: !!userId,
   });
-  // 더미 데이터 노출 조건: 실제 데이터가 없거나 튜토리얼이 활성 상태일 때
-  const isTutorialActive = useQuestStore((state) => state.isTutorialActive);
+  // 더미 데이터 노출 조건: 실제 데이터가 없거나 더미 클라이언트 ID로 직접 접근한 경우
+  const isDummyClientId = clientId === 'dummy_client_1';
   const isDummyFlow =
+    isDummyClientId ||
     (!isLoadingClients &&
       !isLoadingSessions &&
       !clients.length &&
-      sessionsData?.sessions.length === 0) ||
-    isTutorialActive;
+      sessionsData?.sessions.length === 0);
   const isReadOnly = isDummyFlow;
 
   // 클라이언트 분석 관련 hooks
@@ -89,6 +83,17 @@ export const ClientDetailPage: React.FC = () => {
 
   // 더미 플로우일 때는 더미 분석 데이터 사용
   const displayAnalyses = isDummyFlow ? dummyClientAnalysisVersions : analyses;
+
+  // 분석 내용 수정 핸들러
+  const handleSaveAnalysisContent = React.useCallback(
+    async (analysisId: string, content: string) => {
+      await clientAnalysisService.updateAnalysisContent(analysisId, content);
+      queryClient.invalidateQueries({
+        queryKey: clientAnalysisQueryKeys.analysesByClient(clientId || ''),
+      });
+    },
+    [clientId, queryClient]
+  );
 
   // 폴링 상태 조회
   useClientAnalysisStatus({
@@ -317,35 +322,19 @@ export const ClientDetailPage: React.FC = () => {
       {/* 탭 */}
       <div className="flex-shrink-0 px-12">
         <div className="flex justify-center gap-8">
-          <Spotlight
-            isActive={checkIsTutorialActive(3, 2)}
-            tooltip={<AnalysisTabTooltip />}
-            tooltipPosition="bottom"
-            onClose={() => endTutorial()}
-            className="h-full"
+          <button
+            onClick={() => setActiveTab('analyze')}
+            className={`relative px-1 py-4 text-lg font-medium transition-colors ${
+              activeTab === 'analyze'
+                ? 'text-fg'
+                : 'text-fg-muted hover:text-fg'
+            }`}
           >
-            <button
-              onClick={() => {
-                if (checkIsTutorialActive(3, 2)) {
-                  handleTutorialAction(() => setActiveTab('analyze'), 3, {
-                    targetLevel: 2,
-                  });
-                } else {
-                  setActiveTab('analyze');
-                }
-              }}
-              className={`relative px-1 py-4 text-lg font-medium transition-colors ${
-                activeTab === 'analyze'
-                  ? 'text-fg'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              다회기 분석
-              <div
-                className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
-              />
-            </button>
-          </Spotlight>
+            다회기 분석
+            <div
+              className={`absolute bottom-2 right-0 h-0.5 bg-fg transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
+            />
+          </button>
           <button
             onClick={() => setActiveTab('history')}
             className={`relative px-1 py-4 text-lg font-medium transition-colors ${
@@ -462,6 +451,8 @@ export const ClientDetailPage: React.FC = () => {
               analyses={displayAnalyses}
               isLoading={isLoadingAnalyses && !isDummyFlow}
               pollingVersion={pollingVersion}
+              isReadOnly={isReadOnly}
+              onSaveContent={handleSaveAnalysisContent}
               onCreateAnalysis={() => {
                 if (isReadOnly) {
                   toast({

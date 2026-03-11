@@ -124,8 +124,6 @@ export const authService = {
         phoneNumber: data.phone_number,
         defaultTemplateId: data.default_template_id,
         organization: data.organization,
-        termsAgreedAt: data.terms_agreed_at ?? null,
-        termsVersion: data.terms_version ?? null,
       };
     } catch (error) {
       console.error('getUserDataByEmail exception:', error);
@@ -135,17 +133,27 @@ export const authService = {
 
   async updateUser(
     userId: string,
-    data: { name?: string; organization?: string; phoneNumber?: string }
+    data: {
+      name?: string;
+      organization?: string;
+      phoneNumber?: string;
+      referralSource?: string;
+    }
   ): Promise<void> {
     try {
+      const updatePayload: Record<string, unknown> = {
+        name: data.name,
+        organization: data.organization,
+        phone_number: data.phoneNumber,
+        updated_at: new Date().toISOString(),
+      };
+      if (data.referralSource !== undefined) {
+        updatePayload.referral_source = data.referralSource;
+      }
+
       const { error } = await supabase
         .from('users')
-        .update({
-          name: data.name,
-          organization: data.organization,
-          phone_number: data.phoneNumber,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq('id', parseInt(userId));
 
       if (error) throw handleAuthError(error);

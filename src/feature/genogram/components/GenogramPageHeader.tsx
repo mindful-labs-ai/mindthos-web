@@ -4,7 +4,13 @@ import { Check, Download, Loader2, MoreVertical, Save } from 'lucide-react';
 
 import type { Client } from '@/feature/client/types';
 import { useSavedIndicator } from '@/feature/genogram/hooks/useSavedIndicator';
-import { RedoIcon, UndoIcon } from '@/shared/icons';
+import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
+import {
+  RedoIcon,
+  SideLockIcon,
+  SideSessionIcon,
+  UndoIcon,
+} from '@/shared/icons';
 
 import { ClientDropdown } from './ClientDropdown';
 
@@ -35,6 +41,8 @@ interface GenogramPageHeaderProps {
   isResetting?: boolean;
   /** 가계도 기본 정보 보기 핸들러 (역변환) */
   onShowBasicInfo?: () => void;
+  /** 가계도 분석 보고서 핸들러 */
+  onShowReport?: () => void;
 }
 
 export function GenogramPageHeader({
@@ -56,7 +64,9 @@ export function GenogramPageHeader({
   onReset,
   isResetting = false,
   onShowBasicInfo,
+  onShowReport,
 }: GenogramPageHeaderProps) {
+  const { hasAccess: hasReportAccess } = useFeatureAccess('GENOGRAM_SEMINAR');
   const [isExported, setIsExported] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const showSaved = useSavedIndicator(lastSavedAt);
@@ -99,6 +109,23 @@ export function GenogramPageHeader({
             className="flex h-10 items-center rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
           >
             가족 구성원 정보
+          </button>
+        )}
+        {onShowReport && selectedClient && (
+          <button
+            onClick={onShowReport}
+            className={
+              hasReportAccess
+                ? 'flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-50 px-4 text-sm text-primary transition-colors hover:bg-primary-100'
+                : 'flex h-10 items-center gap-1.5 rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast'
+            }
+          >
+            {hasReportAccess ? (
+              <SideSessionIcon size={24} className="text-primary" />
+            ) : (
+              <SideLockIcon size={14} className="text-fg-muted" />
+            )}
+            가계도 분석 보고서
           </button>
         )}
       </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
-import { isProPlan } from '@/feature/settings/utils/planUtils';
+import { isPlusOrAbove } from '@/feature/settings/utils/planUtils';
 import { useModalStore } from '@/stores/modalStore';
 
 import { useGenogramExport } from '../../hooks/useGenogramExport';
@@ -31,7 +31,7 @@ export function GenogramExportModal({
 
   const { creditInfo } = useCreditInfo();
   const openModal = useModalStore((state) => state.openModal);
-  const isPro = isProPlan(creditInfo?.plan.type);
+  const canRemoveWatermark = isPlusOrAbove(creditInfo?.plan.type);
 
   const {
     backgroundId,
@@ -47,7 +47,7 @@ export function GenogramExportModal({
   });
 
   const handleWatermarkClick = () => {
-    if (isPro) {
+    if (canRemoveWatermark) {
       setShowWatermark(!showWatermark);
     } else {
       setShowUpgradeTooltip(true);
@@ -152,7 +152,7 @@ export function GenogramExportModal({
                   워터마크 제거
                 </span>
                 <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
-                  프로
+                  플러스
                 </span>
               </div>
               <button
@@ -162,7 +162,7 @@ export function GenogramExportModal({
                   !showWatermark
                     ? 'border-primary bg-primary'
                     : 'border-border bg-surface-strong'
-                } ${!isPro ? 'opacity-50' : ''}`}
+                } ${!canRemoveWatermark ? 'opacity-50' : ''}`}
               >
                 <span
                   className={`text-sm font-bold text-white transition-opacity ${
@@ -175,7 +175,7 @@ export function GenogramExportModal({
             </div>
 
             {/* 업그레이드 팝업 */}
-            {showUpgradeTooltip && !isPro && (
+            {showUpgradeTooltip && !canRemoveWatermark && (
               <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-white p-4 shadow-md">
                 <button
                   type="button"

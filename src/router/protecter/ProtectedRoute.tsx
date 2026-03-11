@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
 import { GlobalModalContainer } from '@/components/GlobalModalContainer';
+import { useTermsCheck } from '@/feature/terms-agreement/hooks/useTermsCheck';
 import { useMobileRouteGuard } from '@/shared/hooks/useMobileRouteGuard';
 import { useAuthStore } from '@/stores/authStore';
 import { useUtmStore } from '@/stores/utmStore';
@@ -27,13 +28,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
-  const termsAgreedAt = useAuthStore((state) => state.termsAgreedAt);
   const utmParams = useUtmStore((state) => state.utmParams);
+  const { agreedAll, isLoading: isTermsLoading } = useTermsCheck(
+    isAuthenticated && !skipTermsCheck
+  );
 
   // 모바일/태블릿에서 "/" 외 라우트 접근 시 자동 리다이렉트
   useMobileRouteGuard();
 
-  if (isLoading) {
+  if (isLoading || (isAuthenticated && !skipTermsCheck && isTermsLoading)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="text-center">
@@ -50,7 +53,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // 약관 미동의 시 약관 동의 페이지로 리다이렉트
-  if (!skipTermsCheck && !termsAgreedAt) {
+  if (!skipTermsCheck && !agreedAll) {
     const search = utmParams ? `?${utmParams}` : '';
     return (
       <Navigate to={{ pathname: ROUTES.TERMS_AGREEMENT, search }} replace />

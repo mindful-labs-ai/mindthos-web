@@ -184,7 +184,7 @@ export const Tab: React.FC<TabProps> = ({
               }}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className={cn(
-                'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
+                'h-full flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
                 sizeStyles[size],

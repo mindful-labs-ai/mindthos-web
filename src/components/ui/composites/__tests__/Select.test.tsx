@@ -49,7 +49,7 @@ describe('Select', () => {
     await user.click(screen.getByText('Option 1'));
     await user.click(screen.getByText('Option 2'));
 
-    expect(screen.getByText('2 selected')).toBeInTheDocument();
+    expect(screen.getByText('Option 1, Option 2')).toBeInTheDocument();
   });
 
   it('has checkboxes in multiple mode', async () => {
@@ -142,6 +142,6 @@ describe('Select', () => {
     render(
       <Select items={items} multiple value={['1', '2']} onChange={vi.fn()} />
     );
-    expect(screen.getByText('2 selected')).toBeInTheDocument();
+    expect(screen.getByText('Option 1, Option 2')).toBeInTheDocument();
   });
 });

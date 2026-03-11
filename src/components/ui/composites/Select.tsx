@@ -20,6 +20,7 @@ export interface SelectProps {
   onChange?: (value: string | string[]) => void;
   placeholder?: string;
   disabled?: boolean;
+  loading?: boolean;
   className?: string;
   maxDropdownHeight?: number; // 드롭다운 최대 높이 (px)
 }
@@ -39,6 +40,7 @@ export const Select: React.FC<SelectProps> = ({
   onChange,
   placeholder = 'Select...',
   disabled = false,
+  loading = false,
   className,
   maxDropdownHeight = 240, // 기본값 240px (max-h-60)
 }) => {
@@ -82,11 +84,16 @@ export const Select: React.FC<SelectProps> = ({
   const getDisplayValue = (): string => {
     if (multiple && Array.isArray(selectedValue)) {
       if (selectedValue.length === 0) return placeholder;
-      return `${selectedValue.length} selected`;
+      // 선택된 항목의 label을 쉼표로 구분하여 표시
+      return selectedValue
+        .map((v) => {
+          const item = items.find((i) => i.value === v);
+          return item ? (item.displayLabel ?? String(item.label)) : v;
+        })
+        .join(', ');
     }
     const selected = items.find((item) => item.value === selectedValue);
     if (!selected) return placeholder;
-    // displayLabel이 있으면 사용, 없으면 label을 문자열로 변환
     return selected.displayLabel ?? String(selected.label);
   };
 
@@ -189,9 +196,9 @@ export const Select: React.FC<SelectProps> = ({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        disabled={disabled}
+        disabled={disabled || loading}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         className={cn(
@@ -204,100 +211,129 @@ export const Select: React.FC<SelectProps> = ({
           isOpen && 'border-primary'
         )}
       >
-        <span className={cn(!selectedValue && 'text-fg-muted', 'truncate')}>
-          {getDisplayValue()}
-        </span>
-        <svg
-          className={cn('h-4 w-4 transition-transform', isOpen && 'rotate-180')}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+        <span
+          className={cn(
+            'truncate',
+            (!selectedValue ||
+              (Array.isArray(selectedValue) && selectedValue.length === 0)) &&
+              'text-fg-muted'
+          )}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+          {loading ? '불러오는 중...' : getDisplayValue()}
+        </span>
+        {loading ? (
+          <svg
+            className="h-4 w-4 animate-spin text-fg-muted"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+        ) : (
+          <svg
+            className={cn(
+              'h-4 w-4 shrink-0 transition-transform',
+              isOpen && 'rotate-180'
+            )}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        )}
       </button>
 
       {isOpen &&
         !disabled &&
         createPortal(
-          <ul
-            ref={dropdownRef}
-            role="listbox"
-            aria-multiselectable={multiple}
+          <div
             style={{
               position: 'absolute',
               top: `${dropdownPosition.top}px`,
               left: `${dropdownPosition.left}px`,
               width: `${dropdownPosition.width}px`,
               maxHeight: `${maxDropdownHeight}px`,
-              overflow: 'auto',
+              overflow: 'hidden',
             }}
             className={cn(
               'z-[9999]',
-              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
-              'py-1'
+              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg'
             )}
           >
-            {items.map((item, index) => {
-              const selected = isSelected(item.value);
-              return (
-                <li
-                  key={item.value}
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => !item.disabled && handleSelect(item.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      if (!item.disabled) handleSelect(item.value);
-                    }
-                  }}
-                  tabIndex={0}
-                  className={cn(
-                    'flex items-center gap-2 px-3 py-2 text-sm',
-                    'cursor-pointer transition-colors duration-200',
-                    'hover:bg-surface-contrast',
-                    item.disabled && 'cursor-not-allowed opacity-50',
-                    focusedIndex === index && 'bg-surface-contrast',
-                    selected && 'bg-primary/10 font-medium text-primary'
-                  )}
-                >
-                  {multiple && (
-                    <div
-                      className={cn(
-                        'flex h-4 w-4 items-center justify-center rounded border-2',
-                        selected
-                          ? 'border-primary bg-primary'
-                          : 'border-border bg-surface'
-                      )}
-                    >
-                      {selected && (
-                        <svg
-                          className="h-3 w-3 text-surface"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  )}
-                  <span>{item.label}</span>
-                </li>
-              );
-            })}
-          </ul>,
+            <ul
+              ref={dropdownRef}
+              role="listbox"
+              aria-multiselectable={multiple}
+              style={{
+                maxHeight: `${maxDropdownHeight}px`,
+                overflow: 'auto',
+                overscrollBehavior: 'contain',
+              }}
+              className="py-1"
+            >
+              {items.map((item, index) => {
+                const selected = isSelected(item.value);
+                return (
+                  <li
+                    key={item.value}
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => !item.disabled && handleSelect(item.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (!item.disabled) handleSelect(item.value);
+                      }
+                    }}
+                    tabIndex={0}
+                    className={cn(
+                      'flex items-center justify-between px-3 py-2 text-sm',
+                      'cursor-pointer transition-colors duration-200',
+                      'hover:bg-surface-contrast',
+                      item.disabled && 'cursor-not-allowed opacity-50',
+                      focusedIndex === index && 'bg-surface-contrast',
+                      selected && 'font-medium text-primary'
+                    )}
+                  >
+                    <span>{item.label}</span>
+                    {selected && (
+                      <svg
+                        className="h-4 w-4 shrink-0 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>,
           document.body
         )}
     </div>

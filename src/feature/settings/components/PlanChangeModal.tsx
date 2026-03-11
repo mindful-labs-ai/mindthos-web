@@ -13,6 +13,7 @@ import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { usePlansByPeriod } from '@/feature/settings/hooks/usePlans';
 import { trackEvent } from '@/lib/mixpanel';
 import { useAuthStore } from '@/stores/authStore';
+import { useQuestStore } from '@/stores/questStore';
 
 import { DowngradeConfirmModal } from './DowngradeConfirmModal';
 import { PaymentResultModal } from './PaymentResultModal';
@@ -72,6 +73,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   const { requestBillingAuth } = useTossPayments(user?.id || '');
   const { cardInfo } = useCardInfo();
   const { creditInfo } = useCreditInfo();
+  const initializeQuest = useQuestStore((state) => state.initializeQuest);
 
   // 현재 플랜 정보
   const currentPlanType = creditInfo?.plan?.type;
@@ -214,6 +216,11 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         new_plan: response.newPlan,
         amount: response.finalAmount,
       });
+
+      // 플랜 변경 후 퀘스트 상태 갱신 (온보딩 노출 조건 업데이트)
+      if (user?.email) {
+        initializeQuest(user.email);
+      }
 
       setPaymentResult({
         status: 'success',

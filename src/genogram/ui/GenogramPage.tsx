@@ -192,26 +192,30 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       // 현재 뷰포트 저장
       const originalViewport = getViewport();
 
-      // 모든 노드의 bounds 계산
-      const bounds = getNodesBounds(currentNodes);
+      // 모든 노드의 bounds 계산 (ReactFlow 등록 기준 = 노드 도형 영역만)
+      const nodeBounds = getNodesBounds(currentNodes);
       const containerEl = canvasRef.current;
       if (!containerEl) return null;
 
       const containerWidth = containerEl.clientWidth;
       const containerHeight = containerEl.clientHeight;
 
-      // padding을 포함한 zoom 계산
-      const padding = 0.1;
-      const paddedWidth = bounds.width * (1 + padding * 2);
-      const paddedHeight = bounds.height * (1 + padding * 2);
+      // 레이블 overflow를 고려한 뷰포트 피팅용 추정 확장 범위
+      // (viewport 설정 시점엔 실제 DOM 크기를 모르므로 여유 있게 잡음)
+      const FIT_EXPAND = { top: 30, bottom: 40, left: 100, right: 220 };
+      const fitBounds = {
+        x: nodeBounds.x - FIT_EXPAND.left,
+        y: nodeBounds.y - FIT_EXPAND.top,
+        width: nodeBounds.width + FIT_EXPAND.left + FIT_EXPAND.right,
+        height: nodeBounds.height + FIT_EXPAND.top + FIT_EXPAND.bottom,
+      };
 
-      const zoomX = containerWidth / paddedWidth;
-      const zoomY = containerHeight / paddedHeight;
-      const zoom = Math.min(zoomX, zoomY, 1); // 최대 zoom 1로 제한
+      const zoomX = containerWidth / fitBounds.width;
+      const zoomY = containerHeight / fitBounds.height;
+      const zoom = Math.min(zoomX, zoomY, 1);
 
-      // bounds 중심을 화면 중심으로 이동
-      const centerX = bounds.x + bounds.width / 2;
-      const centerY = bounds.y + bounds.height / 2;
+      const centerX = fitBounds.x + fitBounds.width / 2;
+      const centerY = fitBounds.y + fitBounds.height / 2;
 
       const newViewport = {
         x: containerWidth / 2 - centerX * zoom,
@@ -226,16 +230,85 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       await new Promise((resolve) => requestAnimationFrame(resolve));
       await new Promise((resolve) => setTimeout(resolve, 200));
 
+      // 렌더링 후 실제 DOM 요소 크기로 crop 범위 측정
+      // toPng 캡처 기준이 paneEl 이므로 좌표도 paneEl 기준으로 측정
+      const paneRect = paneEl.getBoundingClientRect();
+      const paneWidth = paneEl.clientWidth;
+      const paneHeight = paneEl.clientHeight;
+      const nodeEls = containerEl.querySelectorAll('.react-flow__node');
+      let domMinX = Infinity,
+        domMinY = Infinity,
+        domMaxX = -Infinity,
+        domMaxY = -Infinity;
+
+      nodeEls.forEach((nodeEl) => {
+        nodeEl.querySelectorAll('*').forEach((child) => {
+          const rect = (child as HTMLElement).getBoundingClientRect();
+          if (rect.width < 1 || rect.height < 1) return;
+          domMinX = Math.min(domMinX, rect.left - paneRect.left);
+          domMinY = Math.min(domMinY, rect.top - paneRect.top);
+          domMaxX = Math.max(domMaxX, rect.right - paneRect.left);
+          domMaxY = Math.max(domMaxY, rect.bottom - paneRect.top);
+        });
+      });
+
+      // DOM 측정 실패 시 fallback
+      if (!isFinite(domMinX)) {
+        setViewport(originalViewport, { duration: 0 });
+        return null;
+      }
+
+      const pixelRatio = 2;
+      const VISUAL_PADDING = 24;
+      const cropX = Math.max(0, domMinX - VISUAL_PADDING);
+      const cropY = Math.max(0, domMinY - VISUAL_PADDING);
+      const cropW = Math.min(
+        domMaxX - domMinX + VISUAL_PADDING * 2,
+        paneWidth - cropX
+      );
+      const cropH = Math.min(
+        domMaxY - domMinY + VISUAL_PADDING * 2,
+        paneHeight - cropY
+      );
+
       try {
         const dataUrl = await toPng(paneEl, {
           backgroundColor: undefined,
-          pixelRatio: 2,
+          pixelRatio,
+        });
+
+        const croppedUrl = await new Promise<string>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = cropW * pixelRatio;
+            canvas.height = cropH * pixelRatio;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('No canvas context'));
+              return;
+            }
+            ctx.drawImage(
+              img,
+              cropX * pixelRatio,
+              cropY * pixelRatio,
+              cropW * pixelRatio,
+              cropH * pixelRatio,
+              0,
+              0,
+              cropW * pixelRatio,
+              cropH * pixelRatio
+            );
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.onerror = reject;
+          img.src = dataUrl;
         });
 
         // 원래 뷰포트로 복원
         setViewport(originalViewport, { duration: 0 });
 
-        return dataUrl;
+        return croppedUrl;
       } catch {
         // 에러 시에도 뷰포트 복원
         setViewport(originalViewport, { duration: 0 });

@@ -118,3 +118,6 @@ export type { AudioPlayerProps } from './composites/AudioPlayer';
 
 export { Spotlight } from './composites/Spotlight';
 export type { SpotlightProps } from './composites/Spotlight';
+
+export { DatePicker } from './composites/DatePicker';
+export type { DatePickerProps } from './composites/DatePicker';

@@ -9,10 +9,9 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { ClientSelector } from '@/feature/client/components/ClientSelector';
 import { useClientList } from '@/feature/client/hooks/useClientList';
 import type { Client } from '@/feature/client/types';
-import { useTutorial } from '@/feature/onboarding/hooks/useTutorial';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
-import { CloudUploadIcon } from '@/shared/icons';
+import { CloudUploadIcon, CreditIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -45,8 +44,7 @@ export const CreateMultiSessionModal: React.FC<
   const { creditInfo } = useCreditInfo();
 
   // Quest 관련 hooks
-  const { currentLevel, setShowConfetti } = useQuestStore();
-  const { completeNextStep, endTutorial } = useTutorial({ currentLevel });
+  const { currentLevel, setShowConfetti, completeNextStep } = useQuestStore();
 
   // Step 상태
   const [step, setStep] = useState<ModalStep>('upload');
@@ -255,11 +253,10 @@ export const CreateMultiSessionModal: React.FC<
         duration: 5000,
       });
 
-      // 튜토리얼(레벨 4) 진행 중이라면 완료 처리
+      // 퀘스트(레벨 4) 진행 중이라면 완료 처리 (L4→L5)
       if (currentLevel === 4) {
         await completeNextStep(useAuthStore.getState().user?.email || '');
         setShowConfetti(true);
-        endTutorial();
       }
     }
 
@@ -472,26 +469,7 @@ export const CreateMultiSessionModal: React.FC<
                 <Text className="font-bold text-primary-600">
                   {step2TotalCredit}
                 </Text>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-primary-600"
-                >
-                  <g clipPath="url(#clip0_credit_modal)">
-                    <path
-                      d="M7 14C10.866 14 14 10.866 14 7C14 3.134 10.866 0 7 0C3.134 0 0 3.134 0 7C0.00418359 10.8643 3.13573 13.9958 7 14ZM4.1125 4.1125C5.70836 2.52055 8.29164 2.52055 9.8875 4.1125C10.1113 4.34424 10.1049 4.71352 9.87317 4.93732C9.64712 5.15566 9.28873 5.15566 9.06268 4.93732C7.92351 3.79846 6.07677 3.79868 4.9379 4.93787C3.79903 6.07707 3.79925 7.92378 4.93845 9.06265C6.07742 10.2013 7.92373 10.2013 9.0627 9.06265C9.29444 8.83884 9.66372 8.84527 9.88753 9.07701C10.1058 9.30306 10.1058 9.66142 9.88753 9.8875C8.29281 11.4822 5.70724 11.4822 4.11253 9.8875C2.51779 8.29279 2.51779 5.70721 4.1125 4.1125Z"
-                      fill="currentColor"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0_credit_modal">
-                      <rect width="14" height="14" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
+                <CreditIcon size={14} />
                 <Text className="text-primary-600">사용</Text>
               </div>
             </div>

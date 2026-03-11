@@ -59,7 +59,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none fixed right-4 top-4 z-50 flex flex-col gap-2"
+        className="pointer-events-none fixed right-4 top-4 z-[9999] flex flex-col gap-2"
       >
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onClose={() => removeToast(t.id)} />
