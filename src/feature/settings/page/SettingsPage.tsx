@@ -27,20 +27,30 @@ import {
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { ROUTES, TERMS_TYPES } from '@/router/constants';
 import { authService } from '@/services/auth/authService';
+import { useUserAccesses } from '@/shared/hooks/useFeatureAccess';
+import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
 import { CouponIcon, MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
+import { BadgeDetailModal } from '../components/BadgeDetailModal';
 import { CardInfo } from '../components/CardInfo';
 import { CreditRenewalModal } from '../components/CreditRenewalModal';
 import { NoticeDetail } from '../components/NoticeDetail';
 import { NoticeList } from '../components/NoticeList';
+import { BADGE_ICON_MAP } from '../constants/badgeIcons';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
   const userName = useAuthStore((state) => state.userName);
   const organization = useAuthStore((state) => state.organization);
   const logout = useAuthStore((state) => state.logout);
+
+  // 유저 뱃지 (접근 권한 목록)
+  const { accesses: badges } = useUserAccesses();
+  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(
+    null
+  );
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
@@ -287,25 +297,47 @@ export const SettingsPage: React.FC = () => {
                   </Button>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <UserIcon size={20} className="text-fg-muted" />
-                    <Text className="text-lg font-semibold">
-                      {userName || '이름 없음'}
-                    </Text>
+                <div className="flex items-end justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <UserIcon size={20} className="text-fg-muted" />
+                      <Text className="text-lg font-semibold">
+                        {userName || '이름 없음'}
+                      </Text>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MailIcon size={20} className="text-fg-muted" />
+                      <Text className="text-lg font-semibold">
+                        {user?.email || '이메일 없음'}
+                      </Text>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPinIcon size={20} className="text-fg-muted" />
+                      <Text className="text-lg font-semibold">
+                        {organization || '소속 기관 없음'}
+                      </Text>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <MailIcon size={20} className="text-fg-muted" />
-                    <Text className="text-lg font-semibold">
-                      {user?.email || '이메일 없음'}
-                    </Text>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPinIcon size={20} className="text-fg-muted" />
-                    <Text className="text-lg font-semibold">
-                      {organization || '소속 기관 없음'}
-                    </Text>
-                  </div>
+
+                  {badges.length > 0 && (
+                    <div className="flex gap-2">
+                      {badges.map((badge) => {
+                        const Icon = BADGE_ICON_MAP[badge.type];
+                        if (!Icon) return null;
+                        return (
+                          <button
+                            key={badge.id}
+                            type="button"
+                            onClick={() => setSelectedBadge(badge)}
+                            className="transition-transform hover:scale-105"
+                            aria-label={`${badge.name} 뱃지 상세 보기`}
+                          >
+                            <Icon size={60} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </Card.Body>
             </Card>
@@ -540,6 +572,15 @@ export const SettingsPage: React.FC = () => {
             open={isRenewalModalOpen}
             onOpenChange={setIsRenewalModalOpen}
           />
+          {selectedBadge && (
+            <BadgeDetailModal
+              open={!!selectedBadge}
+              onOpenChange={(open) => {
+                if (!open) setSelectedBadge(null);
+              }}
+              access={selectedBadge}
+            />
+          )}
         </>
       )}
     </div>
