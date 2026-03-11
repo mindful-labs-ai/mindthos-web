@@ -562,7 +562,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             {/* 사망일 — 사망 여부 체크 시에만 표시 */}
             {currentIsDead && (
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-fg">사망일</span>
+                <span className="text-base font-medium text-fg">사망일</span>
                 <DateInput
                   key={`death-${subject!.id}-${attr.lifeSpan.death}`}
                   value={attr.lifeSpan.death}
