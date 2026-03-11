@@ -22,44 +22,59 @@ export interface UserAccess {
   revokedAt: string | null;
 }
 
-// ── 공통 파싱 ──
+// ── 공통 fetch 유틸 ──
 
-interface RawUserAccess {
+interface RawUserAccessRow {
   id: string;
+  access_id: string;
   granted_at: string;
   expires_at: string | null;
   revoked_at: string | null;
-  accesses: { type: string; name: string; description: string };
 }
 
-function parseUserAccess(raw: RawUserAccess): UserAccess {
-  const access = raw.accesses as {
-    type: string;
-    name: string;
-    description: string;
-  };
-  return {
-    id: raw.id,
-    type: access.type,
-    name: access.name,
-    description: access.description,
-    grantedAt: raw.granted_at,
-    expiresAt: raw.expires_at,
-    revokedAt: raw.revoked_at,
-  };
+interface RawAccessRow {
+  id: string;
+  type: string;
+  name: string;
+  description: string;
 }
 
-const ACCESS_SELECT = `
-  id,
-  granted_at,
-  expires_at,
-  revoked_at,
-  accesses!inner (
-    type,
-    name,
-    description
-  )
-`;
+/**
+ * user_accesses ↔ accesses 간 FK가 없으므로 두 단계로 조회 후 수동 매핑.
+ */
+async function fetchAndMergeAccesses(
+  userAccessRows: RawUserAccessRow[]
+): Promise<UserAccess[]> {
+  if (userAccessRows.length === 0) return [];
+
+  const accessIds = userAccessRows.map((r) => r.access_id);
+  const { data: accessRows, error } = await supabase
+    .from('accesses')
+    .select('id, type, name, description')
+    .in('id', accessIds);
+
+  if (error) throw error;
+
+  const accessMap = new Map(
+    (accessRows as RawAccessRow[]).map((a) => [a.id, a])
+  );
+
+  return userAccessRows.flatMap((row) => {
+    const access = accessMap.get(row.access_id);
+    if (!access) return [];
+    return [
+      {
+        id: row.id,
+        type: access.type,
+        name: access.name,
+        description: access.description,
+        grantedAt: row.granted_at,
+        expiresAt: row.expires_at,
+        revokedAt: row.revoked_at,
+      },
+    ];
+  });
+}
 
 // ── 단일 접근 권한 조회 ──
 
@@ -70,18 +85,39 @@ async function fetchUserAccess(
   userId: string,
   type: string
 ): Promise<UserAccess | null> {
-  const { data, error } = await supabase
+  // 1단계: accesses 테이블에서 type으로 access_id 조회
+  const { data: accessRow, error: accessError } = await supabase
+    .from('accesses')
+    .select('id, type, name, description')
+    .eq('type', type)
+    .maybeSingle();
+
+  if (accessError) throw accessError;
+  if (!accessRow) return null;
+
+  // 2단계: user_accesses에서 해당 access_id 보유 여부 확인
+  const { data: userAccessRow, error: userAccessError } = await supabase
     .from('user_accesses')
-    .select(ACCESS_SELECT)
+    .select('id, access_id, granted_at, expires_at, revoked_at')
     .eq('user_id', Number(userId))
-    .eq('accesses.type', type)
+    .eq('access_id', (accessRow as RawAccessRow).id)
     .is('revoked_at', null)
     .maybeSingle();
 
-  if (error) throw error;
-  if (!data) return null;
+  if (userAccessError) throw userAccessError;
+  if (!userAccessRow) return null;
 
-  return parseUserAccess(data as unknown as RawUserAccess);
+  const row = userAccessRow as RawUserAccessRow;
+  const access = accessRow as RawAccessRow;
+  return {
+    id: row.id,
+    type: access.type,
+    name: access.name,
+    description: access.description,
+    grantedAt: row.granted_at,
+    expiresAt: row.expires_at,
+    revokedAt: row.revoked_at,
+  };
 }
 
 export function useFeatureAccess(type: string) {
@@ -123,15 +159,14 @@ const userAccessesQueryKey = (userId: string) =>
 async function fetchAllUserAccesses(userId: string): Promise<UserAccess[]> {
   const { data, error } = await supabase
     .from('user_accesses')
-    .select(ACCESS_SELECT)
+    .select('id, access_id, granted_at, expires_at, revoked_at')
     .eq('user_id', Number(userId))
     .is('revoked_at', null)
     .order('granted_at', { ascending: false });
 
   if (error) throw error;
-  if (!data) return [];
 
-  return (data as unknown as RawUserAccess[]).map(parseUserAccess);
+  return fetchAndMergeAccesses((data ?? []) as RawUserAccessRow[]);
 }
 
 export function useUserAccesses() {
