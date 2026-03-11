@@ -7,6 +7,7 @@ import { onboardingService } from '@/services/onboarding/onboardingService';
 import {
   OnboardingState,
   type OnboardingStateType,
+  type OnboardingSuccessResponse,
 } from '@/services/onboarding/types';
 
 /**
@@ -79,8 +80,9 @@ interface QuestActions {
 
   /**
    * 온보딩 보상 받기
+   * @returns 성공 시 OnboardingSuccessResponse, 에러 시 OnboardingErrorResponse throw
    */
-  getReward: (email: string) => Promise<void>;
+  getReward: (email: string) => Promise<OnboardingSuccessResponse>;
 
   /**
    * 튜토리얼 활성화 여부 설정
@@ -275,7 +277,7 @@ export const useQuestStore = create<QuestStore>()(
           set({ isLoading: true }, false, 'quest/reward_start');
 
           try {
-            await onboardingService.success({ email });
+            const successResponse = await onboardingService.success({ email });
 
             // 보상 수령 후 상태 갱신을 위해 initializeQuest 재호출 혹은 직접 레벨 7로 설정
             const response = await onboardingService.check(email);
@@ -292,9 +294,10 @@ export const useQuestStore = create<QuestStore>()(
               false,
               'quest/reward_success'
             );
-          } catch (error) {
-            console.error('Getting reward failed:', error);
+            return successResponse;
+          } catch (error: unknown) {
             set({ isLoading: false }, false, 'quest/reward_error');
+            throw error;
           }
         },
 
