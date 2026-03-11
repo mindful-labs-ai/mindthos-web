@@ -33,7 +33,11 @@ interface RawUserAccess {
 }
 
 function parseUserAccess(raw: RawUserAccess): UserAccess {
-  const access = raw.accesses as { type: string; name: string; description: string };
+  const access = raw.accesses as {
+    type: string;
+    name: string;
+    description: string;
+  };
   return {
     id: raw.id,
     type: access.type,
@@ -157,7 +161,8 @@ export function useUserAccesses() {
     /** 특정 타입의 권한 보유 여부 */
     hasAccess: (type: string) => (data ?? []).some((a) => a.type === type),
     /** 특정 타입의 권한 상세 조회 */
-    getAccess: (type: string) => (data ?? []).find((a) => a.type === type) ?? null,
+    getAccess: (type: string) =>
+      (data ?? []).find((a) => a.type === type) ?? null,
     /** 캐시 무효화 */
     invalidate,
   };

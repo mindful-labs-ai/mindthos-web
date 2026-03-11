@@ -34,11 +34,11 @@ import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
 import { BadgeDetailModal } from '../components/BadgeDetailModal';
-import { BADGE_ICON_MAP } from '../constants/badgeIcons';
 import { CardInfo } from '../components/CardInfo';
 import { CreditRenewalModal } from '../components/CreditRenewalModal';
 import { NoticeDetail } from '../components/NoticeDetail';
 import { NoticeList } from '../components/NoticeList';
+import { BADGE_ICON_MAP } from '../constants/badgeIcons';
 
 export const SettingsPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);
@@ -48,7 +48,9 @@ export const SettingsPage: React.FC = () => {
 
   // 유저 뱃지 (접근 권한 목록)
   const { accesses: badges } = useUserAccesses();
-  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(null);
+  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(
+    null
+  );
 
   // 크레딧 정보 가져오기
   const { creditInfo } = useCreditInfo();
@@ -573,7 +575,9 @@ export const SettingsPage: React.FC = () => {
           {selectedBadge && (
             <BadgeDetailModal
               open={!!selectedBadge}
-              onOpenChange={(open) => { if (!open) setSelectedBadge(null); }}
+              onOpenChange={(open) => {
+                if (!open) setSelectedBadge(null);
+              }}
               access={selectedBadge}
             />
           )}
