@@ -231,7 +231,7 @@ export const PopUp: React.FC<PopUpProps> = ({
                 'min-w-[200px] max-w-xs',
                 'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
                 'p-4',
-                'animate-[fadeIn_0.15s_ease-out]',
+                'animate-fadeIn',
                 className
               )}
             >

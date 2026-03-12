@@ -62,8 +62,8 @@ export const SnackBar: React.FC<SnackBarProps> = ({
       aria-live="polite"
       aria-atomic="true"
       className={cn(
-        'fixed bottom-4 left-1/2 z-50 -translate-x-1/2',
-        'min-w-[300px] max-w-md',
+        'fixed bottom-4 left-4 right-4 z-50 sm:left-1/2 sm:right-auto sm:-translate-x-1/2',
+        'w-auto sm:min-w-[300px] sm:max-w-md',
         'rounded-[var(--radius-lg)] border-2 border-border bg-surface-contrast shadow-lg',
         'px-4 py-3',
         'flex items-center justify-between gap-4',

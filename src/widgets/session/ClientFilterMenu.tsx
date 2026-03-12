@@ -47,7 +47,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
   };
 
   return (
-    <div className="w-64 space-y-4">
+    <div className="flex h-full w-full flex-col space-y-4">
       {/* 헤더 */}
       <div className="flex items-center gap-2 border-b border-border pb-3">
         {showBackButton && (
@@ -98,7 +98,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
       }
 
       {/* 고객 목록 */}
-      <div className="max-h-80 space-y-1 overflow-y-auto">
+      <div className="flex-1 space-y-1 overflow-y-auto">
         {/* 고객 목록 */}
         {filteredClients.length > 0 ? (
           filteredClients.map((client) => {

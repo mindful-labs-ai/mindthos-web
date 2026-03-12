@@ -3,6 +3,8 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { Modal } from '@/shared/ui/composites/Modal';
 
 export interface SelectItem {
   value: string;
@@ -57,6 +59,9 @@ export const Select: React.FC<SelectProps> = ({
     left: number;
     width: number;
   }>({ top: 0, left: 0, width: 0 });
+
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   const isControlled = controlledValue !== undefined;
   const selectedValue = isControlled ? controlledValue : uncontrolledValue;
@@ -261,7 +266,46 @@ export const Select: React.FC<SelectProps> = ({
         )}
       </button>
 
-      {isOpen &&
+      {isMobileView ? (
+        <Modal open={isOpen && !disabled} onOpenChange={setIsOpen} mobileVariant="bottomSheet">
+          <ul role="listbox" aria-multiselectable={multiple} className="w-full py-1">
+            {items.map((item, index) => {
+              const selected = isSelected(item.value);
+              return (
+                <li
+                  key={item.value}
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => !item.disabled && handleSelect(item.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (!item.disabled) handleSelect(item.value);
+                    }
+                  }}
+                  tabIndex={0}
+                  className={cn(
+                    'flex items-center justify-between px-3 py-3 text-sm',
+                    'cursor-pointer transition-colors duration-200',
+                    'hover:bg-surface-contrast',
+                    item.disabled && 'cursor-not-allowed opacity-50',
+                    focusedIndex === index && 'bg-surface-contrast',
+                    selected && 'font-medium text-primary'
+                  )}
+                >
+                  <span>{item.label}</span>
+                  {selected && (
+                    <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </Modal>
+      ) : (
+        isOpen &&
         !disabled &&
         createPortal(
           <div
@@ -316,18 +360,8 @@ export const Select: React.FC<SelectProps> = ({
                   >
                     <span>{item.label}</span>
                     {selected && (
-                      <svg
-                        className="h-4 w-4 shrink-0 text-primary"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
+                      <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </li>
@@ -336,7 +370,8 @@ export const Select: React.FC<SelectProps> = ({
             </ul>
           </div>,
           document.body
-        )}
+        )
+      )}
     </div>
   );
 };

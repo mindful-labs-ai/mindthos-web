@@ -2,6 +2,8 @@ import React from 'react';
 
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { Tooltip } from '@/shared/ui/composites/Tooltip';
 
 interface CreditPricingTooltipProps {
@@ -13,6 +15,10 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
   children,
   placement = 'bottom',
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  const [isMobileModalOpen, setIsMobileModalOpen] = React.useState(false);
+
   const tooltipContent = (
     <div className="space-y-4 p-2">
       <Title as="h4" className="text-sm font-semibold text-fg">
@@ -108,6 +114,24 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
       </Text>
     </div>
   );
+
+  if (isMobileView) {
+    return (
+      <>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={(e) => { e.stopPropagation(); setIsMobileModalOpen(true); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsMobileModalOpen(true); }}
+        >
+          {children}
+        </div>
+        <Modal open={isMobileModalOpen} onOpenChange={setIsMobileModalOpen} mobileVariant="fullScreen">
+          {tooltipContent}
+        </Modal>
+      </>
+    );
+  }
 
   return (
     <Tooltip content={tooltipContent} placement={placement} delay={100}>

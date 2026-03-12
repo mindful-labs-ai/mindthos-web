@@ -14,9 +14,11 @@ import {
   cleanupUnusedSpeakers,
 } from '@/features/session/utils/segmentRangeUtils';
 import { trackEvent } from '@/lib/mixpanel';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { RadioGroup } from '@/shared/ui/atoms/Radio';
 import { Text } from '@/shared/ui/atoms/Text';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { Spotlight } from '@/shared/ui/composites/Spotlight';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -56,6 +58,8 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   onGuideComplete,
   onApply,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const { clients } = useClientList();
   const { toast } = useToast();
   const [popupContentElement, setPopupContentElement] =
@@ -314,6 +318,24 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     </div>
   );
 
+  if (isMobileView) {
+    return (
+      <>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpenChange(true)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenChange(true); }}
+        >
+          {triggerElement}
+        </div>
+        <Modal open={open} onOpenChange={onOpenChange} mobileVariant="bottomSheet">
+          {popupContent}
+        </Modal>
+      </>
+    );
+  }
+
   return (
     <>
       <PopUp
@@ -332,8 +354,8 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
           tooltip={
             <SpeakerSelectTooltip
               onComplete={() => {
-                onOpenChange(false); // 팝업 닫기
-                onGuideComplete?.(); // 가이드 종료
+                onOpenChange(false);
+                onGuideComplete?.();
               }}
             />
           }

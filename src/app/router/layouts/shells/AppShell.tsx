@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 interface AppShellProps {
   sidebar: ReactNode;
   header: ReactNode;
+  mobileHeader: ReactNode;
   children: ReactNode;
 }
 
@@ -11,22 +12,30 @@ interface AppShellProps {
  *
  * CSS 반응형으로 레이아웃 가시성 제어:
  * - Desktop (sm+): sidebar + header + main
- * - Mobile (<sm): main only (전체 화면)
+ * - Mobile/Tablet (<sm): mobileHeader + main
  *
  * h-dvh: 모바일 브라우저의 동적 뷰포트 높이(주소창/키보드) 자동 대응
  */
-export const AppShell = ({ sidebar, header, children }: AppShellProps) => (
-  <div className="flex h-dvh w-full bg-bg-subtle">
+export const AppShell = ({
+  sidebar,
+  header,
+  mobileHeader,
+  children,
+}: AppShellProps) => (
+  <div className="flex h-dvh w-full overflow-hidden bg-bg-subtle">
     {/* Sidebar - sm 이상에서만 표시 */}
     <div className="hidden sm:contents">{sidebar}</div>
 
     {/* Main Content Area */}
-    <div className="flex flex-1 flex-col">
-      {/* Header - sm 이상에서만 표시 (Header 내부에서도 hidden sm:flex) */}
+    <div className="flex min-w-0 flex-1 flex-col">
+      {/* Mobile Header - sm 미만에서만 표시 */}
+      <div className="contents sm:hidden">{mobileHeader}</div>
+
+      {/* Desktop Header - sm 이상에서만 표시 */}
       <div className="hidden sm:contents">{header}</div>
 
       {/* Page Content */}
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto">{children}</main>
     </div>
   </div>
 );

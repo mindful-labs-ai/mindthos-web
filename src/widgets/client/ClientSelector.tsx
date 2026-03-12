@@ -4,9 +4,11 @@ import { createPortal } from 'react-dom';
 
 import type { Client } from '@/features/client/types';
 import { SearchIcon, UserIcon, XIcon } from '@/shared/icons';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 
 interface ClientSelectorProps {
@@ -40,6 +42,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   // dropdown/modal 모드일 때는 controlled, 아니면 internal state 사용
   const isOpen =
@@ -158,8 +163,25 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
     </div>
   );
 
-  // dropdown 모드
+  // dropdown 모드: 모바일 fullScreen, 데스크톱 PopUp
   if (variant === 'dropdown') {
+    if (isMobileView) {
+      return (
+        <>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setIsOpen(true)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsOpen(true); }}
+          >
+            {trigger}
+          </div>
+          <Modal open={isOpen} onOpenChange={setIsOpen} mobileVariant="fullScreen">
+            <div className="space-y-2 p-3">{renderClientList()}</div>
+          </Modal>
+        </>
+      );
+    }
     return (
       <PopUp
         trigger={trigger}
@@ -212,116 +234,109 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             {trigger}
           </div>
         )}
-        {isOpen &&
-          createPortal(
-            <div
-              className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (e.target === e.currentTarget) handleCloseModal();
-              }}
-              aria-hidden="true"
-            >
-              <div
-                role="dialog"
-                aria-modal="true"
-                aria-label="클라이언트 선택"
-                className="w-full max-w-lg rounded-t-2xl bg-surface px-5 pb-6 pt-4"
-              >
-                {/* 검색 */}
-                <div className="relative mb-4">
-                  <SearchIcon
-                    size={20}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted"
-                  />
-                  <input
-                    type="text"
-                    placeholder="클라이언트 검색하기"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 text-base focus:border-primary focus:outline-none"
-                  />
-                </div>
+        <Modal
+          open={isOpen}
+          onOpenChange={handleCloseModal}
+          mobileVariant="fullScreen"
+        >
+          <div className="flex h-full flex-col gap-4">
+            {/* 검색 */}
+            <div className="relative flex-shrink-0">
+              <SearchIcon
+                size={20}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-fg-muted"
+              />
+              <input
+                type="text"
+                placeholder="클라이언트 검색하기"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 text-base focus:border-primary focus:outline-none"
+              />
+            </div>
 
-                {/* 최근 추가한 고객 */}
-                {searchQuery === '' && recentClients.length > 0 && (
-                  <div className="mb-4">
-                    <Text className="mb-2 text-sm text-fg-muted">
-                      최근 추가한 클라이언트
-                    </Text>
-                    <div className="flex flex-wrap gap-2">
-                      {recentClients.map((client) => (
-                        <button
-                          key={client.id}
-                          onClick={() => handlePendingSelect(client)}
-                        >
-                          <Badge
-                            tone="neutral"
-                            variant="soft"
-                            size="md"
-                            className={`px-4 py-2 ${
-                              pendingClient?.id === client.id
-                                ? ''
-                                : 'bg-transparent'
-                            }`}
-                          >
-                            {client.name}
-                          </Badge>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 모든 고객 */}
+            {/* 목록 */}
+            <div className="flex-1 overflow-y-auto">
+              {/* 최근 추가한 고객 */}
+              {searchQuery === '' && recentClients.length > 0 && (
                 <div className="mb-4">
-                  {searchQuery === '' && (
-                    <Text className="mb-2 text-sm text-fg-muted">
-                      모든 클라이언트
-                    </Text>
-                  )}
-                  <div className="max-h-[240px] space-y-1 overflow-y-auto">
-                    {filteredClients.length > 0 ? (
-                      filteredClients.map((client) => (
-                        <button
-                          key={client.id}
-                          onClick={() => handlePendingSelect(client)}
-                          className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
+                  <Text className="mb-2 text-sm text-fg-muted">
+                    최근 추가한 클라이언트
+                  </Text>
+                  <div className="flex flex-wrap gap-2">
+                    {recentClients.map((client) => (
+                      <button
+                        key={client.id}
+                        onClick={() => handlePendingSelect(client)}
+                      >
+                        <Badge
+                          tone="neutral"
+                          variant="soft"
+                          size="md"
+                          className={`px-4 py-2 ${
                             pendingClient?.id === client.id
-                              ? 'bg-primary-100'
-                              : 'hover:bg-surface-contrast'
+                              ? ''
+                              : 'bg-transparent'
                           }`}
                         >
-                          <Text
-                            className={`text-base ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}
-                          >
-                            {client.name}
-                          </Text>
-                        </button>
-                      ))
-                    ) : (
-                      <Text className="py-4 text-center text-sm text-fg-muted">
-                        검색 결과가 없습니다
-                      </Text>
-                    )}
+                          {client.name}
+                        </Badge>
+                      </button>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {/* 선택 버튼 */}
-                <Button
-                  variant="solid"
-                  tone="primary"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleConfirmSelection}
-                  disabled={!pendingClient}
-                >
-                  선택
-                </Button>
+              {/* 모든 고객 */}
+              <div>
+                {searchQuery === '' && (
+                  <Text className="mb-2 text-sm text-fg-muted">
+                    모든 클라이언트
+                  </Text>
+                )}
+                <div className="space-y-1">
+                  {filteredClients.length > 0 ? (
+                    filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        onClick={() => handlePendingSelect(client)}
+                        className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
+                          pendingClient?.id === client.id
+                            ? 'bg-primary-100'
+                            : 'hover:bg-surface-contrast'
+                        }`}
+                      >
+                        <Text
+                          className={`text-base ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}
+                        >
+                          {client.name}
+                        </Text>
+                      </button>
+                    ))
+                  ) : (
+                    <Text className="py-4 text-center text-sm text-fg-muted">
+                      검색 결과가 없습니다
+                    </Text>
+                  )}
+                </div>
               </div>
-            </div>,
-            document.body
-          )}
+            </div>
+
+            {/* 선택 버튼 */}
+            <div className="flex-shrink-0">
+              <Button
+                variant="solid"
+                tone="primary"
+                size="lg"
+                className="w-full"
+                onClick={handleConfirmSelection}
+                disabled={!pendingClient}
+              >
+                선택
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </>
     );
   }

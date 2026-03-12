@@ -29,6 +29,7 @@ import {
   LogIn,
   Mail,
   MapPin,
+  Menu,
   Minus,
   MoreVertical,
   Plus,
@@ -84,6 +85,7 @@ export const ListChecksIcon: IconComponent = (props) => (
 export const LogInIcon: IconComponent = (props) => <LogIn {...props} />;
 export const MailIcon: IconComponent = (props) => <Mail {...props} />;
 export const MapPinIcon: IconComponent = (props) => <MapPin {...props} />;
+export const MenuIcon: IconComponent = (props) => <Menu {...props} />;
 export const MinusIcon: IconComponent = (props) => <Minus {...props} />;
 export const MoreVerticalIcon: IconComponent = (props) => (
   <MoreVertical {...props} />
@@ -415,9 +417,6 @@ export const SideGenogramIcon: React.FC<CustomIconProps> = ({
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <mask id="side-genogram-mask" fill="white">
-      <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
-    </mask>
     <rect
       x="1"
       y="1"
@@ -425,8 +424,7 @@ export const SideGenogramIcon: React.FC<CustomIconProps> = ({
       height="8.88889"
       rx="1.11111"
       stroke="currentColor"
-      strokeWidth="3"
-      mask="url(#side-genogram-mask)"
+      strokeWidth="1.5"
     />
     <circle
       cx="18.9444"
@@ -560,9 +558,6 @@ export const GenogramIcon: React.FC<CustomIconProps> = ({
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <mask id="path-1-inside-1_5497_51436" fill="white">
-      <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
-    </mask>
     <rect
       x="1"
       y="1"
@@ -570,8 +565,7 @@ export const GenogramIcon: React.FC<CustomIconProps> = ({
       height="8.88889"
       rx="1.11111"
       stroke="currentColor"
-      strokeWidth="3"
-      mask="url(#path-1-inside-1_5497_51436)"
+      strokeWidth="1.5"
     />
     <circle
       cx="18.9444"
@@ -666,6 +660,7 @@ export const Icons = {
   LogIn: LogInIcon,
   Mail: MailIcon,
   MapPin: MapPinIcon,
+  Menu: MenuIcon,
   Minus: MinusIcon,
   MoreVertical: MoreVerticalIcon,
   Plus: PlusIcon,

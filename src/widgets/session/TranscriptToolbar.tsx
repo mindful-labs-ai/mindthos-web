@@ -6,6 +6,8 @@
 import React from 'react';
 
 import { Badge } from '@/shared/ui/atoms/Badge';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { Spotlight } from '@/shared/ui/composites/Spotlight';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -57,6 +59,88 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     onCopy,
     checkIsGuideLevel,
   }) => {
+    const { isMobile, isTablet } = useDevice();
+    const isMobileView = isMobile || isTablet;
+
+    const menuContent = (
+      <div className="w-full space-y-1">
+        <button
+          onClick={() => {
+            onToggleAnonymized();
+            setIsMenuOpen(false);
+          }}
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-fg-muted"
+          >
+            {isAnonymized ? (
+              <>
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </>
+            ) : (
+              <>
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </>
+            )}
+          </svg>
+          <span className="text-sm text-fg">
+            {isAnonymized ? '참석자 가리기 해제' : '참석자 가리기'}
+          </span>
+        </button>
+        {enableTimestampFeatures && (
+          <button
+            onClick={() => {
+              const store = useSessionStore.getState();
+              store.setAutoScrollEnabled(!store.autoScrollEnabled);
+              setIsMenuOpen(false);
+            }}
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-fg-muted"
+            >
+              {useSessionStore.getState().autoScrollEnabled ? (
+                <>
+                  <path d="M12 5v14" />
+                  <path d="M19 12l-7 7-7-7" />
+                </>
+              ) : (
+                <>
+                  <path d="M12 5v14" />
+                  <path d="M19 12l-7 7-7-7" />
+                  <line x1="4" y1="4" x2="20" y2="20" />
+                </>
+              )}
+            </svg>
+            <span className="text-sm text-fg">
+              {useSessionStore.getState().autoScrollEnabled
+                ? '자동 스크롤 끄기'
+                : '자동 스크롤 켜기'}
+            </span>
+          </button>
+        )}
+      </div>
+    );
+
     return (
       <div className="absolute inset-x-0 right-4 top-0 z-20 flex w-full select-none justify-end rounded-lg bg-gradient-to-t from-transparent to-slate-50">
         <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
@@ -126,117 +210,47 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                 </svg>
               </button>
               <div className="inline-block">
-                <PopUp
-                  open={isMenuOpen}
-                  onOpenChange={setIsMenuOpen}
-                  placement="bottom-left"
-                  trigger={
+                {isMobileView ? (
+                  <>
                     <button
                       type="button"
                       className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
                       title="메뉴"
                       aria-label="추가 메뉴"
+                      onClick={() => setIsMenuOpen(true)}
                     >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="1" />
                         <circle cx="12" cy="5" r="1" />
                         <circle cx="12" cy="19" r="1" />
                       </svg>
                     </button>
-                  }
-                  content={
-                    <div className="w-[200px] space-y-1">
+                    <Modal open={isMenuOpen} onOpenChange={setIsMenuOpen} mobileVariant="bottomSheet">
+                      {menuContent}
+                    </Modal>
+                  </>
+                ) : (
+                  <PopUp
+                    open={isMenuOpen}
+                    onOpenChange={setIsMenuOpen}
+                    placement="bottom-left"
+                    trigger={
                       <button
-                        onClick={() => {
-                          onToggleAnonymized();
-                          setIsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                        type="button"
+                        className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                        title="메뉴"
+                        aria-label="추가 메뉴"
                       >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-fg-muted"
-                        >
-                          {isAnonymized ? (
-                            <>
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                              <circle cx="12" cy="12" r="3" />
-                            </>
-                          ) : (
-                            <>
-                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                              <line x1="1" y1="1" x2="23" y2="23" />
-                            </>
-                          )}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="5" r="1" />
+                          <circle cx="12" cy="19" r="1" />
                         </svg>
-                        <span className="text-sm text-fg">
-                          {isAnonymized
-                            ? '참석자 가리기 해제'
-                            : '참석자 가리기'}
-                        </span>
                       </button>
-                      {/* 자동 스크롤 토글 (타임스탬프 기능이 활성화된 경우에만 표시) */}
-                      {enableTimestampFeatures && (
-                        <button
-                          onClick={() => {
-                            const store = useSessionStore.getState();
-                            store.setAutoScrollEnabled(
-                              !store.autoScrollEnabled
-                            );
-                            setIsMenuOpen(false);
-                          }}
-                          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-fg-muted"
-                          >
-                            {useSessionStore.getState().autoScrollEnabled ? (
-                              <>
-                                <path d="M12 5v14" />
-                                <path d="M19 12l-7 7-7-7" />
-                              </>
-                            ) : (
-                              <>
-                                <path d="M12 5v14" />
-                                <path d="M19 12l-7 7-7-7" />
-                                <line x1="4" y1="4" x2="20" y2="20" />
-                              </>
-                            )}
-                          </svg>
-                          <span className="text-sm text-fg">
-                            {useSessionStore.getState().autoScrollEnabled
-                              ? '자동 스크롤 끄기'
-                              : '자동 스크롤 켜기'}
-                          </span>
-                        </button>
-                      )}
-                    </div>
-                  }
-                />
+                    }
+                    content={<div className="w-[200px]">{menuContent}</div>}
+                  />
+                )}
               </div>
             </>
           )}

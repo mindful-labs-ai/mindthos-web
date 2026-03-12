@@ -35,7 +35,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
   const triggerRef = React.useRef<HTMLDivElement>(null);
   const tooltipRef = React.useRef<HTMLDivElement>(null);
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const tooltipId = React.useId();
 
   // 위치 계산
@@ -145,7 +145,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
               'max-w-xs',
               'rounded-[var(--radius-md)] bg-surface px-3 py-2',
               'text-xs text-surface shadow-lg',
-              'animate-[fadeIn_0.1s_ease-out]',
+              'animate-fadeIn',
               className
             )}
           >

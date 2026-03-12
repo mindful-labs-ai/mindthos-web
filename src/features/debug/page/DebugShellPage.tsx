@@ -1,14 +1,13 @@
 import React from 'react';
 
-import { useModalStore } from '@/stores/modalStore';
-import { useQuestStore } from '@/stores/questStore';
-
 import { Button } from '@/shared/ui/atoms/Button';
 import { Tab } from '@/shared/ui/atoms/Tab';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { SnackBar } from '@/shared/ui/composites/SnackBar';
 import { Spotlight } from '@/shared/ui/composites/Spotlight';
 import { useToast } from '@/shared/ui/composites/Toast';
+import { useModalStore } from '@/stores/modalStore';
+import { useQuestStore } from '@/stores/questStore';
 
 type DebugTab = 'modal' | 'toast' | 'snackbar' | 'spotlight' | 'global-modal';
 
@@ -61,6 +60,8 @@ function ModalSection() {
   const [fullOpen, setFullOpen] = React.useState(false);
   const [noCloseOpen, setNoCloseOpen] = React.useState(false);
   const [longOpen, setLongOpen] = React.useState(false);
+  const [bottomSheetOpen, setBottomSheetOpen] = React.useState(false);
+  const [fullScreenOpen, setFullScreenOpen] = React.useState(false);
 
   return (
     <div className="space-y-4">
@@ -78,6 +79,16 @@ function ModalSection() {
         </Button>
         <Button tone="accent" onClick={() => setLongOpen(true)}>
           Long Content (Scroll)
+        </Button>
+        <Button
+          tone="primary"
+          variant="outline"
+          onClick={() => setBottomSheetOpen(true)}
+        >
+          Bottom Sheet (mobile)
+        </Button>
+        <Button tone="danger" onClick={() => setFullScreenOpen(true)}>
+          Full Screen (mobile)
         </Button>
       </div>
 
@@ -131,6 +142,40 @@ function ModalSection() {
           ))}
         </div>
       </Modal>
+
+      <Modal
+        open={bottomSheetOpen}
+        onOpenChange={setBottomSheetOpen}
+        title="Bottom Sheet"
+        mobileVariant="bottomSheet"
+      >
+        <div className="space-y-4">
+          <p className="text-fg-secondary">
+            This modal appears as a bottom sheet on mobile and a center popup on
+            desktop.
+          </p>
+          <Button tone="primary" onClick={() => setBottomSheetOpen(false)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal
+        open={fullScreenOpen}
+        onOpenChange={setFullScreenOpen}
+        title="Full Screen"
+        mobileVariant="fullScreen"
+      >
+        <div className="space-y-4">
+          <p className="text-fg-secondary">
+            This modal takes the full screen on mobile and appears as a center
+            popup on desktop.
+          </p>
+          <Button tone="primary" onClick={() => setFullScreenOpen(false)}>
+            Close
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -145,10 +190,7 @@ function ToastSection() {
       <h2 className="text-lg font-semibold text-fg">Toast</h2>
 
       <div className="flex flex-wrap gap-3">
-        <Button
-          tone="primary"
-          onClick={() => toast({ title: 'Basic Toast' })}
-        >
+        <Button tone="primary" onClick={() => toast({ title: 'Basic Toast' })}>
           Basic
         </Button>
         <Button
@@ -179,9 +221,7 @@ function ToastSection() {
         </Button>
         <Button
           tone="neutral"
-          onClick={() =>
-            toast({ title: 'Persistent Toast', duration: 0 })
-          }
+          onClick={() => toast({ title: 'Persistent Toast', duration: 0 })}
         >
           No Auto-Close (duration=0)
         </Button>
@@ -270,7 +310,7 @@ function SpotlightSection() {
           Activate Spotlight
         </Button>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-fg-secondary">Position:</span>
+          <span className="text-fg-secondary text-sm">Position:</span>
           {(['top', 'bottom', 'left', 'right'] as const).map((pos) => (
             <Button
               key={pos}

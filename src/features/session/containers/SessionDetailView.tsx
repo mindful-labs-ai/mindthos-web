@@ -164,7 +164,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
   const sessionId = session.id;
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-[min(100vw-535px,1332px)] flex-col overflow-hidden">
+    <div className="mx-auto flex h-full w-full max-w-full flex-col overflow-hidden sm:max-w-[min(100vw-535px,1332px)]">
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} preload="metadata" />
 
@@ -178,21 +178,21 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
         />
       </div>
 
-      <div className="flex flex-shrink-0 select-none justify-start px-6 pt-2">
+      <div className="flex flex-shrink-0 select-none justify-start px-2 pt-2 sm:px-6">
         <Tab
           items={tabItems}
           value={activeTab}
           onValueChange={onTabChange}
           size="sm"
           fullWidth
-          className="px-8"
+          className="px-2 sm:px-8"
           variant="underline"
         />
       </div>
 
       {/* 탭 콘텐츠 */}
       <div
-        className={`relative mx-6 mb-2 min-h-0 flex-1 rounded-xl border ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-500 bg-[#FDFFFE]' : 'border-surface-strong bg-surface'}`}
+        className={`relative mx-2 mb-2 min-h-0 flex-1 rounded-xl border sm:mx-6 ${(isEditing || isEditingHandwritten) && activeTab === 'transcript' ? 'border-primary-500 bg-[#FDFFFE]' : 'border-surface-strong bg-surface'}`}
       >
         {/* 직접 입력 세션 버튼 영역 */}
         {activeTab === 'transcript' && isHandwrittenSession && (

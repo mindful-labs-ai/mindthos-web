@@ -10,6 +10,7 @@ import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/cn';
 import { XIcon } from '@/shared/icons';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useFeatureGuideStore } from '@/stores/featureGuideStore';
 import { useQuestStore } from '@/stores/questStore';
 
@@ -87,6 +88,17 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
   className,
   rounded = 'md',
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  // 모바일에서 left/right → top/bottom 축 전환
+  const effectivePosition: 'top' | 'bottom' | 'left' | 'right' = isMobileView
+    ? tooltipPosition === 'left'
+      ? 'top'
+      : tooltipPosition === 'right'
+        ? 'bottom'
+        : tooltipPosition
+    : tooltipPosition;
+
   const [rect, setRect] = useState<DOMRect | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [positionAdjust, setPositionAdjust] = useState({ x: 0, y: 0 });
@@ -164,7 +176,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
       zIndex: 1400,
       pointerEvents: 'auto',
     };
-    switch (tooltipPosition) {
+    switch (effectivePosition) {
       case 'top':
         styles.left = rect.left + rect.width / 2;
         styles.top = rect.top - offset;
@@ -187,7 +199,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
         break;
     }
     return styles;
-  }, [rect, tooltipPosition, padding]);
+  }, [rect, effectivePosition, padding]);
 
   // 화면 경계 보정 로직
   useLayoutEffect(() => {
@@ -313,22 +325,22 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
           <div
             className={cn(
               'absolute h-3 w-3 rotate-45 border-border bg-surface',
-              tooltipPosition === 'top' &&
+              effectivePosition === 'top' &&
                 'bottom-[-6px] left-1/2 -translate-x-1/2 border-b border-r',
-              tooltipPosition === 'bottom' &&
+              effectivePosition === 'bottom' &&
                 'left-1/2 top-[-6px] -translate-x-1/2 border-l border-t',
-              tooltipPosition === 'left' &&
+              effectivePosition === 'left' &&
                 'right-[-6px] top-1/2 -translate-y-1/2 border-r border-t',
-              tooltipPosition === 'right' &&
+              effectivePosition === 'right' &&
                 'left-[-6px] top-1/2 -translate-y-1/2 border-b border-l'
             )}
             style={{
               left:
-                tooltipPosition === 'top' || tooltipPosition === 'bottom'
+                effectivePosition === 'top' || effectivePosition === 'bottom'
                   ? `calc(50% - ${positionAdjust.x}px)`
                   : undefined,
               top:
-                tooltipPosition === 'left' || tooltipPosition === 'right'
+                effectivePosition === 'left' || effectivePosition === 'right'
                   ? `calc(50% - ${positionAdjust.y}px)`
                   : undefined,
             }}

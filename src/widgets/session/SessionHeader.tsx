@@ -1,5 +1,10 @@
 import React from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
+import { ROUTES } from '@/app/router/constants';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { ChevronLeftIcon } from '@/shared/icons';
 import { formatDuration, formatKoreanDateTime } from '@/shared/utils/date';
 
 interface SessionHeaderProps {
@@ -18,6 +23,10 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   isHandwritten = false,
   onTitleUpdate,
 }) => {
+  const navigate = useNavigate();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   const [isEditing, setIsEditing] = React.useState(false);
   const [editedTitle, setEditedTitle] = React.useState(title);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -69,7 +78,19 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   };
 
   return (
-    <div className="px-8 py-4 pt-12">
+    <div className="px-4 py-4 pt-6 sm:px-8 sm:pt-12">
+      {/* 모바일 뒤로가기 버튼 */}
+      {isMobileView && (
+        <button
+          type="button"
+          onClick={() => navigate(ROUTES.SESSIONS)}
+          className="mb-3 flex items-center gap-1 text-sm text-fg-muted hover:text-fg"
+          aria-label="상담 기록 목록으로"
+        >
+          <ChevronLeftIcon size={18} />
+          상담 기록
+        </button>
+      )}
       <div className="flex flex-col items-start justify-between gap-2">
         <div className="flex items-center gap-3">
           {isEditing ? (

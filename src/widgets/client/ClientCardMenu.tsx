@@ -7,7 +7,9 @@ import {
   Trash2Icon,
   ArrowRightIcon,
 } from '@/shared/icons';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { Text } from '@/shared/ui/atoms/Text';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 
 interface ClientCardMenuProps {
@@ -29,6 +31,9 @@ export const ClientCardMenu: React.FC<ClientCardMenuProps> = ({
   onEditClient,
   onDeleteClient,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   const handleCloseSession = (e: React.MouseEvent) => {
     e.stopPropagation();
     onCloseSession();
@@ -49,65 +54,93 @@ export const ClientCardMenu: React.FC<ClientCardMenuProps> = ({
     onDeleteClient();
   };
 
+  const menuContent = isCounselDone ? (
+    <div className="w-full">
+      <button
+        onClick={handleRestartCounseling}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
+      >
+        <ArrowRightIcon size={20} className="text-fg" />
+        <Text className="text-sm font-medium">상담 재시작</Text>
+      </button>
+    </div>
+  ) : (
+    <div className="w-full space-y-1">
+      <button
+        onClick={handleCloseSession}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
+      >
+        <LogInIcon size={18} className="text-fg-muted" />
+        <Text className="text-sm">상담 종결</Text>
+      </button>
+      <button
+        onClick={handleEditClient}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
+      >
+        <ListChecksIcon size={18} className="text-fg-muted" />
+        <Text className="text-sm">내담자 정보 수정</Text>
+      </button>
+      <button
+        onClick={handleDeleteClient}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
+      >
+        <Trash2Icon size={18} className="text-danger" />
+        <Text className="text-sm">삭제</Text>
+      </button>
+    </div>
+  );
+
+  const triggerButton = (
+    <button
+      className="translate-x-3 rounded-lg p-1 text-fg-muted transition-colors hover:bg-surface-contrast"
+      aria-label="메뉴"
+    >
+      <MoreVerticalIcon size={20} />
+    </button>
+  );
+
   return (
     <div
       onClick={(e) => e.stopPropagation()}
       onKeyDown={(e) => e.stopPropagation()}
       role="presentation"
     >
-      <PopUp
-        trigger={
-          <button
-            className="translate-x-3 rounded-lg p-1 text-fg-muted transition-colors hover:bg-surface-contrast"
-            aria-label="메뉴"
+      {isMobileView ? (
+        <>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => onOpenChange(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') onOpenChange(true);
+            }}
           >
-            <MoreVerticalIcon size={20} />
-          </button>
-        }
-        content={
-          isCounselDone ? (
-            // 종결된 클라이언트 메뉴
-            <div className="w-[200px]">
-              <button
-                onClick={handleRestartCounseling}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
-              >
-                <ArrowRightIcon size={20} className="text-fg" />
-                <Text className="text-sm font-medium">상담 재시작</Text>
-              </button>
-            </div>
-          ) : (
-            // 활성 클라이언트 메뉴
-            <div className="w-[200px] space-y-1">
-              <button
-                onClick={handleCloseSession}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
-              >
-                <LogInIcon size={18} className="text-fg-muted" />
-                <Text className="text-sm">상담 종결</Text>
-              </button>
-              <button
-                onClick={handleEditClient}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
-              >
-                <ListChecksIcon size={18} className="text-fg-muted" />
-                <Text className="text-sm">내담자 정보 수정</Text>
-              </button>
-              <button
-                onClick={handleDeleteClient}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-contrast"
-              >
-                <Trash2Icon size={18} className="text-danger" />
-                <Text className="text-sm">삭제</Text>
-              </button>
-            </div>
-          )
-        }
-        placement="bottom-left"
-        open={isOpen}
-        onOpenChange={onOpenChange}
-        className="translate-y-0 p-2"
-      />
+            {triggerButton}
+          </div>
+          <Modal
+            open={isOpen}
+            onOpenChange={onOpenChange}
+            mobileVariant="bottomSheet"
+          >
+            {menuContent}
+          </Modal>
+        </>
+      ) : (
+        <PopUp
+          trigger={triggerButton}
+          content={
+            isCounselDone ? (
+              <div className="w-[200px]">{menuContent}</div>
+            ) : (
+              <div className="w-[200px] space-y-1">{menuContent}</div>
+            )
+          }
+          placement="bottom-left"
+          open={isOpen}
+          onOpenChange={onOpenChange}
+          className="translate-y-0 p-2"
+        />
+      )}
     </div>
   );
 };
