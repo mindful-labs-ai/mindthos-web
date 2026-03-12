@@ -184,7 +184,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
           id="combobox-listbox"
           role="listbox"
           className={cn(
-            'absolute z-50 mt-1 w-full',
+            'absolute z-popover mt-1 w-full',
             'max-h-60 overflow-auto',
             'rounded-[var(--radius-md)] border-2 border-border bg-surface',
             'py-1'

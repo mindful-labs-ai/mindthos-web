@@ -44,7 +44,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   const [searchQuery, setSearchQuery] = React.useState('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const listRef = React.useRef<HTMLUListElement>(null);
-  const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
+  const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const isControlled = controlledValue !== undefined;
   const selectedValue = isControlled ? controlledValue : uncontrolledValue;
@@ -183,7 +183,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           id="dropdown-listbox"
           role="listbox"
           className={cn(
-            'absolute z-50 mt-1 w-full',
+            'absolute z-popover mt-1 w-full',
             'max-h-60 overflow-auto',
             'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
             'py-1'

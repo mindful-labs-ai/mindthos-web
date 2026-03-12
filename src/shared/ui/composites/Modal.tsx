@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { createPortal } from 'react-dom';
+
 import { cn } from '@/lib/cn';
 
 export type ModalMobileVariant = 'center' | 'bottomSheet' | 'fullScreen';
@@ -142,7 +144,7 @@ export const Modal: React.FC<ModalProps> = ({
 
   // 모바일 variant별 wrapper/content 스타일
   const wrapperClass = cn(
-    'fixed inset-0 z-50',
+    'fixed inset-0 z-modal',
     // center (기본): PC와 동일
     mobileVariant === 'center' && 'flex items-center justify-center p-4',
     // bottomSheet: 모바일에서 하단 정렬, sm 이상에서는 center
@@ -199,7 +201,7 @@ export const Modal: React.FC<ModalProps> = ({
     className
   );
 
-  return (
+  return createPortal(
     <div className={wrapperClass}>
       {/* Backdrop */}
       <div
@@ -329,7 +331,8 @@ export const Modal: React.FC<ModalProps> = ({
         aria-hidden="true"
         style={{ position: 'fixed', opacity: 0, pointerEvents: 'none' }}
       />
-    </div>
+    </div>,
+    document.body
   );
 };
 

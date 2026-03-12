@@ -259,7 +259,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewYear}
                   onChange={(e) => setViewYear(Number(e.target.value))}
-                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none"
+                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {Array.from(
                     { length: new Date().getFullYear() - 1970 + 3 },
@@ -273,7 +273,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewMonth}
                   onChange={(e) => setViewMonth(Number(e.target.value))}
-                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none"
+                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {Array.from({ length: 12 }, (_, i) => i).map((m) => (
                     <option key={m} value={m}>

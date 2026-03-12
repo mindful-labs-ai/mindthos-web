@@ -526,7 +526,7 @@ const MobileView = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="ios-guide-title"
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
+            className="fixed inset-0 z-modal flex items-center justify-center bg-black/50 px-6"
           >
             <div className="w-full max-w-sm rounded-2xl bg-white px-6 py-8 text-center">
               <Title

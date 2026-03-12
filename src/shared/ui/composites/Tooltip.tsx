@@ -122,6 +122,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
       <div
         ref={triggerRef}
         className="relative inline-block"
+        aria-describedby={isVisible ? tooltipId : undefined}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
         onFocus={showTooltip}

@@ -138,7 +138,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'fixed bottom-6 right-6 z-40',
+          'fixed bottom-6 right-6 z-sticky',
           'flex flex-col items-center justify-center',
           'h-20 w-20 rounded-full',
           'border-2 border-primary bg-white',
@@ -158,7 +158,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
         <div
           ref={panelRef}
           className={cn(
-            'fixed bottom-28 right-6 z-50',
+            'fixed bottom-28 right-6 z-overlay',
             'w-[352px] rounded-2xl',
             'border border-border bg-white',
             'shadow-2xl',

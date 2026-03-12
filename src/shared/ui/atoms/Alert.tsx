@@ -157,6 +157,7 @@ export const Alert: React.FC<AlertProps> = ({
             'flex-shrink-0 rounded-[var(--radius-sm)] p-1',
             'hover:bg-black/5 dark:hover:bg-white/5',
             'transition-colors duration-200',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
             styles.text
           )}
         >

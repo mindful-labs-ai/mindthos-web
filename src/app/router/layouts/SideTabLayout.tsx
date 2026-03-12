@@ -2,7 +2,6 @@ import React from 'react';
 
 import { Outlet } from 'react-router-dom';
 
-
 import { Header } from '@/app/router/layouts/Header';
 import { MobileHeader } from '@/app/router/layouts/MobileHeader';
 import { SideDrawer } from '@/app/router/layouts/SideDrawer';

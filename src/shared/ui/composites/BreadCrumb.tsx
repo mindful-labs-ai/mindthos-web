@@ -71,7 +71,8 @@ export const BreadCrumb: React.FC<BreadCrumbProps> = ({
                   onClick={(e) => handleClick(e, item, index)}
                   className={cn(
                     'flex items-center gap-1.5 transition-colors duration-200',
-                    'cursor-pointer text-fg-muted hover:text-fg'
+                    'cursor-pointer text-fg-muted hover:text-fg',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm'
                   )}
                 >
                   {item.icon && (
