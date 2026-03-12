@@ -22,7 +22,8 @@ export function useReportTemplates() {
     templates: data ?? [],
     isLoading,
     /** key로 단일 템플릿 조회 */
-    getTemplate: (key: string) => (data ?? []).find((t) => t.key === key) ?? null,
+    getTemplate: (key: string) =>
+      (data ?? []).find((t) => t.key === key) ?? null,
   };
 }
 
