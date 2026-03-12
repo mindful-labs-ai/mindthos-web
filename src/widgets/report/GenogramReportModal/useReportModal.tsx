@@ -7,6 +7,7 @@ import {
 } from '@/features/report/utils/buildReportPdf';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackEvent } from '@/lib/mixpanel';
+import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
 import {
   createSignedPdfUrl,
   exportReport,
@@ -16,7 +17,6 @@ import {
 import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
-import { useFeatureAccessStore } from '@/stores/featureAccessStore';
 
 import type { GeneratingStatus } from '../ReportGeneratingView';
 
@@ -47,23 +47,13 @@ export function useReportModal({
   const { toast } = useToast();
   const { creditInfo } = useCreditInfo();
 
-  // ── 기능 접근 권한 (전역 스토어) ──
+  // ── 기능 접근 권한 (TanStack Query) ──
 
-  const hasAccess =
-    useFeatureAccessStore((s) => s.access.GENOGRAM_SEMINAR) ?? null;
-  const isChecking =
-    useFeatureAccessStore((s) => s.checking.GENOGRAM_SEMINAR) ?? false;
-  const storeCheckAccess = useFeatureAccessStore((s) => s.checkAccess);
-  const storeResetAccess = useFeatureAccessStore((s) => s.resetAccess);
-
-  const checkAccess = useCallback(async (): Promise<boolean> => {
-    if (!userId) return false;
-    return storeCheckAccess(userId, 'GENOGRAM_SEMINAR');
-  }, [userId, storeCheckAccess]);
-
-  const resetAccess = useCallback(() => {
-    storeResetAccess('GENOGRAM_SEMINAR');
-  }, [storeResetAccess]);
+  const {
+    hasAccess,
+    isChecking,
+    invalidate: invalidateAccess,
+  } = useFeatureAccess('GENOGRAM_SEMINAR');
 
   // ── 서브 훅 ──
   const {
@@ -396,7 +386,7 @@ export function useReportModal({
   useEffect(() => {
     if (open) {
       cancelledRef.current = false;
-      resetAccess();
+      invalidateAccess();
       setStep('list');
       setSnapshotImage(null);
       setReports([]);
@@ -412,38 +402,34 @@ export function useReportModal({
       setPreviewTitle('');
       setGeneratingStatus('processing');
       setGeneratingError(null);
-
-      checkAccess().then(async (result) => {
-        if (!result) {
-          trackEvent('genogram_report_seminar_modal_view', {
-            client_id: clientId,
-          });
-          return;
-        }
-        const list = await fetchReports();
-        if (list.length === 0 && !cancelledRef.current) {
-          await handleCreateReport();
-        }
-      });
     }
 
     return () => {
       cancelledRef.current = true;
       revokePdfUrl();
     };
-  }, [
-    open,
-    clientId,
-    userName,
-    clientName,
-    organization,
-    checkAccess,
-    resetAccess,
-    fetchReports,
-    handleCreateReport,
-    setReports,
-    revokePdfUrl,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, clientId, userName, clientName, organization]);
+
+  // 권한 확인 후 보고서 목록 로드
+  useEffect(() => {
+    if (!open || isChecking) return;
+
+    if (!hasAccess) {
+      trackEvent('genogram_report_seminar_modal_view', {
+        client_id: clientId,
+      });
+      return;
+    }
+
+    (async () => {
+      const list = await fetchReports();
+      if (list.length === 0 && !cancelledRef.current) {
+        await handleCreateReport();
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, hasAccess, isChecking]);
 
   // ESC 키
   useEffect(() => {

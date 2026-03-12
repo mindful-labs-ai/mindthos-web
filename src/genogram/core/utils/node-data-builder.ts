@@ -9,19 +9,20 @@ export function buildLifeSpanLabel(
   personAttr: PersonAttribute | null,
   visibility: Visibility
 ): string | null {
-  if (!personAttr?.lifeSpan.birth) return null;
+  if (!personAttr?.lifeSpan.birth && !personAttr?.lifeSpan.death) return null;
 
-  const birthPart = visibility.birthDate
-    ? personAttr.lifeSpan.birth.slice(0, 4)
-    : null;
+  const birthPart =
+    visibility.birthDate && personAttr?.lifeSpan.birth
+      ? personAttr.lifeSpan.birth.slice(0, 4)
+      : null;
   const deathPart =
-    visibility.deathDate && personAttr.lifeSpan.death
+    visibility.deathDate && personAttr?.isDead && personAttr.lifeSpan.death
       ? personAttr.lifeSpan.death.slice(0, 4)
       : null;
 
   if (birthPart && deathPart) return `${birthPart} ~ ${deathPart}`;
   if (birthPart) return `${birthPart}-`;
-  if (deathPart) return `~ ${deathPart}`;
+  if (deathPart) return `~${deathPart}`;
   return null;
 }
 

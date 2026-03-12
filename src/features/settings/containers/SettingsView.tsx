@@ -3,6 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import type { CreditInfo } from '@/shared/api/supabase/creditQueries';
+import { useUserAccesses } from '@/shared/hooks/useFeatureAccess';
+import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
 import { CouponIcon, MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -19,7 +21,9 @@ import { CreditUsageModal } from '@/widgets/settings/CreditUsageModal';
 import { DeleteAccountModal } from '@/widgets/settings/DeleteAccountModal';
 import { LogoutModal } from '@/widgets/settings/LogoutModal';
 import { NoticeDetail } from '@/widgets/settings/NoticeDetail';
+import { BadgeDetailModal } from '@/widgets/settings/BadgeDetailModal';
 import { NoticeList } from '@/widgets/settings/NoticeList';
+import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
 
 export interface SettingsViewProps {
   view: 'settings' | 'noticeList' | 'noticeDetail';
@@ -69,7 +73,6 @@ export interface SettingsViewProps {
   formatRenewalDate: (date: string | null) => string;
   calculateDaysUntilReset: (resetAt: string | null) => number | undefined;
 }
-
 export const SettingsView: React.FC<SettingsViewProps> = ({
   view,
   selectedNoticeId,
@@ -118,6 +121,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   formatRenewalDate,
   calculateDaysUntilReset,
 }) => {
+  const { accesses: badges } = useUserAccesses();
+  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(null);
+
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[1332px] flex-col px-16 py-[42px]">
       {view === 'noticeList' && (
@@ -166,25 +172,46 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   </Button>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <UserIcon size={20} className="text-fg-muted" />
-                    <Text className="text-lg font-semibold">
-                      {userName || '이름 없음'}
-                    </Text>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MailIcon size={20} className="text-fg-muted" />
-                    <Text className="text-lg font-semibold">
-                      {userEmail || '이메일 없음'}
-                    </Text>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPinIcon size={20} className="text-fg-muted" />
-                    <Text className="text-lg font-semibold">
-                      {organization || '소속 기관 없음'}
-                    </Text>
-                  </div>
+                <div className="flex items-end justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <UserIcon size={20} className="text-fg-muted" />
+                      <Text className="text-lg font-semibold">
+                        {userName || '이름 없음'}
+                      </Text>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MailIcon size={20} className="text-fg-muted" />
+                      <Text className="text-lg font-semibold">
+                        {userEmail || '이메일 없음'}
+                      </Text>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPinIcon size={20} className="text-fg-muted" />
+                      <Text className="text-lg font-semibold">
+                        {organization || '소속 기관 없음'}
+                      </Text>
+                    </div>                  </div>
+
+                  {badges.length > 0 && (
+                    <div className="flex gap-2">
+                      {badges.map((badge) => {
+                        const Icon = BADGE_ICON_MAP[badge.type];
+                        if (!Icon) return null;
+                        return (
+                          <button
+                            key={badge.id}
+                            type="button"
+                            onClick={() => setSelectedBadge(badge)}
+                            className="transition-transform hover:scale-105"
+                            aria-label={`${badge.name} 뱃지 상세 보기`}
+                          >
+                            <Icon size={60} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </Card.Body>
             </Card>
@@ -419,6 +446,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             open={isRenewalModalOpen}
             onOpenChange={onSetRenewalModalOpen}
           />
+          {selectedBadge && (
+            <BadgeDetailModal
+              open={!!selectedBadge}
+              onOpenChange={(open) => {
+                if (!open) setSelectedBadge(null);
+              }}
+              access={selectedBadge}
+            />
+          )}
         </>
       )}
     </div>
