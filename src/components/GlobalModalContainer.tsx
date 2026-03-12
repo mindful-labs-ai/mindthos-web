@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
 import { ComingSoonModal } from '@/components/common/ComingSoonModal';
+import { AddClientModal } from '@/feature/client/components/AddClientModal';
+import { clientQueryKeys } from '@/feature/client/constants/queryKeys';
 import { CompleteMissionModal } from '@/feature/onboarding/components/CompleteMissionModal';
 import { MissionFloatingButton } from '@/feature/onboarding/components/MissionFloatingButton';
 import { QuestMissionModal } from '@/feature/onboarding/components/QuestMissionModal';
@@ -55,6 +57,15 @@ export const GlobalModalContainer = () => {
   );
   const isCouponModalOpen = useModalStore((state) =>
     state.openModals.includes('couponModal')
+  );
+  const isAddClientOpen = useModalStore((state) =>
+    state.openModals.includes('addClient')
+  );
+  const addClientData = useModalStore(
+    (state) =>
+      state.modalData.addClient as
+        | { onClientCreated?: (clientId: string) => void }
+        | undefined
   );
 
   // 쿠폰 데이터 (모달에서는 planType 없이 전체 조회)
@@ -114,6 +125,16 @@ export const GlobalModalContainer = () => {
     }
   };
 
+  const handleCloseAddClient = (open: boolean) => {
+    if (!open) closeModal('addClient');
+  };
+
+  const handleClientCreated = (clientId: string) => {
+    queryClient.invalidateQueries({ queryKey: clientQueryKeys.lists() });
+    addClientData?.onClientCreated?.(clientId);
+    closeModal('addClient');
+  };
+
   const handleUserEditSuccess = async () => {
     // 내 정보 입력 미션(Level 5)인 경우 퀘스트 완료 처리
     if (currentLevel === 5 && user?.email) {
@@ -163,6 +184,13 @@ export const GlobalModalContainer = () => {
         open={isComingSoonOpen}
         onOpenChange={handleCloseComingSoon}
         source={comingSoonData?.source}
+      />
+
+      {/* 클라이언트 추가 모달 */}
+      <AddClientModal
+        open={isAddClientOpen}
+        onOpenChange={handleCloseAddClient}
+        onClientCreated={handleClientCreated}
       />
 
       {/* 쿠폰함 모달 */}

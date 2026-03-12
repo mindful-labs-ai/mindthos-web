@@ -255,9 +255,33 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="text-sm font-semibold text-fg">
-                {viewYear}년 {viewMonth + 1}월
-              </span>
+              <div className="flex items-center gap-1">
+                <select
+                  value={viewYear}
+                  onChange={(e) => setViewYear(Number(e.target.value))}
+                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none"
+                >
+                  {Array.from(
+                    { length: new Date().getFullYear() - 1970 + 3 },
+                    (_, i) => 1970 + i
+                  ).map((y) => (
+                    <option key={y} value={y}>
+                      {y}년
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={viewMonth}
+                  onChange={(e) => setViewMonth(Number(e.target.value))}
+                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i).map((m) => (
+                    <option key={m} value={m}>
+                      {m + 1}월
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button
                 type="button"
                 onClick={handleNextMonth}
