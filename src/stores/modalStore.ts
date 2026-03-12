@@ -13,7 +13,8 @@ export type ModalType =
   | 'planChange'
   | 'createMultiSession'
   | 'comingSoon'
-  | 'couponModal';
+  | 'couponModal'
+  | 'addClient';
 
 /**
  * 모달별 데이터 타입 정의
@@ -27,6 +28,7 @@ export interface ModalData {
   createMultiSession: undefined;
   comingSoon: { source: string };
   couponModal: undefined;
+  addClient: { onClientCreated?: (clientId: string) => void } | undefined;
 }
 
 interface ModalState {
