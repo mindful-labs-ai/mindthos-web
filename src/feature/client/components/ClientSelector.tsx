@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/atoms/Text';
 import { PopUp } from '@/components/ui/composites/PopUp';
 import type { Client } from '@/feature/client/types';
 import { SearchIcon, UserIcon, XIcon } from '@/shared/icons';
+import { useModalStore } from '@/stores/modalStore';
 
 interface ClientSelectorProps {
   clients: Client[];
@@ -31,6 +32,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   onOpenChange: controlledOnOpenChange,
   placement = 'bottom-left',
 }) => {
+  const openModal = useModalStore((s) => s.openModal);
   const [internalOpen, setInternalOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   // modal 모드: 선택 대기 중인 고객
@@ -106,6 +108,21 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
     onSelect(null);
   };
 
+  const handleOpenAddClient = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsOpen(false);
+    openModal('addClient', undefined);
+  };
+
+  const addClientBtn = (
+    <button
+      onClick={handleOpenAddClient}
+      className="mb-2 w-full rounded-md bg-surface py-2.5 text-sm text-fg-muted transition-colors hover:bg-surface-contrast"
+    >
+      + 새로운 클라이언트 등록하기
+    </button>
+  );
+
   // 고객 리스트 렌더링 (compact와 dropdown에서 공유)
   const renderClientList = () => (
     <div className="flex max-h-[280px] flex-col space-y-2">
@@ -155,6 +172,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           )}
         </div>
       </div>
+
+      {/* 클라이언트 추가 */}
+      {addClientBtn}
     </div>
   );
 
@@ -307,6 +327,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   </div>
                 </div>
 
+                {/* 클라이언트 추가 */}
+                {addClientBtn}
+
                 {/* 선택 버튼 */}
                 <Button
                   variant="solid"
@@ -414,6 +437,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           )}
         </div>
       </div>
+
+      {/* 클라이언트 추가 */}
+      {addClientBtn}
     </div>
   );
 
