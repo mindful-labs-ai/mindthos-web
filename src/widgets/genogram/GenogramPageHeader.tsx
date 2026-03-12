@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Check, Download, Loader2, MoreVertical, Save } from 'lucide-react';
 
 import type { Client } from '@/features/client/types';
-import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
 import { useSavedIndicator } from '@/features/genogram/hooks/useSavedIndicator';
+import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
 import {
   RedoIcon,
   SideLockIcon,

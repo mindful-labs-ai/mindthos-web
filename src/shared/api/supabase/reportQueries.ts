@@ -239,6 +239,39 @@ export async function savePdfStorageKey(
   }
 }
 
+// ============================================
+// 보고서 템플릿
+// ============================================
+
+export interface ReportTemplate {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  prompt: string;
+  schema: string;
+  createdAt: string;
+}
+
+/** 보고서 템플릿 전체 목록 조회 */
+export async function fetchReportTemplates(): Promise<ReportTemplate[]> {
+  const { data, error } = await supabase
+    .from('report_templates')
+    .select('id, key, name, description, prompt, schema, created_at');
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    key: row.key,
+    name: row.name,
+    description: row.description,
+    prompt: row.prompt,
+    schema: row.schema,
+    createdAt: row.created_at,
+  }));
+}
+
 /** 실패한 보고서 재시도 */
 export async function retryReport(
   reportId: string

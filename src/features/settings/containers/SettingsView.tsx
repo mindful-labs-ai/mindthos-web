@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Link } from 'react-router-dom';
 
+import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
 import type { CreditInfo } from '@/shared/api/supabase/creditQueries';
 import { useUserAccesses } from '@/shared/hooks/useFeatureAccess';
 import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
@@ -12,6 +13,7 @@ import { Title } from '@/shared/ui/atoms/Title';
 import { Card } from '@/shared/ui/composites/Card';
 import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { CardRegistrationModal } from '@/widgets/payment/CardRegistrationModal';
+import { BadgeDetailModal } from '@/widgets/settings/BadgeDetailModal';
 import { CancelSubscriptionModal } from '@/widgets/settings/CancelSubscriptionModal';
 import { CardInfo } from '@/widgets/settings/CardInfo';
 import { CreditDisplay } from '@/widgets/settings/CreditDisplay';
@@ -21,9 +23,7 @@ import { CreditUsageModal } from '@/widgets/settings/CreditUsageModal';
 import { DeleteAccountModal } from '@/widgets/settings/DeleteAccountModal';
 import { LogoutModal } from '@/widgets/settings/LogoutModal';
 import { NoticeDetail } from '@/widgets/settings/NoticeDetail';
-import { BadgeDetailModal } from '@/widgets/settings/BadgeDetailModal';
 import { NoticeList } from '@/widgets/settings/NoticeList';
-import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
 
 export interface SettingsViewProps {
   view: 'settings' | 'noticeList' | 'noticeDetail';
@@ -32,7 +32,10 @@ export interface SettingsViewProps {
   userEmail?: string;
   organization: string | null;
   creditInfo: CreditInfo | undefined;
-  cardInfo: { type: string; company: string; number: string; createdAt: string } | null | undefined;
+  cardInfo:
+    | { type: string; company: string; number: string; createdAt: string }
+    | null
+    | undefined;
   isPaidPlan: boolean | undefined;
   hasCancellationScheduled: boolean;
   isOAuthUser: boolean;
@@ -122,7 +125,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   calculateDaysUntilReset,
 }) => {
   const { accesses: badges } = useUserAccesses();
-  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(null);
+  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(
+    null
+  );
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[1332px] flex-col px-16 py-[42px]">
@@ -191,7 +196,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       <Text className="text-lg font-semibold">
                         {organization || '소속 기관 없음'}
                       </Text>
-                    </div>                  </div>
+                    </div>{' '}
+                  </div>
 
                   {badges.length > 0 && (
                     <div className="flex gap-2">

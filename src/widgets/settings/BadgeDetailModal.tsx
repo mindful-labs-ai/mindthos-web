@@ -1,10 +1,9 @@
 import React from 'react';
 
+import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
+import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
-import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
-
-import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
 
 function formatGrantedDate(dateStr: string): string {
   const d = new Date(dateStr);

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
+import { clientQueryKeys } from '@/features/client/constants/queryKeys';
 import {
   useCoupons,
   couponQueryKeys,
@@ -12,6 +13,7 @@ import { couponService } from '@/features/settings/services/couponService';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
+import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ComingSoonModal } from '@/widgets/common/ComingSoonModal';
 import { CompleteMissionModal } from '@/widgets/onboarding/CompleteMissionModal';
 import { MissionFloatingButton } from '@/widgets/onboarding/MissionFloatingButton';
@@ -78,6 +80,15 @@ export const GlobalModalContainer = () => {
   const isCouponModalOpen = useModalStore((state) =>
     state.openModals.includes('couponModal')
   );
+  const isAddClientOpen = useModalStore((state) =>
+    state.openModals.includes('addClient')
+  );
+  const addClientData = useModalStore(
+    (state) =>
+      state.modalData.addClient as
+        | { onClientCreated?: (clientId: string) => void }
+        | undefined
+  );
 
   // 쿠폰 데이터 (모달에서는 planType 없이 전체 조회)
   const { coupons, isLoading: isCouponsLoading } = useCoupons();
@@ -136,6 +147,16 @@ export const GlobalModalContainer = () => {
     }
   };
 
+  const handleCloseAddClient = (open: boolean) => {
+    if (!open) closeModal('addClient');
+  };
+
+  const handleClientCreated = (clientId: string) => {
+    queryClient.invalidateQueries({ queryKey: clientQueryKeys.lists() });
+    addClientData?.onClientCreated?.(clientId);
+    closeModal('addClient');
+  };
+
   const handleUserEditSuccess = async () => {
     // 내 정보 입력 미션(Level 5)인 경우 퀘스트 완료 처리
     if (currentLevel === 5 && user?.email) {
@@ -185,6 +206,13 @@ export const GlobalModalContainer = () => {
         open={isComingSoonOpen}
         onOpenChange={handleCloseComingSoon}
         source={comingSoonData?.source}
+      />
+
+      {/* 클라이언트 추가 모달 */}
+      <AddClientModal
+        open={isAddClientOpen}
+        onOpenChange={handleCloseAddClient}
+        onClientCreated={handleClientCreated}
       />
 
       {/* 쿠폰함 모달 */}
