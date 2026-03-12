@@ -4,8 +4,8 @@ import { Outlet } from 'react-router-dom';
 
 import type { Client } from '@/features/client/types';
 import type { SessionRecord } from '@/features/session/types';
-import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -123,10 +123,16 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
                       {selectedClientIds.length === 0
                         ? '모든 클라이언트'
                         : selectedClientIds.length === 1
-                          ? effectiveClients.find((c) => c.id === selectedClientIds[0])?.name || '모든 클라이언트'
+                          ? effectiveClients.find(
+                              (c) => c.id === selectedClientIds[0]
+                            )?.name || '모든 클라이언트'
                           : `${selectedClientIds.length}명 선택`}
                     </Button>
-                    <Modal open={isClientFilterOpen} onOpenChange={setIsClientFilterOpen} mobileVariant="fullScreen">
+                    <Modal
+                      open={isClientFilterOpen}
+                      onOpenChange={setIsClientFilterOpen}
+                      mobileVariant="fullScreen"
+                    >
                       <FilterMenu
                         sortOrder={sortOrder}
                         selectedClientIds={selectedClientIds}
@@ -142,16 +148,33 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
                 ) : (
                   <PopUp
                     trigger={
-                      <Button variant="solid" tone="surface" size="sm" icon={<UserIcon size={16} />} iconRight={<ChevronDownIcon size={16} />}>
+                      <Button
+                        variant="solid"
+                        tone="surface"
+                        size="sm"
+                        icon={<UserIcon size={16} />}
+                        iconRight={<ChevronDownIcon size={16} />}
+                      >
                         {selectedClientIds.length === 0
                           ? '모든 클라이언트'
                           : selectedClientIds.length === 1
-                            ? effectiveClients.find((c) => c.id === selectedClientIds[0])?.name || '모든 클라이언트'
+                            ? effectiveClients.find(
+                                (c) => c.id === selectedClientIds[0]
+                              )?.name || '모든 클라이언트'
                             : `${selectedClientIds.length}명 선택`}
                       </Button>
                     }
                     content={
-                      <FilterMenu sortOrder={sortOrder} selectedClientIds={selectedClientIds} clients={effectiveClients} sessionCounts={sessionCounts} onSortChange={onSortChange} onClientChange={onClientChange} onReset={onFilterReset} initialView="client" />
+                      <FilterMenu
+                        sortOrder={sortOrder}
+                        selectedClientIds={selectedClientIds}
+                        clients={effectiveClients}
+                        sessionCounts={sessionCounts}
+                        onSortChange={onSortChange}
+                        onClientChange={onClientChange}
+                        onReset={onFilterReset}
+                        initialView="client"
+                      />
                     }
                     placement="bottom"
                     className="!p-4"
@@ -171,9 +194,15 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
                       iconRight={<ChevronDownIcon size={16} />}
                       onClick={() => setIsSortOpen(true)}
                     >
-                      {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
+                      {sortOrder === 'newest'
+                        ? '최신 날짜 순'
+                        : '오래된 날짜 순'}
                     </Button>
-                    <Modal open={isSortOpen} onOpenChange={setIsSortOpen} mobileVariant="bottomSheet">
+                    <Modal
+                      open={isSortOpen}
+                      onOpenChange={setIsSortOpen}
+                      mobileVariant="bottomSheet"
+                    >
                       <FilterMenu
                         sortOrder={sortOrder}
                         selectedClientIds={selectedClientIds}
@@ -189,12 +218,29 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
                 ) : (
                   <PopUp
                     trigger={
-                      <Button variant="solid" tone="surface" size="sm" icon={<SortDescIcon size={16} />} iconRight={<ChevronDownIcon size={16} />}>
-                        {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
+                      <Button
+                        variant="solid"
+                        tone="surface"
+                        size="sm"
+                        icon={<SortDescIcon size={16} />}
+                        iconRight={<ChevronDownIcon size={16} />}
+                      >
+                        {sortOrder === 'newest'
+                          ? '최신 날짜 순'
+                          : '오래된 날짜 순'}
                       </Button>
                     }
                     content={
-                      <FilterMenu sortOrder={sortOrder} selectedClientIds={selectedClientIds} clients={effectiveClients} sessionCounts={sessionCounts} onSortChange={onSortChange} onClientChange={onClientChange} onReset={onFilterReset} initialView="sort" />
+                      <FilterMenu
+                        sortOrder={sortOrder}
+                        selectedClientIds={selectedClientIds}
+                        clients={effectiveClients}
+                        sessionCounts={sessionCounts}
+                        onSortChange={onSortChange}
+                        onClientChange={onClientChange}
+                        onReset={onFilterReset}
+                        initialView="sort"
+                      />
                     }
                     placement="bottom"
                     className="!p-4"

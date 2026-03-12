@@ -169,46 +169,48 @@ export const SideTab: React.FC<SideTabProps> = ({
       )}
 
       {/* New Session Button (with dropdown) - 드로어에서는 헤더에 있으므로 숨김 */}
-      {!isDrawer && <div className="p-4">
-        <PopUp
-          open={isNewRecordMenuOpen}
-          onOpenChange={setIsNewRecordMenuOpen}
-          placement="bottom-right"
-          trigger={
-            <Button
-              variant="outline"
-              tone="primary"
-              size="md"
-              className="w-full justify-center"
-              icon={<PlusIcon size={18} />}
-              onClick={async () => {
-                setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
-              }}
-            >
-              새 상담 기록
-            </Button>
-          }
-          content={
-            <div className="w-[200px] space-y-1">
-              <button
-                onClick={handleAudioUploadClick}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
+      {!isDrawer && (
+        <div className="p-4">
+          <PopUp
+            open={isNewRecordMenuOpen}
+            onOpenChange={setIsNewRecordMenuOpen}
+            placement="bottom-right"
+            trigger={
+              <Button
+                variant="outline"
+                tone="primary"
+                size="md"
+                className="w-full justify-center"
+                icon={<PlusIcon size={18} />}
+                onClick={async () => {
+                  setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
+                }}
               >
-                <UploadIcon size={18} className="" />
-                <Text>녹음 파일 업로드</Text>
-              </button>
-              <button
-                onClick={handleDirectInputClick}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
-              >
-                <Edit3Icon size={18} className="" />
-                <Text>직접 입력하기</Text>
-              </button>
-            </div>
-          }
-          triggerClassName="w-full"
-        />
-      </div>}
+                새 상담 기록
+              </Button>
+            }
+            content={
+              <div className="w-[200px] space-y-1">
+                <button
+                  onClick={handleAudioUploadClick}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
+                >
+                  <UploadIcon size={18} className="" />
+                  <Text>녹음 파일 업로드</Text>
+                </button>
+                <button
+                  onClick={handleDirectInputClick}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
+                >
+                  <Edit3Icon size={18} className="" />
+                  <Text>직접 입력하기</Text>
+                </button>
+              </div>
+            }
+            triggerClassName="w-full"
+          />
+        </div>
+      )}
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-y-auto px-3">

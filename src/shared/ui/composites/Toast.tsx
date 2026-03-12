@@ -62,7 +62,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         className={cn(
           'pointer-events-none fixed left-4 right-4 top-4 z-toast',
           // 데스크톱: 기존 세로 나열
-          'sm:flex sm:flex-col sm:gap-2 sm:left-auto sm:right-4 sm:w-auto'
+          'sm:left-auto sm:right-4 sm:flex sm:w-auto sm:flex-col sm:gap-2'
         )}
       >
         {toasts.map((t, index) => (
@@ -88,7 +88,12 @@ interface ToastItemProps {
 
 const MAX_VISIBLE_STACK = 3;
 
-const ToastItem: React.FC<ToastItemProps> = ({ toast, index, total, onClose }) => {
+const ToastItem: React.FC<ToastItemProps> = ({
+  toast,
+  index,
+  total,
+  onClose,
+}) => {
   // 모바일 Sonner 스타일: 최신(마지막)이 맨 위, 이전 것들은 뒤로 축소
   const reverseIndex = total - 1 - index; // 0 = 맨 위(최신), 1 = 그 뒤, ...
   const isHidden = reverseIndex >= MAX_VISIBLE_STACK;
@@ -96,19 +101,22 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, index, total, onClose }) =
   return (
     <div
       role="status"
-      style={{
-        // 모바일 스택용 inline style (sm+ 에서는 CSS로 덮어씀)
-        '--stack-offset': `${reverseIndex * 8}px`,
-        '--stack-scale': `${1 - reverseIndex * 0.05}`,
-        '--stack-opacity': isHidden ? '0' : '1',
-      } as React.CSSProperties}
+      style={
+        {
+          // 모바일 스택용 inline style (sm+ 에서는 CSS로 덮어씀)
+          '--stack-offset': `${reverseIndex * 8}px`,
+          '--stack-scale': `${1 - reverseIndex * 0.05}`,
+          '--stack-opacity': isHidden ? '0' : '1',
+        } as React.CSSProperties
+      }
       className={cn(
         'pointer-events-auto',
         'w-full sm:min-w-[300px] sm:max-w-md',
         'rounded-[var(--radius-lg)] border-2 border-border bg-surface shadow-lg',
         'p-4',
         // 모바일: absolute 스택 (최신이 위, 나머지는 뒤로)
-        index < total - 1 && 'absolute left-0 right-0 top-0 sm:relative sm:left-auto sm:right-auto',
+        index < total - 1 &&
+          'absolute left-0 right-0 top-0 sm:relative sm:left-auto sm:right-auto',
         'translate-y-[var(--stack-offset)] scale-[var(--stack-scale)] opacity-[var(--stack-opacity)]',
         'sm:translate-y-0 sm:scale-100 sm:opacity-100',
         'transition-all duration-200 ease-out',

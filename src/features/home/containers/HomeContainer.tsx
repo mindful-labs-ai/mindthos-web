@@ -127,9 +127,7 @@ const HomeContainer = () => {
   // SessionRecord로 변환
   const recentSessionRecords: SessionRecord[] = recentSessions.map(
     ({ session, transcribe, progressNotes }) => {
-      const client = effectiveClients.find(
-        (c) => c.id === session.client_id
-      );
+      const client = effectiveClients.find((c) => c.id === session.client_id);
       const clientName = client?.name || '클라이언트 없음';
       const isHandwritten = session.audio_meta_data === null;
 
@@ -138,10 +136,7 @@ const HomeContainer = () => {
         transcribe_id: transcribe?.id || null,
         client_id: session.client_id || '',
         client_name: clientName,
-        session_number: getSessionNumber(
-          session.id,
-          session.client_id || ''
-        ),
+        session_number: getSessionNumber(session.id, session.client_id || ''),
         title: session.title || undefined,
         content: getSessionContent(transcribe, isHandwritten),
         note_types: getNoteTypesFromProgressNotes(progressNotes),

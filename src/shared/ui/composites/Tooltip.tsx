@@ -35,7 +35,9 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
   const triggerRef = React.useRef<HTMLDivElement>(null);
   const tooltipRef = React.useRef<HTMLDivElement>(null);
-  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
   const tooltipId = React.useId();
 
   // 위치 계산

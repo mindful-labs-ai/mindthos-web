@@ -179,7 +179,10 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
     >
       <Text className="relative px-3 text-xs font-medium text-fg-muted">
         마음토스 크레딧
-        <button className="absolute right-3 top-0" onClick={(e) => e.stopPropagation()}>
+        <button
+          className="absolute right-3 top-0"
+          onClick={(e) => e.stopPropagation()}
+        >
           <CreditPricingTooltip placement="right">
             <svg
               width="14"

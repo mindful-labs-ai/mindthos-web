@@ -36,7 +36,9 @@ export function useDevice(): UseDeviceReturn {
 
   useEffect(() => {
     // matchMedia를 primary로 브레이크포인트 경계 감지
-    const mobileQuery = window.matchMedia(`(max-width: ${BREAKPOINTS.sm - 1}px)`);
+    const mobileQuery = window.matchMedia(
+      `(max-width: ${BREAKPOINTS.sm - 1}px)`
+    );
     const tabletQuery = window.matchMedia(
       `(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${BREAKPOINTS.md - 1}px)`
     );

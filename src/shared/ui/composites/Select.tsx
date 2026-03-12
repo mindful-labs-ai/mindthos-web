@@ -267,8 +267,16 @@ export const Select: React.FC<SelectProps> = ({
       </button>
 
       {isMobileView ? (
-        <Modal open={isOpen && !disabled} onOpenChange={setIsOpen} mobileVariant="bottomSheet">
-          <ul role="listbox" aria-multiselectable={multiple} className="w-full py-1">
+        <Modal
+          open={isOpen && !disabled}
+          onOpenChange={setIsOpen}
+          mobileVariant="bottomSheet"
+        >
+          <ul
+            role="listbox"
+            aria-multiselectable={multiple}
+            className="w-full py-1"
+          >
             {items.map((item, index) => {
               const selected = isSelected(item.value);
               return (
@@ -295,8 +303,18 @@ export const Select: React.FC<SelectProps> = ({
                 >
                   <span>{item.label}</span>
                   {selected && (
-                    <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="h-4 w-4 shrink-0 text-primary"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </li>
@@ -360,8 +378,18 @@ export const Select: React.FC<SelectProps> = ({
                   >
                     <span>{item.label}</span>
                     {selected && (
-                      <svg className="h-4 w-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="h-4 w-4 shrink-0 text-primary"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={3}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                   </li>

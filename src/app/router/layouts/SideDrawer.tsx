@@ -43,7 +43,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-overlay transition-visibility',
+        'transition-visibility fixed inset-0 z-overlay',
         open ? 'visible' : 'invisible'
       )}
     >
@@ -67,9 +67,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
         {/* Drawer header with close button */}
         <div className="flex h-14 items-center justify-between border-b border-border px-4">
           <button
-            onClick={() =>
-              window.location.assign('/')
-            }
+            onClick={() => window.location.assign('/')}
             className="flex items-center gap-2 rounded hover:opacity-80"
           >
             <img
@@ -90,9 +88,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
         </div>
 
         {/* Drawer body - SideTab content */}
-        <div className="flex flex-1 flex-col overflow-y-auto">
-          {children}
-        </div>
+        <div className="flex flex-1 flex-col overflow-y-auto">{children}</div>
       </aside>
     </div>
   );

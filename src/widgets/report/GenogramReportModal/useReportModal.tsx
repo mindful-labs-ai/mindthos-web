@@ -7,8 +7,6 @@ import {
 } from '@/features/report/utils/buildReportPdf';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackEvent } from '@/lib/mixpanel';
-import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
-import { useReportTemplates } from '@/shared/hooks/useReportTemplates';
 import {
   createSignedPdfUrl,
   exportReport,
@@ -16,6 +14,8 @@ import {
   generateReport,
 } from '@/shared/api/supabase/reportQueries';
 import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
+import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
+import { useReportTemplates } from '@/shared/hooks/useReportTemplates';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 

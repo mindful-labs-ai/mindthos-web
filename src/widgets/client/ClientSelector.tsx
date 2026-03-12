@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { Client } from '@/features/client/types';
-import { SearchIcon, UserIcon, XIcon } from '@/shared/icons';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { SearchIcon, UserIcon, XIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -192,11 +192,17 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             role="button"
             tabIndex={0}
             onClick={() => setIsOpen(true)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsOpen(true); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setIsOpen(true);
+            }}
           >
             {trigger}
           </div>
-          <Modal open={isOpen} onOpenChange={setIsOpen} mobileVariant="fullScreen">
+          <Modal
+            open={isOpen}
+            onOpenChange={setIsOpen}
+            mobileVariant="fullScreen"
+          >
             <div className="space-y-2 p-3">{renderClientList()}</div>
           </Modal>
         </>

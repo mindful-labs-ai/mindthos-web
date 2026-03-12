@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useDevice } from '@/shared/hooks/useDevice';
 import {
   MoreVerticalIcon,
   LogInIcon,
@@ -7,7 +8,6 @@ import {
   Trash2Icon,
   ArrowRightIcon,
 } from '@/shared/icons';
-import { useDevice } from '@/shared/hooks/useDevice';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';

@@ -2,12 +2,12 @@ import React from 'react';
 
 import { Outlet } from 'react-router-dom';
 
-import { useModalStore } from '@/stores/modalStore';
 
 import { Header } from '@/app/router/layouts/Header';
 import { MobileHeader } from '@/app/router/layouts/MobileHeader';
 import { SideDrawer } from '@/app/router/layouts/SideDrawer';
 import { SideTab } from '@/app/router/layouts/SideTab';
+import { useModalStore } from '@/stores/modalStore';
 
 import { AppShell } from './shells/AppShell';
 
@@ -42,10 +42,7 @@ const MainFlowLayout = () => {
 
       {/* Mobile/Tablet Drawer */}
       <div className="sm:hidden">
-        <SideDrawer
-          open={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-        >
+        <SideDrawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
           <SideTab
             variant="drawer"
             onNavSelect={() => setIsDrawerOpen(false)}

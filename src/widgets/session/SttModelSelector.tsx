@@ -1,8 +1,8 @@
 import React from 'react';
 
 import type { SttModel } from '@/features/session/types';
-import { Text } from '@/shared/ui';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { Text } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui/composites/Tooltip';
 
 interface SttModelSelectorProps {
@@ -130,8 +130,8 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       </div>
                       <Text className="text-xs leading-relaxed text-fg-muted">
                         <p className="font-semibold">숨소리까지 기록:</p> 침묵,
-                        한숨, 웃음, 울음 등 상담의 맥락을 결정짓는 비언어적 표현을
-                        놓치지 않습니다.
+                        한숨, 웃음, 울음 등 상담의 맥락을 결정짓는 비언어적
+                        표현을 놓치지 않습니다.
                         <br />
                         <p className="font-semibold">완벽한 화자 분리:</p>{' '}
                         목소리가 겹치기 쉬운 3인 이상 부부·가족 상담에서도 누가
@@ -159,7 +159,13 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                     aria-label="프리미엄 모델 정보"
                     className="ml-1 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors hover:bg-surface-strong hover:text-fg"
                   >
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path
                         d="M8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0ZM8 12C7.44772 12 7 11.5523 7 11C7 10.4477 7.44772 10 8 10C8.55228 10 9 10.4477 9 11C9 11.5523 8.55228 12 8 12ZM9 8.5C9 8.77614 8.77614 9 8.5 9H7.5C7.22386 9 7 8.77614 7 8.5V4.5C7 4.22386 7.22386 4 7.5 4H8.5C8.77614 4 9 4.22386 9 4.5V8.5Z"
                         fill="currentColor"

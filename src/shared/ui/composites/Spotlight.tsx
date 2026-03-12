@@ -9,8 +9,8 @@ import React, {
 import { createPortal } from 'react-dom';
 
 import { cn } from '@/lib/cn';
-import { XIcon } from '@/shared/icons';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { XIcon } from '@/shared/icons';
 import { useFeatureGuideStore } from '@/stores/featureGuideStore';
 import { useQuestStore } from '@/stores/questStore';
 

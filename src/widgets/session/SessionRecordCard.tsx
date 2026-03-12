@@ -10,8 +10,8 @@ import {
   deleteSession,
   updateSessionTitle,
 } from '@/shared/api/supabase/sessionQueries';
-import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -383,12 +383,22 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           <div
             role="button"
             tabIndex={0}
-            onClick={(e) => { e.stopPropagation(); handleMenuOpenChange(true); }}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleMenuOpenChange(true); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleMenuOpenChange(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ')
+                handleMenuOpenChange(true);
+            }}
           >
             {triggerButton}
           </div>
-          <Modal open={isMenuOpen} onOpenChange={handleMenuOpenChange} mobileVariant="bottomSheet">
+          <Modal
+            open={isMenuOpen}
+            onOpenChange={handleMenuOpenChange}
+            mobileVariant="bottomSheet"
+          >
             {mobileMenuContent}
           </Modal>
           <ClientSelector
@@ -410,7 +420,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       )}
     </div>
   );
-
 
   const renderDeleteModal = () => (
     <Modal

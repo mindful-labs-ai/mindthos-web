@@ -325,11 +325,17 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
           role="button"
           tabIndex={0}
           onClick={() => onOpenChange(true)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onOpenChange(true); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') onOpenChange(true);
+          }}
         >
           {triggerElement}
         </div>
-        <Modal open={open} onOpenChange={onOpenChange} mobileVariant="bottomSheet">
+        <Modal
+          open={open}
+          onOpenChange={onOpenChange}
+          mobileVariant="bottomSheet"
+        >
           {popupContent}
         </Modal>
       </>

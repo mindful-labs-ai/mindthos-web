@@ -53,7 +53,10 @@ export interface SessionDetailViewProps {
   onCancelEdit: () => void;
   onCopyTranscript: () => void;
   onTextEdit: (index: number, text: string) => void;
-  onSpeakerChange: (updates: { speakerChanges: Record<number, number>; speakerDefinitions: Speaker[] }) => Promise<void>;
+  onSpeakerChange: (updates: {
+    speakerChanges: Record<number, number>;
+    speakerDefinitions: Speaker[];
+  }) => Promise<void>;
   onAddSegment: (afterSegmentId: number, speaker: number) => void;
   onDeleteSegment: (segmentId: number) => void;
   onSeekTo: (time: number) => void;
@@ -72,7 +75,11 @@ export interface SessionDetailViewProps {
   onHandwrittenContentChange: (content: string) => void;
   onCopyHandwritten: () => void;
   // Progress notes
-  activeCreatingTab: { tabId: string; templateId: number | null; isProcessing: boolean } | null;
+  activeCreatingTab: {
+    tabId: string;
+    templateId: number | null;
+    isProcessing: boolean;
+  } | null;
   creatingTabs: Record<string, number | null>;
   sessionProgressNotes: ProgressNote[];
   transcribedText: string | null;

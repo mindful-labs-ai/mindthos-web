@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { useDevice } from '@/shared/hooks/useDevice';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
-import { useDevice } from '@/shared/hooks/useDevice';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { Tooltip } from '@/shared/ui/composites/Tooltip';
 
@@ -121,12 +121,21 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
         <div
           role="button"
           tabIndex={0}
-          onClick={(e) => { e.stopPropagation(); setIsMobileModalOpen(true); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setIsMobileModalOpen(true); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMobileModalOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') setIsMobileModalOpen(true);
+          }}
         >
           {children}
         </div>
-        <Modal open={isMobileModalOpen} onOpenChange={setIsMobileModalOpen} mobileVariant="fullScreen">
+        <Modal
+          open={isMobileModalOpen}
+          onOpenChange={setIsMobileModalOpen}
+          mobileVariant="fullScreen"
+        >
           {tooltipContent}
         </Modal>
       </>

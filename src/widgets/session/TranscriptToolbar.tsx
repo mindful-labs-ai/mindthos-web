@@ -5,8 +5,8 @@
 
 import React from 'react';
 
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { Badge } from '@/shared/ui/atoms/Badge';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { Spotlight } from '@/shared/ui/composites/Spotlight';
@@ -219,13 +219,26 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                       aria-label="추가 메뉴"
                       onClick={() => setIsMenuOpen(true)}
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <circle cx="12" cy="12" r="1" />
                         <circle cx="12" cy="5" r="1" />
                         <circle cx="12" cy="19" r="1" />
                       </svg>
                     </button>
-                    <Modal open={isMenuOpen} onOpenChange={setIsMenuOpen} mobileVariant="bottomSheet">
+                    <Modal
+                      open={isMenuOpen}
+                      onOpenChange={setIsMenuOpen}
+                      mobileVariant="bottomSheet"
+                    >
                       {menuContent}
                     </Modal>
                   </>
@@ -241,7 +254,16 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                         title="메뉴"
                         aria-label="추가 메뉴"
                       >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <circle cx="12" cy="12" r="1" />
                           <circle cx="12" cy="5" r="1" />
                           <circle cx="12" cy="19" r="1" />
