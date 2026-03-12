@@ -1,7 +1,6 @@
 import { Navigate } from 'react-router-dom';
 
 import { useTermsCheck } from '@/features/terms-agreement/hooks/useTermsCheck';
-import { useMobileRouteGuard } from '@/shared/hooks/useMobileRouteGuard';
 import { useAuthStore } from '@/stores/authStore';
 import { useUtmStore } from '@/stores/utmStore';
 import { GlobalModalContainer } from '@/widgets/common/GlobalModalContainer';
@@ -32,9 +31,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { agreedAll, isLoading: isTermsLoading } = useTermsCheck(
     isAuthenticated && !skipTermsCheck
   );
-
-  // 모바일/태블릿에서 "/" 외 라우트 접근 시 자동 리다이렉트
-  useMobileRouteGuard();
 
   if (isLoading || (isAuthenticated && !skipTermsCheck && isTermsLoading)) {
     return (
