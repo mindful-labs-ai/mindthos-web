@@ -4,6 +4,7 @@ import { useToast } from '@/components/ui/composites/Toast';
 import { useCreditInfo } from '@/feature/settings/hooks/useCreditInfo';
 import { trackEvent } from '@/lib/mixpanel';
 import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
+import { useReportTemplates } from '@/shared/hooks/useReportTemplates';
 import { useAuthStore } from '@/stores/authStore';
 
 import { useGenogramCapture } from '../../hooks/useGenogramCapture';
@@ -51,6 +52,8 @@ export function useReportModal({
     isChecking,
     invalidate: invalidateAccess,
   } = useFeatureAccess('GENOGRAM_SEMINAR');
+
+  const { getTemplate } = useReportTemplates();
 
   // ── 서브 훅 ──
   const {
@@ -133,9 +136,19 @@ export function useReportModal({
           ? `${formData.startDate} ~ ${formData.endDate}`
           : '';
 
+      const templateName =
+        getTemplate(GENOGRAM_REPORT_TEMPLATE_KEY)?.name ?? '가계도 분석 보고서';
+      const now = new Date();
+      const yy = String(now.getFullYear()).slice(-2);
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const clientLabel = formData.clientName ? `_${formData.clientName}` : '';
+      const reportTitle = `${templateName}${clientLabel}_${yy}/${mm}/${dd}`;
+
       const result = await generateReport({
         client_id: clientId!,
         template_key: GENOGRAM_REPORT_TEMPLATE_KEY,
+        title: reportTitle,
         input_snapshot: {
           client_name: formData.clientName || undefined,
           counselor_name: formData.counselorName || undefined,
@@ -198,7 +211,7 @@ export function useReportModal({
       fetchReports();
       setPdfBlobUrl(numberedBlob);
       setPreviewReportId(result.report_id);
-      setPreviewTitle(reportData.meta.title || '가계도 분석 보고서');
+      setPreviewTitle(reportTitle);
       setStep('preview');
     } catch (error) {
       if (cancelledRef.current) return;
@@ -220,6 +233,7 @@ export function useReportModal({
     fetchReports,
     toast,
     setPdfBlobUrl,
+    getTemplate,
   ]);
 
   // ── 미리보기 ──
