@@ -69,9 +69,52 @@ body {
 }
 
 @layer components {
+  .layout-page {
+    @apply px-page py-page;
+  }
+  .layout-card {
+    @apply p-card;
+  }
+  .layout-modal {
+    @apply px-modal py-modal;
+  }
 }
 
 @layer utilities {
+  .focus-default {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  @keyframes slideUpFull {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slideUpFull {
+    animation: slideUpFull 0.3s ease-out;
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slideInFromLeft {
+    animation: slideInFromLeft 0.3s ease-out;
+  }
+
   @keyframes progress-flow {
     0% {
       background-position: 200% 0;

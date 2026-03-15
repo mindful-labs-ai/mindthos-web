@@ -9,21 +9,22 @@ export interface UseDeviceReturn {
   deviceType: DeviceType;
 }
 
-const MOBILE_BREAKPOINT = 640;
-const TABLET_BREAKPOINT = 768;
+// Tailwind breakpoints
+const BREAKPOINTS = {
+  sm: 640, // mobile → sm
+  md: 768, // tablet → md
+} as const;
 
 function getDeviceType(width: number): DeviceType {
-  if (width < MOBILE_BREAKPOINT) return 'mobile';
-  if (width < TABLET_BREAKPOINT) return 'tablet';
+  if (width < BREAKPOINTS.sm) return 'mobile';
+  if (width < BREAKPOINTS.md) return 'tablet';
   return 'desktop';
 }
 
 function checkIsMobileUserAgent(): boolean {
   if (typeof navigator === 'undefined') return false;
-
-  const userAgent = navigator.userAgent.toLowerCase();
   return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(
-    userAgent
+    navigator.userAgent.toLowerCase()
   );
 }
 
@@ -34,12 +35,26 @@ export function useDevice(): UseDeviceReturn {
   });
 
   useEffect(() => {
-    const handleResize = () => {
+    // matchMedia를 primary로 브레이크포인트 경계 감지
+    const mobileQuery = window.matchMedia(
+      `(max-width: ${BREAKPOINTS.sm - 1}px)`
+    );
+    const tabletQuery = window.matchMedia(
+      `(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${BREAKPOINTS.md - 1}px)`
+    );
+
+    // innerWidth를 보조로 정확한 값 동기화
+    const updateDeviceType = () => {
       setDeviceType(getDeviceType(window.innerWidth));
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    mobileQuery.addEventListener('change', updateDeviceType);
+    tabletQuery.addEventListener('change', updateDeviceType);
+
+    return () => {
+      mobileQuery.removeEventListener('change', updateDeviceType);
+      tabletQuery.removeEventListener('change', updateDeviceType);
+    };
   }, []);
 
   const isMobileByUserAgent = checkIsMobileUserAgent();

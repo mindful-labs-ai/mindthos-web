@@ -93,7 +93,7 @@ function DebugPanelUI({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-[60] rounded bg-gray-800 px-3 py-1.5 text-xs text-white opacity-60 hover:opacity-100"
+        className="fixed bottom-4 right-4 z-debug rounded bg-gray-800 px-3 py-1.5 text-xs text-white opacity-60 hover:opacity-100"
       >
         DEBUG
       </button>
@@ -101,7 +101,7 @@ function DebugPanelUI({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-[60] w-72 rounded-lg border border-gray-300 bg-white p-3 text-xs shadow-xl">
+    <div className="fixed bottom-4 right-4 z-debug w-72 rounded-lg border border-gray-300 bg-white p-3 text-xs shadow-xl">
       <div className="mb-2 flex items-center justify-between">
         <span className="font-bold text-gray-700">{title}</span>
         <button

@@ -10,8 +10,8 @@
 
 import React from 'react';
 
-import { useToast } from '@/components/ui/composites/Toast';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { useToast } from '@/shared/ui/composites/Toast';
 import { domToMarkdown } from '@/shared/utils/domToMarkdown';
 
 interface UseMarkdownEditSessionOptions {

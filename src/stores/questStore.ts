@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
-import { preloadTutorialAssets } from '@/feature/onboarding/components/TutorialGuideModal';
 import { trackEvent } from '@/lib/mixpanel';
-import { onboardingService } from '@/services/onboarding/onboardingService';
+import { onboardingService } from '@/shared/api/services/onboarding/onboardingService';
 import {
   OnboardingState,
   type OnboardingStateType,
   type OnboardingSuccessResponse,
-} from '@/services/onboarding/types';
+} from '@/shared/api/services/onboarding/types';
+import { preloadTutorialAssets } from '@/widgets/onboarding/TutorialGuideModal';
 
 /**
  * 서버의 [state, step] 조합을 프론트엔드 퀘스트 레벨(0~7)로 매핑하는 함수

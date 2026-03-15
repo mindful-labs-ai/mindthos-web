@@ -1,4 +1,4 @@
-import { type PlanInfo } from '@/feature/settings/types';
+import { type PlanInfo } from '@/features/settings/types';
 
 export const FREE_PLAN: PlanInfo = {
   type: 'FREE',

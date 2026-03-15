@@ -55,6 +55,26 @@ export default {
         info: 'var(--color-info)',
         success: 'var(--color-success)',
       },
+      zIndex: {
+        sidebar: 'var(--z-sidebar)',
+        header: 'var(--z-header)',
+        dropdown: 'var(--z-dropdown)',
+        sticky: 'var(--z-sticky)',
+        overlay: 'var(--z-overlay)',
+        modal: 'var(--z-modal)',
+        popover: 'var(--z-popover)',
+        tooltip: 'var(--z-tooltip)',
+        toast: 'var(--z-toast)',
+        spotlight: 'var(--z-spotlight)',
+        debug: 'var(--z-debug)',
+      },
+      spacing: {
+        page: 'var(--space-page)',
+        card: 'var(--space-card)',
+        modal: 'var(--space-modal)',
+        section: 'var(--space-section)',
+        inline: 'var(--space-inline)',
+      },
       borderRadius: {
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',
@@ -72,6 +92,10 @@ export default {
         slideUp: {
           '0%': { transform: 'translate(-50%, 100%)', opacity: '0' },
           '100%': { transform: 'translate(-50%, 0)', opacity: '1' },
+        },
+        slideUpFull: {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
         scaleIn: {
           '0%': { transform: 'scale(0.95)', opacity: '0' },
@@ -91,6 +115,7 @@ export default {
         fadeIn: 'fadeIn 0.2s ease-out',
         slideIn: 'slideIn 0.2s ease-out',
         slideUp: 'slideUp 0.2s ease-out',
+        slideUpFull: 'slideUpFull 0.3s ease-out',
         scaleIn: 'scaleIn 0.2s ease-out',
         shimmer: 'shimmer 1.5s ease-in-out infinite',
         shake: 'shake 0.5s ease-in-out',

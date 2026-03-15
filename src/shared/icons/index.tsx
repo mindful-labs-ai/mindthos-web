@@ -29,6 +29,7 @@ import {
   LogIn,
   Mail,
   MapPin,
+  Menu,
   Minus,
   MoreVertical,
   Plus,
@@ -84,6 +85,7 @@ export const ListChecksIcon: IconComponent = (props) => (
 export const LogInIcon: IconComponent = (props) => <LogIn {...props} />;
 export const MailIcon: IconComponent = (props) => <Mail {...props} />;
 export const MapPinIcon: IconComponent = (props) => <MapPin {...props} />;
+export const MenuIcon: IconComponent = (props) => <Menu {...props} />;
 export const MinusIcon: IconComponent = (props) => <Minus {...props} />;
 export const MoreVerticalIcon: IconComponent = (props) => (
   <MoreVertical {...props} />
@@ -276,9 +278,9 @@ export const CopyIcon: React.FC<CustomIconProps> = ({
     <path
       d="M7.5 7.5V5.16683C7.5 4.23341 7.5 3.76635 7.68166 3.40983C7.84145 3.09623 8.09623 2.84144 8.40983 2.68166C8.76635 2.5 9.23341 2.5 10.1668 2.5H14.8335C15.7669 2.5 16.2334 2.5 16.5899 2.68166C16.9035 2.84144 17.1587 3.09623 17.3185 3.40983C17.5002 3.76635 17.5002 4.23306 17.5002 5.16648V9.83317C17.5002 10.7666 17.5002 11.2333 17.3185 11.5898C17.1587 11.9034 16.9033 12.1587 16.5897 12.3185C16.2335 12.5 15.7675 12.5 14.8359 12.5H12.5M7.5 7.5H5.16683C4.23341 7.5 3.76635 7.5 3.40983 7.68166C3.09623 7.84144 2.84144 8.09623 2.68166 8.40983C2.5 8.76635 2.5 9.23341 2.5 10.1668V14.8335C2.5 15.7669 2.5 16.2334 2.68166 16.5899C2.84144 16.9035 3.09623 17.1587 3.40983 17.3185C3.766 17.5 4.23249 17.5 5.16409 17.5H9.83629C10.7679 17.5 11.2337 17.5 11.5899 17.3185C11.9035 17.1587 12.1587 16.9033 12.3185 16.5897C12.5 16.2335 12.5 15.7675 12.5 14.8359V12.5M7.5 7.5H9.8335C10.7669 7.5 11.2334 7.5 11.5899 7.68166C11.9035 7.84144 12.1587 8.09623 12.3185 8.40983C12.5 8.766 12.5 9.2325 12.5 10.1641L12.5 12.5"
       stroke="#A2A2A2"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -415,9 +417,6 @@ export const SideGenogramIcon: React.FC<CustomIconProps> = ({
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <mask id="side-genogram-mask" fill="white">
-      <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
-    </mask>
     <rect
       x="1"
       y="1"
@@ -425,8 +424,7 @@ export const SideGenogramIcon: React.FC<CustomIconProps> = ({
       height="8.88889"
       rx="1.11111"
       stroke="currentColor"
-      strokeWidth="3"
-      mask="url(#side-genogram-mask)"
+      strokeWidth="1.5"
     />
     <circle
       cx="18.9444"
@@ -560,9 +558,6 @@ export const GenogramIcon: React.FC<CustomIconProps> = ({
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <mask id="path-1-inside-1_5497_51436" fill="white">
-      <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
-    </mask>
     <rect
       x="1"
       y="1"
@@ -570,8 +565,7 @@ export const GenogramIcon: React.FC<CustomIconProps> = ({
       height="8.88889"
       rx="1.11111"
       stroke="currentColor"
-      strokeWidth="3"
-      mask="url(#path-1-inside-1_5497_51436)"
+      strokeWidth="1.5"
     />
     <circle
       cx="18.9444"
@@ -826,6 +820,7 @@ export const Icons = {
   LogIn: LogInIcon,
   Mail: MailIcon,
   MapPin: MapPinIcon,
+  Menu: MenuIcon,
   Minus: MinusIcon,
   MoreVertical: MoreVerticalIcon,
   Plus: PlusIcon,

@@ -3,8 +3,8 @@ import { devtools } from 'zustand/middleware';
 
 import { identifyUser, resetMixpanel } from '@/lib/mixpanel';
 import { queryClient } from '@/lib/queryClient';
-import { authService } from '@/services/auth/authService';
-import type { User, UserData } from '@/services/auth/types';
+import { authService } from '@/shared/api/services/auth/authService';
+import type { User, UserData } from '@/shared/api/services/auth/types';
 
 interface AuthState {
   user: User | null;

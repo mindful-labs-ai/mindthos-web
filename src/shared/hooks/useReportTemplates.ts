@@ -1,10 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { reportQueryKeys } from '@/feature/report/constants/queryKeys';
+import { reportQueryKeys } from '@/features/report/constants/queryKeys';
 import {
   fetchReportTemplates,
   type ReportTemplate,
-} from '@/feature/report/services/reportService';
+} from '@/shared/api/supabase/reportQueries';
 
 export type { ReportTemplate };
 
