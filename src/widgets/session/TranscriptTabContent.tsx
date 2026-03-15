@@ -242,7 +242,7 @@ const TranscriptContent: React.FC<TranscriptContentProps> = ({
     <div
       key="transcript-container"
       ref={contentScrollRef}
-      className="h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors"
+      className="h-full overflow-y-auto rounded-lg px-4 py-4 transition-colors sm:px-8 sm:py-6"
       onScroll={onGuideScroll}
     >
       {segments.length > 0 ? (

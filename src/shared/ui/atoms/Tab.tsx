@@ -3,7 +3,7 @@ import React from 'react';
 import { cn } from '@/lib/cn';
 
 export type TabSize = 'sm' | 'md' | 'lg' | 'free';
-export type TabVariant = 'pill' | 'underline';
+export type TabVariant = 'pill' | 'underline' | 'card-nav';
 
 export interface TabItem {
   value: string;
@@ -26,6 +26,13 @@ export interface TabProps {
 const SCROLL_AMOUNT = 160;
 
 const pillSizeStyles: Record<TabSize, string> = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-5 py-2.5 text-base',
+  free: '',
+};
+
+const cardNavSizeStyles: Record<TabSize, string> = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2 text-sm',
   lg: 'px-5 py-2.5 text-base',
@@ -69,7 +76,11 @@ export const Tab: React.FC<TabProps> = ({
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
   const sizeStyles =
-    variant === 'underline' ? underlineSizeStyles : pillSizeStyles;
+    variant === 'underline'
+      ? underlineSizeStyles
+      : variant === 'card-nav'
+        ? cardNavSizeStyles
+        : pillSizeStyles;
 
   const updateScrollState = React.useCallback(() => {
     const el = scrollRef.current;
@@ -143,6 +154,108 @@ export const Tab: React.FC<TabProps> = ({
 
     handleSelect(enabledItems[nextIndex].value);
   };
+
+  const enabledItems = items.filter((item) => !item.disabled);
+  const currentEnabledIndex = enabledItems.findIndex(
+    (item) => item.value === selectedValue
+  );
+  const canGoPrev = currentEnabledIndex > 0;
+  const canGoNext = currentEnabledIndex < enabledItems.length - 1;
+
+  if (variant === 'card-nav') {
+    return (
+      <div
+        className={cn(
+          'flex items-center gap-1',
+          fullWidth ? 'w-full' : 'inline-flex',
+          className
+        )}
+      >
+        {/* 이전 탭 화살표 */}
+        <button
+          type="button"
+          aria-label="이전 탭"
+          disabled={!canGoPrev}
+          onClick={() => {
+            if (canGoPrev) handleSelect(enabledItems[currentEnabledIndex - 1].value);
+          }}
+          className={cn(
+            'flex-shrink-0 rounded-full p-1 transition-colors',
+            canGoPrev
+              ? 'text-fg hover:bg-surface-strong'
+              : 'cursor-default text-fg-muted opacity-30'
+          )}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        {/* 탭 목록 */}
+        <div
+          role="tablist"
+          ref={scrollRef}
+          className="scrollbar-hide flex flex-1 items-center gap-1 overflow-x-auto rounded-[var(--radius-md)] bg-surface-strong p-1"
+        >
+          {items.map((item, index) => {
+            const isSelected = item.value === selectedValue;
+            return (
+              <button
+                key={item.value}
+                data-value={item.value}
+                role="tab"
+                type="button"
+                aria-selected={isSelected}
+                aria-controls={`tabpanel-${item.value}`}
+                aria-disabled={item.disabled}
+                tabIndex={isSelected ? 0 : -1}
+                onClick={() => {
+                  if (item.disabled) {
+                    onDisabledClick?.(item.value);
+                    return;
+                  }
+                  handleSelect(item.value);
+                }}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                className={cn(
+                  'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+                  'rounded-[var(--radius-sm)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
+                  cardNavSizeStyles[size],
+                  isSelected
+                    ? 'bg-surface text-fg shadow-sm'
+                    : 'bg-transparent text-fg-muted hover:text-fg'
+                )}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 다음 탭 화살표 */}
+        <button
+          type="button"
+          aria-label="다음 탭"
+          disabled={!canGoNext}
+          onClick={() => {
+            if (canGoNext) handleSelect(enabledItems[currentEnabledIndex + 1].value);
+          }}
+          className={cn(
+            'flex-shrink-0 rounded-full p-1 transition-colors',
+            canGoNext
+              ? 'text-fg hover:bg-surface-strong'
+              : 'cursor-default text-fg-muted opacity-30'
+          )}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div

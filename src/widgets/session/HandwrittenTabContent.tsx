@@ -43,7 +43,7 @@ export const HandwrittenTabContent: React.FC<HandwrittenTabContentProps> =
         <div
           key="handwritten-container"
           ref={contentScrollRef}
-          className="flex h-full flex-col overflow-y-scroll rounded-lg p-8 transition-colors"
+          className="flex h-full flex-col overflow-y-scroll rounded-lg p-4 transition-colors sm:p-8"
         >
           {isEditing ? (
             // 편집 모드: textarea (배경만 변경, 위치 동일)

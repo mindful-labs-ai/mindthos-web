@@ -55,7 +55,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   return (
-    <div className="px-8 pb-2">
+    <div className="px-4 pb-2 sm:px-8">
       <div className="flex items-center gap-4">
         <div
           role="slider"
@@ -87,7 +87,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           <button
             type="button"
             className="rounded-full p-2.5 text-fg transition-transform active:scale-95"

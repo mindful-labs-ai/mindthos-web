@@ -75,7 +75,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
         if (activeCreatingTab?.isProcessing) {
           return (
             <div className="flex h-full flex-col">
-              <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
+              <div className="flex h-full flex-col items-center justify-center gap-4 px-4 py-4 sm:px-8 sm:py-6">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
                 <div className="text-center">
                   <Title as="h2" className="text-lg font-medium text-fg">
@@ -97,7 +97,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
           return (
             <div className="flex h-full flex-col">
               {/* 우측 상단 생성 버튼 */}
-              <div className="flex items-center justify-between px-8 py-4">
+              <div className="flex items-center justify-between px-4 py-3 sm:px-8 sm:py-4">
                 <div>
                   <Title as="h2" className="text-base text-fg-muted">
                     상담 노트 템플릿
@@ -118,7 +118,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
               {/* CreateProgressNoteView */}
               <div
                 ref={contentScrollRef}
-                className="flex-1 overflow-y-auto px-8 py-6"
+                className="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6"
               >
                 <CreateProgressNoteView
                   sessionId={sessionId}
@@ -168,7 +168,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
           {/* 상담노트 콘텐츠 */}
           <div
             ref={contentScrollRef}
-            className="flex-1 overflow-y-auto px-8 py-6"
+            className="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6"
           >
             <ProgressNoteView
               note={selectedNote}

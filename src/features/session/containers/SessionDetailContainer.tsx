@@ -12,6 +12,7 @@ import {
   getAudioPresignedUrl,
   updateSessionTitle,
 } from '@/shared/api/supabase/sessionQueries';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -43,6 +44,8 @@ import { SessionDetailView } from './SessionDetailView';
 export const SessionDetailContainer: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { navigateWithUtm } = useNavigateWithUtm();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -503,6 +506,7 @@ export const SessionDetailContainer: React.FC = () => {
 
   return (
     <SessionDetailView
+      isMobileView={isMobileView}
       session={session}
       transcribe={transcribe ?? null}
       isReadOnly={isReadOnly}

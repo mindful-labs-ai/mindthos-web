@@ -21,6 +21,7 @@ import type {
 } from '../types';
 
 export interface SessionDetailViewProps {
+  isMobileView: boolean;
   session: Session;
   transcribe: Transcribe | HandwrittenTranscribe | null;
   isReadOnly: boolean;
@@ -103,6 +104,7 @@ export interface SessionDetailViewProps {
 }
 
 export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
+  isMobileView,
   session,
   transcribe,
   isReadOnly,
@@ -170,6 +172,14 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
 }) => {
   const sessionId = session.id;
 
+  const sessionHeaderProps = {
+    title: session.title || '제목 없음',
+    createdAt: session.created_at,
+    duration: session.audio_meta_data?.duration_seconds || 0,
+    isHandwritten: isHandwrittenSession,
+    onTitleUpdate: isReadOnly ? undefined : onTitleUpdate,
+  };
+
   return (
     <div className="mx-auto flex h-full w-full max-w-full flex-col overflow-hidden sm:max-w-[min(100vw-535px,1332px)]">
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -177,11 +187,8 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
 
       <div className="flex-shrink-0">
         <SessionHeader
-          title={session.title || '제목 없음'}
-          createdAt={session.created_at}
-          duration={session.audio_meta_data?.duration_seconds || 0}
-          isHandwritten={isHandwrittenSession}
-          onTitleUpdate={isReadOnly ? undefined : onTitleUpdate}
+          {...sessionHeaderProps}
+          variant={isMobileView ? 'compact-nav' : 'full'}
         />
       </div>
 
@@ -193,9 +200,16 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
           size="sm"
           fullWidth
           className="px-2 sm:px-8"
-          variant="underline"
+          variant={isMobileView ? 'card-nav' : 'underline'}
         />
       </div>
+
+      {/* 모바일: 탭 아래에 제목 + 날짜 */}
+      {isMobileView && (
+        <div className="flex-shrink-0">
+          <SessionHeader {...sessionHeaderProps} variant="meta-only" />
+        </div>
+      )}
 
       {/* 탭 콘텐츠 */}
       <div
@@ -229,6 +243,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
             onCancelEdit={onCancelEdit}
             onCopy={onCopyTranscript}
             checkIsGuideLevel={checkIsGuideLevel}
+            isMobileView={isMobileView}
           />
         )}
 
