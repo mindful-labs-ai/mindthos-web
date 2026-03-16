@@ -1,6 +1,9 @@
 import React from 'react';
 
-import { SEEK_STEP_LARGE, SEEK_STEP_SMALL } from '../constants/audioPlayer';
+import {
+  SEEK_STEP_LARGE,
+  SEEK_STEP_SMALL,
+} from '@/shared/constants/audioPlayer';
 
 interface UseAudioPlayerKeyboardParams {
   audioRef: React.RefObject<HTMLAudioElement | null>;

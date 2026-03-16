@@ -1,4 +1,4 @@
-import type { GuideStep } from './types';
+import type { GuideStep } from '@/widgets/genogram/GenogramGuideModal/types';
 
 /**
  * 가계도 안내 모달 기본 스텝 데이터

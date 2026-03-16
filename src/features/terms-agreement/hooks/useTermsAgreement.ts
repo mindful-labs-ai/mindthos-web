@@ -3,8 +3,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import { queryClient } from '@/lib/queryClient';
+import { termsAgreementQueryKeys } from '@/shared/constants/queryKeys';
 
-import { termsAgreementQueryKeys } from '../constants';
 import { termsAgreementService } from '../services/termsAgreementService';
 import type { TermItem } from '../types';
 

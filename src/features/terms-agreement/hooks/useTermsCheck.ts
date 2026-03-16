@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { termsAgreementQueryKeys } from '../constants';
+import { termsAgreementQueryKeys } from '@/shared/constants/queryKeys';
+
 import { termsAgreementService } from '../services/termsAgreementService';
 
 export const useTermsCheck = (enabled = true) => {

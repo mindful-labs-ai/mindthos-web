@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
+import { BADGE_ICON_MAP } from '@/shared/constants/badgeIcons';
 import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';

@@ -1,4 +1,4 @@
-import type { NoteType } from '../types';
+import type { NoteType } from '@/features/session/types';
 
 /**
  * Template ID를 Note Type으로 매핑하는 상수

@@ -8,6 +8,7 @@ import {
   getPlanLabel,
 } from '@/features/settings/utils/planUtils';
 import { cn } from '@/lib/cn';
+import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Edit3Icon, PlusIcon, SideLockIcon, UploadIcon } from '@/shared/icons';
 import { Button, Text } from '@/shared/ui';
@@ -119,11 +120,7 @@ export const SideTab: React.FC<SideTabProps> = ({
 
   const handleNavSelect = (value: string) => {
     if (value === 'help') {
-      window.open(
-        'https://rare-puppy-06f.notion.site/v2-2cfdd162832d801bae95f67269c062c7?source=copy_link',
-        '_blank',
-        'noopener,noreferrer'
-      );
+      window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
       onNavSelect?.();
       return;
     }

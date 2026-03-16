@@ -7,6 +7,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { getSessionList } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import type {
   HandwrittenTranscribe,
@@ -44,7 +45,7 @@ export function useSessionList({
   >(new Map());
 
   const query = useQuery({
-    queryKey: ['sessions', userId],
+    queryKey: sessionQueryKeys.all(userId),
     queryFn: () => getSessionList(userId),
     enabled: enabled && !!userId,
     refetchInterval: (queryInfo) => {

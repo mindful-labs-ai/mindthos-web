@@ -7,6 +7,7 @@ import type {
   AIRelationStatus,
 } from '@/features/genogram/utils/aiJsonConverter';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 import { AddMemberCard, AddRelationCard } from './AddCards';
 import {
@@ -91,7 +92,7 @@ export function FamilyMemberListStep({
   );
 
   const handleAddSubject = useCallback(() => {
-    trackEvent('genogram_family_member_add');
+    trackEvent(MixpanelEvent.GenogramFamilyMemberAdd);
 
     const maxId = Math.max(0, ...data.subjects.map((s) => s.id));
     const newSubject: AISubject = {
@@ -110,7 +111,7 @@ export function FamilyMemberListStep({
 
   const handleDeleteSubject = useCallback(
     (id: number) => {
-      trackEvent('genogram_family_member_delete');
+      trackEvent(MixpanelEvent.GenogramFamilyMemberDelete);
 
       // 해당 구성원과 관련된 모든 관계도 제거
       const newSubjects = data.subjects.filter((s) => s.id !== id);
@@ -359,7 +360,7 @@ export function FamilyMemberListStep({
 
   const handleRelationDelete = useCallback(
     (index: number) => {
-      trackEvent('genogram_relation_delete');
+      trackEvent(MixpanelEvent.GenogramRelationDelete);
 
       const newList = relationDataList.filter((_, i) => i !== index);
       const { relations, influences } = convertToSeparateArrays(newList);
@@ -371,7 +372,7 @@ export function FamilyMemberListStep({
   const handleAddRelation = useCallback(() => {
     if (data.subjects.length < 2) return;
 
-    trackEvent('genogram_relation_add');
+    trackEvent(MixpanelEvent.GenogramRelationAdd);
 
     const maxOrder =
       relationDataList.length > 0
@@ -512,7 +513,7 @@ export function FamilyMemberListStep({
           onClick={() => {
             if (isEditMode) {
               // 편집 모드: 확인 모달 없이 바로 진행
-              trackEvent('genogram_edit_apply_click', {
+              trackEvent(MixpanelEvent.GenogramEditApplyClick, {
                 member_count: data.subjects.length,
                 relation_count: relationDataList.length,
               });
@@ -533,7 +534,7 @@ export function FamilyMemberListStep({
         hasUnsavedChanges={hasUnsavedChanges}
         onClose={() => setShowConfirmModal(false)}
         onConfirm={() => {
-          trackEvent('genogram_generation_confirm_click', {
+          trackEvent(MixpanelEvent.GenogramGenerationConfirmClick, {
             member_count: data.subjects.length,
             relation_count: relationDataList.length,
           });

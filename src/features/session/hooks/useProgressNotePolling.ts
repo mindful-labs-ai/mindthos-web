@@ -7,10 +7,9 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchProgressNoteById } from '@/shared/api/supabase/progressNoteQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import type { ProgressNote, ProgressNoteStatus } from '../types';
-
-import { sessionDetailQueryKey } from './useSessionDetail';
 
 export interface UseProgressNotePollingOptions {
   sessionId: string;
@@ -36,10 +35,10 @@ export function useProgressNotePolling({
 }: UseProgressNotePollingOptions) {
   const queryClient = useQueryClient();
   const previousStatusRef = useRef<ProgressNoteStatus | null>(null);
-  const sessionQueryKey = sessionDetailQueryKey(sessionId, isDummySession);
+  const sessionQueryKey = sessionQueryKeys.detail(sessionId, isDummySession);
 
   const query = useQuery<ProgressNote | null, Error>({
-    queryKey: ['progress-note-status', progressNoteId],
+    queryKey: sessionQueryKeys.progressNoteStatus(progressNoteId!),
     queryFn: async () => {
       if (!progressNoteId) return null;
       return fetchProgressNoteById(progressNoteId);

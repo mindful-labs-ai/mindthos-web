@@ -7,6 +7,7 @@ import {
   listReports,
   retryReport,
 } from '@/shared/api/supabase/reportQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 type ToastFn = (opts: { title: string; description: string }) => void;
 
@@ -78,7 +79,7 @@ export function useReportList({
   const handleDownloadReport = useCallback(
     async (report: ReportListItem) => {
       if (!report.pdf_storage_key) return;
-      trackEvent('genogram_report_download_click', {
+      trackEvent(MixpanelEvent.GenogramReportDownloadClick, {
         client_id: clientId,
         report_id: report.id,
       });

@@ -8,11 +8,11 @@ import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { getNoteTypesFromProgressNotes } from '@/features/session/constants/noteTypeMapping';
 import { useSessionList } from '@/features/session/hooks/useSessionList';
 import type { SessionRecord } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -284,9 +284,7 @@ export const SessionHistoryContainer: React.FC = () => {
   const sessionCards = isLoadingSessions ? (
     <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
       <div className="text-center">
-        <p className="text-sm text-fg-muted">
-          상담기록 목록을 불러오는 중...
-        </p>
+        <p className="text-sm text-fg-muted">상담기록 목록을 불러오는 중...</p>
       </div>
     </div>
   ) : records.length > 0 ? (
@@ -301,9 +299,7 @@ export const SessionHistoryContainer: React.FC = () => {
   ) : (
     <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
       <div className="text-center">
-        <p className="text-sm text-fg-muted">
-          아직 상담 기록이 없습니다.
-        </p>
+        <p className="text-sm text-fg-muted">아직 상담 기록이 없습니다.</p>
       </div>
     </div>
   );

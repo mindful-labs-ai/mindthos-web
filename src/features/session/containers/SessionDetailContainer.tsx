@@ -12,6 +12,8 @@ import {
   getAudioPresignedUrl,
   updateSessionTitle,
 } from '@/shared/api/supabase/sessionQueries';
+import { MixpanelError } from '@/shared/constants/mixpanelEvents';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Tab } from '@/shared/ui/atoms/Tab';
@@ -32,10 +34,7 @@ import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useHandwrittenEdit } from '../hooks/useHandwrittenEdit';
 import { useProgressNoteCreation } from '../hooks/useProgressNoteCreation';
 import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
-import {
-  sessionDetailQueryKey,
-  useSessionDetail,
-} from '../hooks/useSessionDetail';
+import { useSessionDetail } from '../hooks/useSessionDetail';
 import { useTabNavigation } from '../hooks/useTabNavigation';
 import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
 import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
@@ -78,7 +77,7 @@ export const SessionDetailContainer: React.FC = () => {
 
   const { creditInfo } = useCreditInfo();
   const sessionQueryKey = React.useMemo(
-    () => sessionDetailQueryKey(sessionId || '', isDummySession),
+    () => sessionQueryKeys.detail(sessionId || '', isDummySession),
     [sessionId, isDummySession]
   );
 
@@ -286,7 +285,7 @@ export const SessionDetailContainer: React.FC = () => {
       }),
       userIdNum &&
         queryClient.invalidateQueries({
-          queryKey: ['sessions', userIdNum],
+          queryKey: sessionQueryKeys.all(userIdNum),
         }),
     ]);
   };
@@ -370,7 +369,7 @@ export const SessionDetailContainer: React.FC = () => {
           setPresignedAudioUrl(url);
         } catch (error) {
           console.error('녹음 파일을 불러오는 데 실패했습니다:', error);
-          trackError('audio_presigned_url_error', error, {
+          trackError(MixpanelError.AudioPresignedUrlError, error, {
             session_id: sessionId,
           });
         }

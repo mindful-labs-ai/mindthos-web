@@ -14,6 +14,7 @@ import {
   cleanupUnusedSpeakers,
 } from '@/features/session/utils/segmentRangeUtils';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { RadioGroup } from '@/shared/ui/atoms/Radio';
@@ -223,7 +224,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         speakerDefinitions: cleanedSpeakers,
       });
 
-      trackEvent('speaker_edit_apply', {
+      trackEvent(MixpanelEvent.SpeakerEditApply, {
         range,
         selection_type: selectionType,
         affected_segments_count: affectedSegmentIds.length,

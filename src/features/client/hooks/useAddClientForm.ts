@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { clientService } from '@/shared/api/supabase/clientQueries';
+import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
-import { clientQueryKeys } from '../constants/queryKeys';
 import { addClientSchema } from '../schemas/addClientSchema';
 import type { Client } from '../types';
 import type {

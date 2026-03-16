@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-import { getCardBrandName } from '@/features/payment/constants/card';
 import { useCoupons } from '@/features/settings/hooks/useCoupons';
 import type { Coupon } from '@/features/settings/types/coupon';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { getCardBrandName } from '@/shared/constants/card';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -117,7 +121,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
 
   const handleConfirm = async () => {
     setIsLoading(true);
-    trackEvent('plan_upgrade_attempt', {
+    trackEvent(MixpanelEvent.PlanUpgradeAttempt, {
       current_plan: previewData?.currentPlan?.type,
       new_plan: previewData?.newPlan?.type,
       coupon_id: selectedCoupon?.id,
@@ -126,7 +130,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
       await onConfirm(selectedCoupon?.id ?? undefined);
       onOpenChange(false);
     } catch (error) {
-      trackError('plan_upgrade_error', error, {
+      trackError(MixpanelError.PlanUpgradeError, error, {
         current_plan: previewData?.currentPlan?.type,
         new_plan: previewData?.newPlan?.type,
       });

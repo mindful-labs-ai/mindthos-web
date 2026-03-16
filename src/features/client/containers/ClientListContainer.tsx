@@ -110,10 +110,7 @@ export const ClientListContainer: React.FC = () => {
       );
     }
 
-    if (
-      groupedActiveClients.length > 0 ||
-      groupedCompletedClients.length > 0
-    ) {
+    if (groupedActiveClients.length > 0 || groupedCompletedClients.length > 0) {
       return (
         <div className="space-y-12">
           {groupedActiveClients.length > 0 && (

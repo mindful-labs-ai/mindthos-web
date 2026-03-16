@@ -10,6 +10,7 @@ import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { createSessionBackground } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import { s3UploadService } from '../services/s3UploadService';
 import type {
@@ -155,7 +156,7 @@ export function useMultiSessionCreate({
       setIsCreating(false);
 
       // 세션 목록 쿼리 invalidate
-      queryClient.invalidateQueries({ queryKey: ['sessions', userId] });
+      queryClient.invalidateQueries({ queryKey: sessionQueryKeys.all(userId) });
 
       return finalResults;
     },

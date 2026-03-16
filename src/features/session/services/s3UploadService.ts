@@ -11,8 +11,8 @@ import {
   callEdgeFunction,
   EDGE_FUNCTION_ENDPOINTS,
 } from '@/shared/api/edgeFunctionClient';
+import { FILE_UPLOAD_LIMITS } from '@/shared/constants/fileUpload';
 
-import { FILE_UPLOAD_LIMITS } from '../constants/fileUpload';
 import type {
   S3UploadError,
   UploadToS3Request,

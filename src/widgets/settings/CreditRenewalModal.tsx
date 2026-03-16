@@ -8,6 +8,11 @@ import { usePlansByPeriod } from '@/features/settings/hooks/usePlans';
 import { formatUsageDate } from '@/features/settings/utils/planUtils';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { ChevronRightIcon, CreditIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { ProgressCircle } from '@/shared/ui/atoms/ProgressCircle';
@@ -75,7 +80,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
       setPreviewData(preview);
       setStep(2);
     } catch (error) {
-      trackError('credit_renewal_preview_error', error);
+      trackError(MixpanelError.CreditRenewalPreviewError, error);
       toast({
         title: '오류',
         description: '충전 정보를 불러오는데 실패했습니다.',
@@ -94,13 +99,15 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
   };
 
   const handleCardRegistrationSuccess = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
+    await queryClient.invalidateQueries({
+      queryKey: cardQueryKeys.info(userId!),
+    });
     setIsCardModalOpen(false);
     await proceedToPreview();
   };
 
   const handleConfirmPayment = async (userCouponId?: string) => {
-    trackEvent('credit_renewal_attempt', {
+    trackEvent(MixpanelEvent.CreditRenewalAttempt, {
       plan_type: currentPlanType,
       coupon_id: userCouponId,
     });
@@ -111,15 +118,15 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
       const userIdNumber = parseInt(userId);
       if (!isNaN(userIdNumber)) {
         await queryClient.invalidateQueries({
-          queryKey: ['credit', 'subscription', userIdNumber],
+          queryKey: creditQueryKeys.subscription(userIdNumber),
         });
         await queryClient.invalidateQueries({
-          queryKey: ['credit', 'usage', userIdNumber],
+          queryKey: creditQueryKeys.usage(userIdNumber),
         });
       }
     }
 
-    trackEvent('credit_renewal_success', {
+    trackEvent(MixpanelEvent.CreditRenewalSuccess, {
       plan_type: currentPlanType,
     });
 

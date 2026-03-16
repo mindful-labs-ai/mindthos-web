@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Card, Text } from '@/shared/ui';
 
 export interface ActionCardProps {
@@ -15,7 +16,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
   onClick,
 }) => {
   const handleClick = () => {
-    trackEvent('action_card_click', { title });
+    trackEvent(MixpanelEvent.ActionCardClick, { title });
     onClick();
   };
 

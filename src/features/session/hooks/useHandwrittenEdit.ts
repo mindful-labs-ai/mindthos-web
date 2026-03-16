@@ -7,10 +7,9 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { updateHandwrittenTranscribeContent } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
-
-import { sessionDetailQueryKey } from './useSessionDetail';
 
 const MIN_CONTENT_LENGTH = 100;
 const MAX_CONTENT_LENGTH = 50000;
@@ -55,7 +54,7 @@ export function useHandwrittenEdit({
   const [isSaving, setIsSaving] = React.useState(false);
 
   const sessionQueryKey = React.useMemo(
-    () => sessionDetailQueryKey(sessionId, isDummySession),
+    () => sessionQueryKeys.detail(sessionId, isDummySession),
     [sessionId, isDummySession]
   );
 
@@ -112,7 +111,9 @@ export function useHandwrittenEdit({
       const userIdString = useAuthStore.getState().userId;
       const userIdNum = userIdString ? Number(userIdString) : null;
       if (userIdNum) {
-        queryClient.invalidateQueries({ queryKey: ['sessions', userIdNum] });
+        queryClient.invalidateQueries({
+          queryKey: sessionQueryKeys.all(userIdNum),
+        });
       }
       queryClient.invalidateQueries({ queryKey: sessionQueryKey });
 

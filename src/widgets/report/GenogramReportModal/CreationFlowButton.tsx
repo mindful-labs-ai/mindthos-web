@@ -1,6 +1,6 @@
+import { CHECKLIST } from '@/shared/constants/genogramReport';
 import { CreditIcon } from '@/shared/icons';
 
-import { CHECKLIST } from './constants';
 import type { ModalStep, ReportFormData } from './types';
 
 interface CreationFlowButtonProps {

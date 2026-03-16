@@ -11,12 +11,27 @@ export interface TermsSection {
   content: TermsContentBlock[];
 }
 
+/** API 응답의 sections 필드는 정규화 전 다양한 형태로 올 수 있음 */
+export type RawTermsSections =
+  | TermsSection[]
+  | string
+  | {
+      title?: string;
+      description?: string;
+      sections: TermsSection[];
+    };
+
 export interface TermsContent {
   id: string;
   termsType: string;
   version: string;
   title: string;
   description?: string;
+  sections: RawTermsSections;
+}
+
+/** sections가 정규화된 후의 타입 */
+export interface NormalizedTermsContent extends Omit<TermsContent, 'sections'> {
   sections: TermsSection[];
 }
 

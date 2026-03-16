@@ -9,10 +9,9 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchSessionProgressNotes } from '@/shared/api/supabase/progressNoteQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import type { ProgressNote, Session, Transcribe } from '../types';
-
-import { sessionDetailQueryKey } from './useSessionDetail';
 
 export interface UseSessionProgressNotesPollingOptions {
   sessionId: string;
@@ -40,7 +39,7 @@ export function useSessionProgressNotesPolling({
   onNoteError,
 }: UseSessionProgressNotesPollingOptions) {
   const queryClient = useQueryClient();
-  const sessionQueryKey = sessionDetailQueryKey(sessionId, isDummySession);
+  const sessionQueryKey = sessionQueryKeys.detail(sessionId, isDummySession);
 
   // 각 노트의 이전 상태를 추적
   const previousStatusMapRef = useRef<
@@ -54,7 +53,7 @@ export function useSessionProgressNotesPolling({
   }, [hasExternalProcessing]);
 
   const query = useQuery<ProgressNote[], Error>({
-    queryKey: ['session-progress-notes-polling', sessionId],
+    queryKey: sessionQueryKeys.progressNotesPolling(sessionId),
     queryFn: () => fetchSessionProgressNotes(sessionId),
     enabled: enabled && !!sessionId,
     refetchInterval: (query) => {

@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { PLAYBACK_RATES } from '@/features/session/constants/audioPlayer';
 import { useAudioPlayerKeyboard } from '@/features/session/hooks/useAudioPlayerKeyboard';
 import { formatTime } from '@/features/session/utils/formatTime';
 import { trackEvent } from '@/lib/mixpanel';
+import { PLAYBACK_RATES } from '@/shared/constants/audioPlayer';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 interface AudioPlayerProps {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -45,12 +46,12 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     const currentIndex = PLAYBACK_RATES.indexOf(playbackRate);
     const nextIndex = (currentIndex + 1) % PLAYBACK_RATES.length;
     const newRate = PLAYBACK_RATES[nextIndex];
-    trackEvent('audio_speed_change', { speed: newRate });
+    trackEvent(MixpanelEvent.AudioSpeedChange, { speed: newRate });
     onPlaybackRateChange(newRate);
   };
 
   const handlePlayPauseClick = () => {
-    trackEvent(isPlaying ? 'audio_pause' : 'audio_play');
+    trackEvent(isPlaying ? MixpanelEvent.AudioPause : MixpanelEvent.AudioPlay);
     onPlayPause();
   };
 

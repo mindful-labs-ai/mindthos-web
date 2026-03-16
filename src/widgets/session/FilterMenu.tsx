@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { Client } from '@/features/client/types';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 import { ClientFilterMenu } from './ClientFilterMenu';
 import { SortMenu } from './SortMenu';
@@ -53,7 +54,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
       <SortMenu
         sortOrder={sortOrder}
         onSortChange={(order) => {
-          trackEvent('session_sort_change', { order });
+          trackEvent(MixpanelEvent.SessionSortChange, { order });
           onSortChange(order);
         }}
         onBack={() => setCurrentView('main')}
@@ -69,7 +70,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
         clients={clients}
         sessionCounts={sessionCounts}
         onClientChange={(clientIds) => {
-          trackEvent('session_filter_client', {
+          trackEvent(MixpanelEvent.SessionFilterClient, {
             selected_count: clientIds.length,
           });
           onClientChange(clientIds);
@@ -140,7 +141,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
       <button
         type="button"
         onClick={() => {
-          trackEvent('session_filter_reset');
+          trackEvent(MixpanelEvent.SessionFilterReset);
           onReset();
         }}
         className="w-full rounded-lg px-4 py-2 text-sm font-medium text-fg hover:bg-surface-contrast"

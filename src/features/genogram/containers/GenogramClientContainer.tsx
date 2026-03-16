@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import { clientQueryKeys } from '@/features/client/constants/queryKeys';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
@@ -14,6 +13,10 @@ import {
   saveFamilySummary,
 } from '@/shared/api/supabase/genogramAIQueries';
 import { genogramService } from '@/shared/api/supabase/genogramQueries';
+import {
+  clientQueryKeys,
+  genogramQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -119,7 +122,7 @@ export function GenogramClientContainer() {
     setIsStarting(true);
     try {
       await genogramService.save(clientId, userId, '{}');
-      queryClient.setQueryData(['genogram', clientId], '{}');
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), '{}');
     } catch (e) {
       console.error('Failed to create empty genogram:', e);
     } finally {
@@ -198,10 +201,10 @@ export function GenogramClientContainer() {
       await genogramService.save(clientId, userId, canvasJson);
       await saveFamilySummary(clientId, steps.aiOutput);
       queryClient.setQueryData(
-        ['clientFamilySummary', clientId],
+        genogramQueryKeys.familySummary(clientId),
         steps.aiOutput
       );
-      queryClient.setQueryData(['genogram', clientId], canvasJson);
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), canvasJson);
       originalCanvasRef.current = null;
       steps.reset();
     } catch {
@@ -245,11 +248,11 @@ export function GenogramClientContainer() {
       if (steps.aiOutput) {
         await saveFamilySummary(clientId, steps.aiOutput);
         queryClient.setQueryData(
-          ['clientFamilySummary', clientId],
+          genogramQueryKeys.familySummary(clientId),
           steps.aiOutput
         );
       }
-      queryClient.setQueryData(['genogram', clientId], canvasJson);
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), canvasJson);
       const wasEditMode = isEditModeRef.current;
       preparedCanvasJsonRef.current = null;
       isEditModeRef.current = false;
@@ -296,13 +299,16 @@ export function GenogramClientContainer() {
       if (temporaryData) {
         try {
           await genogramService.save(newClientId, userId, temporaryData);
-          queryClient.setQueryData(['genogram', newClientId], temporaryData);
+          queryClient.setQueryData(
+            genogramQueryKeys.data(newClientId),
+            temporaryData
+          );
           setTemporaryData(null);
         } catch (e) {
           console.error('Failed to save genogram to new client:', e);
         }
       }
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
       setSearchParamsWithUtm({ clientId: newClientId });
       setExitedTemporaryMode(true);
     },
@@ -335,11 +341,13 @@ export function GenogramClientContainer() {
         toast({ title: '초기화 실패' });
         return;
       }
-      queryClient.setQueryData(['genogram', clientId], null);
-      queryClient.setQueryData(['clientFamilySummary', clientId], null);
-      queryClient.invalidateQueries({ queryKey: ['genogram', clientId] });
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), null);
+      queryClient.setQueryData(genogramQueryKeys.familySummary(clientId), null);
       queryClient.invalidateQueries({
-        queryKey: ['clientFamilySummary', clientId],
+        queryKey: genogramQueryKeys.data(clientId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: genogramQueryKeys.familySummary(clientId),
       });
       queryClient.invalidateQueries({
         queryKey: clientQueryKeys.list(userId),

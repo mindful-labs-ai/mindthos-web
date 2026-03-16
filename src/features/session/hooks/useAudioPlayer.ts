@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { SEEK_STEP_SMALL } from '../constants/audioPlayer';
+import { SEEK_STEP_SMALL } from '@/shared/constants/audioPlayer';
 
 interface UseAudioPlayerReturn {
   audioRef: React.RefObject<HTMLAudioElement | null>;

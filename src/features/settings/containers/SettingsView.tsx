@@ -2,7 +2,7 @@ import React from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { BADGE_ICON_MAP } from '@/features/settings/constants/badgeIcons';
+import { BADGE_ICON_MAP } from '@/shared/constants/badgeIcons';
 import { useUserAccesses } from '@/shared/hooks/useFeatureAccess';
 import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
 import { Button } from '@/shared/ui/atoms/Button';

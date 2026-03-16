@@ -8,7 +8,6 @@ import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { getNoteTypesFromProgressNotes } from '@/features/session/constants/noteTypeMapping';
 import { useSessionList } from '@/features/session/hooks/useSessionList';
 import type { SessionRecord, Transcribe } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
@@ -16,6 +15,12 @@ import { getTranscriptData } from '@/features/session/utils/transcriptParser';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
+import { dummyClientAnalysisVersions } from '@/shared/constants/dummyClientAnalysis';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -24,7 +29,6 @@ import { ClientAnalysisTab } from '@/widgets/client/ClientAnalysisTab';
 import { CreateAnalysisModal } from '@/widgets/client/CreateAnalysisModal';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
-import { dummyClientAnalysisVersions } from '../constants/dummyClientAnalysis';
 import {
   clientAnalysisQueryKeys,
   useClientAnalyses,
@@ -236,7 +240,7 @@ export const ClientDetailContainer: React.FC = () => {
         ai_supervision_template_id: data.aiSupervisionTemplateId,
       });
 
-      trackEvent('client_analysis_create', {
+      trackEvent(MixpanelEvent.ClientAnalysisCreate, {
         client_id: clientId,
         session_count: data.sessionIds.length,
       });
@@ -249,7 +253,7 @@ export const ClientDetailContainer: React.FC = () => {
       setPollingVersion(response.version);
       setActiveTab('analyze');
     } catch (error) {
-      trackError('client_analysis_create_error', error, {
+      trackError(MixpanelError.ClientAnalysisCreateError, error, {
         client_id: clientId,
       });
 

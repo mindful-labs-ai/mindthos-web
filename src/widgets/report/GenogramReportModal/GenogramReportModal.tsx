@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { ArrowLeft, Loader2, X } from 'lucide-react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { GENOGRAM_SEMINAR_URL } from '@/shared/constants/externalUrls';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { SnackBar } from '@/shared/ui/composites/SnackBar';
 import { useModalStore } from '@/stores/modalStore';
@@ -141,8 +143,8 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    trackEvent('genogram_report_seminar_button_click');
-                    window.open('https://nextgenogram.mindthos.com/', '_blank');
+                    trackEvent(MixpanelEvent.GenogramReportSeminarButtonClick);
+                    window.open(GENOGRAM_SEMINAR_URL, '_blank');
                   }}
                   className="flex-1 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400"
                 >

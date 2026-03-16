@@ -14,6 +14,12 @@ import {
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { GUIDE_URL } from '@/shared/constants/externalUrls';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { CouponIcon, MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -76,14 +82,14 @@ export const SettingsContainer: React.FC = () => {
   const scrollToTop = () => document.querySelector('main')?.scrollTo(0, 0);
 
   const handleOpenNoticeList = () => {
-    trackEvent('notice_list_view');
+    trackEvent(MixpanelEvent.NoticeListView);
     setSelectedNoticeId(null);
     setView('noticeList');
     scrollToTop();
   };
 
   const handleSelectNotice = (noticeId: string) => {
-    trackEvent('notice_detail_view', { notice_id: noticeId });
+    trackEvent(MixpanelEvent.NoticeDetailView, { notice_id: noticeId });
     setSelectedNoticeId(noticeId);
     setView('noticeDetail');
     scrollToTop();
@@ -115,7 +121,9 @@ export const SettingsContainer: React.FC = () => {
   };
 
   const handleCardRegistrationSuccess = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
+    await queryClient.invalidateQueries({
+      queryKey: cardQueryKeys.info(userId!),
+    });
     setIsCardModalOpen(false);
   };
 
@@ -132,7 +140,7 @@ export const SettingsContainer: React.FC = () => {
   };
 
   const handleConfirmCancelSubscription = async () => {
-    trackEvent('subscription_cancel', {
+    trackEvent(MixpanelEvent.SubscriptionCancel, {
       plan_type: creditInfo?.plan?.type,
     });
     await billingService.cancelSubscription();
@@ -141,7 +149,7 @@ export const SettingsContainer: React.FC = () => {
       const userIdNumber = parseInt(userId);
       if (!isNaN(userIdNumber)) {
         await queryClient.invalidateQueries({
-          queryKey: ['credit', 'subscription', userIdNumber],
+          queryKey: creditQueryKeys.subscription(userIdNumber),
         });
       }
     }
@@ -160,7 +168,7 @@ export const SettingsContainer: React.FC = () => {
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: ['credit', 'subscription', userIdNumber],
+            queryKey: creditQueryKeys.subscription(userIdNumber),
           });
         }
       }
@@ -170,7 +178,7 @@ export const SettingsContainer: React.FC = () => {
         description: '구독이 계속 유지됩니다.',
       });
     } catch (error) {
-      trackError('cancel_subscription_revert_error', error);
+      trackError(MixpanelError.CancelSubscriptionRevertError, error);
       toast({
         title: '해지 예약 취소 실패',
         description: '다시 시도해주세요.',
@@ -179,11 +187,7 @@ export const SettingsContainer: React.FC = () => {
   };
 
   const handleGuide = () => {
-    window.open(
-      'https://rare-puppy-06f.notion.site/v2-2cfdd162832d801bae95f67269c062c7?source=copy_link',
-      '_blank',
-      'noopener,noreferrer'
-    );
+    window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
   };
 
   const termsTo = {
@@ -197,10 +201,10 @@ export const SettingsContainer: React.FC = () => {
 
   const handleConfirmLogout = async () => {
     try {
-      trackEvent('logout');
+      trackEvent(MixpanelEvent.Logout);
       await logout();
     } catch (error) {
-      trackError('logout_error', error);
+      trackError(MixpanelError.LogoutError, error);
     }
   };
 
@@ -219,11 +223,11 @@ export const SettingsContainer: React.FC = () => {
     setDeleteError('');
 
     try {
-      trackEvent('account_delete');
+      trackEvent(MixpanelEvent.AccountDelete);
       await authService.deleteAccount(user.email);
       await logout();
     } catch (error) {
-      trackError('account_delete_error', error);
+      trackError(MixpanelError.AccountDeleteError, error);
       setDeleteError('계정 탈퇴에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsDeleting(false);
@@ -247,9 +251,7 @@ export const SettingsContainer: React.FC = () => {
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <UserIcon size={20} className="text-fg-muted" />
-        <Text className="text-lg font-semibold">
-          {userName || '이름 없음'}
-        </Text>
+        <Text className="text-lg font-semibold">{userName || '이름 없음'}</Text>
       </div>
       <div className="flex items-center gap-3">
         <MailIcon size={20} className="text-fg-muted" />
@@ -325,13 +327,13 @@ export const SettingsContainer: React.FC = () => {
                     </span>
                     {hasCancellationScheduled ? (
                       <span className="text-danger">
-                        {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
-                        해지 예정
+                        {formatRenewalDate(creditInfo.subscription.end_at)} 해지
+                        예정
                       </span>
                     ) : (
                       <>
-                        {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
-                        갱신 예정
+                        {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
+                        예정
                       </>
                     )}
                   </Text>
@@ -383,9 +385,7 @@ export const SettingsContainer: React.FC = () => {
                     )}
                     variant="detailed"
                     onRenewal={
-                      isPaidPlan
-                        ? () => setIsRenewalModalOpen(true)
-                        : undefined
+                      isPaidPlan ? () => setIsRenewalModalOpen(true) : undefined
                     }
                   />
                 </div>

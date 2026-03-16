@@ -1,7 +1,7 @@
 import type {
   ClientAnalysis,
   ClientAnalysisVersion,
-} from '../types/clientAnalysis.types';
+} from '@/features/client/types/clientAnalysis.types';
 
 import dummyAnalysisContent from './dummyClientAnalysis.md?raw';
 

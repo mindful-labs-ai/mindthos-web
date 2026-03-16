@@ -14,6 +14,15 @@ import {
   generateReport,
 } from '@/shared/api/supabase/reportQueries';
 import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
+import {
+  CHECKLIST,
+  GENOGRAM_REPORT_TEMPLATE_KEY,
+  REPORT_CREDIT_COST,
+} from '@/shared/constants/genogramReport';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
 import { useReportTemplates } from '@/shared/hooks/useReportTemplates';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -21,11 +30,6 @@ import { useAuthStore } from '@/stores/authStore';
 
 import type { GeneratingStatus } from '../ReportGeneratingView';
 
-import {
-  CHECKLIST,
-  GENOGRAM_REPORT_TEMPLATE_KEY,
-  REPORT_CREDIT_COST,
-} from './constants';
 import { useReportList } from './hooks/useReportList';
 import type {
   GenogramReportModalProps,
@@ -161,7 +165,7 @@ export function useReportModal({
       });
 
       if (cancelledRef.current) return;
-      trackEvent('genogram_report_generate_success', {
+      trackEvent(MixpanelEvent.GenogramReportGenerateSuccess, {
         client_id: clientId,
         report_id: result.report_id,
       });
@@ -220,7 +224,7 @@ export function useReportModal({
       if (cancelledRef.current) return;
       const errorMsg =
         error instanceof Error ? error.message : '오류가 발생했습니다.';
-      trackEvent('genogram_report_generate_fail', {
+      trackEvent(MixpanelError.GenogramReportGenerateFail, {
         client_id: clientId,
         error: errorMsg,
       });
@@ -312,14 +316,18 @@ export function useReportModal({
   // ── 인터랙션 핸들러 ──
 
   const handleCreateReport = useCallback(async () => {
-    trackEvent('genogram_report_button_click', { client_id: clientId });
+    trackEvent(MixpanelEvent.GenogramReportButtonClick, {
+      client_id: clientId,
+    });
     const image = await genogramRef.current?.captureImage();
     setSnapshotImage(image ?? null);
     setStep('verify');
   }, [genogramRef, clientId]);
 
   const handleVerifyComplete = useCallback(() => {
-    trackEvent('genogram_report_verify_complete', { client_id: clientId });
+    trackEvent(MixpanelEvent.GenogramReportVerifyComplete, {
+      client_id: clientId,
+    });
     setStep('input');
   }, [clientId]);
 
@@ -329,7 +337,7 @@ export function useReportModal({
     // 크레딧 잔여량 검증
     const remaining = creditInfo?.plan.remaining ?? 0;
     if (REPORT_CREDIT_COST > remaining) {
-      trackEvent('genogram_report_generate_credit_insufficient', {
+      trackEvent(MixpanelEvent.GenogramReportGenerateCreditInsufficient, {
         client_id: clientId,
         remaining,
         required: REPORT_CREDIT_COST,
@@ -355,7 +363,7 @@ export function useReportModal({
 
   const handleDownloadPreviewPdf = useCallback(async () => {
     if (!pdfUrl) return;
-    trackEvent('genogram_report_export_click', {
+    trackEvent(MixpanelEvent.GenogramReportExportClick, {
       client_id: clientId,
       report_id: previewReportId,
     });
@@ -430,7 +438,7 @@ export function useReportModal({
     if (!open || isChecking) return;
 
     if (!hasAccess) {
-      trackEvent('genogram_report_seminar_modal_view', {
+      trackEvent(MixpanelEvent.GenogramReportSeminarModalView, {
         client_id: clientId,
       });
       return;

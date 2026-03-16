@@ -1,4 +1,5 @@
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 import { GenogramLoadingAnimationLoop } from './GenogramLoadingAnimation';
 
@@ -18,12 +19,14 @@ export function GenogramEmptyState({
   const canGenerateFromRecords = hasRecords && onStartFromRecords;
 
   const handleStartEmpty = () => {
-    trackEvent('genogram_empty_state_click', { action: 'draw_manually' });
+    trackEvent(MixpanelEvent.GenogramEmptyStateClick, {
+      action: 'draw_manually',
+    });
     onStartEmpty();
   };
 
   const handleStartFromRecords = () => {
-    trackEvent('genogram_empty_state_click', {
+    trackEvent(MixpanelEvent.GenogramEmptyStateClick, {
       action: 'generate_from_records',
     });
     onStartFromRecords?.();

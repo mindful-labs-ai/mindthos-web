@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import type { ProgressNote } from '@/features/session/types';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
 import { CheckIcon, CopyIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -158,9 +159,9 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
     },
     isReadOnly: isReadOnly || !onSaveSummary,
     trackingEvents: {
-      editStart: 'progress_note_edit_start',
-      editCancel: 'progress_note_edit_cancel',
-      editComplete: 'progress_note_edit_complete',
+      editStart: MixpanelEvent.ProgressNoteEditStart,
+      editCancel: MixpanelEvent.ProgressNoteEditCancel,
+      editComplete: MixpanelEvent.ProgressNoteEditComplete,
     },
     trackingMeta: {
       note_id: note.id,
@@ -199,7 +200,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
     try {
       await navigator.clipboard.writeText(content);
       setCopiedIndex(index);
-      trackEvent('progress_note_copy', { section_index: index });
+      trackEvent(MixpanelEvent.ProgressNoteCopy, { section_index: index });
       toast({
         title: '복사 완료',
         description: '클립보드에 내용이 복사되었습니다.',
@@ -221,7 +222,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
     try {
       await navigator.clipboard.writeText(note.summary);
       setCopiedAll(true);
-      trackEvent('progress_note_copy_all');
+      trackEvent(MixpanelEvent.ProgressNoteCopyAll);
       toast({
         title: '복사 완료',
         description: '전체 내용이 클립보드에 복사되었습니다.',

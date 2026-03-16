@@ -177,7 +177,8 @@ export const Tab: React.FC<TabProps> = ({
           aria-label="이전 탭"
           disabled={!canGoPrev}
           onClick={() => {
-            if (canGoPrev) handleSelect(enabledItems[currentEnabledIndex - 1].value);
+            if (canGoPrev)
+              handleSelect(enabledItems[currentEnabledIndex - 1].value);
           }}
           className={cn(
             'flex-shrink-0 rounded-full p-1 transition-colors',
@@ -187,7 +188,13 @@ export const Tab: React.FC<TabProps> = ({
           )}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
 
@@ -240,7 +247,8 @@ export const Tab: React.FC<TabProps> = ({
           aria-label="다음 탭"
           disabled={!canGoNext}
           onClick={() => {
-            if (canGoNext) handleSelect(enabledItems[currentEnabledIndex + 1].value);
+            if (canGoNext)
+              handleSelect(enabledItems[currentEnabledIndex + 1].value);
           }}
           className={cn(
             'flex-shrink-0 rounded-full p-1 transition-colors',
@@ -250,7 +258,13 @@ export const Tab: React.FC<TabProps> = ({
           )}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M9 18L15 12L9 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>

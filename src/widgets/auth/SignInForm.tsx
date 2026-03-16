@@ -2,6 +2,7 @@ import React from 'react';
 
 import { ROUTES } from '@/app/router/constants';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
@@ -24,11 +25,11 @@ const SignInForm = () => {
 
     try {
       await login(email, password);
-      trackEvent('login_success', { method: 'email' });
+      trackEvent(MixpanelEvent.LoginSuccess, { method: 'email' });
       // 로그인 성공 시 홈으로 리다이렉트 (UTM 파라미터 자동 유지)
       navigateWithUtm(ROUTES.ROOT);
     } catch (err) {
-      trackEvent('login_failed', {
+      trackEvent(MixpanelEvent.LoginFailed, {
         method: 'email',
         error: err instanceof Error ? err.message : 'Unknown error',
       });

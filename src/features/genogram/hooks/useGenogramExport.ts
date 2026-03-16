@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { type BackgroundOptionId } from '@/widgets/genogram/export/constants';
+import { type BackgroundOptionId } from '@/shared/constants/genogramExport';
 
 import {
   applyExportOptions,

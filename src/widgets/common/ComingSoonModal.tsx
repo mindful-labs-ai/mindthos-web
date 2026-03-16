@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface ComingSoonModalProps {
@@ -17,7 +18,7 @@ export function ComingSoonModal({
   // 모달이 열릴 때 이벤트 트래킹
   useEffect(() => {
     if (open && source) {
-      trackEvent('coming_soon_modal_opened', { source });
+      trackEvent(MixpanelEvent.ComingSoonModalOpened, { source });
     }
   }, [open, source]);
 

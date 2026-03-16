@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Alert } from '@/shared/ui/atoms/Alert';
 import { Button } from '@/shared/ui/atoms/Button';
 
@@ -118,7 +119,7 @@ export function RenderStep({
         <div className="flex justify-center">
           <Button
             onClick={() => {
-              trackEvent('genogram_creation_complete_click');
+              trackEvent(MixpanelEvent.GenogramCreationCompleteClick);
               onComplete();
             }}
             tone="primary"

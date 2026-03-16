@@ -6,7 +6,6 @@ import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { getNoteTypesFromProgressNotes } from '@/features/session/constants/noteTypeMapping';
 import { useSessionList } from '@/features/session/hooks/useSessionList';
 import type {
   HandwrittenTranscribe,
@@ -15,6 +14,8 @@ import type {
 } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { GUIDE_URL } from '@/shared/constants/externalUrls';
+import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
@@ -175,11 +176,7 @@ const HomeContainer = () => {
   const remainingDays = calculateRemainingDays(startedAt);
 
   const handleGuideClick = () => {
-    window.open(
-      'https://rare-puppy-06f.notion.site/v2-2cfdd162832d801bae95f67269c062c7?source=copy_link',
-      '_blank',
-      'noopener,noreferrer'
-    );
+    window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
   };
 
   const handleUploadClick = () => {

@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { TemplateListItem } from '@/features/template/types';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { StarIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -21,7 +22,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
 }) => {
   const handlePinClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    trackEvent('template_pin_toggle', {
+    trackEvent(MixpanelEvent.TemplatePinToggle, {
       template_id: template.id,
       pinned: !template.pin,
     });
@@ -30,7 +31,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
 
   const handleDefaultClick = () => {
     if (!template.is_default) {
-      trackEvent('template_set_default', { template_id: template.id });
+      trackEvent(MixpanelEvent.TemplateSetDefault, {
+        template_id: template.id,
+      });
       onSetDefault?.(template);
     }
   };

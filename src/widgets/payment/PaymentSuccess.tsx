@@ -5,6 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -83,15 +85,15 @@ export const PaymentSuccess = () => {
               const userIdNumber = parseInt(userId);
               if (!isNaN(userIdNumber)) {
                 await queryClient.invalidateQueries({
-                  queryKey: ['credit', 'subscription', userIdNumber],
+                  queryKey: creditQueryKeys.subscription(userIdNumber),
                 });
                 await queryClient.invalidateQueries({
-                  queryKey: ['credit', 'usage', userIdNumber],
+                  queryKey: creditQueryKeys.usage(userIdNumber),
                 });
               }
             }
 
-            trackEvent('plan_upgrade_success', { plan_id: planId });
+            trackEvent(MixpanelEvent.PlanUpgradeSuccess, { plan_id: planId });
 
             // 플랜 변경 후 퀘스트 상태 갱신 (온보딩 노출 조건 업데이트)
             if (user?.email) {
@@ -118,7 +120,7 @@ export const PaymentSuccess = () => {
           // 카드 정보 쿼리 invalidate
           if (userId) {
             await queryClient.invalidateQueries({
-              queryKey: ['cardInfo', userId],
+              queryKey: cardQueryKeys.info(userId!),
             });
           }
 
@@ -132,7 +134,7 @@ export const PaymentSuccess = () => {
         navigateWithUtm('/settings');
       } catch (error) {
         if (planId) {
-          trackEvent('plan_upgrade_failed', {
+          trackEvent(MixpanelEvent.PlanUpgradeFailed, {
             plan_id: planId,
             error_message:
               error instanceof Error ? error.message : 'Unknown error',

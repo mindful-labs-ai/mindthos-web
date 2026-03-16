@@ -210,9 +210,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
-            <div className="space-y-3">
-              {sessionCards}
-            </div>
+            <div className="space-y-3">{sessionCards}</div>
           </div>
         </div>
       ) : (

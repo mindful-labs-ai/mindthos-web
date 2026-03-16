@@ -10,6 +10,7 @@ import {
   deleteSession,
   updateSessionTitle,
 } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
@@ -159,10 +160,10 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ['sessions', Number(userId)],
+          queryKey: sessionQueryKeys.all(Number(userId)),
         }),
         queryClient.resetQueries({
-          queryKey: ['session', record.session_id, false],
+          queryKey: sessionQueryKeys.detail(record.session_id, false),
         }),
       ]);
 
@@ -242,7 +243,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
       // 세션 목록 갱신
       await queryClient.invalidateQueries({
-        queryKey: ['sessions', Number(userId)],
+        queryKey: sessionQueryKeys.all(Number(userId)),
       });
 
       setIsDeleteModalOpen(false);
@@ -270,7 +271,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
         // 세션 목록 갱신
         await queryClient.invalidateQueries({
-          queryKey: ['sessions', Number(userId)],
+          queryKey: sessionQueryKeys.all(Number(userId)),
         });
 
         onChangeClient?.(record);

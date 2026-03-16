@@ -4,6 +4,7 @@ import { useSetDefaultTemplate } from '@/features/template/hooks/useSetDefaultTe
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
 import { useToggleTemplatePin } from '@/features/template/hooks/useToggleTemplatePin';
 import type { TemplateListItem } from '@/features/template/types';
+import { TEMPLATE_REQUEST_FORM_URL } from '@/shared/constants/externalUrls';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -24,10 +25,7 @@ export const TemplateListPage: React.FC = () => {
   };
 
   const handleRequestTemplate = () => {
-    const url = 'https://forms.gle/SSUsQNo7rh8ty4HY7';
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
+    window.open(TEMPLATE_REQUEST_FORM_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (

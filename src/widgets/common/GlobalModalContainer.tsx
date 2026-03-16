@@ -4,12 +4,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
-import { clientQueryKeys } from '@/features/client/constants/queryKeys';
 import {
   useCoupons,
   couponQueryKeys,
 } from '@/features/settings/hooks/useCoupons';
 import { couponService } from '@/features/settings/services/couponService';
+import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';

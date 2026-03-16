@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { getCardBrandName } from '@/features/payment/constants/card';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { getCardBrandName } from '@/shared/constants/card';
+import { cardQueryKeys } from '@/shared/constants/queryKeys';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -46,7 +47,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
     },
     onSuccess: () => {
       // 카드 정보 쿼리 무효화하여 UI 업데이트
-      queryClient.invalidateQueries({ queryKey: ['cardInfo', userId] });
+      queryClient.invalidateQueries({ queryKey: cardQueryKeys.info(userId!) });
       setIsDeleting(false);
       setIsDeleteModalOpen(false);
       toast({

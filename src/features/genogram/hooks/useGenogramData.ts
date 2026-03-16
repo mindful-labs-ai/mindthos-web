@@ -3,9 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { genogramService } from '@/shared/api/supabase/genogramQueries';
+import { genogramQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
-
-const GENOGRAM_QUERY_KEY = 'genogram';
 const AUTO_SAVE_DELAY = 5000;
 
 interface UseGenogramDataOptions {
@@ -26,7 +25,7 @@ export function useGenogramData(
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: initialData, isLoading } = useQuery({
-    queryKey: [GENOGRAM_QUERY_KEY, clientId],
+    queryKey: genogramQueryKeys.data(clientId),
     queryFn: () => genogramService.getByClientId(clientId),
     enabled: !!clientId,
     staleTime: Infinity,
@@ -84,7 +83,7 @@ export function useGenogramData(
   /** 데이터 변경 시 호출 — debounce 자동저장 */
   const onChange = useCallback(
     (jsonData: string) => {
-      queryClient.setQueryData([GENOGRAM_QUERY_KEY, clientId], jsonData);
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), jsonData);
       scheduleSave(jsonData);
     },
     [clientId, queryClient, scheduleSave]
