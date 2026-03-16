@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
+import { getTermsRoute, TERMS_TYPES } from '@/app/router/constants';
 import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
@@ -429,7 +430,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         <div className="flex flex-col items-center gap-y-2">
           <Text className="text-sm text-fg">
             <a
-              href="/terms?type=service"
+              href={getTermsRoute(TERMS_TYPES.SERVICE)}
               target="_blank"
               rel="noopener noreferrer"
               className="underline transition-colors hover:text-primary-600"

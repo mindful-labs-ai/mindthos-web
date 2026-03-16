@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import { getTermsRoute, TERMS_TYPES } from '@/app/router/constants';
 import { useCoupons } from '@/features/settings/hooks/useCoupons';
 import type { Coupon } from '@/features/settings/types/coupon';
 import { trackError, trackEvent } from '@/lib/mixpanel';
@@ -323,7 +324,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         <div className="flex w-full flex-col items-center gap-4">
           <Text className="text-sm text-fg-muted">
             <a
-              href="/terms?type=service"
+              href={getTermsRoute(TERMS_TYPES.SERVICE)}
               target="_blank"
               rel="noopener noreferrer"
               className="underline transition-colors hover:text-primary-600"

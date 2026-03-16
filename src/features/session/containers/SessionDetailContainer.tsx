@@ -3,6 +3,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
+import { ROUTES } from '@/app/router/constants';
 import { isDummySessionId } from '@/features/session/constants/dummySessions';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
@@ -396,7 +397,7 @@ export const SessionDetailContainer: React.FC = () => {
         description: '상담 데이터를 찾을 수 없습니다.',
         duration: 3000,
       });
-      navigateWithUtm('/sessions');
+      navigateWithUtm(ROUTES.SESSIONS);
     }
   }, [isLoading, session, sessionId, navigateWithUtm, toast]);
 

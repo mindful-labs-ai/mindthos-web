@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 
+import { ROUTES } from '@/app/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -46,13 +47,13 @@ export const PaymentFail = () => {
           <div className="flex w-full gap-3">
             <Button
               variant="outline"
-              onClick={() => navigateWithUtm('/settings')}
+              onClick={() => navigateWithUtm(ROUTES.SETTINGS)}
               className="flex-1"
             >
               취소
             </Button>
             <Button
-              onClick={() => navigateWithUtm('/settings')}
+              onClick={() => navigateWithUtm(ROUTES.SETTINGS)}
               className="flex-1"
             >
               다시 시도
