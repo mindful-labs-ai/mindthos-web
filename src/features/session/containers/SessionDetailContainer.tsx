@@ -24,6 +24,12 @@ import { useSessionStore } from '@/stores/sessionStore';
 import { AudioPlayer } from '@/widgets/session/AudioPlayer';
 import { HandwrittenTabContent } from '@/widgets/session/HandwrittenTabContent';
 import { HandwrittenToolbar } from '@/widgets/session/HandwrittenToolbar';
+import { MobileAudioPlayer } from '@/widgets/session/MobileAudioPlayer';
+import { MobileHandwrittenTabContent } from '@/widgets/session/MobileHandwrittenTabContent';
+import { MobileHandwrittenToolbar } from '@/widgets/session/MobileHandwrittenToolbar';
+import { MobileProgressNoteTabContent } from '@/widgets/session/MobileProgressNoteTabContent';
+import { MobileTranscriptTabContent } from '@/widgets/session/MobileTranscriptTabContent';
+import { MobileTranscriptToolbar } from '@/widgets/session/MobileTranscriptToolbar';
 import { ProgressNoteTabContent } from '@/widgets/session/ProgressNoteTabContent';
 import { SessionHeader } from '@/widgets/session/SessionHeader';
 import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
@@ -37,6 +43,7 @@ import { useProgressNoteCreation } from '../hooks/useProgressNoteCreation';
 import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
 import { useSessionDetail } from '../hooks/useSessionDetail';
 import { useTabNavigation } from '../hooks/useTabNavigation';
+import { useTitleEdit } from '../hooks/useTitleEdit';
 import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
 import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
 import { useTranscriptEditSession } from '../hooks/useTranscriptEditSession';
@@ -49,6 +56,7 @@ import {
 import { getTranscriptData } from '../utils/transcriptParser';
 import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
+import { MobileSessionDetailView } from './MobileSessionDetailView';
 import { SessionDetailView } from './SessionDetailView';
 
 export const SessionDetailContainer: React.FC = () => {
@@ -482,6 +490,68 @@ export const SessionDetailContainer: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handlePlayPauseWithInteraction, handleBackward, handleForward]);
 
+  const titleEdit = useTitleEdit({
+    title: session?.title || '제목 없음',
+    onTitleUpdate: isReadOnly ? undefined : handleTitleUpdate,
+  });
+
+  // 상담노트 편집 상태 (ProgressNoteView에서 콜백으로 전달받음)
+  const [noteEditState, setNoteEditState] = React.useState<{
+    isEditing: boolean;
+    hasEdits: boolean;
+    isSaving: boolean;
+    onSave: () => void;
+    onCancel: () => void;
+  } | null>(null);
+
+  // 모바일 compact-nav에 표시할 편집 액션 결정
+  const mobileEditActions = React.useMemo(() => {
+    if (!isMobileView) return undefined;
+    if (titleEdit.isEditing) {
+      return {
+        label: '완료',
+        onSave: titleEdit.handleSave,
+        onCancel: titleEdit.handleCancel,
+        isSaving: titleEdit.isSaving,
+      };
+    }
+    if (isEditing) {
+      return {
+        label: '편집 완료',
+        onSave: handleSaveAllEdits,
+        onCancel: handleCancelEdit,
+      };
+    }
+    if (isEditingHandwritten) {
+      return {
+        label: '편집 완료',
+        onSave: handleSaveHandwrittenEdit,
+        onCancel: handleCancelHandwrittenEdit,
+        isSaving: isSavingHandwritten,
+      };
+    }
+    if (noteEditState?.isEditing) {
+      return {
+        label: '저장',
+        onSave: noteEditState.onSave,
+        onCancel: noteEditState.onCancel,
+        isSaving: noteEditState.isSaving,
+      };
+    }
+    return undefined;
+  }, [
+    isMobileView,
+    titleEdit,
+    isEditing,
+    handleSaveAllEdits,
+    handleCancelEdit,
+    isEditingHandwritten,
+    handleSaveHandwrittenEdit,
+    handleCancelHandwrittenEdit,
+    isSavingHandwritten,
+    noteEditState,
+  ]);
+
   // 세션 변경 시 오디오 정지
   const prevSessionIdForAudio = React.useRef<string | undefined>(undefined);
 
@@ -531,11 +601,16 @@ export const SessionDetailContainer: React.FC = () => {
     <SessionHeader
       {...sessionHeaderProps}
       variant={isMobileView ? 'compact-nav' : 'full'}
+      editActions={mobileEditActions}
     />
   );
 
   const mobileHeader = isMobileView ? (
-    <SessionHeader {...sessionHeaderProps} variant="meta-only" />
+    <SessionHeader
+      {...sessionHeaderProps}
+      variant="meta-only"
+      titleEditState={titleEdit}
+    />
   ) : null;
 
   const tab = (
@@ -545,7 +620,7 @@ export const SessionDetailContainer: React.FC = () => {
       onValueChange={handleTabChange}
       size="sm"
       fullWidth
-      className="px-2 sm:px-8"
+      className={isMobileView ? 'px-2' : 'px-8'}
       variant={isMobileView ? 'card-nav' : 'underline'}
     />
   );
@@ -553,14 +628,35 @@ export const SessionDetailContainer: React.FC = () => {
   const toolbar =
     activeTab === 'transcript' ? (
       isHandwrittenSession ? (
-        <HandwrittenToolbar
+        isMobileView ? (
+          <MobileHandwrittenToolbar
+            isReadOnly={isReadOnly}
+            isEditing={isEditingHandwritten}
+            onEditStart={handleEditHandwrittenStart}
+            onCopy={handleCopyHandwritten}
+          />
+        ) : (
+          <HandwrittenToolbar
+            isReadOnly={isReadOnly}
+            isEditing={isEditingHandwritten}
+            isSaving={isSavingHandwritten}
+            onEditStart={handleEditHandwrittenStart}
+            onSaveEdit={handleSaveHandwrittenEdit}
+            onCancelEdit={handleCancelHandwrittenEdit}
+            onCopy={handleCopyHandwritten}
+          />
+        )
+      ) : isMobileView ? (
+        <MobileTranscriptToolbar
           isReadOnly={isReadOnly}
-          isEditing={isEditingHandwritten}
-          isSaving={isSavingHandwritten}
-          onEditStart={handleEditHandwrittenStart}
-          onSaveEdit={handleSaveHandwrittenEdit}
-          onCancelEdit={handleCancelHandwrittenEdit}
-          onCopy={handleCopyHandwritten}
+          isEditing={isEditing}
+          isAnonymized={isAnonymized}
+          enableTimestampFeatures={enableTimestampFeatures}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          onToggleAnonymized={() => setIsAnonymized(!isAnonymized)}
+          onEditStart={handleEditStart}
+          onCopy={handleCopyTranscript}
         />
       ) : (
         <TranscriptToolbar
@@ -576,7 +672,6 @@ export const SessionDetailContainer: React.FC = () => {
           onCancelEdit={handleCancelEdit}
           onCopy={handleCopyTranscript}
           checkIsGuideLevel={checkIsGuideLevel}
-          isMobileView={isMobileView}
         />
       )
     ) : null;
@@ -584,13 +679,47 @@ export const SessionDetailContainer: React.FC = () => {
   const tabContent =
     activeTab === 'transcript' ? (
       isHandwrittenSession ? (
-        <HandwrittenTabContent
+        isMobileView ? (
+          <MobileHandwrittenTabContent
+            contentScrollRef={contentScrollRef}
+            transcribe={transcribe as HandwrittenTranscribe | null}
+            isEditing={isEditingHandwritten}
+            editContent={handwrittenEditContent}
+            isSaving={isSavingHandwritten}
+            onContentChange={setHandwrittenEditContent}
+          />
+        ) : (
+          <HandwrittenTabContent
+            contentScrollRef={contentScrollRef}
+            transcribe={transcribe as HandwrittenTranscribe | null}
+            isEditing={isEditingHandwritten}
+            editContent={handwrittenEditContent}
+            isSaving={isSavingHandwritten}
+            onContentChange={setHandwrittenEditContent}
+          />
+        )
+      ) : isMobileView ? (
+        <MobileTranscriptTabContent
           contentScrollRef={contentScrollRef}
-          transcribe={transcribe as HandwrittenTranscribe | null}
-          isEditing={isEditingHandwritten}
-          editContent={handwrittenEditContent}
-          isSaving={isSavingHandwritten}
-          onContentChange={setHandwrittenEditContent}
+          segments={segments}
+          speakers={speakers}
+          transcribe={transcribe as Transcribe | null}
+          clientId={session?.client_id || null}
+          isReadOnly={isReadOnly}
+          isEditing={isEditing}
+          isAnonymized={isAnonymized}
+          enableTimestampFeatures={enableTimestampFeatures}
+          currentSegmentIndex={currentSegmentIndex}
+          activeSegmentRef={activeSegmentRef}
+          onSeekTo={handleSeekToWithInteraction}
+          onTextEdit={handleTextEdit}
+          onSpeakerChange={handleSpeakerChange}
+          onAddSegment={handleAddSegment}
+          onDeleteSegment={handleDeleteSegment}
+          checkIsGuideLevel={checkIsGuideLevel}
+          nextGuideLevel={nextGuideLevel}
+          endGuide={endTranscriptEditGuide}
+          onGuideScroll={handleGuideScroll}
         />
       ) : (
         <TranscriptTabContent
@@ -616,6 +745,23 @@ export const SessionDetailContainer: React.FC = () => {
           onGuideScroll={handleGuideScroll}
         />
       )
+    ) : isMobileView ? (
+      <MobileProgressNoteTabContent
+        contentScrollRef={contentScrollRef}
+        activeTab={activeTab}
+        activeCreatingTab={activeCreatingTab}
+        creatingTabs={creatingTabs}
+        sessionId={session.id}
+        transcribedText={transcribedText}
+        progressNotes={sessionProgressNotes}
+        isReadOnly={isReadOnly}
+        isRegenerating={isRegenerating}
+        onCreateProgressNote={handleCreateProgressNote}
+        onRegenerateProgressNote={handleRegenerateProgressNote}
+        onTemplateSelect={handleTemplateSelect}
+        onSaveSummary={handleSaveProgressNoteSummary}
+        onNoteEditStateChange={setNoteEditState}
+      />
     ) : (
       <ProgressNoteTabContent
         contentScrollRef={contentScrollRef}
@@ -636,19 +782,35 @@ export const SessionDetailContainer: React.FC = () => {
 
   const audioPlayer =
     activeTab === 'transcript' && !isHandwrittenSession ? (
-      <AudioPlayer
-        audioRef={audioRef}
-        isPlaying={isPlaying}
-        currentTime={currentTime}
-        duration={audioDuration}
-        playbackRate={playbackRate}
-        isLoading={isLoadingAudioBlob}
-        onPlayPause={handlePlayPauseWithInteraction}
-        onBackward={handleBackward}
-        onForward={handleForward}
-        onProgressClick={handleProgressClick}
-        onPlaybackRateChange={handlePlaybackRateChange}
-      />
+      isMobileView ? (
+        <MobileAudioPlayer
+          audioRef={audioRef}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={audioDuration}
+          playbackRate={playbackRate}
+          isLoading={isLoadingAudioBlob}
+          onPlayPause={handlePlayPauseWithInteraction}
+          onBackward={handleBackward}
+          onForward={handleForward}
+          onProgressClick={handleProgressClick}
+          onPlaybackRateChange={handlePlaybackRateChange}
+        />
+      ) : (
+        <AudioPlayer
+          audioRef={audioRef}
+          isPlaying={isPlaying}
+          currentTime={currentTime}
+          duration={audioDuration}
+          playbackRate={playbackRate}
+          isLoading={isLoadingAudioBlob}
+          onPlayPause={handlePlayPauseWithInteraction}
+          onBackward={handleBackward}
+          onForward={handleForward}
+          onProgressClick={handleProgressClick}
+          onPlaybackRateChange={handlePlaybackRateChange}
+        />
+      )
     ) : null;
 
   const tabChangeModal = (
@@ -662,14 +824,31 @@ export const SessionDetailContainer: React.FC = () => {
 
   const editGuideModal = <TranscriptEditGuideModal />;
 
+  const isContentEditing =
+    (isEditing || isEditingHandwritten) && activeTab === 'transcript';
+
+  if (isMobileView) {
+    return (
+      <MobileSessionDetailView
+        isContentEditing={isContentEditing}
+        audioElement={audioElement}
+        header={header}
+        mobileHeader={mobileHeader}
+        tab={tab}
+        toolbar={toolbar}
+        tabContent={tabContent}
+        audioPlayer={audioPlayer}
+        tabChangeModal={tabChangeModal}
+        editGuideModal={editGuideModal}
+      />
+    );
+  }
+
   return (
     <SessionDetailView
-      isContentEditing={
-        (isEditing || isEditingHandwritten) && activeTab === 'transcript'
-      }
+      isContentEditing={isContentEditing}
       audioElement={audioElement}
       header={header}
-      mobileHeader={mobileHeader}
       tab={tab}
       toolbar={toolbar}
       tabContent={tabContent}

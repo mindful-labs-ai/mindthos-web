@@ -53,7 +53,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
 
       {/* 메인 컨텐츠 영역 */}
       {!sessionId ? (
-        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-4 pt-6 transition-all duration-300 sm:px-16 sm:pt-[42px]">
+        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-4 pt-6 transition-all duration-300 lg:px-16 lg:pt-[42px]">
           <div className="flex-shrink-0 pb-6">
             <div className="flex items-center gap-2">
               <Title as="h1" className="text-start text-2xl font-bold">
@@ -214,7 +214,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <Outlet />
         </div>
       )}
