@@ -12,12 +12,12 @@ export interface UseDeviceReturn {
 // Tailwind breakpoints
 const BREAKPOINTS = {
   sm: 640, // mobile → sm
-  md: 768, // tablet → md
+  lg: 1024, // tablet → lg (desktop starts at lg)
 } as const;
 
 function getDeviceType(width: number): DeviceType {
   if (width < BREAKPOINTS.sm) return 'mobile';
-  if (width < BREAKPOINTS.md) return 'tablet';
+  if (width < BREAKPOINTS.lg) return 'tablet';
   return 'desktop';
 }
 
@@ -40,7 +40,7 @@ export function useDevice(): UseDeviceReturn {
       `(max-width: ${BREAKPOINTS.sm - 1}px)`
     );
     const tabletQuery = window.matchMedia(
-      `(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${BREAKPOINTS.md - 1}px)`
+      `(min-width: ${BREAKPOINTS.sm}px) and (max-width: ${BREAKPOINTS.lg - 1}px)`
     );
 
     // innerWidth를 보조로 정확한 값 동기화
