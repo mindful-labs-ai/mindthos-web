@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getCardBrandName } from '@/features/payment/constants/card';
+import { getCardBrandName } from '@/shared/constants/card';
 import { CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';

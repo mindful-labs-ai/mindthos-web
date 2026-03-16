@@ -1,4 +1,7 @@
-import { BACKGROUND_OPTIONS, type BackgroundOptionId } from './constants';
+import {
+  BACKGROUND_OPTIONS,
+  type BackgroundOptionId,
+} from '@/shared/constants/genogramExport';
 
 interface BackgroundSelectorProps {
   value: BackgroundOptionId;

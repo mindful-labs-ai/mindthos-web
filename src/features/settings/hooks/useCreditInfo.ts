@@ -4,6 +4,7 @@ import {
   creditService,
   type CreditInfo,
 } from '@/shared/api/supabase/creditQueries';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
 export const useCreditInfo = () => {
@@ -17,13 +18,8 @@ export const useCreditInfo = () => {
 
   // 구독 정보 쿼리
   const subscriptionQuery = useQuery({
-    queryKey: ['credit', 'subscription', userIdNumber],
-    queryFn: async () => {
-      if (!userIdNumber) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
-      }
-      return await creditService.getSubscriptionInfo(userIdNumber);
-    },
+    queryKey: creditQueryKeys.subscription(userIdNumber!),
+    queryFn: () => creditService.getSubscriptionInfo(userIdNumber!),
     enabled: !!userIdNumber,
     staleTime: 5000,
     refetchOnWindowFocus: true,
@@ -34,13 +30,8 @@ export const useCreditInfo = () => {
 
   // 사용량 정보 쿼리
   const usageQuery = useQuery({
-    queryKey: ['credit', 'usage', userIdNumber],
-    queryFn: async () => {
-      if (!userIdNumber) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
-      }
-      return await creditService.getCreditUsage(userIdNumber);
-    },
+    queryKey: creditQueryKeys.usage(userIdNumber!),
+    queryFn: () => creditService.getCreditUsage(userIdNumber!),
     enabled: !!userIdNumber,
     staleTime: 5000,
     refetchOnWindowFocus: true,

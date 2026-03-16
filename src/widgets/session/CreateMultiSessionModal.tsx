@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
-import { MULTI_UPLOAD_LIMITS } from '@/features/session/constants/fileUpload';
 import { useDragAndDrop } from '@/features/session/hooks/useDragAndDrop';
 import { useMultiFileUpload } from '@/features/session/hooks/useMultiFileUpload';
 import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionCreate';
@@ -14,6 +13,11 @@ import type {
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { MULTI_UPLOAD_LIMITS } from '@/shared/constants/fileUpload';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { CloudUploadIcon, CreditIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -241,7 +245,7 @@ export const CreateMultiSessionModal: React.FC<
     ).length;
 
     if (successCount > 0) {
-      trackEvent('multi_session_create_success', {
+      trackEvent(MixpanelEvent.MultiSessionCreateSuccess, {
         success_count: successCount,
         failed_count: failedCount,
         total_count: fileConfigs.length,
@@ -267,7 +271,7 @@ export const CreateMultiSessionModal: React.FC<
       const failedResults = finalResults.filter((r) => r.status === 'failed');
       failedResults.forEach((result) => {
         trackError(
-          'multi_session_create_error',
+          MixpanelError.MultiSessionCreateError,
           new Error(result.errorMessage || 'Unknown error'),
           {
             file_id: result.fileId,

@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 
 import { cn } from '@/lib/cn';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -98,10 +99,10 @@ export const CompleteMissionModal = ({
       // 크레딧 정보 갱신
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ['credit', 'subscription', Number(user.id)],
+          queryKey: creditQueryKeys.subscription(Number(user.id)),
         }),
         queryClient.invalidateQueries({
-          queryKey: ['credit', 'usage', Number(user.id)],
+          queryKey: creditQueryKeys.usage(Number(user.id)),
         }),
       ]);
       handleClose();

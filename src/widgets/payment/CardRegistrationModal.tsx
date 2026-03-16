@@ -2,6 +2,10 @@ import { useState } from 'react';
 
 import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -48,18 +52,18 @@ export const CardRegistrationModal = ({
 
     try {
       setIsSubmitting(true);
-      trackEvent('card_register_attempt');
+      trackEvent(MixpanelEvent.CardRegisterAttempt);
       await requestBillingAuth({
         customerName: buyerName,
         customerEmail: user.email,
       });
-      trackEvent('card_register_success');
+      trackEvent(MixpanelEvent.CardRegisterSuccess);
       onSuccess?.();
     } catch (error) {
-      trackEvent('card_register_failed', {
+      trackEvent(MixpanelEvent.CardRegisterFailed, {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
-      trackError('card_registration_error', error);
+      trackError(MixpanelError.CardRegistrationError, error);
       toast({
         title: '카드 등록 실패',
         description: '카드 등록 중 오류가 발생했습니다. 다시 시도해주세요.',

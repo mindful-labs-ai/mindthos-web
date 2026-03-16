@@ -168,16 +168,16 @@ export const Modal: React.FC<ModalProps> = ({
       'px-6 py-4',
     ],
 
-    // bottomSheet: 모바일에서 바텀시트(고정 40vh, 내부 스크롤), sm+ 에서 center
+    // bottomSheet: 모바일에서 바텀시트(콘텐츠 높이, 최대 80vh), sm+ 에서 center
     mobileVariant === 'bottomSheet' && [
-      // 모바일: 하단 시트 - 고정 높이, flex column, overflow hidden (내부 스크롤)
+      // 모바일: 하단 시트 - 콘텐츠에 맞게 높이 조정, 최대 80vh
       'flex flex-col overflow-hidden',
-      'h-[40vh] w-full',
+      'max-h-[80vh] w-full',
       'rounded-t-2xl border-x-2 border-t-2 border-border shadow-xl',
       'animate-slideUpFull',
       'px-6 pt-4',
       // sm+: 센터 팝업 (overflow-auto로 복원)
-      'sm:h-auto sm:max-h-[90vh] sm:max-w-lg',
+      'sm:max-h-[90vh] sm:max-w-lg',
       'sm:overflow-auto',
       'sm:rounded-[var(--radius-lg)] sm:border-2',
       'sm:animate-scaleIn',

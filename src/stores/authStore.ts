@@ -5,6 +5,7 @@ import { identifyUser, resetMixpanel } from '@/lib/mixpanel';
 import { queryClient } from '@/lib/queryClient';
 import { authService } from '@/shared/api/services/auth/authService';
 import type { User, UserData } from '@/shared/api/services/auth/types';
+import { userQueryKeys } from '@/shared/constants/queryKeys';
 
 interface AuthState {
   user: User | null;
@@ -107,7 +108,7 @@ export const useAuthStore = create<AuthStore>()(
         const user = get().user;
         if (user?.email) {
           queryClient.invalidateQueries({
-            queryKey: ['user', 'data', user.email],
+            queryKey: userQueryKeys.data(user.email!),
           });
         }
       },
@@ -172,7 +173,7 @@ export const useAuthStore = create<AuthStore>()(
         // 캐시에 있으면 캐시에서 가져오고, 없으면 fetch 후 캐싱
         const userData = user.email
           ? await queryClient.fetchQuery({
-              queryKey: ['user', 'data', user.email],
+              queryKey: userQueryKeys.data(user.email!),
               queryFn: () => authService.getUserDataByEmail(user.email!),
               staleTime: Infinity, // 캐시 무한 유지
             })

@@ -4,6 +4,10 @@ import React, { useState } from 'react';
 import { ChevronRightIcon } from 'lucide-react';
 
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -64,14 +68,14 @@ export const CancelSubscriptionModal: React.FC<
 
   const handleConfirm = async () => {
     setIsLoading(true);
-    trackEvent('subscription_cancel_attempt', {
+    trackEvent(MixpanelEvent.SubscriptionCancelAttempt, {
       current_plan: currentPlanType,
     });
     try {
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      trackError('subscription_cancel_error', error, {
+      trackError(MixpanelError.SubscriptionCancelError, error, {
         current_plan: currentPlanType,
       });
       toast({

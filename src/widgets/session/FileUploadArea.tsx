@@ -1,10 +1,10 @@
 // TODO: 삭제 예정 - CreateSessionModal에서만 사용되며, CreateSessionModal이 사용되지 않음
 import React from 'react';
 
-import { getFileUploadText } from '@/features/session/constants/fileUpload';
 import { useDragAndDrop } from '@/features/session/hooks/useDragAndDrop';
 import { useFileUpload } from '@/features/session/hooks/useFileUpload';
 import type { FileInfo, UploadType } from '@/features/session/types';
+import { getFileUploadText } from '@/shared/constants/fileUpload';
 import { CloudUploadIcon, XIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';

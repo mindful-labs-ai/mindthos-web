@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchFamilySummary } from '@/shared/api/supabase/clientQueries';
+import { genogramQueryKeys } from '@/shared/constants/queryKeys';
 
 import type { AIGenogramOutput } from '../utils/aiJsonConverter';
 
@@ -13,7 +14,7 @@ export function useClientFamilySummary(
   clientId: string
 ): UseClientFamilySummaryReturn {
   const { data, isLoading } = useQuery({
-    queryKey: ['clientFamilySummary', clientId],
+    queryKey: genogramQueryKeys.familySummary(clientId),
     queryFn: () => fetchFamilySummary(clientId),
     enabled: !!clientId,
     staleTime: 0,

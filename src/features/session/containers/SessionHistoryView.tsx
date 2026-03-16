@@ -3,7 +3,6 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 
 import type { Client } from '@/features/client/types';
-import type { SessionRecord } from '@/features/session/types';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
@@ -12,62 +11,35 @@ import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { FilterMenu } from '@/widgets/session/FilterMenu';
-import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
-import { SessionSideList } from '@/widgets/session/SessionSideList';
-import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
-
-interface SessionListItem {
-  sessionId: string;
-  title: string;
-  clientName: string;
-  sessionNumber: number;
-  duration?: number;
-  hasAudio: boolean;
-  createdAt: string;
-  isAdvancedTranscript: boolean;
-  isHandwritten: boolean;
-}
 
 export interface SessionHistoryViewProps {
   sessionId?: string;
   isDummyFlow: boolean;
-  isLoadingSessions: boolean;
-  records: SessionRecord[];
-  sessionListData: SessionListItem[];
   effectiveClients: Client[];
   sortOrder: 'newest' | 'oldest';
   selectedClientIds: string[];
   sessionCounts: Record<string, number>;
-  isSessionChangeModalOpen: boolean;
-  onSetSessionChangeModalOpen: (open: boolean) => void;
-  onCardClick: (record: SessionRecord) => void;
-  onSessionClick: (sessionId: string) => void;
-  onConfirmSessionChange: () => void;
-  onCancelSessionChange: () => void;
   onSortChange: (order: 'newest' | 'oldest') => void;
   onClientChange: (clientIds: string[]) => void;
   onFilterReset: () => void;
+  sideList: React.ReactNode;
+  sessionCards: React.ReactNode;
+  sessionChangeModal: React.ReactNode;
 }
 
 export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
   sessionId,
   isDummyFlow,
-  isLoadingSessions,
-  records,
-  sessionListData,
   effectiveClients,
   sortOrder,
   selectedClientIds,
   sessionCounts,
-  isSessionChangeModalOpen,
-  onSetSessionChangeModalOpen,
-  onCardClick,
-  onSessionClick,
-  onConfirmSessionChange,
-  onCancelSessionChange,
   onSortChange,
   onClientChange,
   onFilterReset,
+  sideList,
+  sessionCards,
+  sessionChangeModal,
 }) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -77,24 +49,11 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
   return (
     <div className="flex h-full">
       {/* 왼쪽: 세션 목록 - 모바일에서는 숨김 (상세 페이지 전체 너비 사용) */}
-      {sessionId && !isMobileView && (
-        <SessionSideList
-          sessions={sessionListData}
-          activeSessionId={sessionId}
-          onSessionClick={onSessionClick}
-          sortOrder={sortOrder}
-          selectedClientId={selectedClientIds}
-          clients={effectiveClients}
-          sessionCounts={sessionCounts}
-          onSortChange={onSortChange}
-          onClientChange={onClientChange}
-          onFilterReset={onFilterReset}
-        />
-      )}
+      {!isMobileView && sideList}
 
       {/* 메인 컨텐츠 영역 */}
       {!sessionId ? (
-        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-4 pt-6 transition-all duration-300 sm:px-16 sm:pt-[42px]">
+        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-4 pt-6 transition-all duration-300 lg:px-16 lg:pt-[42px]">
           <div className="flex-shrink-0 pb-6">
             <div className="flex items-center gap-2">
               <Title as="h1" className="text-start text-2xl font-bold">
@@ -251,48 +210,16 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
-            <div className="space-y-3">
-              {isLoadingSessions ? (
-                <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
-                  <div className="text-center">
-                    <p className="text-sm text-fg-muted">
-                      상담기록 목록을 불러오는 중...
-                    </p>
-                  </div>
-                </div>
-              ) : records.length > 0 ? (
-                records.map((record) => (
-                  <SessionRecordCard
-                    key={record.session_id}
-                    record={record}
-                    isReadOnly={isDummyFlow}
-                    onClick={() => onCardClick(record)}
-                  />
-                ))
-              ) : (
-                <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
-                  <div className="text-center">
-                    <p className="text-sm text-fg-muted">
-                      아직 상담 기록이 없습니다.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+            <div className="space-y-3">{sessionCards}</div>
           </div>
         </div>
       ) : (
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <Outlet />
         </div>
       )}
 
-      <TabChangeConfirmModal
-        open={isSessionChangeModalOpen}
-        onOpenChange={onSetSessionChangeModalOpen}
-        onCancel={onCancelSessionChange}
-        onConfirm={onConfirmSessionChange}
-      />
+      {sessionChangeModal}
     </div>
   );
 };

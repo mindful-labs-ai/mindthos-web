@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { ArrowRightIcon, CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -63,7 +67,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
 
   const handleConfirm = async () => {
     setIsLoading(true);
-    trackEvent('plan_downgrade_attempt', {
+    trackEvent(MixpanelEvent.PlanDowngradeAttempt, {
       current_plan: currentPlanType,
       new_plan: newPlanType,
     });
@@ -71,7 +75,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      trackError('plan_downgrade_error', error, {
+      trackError(MixpanelError.PlanDowngradeError, error, {
         current_plan: currentPlanType,
         new_plan: newPlanType,
       });

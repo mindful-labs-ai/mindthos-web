@@ -4,7 +4,7 @@ import {
   BACKGROUND_OPTIONS,
   DEFAULT_WATERMARK_OPACITY,
   type BackgroundOptionId,
-} from '@/widgets/genogram/export/constants';
+} from '@/shared/constants/genogramExport';
 
 export interface ExportOptions {
   backgroundId: BackgroundOptionId;

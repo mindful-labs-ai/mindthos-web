@@ -12,6 +12,7 @@ import {
   getSessionStatus,
   type SessionStatusResponse,
 } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 export interface UseSessionStatusOptions {
   sessionId: string;
@@ -36,7 +37,7 @@ export function useSessionStatus({
   const previousStatusRef = useRef<string | null>(null);
 
   const query = useQuery({
-    queryKey: ['session-status', sessionId],
+    queryKey: sessionQueryKeys.status(sessionId),
     queryFn: () => getSessionStatus(sessionId),
     enabled: enabled && !!sessionId,
     refetchInterval: (query) => {

@@ -6,13 +6,21 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getSessionDetailRoute } from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
-import { isFileSizeExceeded } from '@/features/session/constants/fileUpload';
 import { useCreateSession } from '@/features/session/hooks/useCreateSession';
 import { useSessionStatus } from '@/features/session/hooks/useSessionStatus';
 import type { FileInfo, SttModel, UploadType } from '@/features/session/types';
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
 import { getSessionModalTitle } from '@/features/session/utils/sessionModal';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { isFileSizeExceeded } from '@/shared/constants/fileUpload';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -89,7 +97,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       if (status === 'succeeded') {
         // 특정 세션만 refetch (전체 세션 목록이 아닌)
         queryClient.invalidateQueries({
-          queryKey: ['session', 'detail', data.session_id],
+          queryKey: sessionQueryKeys.detailById(data.session_id),
         });
 
         // 크레딧 사용 정보 업데이트
@@ -97,7 +105,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           const userIdNumber = parseInt(userId);
           if (!isNaN(userIdNumber)) {
             queryClient.invalidateQueries({
-              queryKey: ['credit', 'usage', userIdNumber],
+              queryKey: creditQueryKeys.usage(userIdNumber),
             });
           }
         }
@@ -187,7 +195,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       });
 
       // 세션 생성 성공 트래킹
-      trackEvent('session_create_success', {
+      trackEvent(MixpanelEvent.SessionCreateSuccess, {
         upload_type: type,
         transcribe_type: transcribeType,
         has_client: !!selectedClient,
@@ -215,7 +223,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       const errorMessage =
         error instanceof Error ? error.message : '알 수 없는 오류';
 
-      trackError('session_create_error', error, {
+      trackError(MixpanelError.SessionCreateError, error, {
         upload_type: type,
         transcribe_type:
           type === 'audio'

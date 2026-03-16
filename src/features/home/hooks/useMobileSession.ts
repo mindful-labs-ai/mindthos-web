@@ -5,11 +5,11 @@ import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { getNoteTypesFromProgressNotes } from '@/features/session/constants/noteTypeMapping';
 import { useSessionList } from '@/features/session/hooks/useSessionList';
 import type { SessionRecord, Transcribe } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 
 const SESSIONS_PER_PAGE = 5;
 
@@ -46,7 +46,10 @@ export const useSessionRecords = ({
     ? dummySessionRelations
     : sessionsFromQuery;
 
-  const effectiveClients = isDummyFlow ? [dummyClient] : clients;
+  const effectiveClients = useMemo(
+    () => (isDummyFlow ? [dummyClient] : clients),
+    [isDummyFlow, clients]
+  );
 
   // 현재 표시할 세션 목록
   const displayedSessions = useMemo(() => {
@@ -68,8 +71,18 @@ export const useSessionRecords = ({
 
   // 전사 내용을 SessionRecord용 텍스트로 변환
   const getSessionContent = useCallback(
-    (transcribe: Transcribe | null): string => {
-      const transcriptData = getTranscriptData(transcribe);
+    (transcribe: Transcribe | { contents: string } | null): string => {
+      if (!transcribe) return '전사 내용이 없습니다.';
+
+      // 필기 세션 (HandwrittenTranscribe)
+      if ('contents' in transcribe && typeof transcribe.contents === 'string') {
+        return (
+          transcribe.contents.slice(0, 150) +
+          (transcribe.contents.length > 150 ? '...' : '')
+        );
+      }
+
+      const transcriptData = getTranscriptData(transcribe as Transcribe);
       if (!transcriptData) {
         return '전사 내용이 없습니다.';
       }

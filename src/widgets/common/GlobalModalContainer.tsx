@@ -4,12 +4,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 
-import { clientQueryKeys } from '@/features/client/constants/queryKeys';
+import { ROUTES } from '@/app/router/constants';
 import {
   useCoupons,
   couponQueryKeys,
 } from '@/features/settings/hooks/useCoupons';
 import { couponService } from '@/features/settings/services/couponService';
+import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -55,8 +56,8 @@ export const GlobalModalContainer = () => {
   const { currentLevel, completeNextStep } = useQuestStore();
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
-  const isGenogramRoute = location.pathname.includes('/genogram');
-  const isTermsAgreementRoute = location.pathname === '/terms-agreement';
+  const isGenogramRoute = location.pathname.includes(ROUTES.GENOGRAM);
+  const isTermsAgreementRoute = location.pathname === ROUTES.TERMS_AGREEMENT;
   const isPaymentRoute = location.pathname.startsWith('/payment');
 
   // 모달 스토어에서 상태와 액션 가져오기

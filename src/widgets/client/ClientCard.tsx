@@ -2,10 +2,11 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { clientQueryKeys } from '@/features/client/constants/queryKeys';
 import type { Client } from '@/features/client/types';
 import { trackEvent } from '@/lib/mixpanel';
 import { clientService } from '@/shared/api/supabase/clientQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -47,7 +48,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   const canAnalyze = (client.session_count ?? 0) >= 2;
 
   const handleCardClick = () => {
-    trackEvent('client_detail_view', { client_id: client.id });
+    trackEvent(MixpanelEvent.ClientDetailView, { client_id: client.id });
     onClick?.(client);
   };
 
@@ -80,7 +81,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         counsel_done: true,
       });
 
-      trackEvent('client_session_close', { client_id: client.id });
+      trackEvent(MixpanelEvent.ClientSessionClose, { client_id: client.id });
 
       // 클라이언트 목록 갱신
       if (userId) {
@@ -123,7 +124,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         counsel_done: false,
       });
 
-      trackEvent('client_session_restart', { client_id: client.id });
+      trackEvent(MixpanelEvent.ClientSessionRestart, { client_id: client.id });
 
       // 클라이언트 목록 갱신
       if (userId) {
@@ -174,7 +175,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         client_id: client.id,
       });
 
-      trackEvent('client_delete', { client_id: client.id });
+      trackEvent(MixpanelEvent.ClientDelete, { client_id: client.id });
 
       // 클라이언트 목록 갱신
       if (userId) {

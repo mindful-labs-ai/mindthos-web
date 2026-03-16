@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { userQueryKeys } from '@/shared/constants/queryKeys';
+
 import { authService } from '../authService';
 
 /**
@@ -8,7 +10,7 @@ import { authService } from '../authService';
  */
 export const useUserData = (email: string | null | undefined) => {
   return useQuery({
-    queryKey: ['user', 'data', email],
+    queryKey: userQueryKeys.data(email!),
     queryFn: async () => {
       if (!email) {
         throw new Error('Email is required');

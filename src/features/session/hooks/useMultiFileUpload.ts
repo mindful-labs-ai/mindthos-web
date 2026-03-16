@@ -3,7 +3,8 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   FILE_UPLOAD_LIMITS,
   MULTI_UPLOAD_LIMITS,
-} from '../constants/fileUpload';
+} from '@/shared/constants/fileUpload';
+
 import type { MultiFileInfo } from '../types';
 
 interface UseMultiFileUploadReturn {

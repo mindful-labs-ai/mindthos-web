@@ -8,8 +8,7 @@ import {
 } from 'lucide-react';
 
 import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
-
-import { formatDate } from '../constants';
+import { formatDate } from '@/shared/constants/genogramReport';
 
 interface ReportListStepProps {
   reports: ReportListItem[];

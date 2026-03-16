@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
+import { ROUTES } from '@/app/router/constants';
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -43,7 +46,7 @@ export const PaymentSuccess = () => {
           title: '잘못된 요청',
           description: '필수 파라미터가 누락되었습니다.',
         });
-        navigateWithUtm('/settings');
+        navigateWithUtm(ROUTES.SETTINGS);
         return;
       }
 
@@ -55,7 +58,7 @@ export const PaymentSuccess = () => {
           title: '사용자 정보 오류',
           description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
         });
-        navigateWithUtm('/settings');
+        navigateWithUtm(ROUTES.SETTINGS);
         return;
       }
 
@@ -83,15 +86,15 @@ export const PaymentSuccess = () => {
               const userIdNumber = parseInt(userId);
               if (!isNaN(userIdNumber)) {
                 await queryClient.invalidateQueries({
-                  queryKey: ['credit', 'subscription', userIdNumber],
+                  queryKey: creditQueryKeys.subscription(userIdNumber),
                 });
                 await queryClient.invalidateQueries({
-                  queryKey: ['credit', 'usage', userIdNumber],
+                  queryKey: creditQueryKeys.usage(userIdNumber),
                 });
               }
             }
 
-            trackEvent('plan_upgrade_success', { plan_id: planId });
+            trackEvent(MixpanelEvent.PlanUpgradeSuccess, { plan_id: planId });
 
             // 플랜 변경 후 퀘스트 상태 갱신 (온보딩 노출 조건 업데이트)
             if (user?.email) {
@@ -102,7 +105,7 @@ export const PaymentSuccess = () => {
               title: '플랜 업그레이드 완료',
               description: '플랜이 성공적으로 업그레이드되었습니다.',
             });
-            navigateWithUtm('/settings');
+            navigateWithUtm(ROUTES.SETTINGS);
           } else {
             throw new Error(
               response.message || '플랜 업그레이드에 실패했습니다.'
@@ -118,7 +121,7 @@ export const PaymentSuccess = () => {
           // 카드 정보 쿼리 invalidate
           if (userId) {
             await queryClient.invalidateQueries({
-              queryKey: ['cardInfo', userId],
+              queryKey: cardQueryKeys.info(userId!),
             });
           }
 
@@ -129,10 +132,10 @@ export const PaymentSuccess = () => {
         }
 
         // 설정 페이지로 이동
-        navigateWithUtm('/settings');
+        navigateWithUtm(ROUTES.SETTINGS);
       } catch (error) {
         if (planId) {
-          trackEvent('plan_upgrade_failed', {
+          trackEvent(MixpanelEvent.PlanUpgradeFailed, {
             plan_id: planId,
             error_message:
               error instanceof Error ? error.message : 'Unknown error',
@@ -146,7 +149,7 @@ export const PaymentSuccess = () => {
               ? error.message
               : `${planId ? '플랜 업그레이드' : '카드 등록'} 중 오류가 발생했습니다.`,
         });
-        navigateWithUtm('/settings');
+        navigateWithUtm(ROUTES.SETTINGS);
       } finally {
         setIsLoading(false);
       }
@@ -188,7 +191,7 @@ export const PaymentSuccess = () => {
           </div>
 
           <Button
-            onClick={() => navigateWithUtm('/settings')}
+            onClick={() => navigateWithUtm(ROUTES.SETTINGS)}
             disabled={isLoading}
             className="w-full"
           >

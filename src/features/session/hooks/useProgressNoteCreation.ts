@@ -8,12 +8,12 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { trackError } from '@/lib/mixpanel';
 import { addProgressNote } from '@/shared/api/supabase/progressNoteQueries';
+import { MixpanelError } from '@/shared/constants/mixpanelEvents';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 
 import type { ProgressNote } from '../types';
-
-import { sessionDetailQueryKey } from './useSessionDetail';
 
 const PROGRESS_NOTE_CREDIT = 10; // 상담노트 생성 크레딧
 
@@ -170,7 +170,7 @@ export function useProgressNoteCreation({
       setActiveTab(currentTabId);
 
       console.error('상담노트 작성 에러 : ', error);
-      trackError('progress_note_create_error', error, {
+      trackError(MixpanelError.ProgressNoteCreateError, error, {
         session_id: sessionId,
         template_id: templateId,
       });
@@ -265,7 +265,7 @@ export function useProgressNoteCreation({
 
         // 세션 데이터 갱신
         await queryClient.invalidateQueries({
-          queryKey: sessionDetailQueryKey(sessionId, isDummySession),
+          queryKey: sessionQueryKeys.detail(sessionId, isDummySession),
         });
       } catch (error) {
         // 실패 시 requestingTabs에서 제거
@@ -288,7 +288,7 @@ export function useProgressNoteCreation({
         }
 
         console.error('상담노트 재생성 에러:', error);
-        trackError('progress_note_regenerate_error', error, {
+        trackError(MixpanelError.ProgressNoteRegenerateError, error, {
           session_id: sessionId,
           template_id: templateId,
         });

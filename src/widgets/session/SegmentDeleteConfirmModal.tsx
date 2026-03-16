@@ -17,7 +17,7 @@ export function SegmentDeleteConfirmModal({
       onOpenChange={(open) => !open && onClose()}
       className="max-w-[480px]"
     >
-      <div className="flex flex-col items-center px-6 py-4">
+      <div className="flex flex-col items-center px-0 py-4 lg:px-6">
         {/* 제목 */}
         <h2 className="text-2xl font-bold text-fg">대화 내용 삭제</h2>
 

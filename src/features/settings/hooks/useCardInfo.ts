@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { cardQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
 export const useCardInfo = () => {
   const userId = useAuthStore((state) => state.userId);
 
   const { data: cardInfo, isLoading } = useQuery({
-    queryKey: ['cardInfo', userId],
+    queryKey: cardQueryKeys.info(userId!),
     queryFn: async () => {
       if (!userId) return null;
       return await billingService.getCard(Number(userId));

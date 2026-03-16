@@ -17,6 +17,11 @@ import {
   saveTranscriptContents,
   updateTranscriptSegments,
 } from '@/shared/api/supabase/sessionQueries';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/ui/composites/Toast';
 
 import type {
@@ -35,8 +40,6 @@ import {
   getSegments,
   removeSegment,
 } from '../utils/contentsEditor';
-
-import { sessionDetailQueryKey } from './useSessionDetail';
 
 // ── 타입 ──
 
@@ -101,7 +104,7 @@ export function useTranscriptEditSession({
   const textEditsRef = React.useRef<Record<number, string>>({});
 
   const sessionQueryKey = React.useMemo(
-    () => sessionDetailQueryKey(sessionId, isDummySession),
+    () => sessionQueryKeys.detail(sessionId, isDummySession),
     [sessionId, isDummySession]
   );
 
@@ -128,7 +131,7 @@ export function useTranscriptEditSession({
     const contents = getContentsFromCache();
     if (!contents) return;
 
-    trackEvent('transcript_edit_start', { session_id: sessionId });
+    trackEvent(MixpanelEvent.TranscriptEditStart, { session_id: sessionId });
 
     // 스냅샷 생성
     setEditingContents(deepCloneContents(contents));
@@ -152,7 +155,7 @@ export function useTranscriptEditSession({
   // ── 편집 취소 ──
 
   const handleCancelEdit = React.useCallback(() => {
-    trackEvent('transcript_edit_cancel', { session_id: sessionId });
+    trackEvent(MixpanelEvent.TranscriptEditCancel, { session_id: sessionId });
 
     // 스냅샷 폐기
     setEditingContents(null);
@@ -256,7 +259,7 @@ export function useTranscriptEditSession({
             queryKey: sessionQueryKey,
           });
 
-          trackError('speaker_change_error', error, {
+          trackError(MixpanelError.SpeakerChangeError, error, {
             session_id: sessionId,
             transcribe_id: transcribeId,
           });
@@ -383,7 +386,7 @@ export function useTranscriptEditSession({
       // 서버에 전체 contents 저장
       await saveTranscriptContents(transcribeId, finalContents);
 
-      trackEvent('transcript_edit_complete', {
+      trackEvent(MixpanelEvent.TranscriptEditComplete, {
         session_id: sessionId,
         edited_segments_count: Object.keys(textEdits).length,
       });
@@ -399,7 +402,7 @@ export function useTranscriptEditSession({
         queryKey: sessionQueryKey,
       });
 
-      trackError('transcript_save_error', error, {
+      trackError(MixpanelError.TranscriptSaveError, error, {
         session_id: sessionId,
         transcribe_id: transcribeId,
       });

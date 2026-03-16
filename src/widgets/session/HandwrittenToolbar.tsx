@@ -1,5 +1,5 @@
 /**
- * 직접 입력 세션 툴바 컴포넌트
+ * 데스크톱 직접 입력 세션 툴바 컴포넌트
  * 편집/저장/취소/복사 버튼을 포함
  */
 
@@ -35,7 +35,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
     onCopy,
   }) => {
     return (
-      <div className="absolute inset-x-0 right-4 top-0 flex w-full select-none justify-end rounded-lg bg-gradient-to-t from-transparent to-slate-50">
+      <div className="absolute inset-x-0 right-4 top-0 z-20 flex w-full select-none justify-end rounded-lg bg-gradient-to-t from-transparent to-slate-50">
         <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
           {isReadOnly ? (
             <Badge tone="warning" variant="soft" size="sm">

@@ -3,10 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import { clientQueryKeys } from '@/features/client/constants/queryKeys';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
-import type { GenogramPageHandle } from '@/genogram';
+import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import {
   fetchRawAIOutput,
@@ -14,10 +13,25 @@ import {
   saveFamilySummary,
 } from '@/shared/api/supabase/genogramAIQueries';
 import { genogramService } from '@/shared/api/supabase/genogramQueries';
+import {
+  clientQueryKeys,
+  genogramQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
-import { GUIDE_DONT_SHOW_AGAIN_KEY } from '@/widgets/genogram/GenogramGuideModal';
+import { AddClientModal } from '@/widgets/client/AddClientModal';
+import { GenogramExportModal } from '@/widgets/genogram/export';
+import { GenogramEmptyState } from '@/widgets/genogram/GenogramEmptyState';
+import { GenogramGenerationSteps } from '@/widgets/genogram/GenogramGenerationSteps';
+import {
+  DEFAULT_GUIDE_STEPS,
+  GenogramGuideModal,
+  GUIDE_DONT_SHOW_AGAIN_KEY,
+} from '@/widgets/genogram/GenogramGuideModal';
+import { GenogramPageHeader } from '@/widgets/genogram/GenogramPageHeader';
+import { ResetConfirmModal } from '@/widgets/genogram/ResetConfirmModal';
+import { GenogramReportModal } from '@/widgets/report/GenogramReportModal';
 
 import { useClientFamilySummary } from '../hooks/useClientFamilySummary';
 import { useClientHasRecords } from '../hooks/useClientHasRecords';
@@ -108,7 +122,7 @@ export function GenogramClientContainer() {
     setIsStarting(true);
     try {
       await genogramService.save(clientId, userId, '{}');
-      queryClient.setQueryData(['genogram', clientId], '{}');
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), '{}');
     } catch (e) {
       console.error('Failed to create empty genogram:', e);
     } finally {
@@ -187,10 +201,10 @@ export function GenogramClientContainer() {
       await genogramService.save(clientId, userId, canvasJson);
       await saveFamilySummary(clientId, steps.aiOutput);
       queryClient.setQueryData(
-        ['clientFamilySummary', clientId],
+        genogramQueryKeys.familySummary(clientId),
         steps.aiOutput
       );
-      queryClient.setQueryData(['genogram', clientId], canvasJson);
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), canvasJson);
       originalCanvasRef.current = null;
       steps.reset();
     } catch {
@@ -234,11 +248,11 @@ export function GenogramClientContainer() {
       if (steps.aiOutput) {
         await saveFamilySummary(clientId, steps.aiOutput);
         queryClient.setQueryData(
-          ['clientFamilySummary', clientId],
+          genogramQueryKeys.familySummary(clientId),
           steps.aiOutput
         );
       }
-      queryClient.setQueryData(['genogram', clientId], canvasJson);
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), canvasJson);
       const wasEditMode = isEditModeRef.current;
       preparedCanvasJsonRef.current = null;
       isEditModeRef.current = false;
@@ -285,13 +299,16 @@ export function GenogramClientContainer() {
       if (temporaryData) {
         try {
           await genogramService.save(newClientId, userId, temporaryData);
-          queryClient.setQueryData(['genogram', newClientId], temporaryData);
+          queryClient.setQueryData(
+            genogramQueryKeys.data(newClientId),
+            temporaryData
+          );
           setTemporaryData(null);
         } catch (e) {
           console.error('Failed to save genogram to new client:', e);
         }
       }
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
       setSearchParamsWithUtm({ clientId: newClientId });
       setExitedTemporaryMode(true);
     },
@@ -324,11 +341,13 @@ export function GenogramClientContainer() {
         toast({ title: '초기화 실패' });
         return;
       }
-      queryClient.setQueryData(['genogram', clientId], null);
-      queryClient.setQueryData(['clientFamilySummary', clientId], null);
-      queryClient.invalidateQueries({ queryKey: ['genogram', clientId] });
+      queryClient.setQueryData(genogramQueryKeys.data(clientId), null);
+      queryClient.setQueryData(genogramQueryKeys.familySummary(clientId), null);
       queryClient.invalidateQueries({
-        queryKey: ['clientFamilySummary', clientId],
+        queryKey: genogramQueryKeys.data(clientId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: genogramQueryKeys.familySummary(clientId),
       });
       queryClient.invalidateQueries({
         queryKey: clientQueryKeys.list(userId),
@@ -366,65 +385,192 @@ export function GenogramClientContainer() {
     (clientId && isFamilySummaryLoading);
   const showCanvas = (clientId && hasData) || isTemporaryMode;
 
-  return (
-    <GenogramClientView
+  // --- Build widget slots ---
+
+  const header = (
+    <GenogramPageHeader
       clients={clients}
-      clientId={clientId}
       selectedClient={selectedClient}
-      genogramRef={genogramRef}
-      isLoading={!!isLoading}
-      isStarting={isStarting}
-      isTemporaryMode={isTemporaryMode}
-      showCanvas={!!showCanvas}
-      hasData={hasData}
-      hasRecords={hasRecords}
-      initialData={initialData ?? undefined}
-      // Header actions
+      onClientSelect={handleClientSelect}
+      onUndo={handleUndo}
+      onRedo={handleRedo}
+      onExport={handleExport}
+      onSave={handleSave}
+      showActions={
+        !!showCanvas && !(steps.isOpen && steps.currentStep === 'edit')
+      }
       canUndo={canUndo}
       canRedo={canRedo}
       isPanelOpen={isPanelOpen}
       isSaving={isSaving}
       lastSavedAt={lastSavedAt}
-      isResetting={isResetting}
-      onUndo={handleUndo}
-      onRedo={handleRedo}
-      onExport={handleExport}
-      onSave={handleSave}
+      onAddClient={handleOpenAddClientModal}
+      isTemporaryMode={isTemporaryMode}
       onReset={showCanvas && clientId ? handleReset : undefined}
+      isResetting={isResetting}
       onShowBasicInfo={showCanvas && clientId ? handleShowBasicInfo : undefined}
       onShowReport={
         showCanvas && clientId ? () => setIsReportModalOpen(true) : undefined
       }
-      onClientSelect={handleClientSelect}
-      onAddClient={handleOpenAddClientModal}
-      // Steps
-      steps={steps}
-      isEditMode={isEditModeRef.current}
-      onConfirm={handleConfirm}
-      onNextToRender={handleNextToRender}
-      onEditApply={handleEditApply}
-      onEditCancel={handleEditCancel}
-      onStepsComplete={handleStepsComplete}
-      // Empty state
-      onStartEmpty={handleStartEmpty}
-      onStartFromRecords={handleStartFromRecords}
-      // Canvas
-      onCanvasChange={handleCanvasChange}
-      updateGenogramState={updateGenogramState}
-      // Modals
-      isAddClientModalOpen={isAddClientModalOpen}
-      onAddClientModalClose={handleAddClientModalClose}
+    />
+  );
+
+  const content = (() => {
+    if (isLoading || isStarting) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <span className="text-fg-muted">불러오는 중...</span>
+        </div>
+      );
+    }
+
+    if (isTemporaryMode) {
+      return (
+        <GenogramPage
+          key="temporary"
+          ref={genogramRef}
+          onChange={updateGenogramState}
+        />
+      );
+    }
+
+    if (!clientId) {
+      return (
+        <>
+          <GenogramPage
+            key="no-client"
+            ref={genogramRef}
+            onChange={updateGenogramState}
+            hideToolbar
+          />
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            <div className="flex h-[200px] w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-white p-8 text-center backdrop-blur-sm">
+              <p className="text-lg font-medium text-fg-muted">
+                클라이언트를 선택해주세요
+              </p>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    if (steps.isOpen) {
+      return (
+        <GenogramGenerationSteps
+          currentStep={steps.currentStep}
+          isLoading={steps.isLoading}
+          error={steps.error}
+          aiOutput={steps.aiOutput}
+          clientName={selectedClient?.name}
+          isRenderPending={false}
+          isEditMode={isEditModeRef.current}
+          onConfirm={handleConfirm}
+          onAiOutputChange={steps.updateAiOutput}
+          onNextToRender={
+            steps.currentStep === 'edit' ? handleEditApply : handleNextToRender
+          }
+          onComplete={handleStepsComplete}
+          onCancel={steps.reset}
+          onEditCancel={handleEditCancel}
+        />
+      );
+    }
+
+    if (!hasData) {
+      return (
+        <GenogramEmptyState
+          onStartEmpty={handleStartEmpty}
+          onStartFromRecords={handleStartFromRecords}
+          isGenerating={false}
+          hasRecords={hasRecords}
+        />
+      );
+    }
+
+    return (
+      <GenogramPage
+        key={clientId}
+        ref={genogramRef}
+        initialData={initialData ?? undefined}
+        onChange={handleCanvasChange}
+        emptyStateActions={
+          hasRecords && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-fg-muted">
+                혹시 처음부터 그리는게 어렵나요?
+              </span>
+              <button
+                onClick={() => handleStartFromRecords(true)}
+                className="rounded-md border border-border bg-white px-3 py-1.5 font-medium text-fg transition-colors hover:bg-surface-strong"
+              >
+                AI로 자동 생성하기
+              </button>
+            </div>
+          )
+        }
+      />
+    );
+  })();
+
+  const addClientModal = (
+    <AddClientModal
+      open={isAddClientModalOpen}
+      onOpenChange={handleAddClientModalClose}
       onClientCreated={handleClientCreated}
-      isResetModalOpen={isResetModalOpen}
-      onSetResetModalOpen={setIsResetModalOpen}
-      onResetConfirm={handleResetConfirm}
-      isExportModalOpen={isExportModalOpen}
-      onSetExportModalOpen={setIsExportModalOpen}
-      exportImageData={exportImageData}
-      isGuideModalOpen={isGuideModalOpen}
-      onSetGuideModalOpen={setIsGuideModalOpen}
-      isReportModalOpen={isReportModalOpen}
-      onSetReportModalOpen={setIsReportModalOpen}
+    />
+  );
+
+  const resetModal = (
+    <ResetConfirmModal
+      open={isResetModalOpen}
+      onOpenChange={setIsResetModalOpen}
+      clientName={selectedClient?.name ?? ''}
+      onConfirm={handleResetConfirm}
+      isLoading={isResetting}
+    />
+  );
+
+  const exportModal = isExportModalOpen ? (
+    <GenogramExportModal
+      key={exportImageData?.slice(0, 50)}
+      open={isExportModalOpen}
+      onOpenChange={setIsExportModalOpen}
+      imageData={exportImageData}
+      defaultFileName={`${selectedClient?.name ?? '가계도'}_${new Date().toISOString().slice(2, 10).replace(/-/g, '')}`}
+      watermarkSrc="/genogram/genogram-export-watermark.png"
+    />
+  ) : null;
+
+  const guideModal = (
+    <GenogramGuideModal
+      open={isGuideModalOpen}
+      onOpenChange={setIsGuideModalOpen}
+      steps={DEFAULT_GUIDE_STEPS}
+      onDontShowAgain={() => {
+        localStorage.setItem(GUIDE_DONT_SHOW_AGAIN_KEY, 'true');
+      }}
+    />
+  );
+
+  const reportModal = (
+    <GenogramReportModal
+      open={isReportModalOpen}
+      onOpenChange={setIsReportModalOpen}
+      genogramRef={genogramRef}
+      clientId={clientId ?? undefined}
+      clientName={selectedClient?.name}
+    />
+  );
+
+  return (
+    <GenogramClientView
+      header={header}
+      content={content}
+      addClientModal={addClientModal}
+      resetModal={resetModal}
+      exportModal={exportModal}
+      guideModal={guideModal}
+      reportModal={reportModal}
     />
   );
 }

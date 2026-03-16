@@ -8,6 +8,8 @@
  */
 import { Check } from 'lucide-react';
 
+import { KAKAO_SUPPORT_URL } from '@/shared/constants/externalUrls';
+
 import './report-generating.css';
 
 // ============================================
@@ -362,7 +364,7 @@ function SuccessState({ onProceed }: { onProceed?: () => void }) {
 // 실패 상태
 // ============================================
 
-const KAKAO_INQUIRY_URL = 'https://open.kakao.com/o/sM96U0oh';
+const KAKAO_INQUIRY_URL = KAKAO_SUPPORT_URL;
 
 function ErrorState() {
   return (

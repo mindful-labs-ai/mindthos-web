@@ -44,7 +44,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
   const [searchQuery, setSearchQuery] = React.useState('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const listRef = React.useRef<HTMLUListElement>(null);
-  const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  const searchTimeoutRef =
+    React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const isControlled = controlledValue !== undefined;
   const selectedValue = isControlled ? controlledValue : uncontrolledValue;

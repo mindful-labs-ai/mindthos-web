@@ -13,6 +13,8 @@ interface CreateProgressNoteViewProps {
   usedTemplateIds: number[];
   selectedTemplateId: number | null;
   onTemplateSelect: (templateId: number | null) => void;
+  /** 그리드 열 수 (기본값: 1) */
+  columns?: 1 | 2;
 }
 
 export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
@@ -20,6 +22,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
   usedTemplateIds,
   selectedTemplateId,
   onTemplateSelect,
+  columns = 1,
 }) => {
   // 템플릿 목록 조회 (pin, is_default 정보 포함)
   const { templates, isLoading, error } = useTemplateList();
@@ -99,7 +102,9 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
 
       {/* 템플릿 카드 그리드 */}
       {availableTemplates.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div
+          className={`grid grid-cols-1 gap-4 ${columns === 2 ? 'md:grid-cols-2' : ''}`}
+        >
           {availableTemplates.map((template) => {
             const isSelected = selectedTemplateId === template.id;
 

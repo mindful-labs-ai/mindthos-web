@@ -113,11 +113,23 @@ export const Tab: React.FC<TabProps> = ({
     };
   }, [items.length, updateScrollState]);
 
+  const scrollSelectedIntoView = React.useCallback((value: string) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const tab = el.querySelector<HTMLElement>(`[data-value="${value}"]`);
+    tab?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    });
+  }, []);
+
   const handleSelect = (value: string) => {
     if (!isControlled) {
       setUncontrolledValue(value);
     }
     onValueChange?.(value);
+    scrollSelectedIntoView(value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent, _currentIndex: number) => {
@@ -177,7 +189,8 @@ export const Tab: React.FC<TabProps> = ({
           aria-label="이전 탭"
           disabled={!canGoPrev}
           onClick={() => {
-            if (canGoPrev) handleSelect(enabledItems[currentEnabledIndex - 1].value);
+            if (canGoPrev)
+              handleSelect(enabledItems[currentEnabledIndex - 1].value);
           }}
           className={cn(
             'flex-shrink-0 rounded-full p-1 transition-colors',
@@ -186,52 +199,67 @@ export const Tab: React.FC<TabProps> = ({
               : 'cursor-default text-fg-muted opacity-30'
           )}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M15 18L9 12L15 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
 
         {/* 탭 목록 */}
-        <div
-          role="tablist"
-          ref={scrollRef}
-          className="scrollbar-hide flex flex-1 items-center gap-1 overflow-x-auto rounded-[var(--radius-md)] bg-surface-strong p-1"
-        >
-          {items.map((item, index) => {
-            const isSelected = item.value === selectedValue;
-            return (
-              <button
-                key={item.value}
-                data-value={item.value}
-                role="tab"
-                type="button"
-                aria-selected={isSelected}
-                aria-controls={`tabpanel-${item.value}`}
-                aria-disabled={item.disabled}
-                tabIndex={isSelected ? 0 : -1}
-                onClick={() => {
-                  if (item.disabled) {
-                    onDisabledClick?.(item.value);
-                    return;
-                  }
-                  handleSelect(item.value);
-                }}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                className={cn(
-                  'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
-                  'rounded-[var(--radius-sm)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
-                  cardNavSizeStyles[size],
-                  isSelected
-                    ? 'bg-surface text-fg shadow-sm'
-                    : 'bg-transparent text-fg-muted hover:text-fg'
-                )}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+        <div className="relative min-w-0 flex-1">
+          <div
+            role="tablist"
+            ref={scrollRef}
+            className="scrollbar-hide flex items-center gap-3 overflow-x-auto overscroll-x-contain p-1"
+          >
+            {items.map((item, index) => {
+              const isSelected = item.value === selectedValue;
+              return (
+                <button
+                  key={item.value}
+                  data-value={item.value}
+                  role="tab"
+                  type="button"
+                  aria-selected={isSelected}
+                  aria-controls={`tabpanel-${item.value}`}
+                  aria-disabled={item.disabled}
+                  tabIndex={isSelected ? 0 : -1}
+                  onClick={() => {
+                    if (item.disabled) {
+                      onDisabledClick?.(item.value);
+                      return;
+                    }
+                    handleSelect(item.value);
+                  }}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  className={cn(
+                    'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+                    'rounded-sm focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
+                    'border border-surface-strong',
+                    cardNavSizeStyles[size],
+                    isSelected
+                      ? 'bg-surface text-fg shadow-sm'
+                      : 'bg-transparent text-fg-muted hover:text-fg'
+                  )}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+          {canScrollLeft && (
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-4 bg-gradient-to-r from-surface-contrast to-transparent" />
+          )}
+          {canScrollRight && (
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-surface-contrast to-transparent" />
+          )}
         </div>
 
         {/* 다음 탭 화살표 */}
@@ -240,7 +268,8 @@ export const Tab: React.FC<TabProps> = ({
           aria-label="다음 탭"
           disabled={!canGoNext}
           onClick={() => {
-            if (canGoNext) handleSelect(enabledItems[currentEnabledIndex + 1].value);
+            if (canGoNext)
+              handleSelect(enabledItems[currentEnabledIndex + 1].value);
           }}
           className={cn(
             'flex-shrink-0 rounded-full p-1 transition-colors',
@@ -249,8 +278,14 @@ export const Tab: React.FC<TabProps> = ({
               : 'cursor-default text-fg-muted opacity-30'
           )}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M9 18L15 12L9 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>
@@ -269,7 +304,7 @@ export const Tab: React.FC<TabProps> = ({
         role="tablist"
         ref={scrollRef}
         className={cn(
-          'scrollbar-hide flex items-center overflow-x-auto',
+          'scrollbar-hide flex items-center overflow-x-auto overscroll-x-contain',
           fullWidth ? 'w-full' : 'w-fit max-w-full',
           variant === 'pill'
             ? 'gap-1 rounded-[var(--radius-md)] bg-surface-strong p-1'

@@ -2,6 +2,7 @@ import React from 'react';
 
 import { getTermsRoute, ROUTES, TERMS_TYPES } from '@/app/router/constants';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { HyperLink } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -38,13 +39,13 @@ const SignUpForm = () => {
         privacyAccepted,
       });
 
-      trackEvent('signup_success', { method: 'email' });
+      trackEvent(MixpanelEvent.SignupSuccess, { method: 'email' });
 
       navigateWithUtm(ROUTES.EMAIL_VERIFICATION, {
         state: { email },
       });
     } catch (err) {
-      trackEvent('signup_failed', {
+      trackEvent(MixpanelEvent.SignupFailed, {
         error: err instanceof Error ? err.message : 'Unknown error',
       });
       setError(

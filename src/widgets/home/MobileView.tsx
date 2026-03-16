@@ -6,10 +6,6 @@ import { ROUTES, TERMS_TYPES } from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { useSessionRecords } from '@/features/home/hooks/useMobileSession';
-import {
-  getAcceptString,
-  MULTI_UPLOAD_LIMITS,
-} from '@/features/session/constants/fileUpload';
 import { useMultiFileUpload } from '@/features/session/hooks/useMultiFileUpload';
 import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionCreate';
 import type {
@@ -24,6 +20,12 @@ import {
   getPlanLabel,
 } from '@/features/settings/utils/planUtils';
 import { trackEvent } from '@/lib/mixpanel';
+import { MOBILE_GUIDE_URL } from '@/shared/constants/externalUrls';
+import {
+  getAcceptString,
+  MULTI_UPLOAD_LIMITS,
+} from '@/shared/constants/fileUpload';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   ChevronLeftIcon,
@@ -244,7 +246,7 @@ const MobileView = () => {
   const logout = useAuthStore((state) => state.logout);
   const handleLogout = async () => {
     try {
-      trackEvent('logout');
+      trackEvent(MixpanelEvent.Logout);
       await logout();
     } catch (error) {
       console.error('Logout failed:', error);
@@ -252,11 +254,7 @@ const MobileView = () => {
   };
 
   const handleGuideClick = () => {
-    window.open(
-      'https://rare-puppy-06f.notion.site/2e3dd162832d80b29719d18eafac2612?source=copy_link',
-      '_blank',
-      'noopener,noreferrer'
-    );
+    window.open(MOBILE_GUIDE_URL, '_blank', 'noopener,noreferrer');
   };
 
   // 세션 생성

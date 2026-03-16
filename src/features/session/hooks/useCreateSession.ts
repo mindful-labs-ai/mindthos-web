@@ -16,6 +16,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { createSessionBackground } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import type {
   CreateSessionBackgroundRequest,
@@ -194,7 +195,9 @@ export function useCreateSession(): UseCreateSessionReturn {
       setCreatedSessionId(response.session_id);
 
       // 4. 세션 목록 쿼리 즉시 invalidate (새로 생성된 세션이 목록에 바로 표시되도록)
-      queryClient.invalidateQueries({ queryKey: ['sessions', params.userId] });
+      queryClient.invalidateQueries({
+        queryKey: sessionQueryKeys.all(params.userId),
+      });
 
       return response;
     } catch (err) {

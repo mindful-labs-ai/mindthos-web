@@ -5,6 +5,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { getSessionDetail } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import { getDummySessionDetail } from '../constants/dummySessions';
 
@@ -12,11 +13,6 @@ export interface UseSessionDetailOptions {
   sessionId: string;
   enabled?: boolean;
 }
-
-export const sessionDetailQueryKey = (
-  sessionId: string,
-  isDummySession: boolean
-) => ['session', sessionId, isDummySession] as const;
 
 export function useSessionDetail({
   sessionId,
@@ -26,7 +22,7 @@ export function useSessionDetail({
   const isDummySession = !!dummySessionDetail;
 
   return useQuery({
-    queryKey: sessionDetailQueryKey(sessionId, isDummySession),
+    queryKey: sessionQueryKeys.detail(sessionId, isDummySession),
     queryFn: () =>
       isDummySession
         ? Promise.resolve(dummySessionDetail)

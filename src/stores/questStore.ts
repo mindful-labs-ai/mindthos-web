@@ -8,6 +8,7 @@ import {
   type OnboardingStateType,
   type OnboardingSuccessResponse,
 } from '@/shared/api/services/onboarding/types';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { preloadTutorialAssets } from '@/widgets/onboarding/TutorialGuideModal';
 
 /**
@@ -174,7 +175,7 @@ export const useQuestStore = create<QuestStore>()(
               await onboardingService.start({ email });
 
               // 퍼널 시작점: 신규 유저 서비스 첫 입장
-              trackEvent('onboarding_funnel_started', {
+              trackEvent(MixpanelEvent.OnboardingFunnelStarted, {
                 funnel_step: 'service_first_entry',
               });
 

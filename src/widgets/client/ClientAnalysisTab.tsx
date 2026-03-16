@@ -6,6 +6,7 @@ import type {
   ClientAnalysisVersion,
 } from '@/features/client/types/clientAnalysis.types';
 import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
 import { CheckIcon, CopyIcon } from '@/shared/icons';
 import type { TabItem } from '@/shared/ui/atoms/Tab';
@@ -108,9 +109,9 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     },
     isReadOnly: isReadOnly || !onSaveContent,
     trackingEvents: {
-      editStart: 'analysis_edit_start',
-      editCancel: 'analysis_edit_cancel',
-      editComplete: 'analysis_edit_complete',
+      editStart: MixpanelEvent.AnalysisEditStart,
+      editCancel: MixpanelEvent.AnalysisEditCancel,
+      editComplete: MixpanelEvent.AnalysisEditComplete,
     },
     trackingMeta: {
       analysis_id: currentAnalysisData?.id,
@@ -175,7 +176,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       await navigator.clipboard.writeText(content);
       setCopiedKey('ai_supervision');
 
-      trackEvent('analysis_copy', { tab: activeTab });
+      trackEvent(MixpanelEvent.AnalysisCopy, { tab: activeTab });
 
       toast({
         title: '복사 완료',
@@ -260,7 +261,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      trackEvent('supervision_retry');
+                      trackEvent(MixpanelEvent.SupervisionRetry);
                       onCreateAnalysis();
                     }}
                     className="flex items-center gap-1.5 rounded-md border border-primary bg-primary-100 px-3 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
@@ -426,7 +427,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             items={tabItems}
             value={activeTab}
             onValueChange={(value) => {
-              trackEvent('analysis_tab_change', { tab: value });
+              trackEvent(MixpanelEvent.AnalysisTabChange, { tab: value });
               setActiveTab(value);
             }}
             onDisabledClick={handleDisabledTabClick}

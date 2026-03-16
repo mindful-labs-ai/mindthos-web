@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { templateService } from '@/shared/api/supabase/templateQueries';
+import { templateQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
-
-import { templateQueryKeys } from '../constants/queryKeys';
 
 export const useToggleTemplatePin = () => {
   const userId = useAuthStore((state) => state.userId);

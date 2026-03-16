@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Check } from 'lucide-react';
 
-import { CHECKLIST } from '../constants';
+import { CHECKLIST } from '@/shared/constants/genogramReport';
 
 interface VerifyStepProps {
   snapshotImage: string | null;

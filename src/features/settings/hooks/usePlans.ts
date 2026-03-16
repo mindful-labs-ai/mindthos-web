@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { planService } from '@/shared/api/supabase/planQueries';
+import { planQueryKeys } from '@/shared/constants/queryKeys';
 
 /**
  * 모든 플랜 조회 Hook
  */
 export const usePlans = () => {
   return useQuery({
-    queryKey: ['plans'],
+    queryKey: planQueryKeys.all,
     queryFn: () => planService.getAllPlans(),
     // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect false
   });
@@ -18,7 +19,7 @@ export const usePlans = () => {
  */
 export const useMonthlyPlans = () => {
   return useQuery({
-    queryKey: ['plans', 'monthly'],
+    queryKey: planQueryKeys.monthly(),
     queryFn: () => planService.getMonthlyPlans(),
     // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect false
   });
@@ -29,7 +30,7 @@ export const useMonthlyPlans = () => {
  */
 export const useYearlyPlans = () => {
   return useQuery({
-    queryKey: ['plans', 'yearly'],
+    queryKey: planQueryKeys.yearly(),
     queryFn: () => planService.getYearlyPlans(),
     // 전역 설정 사용: staleTime Infinity, refetchOnWindowFocus/Mount/Reconnect false
   });

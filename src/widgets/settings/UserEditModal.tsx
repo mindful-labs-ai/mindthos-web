@@ -5,6 +5,11 @@ import { z } from 'zod';
 
 import { qualificationService } from '@/features/settings/services/qualificationService';
 import { trackEvent } from '@/lib/mixpanel';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import { qualificationQueryKeys } from '@/shared/constants/queryKeys';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -88,7 +93,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     data: qualificationOptions = [],
     isLoading: isQualificationsLoading,
   } = useQuery({
-    queryKey: ['qualifications'],
+    queryKey: qualificationQueryKeys.all,
     queryFn: async () => {
       const list = await qualificationService.list();
       return list.map((q) => ({ value: q.name, label: q.name }));
@@ -99,7 +104,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
   // 유저의 보유 자격 조회
   const { data: userQualifications } = useQuery({
-    queryKey: ['qualifications', 'user'],
+    queryKey: qualificationQueryKeys.user(),
     queryFn: () => qualificationService.user(),
     enabled: open,
     staleTime: Infinity,
@@ -178,7 +183,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       await Promise.all(promises);
     },
     onSuccess: () => {
-      trackEvent('user_info_edit_success');
+      trackEvent(MixpanelEvent.UserInfoEditSuccess);
       toast({
         title: '정보 입력 완료',
         description: '사용자 정보가 성공적으로 수정되었습니다.',
@@ -187,7 +192,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       onOpenChange(false);
     },
     onError: (error) => {
-      trackEvent('user_info_edit_failed', {
+      trackEvent(MixpanelError.UserInfoEditFailed, {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       console.error('Update user failed:', error);

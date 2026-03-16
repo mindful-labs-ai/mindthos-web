@@ -7,6 +7,11 @@ import type { Client } from '@/features/client/types';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { createHandWrittenSession } from '@/shared/api/supabase/sessionQueries';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -133,7 +138,7 @@ export const CreateHandWrittenSessionModal: React.FC<
         template_id: defaultTemplateId || 1,
       });
 
-      trackEvent('hand_written_session_create_success', {
+      trackEvent(MixpanelEvent.HandWrittenSessionCreateSuccess, {
         session_id: response.session_id,
         has_client: !!selectedClient,
         content_length: contents.length,
@@ -147,7 +152,7 @@ export const CreateHandWrittenSessionModal: React.FC<
 
       // 세션 목록 쿼리 invalidate (폴링 시작)
       queryClient.invalidateQueries({
-        queryKey: ['sessions', parseInt(userId)],
+        queryKey: sessionQueryKeys.all(parseInt(userId)),
       });
 
       // 크레딧 정보 갱신
@@ -157,10 +162,14 @@ export const CreateHandWrittenSessionModal: React.FC<
     } catch (error: unknown) {
       const err = error as { message?: string; status?: number };
 
-      trackError('hand_written_session_create_error', new Error(err.message), {
-        content_length: contents.length,
-        has_client: !!selectedClient,
-      });
+      trackError(
+        MixpanelError.HandWrittenSessionCreateError,
+        new Error(err.message),
+        {
+          content_length: contents.length,
+          has_client: !!selectedClient,
+        }
+      );
 
       toast({
         title: '상담 기록 생성 실패',

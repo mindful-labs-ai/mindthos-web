@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
+import { getTermsRoute, TERMS_TYPES } from '@/app/router/constants';
 import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { usePlansByPeriod } from '@/features/settings/hooks/usePlans';
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { Text, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -203,16 +206,16 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: ['credit', 'subscription', userIdNumber],
+            queryKey: creditQueryKeys.subscription(userIdNumber),
           });
           await queryClient.invalidateQueries({
-            queryKey: ['credit', 'usage', userIdNumber],
+            queryKey: creditQueryKeys.usage(userIdNumber),
           });
         }
       }
 
       // 플랜 업그레이드 성공 트래킹
-      trackEvent('plan_upgrade_success', {
+      trackEvent(MixpanelEvent.PlanUpgradeSuccess, {
         new_plan: response.newPlan,
         amount: response.finalAmount,
       });
@@ -238,7 +241,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      trackEvent('plan_upgrade_failed', {
+      trackEvent(MixpanelEvent.PlanUpgradeFailed, {
         target_plan: selectedPlan?.type,
         error: errorMessage,
       });
@@ -273,7 +276,9 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     const response = await billingService.changePlan(selectedPlanId);
 
     if (response.type === 'downgrade') {
-      trackEvent('plan_downgrade_scheduled', { new_plan: selectedPlanId });
+      trackEvent(MixpanelEvent.PlanDowngradeScheduled, {
+        new_plan: selectedPlanId,
+      });
 
       toast({
         title: '플랜 다운그레이드 예약',
@@ -285,7 +290,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: ['credit', 'subscription', userIdNumber],
+            queryKey: creditQueryKeys.subscription(userIdNumber),
           });
         }
       }
@@ -425,7 +430,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         <div className="flex flex-col items-center gap-y-2">
           <Text className="text-sm text-fg">
             <a
-              href="/terms?type=service"
+              href={getTermsRoute(TERMS_TYPES.SERVICE)}
               target="_blank"
               rel="noopener noreferrer"
               className="underline transition-colors hover:text-primary-600"
