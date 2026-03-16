@@ -14,13 +14,8 @@ interface MobileHandwrittenToolbarProps {
   onCopy: () => void;
 }
 
-export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> = React.memo(
-  ({
-    isReadOnly,
-    isEditing,
-    onEditStart,
-    onCopy,
-  }) => {
+export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
+  React.memo(({ isReadOnly, isEditing, onEditStart, onCopy }) => {
     return (
       <div className="sticky inset-x-0 right-4 top-0 z-20 flex w-full select-none justify-end rounded-lg bg-gradient-to-t from-transparent to-slate-50">
         <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-2">
@@ -63,7 +58,6 @@ export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
         </div>
       </div>
     );
-  }
-);
+  });
 
 MobileHandwrittenToolbar.displayName = 'MobileHandwrittenToolbar';

@@ -35,9 +35,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
       <div className="flex-shrink-0">{header}</div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex-shrink-0 select-none px-6 pt-2">
-          {tab}
-        </div>
+        <div className="flex-shrink-0 select-none px-6 pt-2">{tab}</div>
 
         <div
           className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-primary-500 bg-[#FDFFFE]' : 'border-surface-strong bg-surface'}`}

@@ -22,7 +22,9 @@ interface MobileProgressNoteHeaderProps {
   onRegenerateClick: () => void;
 }
 
-export const MobileProgressNoteHeader: React.FC<MobileProgressNoteHeaderProps> = ({
+export const MobileProgressNoteHeader: React.FC<
+  MobileProgressNoteHeaderProps
+> = ({
   title,
   isEditing,
   isReadOnly,
@@ -79,7 +81,17 @@ export const MobileProgressNoteHeader: React.FC<MobileProgressNoteHeaderProps> =
                     disabled={isRegenerating}
                     className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fg-muted">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-fg-muted"
+                    >
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
@@ -105,7 +117,13 @@ export const MobileProgressNoteHeader: React.FC<MobileProgressNoteHeaderProps> =
                     disabled={isReadOnly || isRegenerating}
                     className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface disabled:opacity-50"
                   >
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="text-fg-muted">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      className="text-fg-muted"
+                    >
                       <path
                         d="M8.33447 13.3333H4.16781V17.5M11.6678 6.66667H15.8345V2.5M3.82031 7.50284C4.28755 6.34638 5.06984 5.3442 6.07826 4.61019C7.08669 3.87618 8.28185 3.4396 9.52593 3.35042C10.77 3.26125 12.0134 3.52284 13.1162 4.10551C14.219 4.68819 15.1355 5.56878 15.7629 6.64677M16.1824 12.4976C15.7152 13.654 14.9329 14.6562 13.9245 15.3902C12.9161 16.1242 11.7221 16.5602 10.478 16.6494C9.23395 16.7386 7.98953 16.477 6.88672 15.8944C5.78391 15.3117 4.86682 14.4313 4.23942 13.3533"
                         stroke="currentColor"

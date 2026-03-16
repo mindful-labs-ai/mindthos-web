@@ -102,7 +102,9 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
 
       {/* 템플릿 카드 그리드 */}
       {availableTemplates.length > 0 ? (
-        <div className={`grid grid-cols-1 gap-4 ${columns === 2 ? 'md:grid-cols-2' : ''}`}>
+        <div
+          className={`grid grid-cols-1 gap-4 ${columns === 2 ? 'md:grid-cols-2' : ''}`}
+        >
           {availableTemplates.map((template) => {
             const isSelected = selectedTemplateId === template.id;
 

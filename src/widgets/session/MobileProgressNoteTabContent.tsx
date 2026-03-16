@@ -119,10 +119,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                   </span>
                 </button>
               </div>
-              <div
-                ref={contentScrollRef}
-                className="py-4"
-              >
+              <div ref={contentScrollRef} className="py-4">
                 <CreateProgressNoteView
                   sessionId={sessionId}
                   transcribedText={transcribedText}
@@ -166,10 +163,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
           key={`note-container-${activeTab}`}
           className="flex h-full flex-col"
         >
-          <div
-            ref={contentScrollRef}
-            className="py-4"
-          >
+          <div ref={contentScrollRef} className="py-4">
             <MobileProgressNoteView
               note={selectedNote}
               onRegenerate={

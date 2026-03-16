@@ -112,7 +112,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
 }) => {
   const { toast } = useToast();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [copiedAll, setCopiedAll] = useState(false);
+  const [_copiedAll, setCopiedAll] = useState(false);
   const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 

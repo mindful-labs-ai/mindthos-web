@@ -13,7 +13,9 @@ export interface MobileSessionDetailViewProps {
   editGuideModal: React.ReactNode;
 }
 
-export const MobileSessionDetailView: React.FC<MobileSessionDetailViewProps> = ({
+export const MobileSessionDetailView: React.FC<
+  MobileSessionDetailViewProps
+> = ({
   isContentEditing,
   audioElement,
   header,
@@ -33,9 +35,7 @@ export const MobileSessionDetailView: React.FC<MobileSessionDetailViewProps> = (
 
       {/* 모바일: tab+mobileHeader+콘텐츠가 하나의 스크롤 영역 */}
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <div className="flex-shrink-0 select-none px-1.5 pt-3">
-          {tab}
-        </div>
+        <div className="flex-shrink-0 select-none px-1.5 pt-3">{tab}</div>
 
         {mobileHeader && <div className="flex-shrink-0">{mobileHeader}</div>}
 
