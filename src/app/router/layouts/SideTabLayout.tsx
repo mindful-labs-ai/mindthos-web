@@ -14,9 +14,9 @@ import { AppShell } from './shells/AppShell';
 
 /**
  * 메인 앱 레이아웃
- * AppShell을 통해 CSS 기반 반응형 레이아웃 적용
- * - Desktop (sm+): Sidebar + Header + Content
- * - Mobile/Tablet (<sm): MobileHeader + Content + SideDrawer
+ * AppShell을 통해 useDevice 기반 적응형 레이아웃 적용
+ * - Desktop: Sidebar + Header + Content
+ * - Mobile/Tablet: MobileHeader + Content + SideDrawer
  *
  * chromeless 라우트(shellConfig.ts에서 선언)에서는
  * sidebar/header 없이 콘텐츠만 전체 화면으로 렌더링
@@ -36,7 +36,7 @@ const MainFlowLayout = () => {
 
   if (chromeless) {
     return (
-      <div className="flex h-dvh w-full flex-col overflow-hidden bg-bg-subtle">
+      <div className="flex h-dvh w-full flex-col overflow-hidden bg-surface-contrast">
         <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
@@ -55,19 +55,20 @@ const MainFlowLayout = () => {
             onNewSession={handleNewSession}
           />
         }
+        isMobileView={isMobileView}
       >
         <Outlet />
       </AppShell>
 
       {/* Mobile/Tablet Drawer */}
-      <div className="sm:hidden">
+      {isMobileView && (
         <SideDrawer open={isDrawerOpen} onClose={() => setIsDrawerOpen(false)}>
           <SideTab
             variant="drawer"
             onNavSelect={() => setIsDrawerOpen(false)}
           />
         </SideDrawer>
-      </div>
+      )}
     </>
   );
 };
