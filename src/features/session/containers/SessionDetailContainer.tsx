@@ -14,9 +14,19 @@ import {
 } from '@/shared/api/supabase/sessionQueries';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { Tab } from '@/shared/ui/atoms/Tab';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
+import { AudioPlayer } from '@/widgets/session/AudioPlayer';
+import { HandwrittenTabContent } from '@/widgets/session/HandwrittenTabContent';
+import { HandwrittenToolbar } from '@/widgets/session/HandwrittenToolbar';
+import { ProgressNoteTabContent } from '@/widgets/session/ProgressNoteTabContent';
+import { SessionHeader } from '@/widgets/session/SessionHeader';
+import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
+import { TranscriptEditGuideModal } from '@/widgets/session/TranscriptEditGuideModal';
+import { TranscriptTabContent } from '@/widgets/session/TranscriptTabContent';
+import { TranscriptToolbar } from '@/widgets/session/TranscriptToolbar';
 
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 import { useHandwrittenEdit } from '../hooks/useHandwrittenEdit';
@@ -504,81 +514,168 @@ export const SessionDetailContainer: React.FC = () => {
 
   const audioDuration = audioMetadata?.duration_seconds || duration || 0;
 
+  const sessionHeaderProps = {
+    title: session.title || '제목 없음',
+    createdAt: session.created_at,
+    duration: session.audio_meta_data?.duration_seconds || 0,
+    isHandwritten: isHandwrittenSession,
+    onTitleUpdate: isReadOnly ? undefined : handleTitleUpdate,
+  };
+
+  // --- Build widget slots ---
+
+  // eslint-disable-next-line jsx-a11y/media-has-caption
+  const audioElement = <audio ref={audioRef} preload="metadata" />;
+
+  const header = (
+    <SessionHeader
+      {...sessionHeaderProps}
+      variant={isMobileView ? 'compact-nav' : 'full'}
+    />
+  );
+
+  const mobileHeader = isMobileView ? (
+    <SessionHeader {...sessionHeaderProps} variant="meta-only" />
+  ) : null;
+
+  const tab = (
+    <Tab
+      items={tabItems}
+      value={activeTab}
+      onValueChange={handleTabChange}
+      size="sm"
+      fullWidth
+      className="px-2 sm:px-8"
+      variant={isMobileView ? 'card-nav' : 'underline'}
+    />
+  );
+
+  const toolbar =
+    activeTab === 'transcript' ? (
+      isHandwrittenSession ? (
+        <HandwrittenToolbar
+          isReadOnly={isReadOnly}
+          isEditing={isEditingHandwritten}
+          isSaving={isSavingHandwritten}
+          onEditStart={handleEditHandwrittenStart}
+          onSaveEdit={handleSaveHandwrittenEdit}
+          onCancelEdit={handleCancelHandwrittenEdit}
+          onCopy={handleCopyHandwritten}
+        />
+      ) : (
+        <TranscriptToolbar
+          isReadOnly={isReadOnly}
+          isEditing={isEditing}
+          isAnonymized={isAnonymized}
+          enableTimestampFeatures={enableTimestampFeatures}
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          onToggleAnonymized={() => setIsAnonymized(!isAnonymized)}
+          onEditStart={handleEditStart}
+          onSaveEdit={handleSaveAllEdits}
+          onCancelEdit={handleCancelEdit}
+          onCopy={handleCopyTranscript}
+          checkIsGuideLevel={checkIsGuideLevel}
+          isMobileView={isMobileView}
+        />
+      )
+    ) : null;
+
+  const tabContent =
+    activeTab === 'transcript' ? (
+      isHandwrittenSession ? (
+        <HandwrittenTabContent
+          contentScrollRef={contentScrollRef}
+          transcribe={transcribe as HandwrittenTranscribe | null}
+          isEditing={isEditingHandwritten}
+          editContent={handwrittenEditContent}
+          isSaving={isSavingHandwritten}
+          onContentChange={setHandwrittenEditContent}
+        />
+      ) : (
+        <TranscriptTabContent
+          contentScrollRef={contentScrollRef}
+          segments={segments}
+          speakers={speakers}
+          transcribe={transcribe as Transcribe | null}
+          clientId={session?.client_id || null}
+          isReadOnly={isReadOnly}
+          isEditing={isEditing}
+          isAnonymized={isAnonymized}
+          enableTimestampFeatures={enableTimestampFeatures}
+          currentSegmentIndex={currentSegmentIndex}
+          activeSegmentRef={activeSegmentRef}
+          onSeekTo={handleSeekToWithInteraction}
+          onTextEdit={handleTextEdit}
+          onSpeakerChange={handleSpeakerChange}
+          onAddSegment={handleAddSegment}
+          onDeleteSegment={handleDeleteSegment}
+          checkIsGuideLevel={checkIsGuideLevel}
+          nextGuideLevel={nextGuideLevel}
+          endGuide={endTranscriptEditGuide}
+          onGuideScroll={handleGuideScroll}
+        />
+      )
+    ) : (
+      <ProgressNoteTabContent
+        contentScrollRef={contentScrollRef}
+        activeTab={activeTab}
+        activeCreatingTab={activeCreatingTab}
+        creatingTabs={creatingTabs}
+        sessionId={session.id}
+        transcribedText={transcribedText}
+        progressNotes={sessionProgressNotes}
+        isReadOnly={isReadOnly}
+        isRegenerating={isRegenerating}
+        onCreateProgressNote={handleCreateProgressNote}
+        onRegenerateProgressNote={handleRegenerateProgressNote}
+        onTemplateSelect={handleTemplateSelect}
+        onSaveSummary={handleSaveProgressNoteSummary}
+      />
+    );
+
+  const audioPlayer =
+    activeTab === 'transcript' && !isHandwrittenSession ? (
+      <AudioPlayer
+        audioRef={audioRef}
+        isPlaying={isPlaying}
+        currentTime={currentTime}
+        duration={audioDuration}
+        playbackRate={playbackRate}
+        isLoading={isLoadingAudioBlob}
+        onPlayPause={handlePlayPauseWithInteraction}
+        onBackward={handleBackward}
+        onForward={handleForward}
+        onProgressClick={handleProgressClick}
+        onPlaybackRateChange={handlePlaybackRateChange}
+      />
+    ) : null;
+
+  const tabChangeModal = (
+    <TabChangeConfirmModal
+      open={isTabChangeModalOpen}
+      onOpenChange={setIsTabChangeModalOpen}
+      onCancel={handleCancelTabChange}
+      onConfirm={handleConfirmTabChange}
+    />
+  );
+
+  const editGuideModal = <TranscriptEditGuideModal />;
+
   return (
     <SessionDetailView
-      isMobileView={isMobileView}
-      session={session}
-      transcribe={transcribe ?? null}
-      isReadOnly={isReadOnly}
-      isHandwrittenSession={isHandwrittenSession}
-      // Tab
-      activeTab={activeTab}
-      tabItems={tabItems}
-      onTabChange={handleTabChange}
-      // Tab change modal
-      isTabChangeModalOpen={isTabChangeModalOpen}
-      onSetTabChangeModalOpen={setIsTabChangeModalOpen}
-      onConfirmTabChange={handleConfirmTabChange}
-      onCancelTabChange={handleCancelTabChange}
-      // Header
-      onTitleUpdate={handleTitleUpdate}
-      // Transcript
-      segments={segments}
-      speakers={speakers}
-      isEditing={isEditing}
-      isAnonymized={isAnonymized}
-      enableTimestampFeatures={enableTimestampFeatures}
-      currentSegmentIndex={currentSegmentIndex}
-      activeSegmentRef={activeSegmentRef}
-      contentScrollRef={contentScrollRef}
-      isMenuOpen={isMenuOpen}
-      onSetMenuOpen={setIsMenuOpen}
-      onToggleAnonymized={() => setIsAnonymized(!isAnonymized)}
-      onEditStart={handleEditStart}
-      onSaveEdit={handleSaveAllEdits}
-      onCancelEdit={handleCancelEdit}
-      onCopyTranscript={handleCopyTranscript}
-      onTextEdit={handleTextEdit}
-      onSpeakerChange={handleSpeakerChange}
-      onAddSegment={handleAddSegment}
-      onDeleteSegment={handleDeleteSegment}
-      onSeekTo={handleSeekToWithInteraction}
-      // Guide
-      checkIsGuideLevel={checkIsGuideLevel}
-      nextGuideLevel={nextGuideLevel}
-      endGuide={endTranscriptEditGuide}
-      onGuideScroll={handleGuideScroll}
-      // Handwritten
-      isEditingHandwritten={isEditingHandwritten}
-      handwrittenEditContent={handwrittenEditContent}
-      isSavingHandwritten={isSavingHandwritten}
-      onEditHandwrittenStart={handleEditHandwrittenStart}
-      onSaveHandwrittenEdit={handleSaveHandwrittenEdit}
-      onCancelHandwrittenEdit={handleCancelHandwrittenEdit}
-      onHandwrittenContentChange={setHandwrittenEditContent}
-      onCopyHandwritten={handleCopyHandwritten}
-      // Progress notes
-      activeCreatingTab={activeCreatingTab}
-      creatingTabs={creatingTabs}
-      sessionProgressNotes={sessionProgressNotes}
-      transcribedText={transcribedText}
-      isRegenerating={isRegenerating}
-      onCreateProgressNote={handleCreateProgressNote}
-      onRegenerateProgressNote={handleRegenerateProgressNote}
-      onTemplateSelect={handleTemplateSelect}
-      onSaveProgressNoteSummary={handleSaveProgressNoteSummary}
-      // Audio
-      audioRef={audioRef}
-      isPlaying={isPlaying}
-      currentTime={currentTime}
-      audioDuration={audioDuration}
-      playbackRate={playbackRate}
-      isLoadingAudioBlob={isLoadingAudioBlob}
-      onPlayPause={handlePlayPauseWithInteraction}
-      onBackward={handleBackward}
-      onForward={handleForward}
-      onProgressClick={handleProgressClick}
-      onPlaybackRateChange={handlePlaybackRateChange}
+      isContentEditing={
+        (isEditing || isEditingHandwritten) && activeTab === 'transcript'
+      }
+      audioElement={audioElement}
+      header={header}
+      mobileHeader={mobileHeader}
+      tab={tab}
+      toolbar={toolbar}
+      tabContent={tabContent}
+      audioPlayer={audioPlayer}
+      tabChangeModal={tabChangeModal}
+      editGuideModal={editGuideModal}
     />
   );
 };

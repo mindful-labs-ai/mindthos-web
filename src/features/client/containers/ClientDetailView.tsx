@@ -1,65 +1,33 @@
 import React from 'react';
 
-import type { Session, SessionRecord } from '@/features/session/types';
 import { Badge } from '@/shared/ui/atoms/Badge';
-import { AddClientModal } from '@/widgets/client/AddClientModal';
-import { ClientAnalysisTab } from '@/widgets/client/ClientAnalysisTab';
-import { CreateAnalysisModal } from '@/widgets/client/CreateAnalysisModal';
-import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
 import type { Client } from '../types';
-import type {
-  ClientAnalysisVersion,
-  ClientTemplateGroups,
-} from '../types/clientAnalysis.types';
 
 export interface ClientDetailViewProps {
   client: Client;
   isDummyFlow: boolean;
-  isReadOnly: boolean;
   activeTab: 'history' | 'analyze';
   onTabChange: (tab: 'history' | 'analyze') => void;
-  sessionRecords: SessionRecord[];
-  displayAnalyses: ClientAnalysisVersion[];
-  isLoadingAnalyses: boolean;
-  pollingVersion: number | null;
-  templates: ClientTemplateGroups | undefined;
-  sessions: Session[];
-  isEditModalOpen: boolean;
-  isAnalysisModalOpen: boolean;
-  onEditModalOpen: (open: boolean) => void;
-  onSetAnalysisModalOpen: (open: boolean) => void;
-  onSessionClick: (record: SessionRecord) => void;
+  sessionRecordCount: number;
   onEditClientClick: () => void;
-  onCreateAnalysis: (data: {
-    sessionIds: string[];
-    aiSupervisionTemplateId: number;
-  }) => Promise<void>;
-  onOpenCreateAnalysis: () => void;
-  onSaveAnalysisContent: (analysisId: string, content: string) => Promise<void>;
+  sessionList: React.ReactNode;
+  clientAnalysisTab: React.ReactNode;
+  editModal: React.ReactNode;
+  analysisModal: React.ReactNode;
 }
 
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
   isDummyFlow,
-  isReadOnly,
   activeTab,
   onTabChange,
-  sessionRecords,
-  displayAnalyses,
-  isLoadingAnalyses,
-  pollingVersion,
-  templates,
-  sessions,
-  isEditModalOpen,
-  isAnalysisModalOpen,
-  onEditModalOpen,
-  onSetAnalysisModalOpen,
-  onSessionClick,
+  sessionRecordCount,
   onEditClientClick,
-  onCreateAnalysis,
-  onOpenCreateAnalysis,
-  onSaveAnalysisContent,
+  sessionList,
+  clientAnalysisTab,
+  editModal,
+  analysisModal,
 }) => {
   return (
     <div className="mx-auto flex h-full w-full max-w-[1332px] flex-col">
@@ -69,7 +37,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
           <div className="flex items-end gap-3">
             <h1 className="text-2xl font-bold text-fg">{client.name} </h1>
             <span className="text-xl font-semibold text-fg-muted">
-              총 {sessionRecords.length}개의 상담 기록
+              총 {sessionRecordCount}개의 상담 기록
             </span>
             {isDummyFlow && (
               <Badge tone="warning" variant="soft" size="sm">
@@ -118,24 +86,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
           <div className="h-full overflow-y-auto overflow-x-hidden">
             <div className="grid grid-cols-[1fr_400px] gap-6 px-12 py-6">
               {/* 왼쪽: 세션 목록 */}
-              <div className="min-w-0">
-                {sessionRecords.length > 0 ? (
-                  <div className="space-y-3">
-                    {sessionRecords.map((record) => (
-                      <SessionRecordCard
-                        key={record.session_id}
-                        record={record}
-                        isReadOnly={isReadOnly}
-                        onClick={onSessionClick}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-border bg-surface">
-                    <p className="text-fg-muted">상담 기록이 없습니다.</p>
-                  </div>
-                )}
-              </div>
+              <div className="min-w-0">{sessionList}</div>
 
               {/* 우측: 클라이언트 정보 */}
               <div className="sticky top-0 h-fit">
@@ -193,33 +144,16 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
           </div>
         ) : (
           <div className="flex h-full flex-col overflow-hidden px-12 py-6">
-            <ClientAnalysisTab
-              analyses={displayAnalyses}
-              isLoading={isLoadingAnalyses}
-              pollingVersion={pollingVersion}
-              isReadOnly={isReadOnly}
-              onSaveContent={onSaveAnalysisContent}
-              onCreateAnalysis={onOpenCreateAnalysis}
-            />
+            {clientAnalysisTab}
           </div>
         )}
       </div>
 
       {/* 클라이언트 수정 모달 */}
-      <AddClientModal
-        open={isEditModalOpen}
-        onOpenChange={onEditModalOpen}
-        initialData={client}
-      />
+      {editModal}
 
       {/* 클라이언트 분석 모달 */}
-      <CreateAnalysisModal
-        open={isAnalysisModalOpen}
-        onOpenChange={onSetAnalysisModalOpen}
-        templates={templates}
-        sessions={sessions}
-        onCreateAnalysis={onCreateAnalysis}
-      />
+      {analysisModal}
     </div>
   );
 };

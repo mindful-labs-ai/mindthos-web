@@ -17,6 +17,9 @@ import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useSessionStore } from '@/stores/sessionStore';
+import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
+import { SessionSideList } from '@/widgets/session/SessionSideList';
+import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
 
 import { SessionHistoryView } from './SessionHistoryView';
 
@@ -263,26 +266,71 @@ export const SessionHistoryContainer: React.FC = () => {
     setSelectedClientIds([]);
   };
 
+  const sideList = sessionId ? (
+    <SessionSideList
+      sessions={sessionListData}
+      activeSessionId={sessionId}
+      onSessionClick={handleSessionClick}
+      sortOrder={sortOrder}
+      selectedClientId={selectedClientIds}
+      clients={effectiveClients}
+      sessionCounts={sessionCounts}
+      onSortChange={handleSortChange}
+      onClientChange={handleClientChange}
+      onFilterReset={handleFilterReset}
+    />
+  ) : null;
+
+  const sessionCards = isLoadingSessions ? (
+    <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
+      <div className="text-center">
+        <p className="text-sm text-fg-muted">
+          상담기록 목록을 불러오는 중...
+        </p>
+      </div>
+    </div>
+  ) : records.length > 0 ? (
+    records.map((record) => (
+      <SessionRecordCard
+        key={record.session_id}
+        record={record}
+        isReadOnly={isDummyFlow}
+        onClick={() => handleCardClick(record)}
+      />
+    ))
+  ) : (
+    <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
+      <div className="text-center">
+        <p className="text-sm text-fg-muted">
+          아직 상담 기록이 없습니다.
+        </p>
+      </div>
+    </div>
+  );
+
+  const sessionChangeModal = (
+    <TabChangeConfirmModal
+      open={isSessionChangeModalOpen}
+      onOpenChange={setIsSessionChangeModalOpen}
+      onCancel={handleCancelSessionChange}
+      onConfirm={handleConfirmSessionChange}
+    />
+  );
+
   return (
     <SessionHistoryView
       sessionId={sessionId}
       isDummyFlow={isDummyFlow}
-      isLoadingSessions={isLoadingSessions}
-      records={records}
-      sessionListData={sessionListData}
       effectiveClients={effectiveClients}
       sortOrder={sortOrder}
       selectedClientIds={selectedClientIds}
       sessionCounts={sessionCounts}
-      isSessionChangeModalOpen={isSessionChangeModalOpen}
-      onSetSessionChangeModalOpen={setIsSessionChangeModalOpen}
-      onCardClick={handleCardClick}
-      onSessionClick={handleSessionClick}
-      onConfirmSessionChange={handleConfirmSessionChange}
-      onCancelSessionChange={handleCancelSessionChange}
       onSortChange={handleSortChange}
       onClientChange={handleClientChange}
       onFilterReset={handleFilterReset}
+      sideList={sideList}
+      sessionCards={sessionCards}
+      sessionChangeModal={sessionChangeModal}
     />
   );
 };

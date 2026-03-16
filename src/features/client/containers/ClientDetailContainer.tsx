@@ -19,6 +19,10 @@ import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueri
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
+import { AddClientModal } from '@/widgets/client/AddClientModal';
+import { ClientAnalysisTab } from '@/widgets/client/ClientAnalysisTab';
+import { CreateAnalysisModal } from '@/widgets/client/CreateAnalysisModal';
+import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
 import { dummyClientAnalysisVersions } from '../constants/dummyClientAnalysis';
 import {
@@ -314,28 +318,65 @@ export const ClientDetailContainer: React.FC = () => {
     );
   }
 
+  const sessionList =
+    sessionRecords.length > 0 ? (
+      <div className="space-y-3">
+        {sessionRecords.map((record) => (
+          <SessionRecordCard
+            key={record.session_id}
+            record={record}
+            isReadOnly={isReadOnly}
+            onClick={handleSessionClick}
+          />
+        ))}
+      </div>
+    ) : (
+      <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-border bg-surface">
+        <p className="text-fg-muted">상담 기록이 없습니다.</p>
+      </div>
+    );
+
+  const clientAnalysisTab = (
+    <ClientAnalysisTab
+      analyses={displayAnalyses}
+      isLoading={isLoadingAnalyses && !isDummyFlow}
+      pollingVersion={pollingVersion}
+      isReadOnly={isReadOnly}
+      onSaveContent={handleSaveAnalysisContent}
+      onCreateAnalysis={handleOpenCreateAnalysis}
+    />
+  );
+
+  const editModalWidget = (
+    <AddClientModal
+      open={isEditModalOpen}
+      onOpenChange={handleEditModalOpen}
+      initialData={client}
+    />
+  );
+
+  const analysisModalWidget = (
+    <CreateAnalysisModal
+      open={isAnalysisModalOpen}
+      onOpenChange={setIsAnalysisModalOpen}
+      templates={templates}
+      sessions={clientSessions.map((s) => s.session)}
+      onCreateAnalysis={handleCreateAnalysis}
+    />
+  );
+
   return (
     <ClientDetailView
       client={client}
       isDummyFlow={isDummyFlow}
-      isReadOnly={isReadOnly}
       activeTab={activeTab}
       onTabChange={setActiveTab}
-      sessionRecords={sessionRecords}
-      displayAnalyses={displayAnalyses}
-      isLoadingAnalyses={isLoadingAnalyses && !isDummyFlow}
-      pollingVersion={pollingVersion}
-      templates={templates}
-      sessions={clientSessions.map((s) => s.session)}
-      isEditModalOpen={isEditModalOpen}
-      isAnalysisModalOpen={isAnalysisModalOpen}
-      onEditModalOpen={handleEditModalOpen}
-      onSetAnalysisModalOpen={setIsAnalysisModalOpen}
-      onSessionClick={handleSessionClick}
+      sessionRecordCount={sessionRecords.length}
       onEditClientClick={handleEditClientClick}
-      onCreateAnalysis={handleCreateAnalysis}
-      onOpenCreateAnalysis={handleOpenCreateAnalysis}
-      onSaveAnalysisContent={handleSaveAnalysisContent}
+      sessionList={sessionList}
+      clientAnalysisTab={clientAnalysisTab}
+      editModal={editModalWidget}
+      analysisModal={analysisModalWidget}
     />
   );
 };
