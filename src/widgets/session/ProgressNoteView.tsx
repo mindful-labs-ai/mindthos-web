@@ -302,7 +302,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
   return (
     <div className="space-y-4 text-left">
       {/* 헤더 */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="static mb-6 flex items-center justify-between bg-surface px-0">
         <Title as="h2" className="text-base font-bold text-fg-muted">
           {note.title || '상담 노트'}
         </Title>
