@@ -22,7 +22,7 @@ export const ScrollIndicator = ({
         className
       )}
     >
-      <span className="rounded-xl bg-primary px-4 py-2 typo-l font-headline text-surface">
+      <span className="typo-l rounded-xl bg-primary px-4 py-2 font-headline text-surface">
         아래로 스크롤
       </span>
       <div className="animate-bounce-slow flex flex-col items-center">

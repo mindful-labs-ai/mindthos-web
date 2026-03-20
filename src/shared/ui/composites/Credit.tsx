@@ -150,7 +150,7 @@ export const Credit: React.FC<CreditProps> = ({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-2 rounded-md border-default bg-surface px-3 py-2',
+        'border-default inline-flex items-center gap-2 rounded-md bg-surface px-3 py-2',
         className
       )}
       role="status"

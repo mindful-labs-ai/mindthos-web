@@ -214,7 +214,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         disabled={disabled}
         className={cn(
           'flex h-10 w-full items-center justify-between',
-          'rounded-md border-default bg-surface px-4',
+          'border-default rounded-md bg-surface px-4',
           'typo-sm transition-default',
           'hover:border-primary-subtle',
           'focus-default',
@@ -242,7 +242,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             }}
             className={cn(
               'z-popover',
-              'rounded-md border-default bg-surface shadow-elevated',
+              'border-default rounded-md bg-surface shadow-elevated',
               'p-3'
             )}
           >
@@ -259,7 +259,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewYear}
                   onChange={(e) => setViewYear(Number(e.target.value))}
-                  className="cursor-pointer rounded bg-surface px-1 py-0.5 typo-sm font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="typo-sm cursor-pointer rounded bg-surface px-1 py-0.5 font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {Array.from(
                     { length: new Date().getFullYear() - 1970 + 3 },
@@ -273,7 +273,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewMonth}
                   onChange={(e) => setViewMonth(Number(e.target.value))}
-                  className="cursor-pointer rounded bg-surface px-1 py-0.5 typo-sm font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="typo-sm cursor-pointer rounded bg-surface px-1 py-0.5 font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {Array.from({ length: 12 }, (_, i) => i).map((m) => (
                     <option key={m} value={m}>
@@ -296,7 +296,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="py-1 text-center typo-xs font-medium text-fg-muted"
+                  className="typo-xs py-1 text-center font-medium text-fg-muted"
                 >
                   {day}
                 </div>
@@ -349,7 +349,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                       onClick={() => !isOutOfRange && handleSelect(date)}
                       disabled={!!isOutOfRange}
                       className={cn(
-                        'relative z-10 flex h-7 w-7 items-center justify-center rounded-full typo-sm transition-colors',
+                        'typo-sm relative z-10 flex h-7 w-7 items-center justify-center rounded-full transition-colors',
                         isOutOfRange && 'cursor-not-allowed text-fg-muted',
                         !isOutOfRange && !isCurrentMonth && 'text-fg-muted',
                         !isOutOfRange &&
@@ -360,7 +360,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                           isToday &&
                           !isSelected &&
                           'ring-primary/30 font-medium ring-1 ring-inset',
-                        isSelected && 'bg-primary font-emphasize text-primary-fg'
+                        isSelected &&
+                          'bg-primary font-emphasize text-primary-fg'
                       )}
                     >
                       {date.getDate()}

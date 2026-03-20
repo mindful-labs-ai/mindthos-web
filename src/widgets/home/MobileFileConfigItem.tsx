@@ -46,7 +46,7 @@ const CircularProgress: React.FC<{
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        className="duration-slow text-primary transition-all"
+        className="text-primary transition-all duration-slow"
       />
     </svg>
   );
@@ -84,7 +84,7 @@ const MobileSttModelToggle: React.FC<{
       {/* 체크 아이콘 (움직이는 원) */}
       <div
         className={cn(
-          'duration-normal absolute flex h-6 w-6 items-center justify-center rounded-full bg-surface shadow transition-all',
+          'absolute flex h-6 w-6 items-center justify-center rounded-full bg-surface shadow transition-all duration-normal',
           isAdvanced ? 'left-[calc(100%-28px)]' : 'left-1'
         )}
       >
@@ -99,7 +99,7 @@ const MobileSttModelToggle: React.FC<{
       {/* 텍스트 */}
       <span
         className={cn(
-          'typo-xs duration-normal absolute font-medium text-white transition-all',
+          'typo-xs absolute font-medium text-white transition-all duration-normal',
           isAdvanced ? 'left-2' : 'right-2'
         )}
       >

@@ -28,7 +28,7 @@ function ContentBlockItem({ block }: { block: TermsContentBlock }) {
       const Tag = block.ordered ? 'ol' : 'ul';
       return (
         <Tag
-          className={`ml-4 space-y-1 typo-m text-fg ${block.ordered ? 'list-decimal' : 'list-disc'}`}
+          className={`typo-m ml-4 space-y-1 text-fg ${block.ordered ? 'list-decimal' : 'list-disc'}`}
         >
           {block.items.map((item, i) => (
             <li
@@ -43,7 +43,7 @@ function ContentBlockItem({ block }: { block: TermsContentBlock }) {
     case 'table':
       return (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-border typo-sm">
+          <table className="typo-sm w-full border-collapse border border-border">
             <thead>
               <tr>
                 {block.headers.map((header, i) => (

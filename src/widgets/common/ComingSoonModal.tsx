@@ -29,12 +29,12 @@ export function ComingSoonModal({
         <h2 className="typo-2xl font-headline text-fg">출시 예정 기능</h2>
 
         {/* 확인 문구 */}
-        <p className="mt-8 text-center typo-l font-medium text-fg">
+        <p className="typo-l mt-8 text-center font-medium text-fg">
           해당 기능은 현재 개발 중입니다.
         </p>
 
         {/* 설명 */}
-        <p className="mt-4 text-center typo-sm text-fg-muted">
+        <p className="typo-sm mt-4 text-center text-fg-muted">
           기능이 출시되면 업데이트 알림을 통해
           <br />
           소식을 알려드릴게요.
@@ -43,7 +43,7 @@ export function ComingSoonModal({
         {/* 완료 버튼 */}
         <button
           onClick={() => onOpenChange(false)}
-          className="mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2 typo-l font-medium text-primary-fg transition-colors hover:bg-primary-400"
+          className="typo-l hover:bg-primary-400 mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2 font-medium text-primary-fg transition-colors"
         >
           확인
         </button>

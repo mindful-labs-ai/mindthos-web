@@ -22,10 +22,7 @@ const CardRoot = React.forwardRef<HTMLElement, CardProps>(
     return (
       <Component
         ref={ref as React.Ref<HTMLDivElement>}
-        className={cn(
-          'card-base',
-          className
-        )}
+        className={cn('card-base', className)}
         {...props}
       >
         {children}

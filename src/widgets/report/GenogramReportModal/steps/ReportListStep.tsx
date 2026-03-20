@@ -64,7 +64,7 @@ export function ReportListStep({
           className="flex w-full items-center justify-between rounded-xl border border-border px-5 py-4"
         >
           <div className="min-w-0 flex-1">
-            <p className="truncate typo-m font-medium text-fg">
+            <p className="typo-m truncate font-medium text-fg">
               {report.title}
             </p>
             <div className="mt-1 flex items-center gap-2">
@@ -72,13 +72,13 @@ export function ReportListStep({
                 {formatDate(report.created_at)}
               </p>
               {report.status === 'IN_PROGRESS' && (
-                <span className="flex items-center gap-1 typo-xs text-fg-muted">
+                <span className="typo-xs flex items-center gap-1 text-fg-muted">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   생성 중
                 </span>
               )}
               {report.status === 'FAILED' && (
-                <span className="flex items-center gap-1 typo-xs text-red-500">
+                <span className="typo-xs flex items-center gap-1 text-red-500">
                   <AlertCircle className="h-3 w-3" />
                   실패
                 </span>
@@ -138,7 +138,7 @@ function CreateReportButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full max-w-[265px] items-center justify-center gap-2 rounded-lg border-2 border-primary-400 bg-primary-subtle py-2.5 typo-m font-medium text-primary-400 transition-colors hover:border-primary hover:bg-primary-subtle"
+      className="border-primary-400 typo-m text-primary-400 flex w-full max-w-[265px] items-center justify-center gap-2 rounded-lg border-2 bg-primary-subtle py-2.5 font-medium transition-colors hover:border-primary hover:bg-primary-subtle"
     >
       <Plus className="h-5 w-5" />
       새로운 보고서 만들기

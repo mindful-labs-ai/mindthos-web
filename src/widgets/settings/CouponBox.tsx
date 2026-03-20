@@ -74,7 +74,7 @@ const CouponCard: React.FC<CouponCardProps> = ({
           <Text
             className={cn(
               'text-fg-muted',
-              size === 'lg' ? 'mt-2 typo-sm' : 'mt-1 typo-xs'
+              size === 'lg' ? 'typo-sm mt-2' : 'typo-xs mt-1'
             )}
           >
             {formatExpiresAt(coupon.expiresAt)}
@@ -195,9 +195,7 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
           <p className="text-grey-60">보유 중인 쿠폰이 없습니다.</p>
         </div>
       ) : (
-        coupons.map((coupon) => (
-          <CouponCard key={coupon.id} coupon={coupon} />
-        ))
+        coupons.map((coupon) => <CouponCard key={coupon.id} coupon={coupon} />)
       )}
     </div>
   );
@@ -291,11 +289,11 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
   return (
     <div
       className={cn(
-        'w-[320px] rounded-xl border-default bg-surface p-5 shadow-prominent',
+        'border-default w-[320px] rounded-xl bg-surface p-5 shadow-prominent',
         'animate-[scaleIn_0.15s_ease-out]'
       )}
     >
-      <Title as="h3" className="mb-4 typo-l font-headline">
+      <Title as="h3" className="typo-l mb-4 font-headline">
         사용 가능한 쿠폰
       </Title>
 

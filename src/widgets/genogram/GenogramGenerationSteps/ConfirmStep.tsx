@@ -26,7 +26,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
         </div>
 
         {/* 설명 텍스트 - 축소 불가 */}
-        <p className="mb-6 shrink-0 text-center typo-sm font-medium text-fg">
+        <p className="typo-sm mb-6 shrink-0 text-center font-medium text-fg">
           클릭 한 번으로 가계도를 생성할 수 있어요.
           <br />
           지금 바로 시작해보세요

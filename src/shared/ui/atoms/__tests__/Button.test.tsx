@@ -39,12 +39,15 @@ describe('Button', () => {
           Primary
         </Button>
       );
-      expect(container.firstChild).toHaveClass('bg-primary', 'text-surface');
+      expect(container.firstChild).toHaveClass(
+        'interact-primary-bg',
+        'text-primary-fg'
+      );
     });
 
     it('applies outline variant styles', () => {
       const { container } = render(<Button variant="outline">Outline</Button>);
-      expect(container.firstChild).toHaveClass('border-2');
+      expect(container.firstChild).toHaveClass('border-default');
     });
 
     it('applies ghost variant styles', () => {

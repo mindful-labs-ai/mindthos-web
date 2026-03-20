@@ -38,14 +38,16 @@ const ErrorTestPage = () => {
         <Title as="h1" className="mb-8 text-3xl">
           에러 테스트 페이지
         </Title>
-        <p className="mb-8 typo-m text-muted">
+        <p className="typo-m text-muted mb-8">
           개발 환경에서 에러 처리를 테스트하기 위한 페이지입니다.
         </p>
 
         <div className="space-y-4">
-          <div className="rounded-lg border-default bg-surface p-6">
-            <h2 className="mb-4 typo-xl font-emphasize">ErrorBoundary 테스트</h2>
-            <p className="mb-4 typo-sm text-muted">
+          <div className="border-default rounded-lg bg-surface p-6">
+            <h2 className="typo-xl mb-4 font-emphasize">
+              ErrorBoundary 테스트
+            </h2>
+            <p className="typo-sm text-muted mb-4">
               컴포넌트 렌더링 중 발생하는 에러를 ErrorBoundary가 잡습니다.
             </p>
             <Button onClick={handleRuntimeError} tone="primary">
@@ -53,45 +55,45 @@ const ErrorTestPage = () => {
             </Button>
           </div>
 
-          <div className="rounded-lg border-default bg-surface p-6">
-            <h2 className="mb-4 typo-xl font-emphasize">404 에러 테스트</h2>
-            <p className="mb-4 typo-sm text-muted">
+          <div className="border-default rounded-lg bg-surface p-6">
+            <h2 className="typo-xl mb-4 font-emphasize">404 에러 테스트</h2>
+            <p className="typo-sm text-muted mb-4">
               존재하지 않는 페이지로 이동하여 NotFoundPage를 확인합니다.
             </p>
             <a
               href="/invalid-page-url"
-              className="inline-block rounded-lg bg-primary-500 px-4 py-2 typo-sm font-medium text-primary-fg hover:bg-primary-600"
+              className="bg-primary-500 typo-sm hover:bg-primary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
             >
               404 페이지로 이동
             </a>
           </div>
 
-          <div className="rounded-lg border-default bg-surface p-6">
-            <h2 className="mb-4 typo-xl font-emphasize">
+          <div className="border-default rounded-lg bg-surface p-6">
+            <h2 className="typo-xl mb-4 font-emphasize">
               약관 페이지 에러 테스트
             </h2>
-            <p className="mb-4 typo-sm text-muted">
+            <p className="typo-sm text-muted mb-4">
               잘못된 쿼리스트링으로 404 리다이렉팅을 테스트합니다.
             </p>
             <div className="flex gap-2">
               <a
                 href="/terms"
-                className="inline-block rounded-lg bg-secondary-500 px-4 py-2 typo-sm font-medium text-primary-fg hover:bg-secondary-600"
+                className="bg-secondary-500 typo-sm hover:bg-secondary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
               >
                 /terms (404로 리다이렉팅)
               </a>
               <a
                 href="/terms?type=invalid"
-                className="inline-block rounded-lg bg-secondary-500 px-4 py-2 typo-sm font-medium text-primary-fg hover:bg-secondary-600"
+                className="bg-secondary-500 typo-sm hover:bg-secondary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
               >
                 /terms?type=invalid (404로 리다이렉팅)
               </a>
             </div>
           </div>
 
-          <div className="rounded-lg border-default bg-surface p-6">
-            <h2 className="mb-4 typo-xl font-emphasize">기타 에러 테스트</h2>
-            <p className="mb-4 typo-sm text-muted">
+          <div className="border-default rounded-lg bg-surface p-6">
+            <h2 className="typo-xl mb-4 font-emphasize">기타 에러 테스트</h2>
+            <p className="typo-sm text-muted mb-4">
               다양한 타입의 에러를 테스트합니다. (콘솔 확인 필요)
             </p>
             <div className="flex gap-2">

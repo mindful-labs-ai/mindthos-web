@@ -23,7 +23,7 @@ export function GuideStep({
         <Title
           as="h2"
           id="onboarding-title"
-          className="text-left typo-xl font-headline text-fg"
+          className="typo-xl text-left font-headline text-fg"
         >
           {title}
         </Title>

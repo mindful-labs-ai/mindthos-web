@@ -24,12 +24,12 @@ export function ResetConfirmModal({
         <h2 className="typo-2xl font-headline text-fg">가계도 초기화</h2>
 
         {/* 확인 문구 */}
-        <p className="mt-8 text-center typo-l font-medium text-fg">
+        <p className="typo-l mt-8 text-center font-medium text-fg">
           {clientName}의 가계도를 초기화하시겠습니까?
         </p>
 
         {/* 설명 */}
-        <p className="mt-4 text-center typo-sm text-fg-muted">
+        <p className="typo-sm mt-4 text-center text-fg-muted">
           초기화하면 지금까지 제작된 가계도 내용은
           <br />
           모두 삭제되고, 다시 불러올 수 없어요.
@@ -39,7 +39,7 @@ export function ResetConfirmModal({
         <button
           onClick={onConfirm}
           disabled={isLoading}
-          className="hover:bg-primary/90 mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 typo-l font-medium text-primary-fg transition-colors disabled:opacity-50"
+          className="hover:bg-primary/90 typo-l mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 font-medium text-primary-fg transition-colors disabled:opacity-50"
         >
           {isLoading ? (
             <>

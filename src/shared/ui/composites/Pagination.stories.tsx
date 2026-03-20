@@ -27,7 +27,7 @@ export const Default: Story = {
             totalPages={10}
             onPageChange={setCurrentPage}
           />
-          <p className="text-center typo-sm text-fg-muted">
+          <p className="typo-sm text-center text-fg-muted">
             Page {currentPage} of 10
           </p>
         </div>
@@ -125,7 +125,7 @@ export const InContext: Story = {
 
       return (
         <div className="w-[600px] space-y-4">
-          <div className="rounded-lg border-default bg-surface p-4">
+          <div className="border-default rounded-lg bg-surface p-4">
             <h3 className="mb-4 font-emphasize text-fg">Items List</h3>
             <div className="space-y-2">
               {Array.from({ length: itemsPerPage }).map((_, i) => {
@@ -134,7 +134,7 @@ export const InContext: Story = {
                 return (
                   <div
                     key={itemNumber}
-                    className="rounded border border-border bg-surface-contrast p-2 typo-sm text-fg"
+                    className="typo-sm rounded border border-border bg-surface-contrast p-2 text-fg"
                   >
                     Item {itemNumber}
                   </div>

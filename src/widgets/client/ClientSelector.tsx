@@ -122,7 +122,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   const addClientBtn = (
     <button
       onClick={handleOpenAddClient}
-      className="mb-2 w-full rounded-md bg-surface py-2.5 typo-sm text-fg-muted transition-colors hover:bg-surface-contrast"
+      className="typo-sm mb-2 w-full rounded-md bg-surface py-2.5 text-fg-muted transition-colors hover:bg-surface-contrast"
     >
       + 새로운 클라이언트 등록하기
     </button>
@@ -142,14 +142,14 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           placeholder="클라이언트 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-surface-strong bg-surface-contrast py-1.5 pl-8 pr-2 typo-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="typo-sm w-full rounded-lg border border-surface-strong bg-surface-contrast py-1.5 pl-8 pr-2 focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
       {/* 모든 고객 */}
       <div className="flex min-h-0 flex-1 flex-col space-y-1">
         {searchQuery === '' && (
-          <Text className="flex-shrink-0 typo-xs text-muted">
+          <Text className="typo-xs text-muted flex-shrink-0">
             클라이언트 목록
           </Text>
         )}
@@ -171,7 +171,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               </button>
             ))
           ) : (
-            <Text className="py-2 text-center typo-sm text-fg-muted">
+            <Text className="typo-sm py-2 text-center text-fg-muted">
               검색 결과가 없습니다
             </Text>
           )}
@@ -267,7 +267,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           mobileVariant="fullScreen"
           className="flex flex-col px-4 py-4"
         >
-          <div className="flex flex-1 min-h-0 flex-col gap-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-4">
             {/* 검색 */}
             <div className="relative flex-shrink-0">
               <SearchIcon
@@ -279,7 +279,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                 placeholder="클라이언트 검색하기"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 typo-m focus:border-primary focus:outline-none"
+                className="typo-m w-full border-b border-surface-strong bg-transparent py-3 pl-10 pr-3 focus:border-primary focus:outline-none"
               />
             </div>
 
@@ -288,7 +288,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               {/* 최근 추가한 고객 */}
               {searchQuery === '' && recentClients.length > 0 && (
                 <div className="mb-4">
-                  <Text className="mb-2 typo-sm text-fg-muted">
+                  <Text className="typo-sm mb-2 text-fg-muted">
                     최근 추가한 클라이언트
                   </Text>
                   <div className="flex flex-wrap gap-2">
@@ -318,7 +318,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               {/* 모든 고객 */}
               <div>
                 {searchQuery === '' && (
-                  <Text className="mb-2 typo-sm text-fg-muted">
+                  <Text className="typo-sm mb-2 text-fg-muted">
                     모든 클라이언트
                   </Text>
                 )}
@@ -342,7 +342,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                       </button>
                     ))
                   ) : (
-                    <Text className="py-4 text-center typo-sm text-fg-muted">
+                    <Text className="typo-sm py-4 text-center text-fg-muted">
                       검색 결과가 없습니다
                     </Text>
                   )}
@@ -398,7 +398,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           placeholder="클라이언트 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-lg border border-surface-strong bg-surface-contrast py-1.5 pl-8 pr-2 typo-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="typo-sm w-full rounded-lg border border-surface-strong bg-surface-contrast py-1.5 pl-8 pr-2 focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
@@ -429,7 +429,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       {/* 모든 고객 */}
       <div className="flex min-h-0 flex-1 flex-col space-y-1">
         {searchQuery === '' && (
-          <Text className="flex-shrink-0 typo-xs text-muted">
+          <Text className="typo-xs text-muted flex-shrink-0">
             모든 클라이언트
           </Text>
         )}
@@ -451,7 +451,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               </button>
             ))
           ) : (
-            <Text className="py-2 text-center typo-sm text-fg-muted">
+            <Text className="typo-sm py-2 text-center text-fg-muted">
               검색 결과가 없습니다
             </Text>
           )}
@@ -478,7 +478,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       ) : (
         <div className="flex h-10 w-full items-center gap-2 rounded-lg border border-primary px-3">
           <UserIcon size={16} className="text-primary" />
-          <Text className="flex-1 typo-sm font-medium">
+          <Text className="typo-sm flex-1 font-medium">
             {selectedClient.name}
           </Text>
           <button

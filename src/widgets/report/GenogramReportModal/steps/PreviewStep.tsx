@@ -25,18 +25,18 @@ export function PreviewStep({
     <div className="flex flex-col gap-5">
       {/* 보고서 제목 */}
       <div>
-        <p className="mb-2 typo-sm font-medium text-fg">보고서 제목</p>
+        <p className="typo-sm mb-2 font-medium text-fg">보고서 제목</p>
         <input
           type="text"
           value={previewTitle}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="w-full rounded-xl border border-border bg-surface-contrast px-4 py-3 typo-m text-fg outline-none transition-colors focus:border-primary"
+          className="typo-m w-full rounded-xl border border-border bg-surface-contrast px-4 py-3 text-fg outline-none transition-colors focus:border-primary"
         />
       </div>
 
       {/* PDF 미리보기 */}
       <div>
-        <p className="mb-2 typo-sm font-medium text-fg">PDF 미리보기</p>
+        <p className="typo-sm mb-2 font-medium text-fg">PDF 미리보기</p>
 
         {showLoading || isRendering ? (
           <div className="flex h-[360px] items-center justify-center rounded-xl border border-border bg-surface-contrast">
@@ -63,7 +63,7 @@ export function PreviewStep({
                       className="h-[300px] w-auto"
                     />
                   </div>
-                  <p className="mt-2 text-center typo-sm text-fg-muted">
+                  <p className="typo-sm mt-2 text-center text-fg-muted">
                     {i + 1} 페이지
                   </p>
                 </div>

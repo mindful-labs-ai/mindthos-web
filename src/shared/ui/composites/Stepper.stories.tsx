@@ -72,11 +72,11 @@ export const Interactive: Story = {
       return (
         <div className="w-[600px] space-y-6">
           <Stepper steps={steps} currentStep={current} />
-          <div className="rounded-lg border-default bg-surface p-6">
-            <h3 className="mb-4 typo-l font-emphasize text-fg">
+          <div className="border-default rounded-lg bg-surface p-6">
+            <h3 className="typo-l mb-4 font-emphasize text-fg">
               {steps[current].label}
             </h3>
-            <p className="mb-6 typo-sm text-fg-muted">
+            <p className="typo-sm mb-6 text-fg-muted">
               Complete this step: {steps[current].description}
             </p>
             <div className="flex gap-3">

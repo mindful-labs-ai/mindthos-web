@@ -208,8 +208,8 @@ export const Select: React.FC<SelectProps> = ({
         aria-expanded={isOpen}
         className={cn(
           'flex w-full items-center justify-between gap-2',
-          'rounded-md border-default bg-surface px-3 py-2',
-          'typo-sm text-fg transition-default',
+          'border-default rounded-md bg-surface px-3 py-2',
+          'typo-sm transition-default text-fg',
           'hover:border-primary-subtle',
           'focus-default',
           'disabled:disabled-default',
@@ -293,8 +293,8 @@ export const Select: React.FC<SelectProps> = ({
                   }}
                   tabIndex={0}
                   className={cn(
-                    'flex items-center justify-between px-3 py-3 typo-sm',
-                    'cursor-pointer transition-default',
+                    'typo-sm flex items-center justify-between px-3 py-3',
+                    'transition-default cursor-pointer',
                     'hover:bg-surface-contrast',
                     item.disabled && 'cursor-not-allowed opacity-50',
                     focusedIndex === index && 'bg-surface-contrast',
@@ -337,7 +337,7 @@ export const Select: React.FC<SelectProps> = ({
             }}
             className={cn(
               'z-popover',
-              'rounded-md border-default bg-surface shadow-elevated'
+              'border-default rounded-md bg-surface shadow-elevated'
             )}
           >
             <ul
@@ -367,8 +367,8 @@ export const Select: React.FC<SelectProps> = ({
                     }}
                     tabIndex={0}
                     className={cn(
-                      'flex items-center justify-between px-3 py-2 typo-sm',
-                      'cursor-pointer transition-default',
+                      'typo-sm flex items-center justify-between px-3 py-2',
+                      'transition-default cursor-pointer',
                       'hover:bg-surface-contrast',
                       'focus-default',
                       item.disabled && 'disabled-default',

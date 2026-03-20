@@ -82,7 +82,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
           placeholder="이름 또는 전화번호 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="focus:ring-primary/20 w-full rounded-lg border border-border bg-bg px-3 py-2 typo-sm text-fg placeholder-fg-muted focus:border-primary focus:outline-none focus:ring-2"
+          className="focus:ring-primary/20 typo-sm w-full rounded-lg border border-border bg-bg px-3 py-2 text-fg placeholder-fg-muted focus:border-primary focus:outline-none focus:ring-2"
         />
       </div>
 
@@ -91,7 +91,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
         <button
           type="button"
           onClick={handleClearSelection}
-          className="hover:bg-surface-hover w-full rounded-lg bg-surface px-4 py-2 typo-sm font-medium text-fg"
+          className="hover:bg-surface-hover typo-sm w-full rounded-lg bg-surface px-4 py-2 font-medium text-fg"
         >
           선택 초기화 ({selectedClientIds.length}명 선택됨)
         </button>
@@ -115,7 +115,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
                 }`}
               >
                 <span
-                  className={`flex-1 typo-sm text-fg ${
+                  className={`typo-sm flex-1 text-fg ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >
@@ -132,7 +132,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
             );
           })
         ) : (
-          <p className="py-4 text-center typo-sm text-fg-muted">
+          <p className="typo-sm py-4 text-center text-fg-muted">
             검색 결과가 없습니다
           </p>
         )}

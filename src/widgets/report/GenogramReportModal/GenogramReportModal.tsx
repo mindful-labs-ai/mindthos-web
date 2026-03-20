@@ -63,7 +63,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <ArrowLeft className="h-5 w-5" />
             </button>
           )}
-          <h2 className="text-center typo-xl font-headline text-fg">
+          <h2 className="typo-xl text-center font-headline text-fg">
             가계도 분석 보고서
           </h2>
           {!isGenerating && (
@@ -136,7 +136,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                 <button
                   type="button"
                   onClick={modal.handleClose}
-                  className="flex-1 rounded-xl border border-border py-3.5 text-center typo-m font-emphasize text-fg transition-colors hover:bg-surface-contrast"
+                  className="typo-m flex-1 rounded-xl border border-border py-3.5 text-center font-emphasize text-fg transition-colors hover:bg-surface-contrast"
                 >
                   확인
                 </button>
@@ -146,7 +146,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                     trackEvent(MixpanelEvent.GenogramReportSeminarButtonClick);
                     window.open(GENOGRAM_SEMINAR_URL, '_blank');
                   }}
-                  className="flex-1 rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
+                  className="typo-m hover:bg-primary-400 flex-1 rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
                 >
                   세미나 신청하기
                 </button>
@@ -170,7 +170,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <button
                 type="button"
                 onClick={modal.handleBackToList}
-                className="w-full rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
+                className="typo-m hover:bg-primary-400 w-full rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
               >
                 확인
               </button>
@@ -178,7 +178,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <button
                 type="button"
                 onClick={modal.handleClose}
-                className="w-full rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
+                className="typo-m hover:bg-primary-400 w-full rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
               >
                 확인
               </button>

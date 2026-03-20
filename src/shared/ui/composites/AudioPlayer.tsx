@@ -75,13 +75,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
   };
 
   return (
-    <div
-      className={cn(
-        'flex flex-col gap-2 p-4',
-        'card-base',
-        className
-      )}
-    >
+    <div className={cn('flex flex-col gap-2 p-4', 'card-base', className)}>
       {title && <div className="typo-sm font-medium text-fg">{title}</div>}
 
       <div className="flex items-center gap-3">
@@ -128,7 +122,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             )}
           />
           {timecode && (
-            <div className="flex justify-between typo-xs text-fg-muted">
+            <div className="typo-xs flex justify-between text-fg-muted">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>

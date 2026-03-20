@@ -49,7 +49,7 @@ export const MobileHandwrittenTabContent: React.FC<MobileHandwrittenTabContentPr
                 disabled={isSaving}
               />
               <Text
-                className={`mt-2 flex-shrink-0 text-right typo-sm ${
+                className={`typo-sm mt-2 flex-shrink-0 text-right ${
                   isOverLimit || isUnderLimit ? 'text-red-500' : 'text-fg-muted'
                 }`}
               >

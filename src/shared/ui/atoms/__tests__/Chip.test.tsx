@@ -18,7 +18,7 @@ describe('Chip', () => {
 
     it('applies secondary tone', () => {
       const { container } = render(<Chip tone="secondary" label="Secondary" />);
-      expect(container.firstChild).toHaveClass('bg-secondary/10');
+      expect(container.firstChild).toHaveClass('bg-neutral/10');
     });
   });
 

@@ -123,20 +123,20 @@ export function ClientDropdown({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="클라이언트 검색"
-              className="w-full border-b border-border bg-transparent py-2.5 pl-10 pr-3 typo-m placeholder:text-fg-muted focus:border-primary focus:outline-none"
+              className="typo-m w-full border-b border-border bg-transparent py-2.5 pl-10 pr-3 placeholder:text-fg-muted focus:border-primary focus:outline-none"
             />
           </div>
 
           {/* 최근 추가한 고객 */}
           {!searchQuery && recentClients.length > 0 && (
             <div className="mb-4">
-              <p className="mb-2 typo-sm text-fg-muted">최근 추가한 고객</p>
+              <p className="typo-sm mb-2 text-fg-muted">최근 추가한 고객</p>
               <div className="flex flex-wrap gap-2">
                 {recentClients.map((client) => (
                   <button
                     key={client.id}
                     onClick={() => handleSelect(client)}
-                    className={`rounded-lg border px-3 py-1 typo-sm font-medium transition-colors ${
+                    className={`typo-sm rounded-lg border px-3 py-1 font-medium transition-colors ${
                       selectedClient?.id === client.id
                         ? 'bg-primary/10 border-primary text-primary'
                         : 'hover:bg-primary/5 border-border bg-surface-strong text-fg hover:border-primary'
@@ -151,10 +151,10 @@ export function ClientDropdown({
 
           {/* 모든 고객 */}
           <div>
-            <p className="mb-2 typo-sm text-fg-muted">모든 고객</p>
+            <p className="typo-sm mb-2 text-fg-muted">모든 고객</p>
             <div className="max-h-[240px] space-y-1 overflow-y-auto">
               {filteredClients.length === 0 ? (
-                <p className="py-4 text-center typo-sm text-fg-muted">
+                <p className="typo-sm py-4 text-center text-fg-muted">
                   검색 결과가 없습니다
                 </p>
               ) : (

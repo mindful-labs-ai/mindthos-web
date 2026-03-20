@@ -80,7 +80,7 @@ export const ProgressCircle = React.forwardRef<
             strokeDasharray={circumference}
             strokeDashoffset={indeterminate ? circumference * 0.75 : offset}
             strokeLinecap="butt"
-            className="duration-slow text-primary transition-all"
+            className="text-primary transition-all duration-slow"
             style={{
               transform: 'rotate(-90deg)',
               transformOrigin: '50% 50%',

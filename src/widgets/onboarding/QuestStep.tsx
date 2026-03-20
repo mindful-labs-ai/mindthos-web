@@ -162,7 +162,7 @@ export const QuestStep = ({
                       </div>
 
                       {/* 라벨 텍스트 */}
-                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center typo-m font-medium text-fg">
+                      <p className="typo-m min-h-[2.5rem] w-full max-w-[140px] break-keep text-center font-medium text-fg">
                         {quest.label}
                       </p>
 
@@ -174,7 +174,7 @@ export const QuestStep = ({
                             tone={isInProgress ? 'primary' : 'neutral'}
                             disabled={!isInProgress || isLoading}
                             className={cn(
-                              'h-9 w-full typo-sm shadow-none',
+                              'typo-sm h-9 w-full shadow-none',
                               // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
                               !isInProgress &&
                                 'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast',
@@ -238,16 +238,16 @@ export const QuestStep = ({
 
         {/* 보상 정보 */}
         <div className="flex min-w-[277px] flex-col items-center justify-center rounded-xl bg-primary-subtle p-4 text-center">
-          <div className="mb-2 text-center typo-2xl">
+          <div className="typo-2xl mb-2 text-center">
             🎁
-            <h3 className="mb-4 typo-m font-headline text-fg">
+            <h3 className="typo-m mb-4 font-headline text-fg">
               모든 미션 달성 시<br />
               <span className="text-primary">스타터 1개월</span> 무료 지급!
             </h3>
           </div>
 
           {!isAllCompleted && (
-            <p className="mb-3 typo-xs font-medium text-danger">
+            <p className="typo-xs mb-3 font-medium text-danger">
               남은 기간 {remainingDays}일
             </p>
           )}

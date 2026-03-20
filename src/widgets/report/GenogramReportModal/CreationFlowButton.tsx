@@ -44,12 +44,12 @@ export function CreationFlowButton({
         type="button"
         onClick={handleClick}
         disabled={isDisabled}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400 disabled:disabled-default"
+        className="typo-m hover:bg-primary-400 disabled:disabled-default flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
       >
         {isInput ? '보고서 생성하기' : '이어서 진행하기'}
       </button>
       {isInput && (
-        <p className="mt-2 typo-sm font-medium text-primary">
+        <p className="typo-sm mt-2 font-medium text-primary">
           출시 기념 90% 크레딧 할인
         </p>
       )}

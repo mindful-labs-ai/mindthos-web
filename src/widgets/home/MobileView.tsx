@@ -373,7 +373,7 @@ const MobileView = () => {
 
         {/* 나의 크레딧 */}
         <div className="mt-12">
-          <Title as="h2" className="mb-4 typo-l font-emphasize">
+          <Title as="h2" className="typo-l mb-4 font-emphasize">
             나의 크레딧
           </Title>
           {creditInfo && (
@@ -435,7 +435,7 @@ const MobileView = () => {
 
         <div className="flex flex-col gap-4">
           <button
-            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 typo-xl font-headline"
+            className="typo-xl flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 font-headline"
             onClick={handleUploadClick}
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-lg border">
@@ -444,7 +444,7 @@ const MobileView = () => {
             녹음 파일 업로드하기
           </button>
           <button
-            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 typo-xl font-headline"
+            className="typo-xl flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 font-headline"
             onClick={handleGuideClick}
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-lg border">
@@ -530,11 +530,11 @@ const MobileView = () => {
               <Title
                 as="h2"
                 id="ios-guide-title"
-                className="mb-6 typo-xl font-headline"
+                className="typo-xl mb-6 font-headline"
               >
                 파일 위치 안내
               </Title>
-              <Text className="mb-8 typo-m leading-relaxed text-fg">
+              <Text className="typo-m mb-8 leading-relaxed text-fg">
                 아이폰 녹음 앱으로 녹음한 파일은
                 <br />
                 &apos;나의 iPhone&apos; 혹은 &apos;iCloud Drive&apos;안에
@@ -544,7 +544,7 @@ const MobileView = () => {
               <div className="flex gap-3">
                 <button
                   onClick={handleIosGuideDismiss}
-                  className="flex-1 py-3 typo-m text-fg-muted"
+                  className="typo-m flex-1 py-3 text-fg-muted"
                 >
                   다시 보지 않기
                 </button>
@@ -719,7 +719,7 @@ const MobileView = () => {
 
       {/* 파일 설정 목록 */}
       <div className="flex-1 overflow-y-auto bg-surface p-4">
-        <Text className="mb-3 typo-sm text-fg-muted">상담기록 세부 설정</Text>
+        <Text className="typo-sm mb-3 text-fg-muted">상담기록 세부 설정</Text>
 
         <div className="mb-16 space-y-3">
           {fileConfigs.map((config, index) => {

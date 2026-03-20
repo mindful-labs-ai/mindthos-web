@@ -185,7 +185,7 @@ export const HighUsage: Story = {
 export const InContext: Story = {
   render: () => (
     <div className="w-[400px] space-y-4">
-      <div className="rounded-lg border-default bg-surface p-6">
+      <div className="border-default rounded-lg bg-surface p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="typo-l font-emphasize text-fg">내 계정</h3>
@@ -214,7 +214,7 @@ export const InContext: Story = {
               showPercentage
             />
           </div>
-          <button className="w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90">
+          <button className="typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface hover:opacity-90">
             크레딧 구매
           </button>
         </div>

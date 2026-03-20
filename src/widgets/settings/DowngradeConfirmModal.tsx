@@ -115,22 +115,29 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
   const currentPlanCard = (
     <div className="rounded-xl border border-grey-30 px-4 py-6">
       <p className="mb-6 px-4 text-l font-emphasize text-grey-100">
-        {getPlanDisplayName(currentPlanType)} {isMobile ? '요금제' : '플랜'} 이용 중
+        {getPlanDisplayName(currentPlanType)} {isMobile ? '요금제' : '플랜'}{' '}
+        이용 중
       </p>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
           <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-          <span className="text-sm"><span className="font-emphasize">{currentPlanCredit.toLocaleString()} 크레딧</span> / 월</span>
+          <span className="text-sm">
+            <span className="font-emphasize">
+              {currentPlanCredit.toLocaleString()} 크레딧
+            </span>{' '}
+            / 월
+          </span>
         </div>
-        {currentFeatures && Object.entries(currentFeatures).map(([idx, { text, style, sub }]) => (
-          <div key={idx} className="flex items-center gap-3">
-            <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-            <div className="flex gap-1">
-              <span className={`text-sm ${style || ''}`}>{text}</span>
-              {sub && <span className="text-sm">{sub}</span>}
+        {currentFeatures &&
+          Object.entries(currentFeatures).map(([idx, { text, style, sub }]) => (
+            <div key={idx} className="flex items-center gap-3">
+              <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
+              <div className="flex gap-1">
+                <span className={`text-sm ${style || ''}`}>{text}</span>
+                {sub && <span className="text-sm">{sub}</span>}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
@@ -144,17 +151,23 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
       <div className="space-y-3">
         <div className="flex items-center gap-3">
           <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-          <span className="text-sm"><span className="font-emphasize">{newPlanCredit.toLocaleString()} 크레딧</span> / 월</span>
+          <span className="text-sm">
+            <span className="font-emphasize">
+              {newPlanCredit.toLocaleString()} 크레딧
+            </span>{' '}
+            / 월
+          </span>
         </div>
-        {newFeatures && Object.entries(newFeatures).map(([idx, { text, style, sub }]) => (
-          <div key={idx} className="flex items-center gap-3">
-            <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-            <div className="flex gap-1">
-              <span className={`text-sm ${style || ''}`}>{text}</span>
-              {sub && <span className="text-sm">{sub}</span>}
+        {newFeatures &&
+          Object.entries(newFeatures).map(([idx, { text, style, sub }]) => (
+            <div key={idx} className="flex items-center gap-3">
+              <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
+              <div className="flex gap-1">
+                <span className={`text-sm ${style || ''}`}>{text}</span>
+                {sub && <span className="text-sm">{sub}</span>}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
         {!newFeatures && (
           <div className="flex items-center gap-3">
             <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
@@ -169,8 +182,10 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
   const noticeText = (
     <div className="text-center">
       <p className="text-sm text-grey-60">
-        <span className="font-emphasize text-grey-100">{formatDate(effectiveAt)}</span>
-        {' '}이후 {getPlanDisplayName(newPlanType)} 플랜이 적용됩니다.
+        <span className="font-emphasize text-grey-100">
+          {formatDate(effectiveAt)}
+        </span>{' '}
+        이후 {getPlanDisplayName(newPlanType)} 플랜이 적용됩니다.
       </p>
     </div>
   );
@@ -205,7 +220,11 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className={isMobileView ? 'flex flex-col' : 'flex max-w-3xl items-center justify-center'}
+      className={
+        isMobileView
+          ? 'flex flex-col'
+          : 'flex max-w-3xl items-center justify-center'
+      }
       mobileVariant={isMobileView ? 'fullScreen' : 'center'}
       hideCloseButton={isMobileView}
     >
@@ -217,17 +236,34 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
-              <p className="font-emphasize text-grey-100">정말 플랜을 바꾸시겠습니까?</p>
-              <p className="font-emphasize text-grey-100">플랜 변경 후 아래 기능을 더 이상 이용할 수 없습니다.</p>
+              <p className="font-emphasize text-grey-100">
+                정말 플랜을 바꾸시겠습니까?
+              </p>
+              <p className="font-emphasize text-grey-100">
+                플랜 변경 후 아래 기능을 더 이상 이용할 수 없습니다.
+              </p>
             </div>
 
             {/* 모바일: 세로 배치 + v 화살표, 태블릿: 가로 배치 + > 화살표 */}
-            <div className={isMobile ? 'flex flex-col items-center gap-4' : 'flex items-center gap-4'}>
-              <div className={isMobile ? 'w-full' : 'flex-1 self-stretch'}>{currentPlanCard}</div>
-              <div className="flex-shrink-0">
-                <ArrowRightIcon size={24} className={`text-grey-60 ${isMobile ? 'rotate-90' : ''}`} />
+            <div
+              className={
+                isMobile
+                  ? 'flex flex-col items-center gap-4'
+                  : 'flex items-center gap-4'
+              }
+            >
+              <div className={isMobile ? 'w-full' : 'flex-1 self-stretch'}>
+                {currentPlanCard}
               </div>
-              <div className={isMobile ? 'w-full' : 'flex-1 self-stretch'}>{newPlanCard}</div>
+              <div className="flex-shrink-0">
+                <ArrowRightIcon
+                  size={24}
+                  className={`text-grey-60 ${isMobile ? 'rotate-90' : ''}`}
+                />
+              </div>
+              <div className={isMobile ? 'w-full' : 'flex-1 self-stretch'}>
+                {newPlanCard}
+              </div>
             </div>
 
             <div className="mt-8">{noticeText}</div>
@@ -241,27 +277,49 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
           <div className="text-center">
             <div className="mb-4 flex items-center justify-center gap-2 text-danger">
               <HelpCircleIcon size={24} />
-              <Title as="h2" className="text-xl font-headline">플랜 다운그레이드하기</Title>
+              <Title as="h2" className="text-xl font-headline">
+                플랜 다운그레이드하기
+              </Title>
             </div>
             <div className="space-y-1">
-              <Text className="font-emphasize">정말 플랜을 바꾸시겠습니까?</Text>
-              <Text className="font-emphasize">플랜 변경 후 아래 기능을 더 이상 이용할 수 없습니다.</Text>
+              <Text className="font-emphasize">
+                정말 플랜을 바꾸시겠습니까?
+              </Text>
+              <Text className="font-emphasize">
+                플랜 변경 후 아래 기능을 더 이상 이용할 수 없습니다.
+              </Text>
             </div>
           </div>
 
           <div className="flex w-full items-center justify-center gap-4">
             <div className="flex-1 self-stretch">{currentPlanCard}</div>
-            <div className="flex-shrink-0"><ArrowRightIcon size={24} className="text-grey-60" /></div>
+            <div className="flex-shrink-0">
+              <ArrowRightIcon size={24} className="text-grey-60" />
+            </div>
             <div className="flex-1 self-stretch">{newPlanCard}</div>
           </div>
 
           {noticeText}
 
           <div className="flex justify-center gap-3">
-            <Button variant="outline" tone="neutral" size="lg" onClick={() => onOpenChange(false)} disabled={isLoading} className="w-40">
+            <Button
+              variant="outline"
+              tone="neutral"
+              size="lg"
+              onClick={() => onOpenChange(false)}
+              disabled={isLoading}
+              className="w-40"
+            >
               계속 이용하기
             </Button>
-            <Button variant="soft" tone="danger" size="lg" onClick={handleConfirm} disabled={isLoading} className="w-40">
+            <Button
+              variant="soft"
+              tone="danger"
+              size="lg"
+              onClick={handleConfirm}
+              disabled={isLoading}
+              className="w-40"
+            >
               {isLoading ? '처리 중...' : '변경하기'}
             </Button>
           </div>

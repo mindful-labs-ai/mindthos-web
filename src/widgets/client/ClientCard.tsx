@@ -202,7 +202,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     <>
       <div
         data-client-id={client.id}
-        className={`cursor-pointer rounded-xl border border-grey-30 bg-white p-5 transition-all hover:border-grey-50 md:p-6 ${
+        className={`hover:border-grey-50 cursor-pointer rounded-xl border border-grey-30 bg-white p-5 transition-all md:p-6 ${
           client.counsel_done ? 'opacity-50' : ''
         }`}
         onClick={handleCardClick}
@@ -247,7 +247,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             </span>
             <span className="text-sm text-grey-40">|</span>
             <span className="text-sm text-grey-60">
-              {client.counsel_number ? `${client.counsel_number}회기` : '회기 정보 없음'}
+              {client.counsel_number
+                ? `${client.counsel_number}회기`
+                : '회기 정보 없음'}
             </span>
           </div>
           {!isMobile && canAnalyze && (

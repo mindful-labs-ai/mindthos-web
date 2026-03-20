@@ -58,10 +58,10 @@ export function GenogramGenerationSteps({
         return (
           <div className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-red-500" />
-            <p className="mt-4 text-center typo-l font-medium text-fg">
+            <p className="typo-l mt-4 text-center font-medium text-fg">
               오류가 발생했습니다
             </p>
-            <p className="mt-2 text-center typo-sm text-fg-muted">{error}</p>
+            <p className="typo-sm mt-2 text-center text-fg-muted">{error}</p>
             {onEditCancel && (
               <Button variant="outline" className="mt-6" onClick={onEditCancel}>
                 돌아가기
@@ -137,10 +137,10 @@ export function GenogramGenerationSteps({
       return (
         <div className="flex flex-col items-center justify-center py-12">
           <AlertCircle className="h-12 w-12 text-red-500" />
-          <p className="mt-4 text-center typo-l font-medium text-fg">
+          <p className="typo-l mt-4 text-center font-medium text-fg">
             오류가 발생했습니다
           </p>
-          <p className="mt-2 text-center typo-sm text-fg-muted">{error}</p>
+          <p className="typo-sm mt-2 text-center text-fg-muted">{error}</p>
           {onCancel && (
             <Button variant="outline" className="mt-6" onClick={onCancel}>
               돌아가기
@@ -186,7 +186,7 @@ export function GenogramGenerationSteps({
   return (
     <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
       <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-elevated">
-        <h2 className="mb-4 shrink-0 typo-xl font-emphasize text-fg">
+        <h2 className="typo-xl mb-4 shrink-0 font-emphasize text-fg">
           {clientName
             ? `${clientName}님의 상담기록으로 자동 생성하기`
             : '상담기록으로 자동 생성하기'}
@@ -199,7 +199,7 @@ export function GenogramGenerationSteps({
             {/* Step 1 배지 */}
             <div
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full typo-l font-headline',
+                'typo-l flex h-10 w-10 items-center justify-center rounded-full font-headline',
                 stepIndex >= 0
                   ? 'bg-primary text-primary-fg'
                   : 'border-default text-fg-muted'
@@ -219,7 +219,7 @@ export function GenogramGenerationSteps({
             {/* Step 2 배지 */}
             <div
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-full typo-l font-headline',
+                'typo-l flex h-10 w-10 items-center justify-center rounded-full font-headline',
                 stepIndex >= 1
                   ? 'bg-primary text-primary-fg'
                   : 'border-default text-fg-muted'
@@ -231,11 +231,11 @@ export function GenogramGenerationSteps({
 
           {/* 라벨 */}
           <div className="mt-2 flex items-start">
-            <span className="w-40 text-center typo-sm text-fg">
+            <span className="typo-sm w-40 text-center text-fg">
               1단계 : 가족 구성원 분석
             </span>
             <div className="w-24" />
-            <span className="w-40 text-center typo-sm text-fg">
+            <span className="typo-sm w-40 text-center text-fg">
               2단계 : 가계도 그리기
             </span>
           </div>

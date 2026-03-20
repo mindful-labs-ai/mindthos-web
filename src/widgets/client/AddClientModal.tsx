@@ -54,7 +54,10 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
       mobileVariant={isMobileView ? 'fullScreen' : 'center'}
       hideCloseButton={isMobileView}
     >
-      <form onSubmit={handleSubmit} className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}>
+      <form
+        onSubmit={handleSubmit}
+        className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}
+      >
         {isMobileView ? (
           <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={handleClose} />
@@ -64,13 +67,21 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
           </div>
         ) : (
           <div className="flex items-start justify-between">
-            <Title as="h2" className="px-6 typo-2xl font-headline">
-              {isEditMode ? '클라이언트 정보 수정' : '새로운 클라이언트 등록하기'}
+            <Title as="h2" className="typo-2xl px-6 font-headline">
+              {isEditMode
+                ? '클라이언트 정보 수정'
+                : '새로운 클라이언트 등록하기'}
             </Title>
           </div>
         )}
 
-        <div className={isMobileView ? 'flex-1 space-y-4 overflow-y-auto px-4 py-4 md:px-6' : 'space-y-4 px-6'}>
+        <div
+          className={
+            isMobileView
+              ? 'flex-1 space-y-4 overflow-y-auto px-4 py-4 md:px-6'
+              : 'space-y-4 px-6'
+          }
+        >
           <FormField label="이름" required error={form.errors.name}>
             <Input
               type="text"
@@ -145,14 +156,18 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
 
         {form.submitError && (
           <div
-            className="mx-6 rounded-md bg-danger px-4 py-3 typo-sm text-danger"
+            className="typo-sm mx-6 rounded-md bg-danger px-4 py-3 text-danger"
             role="alert"
           >
             {form.submitError}
           </div>
         )}
 
-        <div className={isMobileView ? 'px-4 pb-4 md:px-6' : 'flex justify-center px-6 pt-4'}>
+        <div
+          className={
+            isMobileView ? 'px-4 pb-4 md:px-6' : 'flex justify-center px-6 pt-4'
+          }
+        >
           <Button
             type="submit"
             variant="solid"

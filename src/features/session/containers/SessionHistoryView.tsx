@@ -47,7 +47,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
         <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col p-16">
           <div className="flex-shrink-0 pb-6">
             <div className="flex items-center gap-2">
-              <Title as="h1" className="text-start typo-2xl font-headline">
+              <Title as="h1" className="typo-2xl text-start font-headline">
                 상담 기록
               </Title>
               {isDummyFlow && (
@@ -101,9 +101,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
                     icon={<SortDescIcon size={16} />}
                     iconRight={<ChevronDownIcon size={16} />}
                   >
-                    {sortOrder === 'newest'
-                      ? '최신 날짜 순'
-                      : '오래된 날짜 순'}
+                    {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
                   </Button>
                 }
                 content={

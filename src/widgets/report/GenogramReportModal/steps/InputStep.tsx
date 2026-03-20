@@ -15,7 +15,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
         <p className="typo-m font-headline text-fg">
           아래 정보가 보고서 표지에 반영됩니다.
         </p>
-        <p className="mt-2 typo-sm text-fg-muted">
+        <p className="typo-sm mt-2 text-fg-muted">
           보고서에 기입될 정보를 확인해주세요.
         </p>
       </div>
@@ -23,7 +23,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       <div>
         <label
           htmlFor="counselor"
-          className="mb-2 block typo-m font-headline text-fg"
+          className="typo-m mb-2 block font-headline text-fg"
         >
           1. 상담사님의 성함
         </label>
@@ -39,7 +39,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       <div>
         <label
           htmlFor="client"
-          className="mb-2 block typo-m font-headline text-fg"
+          className="typo-m mb-2 block font-headline text-fg"
         >
           2. 내담자님의 성함
         </label>
@@ -56,13 +56,13 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       <div>
         <label
           htmlFor="date"
-          className="mb-2 block typo-m font-headline text-fg"
+          className="typo-m mb-2 block font-headline text-fg"
         >
           3. 상담 진행 기간
         </label>
         <div className="flex flex-col gap-2">
           <div>
-            <p className="mb-1 typo-sm text-fg-muted">상담 시작 날짜</p>
+            <p className="typo-sm mb-1 text-fg-muted">상담 시작 날짜</p>
             <DatePicker
               value={formData.startDate}
               onChange={(v) => onFormChange('startDate', v)}
@@ -72,7 +72,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
             />
           </div>
           <div>
-            <p className="mb-1 typo-sm text-fg-muted">상담 종료 날짜</p>
+            <p className="typo-sm mb-1 text-fg-muted">상담 종료 날짜</p>
             <DatePicker
               value={formData.endDate}
               onChange={(v) => onFormChange('endDate', v)}
@@ -87,7 +87,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       <div>
         <label
           htmlFor="organization"
-          className="mb-2 block typo-m font-headline text-fg"
+          className="typo-m mb-2 block font-headline text-fg"
         >
           4. 상담 기관(센터) 이름
         </label>

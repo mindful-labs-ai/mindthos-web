@@ -231,10 +231,12 @@ export const TutorialGuideModal: React.FC = () => {
     >
       <div className="flex h-full flex-col items-center px-0 py-6 sm:px-8 sm:py-8 md:px-14 md:py-[38px]">
         {/* Title */}
-        <h2 className="shrink-0 typo-xl font-headline text-fg">{config.title}</h2>
+        <h2 className="typo-xl shrink-0 font-headline text-fg">
+          {config.title}
+        </h2>
 
         {/* Subtitle */}
-        <p className="mt-4 shrink-0 typo-m font-emphasize text-primary">
+        <p className="typo-m mt-4 shrink-0 font-emphasize text-primary">
           {slide.subtitle}
         </p>
 
@@ -247,7 +249,7 @@ export const TutorialGuideModal: React.FC = () => {
                 videoAspectRatio ? { aspectRatio: videoAspectRatio } : undefined
               }
             >
-              <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border-default">
+              <div className="border-default min-h-0 flex-1 overflow-hidden rounded-2xl">
                 <video
                   ref={videoRef}
                   key={slide.media.src}
@@ -284,7 +286,7 @@ export const TutorialGuideModal: React.FC = () => {
         </div>
 
         {/* Description */}
-        <p className="mt-5 shrink-0 whitespace-pre-line text-center typo-sm leading-relaxed text-fg">
+        <p className="typo-sm mt-5 shrink-0 whitespace-pre-line text-center leading-relaxed text-fg">
           {slide.description}
         </p>
 

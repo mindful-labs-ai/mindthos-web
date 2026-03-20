@@ -45,7 +45,7 @@ const CircularProgress: React.FC<{
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        className="duration-slow text-primary transition-all"
+        className="text-primary transition-all duration-slow"
       />
     </svg>
   );

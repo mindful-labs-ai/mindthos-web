@@ -113,7 +113,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
             {groupedSessions.map((group) => (
               <div key={group.date}>
                 {/* 날짜 헤더 */}
-                <Text className="mb-2 px-2 text-left typo-xs font-medium text-fg-muted">
+                <Text className="typo-xs mb-2 px-2 text-left font-medium text-fg-muted">
                   {group.date}
                 </Text>
 

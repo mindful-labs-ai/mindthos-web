@@ -22,7 +22,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
 }) => {
   return (
     <div
-      className={`welcome-banner-height text-primary-fg from-green-80 relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r to-amber-200 p-5 transition-all md:p-12 ${className}`}
+      className={`welcome-banner-height relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-green-80 to-amber-200 p-5 text-primary-fg transition-all md:p-12 ${className}`}
     >
       {onClose && (
         <button
@@ -35,7 +35,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
       )}
       <div className="flex flex-col gap-y-4">
         <h2 className="welcome-banner-title">{title}</h2>
-        <p className="typo-m font-emphasize text-primary-fg/90">
+        <p className="typo-m text-primary-fg/90 font-emphasize">
           {description}
         </p>
       </div>

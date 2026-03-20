@@ -189,8 +189,8 @@ export const CustomIcon: Story = {
 export const InContext: Story = {
   render: () => (
     <div className="w-[600px] space-y-4">
-      <div className="rounded-lg border-default bg-surface p-6">
-        <h2 className="mb-4 typo-xl font-headline text-fg">Account Settings</h2>
+      <div className="border-default rounded-lg bg-surface p-6">
+        <h2 className="typo-xl mb-4 font-headline text-fg">Account Settings</h2>
         <div className="space-y-4">
           <Alert tone="warn" title="Email not verified">
             Please verify your email address to access all features.
@@ -205,7 +205,7 @@ export const InContext: Story = {
             <input
               id="email-input"
               type="email"
-              className="w-full rounded-lg border-default bg-surface px-3 py-2 text-fg"
+              className="border-default w-full rounded-lg bg-surface px-3 py-2 text-fg"
               value="user@example.com"
               readOnly
             />

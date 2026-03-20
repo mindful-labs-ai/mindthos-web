@@ -435,7 +435,7 @@ export function FamilyMemberListStep({
       >
         {/* 구성원 섹션 */}
         <div className="my-6">
-          <h3 className="mb-3 typo-sm font-medium text-fg">
+          <h3 className="typo-sm mb-3 font-medium text-fg">
             가족 구성원 ({data.subjects.length}명)
           </h3>
 
@@ -472,7 +472,7 @@ export function FamilyMemberListStep({
 
         {/* 구성원 관계 섹션 */}
         <div className="border-t border-border pt-4">
-          <h3 className="mb-3 typo-sm font-medium text-fg">
+          <h3 className="typo-sm mb-3 font-medium text-fg">
             구성원 관계 ({relationDataList.length}개)
           </h3>
 
@@ -522,7 +522,7 @@ export function FamilyMemberListStep({
               setShowConfirmModal(true);
             }
           }}
-          className="h-12 w-full max-w-[500px] rounded-xl bg-primary typo-l font-medium text-primary-fg transition-colors hover:bg-primary-600"
+          className="typo-l hover:bg-primary-600 h-12 w-full max-w-[500px] rounded-xl bg-primary font-medium text-primary-fg transition-colors"
         >
           {buttonText}
         </button>

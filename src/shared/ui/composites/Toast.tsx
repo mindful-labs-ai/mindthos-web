@@ -112,7 +112,7 @@ const ToastItem: React.FC<ToastItemProps> = ({
       className={cn(
         'pointer-events-auto',
         'w-full sm:min-w-[300px] sm:max-w-md',
-        'rounded-lg border-default bg-surface shadow-elevated',
+        'border-default rounded-lg bg-surface shadow-elevated',
         'p-4',
         // 모바일: absolute 스택 (최신이 위, 나머지는 뒤로)
         index < total - 1 &&
@@ -128,7 +128,7 @@ const ToastItem: React.FC<ToastItemProps> = ({
         <div className="flex-1">
           <div className="font-emphasize text-fg">{toast.title}</div>
           {toast.description && (
-            <div className="mt-1 typo-sm text-fg-muted">
+            <div className="typo-sm mt-1 text-fg-muted">
               {toast.description}
             </div>
           )}
@@ -139,7 +139,7 @@ const ToastItem: React.FC<ToastItemProps> = ({
                 onClose();
               }}
               className={cn(
-                'mt-2 rounded-sm typo-sm font-medium text-primary hover:text-primary-hover',
+                'typo-sm mt-2 rounded-sm font-medium text-primary hover:text-primary-hover',
                 'transition-default',
                 'focus-default'
               )}

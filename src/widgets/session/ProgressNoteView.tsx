@@ -253,7 +253,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
             <Text className="typo-l font-medium text-fg">
               상담노트 작성 중...
             </Text>
-            <Text className="mt-2 typo-sm text-fg-muted">
+            <Text className="typo-sm mt-2 text-fg-muted">
               {note.processing_status === 'pending'
                 ? '대기 중입니다. 잠시만 기다려주세요.'
                 : 'AI가 상담 내용을 분석하고 있습니다.'}
@@ -290,7 +290,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
             <Text className="typo-l font-medium text-danger">
               상담노트 작성 실패
             </Text>
-            <Text className="mt-2 typo-sm text-fg-muted">
+            <Text className="typo-sm mt-2 text-fg-muted">
               {note.error_message || '상담노트 작성 중 오류가 발생했습니다.'}
             </Text>
           </div>
@@ -368,7 +368,9 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <span>{isRegenerating ? '재생성 중...' : '노트 재생성'}</span>
+                    <span>
+                      {isRegenerating ? '재생성 중...' : '노트 재생성'}
+                    </span>
                   </button>
                 )}
               </>
@@ -392,16 +394,17 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                     hasEdits && !isSaving
                       ? 'bg-green-80 text-white hover:opacity-90'
                       : 'cursor-not-allowed bg-grey-20 text-grey-60'
-                }`}
-              >
-                {isSaving ? '저장 중...' : '저장'}
-              </button>
-            </>
-          )}
+                  }`}
+                >
+                  {isSaving ? '저장 중...' : '저장'}
+                </button>
+              </>
+            )}
           </div>
         </div>
         <p className="mt-1 text-sm text-grey-60">
-          {note.created_at && `${new Date(note.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 작성됨`}
+          {note.created_at &&
+            `${new Date(note.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 작성됨`}
         </p>
         {/* 구분선 */}
         <div className="mt-4 border-b border-grey-30" />
@@ -455,7 +458,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                         ) : (
                           <CopyIcon />
                         )}
-                        <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 typo-xs text-bg opacity-0 transition-opacity hover:opacity-100">
+                        <span className="typo-xs pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-bg opacity-0 transition-opacity hover:opacity-100">
                           {copiedIndex === index ? '복사됨' : '복사'}
                         </span>
                       </button>

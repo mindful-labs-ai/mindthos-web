@@ -51,7 +51,9 @@ export const ClientDetailContainer: React.FC = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const initialTab = (searchParams.get('tab') as TabType) || 'history';
   const [activeTab, setActiveTab] = React.useState<TabType>(initialTab);
-  const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>('newest');
+  const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>(
+    'newest'
+  );
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(

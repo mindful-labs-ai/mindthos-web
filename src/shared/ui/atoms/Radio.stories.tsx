@@ -84,7 +84,7 @@ export const Controlled: Story = {
           <p className="typo-sm text-fg-muted">Selected: {value}</p>
           <button
             onClick={() => setValue('2')}
-            className="rounded-lg bg-primary px-4 py-2 typo-sm text-surface"
+            className="typo-sm rounded-lg bg-primary px-4 py-2 text-surface"
           >
             Select Option 2
           </button>
@@ -113,8 +113,8 @@ export const InContext: Story = {
     const Component = () => {
       const [plan, setPlan] = useState('standard');
       return (
-        <div className="w-[400px] rounded-lg border-default bg-surface p-6">
-          <h3 className="mb-4 typo-l font-emphasize text-fg">
+        <div className="border-default w-[400px] rounded-lg bg-surface p-6">
+          <h3 className="typo-l mb-4 font-emphasize text-fg">
             Choose your plan
           </h3>
           <Radio
@@ -123,7 +123,7 @@ export const InContext: Story = {
             onChange={setPlan}
             size="md"
           />
-          <button className="mt-6 w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90">
+          <button className="typo-sm mt-6 w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface hover:opacity-90">
             Continue with {plan.charAt(0).toUpperCase() + plan.slice(1)}
           </button>
         </div>

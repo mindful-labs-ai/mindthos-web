@@ -321,10 +321,10 @@ function ProcessingAnimation() {
         />
       </svg>
 
-      <span className="text-center typo-m text-fg-muted">
+      <span className="typo-m text-center text-fg-muted">
         보고서를 생성하고 있습니다...
       </span>
-      <span className="text-center typo-xs text-primary">
+      <span className="typo-xs text-center text-primary">
         최대 1분 정도 소요될 수 있습니다.
       </span>
     </div>
@@ -351,7 +351,7 @@ function SuccessState({ onProceed }: { onProceed?: () => void }) {
         <button
           type="button"
           onClick={onProceed}
-          className="mt-2 w-full max-w-[240px] rounded-xl bg-primary py-3 typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
+          className="typo-m hover:bg-primary-400 mt-2 w-full max-w-[240px] rounded-xl bg-primary py-3 font-emphasize text-primary-fg transition-colors"
         >
           보고서 확인하기
         </button>
@@ -372,21 +372,21 @@ function ErrorState() {
       <h3 className="typo-l font-emphasize text-fg">
         아쉽게도 보고서를 생성할 수 없어요.
       </h3>
-      <p className="text-center typo-sm leading-relaxed text-fg-muted">
+      <p className="typo-sm text-center leading-relaxed text-fg-muted">
         축어록 내용이 충분하지 않거나, 보고서 생성에
         <br />
         적합하지 않은 경우 보고서를 생성할 수 없습니다.
         <br />
         혹은 알 수 없는 문제가 발생했을 수도 있어요.
       </p>
-      <p className="text-center typo-sm text-fg-muted">
+      <p className="typo-sm text-center text-fg-muted">
         자세한 내용은 아래로 문의해주세요.
       </p>
       <a
         href={KAKAO_INQUIRY_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2 rounded-xl border border-border px-6 py-3 typo-m font-emphasize text-fg transition-colors hover:bg-surface-contrast"
+        className="typo-m mt-2 rounded-xl border border-border px-6 py-3 font-emphasize text-fg transition-colors hover:bg-surface-contrast"
       >
         마음토스 오류 문의
       </a>

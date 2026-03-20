@@ -65,7 +65,7 @@ export const FromTimestamp: Story = {
 
 export const InContext: Story = {
   render: () => (
-    <div className="flex flex-col gap-3 rounded-lg border-default bg-surface p-4">
+    <div className="border-default flex flex-col gap-3 rounded-lg bg-surface p-4">
       <div className="flex items-center justify-between">
         <h3 className="font-emphasize text-fg">Comment</h3>
         <TimeStamp value={new Date(Date.now() - 3 * 60 * 60 * 1000)} relative />

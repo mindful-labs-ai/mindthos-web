@@ -24,7 +24,7 @@ export interface FootPrintProps {
 export const FootPrint: React.FC<FootPrintProps> = ({ items, className }) => {
   return (
     <div
-      className={cn('flex items-center gap-4 typo-xs text-fg-muted', className)}
+      className={cn('typo-xs flex items-center gap-4 text-fg-muted', className)}
     >
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-1.5">

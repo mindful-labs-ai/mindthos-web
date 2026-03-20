@@ -26,13 +26,13 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
       </Title>
 
       <div className="space-y-3 rounded-lg border border-surface-strong bg-surface-contrast p-3">
-        <Text className="text-grey-80 text-center text-sm font-normal">
+        <Text className="text-center text-sm font-normal text-grey-80">
           크레딧 사용 가격
         </Text>
 
         {/* 녹음 변환 */}
         <div className="space-y-2">
-          <Text className="text-grey-80 text-sm font-normal">음성 변환</Text>
+          <Text className="text-sm font-normal text-grey-80">음성 변환</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
               <Text className="text-sm font-normal text-fg">일반 축어록</Text>

@@ -158,7 +158,7 @@ export const InContext: Story = {
       </div>
       <div className="p-4">
         <h1 className="typo-2xl font-headline text-fg">Laptop Details</h1>
-        <p className="mt-2 typo-sm text-fg-muted">
+        <p className="typo-sm mt-2 text-fg-muted">
           This demonstrates how breadcrumbs appear in a typical page layout.
         </p>
       </div>

@@ -51,7 +51,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <Text className="text-destructive">{error}</Text>
-          <Text className="mt-2 typo-sm text-fg-muted">
+          <Text className="typo-sm mt-2 text-fg-muted">
             페이지를 새로고침하거나 다시 시도해주세요.
           </Text>
         </div>
@@ -136,9 +136,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
                 <div className="pointer-events-none absolute bottom-6 right-6">
                   <div
                     className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
-                      isSelected
-                        ? 'bg-primary'
-                        : 'border-default bg-surface'
+                      isSelected ? 'bg-primary' : 'border-default bg-surface'
                     }`}
                   >
                     {isSelected && (

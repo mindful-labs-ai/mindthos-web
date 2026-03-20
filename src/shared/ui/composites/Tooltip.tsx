@@ -147,7 +147,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
               'pointer-events-none',
               'max-w-xs',
               'rounded-md bg-surface px-3 py-2',
-              'typo-xs shadow-elevated text-fg',
+              'typo-xs text-fg shadow-elevated',
               'animate-fadeIn',
               className
             )}

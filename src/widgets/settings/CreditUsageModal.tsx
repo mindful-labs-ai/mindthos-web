@@ -7,7 +7,6 @@ import type { CreditLog } from '@/shared/api/supabase/creditQueries';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
-import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -107,7 +106,9 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         >
           <p className="text-grey-100">{formatLogDate(log.created_at)}</p>
           <p className="font-medium text-grey-100">{getUsageLabel(log)}</p>
-          <p className="text-grey-100">{log.use_amount.toLocaleString()} 크레딧</p>
+          <p className="text-grey-100">
+            {log.use_amount.toLocaleString()} 크레딧
+          </p>
         </div>
       ))}
       <div ref={ref} className="h-4 w-full">

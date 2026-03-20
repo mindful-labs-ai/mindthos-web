@@ -156,10 +156,10 @@ export function AnalyzeLoadingAnimation() {
         />
       </svg>
 
-      <span className="text-center typo-m text-fg-muted">
+      <span className="typo-m text-center text-fg-muted">
         상담기록을 기반으로 내담자의 <br />
         가족 구성원을 분석합니다. <br />
-        <span className="pt-2 typo-xs text-primary">
+        <span className="typo-xs pt-2 text-primary">
           정밀 분석 중... 완성까지 최대 2분 정도 소요될 수 있습니다.
         </span>
       </span>
@@ -422,7 +422,7 @@ export function GenogramLoadingAnimation() {
         </g>
       </svg>
 
-      <span className="text-center typo-m text-fg-muted">
+      <span className="typo-m text-center text-fg-muted">
         가계도를 그리는 중입니다.
       </span>
 
@@ -602,7 +602,7 @@ export function GenogramLoadingAnimationLoop() {
         />
       </svg>
 
-      <span className="text-center typo-m text-fg-muted">
+      <span className="typo-m text-center text-fg-muted">
         가계도를 그리는 중입니다.
       </span>
 
