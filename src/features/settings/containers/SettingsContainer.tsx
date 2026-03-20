@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { createSearchParams } from 'react-router-dom';
+import { Link, createSearchParams } from 'react-router-dom';
 
 import { ROUTES, TERMS_TYPES } from '@/app/router/constants';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
@@ -20,11 +20,17 @@ import {
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
-import { CouponIcon, MailIcon, MapPinIcon, UserIcon } from '@/shared/icons';
+import { useDevice } from '@/shared/hooks/useDevice';
+import {
+  CouponIcon,
+  SettingPageEmailIcon,
+  SettingPageLocationIcon,
+  SettingPageNameIcon,
+} from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
-import { Card } from '@/shared/ui/composites/Card';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { useAuthStore } from '@/stores/authStore';
@@ -44,6 +50,8 @@ import { NoticeList } from '@/widgets/settings/NoticeList';
 import { SettingsView } from './SettingsView';
 
 export const SettingsContainer: React.FC = () => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const user = useAuthStore((state) => state.user);
   const userName = useAuthStore((state) => state.userName);
   const organization = useAuthStore((state) => state.organization);
@@ -250,21 +258,32 @@ export const SettingsContainer: React.FC = () => {
   const userInfoContent = (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <UserIcon size={20} className="text-fg-muted" />
-        <Text className="text-lg font-semibold">{userName || '이름 없음'}</Text>
+        <SettingPageNameIcon
+          size={isMobile ? 16 : 20}
+          className="text-grey-70"
+        />
+        <Text className="text-m font-emphasize md:text-xl">
+          {userName || '이름 없음'}
+        </Text>
       </div>
       <div className="flex items-center gap-3">
-        <MailIcon size={20} className="text-fg-muted" />
-        <Text className="text-lg font-semibold">
+        <SettingPageEmailIcon
+          size={isMobile ? 16 : 20}
+          className="text-grey-70"
+        />
+        <Text className="text-m font-emphasize md:text-xl">
           {user?.email || '이메일 없음'}
         </Text>
       </div>
       <div className="flex items-center gap-3">
-        <MapPinIcon size={20} className="text-fg-muted" />
-        <Text className="text-lg font-semibold">
+        <SettingPageLocationIcon
+          size={isMobile ? 16 : 20}
+          className="text-grey-70"
+        />
+        <Text className="text-m font-emphasize md:text-xl">
           {organization || '소속 기관 없음'}
         </Text>
-      </div>{' '}
+      </div>
     </div>
   );
 
@@ -277,129 +296,200 @@ export const SettingsContainer: React.FC = () => {
     />
   );
 
-  const usageInfoCard = (
-    <Card>
-      <Card.Body className="p-6">
-        <div className="flex items-center justify-between">
-          <Title as="h2" className="text-lg font-semibold text-fg-muted">
-            사용 정보
-          </Title>
-          <div className="flex gap-4">
-            <Button
-              variant="outline"
-              tone="neutral"
-              size="sm"
-              onClick={handleOpenCouponModal}
-              className="text-fg-muted"
-            >
-              <span className="flex items-center gap-0.5 text-center">
-                <CouponIcon />
-                보유 중인 쿠폰
+  const [isUsageMenuOpen, setIsUsageMenuOpen] = React.useState(false);
+
+  // 공통: 플랜 정보 + 크레딧
+  const usageContent = creditInfo && (
+    <>
+      {creditInfo.plan.type.toLowerCase() === 'free' ? (
+        <Text className="typo-m text-left">
+          <span className="font-headline text-primary">
+            {getPlanLabel(creditInfo.plan.type)}
+          </span>{' '}
+          이용 중
+        </Text>
+      ) : (
+        <div className="space-y-2">
+          <Text className="flex gap-3 text-left font-emphasize">
+            <span className="font-headline text-primary">
+              {getPlanLabel(creditInfo.plan.type)}
+            </span>
+            {hasCancellationScheduled ? (
+              <span className="text-danger">
+                {formatRenewalDate(creditInfo.subscription.end_at)} 해지 예정
               </span>
-            </Button>
-            <Button
-              variant="outline"
-              tone="neutral"
-              size="sm"
+            ) : (
+              <>{formatRenewalDate(creditInfo.subscription.end_at)} 갱신 예정</>
+            )}
+          </Text>
+        </div>
+      )}
+
+      <div className="mb-2 flex gap-4">
+        <Button
+          variant="outline"
+          tone="primary"
+          size="sm"
+          className="w-32"
+          onClick={handleUpgradePlan}
+        >
+          {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
+        </Button>
+        {isPaidPlan && !hasCancellationScheduled && (
+          <Button
+            variant="ghost"
+            tone="neutral"
+            size="sm"
+            onClick={handleCancelSubscription}
+            className="text-fg-muted hover:text-danger"
+          >
+            구독 해지
+          </Button>
+        )}
+        {hasCancellationScheduled && (
+          <Button
+            variant="outline"
+            tone="neutral"
+            size="sm"
+            onClick={handleUndoCancellation}
+          >
+            해지 예약 취소
+          </Button>
+        )}
+      </div>
+
+      <div
+        className={
+          isMobileView
+            ? 'flex flex-col gap-4'
+            : 'flex w-full justify-center gap-6 px-8'
+        }
+      >
+        <div
+          className={
+            isMobileView ? '' : 'flex flex-1 items-center justify-center'
+          }
+        >
+          <CreditDisplay
+            totalCredit={creditInfo.plan.total}
+            usedCredit={creditInfo.plan.used}
+            planLabel={getPlanLabel(creditInfo.plan.type)}
+            planType={creditInfo.plan.type}
+            daysUntilReset={calculateDaysUntilReset(
+              creditInfo.subscription.end_at
+            )}
+            variant="detailed"
+            onRenewal={
+              isPaidPlan ? () => setIsRenewalModalOpen(true) : undefined
+            }
+          />
+        </div>
+        <div className={isMobileView ? '' : 'flex-1'}>
+          <CreditUsageInfo remainingCredit={creditInfo.plan.remaining} />
+        </div>
+      </div>
+    </>
+  );
+
+  const usageInfoCard = isMobileView ? (
+    <div className="bg-white p-4 md:rounded-xl md:border md:border-grey-30 md:p-6">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-m font-emphasize text-grey-70 md:text-l">
+          사용 정보
+        </p>
+        {isMobile ? (
+          <>
+            <button
+              type="button"
+              className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+              onClick={() => setIsUsageMenuOpen(true)}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="12" cy="5" r="1" />
+                <circle cx="12" cy="19" r="1" />
+              </svg>
+            </button>
+            <Modal
+              open={isUsageMenuOpen}
+              onOpenChange={setIsUsageMenuOpen}
+              mobileVariant="bottomSheet"
+            >
+              <div className="mb-16 w-full space-y-1">
+                <button
+                  onClick={() => {
+                    handleOpenCouponModal();
+                    setIsUsageMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                >
+                  <span className="text-m text-grey-100">보유 중인 쿠폰</span>
+                </button>
+                <button
+                  onClick={() => {
+                    handleCreditUsageLog();
+                    setIsUsageMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                >
+                  <span className="text-m text-grey-100">크레딧 사용 내역</span>
+                </button>
+              </div>
+            </Modal>
+          </>
+        ) : (
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleOpenCouponModal}
+              className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+            >
+              <CouponIcon /> 보유 중인 쿠폰
+            </button>
+            <button
+              type="button"
               onClick={handleCreditUsageLog}
-              className="text-fg-muted"
+              className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
             >
               크레딧 사용 내역
-            </Button>
+            </button>
           </div>
+        )}
+      </div>
+      <div className="mt-3 flex flex-col space-y-4">{usageContent}</div>
+    </div>
+  ) : (
+    <div className="rounded-xl border border-grey-30 bg-white p-6">
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="text-l font-emphasize text-grey-70">사용 정보</h2>
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={handleOpenCouponModal}
+            className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+          >
+            <CouponIcon /> 보유 중인 쿠폰
+          </button>
+          <button
+            type="button"
+            onClick={handleCreditUsageLog}
+            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+          >
+            크레딧 사용 내역
+          </button>
         </div>
-
-        <div className="flex flex-col space-y-3">
-          {creditInfo && (
-            <>
-              {creditInfo.plan.type.toLowerCase() === 'free' ? (
-                <Text className="text-left text-base">
-                  <span className="font-bold text-primary">
-                    {getPlanLabel(creditInfo.plan.type)}
-                  </span>{' '}
-                  이용 중
-                </Text>
-              ) : (
-                <div className="space-y-2">
-                  <Text className="flex gap-3 text-left font-semibold">
-                    <span className="font-bold text-primary">
-                      {getPlanLabel(creditInfo.plan.type)}
-                    </span>
-                    {hasCancellationScheduled ? (
-                      <span className="text-danger">
-                        {formatRenewalDate(creditInfo.subscription.end_at)} 해지
-                        예정
-                      </span>
-                    ) : (
-                      <>
-                        {formatRenewalDate(creditInfo.subscription.end_at)} 갱신
-                        예정
-                      </>
-                    )}
-                  </Text>
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  tone="primary"
-                  size="sm"
-                  className="w-32"
-                  onClick={handleUpgradePlan}
-                >
-                  {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
-                </Button>
-                {isPaidPlan && !hasCancellationScheduled && (
-                  <Button
-                    variant="ghost"
-                    tone="neutral"
-                    size="sm"
-                    onClick={handleCancelSubscription}
-                    className="text-fg-muted hover:text-danger"
-                  >
-                    구독 해지
-                  </Button>
-                )}
-                {hasCancellationScheduled && (
-                  <Button
-                    variant="outline"
-                    tone="neutral"
-                    size="sm"
-                    onClick={handleUndoCancellation}
-                  >
-                    해지 예약 취소
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex w-full justify-center gap-6 px-8">
-                <div className="flex flex-1 items-center justify-center">
-                  <CreditDisplay
-                    totalCredit={creditInfo.plan.total}
-                    usedCredit={creditInfo.plan.used}
-                    planLabel={getPlanLabel(creditInfo.plan.type)}
-                    planType={creditInfo.plan.type}
-                    daysUntilReset={calculateDaysUntilReset(
-                      creditInfo.subscription.end_at
-                    )}
-                    variant="detailed"
-                    onRenewal={
-                      isPaidPlan ? () => setIsRenewalModalOpen(true) : undefined
-                    }
-                  />
-                </div>
-                <div className="flex-1">
-                  <CreditUsageInfo
-                    remainingCredit={creditInfo.plan.remaining}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </Card.Body>
-    </Card>
+      </div>
+      <div className="flex flex-col space-y-4">{usageContent}</div>
+    </div>
   );
 
   const welcomeBanner = (
@@ -408,7 +498,7 @@ export const SettingsContainer: React.FC = () => {
       description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
       buttonText="더 알아보기"
       onButtonClick={handleGuide}
-      className="text-left"
+      className="mx-4 text-left md:mx-0"
     />
   );
 
@@ -465,26 +555,139 @@ export const SettingsContainer: React.FC = () => {
     />
   );
 
+  // --- 조립: 타이틀 ---
+  const titleSlot = !isMobileView ? (
+    view === 'noticeList' ? (
+      <div>
+        <Title
+          as="h1"
+          className="text-left text-2xl font-headline text-grey-100"
+        >
+          마음토스 공지사항
+        </Title>
+      </div>
+    ) : view === 'settings' ? (
+      <div>
+        <Title
+          as="h1"
+          className="text-left text-2xl font-headline text-grey-100"
+        >
+          서비스 설정
+        </Title>
+      </div>
+    ) : null
+  ) : null;
+
+  // --- 조립: 공지사항 콘텐츠 (패딩 포함) ---
+  const noticeSlot = noticeContent ? (
+    <div
+      className={
+        isMobileView ? 'flex-1 px-4 py-4 md:px-10 md:py-6' : 'flex-1 py-[42px]'
+      }
+    >
+      {noticeContent}
+    </div>
+  ) : null;
+
+  // --- 조립: 상담사 정보 섹션 ---
+  const userInfoSection = (
+    <div
+      className={
+        isMobileView
+          ? 'bg-white p-4 md:rounded-xl md:border md:border-grey-30 md:p-6'
+          : 'rounded-xl border border-grey-30 bg-white p-6'
+      }
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-m font-emphasize text-grey-70 md:text-l">
+          상담사 정보
+        </p>
+        <button
+          type="button"
+          onClick={handleEditInfo}
+          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+        >
+          정보 수정
+        </button>
+      </div>
+      <div className="mt-4">{userInfoContent}</div>
+    </div>
+  );
+
+  // --- 조립: 푸터 ---
+  const footerSlot = (
+    <div
+      className={isMobileView ? 'py-6' : 'border-t border-grey-30 px-8 py-6'}
+    >
+      <div className="flex items-center justify-center gap-4 text-sm">
+        <button
+          type="button"
+          onClick={handleOpenNoticeList}
+          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+        >
+          공지사항
+        </button>
+        <span className="text-grey-40">|</span>
+        <Link
+          to={termsTo}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+        >
+          서비스 약관
+        </Link>
+        <span className="text-grey-40">|</span>
+        <button
+          type="button"
+          onClick={handleLogoutClick}
+          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+        >
+          로그아웃
+        </button>
+        {!isOAuthUser && (
+          <>
+            <span className="text-grey-40">|</span>
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="font-medium text-grey-60 transition-colors hover:text-red-80"
+            >
+              계정 탈퇴
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
+  // --- 조립: 모달 모음 ---
+  const modalsSlot = (
+    <>
+      {cancelModal}
+      {logoutModal}
+      {deleteModal}
+      {cardRegistrationModal}
+      {creditUsageModal}
+      {creditRenewalModal}
+    </>
+  );
+
   return (
     <SettingsView
       view={view}
-      termsTo={termsTo}
-      isOAuthUser={isOAuthUser}
-      onOpenNoticeList={handleOpenNoticeList}
-      onLogoutClick={handleLogoutClick}
-      onDeleteAccount={handleDeleteAccount}
-      onEditInfo={handleEditInfo}
-      noticeContent={noticeContent}
-      userInfoContent={userInfoContent}
+      className={
+        isMobileView
+          ? 'w-full space-y-4 py-4 md:px-10 md:py-6'
+          : 'mx-auto flex min-h-screen w-full max-w-[1332px] flex-col space-y-6 px-16 py-[42px]'
+      }
+      title={titleSlot}
+      userInfoSection={userInfoSection}
       cardInfoSection={cardInfoSection}
       usageInfoCard={usageInfoCard}
       welcomeBanner={welcomeBanner}
-      cancelModal={cancelModal}
-      logoutModal={logoutModal}
-      deleteModal={deleteModal}
-      cardRegistrationModal={cardRegistrationModal}
-      creditUsageModal={creditUsageModal}
-      creditRenewalModal={creditRenewalModal}
+      noticeContent={noticeSlot}
+      footer={footerSlot}
+      modals={modalsSlot}
     />
   );
 };

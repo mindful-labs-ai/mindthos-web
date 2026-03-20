@@ -21,6 +21,7 @@ import {
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -44,10 +45,13 @@ type TabType = 'history' | 'analyze';
 
 export const ClientDetailContainer: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const [searchParams] = useSearchParams();
   const { navigateWithUtm } = useNavigateWithUtm();
   const initialTab = (searchParams.get('tab') as TabType) || 'history';
   const [activeTab, setActiveTab] = React.useState<TabType>(initialTab);
+  const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>('newest');
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(
@@ -209,6 +213,14 @@ export const ClientDetailContainer: React.FC = () => {
     });
   }, [clientSessions, client]);
 
+  const sortedSessionRecords = React.useMemo(() => {
+    return [...sessionRecords].sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+  }, [sessionRecords, sortOrder]);
+
   const handleCreateAnalysis = async (data: {
     sessionIds: string[];
     aiSupervisionTemplateId: number;
@@ -323,9 +335,9 @@ export const ClientDetailContainer: React.FC = () => {
   }
 
   const sessionList =
-    sessionRecords.length > 0 ? (
+    sortedSessionRecords.length > 0 ? (
       <div className="space-y-3">
-        {sessionRecords.map((record) => (
+        {sortedSessionRecords.map((record) => (
           <SessionRecordCard
             key={record.session_id}
             record={record}
@@ -335,8 +347,8 @@ export const ClientDetailContainer: React.FC = () => {
         ))}
       </div>
     ) : (
-      <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-border bg-surface">
-        <p className="text-fg-muted">상담 기록이 없습니다.</p>
+      <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-grey-30 bg-white">
+        <p className="text-grey-60">상담 기록이 없습니다.</p>
       </div>
     );
 
@@ -348,6 +360,7 @@ export const ClientDetailContainer: React.FC = () => {
       isReadOnly={isReadOnly}
       onSaveContent={handleSaveAnalysisContent}
       onCreateAnalysis={handleOpenCreateAnalysis}
+      isMobileView={isMobileView}
     />
   );
 
@@ -379,8 +392,11 @@ export const ClientDetailContainer: React.FC = () => {
       onEditClientClick={handleEditClientClick}
       sessionList={sessionList}
       clientAnalysisTab={clientAnalysisTab}
+      sortOrder={sortOrder}
+      onSortChange={setSortOrder}
       editModal={editModalWidget}
       analysisModal={analysisModalWidget}
+      isMobileView={isMobileView}
     />
   );
 };

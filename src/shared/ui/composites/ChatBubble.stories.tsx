@@ -15,7 +15,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const Avatar = ({ name }: { name: string }) => (
-  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-semibold text-surface">
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-emphasize text-surface">
     {name[0]}
   </div>
 );

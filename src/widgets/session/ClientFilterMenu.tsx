@@ -72,7 +72,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
             </svg>
           </button>
         )}
-        <h3 className="text-sm font-semibold text-fg">클라이언트 선택</h3>
+        <h3 className="typo-sm font-emphasize text-fg">클라이언트 선택</h3>
       </div>
 
       {/* 검색 입력 */}
@@ -82,7 +82,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
           placeholder="이름 또는 전화번호 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="focus:ring-primary/20 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-fg placeholder-fg-muted focus:border-primary focus:outline-none focus:ring-2"
+          className="focus:ring-primary/20 w-full rounded-lg border border-border bg-bg px-3 py-2 typo-sm text-fg placeholder-fg-muted focus:border-primary focus:outline-none focus:ring-2"
         />
       </div>
 
@@ -91,7 +91,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
         <button
           type="button"
           onClick={handleClearSelection}
-          className="hover:bg-surface-hover w-full rounded-lg bg-surface px-4 py-2 text-sm font-medium text-fg"
+          className="hover:bg-surface-hover w-full rounded-lg bg-surface px-4 py-2 typo-sm font-medium text-fg"
         >
           선택 초기화 ({selectedClientIds.length}명 선택됨)
         </button>
@@ -110,19 +110,19 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
                 onClick={() => handleToggleClient(client.id)}
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors ${
                   isSelected
-                    ? 'bg-primary-100 hover:bg-primary-200'
+                    ? 'bg-primary-subtle hover:bg-primary-subtle'
                     : 'hover:bg-surface-contrast'
                 }`}
               >
                 <span
-                  className={`flex-1 text-sm text-fg ${
+                  className={`flex-1 typo-sm text-fg ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >
                   {client.name}
                 </span>
                 <span
-                  className={`text-xs text-fg-muted ${
+                  className={`typo-xs text-fg-muted ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >
@@ -132,7 +132,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
             );
           })
         ) : (
-          <p className="py-4 text-center text-sm text-fg-muted">
+          <p className="py-4 text-center typo-sm text-fg-muted">
             검색 결과가 없습니다
           </p>
         )}

@@ -59,20 +59,15 @@ const NavItem: React.FC<NavItemProps> = ({
       data-value={value}
       type="button"
       onClick={handleClick}
-      className={cn(
-        'flex w-full items-center justify-between rounded-lg px-3 py-2.5',
-        'text-left text-sm font-medium',
-        'transition-colors duration-200',
-        isActive
-          ? 'bg-surface-contrast text-fg'
-          : 'text-[#BABAC0] opacity-90 hover:bg-surface-contrast'
-      )}
+      className={cn('nav-content', isActive ? 'active-nav' : 'inactive-nav')}
     >
       <div className="flex items-center gap-3">
         {icon && <span className={cn('flex-shrink-0')}>{icon}</span>}
         <div className="flex items-center gap-1">
           <span>{label}</span>
-          {disabled && <SideLockIcon size={14} className="text-[#BABAC0]" />}
+          {disabled && (
+            <SideLockIcon size={14} className="text-nav-inactive-text" />
+          )}
         </div>
       </div>
       {badge && (
@@ -80,8 +75,8 @@ const NavItem: React.FC<NavItemProps> = ({
           className={cn(
             'rounded-md px-1 py-0.5 text-xs font-bold',
             badge === 'beta'
-              ? 'bg-primary text-white'
-              : 'bg-[#BABAC0] text-surface'
+              ? 'text-primary-fg bg-primary'
+              : 'bg-nav-inactive-text text-surface'
           )}
         >
           {badge === 'beta' ? 'Beta' : '준비 중'}
@@ -150,15 +145,15 @@ export const SideTab: React.FC<SideTabProps> = ({
     <>
       {/* Logo Section - 데스크탑 사이드바에서만 표시 */}
       {!isDrawer && (
-        <div className="flex h-14 items-center justify-between border-b border-border p-4">
+        <div className="border-sidebar-border h-header flex w-full items-center justify-between border-b">
           <button
             onClick={() => navigateWithUtm('/')}
-            className="flex items-center gap-2 rounded hover:opacity-80"
+            className="main-logo-size items-center gap-2 hover:opacity-80"
           >
             <img
               src="/title_mindthos_logo.png"
               alt="마음토스"
-              className="h-6 w-auto antialiased"
+              className="h-6 w-full object-cover antialiased"
               draggable="false"
             />
           </button>
@@ -167,7 +162,7 @@ export const SideTab: React.FC<SideTabProps> = ({
 
       {/* New Session Button (with dropdown) - 드로어에서는 헤더에 있으므로 숨김 */}
       {!isDrawer && (
-        <div className="p-4">
+        <div className="new-session-padding">
           <PopUp
             open={isNewRecordMenuOpen}
             onOpenChange={setIsNewRecordMenuOpen}
@@ -190,14 +185,14 @@ export const SideTab: React.FC<SideTabProps> = ({
               <div className="w-[200px] space-y-1">
                 <button
                   onClick={handleAudioUploadClick}
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
+                  className="transition-default hover:bg-nav-hover-bg flex w-full items-center gap-3 rounded-lg px-4 py-3"
                 >
                   <UploadIcon size={18} className="" />
                   <Text>녹음 파일 업로드</Text>
                 </button>
                 <button
                   onClick={handleDirectInputClick}
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-50"
+                  className="transition-default hover:bg-nav-hover-bg flex w-full items-center gap-3 rounded-lg px-4 py-3"
                 >
                   <Edit3Icon size={18} className="" />
                   <Text>직접 입력하기</Text>
@@ -210,12 +205,10 @@ export const SideTab: React.FC<SideTabProps> = ({
       )}
 
       {/* Main Navigation */}
-      <div className="flex-1 overflow-y-auto px-3">
+      <div className="flex-1 overflow-y-auto">
         {/* 상담 관리 섹션 */}
-        <div className="mb-4">
-          <Text className="mb-2 px-1.5 text-sm font-medium text-fg">
-            상담 관리
-          </Text>
+        <div className="">
+          <Text className="nav-label">상담 관리</Text>
           <nav className="flex flex-col gap-1">
             {SESSION_MANAGEMENT_ITEMS.map((item) => (
               <NavItem
@@ -237,9 +230,7 @@ export const SideTab: React.FC<SideTabProps> = ({
 
         {/* AI 분석 섹션 */}
         <div>
-          <Text className="mb-2 px-1.5 text-sm font-medium text-fg">
-            AI 분석
-          </Text>
+          <Text className="nav-label">AI 분석</Text>
           <nav className="flex flex-col gap-1">
             {AI_ANALYSIS_ITEMS.map((item) => (
               <NavItem
@@ -274,7 +265,7 @@ export const SideTab: React.FC<SideTabProps> = ({
             variant="sidebar"
           />
         )}
-        <div className="border-t border-border px-3 py-3">
+        <div className="border-sidebar-border border-t py-3">
           <nav className="flex flex-col gap-1">
             {BOTTOM_NAV_ITEMS.map((item) => (
               <NavItem
@@ -312,9 +303,9 @@ export const SideTab: React.FC<SideTabProps> = ({
   return (
     <aside
       className={cn(
-        'relative z-sidebar flex h-full flex-col overflow-hidden border-r border-border bg-bg transition-all duration-300',
-        'w-0 px-0',
-        'sm:min-w-64 sm:px-3'
+        'border-sidebar-border bg-sidebar-bg duration-slow relative z-sidebar flex h-full flex-col overflow-hidden border-r transition-all',
+        'w-sidetab',
+        'px-5'
       )}
     >
       {content}

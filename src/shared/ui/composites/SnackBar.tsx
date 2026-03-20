@@ -64,14 +64,14 @@ export const SnackBar: React.FC<SnackBarProps> = ({
       className={cn(
         'fixed bottom-4 left-4 right-4 z-toast sm:left-1/2 sm:right-auto sm:-translate-x-1/2',
         'w-auto sm:min-w-[300px] sm:max-w-md',
-        'rounded-[var(--radius-lg)] border-2 border-border bg-surface-contrast shadow-lg',
+        'rounded-lg border-default bg-surface-contrast shadow-elevated',
         'px-4 py-3',
         'flex items-center justify-between gap-4',
         'animate-[slideUp_0.2s_ease-out]',
         className
       )}
     >
-      <span className="text-sm text-fg">{message}</span>
+      <span className="typo-sm text-fg">{message}</span>
       <div className="flex flex-shrink-0 items-center gap-2">
         {action && (
           <button
@@ -80,9 +80,9 @@ export const SnackBar: React.FC<SnackBarProps> = ({
               onOpenChange(false);
             }}
             className={cn(
-              'rounded-[var(--radius-sm)] text-sm font-medium text-primary hover:text-primary-600',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+              'rounded-sm typo-sm font-medium text-primary hover:text-primary-hover',
+              'transition-default',
+              'focus-default'
             )}
           >
             {action.label}
@@ -92,10 +92,10 @@ export const SnackBar: React.FC<SnackBarProps> = ({
           onClick={() => onOpenChange(false)}
           aria-label="Close"
           className={cn(
-            'rounded-[var(--radius-sm)] p-1',
+            'rounded-sm p-1',
             'text-fg-muted hover:bg-surface-contrast hover:text-fg',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            'transition-default',
+            'focus-default'
           )}
         >
           <svg

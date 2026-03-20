@@ -68,7 +68,7 @@ export const Controlled: Story = {
             onChange={(e) => setChecked(e.target.checked)}
             label="Controlled checkbox"
           />
-          <p className="text-sm text-fg-muted">
+          <p className="typo-sm text-fg-muted">
             Status: {checked ? 'Checked' : 'Unchecked'}
           </p>
         </div>

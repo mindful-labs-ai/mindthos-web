@@ -28,7 +28,7 @@ export const NoneDesktopAlert = () => {
   return (
     <Modal open={open} onOpenChange={setOpen} closeOnOverlay={false}>
       <div className="flex flex-col items-center px-4 py-6 text-center">
-        <h2 className="text-xl font-bold text-fg">모바일 이용 안내</h2>
+        <h2 className="typo-xl font-headline text-fg">모바일 이용 안내</h2>
 
         <p className="mt-6 text-fg">
           현재 모바일 환경에서는 녹음 파일 업로드 기능만 지원하고 있습니다.

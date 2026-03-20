@@ -21,37 +21,37 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
   const tooltipContent = (
     <div className="space-y-4 p-2">
-      <Title as="h4" className="text-sm font-semibold text-fg">
+      <Title as="h4" className="text-sm font-medium text-fg">
         마음토스 크레딧
       </Title>
 
       <div className="space-y-3 rounded-lg border border-surface-strong bg-surface-contrast p-3">
-        <Text className="text-center text-sm font-medium text-fg-muted">
+        <Text className="text-grey-80 text-center text-sm font-normal">
           크레딧 사용 가격
         </Text>
 
         {/* 녹음 변환 */}
         <div className="space-y-2">
-          <Text className="text-xs font-medium text-fg-muted">녹음 변환</Text>
+          <Text className="text-grey-80 text-sm font-normal">음성 변환</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
-              <Text className="text-xs text-fg">일반 축어록</Text>
+              <Text className="text-sm font-normal text-fg">일반 축어록</Text>
               <div>
-                <Text className="text-xs font-semibold text-fg">
+                <Text className="text-sm font-semibold text-fg">
                   30분 까지 - 30크레딧 (고정)
                 </Text>
-                <Text className="text-xs font-semibold text-fg">
+                <Text className="text-sm font-semibold text-fg">
                   30분 초과 - 분당 1크레딧
                 </Text>
               </div>
             </div>
             <div className="flex gap-2">
-              <Text className="text-xs text-fg">고급 축어록</Text>
+              <Text className="text-sm font-normal text-fg">고급 축어록</Text>
               <div>
-                <Text className="text-xs font-semibold text-fg">
+                <Text className="text-sm font-semibold text-fg">
                   30분 까지 - 45크레딧 (고정)
                 </Text>
-                <Text className="text-xs font-semibold text-fg">
+                <Text className="text-sm font-semibold text-fg">
                   30분 초과 - 분당 1.5크레딧
                 </Text>
               </div>
@@ -61,12 +61,12 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* 직접 입력 */}
         <div className="space-y-2">
-          <Text className="text-xs font-medium text-fg-muted">직접 입력</Text>
+          <Text className="typo-xs font-medium text-fg-muted">직접 입력</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
-              <Text className="text-xs text-fg">직접 입력</Text>
+              <Text className="typo-xs text-fg">직접 입력</Text>
               <div>
-                <Text className="text-xs font-semibold text-fg">30크레딧</Text>
+                <Text className="typo-xs font-emphasize text-fg">30크레딧</Text>
               </div>
             </div>
           </div>
@@ -74,29 +74,29 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* AI 상담 노트 및 분석 */}
         <div className="space-y-2">
-          <Text className="text-xs font-medium text-fg-muted">
+          <Text className="typo-xs font-medium text-fg-muted">
             AI 상담 노트 및 분석
           </Text>
           <div className="space-y-1">
             <div className="flex gap-2">
-              <Text className="text-xs text-fg">상담 노트 추가 작성</Text>
-              <Text className="text-xs font-semibold text-fg">10 크레딧</Text>
+              <Text className="typo-xs text-fg">상담 노트 추가 작성</Text>
+              <Text className="typo-xs font-emphasize text-fg">10 크레딧</Text>
             </div>
             <div className="flex gap-2">
-              <Text className="text-xs text-fg">다회기 분석</Text>
-              <Text className="text-xs font-semibold text-fg">50 크레딧</Text>
+              <Text className="typo-xs text-fg">다회기 분석</Text>
+              <Text className="typo-xs font-emphasize text-fg">50 크레딧</Text>
             </div>
           </div>
         </div>
 
         {/* 가계도 */}
         <div className="space-y-2">
-          <Text className="text-xs font-medium text-fg-muted">가계도</Text>
+          <Text className="typo-xs font-medium text-fg-muted">가계도</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
-              <Text className="text-xs text-fg">가계도 자동 생성</Text>
+              <Text className="typo-xs text-fg">가계도 자동 생성</Text>
               <div>
-                <Text className="text-xs font-semibold text-fg">50크레딧</Text>
+                <Text className="typo-xs font-emphasize text-fg">50크레딧</Text>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
         </div>
       </div>
 
-      <Text className="text-xs text-fg">
+      <Text className="typo-xs text-fg">
         마음토스 크레딧을 통해 <br /> 축어록 풀이 및 AI 노트를 작성할 수
         있습니다.
         <br /> 크레딧은 구독 날짜를 기준으로 매월 초기화됩니다.
@@ -135,6 +135,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           open={isMobileModalOpen}
           onOpenChange={setIsMobileModalOpen}
           mobileVariant="fullScreen"
+          className="px-4 py-4"
         >
           {tooltipContent}
         </Modal>

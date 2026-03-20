@@ -15,15 +15,15 @@ export interface TextAreaProps
 }
 
 const sizeStyles: Record<TextAreaSize, string> = {
-  sm: 'p-2 text-sm rounded-[var(--radius-sm)]',
-  md: 'p-3 text-sm rounded-[var(--radius-md)]',
-  lg: 'p-4 text-base rounded-[var(--radius-lg)]',
+  sm: 'p-2 typo-sm rounded-sm',
+  md: 'p-3 typo-sm rounded-md',
+  lg: 'p-4 typo-m rounded-lg',
   free: '',
 };
 
 const variantStyles: Record<TextAreaVariant, string> = {
   solid: 'bg-surface-contrast border-transparent',
-  outline: 'bg-surface border-border',
+  outline: 'bg-input-bg border-input-border',
   ghost: 'bg-transparent border-transparent',
   soft: 'bg-surface-contrast/50 border-transparent',
 };
@@ -57,10 +57,10 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         aria-invalid={error || undefined}
         className={cn(
           'w-full resize-y border-2',
-          'placeholder:text-fg-muted',
-          'transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'placeholder:text-input-placeholder',
+          'transition-default',
+          'focus-default',
+          'disabled:disabled-default',
           sizeStyles[size],
           variantStyles[variant],
           error && 'border-danger focus-visible:ring-danger',

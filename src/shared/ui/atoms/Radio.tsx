@@ -28,9 +28,9 @@ const sizeStyles: Record<
   RadioSize,
   { radio: string; text: string; desc: string }
 > = {
-  sm: { radio: 'h-4 w-4', text: 'text-sm', desc: 'text-xs' },
-  md: { radio: 'h-5 w-5', text: 'text-base', desc: 'text-sm' },
-  lg: { radio: 'h-6 w-6', text: 'text-lg', desc: 'text-base' },
+  sm: { radio: 'h-4 w-4', text: 'typo-sm', desc: 'typo-xs' },
+  md: { radio: 'h-5 w-5', text: 'typo-m', desc: 'typo-sm' },
+  lg: { radio: 'h-6 w-6', text: 'typo-m', desc: 'typo-m' },
 };
 
 /**
@@ -132,7 +132,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
             htmlFor={optionId}
             className={cn(
               'flex cursor-pointer items-start gap-2 px-4',
-              isDisabled && 'cursor-not-allowed opacity-50'
+              isDisabled && 'disabled-default'
             )}
           >
             <div className="relative flex items-center justify-center pt-0.5">
@@ -149,7 +149,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
               />
               <div
                 className={cn(
-                  'flex items-center justify-center rounded-full border-2 transition-all duration-200',
+                  'flex items-center justify-center rounded-full border-2 transition-all duration-normal',
                   sizeStyles[size].radio,
                   isSelected
                     ? 'border-primary bg-primary'

@@ -33,7 +33,7 @@ export function GenogramEmptyState({
   };
 
   const genogramButtonStyle =
-    'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-white px-6 pb-[36px] shadow-sm transition-all hover:border-primary hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50';
+    'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-surface px-6 pb-[36px] shadow-sm transition-all hover:border-primary hover:shadow-md disabled:disabled-default';
 
   return (
     <div className="flex h-full items-center justify-center bg-surface">
@@ -47,7 +47,7 @@ export function GenogramEmptyState({
           <div className="flex h-[198px] w-full items-center justify-center">
             <GenogramIllustration />
           </div>
-          <h3 className="font-semibold text-fg">직접 가계도 그리기</h3>
+          <h3 className="font-emphasize text-fg">직접 가계도 그리기</h3>
         </button>
 
         {/* 상담기록으로 자동 생성하기 */}
@@ -57,7 +57,7 @@ export function GenogramEmptyState({
           className={genogramButtonStyle}
         >
           {canGenerateFromRecords && (
-            <div className="rounded-md bg-primary px-[15px] py-[7px] text-base font-bold text-surface">
+            <div className="rounded-md bg-primary px-[15px] py-[7px] typo-m font-headline text-primary-fg">
               AI 자동 생성
             </div>
           )}
@@ -68,12 +68,12 @@ export function GenogramEmptyState({
               <AIGenogramIllustration />
             )}
           </div>
-          <h3 className="flex gap-0.5 font-semibold text-fg">
+          <h3 className="flex gap-0.5 font-emphasize text-fg">
             <SparkleIcon />
             상담기록으로 자동 생성하기
           </h3>
           {!canGenerateFromRecords && (
-            <div className="rounded-lg bg-surface-strong px-1.5 py-1 text-sm">
+            <div className="rounded-lg bg-surface-strong px-1.5 py-1 typo-sm">
               {hasRecords ? '준비 중' : '상담 기록 없음'}
             </div>
           )}

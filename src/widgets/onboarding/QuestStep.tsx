@@ -56,8 +56,8 @@ export const QuestStep = ({
       <div className="flex items-center">
         <div className="flex-1">
           <div className="mb-6 flex items-center gap-5">
-            <h3 className="text-xl font-semibold text-fg">신규 가입자 미션</h3>
-            <span className="text-sm text-fg-muted">
+            <h3 className="typo-xl font-emphasize text-fg">신규 가입자 미션</h3>
+            <span className="typo-sm text-fg-muted">
               {activeCompletedCount}/{totalSteps} 완료
             </span>
           </div>
@@ -150,9 +150,9 @@ export const QuestStep = ({
                       {/* 체크 아이콘 원형 배지 */}
                       <div
                         className={cn(
-                          'flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-300',
+                          'flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-slow',
                           isCompleted
-                            ? 'border-primary bg-primary text-white' // 완료됨
+                            ? 'border-primary bg-primary text-primary-fg' // 완료됨
                             : isInProgress
                               ? 'border-primary bg-surface text-primary' // 진행중
                               : 'border-fg-muted bg-surface text-fg-muted' // 미완료
@@ -162,7 +162,7 @@ export const QuestStep = ({
                       </div>
 
                       {/* 라벨 텍스트 */}
-                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center text-base font-medium text-fg">
+                      <p className="min-h-[2.5rem] w-full max-w-[140px] break-keep text-center typo-m font-medium text-fg">
                         {quest.label}
                       </p>
 
@@ -174,7 +174,7 @@ export const QuestStep = ({
                             tone={isInProgress ? 'primary' : 'neutral'}
                             disabled={!isInProgress || isLoading}
                             className={cn(
-                              'h-9 w-full text-sm shadow-none',
+                              'h-9 w-full typo-sm shadow-none',
                               // 완료되었거나 잠긴 상태면 배경색과 텍스트 색상을 dimmed 처리
                               !isInProgress &&
                                 'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast',
@@ -237,17 +237,17 @@ export const QuestStep = ({
         </div>
 
         {/* 보상 정보 */}
-        <div className="flex min-w-[277px] flex-col items-center justify-center rounded-xl bg-primary-50 p-4 text-center">
-          <div className="mb-2 text-center text-2xl">
+        <div className="flex min-w-[277px] flex-col items-center justify-center rounded-xl bg-primary-subtle p-4 text-center">
+          <div className="mb-2 text-center typo-2xl">
             🎁
-            <h3 className="mb-4 text-base font-bold text-fg">
+            <h3 className="mb-4 typo-m font-headline text-fg">
               모든 미션 달성 시<br />
-              <span className="text-primary-600">스타터 1개월</span> 무료 지급!
+              <span className="text-primary">스타터 1개월</span> 무료 지급!
             </h3>
           </div>
 
           {!isAllCompleted && (
-            <p className="mb-3 text-xs font-medium text-danger">
+            <p className="mb-3 typo-xs font-medium text-danger">
               남은 기간 {remainingDays}일
             </p>
           )}

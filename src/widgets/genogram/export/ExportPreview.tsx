@@ -6,11 +6,11 @@ interface ExportPreviewProps {
 export function ExportPreview({ imageUrl, isLoading }: ExportPreviewProps) {
   return (
     <div>
-      <span className="mb-2 block select-none text-base font-semibold text-fg">
+      <span className="mb-2 block select-none typo-m font-emphasize text-fg">
         미리보기
       </span>
       <div
-        className={`relative mx-auto flex aspect-[432/293] w-full max-w-[432px] items-center justify-center overflow-hidden rounded-lg border border-border transition-opacity duration-200 ${
+        className={`relative mx-auto flex aspect-[432/293] w-full max-w-[432px] items-center justify-center overflow-hidden rounded-lg border border-border transition-opacity duration-normal ${
           isLoading ? 'opacity-50' : 'opacity-100'
         }`}
       >

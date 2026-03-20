@@ -12,15 +12,15 @@ const formatInlineStyles = (text: string): string =>
 function ContentBlockItem({ block }: { block: TermsContentBlock }) {
   switch (block.type) {
     case 'h1':
-      return <h1 className="text-2xl font-bold text-fg">{block.text}</h1>;
+      return <h1 className="typo-2xl font-headline text-fg">{block.text}</h1>;
     case 'h2':
-      return <h2 className="text-xl font-bold text-fg">{block.text}</h2>;
+      return <h2 className="typo-xl font-headline text-fg">{block.text}</h2>;
     case 'h3':
-      return <h3 className="text-lg font-semibold text-fg">{block.text}</h3>;
+      return <h3 className="typo-l font-emphasize text-fg">{block.text}</h3>;
     case 'span':
       return (
         <p
-          className="text-base leading-relaxed text-fg [&>u]:underline"
+          className="typo-m leading-relaxed text-fg [&>u]:underline"
           dangerouslySetInnerHTML={{ __html: formatInlineStyles(block.text) }}
         />
       );
@@ -28,7 +28,7 @@ function ContentBlockItem({ block }: { block: TermsContentBlock }) {
       const Tag = block.ordered ? 'ol' : 'ul';
       return (
         <Tag
-          className={`ml-4 space-y-1 text-base text-fg ${block.ordered ? 'list-decimal' : 'list-disc'}`}
+          className={`ml-4 space-y-1 typo-m text-fg ${block.ordered ? 'list-decimal' : 'list-disc'}`}
         >
           {block.items.map((item, i) => (
             <li
@@ -43,13 +43,13 @@ function ContentBlockItem({ block }: { block: TermsContentBlock }) {
     case 'table':
       return (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-border text-sm">
+          <table className="w-full border-collapse border border-border typo-sm">
             <thead>
               <tr>
                 {block.headers.map((header, i) => (
                   <th
                     key={i}
-                    className="bg-surface-contrast/50 border border-border px-3 py-2 text-left font-semibold"
+                    className="bg-surface-contrast/50 border border-border px-3 py-2 text-left font-emphasize"
                   >
                     {header}
                   </th>
@@ -78,7 +78,7 @@ function ContentBlockItem({ block }: { block: TermsContentBlock }) {
       return (
         <a
           href={block.href}
-          className="text-primary-500 underline hover:text-primary-600"
+          className="text-primary underline hover:text-primary-hover"
           target={block.href.startsWith('mailto:') ? undefined : '_blank'}
           rel="noopener noreferrer"
         >

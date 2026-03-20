@@ -243,17 +243,17 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
     return (
       <div className="space-y-4 text-left">
         <div className="mb-6 flex items-center justify-between">
-          <Title as="h2" className="text-base font-bold text-fg-muted">
+          <Title as="h2" className="typo-m font-headline text-fg-muted">
             {note.title || '상담 노트'}
           </Title>
         </div>
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
           <div className="text-center">
-            <Text className="text-lg font-medium text-fg">
+            <Text className="typo-l font-medium text-fg">
               상담노트 작성 중...
             </Text>
-            <Text className="mt-2 text-sm text-fg-muted">
+            <Text className="mt-2 typo-sm text-fg-muted">
               {note.processing_status === 'pending'
                 ? '대기 중입니다. 잠시만 기다려주세요.'
                 : 'AI가 상담 내용을 분석하고 있습니다.'}
@@ -268,7 +268,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
     return (
       <div className="space-y-4 text-left">
         <div className="mb-6 flex items-center justify-between">
-          <Title as="h2" className="text-base font-bold text-fg-muted">
+          <Title as="h2" className="typo-m font-headline text-fg-muted">
             {note.title || '상담 노트'}
           </Title>
         </div>
@@ -287,10 +287,10 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
             />
           </svg>
           <div className="text-center">
-            <Text className="text-lg font-medium text-danger">
+            <Text className="typo-l font-medium text-danger">
               상담노트 작성 실패
             </Text>
-            <Text className="mt-2 text-sm text-fg-muted">
+            <Text className="mt-2 typo-sm text-fg-muted">
               {note.error_message || '상담노트 작성 중 오류가 발생했습니다.'}
             </Text>
           </div>
@@ -302,103 +302,109 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
   return (
     <div className="space-y-4 text-left">
       {/* 헤더 */}
-      <div className="static mb-6 flex items-center justify-between bg-surface px-0">
-        <Title as="h2" className="text-base font-bold text-fg-muted">
-          {note.title || '상담 노트'}
-        </Title>
-        <div className="flex items-center gap-2">
-          {!isEditing && (
-            <>
-              {onSaveSummary && !isReadOnly && (
-                <button
-                  type="button"
-                  onClick={handleEditStart}
-                  disabled={isRegenerating}
-                  className={`flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-sm text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg ${
-                    isRegenerating ? 'cursor-not-allowed opacity-50' : ''
-                  }`}
-                  aria-label="노트 편집"
-                >
-                  <span>편집</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={handleCopyAll}
-                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-sm text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
-                aria-label="전체 복사"
-              >
-                {copiedAll ? (
-                  <>
-                    <CheckIcon size={18} className="text-success" />
-                    <span className="text-success">복사됨</span>
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon size={20} />
-                    <span>복사하기</span>
-                  </>
-                )}
-              </button>
-              {onRegenerate && (
-                <button
-                  type="button"
-                  onClick={handleRegenerateClick}
-                  disabled={isReadOnly || isRegenerating}
-                  className={`flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1 text-sm text-fg-muted transition-colors ${
-                    isReadOnly || isRegenerating
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'hover:bg-surface-contrast'
-                  }`}
-                  aria-label="노트 재생성"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={isRegenerating ? 'animate-spin' : ''}
+      <div className="mb-6 px-0">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-headline text-grey-100">
+            {note.title || '상담 노트'}
+          </h2>
+          <div className="flex items-center gap-2">
+            {!isEditing && (
+              <>
+                {onSaveSummary && !isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={handleEditStart}
+                    disabled={isRegenerating}
+                    className={`rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100 ${
+                      isRegenerating ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
+                    aria-label="노트 편집"
                   >
-                    <path
-                      d="M8.33447 13.3333H4.16781V17.5M11.6678 6.66667H15.8345V2.5M3.82031 7.50284C4.28755 6.34638 5.06984 5.3442 6.07826 4.61019C7.08669 3.87618 8.28185 3.4396 9.52593 3.35042C10.77 3.26125 12.0134 3.52284 13.1162 4.10551C14.219 4.68819 15.1355 5.56878 15.7629 6.64677M16.1824 12.4976C15.7152 13.654 14.9329 14.6562 13.9245 15.3902C12.9161 16.1242 11.7221 16.5602 10.478 16.6494C9.23395 16.7386 7.98953 16.477 6.88672 15.8944C5.78391 15.3117 4.86682 14.4313 4.23942 13.3533"
-                      stroke="#A2A2A2"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>{isRegenerating ? '재생성 중...' : '노트 재생성'}</span>
+                    편집
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleCopyAll}
+                  className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                  aria-label="전체 복사"
+                >
+                  {copiedAll ? (
+                    <>
+                      <CheckIcon size={18} className="text-green-80" />
+                      <span className="text-green-80">복사됨</span>
+                    </>
+                  ) : (
+                    <>
+                      <CopyIcon size={20} />
+                      <span>복사하기</span>
+                    </>
+                  )}
                 </button>
-              )}
-            </>
-          )}
+                {onRegenerate && (
+                  <button
+                    type="button"
+                    onClick={handleRegenerateClick}
+                    disabled={isReadOnly || isRegenerating}
+                    className={`flex items-center gap-1.5 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors ${
+                      isReadOnly || isRegenerating
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'hover:bg-grey-10 hover:text-grey-100'
+                    }`}
+                    aria-label="노트 재생성"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      className={isRegenerating ? 'animate-spin' : ''}
+                    >
+                      <path
+                        d="M8.33447 13.3333H4.16781V17.5M11.6678 6.66667H15.8345V2.5M3.82031 7.50284C4.28755 6.34638 5.06984 5.3442 6.07826 4.61019C7.08669 3.87618 8.28185 3.4396 9.52593 3.35042C10.77 3.26125 12.0134 3.52284 13.1162 4.10551C14.219 4.68819 15.1355 5.56878 15.7629 6.64677M16.1824 12.4976C15.7152 13.654 14.9329 14.6562 13.9245 15.3902C12.9161 16.1242 11.7221 16.5602 10.478 16.6494C9.23395 16.7386 7.98953 16.477 6.88672 15.8944C5.78391 15.3117 4.86682 14.4313 4.23942 13.3533"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span>{isRegenerating ? '재생성 중...' : '노트 재생성'}</span>
+                  </button>
+                )}
+              </>
+            )}
 
-          {isEditing && (
-            <>
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                disabled={isSaving}
-                className="rounded-md border border-border px-3 py-1 text-sm text-fg-muted transition-colors hover:bg-surface-contrast"
-              >
-                취소
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                disabled={!hasEdits || isSaving}
-                className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
-                  hasEdits && !isSaving
-                    ? 'bg-primary text-white hover:bg-primary-600'
-                    : 'cursor-not-allowed bg-surface-contrast text-fg-muted'
+            {isEditing && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEdit}
+                  disabled={!hasEdits || isSaving}
+                  className={`rounded-md px-3.5 py-1 text-m font-medium transition-colors ${
+                    hasEdits && !isSaving
+                      ? 'bg-green-80 text-white hover:opacity-90'
+                      : 'cursor-not-allowed bg-grey-20 text-grey-60'
                 }`}
               >
                 {isSaving ? '저장 중...' : '저장'}
               </button>
             </>
           )}
+          </div>
         </div>
+        <p className="mt-1 text-sm text-grey-60">
+          {note.created_at && `${new Date(note.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 작성됨`}
+        </p>
+        {/* 구분선 */}
+        <div className="mt-4 border-b border-grey-30" />
       </div>
 
       {/* 마크다운 문서 렌더링 - 뷰/편집 모두 동일한 섹션 구조 */}
@@ -425,7 +431,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                           : undefined
                       }
                       as="h3"
-                      className={`text-lg font-semibold text-fg${isEditing ? 'focus:ring-primary/50 cursor-text bg-primary-50 focus:rounded focus:outline-none focus:ring-1' : ''}`}
+                      className={`typo-l font-emphasize text-fg${isEditing ? 'focus:ring-primary/50 cursor-text bg-primary-subtle focus:rounded focus:outline-none focus:ring-1' : ''}`}
                       {...(isEditing
                         ? {
                             contentEditable: true,
@@ -449,7 +455,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                         ) : (
                           <CopyIcon />
                         )}
-                        <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs text-bg opacity-0 transition-opacity hover:opacity-100">
+                        <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 typo-xs text-bg opacity-0 transition-opacity hover:opacity-100">
                           {copiedIndex === index ? '복사됨' : '복사'}
                         </span>
                       </button>

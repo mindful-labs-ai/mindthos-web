@@ -214,16 +214,16 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         disabled={disabled}
         className={cn(
           'flex h-10 w-full items-center justify-between',
-          'rounded-[var(--radius-md)] border-2 border-border bg-surface px-4',
-          'text-sm transition-colors duration-200',
-          'hover:border-primary-100',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'rounded-md border-default bg-surface px-4',
+          'typo-sm transition-default',
+          'hover:border-primary-subtle',
+          'focus-default',
+          'disabled:disabled-default',
           isOpen && 'border-primary',
           className
         )}
       >
-        <span className={cn(!value && 'text-fg-muted', 'text-fg')}>
+        <span className={value ? 'text-fg' : 'text-fg-muted'}>
           {value ? formatDisplay(value) : placeholder}
         </span>
         <CalendarDays className="h-4 w-4 shrink-0 text-fg-muted" />
@@ -242,7 +242,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
             }}
             className={cn(
               'z-popover',
-              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
+              'rounded-md border-default bg-surface shadow-elevated',
               'p-3'
             )}
           >
@@ -259,7 +259,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewYear}
                   onChange={(e) => setViewYear(Number(e.target.value))}
-                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="cursor-pointer rounded bg-surface px-1 py-0.5 typo-sm font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {Array.from(
                     { length: new Date().getFullYear() - 1970 + 3 },
@@ -273,7 +273,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewMonth}
                   onChange={(e) => setViewMonth(Number(e.target.value))}
-                  className="cursor-pointer rounded bg-surface px-1 py-0.5 text-sm font-semibold text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="cursor-pointer rounded bg-surface px-1 py-0.5 typo-sm font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {Array.from({ length: 12 }, (_, i) => i).map((m) => (
                     <option key={m} value={m}>
@@ -296,7 +296,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="py-1 text-center text-xs font-medium text-fg-muted"
+                  className="py-1 text-center typo-xs font-medium text-fg-muted"
                 >
                   {day}
                 </div>
@@ -335,7 +335,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                     {inRange && !(isRangeStart && isRangeEnd) && (
                       <div
                         className={cn(
-                          'absolute inset-y-0 bg-primary-50',
+                          'absolute inset-y-0 bg-primary-subtle',
                           isRangeStart &&
                             'left-1/4 right-0 rounded-bl-full rounded-tl-full',
                           isRangeEnd &&
@@ -349,18 +349,18 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                       onClick={() => !isOutOfRange && handleSelect(date)}
                       disabled={!!isOutOfRange}
                       className={cn(
-                        'relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-sm transition-colors',
+                        'relative z-10 flex h-7 w-7 items-center justify-center rounded-full typo-sm transition-colors',
                         isOutOfRange && 'cursor-not-allowed text-fg-muted',
                         !isOutOfRange && !isCurrentMonth && 'text-fg-muted',
                         !isOutOfRange &&
                           isCurrentMonth &&
                           !isSelected &&
-                          'text-fg hover:bg-primary-50',
+                          'text-fg hover:bg-primary-subtle',
                         !isOutOfRange &&
                           isToday &&
                           !isSelected &&
                           'ring-primary/30 font-medium ring-1 ring-inset',
-                        isSelected && 'bg-primary font-semibold text-white'
+                        isSelected && 'bg-primary font-emphasize text-primary-fg'
                       )}
                     >
                       {date.getDate()}

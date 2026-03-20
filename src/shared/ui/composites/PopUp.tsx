@@ -204,7 +204,7 @@ export const PopUp: React.FC<PopUpProps> = ({
           }}
           aria-controls={contentId}
           aria-expanded={isOpen}
-          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="rounded-sm focus-default"
         >
           {trigger}
         </div>
@@ -230,7 +230,7 @@ export const PopUp: React.FC<PopUpProps> = ({
               }}
               className={cn(
                 'min-w-[200px] max-w-xs',
-                'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
+                'rounded-md border-default bg-surface shadow-elevated',
                 'p-4',
                 'animate-fadeIn',
                 className

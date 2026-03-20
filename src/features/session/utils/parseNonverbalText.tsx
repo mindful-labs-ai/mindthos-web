@@ -140,7 +140,7 @@ export function renderTextWithNonverbal(
     return (
       <span
         key={index}
-        className={`mx-1 inline-flex items-center rounded-md border px-2 py-0.5 align-middle text-xs font-medium ${styles.bg} ${styles.text} ${styles.border}`}
+        className={`mx-1 inline-flex items-center rounded-md border px-2 py-0.5 align-middle typo-xs font-medium ${styles.bg} ${styles.text} ${styles.border}`}
       >
         {label}
       </span>

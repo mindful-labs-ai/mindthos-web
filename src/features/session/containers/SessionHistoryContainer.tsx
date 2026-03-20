@@ -13,6 +13,7 @@ import type { SessionRecord } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -21,9 +22,12 @@ import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 import { SessionSideList } from '@/widgets/session/SessionSideList';
 import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
 
+import { MobileSessionHistoryView } from './MobileSessionHistoryView';
 import { SessionHistoryView } from './SessionHistoryView';
 
 export const SessionHistoryContainer: React.FC = () => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const { navigateWithUtm } = useNavigateWithUtm();
   const { sessionId } = useParams<{ sessionId: string }>();
   const userId = useAuthStore((state) => state.userId);
@@ -284,7 +288,7 @@ export const SessionHistoryContainer: React.FC = () => {
   const sessionCards = isLoadingSessions ? (
     <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
       <div className="text-center">
-        <p className="text-sm text-fg-muted">상담기록 목록을 불러오는 중...</p>
+        <p className="typo-sm text-fg-muted">상담기록 목록을 불러오는 중...</p>
       </div>
     </div>
   ) : records.length > 0 ? (
@@ -299,7 +303,7 @@ export const SessionHistoryContainer: React.FC = () => {
   ) : (
     <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
       <div className="text-center">
-        <p className="text-sm text-fg-muted">아직 상담 기록이 없습니다.</p>
+        <p className="typo-sm text-fg-muted">아직 상담 기록이 없습니다.</p>
       </div>
     </div>
   );
@@ -312,6 +316,24 @@ export const SessionHistoryContainer: React.FC = () => {
       onConfirm={handleConfirmSessionChange}
     />
   );
+
+  if (isMobileView) {
+    return (
+      <MobileSessionHistoryView
+        sessionId={sessionId}
+        isDummyFlow={isDummyFlow}
+        effectiveClients={effectiveClients}
+        sortOrder={sortOrder}
+        selectedClientIds={selectedClientIds}
+        sessionCounts={sessionCounts}
+        onSortChange={handleSortChange}
+        onClientChange={handleClientChange}
+        onFilterReset={handleFilterReset}
+        sessionCards={sessionCards}
+        sessionChangeModal={sessionChangeModal}
+      />
+    );
+  }
 
   return (
     <SessionHistoryView

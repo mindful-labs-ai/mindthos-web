@@ -49,15 +49,15 @@ const TermsPageContent = ({ type }: { type: TermsType }) => {
 
   if (isError || !content) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
+      <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <p className="text-base text-muted">
+          <p className="text-m font-emphasize text-grey-100">
             약관 내용을 불러오는 중 오류가 발생했습니다.
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-primary-500 hover:text-primary-600"
+            className="mt-2 text-m text-green-80 hover:opacity-80"
           >
             다시 시도
           </button>
@@ -73,14 +73,16 @@ const TermsPageContent = ({ type }: { type: TermsType }) => {
   }));
 
   return (
-    <div className="min-h-screen bg-bg p-8">
+    <div className="min-h-screen bg-white px-3 py-8 md:px-8">
       <div className="mx-auto max-w-4xl space-y-8">
         <section>
-          <Title as="h1" className="mb-6 text-2xl">
+          <Title as="h1" className="mb-6 text-2xl font-headline">
             {content.title}
           </Title>
           {content.description && (
-            <p className="mb-6 text-base text-muted">{content.description}</p>
+            <p className="mb-6 text-m font-medium text-grey-100">
+              {content.description}
+            </p>
           )}
           <Accordion
             type="single"

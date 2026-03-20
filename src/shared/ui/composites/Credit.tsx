@@ -18,9 +18,9 @@ export interface CreditProps {
 }
 
 const sizeStyles: Record<CreditSize, { text: string; bar: string }> = {
-  sm: { text: 'text-xs', bar: 'h-1' },
-  md: { text: 'text-sm', bar: 'h-2' },
-  lg: { text: 'text-base', bar: 'h-3' },
+  sm: { text: 'typo-xs', bar: 'h-1' },
+  md: { text: 'typo-sm', bar: 'h-2' },
+  lg: { text: 'typo-m', bar: 'h-3' },
 };
 
 /**
@@ -81,7 +81,7 @@ export const Credit: React.FC<CreditProps> = ({
         )}
         <span
           className={cn(
-            'font-semibold',
+            'font-emphasize',
             toneColorClasses[tone],
             sizeStyles[size].text
           )}
@@ -115,7 +115,7 @@ export const Credit: React.FC<CreditProps> = ({
           )}
           <span
             className={cn(
-              'font-semibold',
+              'font-emphasize',
               toneColorClasses[tone],
               sizeStyles[size].text
             )}
@@ -136,7 +136,7 @@ export const Credit: React.FC<CreditProps> = ({
         >
           <div
             className={cn(
-              'h-full transition-all duration-300',
+              'h-full transition-all duration-slow',
               toneBgClasses[tone]
             )}
             style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -150,7 +150,7 @@ export const Credit: React.FC<CreditProps> = ({
   return (
     <div
       className={cn(
-        'inline-flex items-center gap-2 rounded-[var(--radius-md)] border-2 border-border bg-surface px-3 py-2',
+        'inline-flex items-center gap-2 rounded-md border-default bg-surface px-3 py-2',
         className
       )}
       role="status"
@@ -166,7 +166,7 @@ export const Credit: React.FC<CreditProps> = ({
       <div className="flex items-center gap-1">
         <span
           className={cn(
-            'font-semibold',
+            'font-emphasize',
             toneColorClasses[tone],
             sizeStyles[size].text
           )}
@@ -174,14 +174,14 @@ export const Credit: React.FC<CreditProps> = ({
           {used}
         </span>
         <span className={cn('text-fg-muted', sizeStyles[size].text)}>/</span>
-        <span className={cn('font-semibold text-fg', sizeStyles[size].text)}>
+        <span className={cn('font-emphasize text-fg', sizeStyles[size].text)}>
           {total}
         </span>
       </div>
       {showPercentage && (
         <span
           className={cn(
-            'rounded-[var(--radius-sm)] bg-surface-contrast px-1.5 py-0.5 font-medium',
+            'rounded-sm bg-surface-contrast px-1.5 py-0.5 font-medium',
             toneColorClasses[tone],
             sizeStyles[size].text
           )}

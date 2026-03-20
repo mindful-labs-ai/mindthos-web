@@ -51,7 +51,7 @@ export const Controlled: Story = {
       return (
         <div className="flex flex-col gap-4">
           <Dropdown items={items} value={value} onChange={setValue} />
-          <p className="text-sm text-fg-muted">Selected: {value || 'None'}</p>
+          <p className="typo-sm text-fg-muted">Selected: {value || 'None'}</p>
         </div>
       );
     };

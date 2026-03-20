@@ -41,7 +41,7 @@ export const SortMenu: React.FC<SortMenuProps> = ({
             </svg>
           </button>
         )}
-        <h3 className="text-sm font-semibold text-fg">정렬</h3>
+        <h3 className="typo-sm font-emphasize text-fg">정렬</h3>
       </div>
 
       {/* 정렬 옵션 */}

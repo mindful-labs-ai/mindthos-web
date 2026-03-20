@@ -40,19 +40,19 @@ export const DifferentDurations: Story = {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <span className="w-32 text-sm text-fg-muted">30 seconds:</span>
+          <span className="w-32 typo-sm text-fg-muted">30 seconds:</span>
           <Remain endTime={new Date(now + 30 * 1000)} format="short" />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-32 text-sm text-fg-muted">5 minutes:</span>
+          <span className="w-32 typo-sm text-fg-muted">5 minutes:</span>
           <Remain endTime={new Date(now + 5 * 60 * 1000)} format="short" />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-32 text-sm text-fg-muted">1 hour:</span>
+          <span className="w-32 typo-sm text-fg-muted">1 hour:</span>
           <Remain endTime={new Date(now + 60 * 60 * 1000)} format="short" />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-32 text-sm text-fg-muted">1 day:</span>
+          <span className="w-32 typo-sm text-fg-muted">1 day:</span>
           <Remain
             endTime={new Date(now + 24 * 60 * 60 * 1000)}
             format="short"
@@ -69,17 +69,17 @@ export const AutoTone: Story = {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-fg-muted">Neutral (1 hour left)</span>
+          <span className="typo-xs text-fg-muted">Neutral (1 hour left)</span>
           <Remain endTime={new Date(now + 60 * 60 * 1000)} format="short" />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-fg-muted">
+          <span className="typo-xs text-fg-muted">
             Warning (20 minutes left)
           </span>
           <Remain endTime={new Date(now + 20 * 60 * 1000)} format="short" />
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-fg-muted">Danger (3 minutes left)</span>
+          <span className="typo-xs text-fg-muted">Danger (3 minutes left)</span>
           <Remain endTime={new Date(now + 3 * 60 * 1000)} format="short" />
         </div>
       </div>
@@ -154,29 +154,29 @@ export const InContext: Story = {
     const now = Date.now();
     return (
       <div className="w-[400px] space-y-4">
-        <div className="rounded-lg border-2 border-border bg-surface p-4">
+        <div className="rounded-lg border-default bg-surface p-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-fg">Flash Sale</h3>
+            <h3 className="font-emphasize text-fg">Flash Sale</h3>
             <Remain
               endTime={new Date(now + 2 * 60 * 60 * 1000)}
               format="short"
             />
           </div>
-          <p className="mt-2 text-sm text-fg-muted">
+          <p className="mt-2 typo-sm text-fg-muted">
             Get 50% off on selected items. Hurry up!
           </p>
         </div>
 
         <div className="border-warn/20 bg-warn/10 rounded-lg border-2 p-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-warn">Session Timeout</h3>
+            <h3 className="font-emphasize text-warn">Session Timeout</h3>
             <Remain
               endTime={new Date(now + 5 * 60 * 1000)}
               format="minimal"
               tone="warn"
             />
           </div>
-          <p className="mt-2 text-sm text-fg-muted">
+          <p className="mt-2 typo-sm text-fg-muted">
             Your session will expire soon. Please save your work.
           </p>
         </div>

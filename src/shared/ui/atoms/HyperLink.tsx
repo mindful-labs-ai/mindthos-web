@@ -51,9 +51,9 @@ export const HyperLink = React.forwardRef<HTMLAnchorElement, HyperLinkProps>(
         ref={ref}
         href={href}
         className={cn(
-          'text-primary hover:text-primary-600',
-          'transition-colors duration-200',
-          'rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'text-primary hover:text-primary-hover',
+          'transition-default',
+          'rounded-sm focus-default',
           underlineStyles[String(underline)],
           className
         )}

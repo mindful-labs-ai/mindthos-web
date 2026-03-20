@@ -14,15 +14,15 @@ const formatInlineStyles = (text: string): string =>
 function ContentBlockItem({ block }: { block: ContentBlock }) {
   switch (block.type) {
     case 'h1':
-      return <h1 className="text-2xl font-bold text-fg">{block.text}</h1>;
+      return <h1 className="typo-2xl font-headline text-fg">{block.text}</h1>;
     case 'h2':
-      return <h2 className="text-xl font-bold text-fg">{block.text}</h2>;
+      return <h2 className="typo-xl font-headline text-fg">{block.text}</h2>;
     case 'h3':
-      return <h3 className="text-lg font-bold text-fg">{block.text}</h3>;
+      return <h3 className="typo-l font-headline text-fg">{block.text}</h3>;
     case 'span':
       return (
         <p
-          className="text-base leading-relaxed text-fg [&>s]:line-through [&>u]:underline"
+          className="typo-m leading-relaxed text-fg [&>s]:line-through [&>u]:underline"
           dangerouslySetInnerHTML={{ __html: formatInlineStyles(block.text) }}
         />
       );

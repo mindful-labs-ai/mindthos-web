@@ -30,7 +30,7 @@ export const WithHeader: Story = {
   render: () => (
     <Card className="w-[400px]">
       <Card.Header>
-        <h3 className="text-lg font-semibold">Card Title</h3>
+        <h3 className="typo-l font-emphasize">Card Title</h3>
       </Card.Header>
       <Card.Body>
         <p className="text-fg">Card content goes here.</p>
@@ -43,8 +43,8 @@ export const Full: Story = {
   render: () => (
     <Card className="w-[400px]">
       <Card.Header>
-        <h3 className="text-lg font-semibold">User Profile</h3>
-        <p className="text-sm text-fg-muted">Manage your account settings</p>
+        <h3 className="typo-l font-emphasize">User Profile</h3>
+        <p className="typo-sm text-fg-muted">Manage your account settings</p>
       </Card.Header>
       <Card.Body>
         <p className="text-fg">
@@ -67,7 +67,7 @@ export const AsArticle: Story = {
   render: () => (
     <Card as="article" className="w-[400px]">
       <Card.Header>
-        <h2 className="text-xl font-bold">Article Title</h2>
+        <h2 className="typo-xl font-headline">Article Title</h2>
       </Card.Header>
       <Card.Body>
         <p className="text-fg">Article content...</p>

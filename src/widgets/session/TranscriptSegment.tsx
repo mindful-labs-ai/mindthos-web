@@ -9,10 +9,8 @@ import {
   parseNonverbalText,
   renderTextWithNonverbal,
 } from '@/features/session/utils/parseNonverbalText';
-import { Spotlight } from '@/shared/ui/composites/Spotlight';
 
 import { SpeakerEditPopup } from './SpeakerEditPopup';
-import { SpeakerLabelTooltip } from './TranscriptEditGuideTooltips';
 
 interface TranscriptSegmentProps {
   segment: TranscribeSegment;
@@ -33,14 +31,6 @@ interface TranscriptSegmentProps {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
   }) => Promise<void>;
-  /** 현재 가이드 레벨 (4: 화자 라벨, 5: 화자 선택) */
-  guideLevel?: 4 | 5 | null;
-  /** 다음 가이드 레벨로 진행 */
-  onGuideNext?: () => void;
-  /** 가이드 완료 */
-  onGuideComplete?: () => void;
-  /** 첫 번째 세그먼트 여부 (Spotlight은 첫 번째만) */
-  isFirstSegment?: boolean;
   /** 세그먼트 추가 콜백 (편집 모드에서만) */
   onAddSegment?: (afterSegmentId: number, speaker: number) => void;
   /** 세그먼트 삭제 콜백 (편집 모드에서만) */
@@ -62,10 +52,6 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   allSegments = [],
   clientId,
   onSpeakerChange,
-  guideLevel,
-  onGuideNext,
-  onGuideComplete,
-  isFirstSegment = false,
   onAddSegment,
   onDeleteSegment,
 }) => {
@@ -151,39 +137,25 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
     }
   };
 
-  // 화자 라벨 렌더링 (Spotlight 래핑 포함)
-  const renderSpeakerLabel = () => {
-    const labelElement = (
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={handleSpeakerClick}
-        onKeyDown={handleSpeakerKeyDown}
-        aria-label="화자 편집"
-        className={`relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-full transition-all ${bgColor} ${
-          isActive ? 'scale-105' : 'group-hover:scale-105'
-        }`}
-      >
-        <span className={`text-base font-medium ${textColor}`}>{label}</span>
-      </div>
-    );
-
-    // 첫 번째 세그먼트이고 가이드 Level 4인 경우에만 Spotlight
-    if (isFirstSegment && guideLevel === 4) {
-      return (
-        <Spotlight
-          isActive={true}
-          tooltip={<SpeakerLabelTooltip />}
-          tooltipPosition="left"
-          store="featureGuide"
-        >
-          {labelElement}
-        </Spotlight>
-      );
-    }
-
-    return labelElement;
-  };
+  // 화자 라벨 렌더링
+  const speakerCircle = (interactive?: boolean) => (
+    <div
+      {...(interactive && {
+        role: 'button',
+        tabIndex: 0,
+        onClick: handleSpeakerClick,
+        onKeyDown: handleSpeakerKeyDown,
+        'aria-label': '화자 편집',
+      })}
+      className={`relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-grey-40 transition-all md:h-9 md:w-9 ${bgColor} ${
+        interactive ? 'cursor-pointer' : ''
+      } ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
+    >
+      <span className={`text-m font-medium md:text-l ${textColor}`}>
+        {label}
+      </span>
+    </div>
+  );
 
   const handleAddSegment = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -200,14 +172,14 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       ref={segmentRef}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
-      className={`group/segment group relative flex gap-4 rounded-lg p-4 text-left transition-all duration-200 ${
+      className={`group/segment group relative flex gap-4 rounded-lg px-4 py-2.5 text-left transition-all duration-normal md:py-4 ${
         isClickable ? 'cursor-pointer' : ''
       } ${
         isActive
-          ? 'bg-surface-contrast'
+          ? 'bg-grey-20'
           : isEditable
-            ? 'hover:bg-surface-contrast'
-            : `${isClickable ? 'hover:border-border hover:bg-surface-contrast' : ''}`
+            ? 'hover:grey-20'
+            : `${isClickable ? 'hover:border-grey-40 hover:bg-grey-20' : ''}`
       }`}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
@@ -233,22 +205,11 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               speakers={speakers}
               allSegments={allSegments}
               clientId={clientId || null}
-              triggerElement={renderSpeakerLabel()}
+              triggerElement={speakerCircle(true)}
               onApply={onSpeakerChange}
-              guideLevel={guideLevel}
-              onGuideNext={onGuideNext}
-              onGuideComplete={onGuideComplete}
             />
           ) : (
-            <div
-              className={`relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition-transform ${bgColor} ${
-                isActive ? 'scale-105' : 'group-hover:scale-105'
-              }`}
-            >
-              <span className={`text-base font-medium ${textColor}`}>
-                {label}
-              </span>
-            </div>
+            speakerCircle(false)
           )}
         </>
       )}
@@ -261,26 +222,30 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               onClick={handleSpeakerClick}
               onKeyDown={handleSpeakerKeyDown}
               aria-label="화자 편집"
-              className="cursor-pointer text-sm font-semibold text-fg hover:underline"
+              className="cursor-pointer text-sm font-medium text-grey-100 hover:underline md:text-m"
             >
               {name}
             </span>
           )}
           {!isAnonymized && !onSpeakerChange && (
-            <span className="text-sm font-semibold text-fg">{name}</span>
+            <span className="text-sm font-medium text-grey-100 md:text-m">
+              {name}
+            </span>
           )}
           {isAnonymized && (
-            <span className="text-sm font-semibold text-fg">익명화됨</span>
+            <span className="text-sm font-medium text-grey-100 md:text-m">
+              익명화됨
+            </span>
           )}
           {showTimestampDisplay &&
             segment.start != null &&
             segment.start > 0 && (
-              <span className="text-xs text-fg-muted">
+              <span className="text-sm text-grey-70 md:text-m">
                 {formatTime(segment.start)}
               </span>
             )}
           {!showTimestamp && speakerUtteranceIndex !== undefined && (
-            <span className="text-xs text-fg-muted">
+            <span className="text-sm text-grey-70 md:text-m">
               {speakerUtteranceIndex}
             </span>
           )}
@@ -293,22 +258,13 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             onChange={handleTextareaChange}
             onClick={(e) => e.stopPropagation()}
             rows={1}
-            className={`m-0 block w-full resize-none overflow-hidden border-0 bg-transparent p-0 leading-relaxed outline-none placeholder:text-[#CFCED3] ${
-              isActive ? 'font-medium text-fg' : 'text-fg-muted'
+            className={`m-0 block w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none placeholder:text-grey-70 md:text-m ${
+              isActive ? 'font-emphasize' : ''
             }`}
-            style={{
-              lineHeight: '1.625',
-              fontFamily: 'inherit',
-              fontSize: 'inherit',
-              fontWeight: 'inherit',
-              minHeight: '1.625em',
-            }}
           />
         ) : (
           <p
-            className={`m-0 leading-relaxed ${
-              isActive ? 'font-medium text-fg' : 'text-fg-muted'
-            }`}
+            className={`m-0 text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
           >
             {renderTextWithNonverbal(textParts, sttModel)}
           </p>
@@ -319,7 +275,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       {isEditable && onAddSegment && (
         <button
           onClick={handleAddSegment}
-          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-50 p-2 text-primary-600 opacity-0 shadow-sm transition-all hover:scale-105 hover:border-primary group-hover/segment:pointer-events-auto group-hover/segment:opacity-100"
+          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-subtle p-2 text-primary opacity-0 shadow-sm transition-all hover:scale-105 hover:border-primary group-hover/segment:pointer-events-auto group-hover/segment:opacity-100"
           aria-label="세그먼트 추가"
         >
           <Plus className="h-4 w-4" />

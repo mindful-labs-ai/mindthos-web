@@ -20,25 +20,25 @@ export interface BadgeProps extends React.ComponentPropsWithoutRef<'span'> {
 }
 
 const sizeStyles: Record<BadgeSize, string> = {
-  sm: 'px-2 py-0.5 text-xs rounded-[var(--radius-sm)]',
-  md: 'px-2.5 py-1 text-sm rounded-[var(--radius-md)]',
-  lg: 'px-3 py-1.5 text-base rounded-[var(--radius-lg)]',
+  sm: 'px-2 py-0.5 typo-xs rounded-sm',
+  md: 'px-2.5 py-1 typo-sm rounded-md',
+  lg: 'px-3 py-1.5 typo-m rounded-lg',
 };
 
 const toneVariantStyles: Record<BadgeTone, Record<BadgeVariant, string>> = {
   primary: {
-    solid: 'bg-primary text-surface',
-    soft: 'bg-primary-100 text-primary',
-    outline: 'border border-primary bg-primary-100 text-primary',
+    solid: 'bg-primary text-primary-fg',
+    soft: 'bg-primary-subtle text-primary',
+    outline: 'border border-primary bg-primary-subtle text-primary',
   },
   secondary: {
-    solid: 'bg-secondary text-surface',
-    soft: 'bg-secondary text-fg',
-    outline: 'border border-secondary text-secondary bg-transparent',
+    solid: 'bg-neutral text-neutral-fg',
+    soft: 'bg-neutral-active text-fg',
+    outline: 'border border-neutral text-neutral-fg bg-transparent',
   },
   accent: {
-    solid: 'bg-accent text-surface',
-    soft: 'bg-accent text-accent',
+    solid: 'bg-accent text-primary-fg',
+    soft: 'bg-accent/10 text-accent',
     outline: 'border border-accent text-accent bg-transparent',
   },
   neutral: {
@@ -47,19 +47,19 @@ const toneVariantStyles: Record<BadgeTone, Record<BadgeVariant, string>> = {
     outline: 'border border-border text-fg bg-transparent',
   },
   success: {
-    solid: 'bg-green-500 text-white',
-    soft: 'bg-green-50 text-green-700',
-    outline: 'border border-green-500 text-green-700 bg-transparent',
+    solid: 'bg-success text-primary-fg',
+    soft: 'bg-green-20 text-green-80',
+    outline: 'border border-success text-green-80 bg-transparent',
   },
   warning: {
-    solid: 'bg-yellow-500 text-white',
-    soft: 'bg-yellow-50 text-yellow-700',
-    outline: 'border border-yellow-500 text-yellow-700 bg-transparent',
+    solid: 'bg-warn text-primary-fg',
+    soft: 'bg-red-20 text-red-80',
+    outline: 'border border-warn text-warn bg-transparent',
   },
   error: {
-    solid: 'bg-red-500 text-white',
-    soft: 'bg-red-50 text-red-700',
-    outline: 'border border-red-500 text-red-700 bg-transparent',
+    solid: 'bg-danger text-danger-fg',
+    soft: 'bg-danger-subtle text-danger',
+    outline: 'border border-danger text-danger bg-transparent',
   },
 };
 

@@ -146,8 +146,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
             className={cn(
               'pointer-events-none',
               'max-w-xs',
-              'rounded-[var(--radius-md)] bg-surface px-3 py-2',
-              'text-xs text-surface shadow-lg',
+              'rounded-md bg-surface px-3 py-2',
+              'typo-xs shadow-elevated text-fg',
               'animate-fadeIn',
               className
             )}

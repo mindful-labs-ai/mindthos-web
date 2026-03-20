@@ -321,10 +321,10 @@ function ProcessingAnimation() {
         />
       </svg>
 
-      <span className="text-center text-base text-fg-muted">
+      <span className="text-center typo-m text-fg-muted">
         보고서를 생성하고 있습니다...
       </span>
-      <span className="text-center text-xs text-primary">
+      <span className="text-center typo-xs text-primary">
         최대 1분 정도 소요될 수 있습니다.
       </span>
     </div>
@@ -341,17 +341,17 @@ function SuccessState({ onProceed }: { onProceed?: () => void }) {
       <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
         <Check className="h-8 w-8 text-green-600" />
       </div>
-      <h3 className="text-lg font-semibold text-fg">
+      <h3 className="typo-l font-emphasize text-fg">
         보고서가 생성되었습니다!
       </h3>
-      <p className="text-sm text-fg-muted">
+      <p className="typo-sm text-fg-muted">
         미리보기로 이동하여 보고서를 확인해보세요.
       </p>
       {onProceed && (
         <button
           type="button"
           onClick={onProceed}
-          className="mt-2 w-full max-w-[240px] rounded-xl bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primary-400"
+          className="mt-2 w-full max-w-[240px] rounded-xl bg-primary py-3 typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
         >
           보고서 확인하기
         </button>
@@ -369,24 +369,24 @@ const KAKAO_INQUIRY_URL = KAKAO_SUPPORT_URL;
 function ErrorState() {
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      <h3 className="text-lg font-semibold text-fg">
+      <h3 className="typo-l font-emphasize text-fg">
         아쉽게도 보고서를 생성할 수 없어요.
       </h3>
-      <p className="text-center text-sm leading-relaxed text-fg-muted">
+      <p className="text-center typo-sm leading-relaxed text-fg-muted">
         축어록 내용이 충분하지 않거나, 보고서 생성에
         <br />
         적합하지 않은 경우 보고서를 생성할 수 없습니다.
         <br />
         혹은 알 수 없는 문제가 발생했을 수도 있어요.
       </p>
-      <p className="text-center text-sm text-fg-muted">
+      <p className="text-center typo-sm text-fg-muted">
         자세한 내용은 아래로 문의해주세요.
       </p>
       <a
         href={KAKAO_INQUIRY_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2 rounded-xl border border-border px-6 py-3 text-base font-semibold text-fg transition-colors hover:bg-surface-contrast"
+        className="mt-2 rounded-xl border border-border px-6 py-3 typo-m font-emphasize text-fg transition-colors hover:bg-surface-contrast"
       >
         마음토스 오류 문의
       </a>

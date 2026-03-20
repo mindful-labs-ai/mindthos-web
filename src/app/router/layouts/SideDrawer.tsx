@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { cn } from '@/lib/cn';
-import { ChevronLeftIcon } from '@/shared/icons';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 
 interface SideDrawerProps {
   open: boolean;
@@ -50,7 +50,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       {/* Backdrop - blur + dim */}
       <div
         className={cn(
-          'absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300',
+          'bg-overlay-bg duration-slow absolute inset-0 backdrop-blur-sm transition-opacity',
           open ? 'opacity-100' : 'opacity-0'
         )}
         onClick={onClose}
@@ -60,31 +60,24 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       {/* Drawer panel */}
       <aside
         className={cn(
-          'absolute inset-y-0 left-0 flex w-64 max-w-[80vw] flex-col bg-bg shadow-xl transition-transform duration-300 ease-out',
+          'w-sidetab bg-sidebar-bg shadow-prominent duration-slow absolute inset-y-0 left-0 flex flex-col px-5 transition-transform ease-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Drawer header with close button */}
-        <div className="flex h-14 items-center justify-between border-b border-border px-4">
+        <div className="border-sidebar-border h-header flex w-full items-center justify-between border-b">
           <button
             onClick={() => window.location.assign('/')}
-            className="flex items-center gap-2 rounded hover:opacity-80"
+            className="main-logo-mobile-size items-center gap-2"
           >
             <img
               src="/title_mindthos_logo.png"
               alt="마음토스"
-              className="h-6 w-auto antialiased"
+              className="h-6 w-full object-cover antialiased"
               draggable="false"
             />
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex items-center justify-center rounded-lg border border-border p-1.5 text-fg-muted transition-colors hover:bg-surface-contrast"
-            aria-label="메뉴 닫기"
-          >
-            <ChevronLeftIcon size={20} />
-          </button>
+          <BackButton onClick={onClose} aria-label="메뉴 닫기" />
         </div>
 
         {/* Drawer body - SideTab content */}

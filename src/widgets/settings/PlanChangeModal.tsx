@@ -11,7 +11,9 @@ import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { Text, Title } from '@/shared/ui';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -37,6 +39,8 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const [period] = React.useState<PlanPeriod>('monthly');
   const [selectedPlanId, setSelectedPlanId] = React.useState<string | null>(
     null
@@ -136,8 +140,9 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         // 업그레이드: 미리보기 조회 후 확인 모달 표시
         const preview = await billingService.previewUpgrade(selectedPlanId);
         setUpgradePreview(preview);
-        setUpgradeModalOpen(true);
         setIsUpgrading(false);
+        // fullScreen 중첩 시 history 충돌 방지
+        requestAnimationFrame(() => setUpgradeModalOpen(true));
       } else {
         // 다운그레이드: 확인 모달 표시
         setSelectedNewPlan({
@@ -145,8 +150,8 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
           price: selectedPlan.price,
           totalCredit: selectedPlan.total_credit,
         });
-        setDowngradeModalOpen(true);
         setIsUpgrading(false);
+        requestAnimationFrame(() => setDowngradeModalOpen(true));
       }
     } catch (error) {
       setIsUpgrading(false);
@@ -361,12 +366,36 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="mx-12 flex h-fit max-w-fit items-center justify-center"
+      className={
+        isMobileView
+          ? 'flex flex-col'
+          : 'mx-12 flex h-fit max-w-fit items-center justify-center'
+      }
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
+      closeOnOverlay={!upgradeModalOpen && !downgradeModalOpen}
     >
-      <div className="flex flex-col items-stretch gap-y-12 p-6">
-        <Title className="pt-4" as="h2">
-          마음토스 플랜 업그레이드
-        </Title>
+      {isMobileView && (
+        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+          <BackButton onClick={() => onOpenChange(false)} />
+          <p className="text-l font-medium text-grey-80">
+            마음토스 플랜 업그레이드
+          </p>
+        </div>
+      )}
+
+      <div
+        className={
+          isMobileView
+            ? 'flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:px-20'
+            : 'flex flex-col items-stretch gap-y-12 p-6'
+        }
+      >
+        {!isMobileView && (
+          <Title className="text-center" as="h2">
+            마음토스 플랜 업그레이드
+          </Title>
+        )}
         {/* Period Toggle */}
         {/* <div className="flex justify-center gap-1 rounded-lg bg-surface-contrast p-1">
           <Button
@@ -399,7 +428,13 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
             <Text className="text-fg-muted">사용 가능한 플랜이 없습니다.</Text>
           </div>
         ) : (
-          <div className="flex justify-center gap-6 overflow-auto">
+          <div
+            className={
+              isMobileView
+                ? 'flex flex-col gap-4'
+                : 'flex justify-center gap-6 overflow-auto'
+            }
+          >
             {currentPlans.map((plan) => {
               const isYearly = plan.is_year;
               const discountInfo = isYearly
@@ -408,7 +443,10 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
               const isCurrent = plan.id === currentPlanId;
 
               return (
-                <div key={plan.id} className="max-w-md flex-1">
+                <div
+                  key={plan.id}
+                  className={isMobileView ? 'w-full' : 'max-w-md flex-1'}
+                >
                   <PlanCard
                     name={getPlanName(plan.type)}
                     description={plan.description}
@@ -420,54 +458,103 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
                     isSelected={selectedPlanId === plan.id}
                     isCurrent={isCurrent}
                     onSelect={() => !isCurrent && handleSelectPlan(plan.id)}
+                    compact={isMobileView}
                   />
                 </div>
               );
             })}
           </div>
         )}
-
-        <div className="flex flex-col items-center gap-y-2">
-          <Text className="text-sm text-fg">
-            <a
-              href={getTermsRoute(TERMS_TYPES.SERVICE)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline transition-colors hover:text-primary-600"
-            >
-              결제 약관
-            </a>
-            에 동의합니다.
-          </Text>
-          <Button
-            variant="solid"
-            tone="primary"
-            size="lg"
-            disabled={
-              !selectedPlanId ||
-              isLoading ||
-              isUpgrading ||
-              selectedPlanId === currentPlanId
-            }
-            onClick={handleUpgrade}
-            className="w-full max-w-lg"
+        {!isMobileView && (
+          <div className="flex flex-col items-center gap-y-2">
+        <Text className="typo-sm text-fg">
+          <a
+            href={getTermsRoute(TERMS_TYPES.SERVICE)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline transition-colors hover:text-primary-hover"
           >
-            {isUpgrading
-              ? '처리 중...'
-              : selectedPlanId
-                ? (() => {
-                    const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
-                      (p) => p.id === selectedPlanId
-                    );
-                    if (!selectedPlan) return '플랜 변경';
-                    return selectedPlan.price > currentPlanPrice
-                      ? '플랜 업그레이드'
-                      : '플랜 다운그레이드';
-                  })()
-                : '플랜 변경'}
+            결제 약관
+          </a>
+          에 동의합니다.
+        </Text>
+        <Button
+          variant="solid"
+          tone="primary"
+          size="lg"
+          disabled={
+            !selectedPlanId ||
+            isLoading ||
+            isUpgrading ||
+            selectedPlanId === currentPlanId
+          }
+          onClick={handleUpgrade}
+          className="w-full max-w-lg"
+        >
+          {isUpgrading
+            ? '처리 중...'
+            : selectedPlanId
+              ? (() => {
+                  const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
+                    (p) => p.id === selectedPlanId
+                  );
+                  if (!selectedPlan) return '플랜 변경';
+                  return selectedPlan.price > currentPlanPrice
+                    ? '플랜 업그레이드'
+                    : '플랜 다운그레이드';
+                })()
+              : '플랜 변경'}
           </Button>
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* 모바일: 하단 그라데이션 + 버튼 */}
+      {isMobileView && (
+        <>
+          <div className="pointer-events-none relative z-10 -mt-8 h-8 flex-shrink-0 bg-gradient-to-t from-white to-transparent" />
+          <div className="flex flex-shrink-0 flex-col items-center gap-y-2 px-4 pb-4 md:px-20">
+            <Text className="typo-sm text-fg">
+              <a
+                href={getTermsRoute(TERMS_TYPES.SERVICE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline transition-colors hover:text-primary-hover"
+              >
+                결제 약관
+              </a>
+              에 동의합니다.
+            </Text>
+            <Button
+              variant="solid"
+              tone="primary"
+              size="lg"
+              disabled={
+                !selectedPlanId ||
+                isLoading ||
+                isUpgrading ||
+                selectedPlanId === currentPlanId
+              }
+              onClick={handleUpgrade}
+              className="w-full"
+            >
+              {isUpgrading
+                ? '처리 중...'
+                : selectedPlanId
+                  ? (() => {
+                      const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
+                        (p) => p.id === selectedPlanId
+                      );
+                      if (!selectedPlan) return '플랜 변경';
+                      return selectedPlan.price > currentPlanPrice
+                        ? '플랜 업그레이드'
+                        : '플랜 다운그레이드';
+                    })()
+                  : '플랜 변경'}
+            </Button>
+          </div>
+        </>
+      )}
 
       {/* 업그레이드 확인 모달 */}
       <UpgradeConfirmModal

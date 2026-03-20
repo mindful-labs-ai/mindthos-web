@@ -10,6 +10,8 @@ import {
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { qualificationQueryKeys } from '@/shared/constants/queryKeys';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -109,6 +111,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     enabled: open,
     staleTime: Infinity,
   });
+
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   const [formData, setFormData] = React.useState<UserEditFormData>({
     name: '',
@@ -228,34 +233,54 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="max-w-lg text-left"
+      className={isMobileView ? 'flex flex-col' : 'max-w-lg text-left'}
       closeOnOverlay={false}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
     >
-      <form onSubmit={handleSubmit} className="space-y-6 py-4">
-        <div className="px-6">
-          {isQuestMode && (
-            <>
-              <Text className="mb-1 text-sm font-bold text-primary">
-                마지막 미션
-              </Text>
-              <Title as="h2" className="text-2xl font-bold">
-                선생님의 성함은 무엇인가요?
+      <form
+        onSubmit={handleSubmit}
+        className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}
+      >
+        {isMobileView ? (
+          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+            <BackButton onClick={() => onOpenChange(false)} />
+            <p className="text-l font-medium text-grey-80">
+              회원 정보 수정하기
+            </p>
+          </div>
+        ) : (
+          <div className="px-6">
+            {isQuestMode && (
+              <>
+                <Text className="typo-sm mb-1 font-headline text-primary">
+                  마지막 미션
+                </Text>
+                <Title as="h2" className="typo-2xl font-headline">
+                  선생님의 성함은 무엇인가요?
+                </Title>
+                <Text className="typo-sm mt-3 leading-relaxed text-fg-muted">
+                  마음토스에서 상담 &amp; 임상 보고서를 만드실 때,
+                  <br />
+                  여기서 입력된 선생님의 정보가 기입됩니다.
+                </Text>
+              </>
+            )}
+            {!isQuestMode && (
+              <Title as="h2" className="typo-2xl font-headline">
+                정보 입력하기
               </Title>
-              <Text className="mt-3 text-sm leading-relaxed text-fg-muted">
-                마음토스에서 상담 &amp; 임상 보고서를 만드실 때,
-                <br />
-                여기서 입력된 선생님의 정보가 기입됩니다.
-              </Text>
-            </>
-          )}
-          {!isQuestMode && (
-            <Title as="h2" className="text-2xl font-bold">
-              정보 입력하기
-            </Title>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        <div className="space-y-4 px-6">
+        <div
+          className={
+            isMobileView
+              ? 'flex-1 space-y-4 overflow-y-auto px-4 py-4 md:px-10'
+              : 'space-y-4 px-6'
+          }
+        >
           <FormField label="이름" required error={errors.name}>
             <Input
               type="text"
@@ -349,13 +374,19 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-center px-6 pt-4">
+        <div
+          className={
+            isMobileView
+              ? 'flex-shrink-0 px-4 pb-4 md:px-10'
+              : 'flex justify-center px-6 pt-4'
+          }
+        >
           <Button
             type="submit"
             variant="solid"
             tone="primary"
             size="lg"
-            className="w-full max-w-md"
+            className={isMobileView ? 'w-full' : 'w-full max-w-md'}
             disabled={
               mutation.isPending ||
               !formData.name.trim() ||
@@ -369,7 +400,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
               ? '저장 중...'
               : isQuestMode
                 ? '저장하고 미션 완료하기'
-                : '정보 입력하기'}
+                : isMobileView
+                  ? '수정하기'
+                  : '정보 입력하기'}
           </Button>
         </div>
       </form>

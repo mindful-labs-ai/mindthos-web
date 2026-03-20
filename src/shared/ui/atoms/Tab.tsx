@@ -26,23 +26,23 @@ export interface TabProps {
 const SCROLL_AMOUNT = 160;
 
 const pillSizeStyles: Record<TabSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-5 py-2.5 text-base',
+  sm: 'px-3 py-1.5 typo-sm',
+  md: 'px-4 py-2 typo-sm',
+  lg: 'px-5 py-2.5 typo-m',
   free: '',
 };
 
 const cardNavSizeStyles: Record<TabSize, string> = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-5 py-2.5 text-base',
+  sm: 'px-3 py-1.5 typo-sm',
+  md: 'px-4 py-2 typo-sm',
+  lg: 'px-5 py-2.5 typo-m',
   free: '',
 };
 
 const underlineSizeStyles: Record<TabSize, string> = {
-  sm: 'px-3 py-2 pt-1 text-sm',
-  md: 'px-4 py-3 pt-2 text-sm',
-  lg: 'px-5 py-4 pt-3 text-base',
+  sm: 'px-3 py-2 pt-1 text-m font-headline',
+  md: 'px-4 py-3 pt-2 text-m font-headline',
+  lg: 'px-5 py-4 pt-3 typo-m',
   free: '',
 };
 
@@ -238,15 +238,15 @@ export const Tab: React.FC<TabProps> = ({
                   }}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                   className={cn(
-                    'flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
+                    'transition-default flex-shrink-0 whitespace-nowrap font-medium',
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+                    'aria-disabled:disabled-default min-h-[42px] min-w-[138px] items-center text-center',
                     'rounded-sm focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
-                    'border border-surface-strong',
+                    'border border-grey-40',
                     cardNavSizeStyles[size],
                     isSelected
-                      ? 'bg-surface text-fg shadow-sm'
-                      : 'bg-transparent text-fg-muted hover:text-fg'
+                      ? 'bg-white text-grey-100'
+                      : 'bg-grey-10 text-grey-60 hover:opacity-80'
                   )}
                 >
                   {item.label}
@@ -307,7 +307,7 @@ export const Tab: React.FC<TabProps> = ({
           'scrollbar-hide flex items-center overflow-x-auto overscroll-x-contain',
           fullWidth ? 'w-full' : 'w-fit max-w-full',
           variant === 'pill'
-            ? 'gap-1 rounded-[var(--radius-md)] bg-surface-strong p-1'
+            ? 'gap-1 rounded-md bg-surface-strong p-1'
             : 'gap-2'
         )}
       >
@@ -332,22 +332,23 @@ export const Tab: React.FC<TabProps> = ({
               }}
               onKeyDown={(e) => handleKeyDown(e, index)}
               className={cn(
-                'h-full flex-shrink-0 whitespace-nowrap font-medium transition-colors duration-200',
+                'transition-default h-full flex-shrink-0 whitespace-nowrap font-medium',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                'min-w-20 items-center text-center aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+                'aria-disabled:disabled-default flex items-center justify-center text-center',
+                'min-h-[42px] min-w-[138px]',
                 sizeStyles[size],
                 variant === 'pill'
                   ? cn(
-                      'rounded-[var(--radius-sm)]',
+                      'rounded-sm',
                       'focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
                       isSelected
-                        ? 'bg-surface text-fg shadow-sm'
+                        ? 'bg-surface text-fg shadow-subtle'
                         : 'bg-transparent text-fg-muted hover:text-fg'
                     )
                   : cn(
                       'relative rounded-t-lg border border-transparent',
                       isSelected
-                        ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-primary shadow-sm'
+                        ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-primary shadow-subtle'
                         : 'border-b-0 border-l-border border-r-border border-t-border text-fg-muted hover:text-fg'
                     )
               )}
@@ -364,7 +365,7 @@ export const Tab: React.FC<TabProps> = ({
           <button
             type="button"
             aria-label="이전 탭"
-            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-sm ring-1 ring-border transition hover:bg-surface-strong"
+            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-subtle ring-1 ring-border transition hover:bg-surface-strong"
             onClick={() => handleScrollBy('left')}
           >
             <svg
@@ -393,7 +394,7 @@ export const Tab: React.FC<TabProps> = ({
           <button
             type="button"
             aria-label="다음 탭"
-            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-sm ring-1 ring-border transition hover:bg-surface-strong"
+            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-subtle ring-1 ring-border transition hover:bg-surface-strong"
             onClick={() => handleScrollBy('right')}
           >
             <svg

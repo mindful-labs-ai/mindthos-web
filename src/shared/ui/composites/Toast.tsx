@@ -112,23 +112,23 @@ const ToastItem: React.FC<ToastItemProps> = ({
       className={cn(
         'pointer-events-auto',
         'w-full sm:min-w-[300px] sm:max-w-md',
-        'rounded-[var(--radius-lg)] border-2 border-border bg-surface shadow-lg',
+        'rounded-lg border-default bg-surface shadow-elevated',
         'p-4',
         // 모바일: absolute 스택 (최신이 위, 나머지는 뒤로)
         index < total - 1 &&
           'absolute left-0 right-0 top-0 sm:relative sm:left-auto sm:right-auto',
         'translate-y-[var(--stack-offset)] scale-[var(--stack-scale)] opacity-[var(--stack-opacity)]',
         'sm:translate-y-0 sm:scale-100 sm:opacity-100',
-        'transition-all duration-200 ease-out',
+        'transition-all duration-normal ease-out',
         'origin-top',
         'animate-[slideIn_0.2s_ease-out]'
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <div className="font-semibold text-fg">{toast.title}</div>
+          <div className="font-emphasize text-fg">{toast.title}</div>
           {toast.description && (
-            <div className="mt-1 text-sm text-fg-muted">
+            <div className="mt-1 typo-sm text-fg-muted">
               {toast.description}
             </div>
           )}
@@ -139,9 +139,9 @@ const ToastItem: React.FC<ToastItemProps> = ({
                 onClose();
               }}
               className={cn(
-                'mt-2 rounded-[var(--radius-sm)] text-sm font-medium text-primary hover:text-primary-600',
-                'transition-colors duration-200',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+                'mt-2 rounded-sm typo-sm font-medium text-primary hover:text-primary-hover',
+                'transition-default',
+                'focus-default'
               )}
             >
               {toast.action.label}
@@ -152,11 +152,11 @@ const ToastItem: React.FC<ToastItemProps> = ({
           onClick={onClose}
           aria-label="Close notification"
           className={cn(
-            'flex-shrink-0 rounded-[var(--radius-sm)] p-1',
+            'flex-shrink-0 rounded-sm p-1',
             'text-fg-muted hover:text-fg',
             'hover:bg-surface-contrast',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            'transition-default',
+            'focus-default'
           )}
         >
           <svg

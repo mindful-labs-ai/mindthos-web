@@ -10,10 +10,10 @@ export interface TitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
 }
 
 const headingStyles: Record<TitleAs, string> = {
-  h1: 'text-3xl font-bold tracking-tight',
-  h2: 'text-2xl font-semibold tracking-tight',
-  h3: 'text-xl font-semibold',
-  h4: 'text-lg font-medium',
+  h1: 'typo-2xl-extrabold tracking-tight',
+  h2: 'typo-xl-headline tracking-tight',
+  h3: 'typo-l-headline',
+  h4: 'typo-m',
 };
 
 /**

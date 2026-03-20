@@ -24,7 +24,7 @@ export const AppShell = ({
   isMobileView,
   children,
 }: AppShellProps) => (
-  <div className="flex h-dvh w-full overflow-hidden bg-surface-contrast">
+  <div className="flex h-dvh w-full overflow-hidden bg-app-bg">
     {/* Sidebar - 데스크톱에서만 표시 */}
     {!isMobileView && sidebar}
 

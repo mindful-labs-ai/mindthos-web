@@ -4,8 +4,6 @@ import { ROUTES } from '@/app/router/constants';
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { Button } from '@/shared/ui/atoms/Button';
-import { Input } from '@/shared/ui/atoms/Input';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -45,46 +43,35 @@ const SignInForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="auth-error-area">{error}</div>}
 
       <FormField>
-        <Input
+        <input
           type="email"
           placeholder="이메일 주소"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
           autoComplete="email"
-          className="h-12 text-base"
+          className="auth-input"
           disabled={isSubmitting}
         />
       </FormField>
       <FormField>
-        <Input
+        <input
           type="password"
           placeholder="비밀번호"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           autoComplete="current-password"
-          className="h-12 text-base"
+          className="auth-input"
           disabled={isSubmitting}
         />
       </FormField>
-      <Button
-        type="submit"
-        size="lg"
-        variant="solid"
-        tone="primary"
-        className="h-12 w-full bg-primary-500 text-base hover:bg-primary-600"
-        disabled={isSubmitting}
-      >
+      <button type="submit" className="auth-button" disabled={isSubmitting}>
         {isSubmitting ? '로그인 중...' : '로그인'}
-      </Button>
+      </button>
     </form>
   );
 };

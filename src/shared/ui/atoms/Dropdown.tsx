@@ -151,11 +151,11 @@ export const Dropdown: React.FC<DropdownProps> = ({
         onKeyDown={handleKeyDown}
         className={cn(
           'inline-flex items-center justify-between gap-2',
-          'h-10 w-full min-w-[200px] px-4 text-sm',
-          'rounded-[var(--radius-md)] border-2 border-border bg-surface',
-          'transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'h-10 w-full min-w-[200px] px-4 typo-sm',
+          'rounded-md border-default bg-input-bg',
+          'transition-default',
+          'focus-default',
+          'disabled:disabled-default',
           !selectedItem && 'text-fg-muted'
         )}
       >
@@ -186,7 +186,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           className={cn(
             'absolute z-popover mt-1 w-full',
             'max-h-60 overflow-auto',
-            'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg',
+            'rounded-md border-default bg-surface shadow-elevated',
             'py-1'
           )}
         >
@@ -210,9 +210,9 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   }
                 }}
                 className={cn(
-                  'cursor-pointer px-4 py-2 text-sm',
-                  'transition-colors duration-150',
-                  item.disabled && 'cursor-not-allowed opacity-50',
+                  'cursor-pointer px-4 py-2 typo-sm',
+                  'transition-default',
+                  item.disabled && 'disabled-default',
                   !item.disabled && isHighlighted && 'bg-surface-contrast',
                   !item.disabled &&
                     !isHighlighted &&

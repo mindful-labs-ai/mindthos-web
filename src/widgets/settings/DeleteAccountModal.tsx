@@ -41,14 +41,14 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
       className="max-w-sm text-left"
     >
       <div className="space-y-4">
-        <Text className="text-sm text-fg-muted">
+        <Text className="typo-sm text-fg-muted">
           계정을 탈퇴하면 모든 데이터가 삭제되며, 복구할 수 없습니다.
           <br />
           정말 탈퇴하시겠습니까?
         </Text>
 
         {error && (
-          <p className="text-sm text-danger" role="alert">
+          <p className="typo-sm text-danger" role="alert">
             {error}
           </p>
         )}

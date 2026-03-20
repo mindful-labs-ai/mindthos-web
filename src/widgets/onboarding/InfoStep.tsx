@@ -51,11 +51,11 @@ export function InfoStep({
         <Title
           as="h2"
           id="onboarding-title"
-          className="text-xl font-bold text-fg"
+          className="typo-xl font-headline text-fg"
         >
           마음토스에 오신 것을 환영합니다!
         </Title>
-        <Text className="mt-2 text-sm text-fg-muted">
+        <Text className="mt-2 typo-sm text-fg-muted">
           사용하기 앞서 선생님의 원활한 마음토스 사용을 도와드릴게요.
           <br />
           먼저, 기본 정보를 입력해주세요.
@@ -110,7 +110,7 @@ export function InfoStep({
       </div>
 
       {error && (
-        <p className="text-sm text-danger" role="alert">
+        <p className="typo-sm text-danger" role="alert">
           {error}
         </p>
       )}

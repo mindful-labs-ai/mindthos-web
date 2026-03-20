@@ -67,7 +67,7 @@ export const ProgressCircle = React.forwardRef<
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-primary-200"
+            className="text-primary-hover"
           />
           {/* Progress circle */}
           <circle
@@ -80,7 +80,7 @@ export const ProgressCircle = React.forwardRef<
             strokeDasharray={circumference}
             strokeDashoffset={indeterminate ? circumference * 0.75 : offset}
             strokeLinecap="butt"
-            className="text-primary-400 transition-all duration-300"
+            className="duration-slow text-primary transition-all"
             style={{
               transform: 'rotate(-90deg)',
               transformOrigin: '50% 50%',
@@ -88,9 +88,7 @@ export const ProgressCircle = React.forwardRef<
           />
         </svg>
         {!indeterminate && showValue && (
-          <span className="absolute text-xs font-medium text-fg">
-            {clampedValue}%
-          </span>
+          <span className="typo-xs absolute text-fg">{clampedValue}%</span>
         )}
       </div>
     );

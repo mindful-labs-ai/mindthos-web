@@ -18,7 +18,12 @@ import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { FileSearchIcon, UploadIcon, UserPlusIcon } from '@/shared/icons';
+import {
+  AddClientActionIcon,
+  SessionHistoryActionIcon,
+  UploadActionIcon,
+} from '@/shared/icons';
+import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { formatKoreanDate } from '@/shared/utils/date';
@@ -27,21 +32,21 @@ import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 import { ActionCard } from '@/widgets/home/ActionCard';
 import { GreetingSection } from '@/widgets/home/GreetingSection';
-import MobileView from '@/widgets/home/MobileView';
 import { QuestStep } from '@/widgets/onboarding/QuestStep';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
 import { HomeView } from './HomeView';
+import { MobileHomeView } from './MobileHomeView';
 
 const HomeContainer = () => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const { navigateWithUtm } = useNavigateWithUtm();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
   const user = useAuthStore((state) => state.user);
   const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
     React.useState(true);
-
-  const { isMobile } = useDevice();
 
   const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
     useQuestStore();
@@ -180,7 +185,11 @@ const HomeContainer = () => {
   };
 
   const handleUploadClick = () => {
-    openModal('createMultiSession');
+    if (isMobileView) {
+      openModal('sessionTypeSelect');
+    } else {
+      openModal('createMultiSession');
+    }
   };
 
   const handleAddCustomerClick = () => {
@@ -204,10 +213,6 @@ const HomeContainer = () => {
   const handleOpenUserEdit = () => {
     openModal('userEdit');
   };
-
-  if (isMobile) {
-    return <MobileView />;
-  }
 
   const hasSession = sessionsFromQuery.length > 0;
   const hasMoreSessions = sessionsWithTranscribes.length > 5;
@@ -242,27 +247,41 @@ const HomeContainer = () => {
   );
 
   const actionCards = (
-    <div className="mb-8 flex max-w-[1200px] flex-row gap-6">
+    <div className="mb-8 flex max-w-[1200px] flex-wrap gap-3 md:justify-start md:gap-5 lg:flex-nowrap lg:gap-6">
       <ActionCard
-        icon={<UploadIcon size={24} className="text-primary-500" />}
+        icon={<UploadActionIcon size={24} />}
         title="녹음 파일 업로드하기"
         onClick={handleUploadClick}
+        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
       />
       <ActionCard
-        icon={<UserPlusIcon size={24} className="text-danger" />}
+        icon={<AddClientActionIcon size={24} className="text-danger" />}
         title="클라이언트 추가하기"
         onClick={handleAddCustomerClick}
+        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
       />
       <ActionCard
-        icon={<FileSearchIcon size={24} className="text-warn" />}
+        icon={<SessionHistoryActionIcon size={24} className="text-warn" />}
         title="상담 기록 전체보기"
         onClick={handleViewAllRecordsClick}
+        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
       />
     </div>
   );
 
-  const sessionList = (
-    <>
+  const sessionSection = (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="text-l font-headline">지난 상담 기록</h2>
+          {isDummyFlow && (
+            <Badge tone="warning" variant="soft" size="sm">
+              예시
+            </Badge>
+          )}
+        </div>
+      </div>
+
       <div className="space-y-4">
         {isLoadingSessions ? (
           <div className="rounded-lg border border-surface-strong bg-surface-contrast p-8 text-center">
@@ -293,24 +312,27 @@ const HomeContainer = () => {
           <button
             type="button"
             onClick={handleViewAllRecordsClick}
-            className="w-full rounded-lg border-2 border-border bg-surface px-6 py-2.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+            className="border-default typo-sm w-full rounded-lg bg-surface px-6 py-2.5 font-medium text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
           >
             더보기
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 
-  return (
-    <HomeView
-      onboardingSection={onboardingSection}
-      greetingSection={greetingSection}
-      actionCards={actionCards}
-      sessionList={sessionList}
-      isDummyFlow={isDummyFlow}
-    />
-  );
+  const viewProps = {
+    onboardingSection,
+    greetingSection,
+    actionCards,
+    sessionSection,
+  };
+
+  if (isMobileView) {
+    return <MobileHomeView {...viewProps} />;
+  }
+
+  return <HomeView {...viewProps} />;
 };
 
 export default HomeContainer;

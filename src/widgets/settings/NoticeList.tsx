@@ -32,26 +32,28 @@ function NoticeCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full cursor-pointer overflow-hidden rounded-2xl border border-border bg-surface text-left transition-colors hover:border-primary-500"
+      className="hover:border-primary-500 flex w-full cursor-pointer overflow-hidden rounded-2xl border border-border bg-surface text-left transition-colors"
     >
       {notice.thumbnail && (
         <img
           src={notice.thumbnail}
           alt={notice.title}
-          className="h-auto w-[200px] flex-shrink-0 object-cover"
+          className="hidden h-auto w-[200px] flex-shrink-0 object-cover md:block"
         />
       )}
-      <div className="flex flex-1 flex-col justify-center gap-2 p-6">
-        <div className="flex items-start justify-between">
-          <Text className="text-lg font-bold">{notice.title}</Text>
-          <Text className="text-sm font-semibold text-primary">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2 p-4 md:p-6">
+        <div className="flex items-start gap-2">
+          <Text className="min-w-0 flex-1 truncate text-m font-headline md:text-l">
+            {notice.title}
+          </Text>
+          <Text className="flex-shrink-0 text-xs font-medium text-green-80 md:text-sm">
             {notice.version}
           </Text>
         </div>
         {preview && (
-          <Text className="line-clamp-2 text-sm text-fg">{preview}</Text>
+          <Text className="typo-sm line-clamp-2 text-fg">{preview}</Text>
         )}
-        <Text className="text-xs text-fg-muted">{notice.date}</Text>
+        <Text className="typo-xs text-fg-muted">{notice.date}</Text>
       </div>
     </button>
   );

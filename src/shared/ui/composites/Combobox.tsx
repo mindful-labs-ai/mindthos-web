@@ -156,12 +156,12 @@ export const Combobox: React.FC<ComboboxProps> = ({
           aria-expanded={isOpen}
           aria-controls="combobox-listbox"
           className={cn(
-            'w-full rounded-[var(--radius-md)] border-2 border-border bg-surface px-3 py-2 pr-10',
-            'text-sm text-fg transition-colors duration-200',
-            'placeholder:text-fg-muted',
+            'w-full rounded-md border-default bg-input-bg px-3 py-2 pr-10',
+            'typo-sm text-fg transition-default',
+            'placeholder:text-input-placeholder',
             'hover:border-primary/50',
-            'focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            'disabled:cursor-not-allowed disabled:opacity-50'
+            'focus-visible:border-primary focus-default',
+            'disabled:disabled-default'
           )}
         />
         <svg
@@ -186,12 +186,12 @@ export const Combobox: React.FC<ComboboxProps> = ({
           className={cn(
             'absolute z-popover mt-1 w-full',
             'max-h-60 overflow-auto',
-            'rounded-[var(--radius-md)] border-2 border-border bg-surface',
+            'rounded-md border-default bg-surface shadow-elevated',
             'py-1'
           )}
         >
           {filteredItems.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-fg-muted">
+            <li className="px-3 py-2 typo-sm text-fg-muted">
               No results found
             </li>
           ) : (
@@ -208,7 +208,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
                   }
                 }}
                 className={cn(
-                  'cursor-pointer px-3 py-2 text-sm transition-colors duration-200',
+                  'cursor-pointer px-3 py-2 typo-sm transition-default',
                   'hover:bg-surface-contrast',
                   item.disabled && 'cursor-not-allowed opacity-50',
                   focusedIndex === index && 'bg-surface-contrast',

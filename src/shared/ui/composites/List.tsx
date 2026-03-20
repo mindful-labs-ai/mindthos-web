@@ -33,7 +33,7 @@ export const List: React.FC<ListProps> = ({
       )}
     >
       {items.map((item, index) => (
-        <li key={index} className="text-sm">
+        <li key={index} className="typo-sm">
           {item}
         </li>
       ))}

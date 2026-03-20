@@ -25,53 +25,52 @@ export interface ButtonProps extends React.ComponentPropsWithoutRef<'button'> {
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-sm rounded-[var(--radius-sm)]',
-  md: 'h-10 px-4 text-sm rounded-[var(--radius-md)]',
-  lg: 'h-12 px-5 text-base rounded-[var(--radius-lg)]',
+  sm: 'h-8 px-3 typo-sm rounded-sm',
+  md: 'h-10 px-4 typo-sm rounded-md',
+  lg: 'h-12 px-5 typo-m rounded-lg',
   free: '',
 };
 
 const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
   primary: {
-    solid: 'bg-primary text-surface hover:bg-primary-600',
+    solid: 'interact-primary-bg text-primary-fg',
     outline:
-      'border-2 border-primary text-primary bg-primary-100 hover:bg-primary-200',
-    ghost: 'bg-transparent text-primary hover:bg-primary-100',
-    soft: 'bg-primary-100 text-primary hover:bg-primary-200',
+      'border border-primary text-primary bg-primary-subtle hover:bg-primary-hover',
+    ghost: 'bg-transparent text-primary hover:bg-primary-subtle',
+    soft: 'bg-primary-subtle text-primary hover:bg-primary-hover',
   },
   secondary: {
-    solid: 'bg-secondary text-surface hover:bg-secondary-600',
+    solid: 'bg-neutral text-neutral-fg hover:bg-neutral-hover',
     outline:
-      'border-2 border-secondary text-secondary bg-transparent hover:bg-secondary/10',
-    ghost: 'bg-transparent text-secondary hover:bg-secondary/10',
-    soft: 'bg-secondary/10 text-secondary hover:bg-secondary/20',
+      'border border-neutral text-neutral-fg bg-transparent hover:bg-neutral-active',
+    ghost: 'bg-transparent text-neutral-fg hover:bg-neutral-active',
+    soft: 'bg-neutral-active text-neutral-fg hover:bg-neutral-hover',
   },
   accent: {
-    solid: 'bg-accent text-surface hover:opacity-90',
+    solid: 'bg-accent text-primary-fg hover:opacity-90',
     outline:
-      'border-2 border-accent text-accent bg-transparent hover:bg-accent/10',
+      'border border-accent text-accent bg-transparent hover:bg-accent/10',
     ghost: 'bg-transparent text-accent hover:bg-accent/10',
     soft: 'bg-accent/10 text-accent hover:bg-accent/20',
   },
   neutral: {
-    solid: 'bg-surface-contrast text-fg hover:bg-border',
-    outline:
-      'border-2 border-border text-fg bg-transparent hover:bg-surface-contrast',
+    solid: 'bg-surface-contrast text-fg hover:bg-neutral',
+    outline: 'border-default text-fg bg-transparent hover:bg-surface-contrast',
     ghost: 'bg-transparent text-fg hover:bg-surface-contrast',
-    soft: 'bg-surface-contrast text-fg hover:bg-border',
+    soft: 'bg-surface-contrast text-fg hover:bg-neutral',
   },
   surface: {
-    solid: 'bg-surface text-fg-muted hover:bg-border',
-    outline: 'border-2 border-border text-fg bg-transparent hover:bg-surface',
+    solid: 'bg-surface text-fg-muted hover:bg-neutral',
+    outline: 'border-default text-fg bg-transparent hover:bg-surface',
     ghost: 'bg-transparent text-fg hover:bg-surface',
-    soft: 'bg-surface-contrast text-fg hover:bg-border',
+    soft: 'bg-surface-contrast text-fg hover:bg-neutral',
   },
   danger: {
-    solid: 'bg-danger text-surface hover:bg-danger/90',
+    solid: 'interact-danger-bg text-danger-fg',
     outline:
-      'border-2 border-danger text-danger bg-transparent hover:bg-danger/10',
-    ghost: 'bg-transparent text-danger hover:bg-danger/10',
-    soft: 'bg-red-300 text-danger hover:bg-red-400',
+      'border border-danger text-danger bg-transparent hover:bg-danger-subtle',
+    ghost: 'bg-transparent text-danger hover:bg-danger-subtle',
+    soft: 'bg-danger-subtle text-danger hover:bg-danger-hover',
   },
 };
 
@@ -112,8 +111,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         className={cn(
           'inline-flex items-center justify-center gap-2 font-medium',
-          'transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+          'transition-default',
+          'focus-default',
           'disabled:cursor-not-allowed disabled:bg-surface-contrast disabled:text-fg-muted',
           sizeStyles[size],
           toneVariantStyles[tone][variant],

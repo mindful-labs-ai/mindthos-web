@@ -81,18 +81,18 @@ export const CardRegistrationModal = ({
     >
       <div className="flex flex-col gap-6 p-6">
         <div>
-          <Text className="text-xl font-semibold">카드 등록</Text>
-          <Text className="mt-2 text-sm text-gray-600">
+          <Text className="typo-xl font-emphasize">카드 등록</Text>
+          <Text className="mt-2 typo-sm text-gray-600">
             정기 결제를 위한 카드 정보를 등록해주세요.
           </Text>
         </div>
 
         {sdkError && (
           <div className="rounded-md bg-red-50 p-4">
-            <Text className="text-sm text-red-800">
+            <Text className="typo-sm text-red-800">
               결제 시스템 초기화 실패: {sdkError.message}
             </Text>
-            <Text className="mt-1 text-xs text-red-600">
+            <Text className="mt-1 typo-xs text-red-600">
               환경 변수(VITE_TOSS_PAYMENTS_CLIENT_KEY)를 확인해주세요.
             </Text>
           </div>
@@ -100,13 +100,13 @@ export const CardRegistrationModal = ({
 
         {isSdkLoading && (
           <div className="rounded-md bg-blue-50 p-4">
-            <Text className="text-sm text-blue-800">
+            <Text className="typo-sm text-blue-800">
               결제 시스템을 초기화하고 있습니다...
             </Text>
           </div>
         )}
 
-        <Text className="text-sm text-gray-600">
+        <Text className="typo-sm text-gray-600">
           카드 등록하기 버튼을 클릭하면 토스페이먼츠 페이지로 이동하여 카드
           정보를 안전하게 등록할 수 있습니다.
         </Text>

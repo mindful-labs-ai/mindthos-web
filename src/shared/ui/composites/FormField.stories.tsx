@@ -101,8 +101,8 @@ export const FullForm: Story = {
       };
 
       return (
-        <div className="w-[400px] space-y-4 rounded-lg border-2 border-border bg-surface p-6">
-          <h2 className="text-xl font-bold text-fg">Sign Up</h2>
+        <div className="w-[400px] space-y-4 rounded-lg border-default bg-surface p-6">
+          <h2 className="typo-xl font-headline text-fg">Sign Up</h2>
           <FormField
             label="Email"
             required
@@ -136,7 +136,7 @@ export const FullForm: Story = {
           <FormField label="Bio">
             <TextArea placeholder="Tell us about yourself" rows={3} />
           </FormField>
-          <button className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface hover:opacity-90">
+          <button className="w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90">
             Create Account
           </button>
         </div>

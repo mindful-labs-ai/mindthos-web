@@ -64,7 +64,7 @@ export const Controlled: Story = {
             onChange={setValue}
             placeholder="Search frameworks..."
           />
-          <p className="text-sm text-fg-muted">Selected: {value || 'None'}</p>
+          <p className="typo-sm text-fg-muted">Selected: {value || 'None'}</p>
         </div>
       );
     };
@@ -107,7 +107,7 @@ export const CustomFilter: Story = {
 
     return (
       <div className="w-[300px] space-y-2">
-        <p className="text-xs text-fg-muted">
+        <p className="typo-xs text-fg-muted">
           Custom filter: matches from start only
         </p>
         <Combobox
@@ -127,15 +127,15 @@ export const InContext: Story = {
       const [country, setCountry] = useState('');
 
       return (
-        <div className="w-[400px] rounded-lg border-2 border-border bg-surface p-6">
-          <h3 className="mb-4 text-lg font-semibold text-fg">
+        <div className="w-[400px] rounded-lg border-default bg-surface p-6">
+          <h3 className="mb-4 typo-l font-emphasize text-fg">
             Developer Survey
           </h3>
           <div className="space-y-4">
             <div>
               <label
                 htmlFor="framework-combobox"
-                className="mb-1.5 block text-sm font-medium text-fg"
+                className="mb-1.5 block typo-sm font-medium text-fg"
               >
                 Favorite Framework
               </label>
@@ -149,7 +149,7 @@ export const InContext: Story = {
             <div>
               <label
                 htmlFor="country-combobox"
-                className="mb-1.5 block text-sm font-medium text-fg"
+                className="mb-1.5 block typo-sm font-medium text-fg"
               >
                 Country
               </label>
@@ -161,7 +161,7 @@ export const InContext: Story = {
               />
             </div>
             <button
-              className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface hover:opacity-90 disabled:opacity-50"
+              className="w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90 disabled:opacity-50"
               disabled={!framework || !country}
             >
               Submit
@@ -183,7 +183,7 @@ export const LargeDataset: Story = {
 
     return (
       <div className="w-[300px] space-y-2">
-        <p className="text-xs text-fg-muted">100 items with search</p>
+        <p className="typo-xs text-fg-muted">100 items with search</p>
         <Combobox items={largeDataset} placeholder="Search 100 items..." />
       </div>
     );

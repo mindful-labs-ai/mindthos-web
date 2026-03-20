@@ -1,63 +1,175 @@
 /**
- * Design tokens - CSS custom properties for theming
- * These variables are used by Tailwind via the tailwind.config.ts
+ * Design Tokens
+ * 3-Layer Architecture: Primitive → Semantic → Tailwind
+ *
+ * Primitive: 기획에서 정의한 원본 색상값
+ * Semantic:  역할 기반 매핑 (primitive를 참조)
+ * Tailwind:  tailwind.config.ts에서 semantic을 참조
+ *
+ * 색상 변경 시: primitive 값만 수정
+ * 역할 변경 시: semantic 매핑만 수정
  */
 
 :root {
-  /* Base colors */
-  --color-bg: #ffffff;
-  --color-bg-subtle: #f8fafc;
-  --color-bg-whisper: #f1f5f9;
-  --color-fg: #0f172a;
-  --color-fg-muted: #8898ad;
-  --color-muted: #64748b;
-  --color-accent: #10b981;
+  /* ========================================
+   * 1. PRIMITIVE TOKENS — 기획 원본 값
+   * ======================================== */
 
-  /* Surface colors */
-  --color-surface: #ffffff;
-  --color-surface-contrast: #f1f4f6;
-  --color-surface-strong: #e1e4e7;
+  /* Grey */
+  --primitive-grey-10: #fafbff;
+  --primitive-grey-20: #f4f5fa;
+  --primitive-grey-30: #edeff6;
+  --primitive-grey-40: #d6d8e1;
+  --primitive-grey-60: #babcc7;
+  --primitive-grey-70: #9c9ea6;
+  --primitive-grey-80: #747479;
+  --primitive-grey-90: #4d4f54;
+  --primitive-grey-100: #3c3c3c;
 
-  /* Border & Ring */
-  --color-border: #e2e8f0;
-  --color-ring: #3b82f6;
+  /* Green */
+  --primitive-green-10: #fdfffe;
+  --primitive-green-20: #ecfaed;
+  --primitive-green-40: #cfe5d0;
+  --primitive-green-80: #44ce4b;
 
-  /* Secondary palette (gray) */
-  --color-secondary-50: #f8fafc;
-  --color-secondary-100: #f1f5f9;
-  --color-secondary-200: #e2e8f0;
-  --color-secondary-300: #cbd5e1;
-  --color-secondary-400: #94a3b8;
-  --color-secondary-500: #64748b;
-  --color-secondary-600: #475569;
-  --color-secondary-700: #334155;
-  --color-secondary-800: #1e293b;
-  --color-secondary-900: #0f172a;
+  /* Red */
+  --primitive-red-20: #ffc8c8;
+  --primitive-red-50: #f77575;
+  --primitive-red-80: #d54036;
 
-  /* Primary palette (green - based on #44CE4B) */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dcfce7;
-  --color-primary-200: #bbf7d0;
-  --color-primary-300: #86efac;
-  --color-primary-400: #4ade80;
-  --color-primary-500: #44ce4b;
-  --color-primary-600: #3bb842;
-  --color-primary-700: #32a038;
-  --color-primary-800: #2a842e;
-  --color-primary-900: #1e5f21;
+  /* White / Black (불변) */
+  --primitive-white: #ffffff;
+  --primitive-black: #000000;
 
-  /* Radius */
+  /* ========================================
+   * 2. SEMANTIC TOKENS — 역할 기반 매핑
+   * ======================================== */
+
+  /* --- Text --- */
+  --color-fg: var(--primitive-grey-100);
+  --color-fg-muted: var(--primitive-grey-70);
+  --color-fg-subtle: var(--primitive-grey-60);
+  --color-fg-disabled: var(--primitive-grey-60);
+  --color-fg-inverse: var(--primitive-white);
+
+  /* --- Background --- */
+  --color-bg: var(--primitive-white);
+  --color-bg-subtle: var(--primitive-grey-10);
+  --color-bg-whisper: var(--primitive-grey-20);
+
+  /* --- Surface --- */
+  --color-surface: var(--primitive-white);
+  --color-surface-contrast: var(--primitive-grey-20);
+  --color-surface-strong: var(--primitive-grey-30);
+
+  /* --- Border & Ring --- */
+  --color-border: var(--primitive-grey-40);
+  --color-border-subtle: var(--primitive-grey-30);
+  --color-ring: var(--primitive-green-80);
+
+  /* --- Interactive States ---
+   * 각 색상 그룹은 idle → hover → active 3단계 세트
+   * 사용: bg-primary hover:bg-primary-hover active:bg-primary-active
+   */
+
+  /* Primary (Green): idle → hover → active */
+  --color-primary: var(--primitive-green-80);
+  --color-primary-hover: var(--primitive-green-40);
+  --color-primary-active: var(--primitive-green-20);
+  --color-primary-fg: var(--primitive-white);
+  --color-primary-subtle: var(--primitive-green-20);
+  --color-primary-surface: var(--primitive-green-10);
+
+  /* Danger (Red): idle → hover → active */
+  --color-danger: var(--primitive-red-80);
+  --color-danger-hover: var(--primitive-red-50);
+  --color-danger-active: var(--primitive-red-20);
+  --color-danger-fg: var(--primitive-white);
+  --color-danger-subtle: var(--primitive-red-20);
+
+  /* Neutral (Grey): idle → hover → active */
+  --color-neutral: var(--primitive-grey-40);
+  --color-neutral-hover: var(--primitive-grey-30);
+  --color-neutral-active: var(--primitive-grey-20);
+  --color-neutral-fg: var(--primitive-grey-100);
+
+  /* --- Status --- */
+  --color-warn: #f59e0b;
+  --color-info: #3b82f6;
+  --color-success: var(--primitive-green-80);
+  --color-accent: var(--primitive-green-80);
+
+  /* ========================================
+   * 3. ROLE TOKENS — 컴포넌트/레이아웃 역할별 매핑
+   *
+   * 색상 시맨틱(bg, surface 등)을 참조하여 역할 부여
+   * 컴포넌트에서는 이 토큰을 사용 → 역할의 색상만 바꾸면 전체 반영
+   * ======================================== */
+
+  /* --- App Shell --- */
+  --color-app-bg: var(--primitive-grey-20);
+
+  /* --- Sidebar --- */
+  --color-sidebar-bg: var(--color-bg);
+  --color-sidebar-border: var(--primitive-grey-30);
+
+  /* --- Header --- */
+  --color-header-bg: var(--primitive-white);
+  --color-header-border: var(--primitive-grey-30);
+
+  /* --- Nav Item --- */
+  --color-nav-active-bg: var(--primitive-grey-20);
+  --color-nav-active-text: var(--color-default);
+  --color-nav-inactive-text: var(--primitive-grey-60);
+  --color-nav-hover-bg: var(--primitive-grey-20);
+  --color-nav-click-bg: var(--primitive-grey-40);
+
+  /* --- Card --- */
+  --color-card-bg: var(--color-surface);
+  --color-card-border: var(--color-border);
+
+  /* --- Input --- */
+  --color-input-bg: var(--color-surface);
+  --color-input-border: var(--color-border);
+  --color-input-placeholder: var(--color-fg-subtle);
+
+  /* --- Modal / Dialog --- */
+  --color-modal-bg: var(--color-surface);
+  --color-modal-border: var(--color-border);
+  --color-overlay-bg: rgb(0 0 0 / 0.5);
+
+  /* --- Grey palette (Tailwind 유틸리티용) --- */
+  --color-grey-10: var(--primitive-grey-10);
+  --color-grey-20: var(--primitive-grey-20);
+  --color-grey-30: var(--primitive-grey-30);
+  --color-grey-40: var(--primitive-grey-40);
+  --color-grey-60: var(--primitive-grey-60);
+  --color-grey-70: var(--primitive-grey-70);
+  --color-grey-80: var(--primitive-grey-80);
+  --color-grey-90: var(--primitive-grey-90);
+  --color-grey-100: var(--primitive-grey-100);
+
+  /* --- Green palette (Tailwind 유틸리티용) --- */
+  --color-green-10: var(--primitive-green-10);
+  --color-green-20: var(--primitive-green-20);
+  --color-green-40: var(--primitive-green-40);
+  --color-green-80: var(--primitive-green-80);
+
+  /* --- Red palette (Tailwind 유틸리티용) --- */
+  --color-red-20: var(--primitive-red-20);
+  --color-red-50: var(--primitive-red-50);
+  --color-red-80: var(--primitive-red-80);
+
+  /* ========================================
+   * 3. RADIUS
+   * ======================================== */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
 
-  /* Status colors */
-  --color-danger: #ef4444;
-  --color-warn: #f59e0b;
-  --color-info: #3b82f6;
-  --color-success: #10b981;
-
-  /* Z-Index scale */
+  /* ========================================
+   * 4. Z-INDEX SCALE
+   * ======================================== */
   --z-base: 0;
   --z-sidebar: 10;
   --z-header: 20;
@@ -71,60 +183,112 @@
   --z-spotlight: 1400;
   --z-debug: 1500;
 
-  /* Spacing abstractions */
+  /* ========================================
+   * 5. SPACING
+   * ======================================== */
   --space-page: 1.5rem;
   --space-card: 1rem;
   --space-modal: 1.5rem;
   --space-section: 1.25rem;
   --space-inline: 0.5rem;
+
+  /* ========================================
+   * 5-1. LAYOUT SIZE
+   * ======================================== */
+  --height-header: 67px;
+  --width-sidetab: 304px;
+
+  /* ========================================
+   * 6. SHADOW
+   * ======================================== */
+  --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-default:
+    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-elevated:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-prominent:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ========================================
+   * 7. TRANSITION
+   * ======================================== */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
 }
 
+/* ========================================
+ * DARK MODE
+ * 구조만 준비, 색상은 light와 동일 (기획 확정 시 교체)
+ * ======================================== */
 .dark {
-  /* Dark mode colors */
-  --color-bg: #0b1020;
-  --color-bg-subtle: #1e293b;
-  --color-bg-whisper: #334155;
-  --color-fg: #e5e7eb;
-  --color-fg-muted: #94a3b8;
-  --color-muted: #94a3b8;
-  --color-accent: #34d399;
+  /* --- Text --- */
+  --color-default: var(--primitive-grey-100);
+  --color-fg-muted: var(--primitive-grey-70);
+  --color-fg-subtle: var(--primitive-grey-60);
+  --color-fg-disabled: var(--primitive-grey-60);
+  --color-fg-inverse: var(--primitive-white);
 
-  /* Surface colors */
-  --color-surface: #0b1020;
-  --color-surface-contrast: #1e293b;
-  --color-surface-strong: #2d384b;
+  /* --- Background --- */
+  --color-bg: var(--primitive-white);
+  --color-bg-subtle: var(--primitive-grey-10);
+  --color-bg-whisper: var(--primitive-grey-20);
 
-  /* Border & Ring */
-  --color-border: #334155;
-  --color-ring: #60a5fa;
+  /* --- Surface --- */
+  --color-surface: var(--primitive-white);
+  --color-surface-contrast: var(--primitive-grey-20);
+  --color-surface-strong: var(--primitive-grey-30);
 
-  /* Secondary palette (adjusted for dark) */
-  --color-secondary-50: #0f172a;
-  --color-secondary-100: #1e293b;
-  --color-secondary-200: #334155;
-  --color-secondary-300: #475569;
-  --color-secondary-400: #64748b;
-  --color-secondary-500: #94a3b8;
-  --color-secondary-600: #cbd5e1;
-  --color-secondary-700: #e2e8f0;
-  --color-secondary-800: #f1f5f9;
-  --color-secondary-900: #f8fafc;
+  /* --- Border & Ring --- */
+  --color-border: var(--primitive-grey-40);
+  --color-border-subtle: var(--primitive-grey-30);
+  --color-ring: var(--primitive-green-80);
 
-  /* Adjusted primary for dark mode */
-  --color-primary-50: #1e5f21;
-  --color-primary-100: #2a842e;
-  --color-primary-200: #32a038;
-  --color-primary-300: #3bb842;
-  --color-primary-400: #44ce4b;
-  --color-primary-500: #4ade80;
-  --color-primary-600: #86efac;
-  --color-primary-700: #bbf7d0;
-  --color-primary-800: #dcfce7;
-  --color-primary-900: #f0fdf4;
+  /* --- Interactive States: idle → hover → active --- */
 
-  /* Status colors (same for dark) */
-  --color-danger: #ef4444;
+  /* Primary (Green) */
+  --color-primary: var(--primitive-green-80);
+  --color-primary-hover: var(--primitive-green-40);
+  --color-primary-active: var(--primitive-green-20);
+  --color-primary-fg: var(--primitive-white);
+  --color-primary-subtle: var(--primitive-green-20);
+  --color-primary-surface: var(--primitive-green-10);
+
+  /* Danger (Red) */
+  --color-danger: var(--primitive-red-80);
+  --color-danger-hover: var(--primitive-red-50);
+  --color-danger-active: var(--primitive-red-20);
+  --color-danger-fg: var(--primitive-white);
+  --color-danger-subtle: var(--primitive-red-20);
+
+  /* Neutral (Grey) */
+  --color-neutral: var(--primitive-grey-40);
+  --color-neutral-hover: var(--primitive-grey-30);
+  --color-neutral-active: var(--primitive-grey-20);
+  --color-neutral-fg: var(--primitive-grey-100);
+
+  /* --- Status --- */
   --color-warn: #f59e0b;
   --color-info: #60a5fa;
-  --color-success: #34d399;
+  --color-success: var(--primitive-green-80);
+  --color-accent: var(--primitive-green-80);
+
+  /* --- Role tokens (dark 기획 확정 시 교체) --- */
+  --color-app-bg: var(--color-surface-contrast);
+  --color-sidebar-bg: var(--color-bg);
+  --color-sidebar-border: var(--color-border);
+  --color-header-bg: var(--primitive-white);
+  --color-header-border: var(--color-border);
+  --color-nav-active-bg: var(--color-surface-contrast);
+  --color-nav-active-text: var(--color-fg);
+  --color-nav-inactive-text: var(--primitive-grey-60);
+  --color-nav-hover-bg: var(--color-surface-contrast);
+  --color-card-bg: var(--color-surface);
+  --color-card-border: var(--color-border);
+  --color-input-bg: var(--color-surface);
+  --color-input-border: var(--color-border);
+  --color-input-placeholder: var(--color-fg-subtle);
+  --color-modal-bg: var(--color-surface);
+  --color-modal-border: var(--color-border);
+  --color-overlay-bg: rgb(0 0 0 / 0.5);
 }

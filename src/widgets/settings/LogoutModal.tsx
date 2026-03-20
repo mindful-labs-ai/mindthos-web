@@ -35,7 +35,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
       className="max-w-sm text-left"
     >
       <div className="space-y-4">
-        <Text className="text-sm text-fg-muted">
+        <Text className="typo-sm text-fg-muted">
           로그아웃하면 다시 로그인해야 서비스를 이용할 수 있습니다.
         </Text>
 

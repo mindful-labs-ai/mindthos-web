@@ -50,7 +50,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
         onOpenChange={handleOpenChange}
         closeOnOverlay={!isGenerating}
         hideCloseButton
-        className="flex h-[788px] max-h-[90vh] w-11/12 max-w-[512px] flex-col rounded-2xl border-none bg-white p-0 shadow-xl"
+        className="flex h-[788px] max-h-[90vh] w-11/12 max-w-[512px] flex-col rounded-2xl border-none bg-surface p-0 shadow-prominent"
       >
         {/* ── 헤더 ── */}
         <div className="relative shrink-0 px-[49px] pb-2 pt-[39px]">
@@ -63,7 +63,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <ArrowLeft className="h-5 w-5" />
             </button>
           )}
-          <h2 className="text-center text-xl font-bold text-fg">
+          <h2 className="text-center typo-xl font-headline text-fg">
             가계도 분석 보고서
           </h2>
           {!isGenerating && (
@@ -136,7 +136,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                 <button
                   type="button"
                   onClick={modal.handleClose}
-                  className="flex-1 rounded-xl border border-border py-3.5 text-center text-base font-semibold text-fg transition-colors hover:bg-surface-contrast"
+                  className="flex-1 rounded-xl border border-border py-3.5 text-center typo-m font-emphasize text-fg transition-colors hover:bg-surface-contrast"
                 >
                   확인
                 </button>
@@ -146,7 +146,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                     trackEvent(MixpanelEvent.GenogramReportSeminarButtonClick);
                     window.open(GENOGRAM_SEMINAR_URL, '_blank');
                   }}
-                  className="flex-1 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400"
+                  className="flex-1 rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
                 >
                   세미나 신청하기
                 </button>
@@ -170,7 +170,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <button
                 type="button"
                 onClick={modal.handleBackToList}
-                className="w-full rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400"
+                className="w-full rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
               >
                 확인
               </button>
@@ -178,7 +178,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <button
                 type="button"
                 onClick={modal.handleClose}
-                className="w-full rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400"
+                className="w-full rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
               >
                 확인
               </button>

@@ -93,7 +93,7 @@ export const Dismissible: Story = {
         return (
           <button
             onClick={() => setVisible(true)}
-            className="text-sm text-primary"
+            className="typo-sm text-primary"
           >
             Show banner again
           </button>

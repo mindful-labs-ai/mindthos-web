@@ -7,12 +7,13 @@ import type {
 } from '@/features/client/types/clientAnalysis.types';
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
 import { CheckIcon, CopyIcon } from '@/shared/icons';
+import { Modal } from '@/shared/ui';
 import type { TabItem } from '@/shared/ui/atoms/Tab';
 import { Tab } from '@/shared/ui/atoms/Tab';
 import { Text } from '@/shared/ui/atoms/Text';
-import { Title } from '@/shared/ui/atoms/Title';
 import { MarkdownRenderer } from '@/shared/ui/composites/MarkdownRenderer';
 import type { SelectItem } from '@/shared/ui/composites/Select';
 import { Select } from '@/shared/ui/composites/Select';
@@ -31,6 +32,7 @@ interface ClientAnalysisTabProps {
   isReadOnly?: boolean;
   /** 분석 내용 저장 핸들러 */
   onSaveContent?: (analysisId: string, content: string) => Promise<void>;
+  isMobileView?: boolean;
 }
 
 export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
@@ -40,8 +42,11 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   pollingVersion,
   isReadOnly = false,
   onSaveContent,
+  isMobileView = false,
 }) => {
   const { toast } = useToast();
+  const { isTablet } = useDevice();
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const { data: templates } = useClientTemplates();
   // 사용자가 수동으로 선택한 버전 (null이면 자동 선택)
   const [userSelectedVersion, setUserSelectedVersion] = useState<number | null>(
@@ -160,7 +165,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       label: (
         <div className="flex flex-col">
           <span className="font-medium">{dateStr}</span>
-          <span className="text-xs text-fg-muted">
+          <span className="typo-xs text-fg-muted">
             {templateName} / {analysis.session_ids.length}개 회기
           </span>
         </div>
@@ -222,84 +227,202 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
     // 완료 상태
     if (analysis?.status === 'succeeded' && analysis.content) {
+      const title = getTemplateName(analysis.template_id);
+      const dateStr = analysis.created_at
+        ? formatDate(analysis.created_at)
+        : '';
+
       return (
         <div className="relative">
-          {/* 액션 버튼 영역 */}
-          <div className="mb-6 flex items-center justify-end gap-2">
-            {/* 편집 중이 아닐 때: 수퍼비전 다시 받기 + 편집 + 복사 */}
-            {!isEditing && (
-              <>
-                {onSaveContent && !isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={handleEditStart}
-                    className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-sm text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
-                    aria-label="분석 편집"
-                  >
-                    <span>편집</span>
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleCopy(analysis.content || '')}
-                  className="group relative flex items-center gap-1.5 rounded-md border border-border px-3 py-1 text-sm font-medium text-fg-muted transition-all hover:bg-surface-contrast hover:text-fg"
-                  aria-label="전체 복사"
-                >
-                  {copiedKey === 'ai_supervision' ? (
+          {/* 헤더: 타이틀 + 액션 버튼 */}
+          <div className="mb-2 flex items-start justify-between">
+            <h2
+              className={
+                isMobileView
+                  ? 'text-l font-headline text-grey-100'
+                  : 'text-xl font-headline text-grey-100'
+              }
+            >
+              {title}
+            </h2>
+            <div className="flex flex-shrink-0 items-center gap-2">
+              {!isEditing && (
+                <>
+                  {/* 데스크탑: 모든 버튼 인라인 */}
+                  {!isMobileView && (
                     <>
-                      <CheckIcon size={18} className="text-success" />
-                      <span className="text-success">복사됨</span>
-                    </>
-                  ) : (
-                    <>
-                      <CopyIcon size={20} />
-                      <span>복사하기</span>
+                      {onSaveContent && !isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={handleEditStart}
+                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                        >
+                          편집
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(analysis.content || '')}
+                        className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                      >
+                        {copiedKey === 'ai_supervision' ? (
+                          <>
+                            <CheckIcon size={18} className="text-green-80" />
+                            <span className="text-green-80">복사됨</span>
+                          </>
+                        ) : (
+                          <>
+                            <CopyIcon size={20} /> 복사하기
+                          </>
+                        )}
+                      </button>
+                      {onCreateAnalysis && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            trackEvent(MixpanelEvent.SupervisionRetry);
+                            onCreateAnalysis();
+                          }}
+                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                        >
+                          보고서 재생성
+                        </button>
+                      )}
                     </>
                   )}
-                </button>
-                {onCreateAnalysis && (
+                  {/* 태블릿: 편집/복사 인라인 + ⋮ */}
+                  {isMobileView && isTablet && (
+                    <>
+                      {onSaveContent && !isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={handleEditStart}
+                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                        >
+                          편집
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(analysis.content || '')}
+                        className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                      >
+                        <CopyIcon size={20} /> 복사하기
+                      </button>
+                    </>
+                  )}
+                  {/* 모바일/태블릿: ⋮ 메뉴 */}
+                  {isMobileView && (
+                    <>
+                      <button
+                        type="button"
+                        className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+                        onClick={() => setIsMenuOpen(true)}
+                        aria-label="추가 메뉴"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="5" r="1" />
+                          <circle cx="12" cy="19" r="1" />
+                        </svg>
+                      </button>
+                      <Modal
+                        open={isMenuOpen}
+                        onOpenChange={setIsMenuOpen}
+                        mobileVariant="bottomSheet"
+                      >
+                        <div className="mb-16 w-full space-y-1">
+                          {!isTablet && onSaveContent && !isReadOnly && (
+                            <button
+                              onClick={() => {
+                                handleEditStart();
+                                setIsMenuOpen(false);
+                              }}
+                              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                            >
+                              <span className="text-m text-grey-100">편집</span>
+                            </button>
+                          )}
+                          {!isTablet && (
+                            <button
+                              onClick={() => {
+                                handleCopy(analysis.content || '');
+                                setIsMenuOpen(false);
+                              }}
+                              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                            >
+                              <span className="text-m text-grey-100">
+                                복사하기
+                              </span>
+                            </button>
+                          )}
+                          {onCreateAnalysis && (
+                            <button
+                              onClick={() => {
+                                trackEvent(MixpanelEvent.SupervisionRetry);
+                                onCreateAnalysis();
+                                setIsMenuOpen(false);
+                              }}
+                              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                            >
+                              <span className="text-m text-grey-100">
+                                보고서 재생성
+                              </span>
+                            </button>
+                          )}
+                        </div>
+                      </Modal>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* 편집 중 */}
+              {isEditing && (
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      trackEvent(MixpanelEvent.SupervisionRetry);
-                      onCreateAnalysis();
-                    }}
-                    className="flex items-center gap-1.5 rounded-md border border-primary bg-primary-100 px-3 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
                   >
-                    수퍼비전 다시 받기
+                    취소
                   </button>
-                )}
-              </>
-            )}
-
-            {/* 편집 중일 때: 취소 + 저장 */}
-            {isEditing && (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  disabled={isSaving}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-fg-muted transition-colors hover:bg-surface-contrast"
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveEdit}
-                  disabled={!hasEdits || isSaving}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    hasEdits && !isSaving
-                      ? 'bg-primary text-white hover:bg-primary-600'
-                      : 'cursor-not-allowed bg-surface-contrast text-fg-muted'
-                  }`}
-                >
-                  {isSaving ? '저장 중...' : '저장'}
-                </button>
-              </div>
-            )}
+                  <button
+                    type="button"
+                    onClick={handleSaveEdit}
+                    disabled={!hasEdits || isSaving}
+                    className={`rounded-md px-3.5 py-1 text-m font-medium transition-colors ${
+                      hasEdits && !isSaving
+                        ? 'bg-green-80 text-white hover:opacity-90'
+                        : 'cursor-not-allowed bg-grey-20 text-grey-60'
+                    }`}
+                  >
+                    {isSaving ? '저장 중...' : '저장'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* 마크다운 렌더링 (편집 모드일 때 contentEditable) */}
+          {/* 서브타이틀 */}
+          <p className="mb-4 text-sm text-grey-60">
+            {dateStr && `${dateStr} 작성됨`}
+          </p>
+
+          {/* 모바일: 구분선 */}
+          {isMobileView && <div className="mb-6 border-b border-grey-30" />}
+
+          {/* 마크다운 렌더링 */}
           <MarkdownRenderer
             ref={isEditing ? markdownRef : undefined}
             content={removeNonverbalTags(analysis.content)}
@@ -340,7 +463,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
         <span className="flex items-center gap-1.5">
           프로파일링
           <div className="flex items-center rounded-md bg-fg-muted px-1 py-0.5">
-            <span className="text-xs font-bold text-surface">준비 중</span>
+            <span className="typo-xs font-headline text-surface">준비 중</span>
           </div>
         </span>
       ),
@@ -352,7 +475,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
         <span className="flex items-center gap-1.5">
           심리치료계획
           <div className="flex items-center rounded-md bg-fg-muted p-1">
-            <span className="text-xs font-bold text-surface">준비 중</span>
+            <span className="typo-xs font-headline text-surface">준비 중</span>
           </div>
         </span>
       ),
@@ -363,47 +486,45 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   // 빈 상태
   if (analyses.length === 0) {
     return (
-      <div className="flex flex-col">
-        {/* 탭 + 버전 선택 + 다회기 분석 버튼 */}
-        <div className="flex items-center justify-between px-8">
-          {/* 탭 영역 */}
-          <div className="flex items-center gap-4">
-            <Tab
-              items={tabItems}
-              value={activeTab}
-              onValueChange={setActiveTab}
-              onDisabledClick={handleDisabledTabClick}
-              variant="underline"
-              size="md"
-            />
-          </div>
-
-          {/* 버전 선택 */}
-          {analyses.length > 1 && (
-            <div className="w-64">
-              <Select
-                items={versionItems}
-                value={String(selectedVersion)}
-                onChange={(value) => setUserSelectedVersion(Number(value))}
-                placeholder="버전 선택"
+      <div className="flex h-full flex-col">
+        {/* 탭 + 버전 선택 (데스크탑만) */}
+        {!isMobileView && (
+          <div className="flex items-center justify-between px-8">
+            <div className="flex items-center gap-4">
+              <Tab
+                items={tabItems}
+                value={activeTab}
+                onValueChange={setActiveTab}
+                onDisabledClick={handleDisabledTabClick}
+                variant="underline"
+                size="md"
               />
             </div>
-          )}
-        </div>
+            {analyses.length > 1 && (
+              <div className="w-64">
+                <Select
+                  items={versionItems}
+                  value={String(selectedVersion)}
+                  onChange={(value) => setUserSelectedVersion(Number(value))}
+                  placeholder="버전 선택"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 분석 내용 */}
-        <div className="relative min-h-[400px] rounded-lg border border-border bg-surface p-6">
-          <Title as="h4" className="mb-8 text-left text-sm text-fg-muted">
-            수퍼비전 보고서
-          </Title>
-          <Text className="text-center font-medium text-fg-muted">
-            아직 분석 기록이 없습니다.
-          </Text>{' '}
+        <div
+          className={`flex h-full min-h-[400px] flex-col items-center justify-center bg-white p-6 ${
+            isMobileView && !isTablet ? '' : 'rounded-lg border border-grey-30'
+          }`}
+        >
+          <p className="mb-4 text-m text-grey-60">아직 분석 기록이 없습니다.</p>
           {onCreateAnalysis && (
             <button
               type="button"
               onClick={onCreateAnalysis}
-              className="absolute bottom-4 right-4 flex items-center gap-2 rounded-lg border border-primary bg-primary-100 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-200"
+              className="rounded-lg bg-green-80 px-8 py-3 text-m font-medium text-white transition-colors hover:opacity-90"
             >
               AI 수퍼비전 받기
             </button>
@@ -419,42 +540,41 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* 탭 + 버전 선택 + 다회기 분석 버튼 */}
-      <div className="flex flex-shrink-0 items-center justify-between px-8">
-        {/* 탭 영역 */}
-        <div className="flex items-center gap-4">
-          <Tab
-            items={tabItems}
-            value={activeTab}
-            onValueChange={(value) => {
-              trackEvent(MixpanelEvent.AnalysisTabChange, { tab: value });
-              setActiveTab(value);
-            }}
-            onDisabledClick={handleDisabledTabClick}
-            variant="underline"
-            size="md"
-          />
-        </div>
-
-        {/* 버전 선택 */}
-        {analyses.length > 1 && (
-          <div className="w-64">
-            <Select
-              items={versionItems}
-              value={String(selectedVersion)}
-              onChange={(value) => setUserSelectedVersion(Number(value))}
-              placeholder="버전 선택"
-              maxDropdownHeight={200}
+      {/* 탭 + 버전 선택 (데스크탑만) */}
+      {!isMobileView && (
+        <div className="flex flex-shrink-0 items-center justify-between px-8">
+          <div className="flex items-center gap-4">
+            <Tab
+              items={tabItems}
+              value={activeTab}
+              onValueChange={(value) => {
+                trackEvent(MixpanelEvent.AnalysisTabChange, { tab: value });
+                setActiveTab(value);
+              }}
+              onDisabledClick={handleDisabledTabClick}
+              variant="underline"
+              size="md"
             />
           </div>
-        )}
-      </div>
+          {analyses.length > 1 && (
+            <div className="w-64">
+              <Select
+                items={versionItems}
+                value={String(selectedVersion)}
+                onChange={(value) => setUserSelectedVersion(Number(value))}
+                placeholder="버전 선택"
+                maxDropdownHeight={200}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 분석 내용 */}
-      <div className="min-h-0 flex-1">
+      <div className="min-h-0 flex-1 md:rounded-lg md:bg-white">
         <div
           ref={scrollRef}
-          className="h-full overflow-y-auto rounded-lg border border-border bg-surface p-6"
+          className="h-full overflow-y-auto border border-grey-30 bg-white p-6 md:rounded-lg"
         >
           {currentAnalysis &&
             renderAnalysisContent(currentAnalysis.ai_supervision)}

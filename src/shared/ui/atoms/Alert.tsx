@@ -134,7 +134,7 @@ export const Alert: React.FC<AlertProps> = ({
     <div
       role="alert"
       className={cn(
-        'flex gap-3 rounded-[var(--radius-md)] border-2 p-4',
+        'flex gap-3 rounded-md border-2 p-4',
         styles.bg,
         styles.border,
         className
@@ -145,19 +145,19 @@ export const Alert: React.FC<AlertProps> = ({
       )}
       <div className="flex-1 space-y-1">
         {title && (
-          <div className={cn('font-semibold', styles.text)}>{title}</div>
+          <div className={cn('font-emphasize', styles.text)}>{title}</div>
         )}
-        <div className="text-sm text-fg">{children}</div>
+        <div className="typo-sm text-fg">{children}</div>
       </div>
       {dismissible && onDismiss && (
         <button
           onClick={onDismiss}
           aria-label="Dismiss alert"
           className={cn(
-            'flex-shrink-0 rounded-[var(--radius-sm)] p-1',
-            'hover:bg-black/5 dark:hover:bg-white/5',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'flex-shrink-0 rounded-sm p-1',
+            'hover:bg-neutral-active',
+            'transition-default',
+            'focus-default',
             styles.text
           )}
         >

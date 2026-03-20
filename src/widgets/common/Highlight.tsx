@@ -21,7 +21,7 @@ export const Highlight: React.FC<HighlightProps> = ({
   text,
   query,
   className,
-  highlightClassName = 'bg-primary-100 text-primary-700',
+  highlightClassName = 'bg-primary-subtle text-primary-700',
 }) => {
   const parts = highlightMatches(text, query);
 
@@ -31,7 +31,7 @@ export const Highlight: React.FC<HighlightProps> = ({
         <React.Fragment key={index}>
           {part.highlight ? (
             <mark
-              className={cn('rounded px-0.5 font-semibold', highlightClassName)}
+              className={cn('rounded px-0.5 font-emphasize', highlightClassName)}
             >
               {part.text}
             </mark>

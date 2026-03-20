@@ -26,7 +26,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
         </div>
 
         {/* 설명 텍스트 - 축소 불가 */}
-        <p className="mb-6 shrink-0 text-center text-sm font-medium text-fg">
+        <p className="mb-6 shrink-0 text-center typo-sm font-medium text-fg">
           클릭 한 번으로 가계도를 생성할 수 있어요.
           <br />
           지금 바로 시작해보세요
@@ -34,15 +34,15 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
 
         {/* 크레딧 배지 + 버튼 - 축소 불가 */}
         <div className="flex shrink-0 flex-col items-center gap-2 md:gap-3">
-          <div className="flex items-center gap-1 rounded-lg bg-primary-100 px-3 py-1">
-            <Text className="font-bold text-primary-600">50</Text>
+          <div className="flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
+            <Text className="font-headline text-primary">50</Text>
             <svg
               width="14"
               height="14"
               viewBox="0 0 14 14"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-primary-600"
+              className="text-primary"
             >
               <g clipPath="url(#clip0_credit_modal)">
                 <path
@@ -56,7 +56,7 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
                 </clipPath>
               </defs>
             </svg>
-            <Text className="text-primary-600">사용</Text>
+            <Text className="text-primary">사용</Text>
           </div>
 
           <button
@@ -68,16 +68,16 @@ export function ConfirmStep({ onConfirm }: ConfirmStepProps) {
               'rounded-lg px-8 py-3 font-medium transition-colors',
               'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
               isLoadingCredits
-                ? 'bg-primary/50 text-white'
+                ? 'bg-primary/50 text-primary-fg'
                 : hasEnoughCredits
-                  ? 'hover:bg-primary/90 bg-primary text-white'
+                  ? 'hover:bg-primary/90 bg-primary text-primary-fg'
                   : 'bg-gray-300 text-gray-500'
             )}
           >
             {isLoadingCredits ? '크레딧 확인 중...' : '가계도 생성 시작하기'}
           </button>
           {!isLoadingCredits && !hasEnoughCredits && (
-            <span className="text-sm text-red-500">
+            <span className="typo-sm text-red-500">
               크레딧이 부족합니다 (현재: {remainingCredits}C)
             </span>
           )}

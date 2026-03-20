@@ -444,8 +444,8 @@ export function GenogramClientContainer() {
             hideToolbar
           />
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-            <div className="flex h-[200px] w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-white p-8 text-center backdrop-blur-sm">
-              <p className="text-lg font-medium text-fg-muted">
+            <div className="flex h-[200px] w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-surface p-8 text-center backdrop-blur-sm">
+              <p className="typo-l font-medium text-fg-muted">
                 클라이언트를 선택해주세요
               </p>
             </div>
@@ -495,13 +495,13 @@ export function GenogramClientContainer() {
         onChange={handleCanvasChange}
         emptyStateActions={
           hasRecords && (
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 typo-sm">
               <span className="text-fg-muted">
                 혹시 처음부터 그리는게 어렵나요?
               </span>
               <button
                 onClick={() => handleStartFromRecords(true)}
-                className="rounded-md border border-border bg-white px-3 py-1.5 font-medium text-fg transition-colors hover:bg-surface-strong"
+                className="rounded-md border border-border bg-surface px-3 py-1.5 font-medium text-fg transition-colors hover:bg-surface-strong"
               >
                 AI로 자동 생성하기
               </button>

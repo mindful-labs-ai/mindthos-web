@@ -3,8 +3,6 @@ import React from 'react';
 import { CheckIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
-import { Title } from '@/shared/ui/atoms/Title';
-import { Card } from '@/shared/ui/composites/Card';
 import { formatPrice } from '@/shared/utils/format';
 
 export interface PlanCardProps {
@@ -18,6 +16,8 @@ export interface PlanCardProps {
   isSelected?: boolean;
   isCurrent?: boolean;
   onSelect: () => void;
+  /** 모바일: 가격을 상단 우측에 배치 */
+  compact?: boolean;
 }
 
 export type PlanKey = '스타터' | '플러스' | '프로';
@@ -35,24 +35,24 @@ export const planFeature = {
   플러스: {
     0: {
       text: '스타터 모든 기능 포함',
-      style: 'font-bold text-primary',
+      style: 'font-headline text-primary',
       sub: null,
     },
     1: {
       text: '모든 사례개념화 노트',
-      style: 'font-bold',
+      style: 'font-headline',
       sub: '사용 가능',
     },
     2: {
       text: '모든 이론 AI 슈퍼비전',
-      style: 'font-bold',
+      style: 'font-headline',
       sub: '사용 가능',
     },
   },
   프로: {
     0: {
       text: '플러스 모든 기능 포함',
-      style: 'font-bold text-primary',
+      style: 'font-headline text-primary',
       sub: null,
     },
     1: { text: '최신기능 우선 사용', style: null, sub: null },
@@ -65,12 +65,13 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   description,
   totalCredit,
   price,
-  originalPrice,
-  discountRate = 0,
+  // originalPrice,
+  // discountRate = 0,
   isYearly = false,
   isSelected = false,
   isCurrent = false,
   onSelect,
+  compact = false,
 }) => {
   const features = planFeature[name as PlanKey];
 
@@ -78,16 +79,16 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
   // 현재 이용 중인 플랜 스타일
   const getBorderClass = () => {
-    if (isCurrent) return 'border-2 border-surface-strong';
-    if (isSelected) return 'border-2 border-primary';
-    return 'border border-border hover:border-primary-100';
+    if (isCurrent) return 'border-2 border-grey-20';
+    if (isSelected) return 'border-2 border-green-80';
+    return 'border border-border hover:border-2';
   };
 
   return (
-    <Card
-      className={`h-full w-72 select-none text-left transition-all ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'} ${getBorderClass()}`}
+    <div
+      className={`h-full w-full select-none rounded-xl bg-white text-left transition-all lg:w-72 ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'} ${getBorderClass()}`}
     >
-      <Card.Body className="flex h-full flex-col justify-between space-y-6 p-6">
+      <div className="flex h-full flex-col justify-between space-y-6 p-6">
         <div
           className={`space-y-6 ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           onClick={onSelect}
@@ -102,24 +103,42 @@ export const PlanCard: React.FC<PlanCardProps> = ({
           aria-label={`${name} 플랜 선택`}
         >
           <div className="relative">
-            <Title as="h3" className="mb-2 text-xl font-bold">
-              {name}
-            </Title>
-            <Text className="whitespace-pre-line text-sm leading-relaxed text-fg-muted">
-              {description}
-            </Text>
-            {name === '플러스' && (
-              <div className="absolute right-0 top-0 rounded-xl bg-primary px-3 py-1 text-sm font-semibold text-surface">
-                인기
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <h3 className="text-xl font-headline text-grey-100">
+                    {name}
+                  </h3>
+                  {name === '플러스' && (
+                    <span className="rounded-xl bg-green-80 px-3 py-0.5 text-xs font-medium text-white">
+                      인기
+                    </span>
+                  )}
+                </div>
+                <p className="whitespace-pre-line text-sm leading-relaxed text-grey-60">
+                  {description}
+                </p>
               </div>
-            )}
+              {compact && (
+                <div className="flex-shrink-0 text-right">
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-xl font-headline text-grey-100">
+                      {formatPrice(price)}원
+                    </span>
+                    <span className="text-sm text-grey-60">
+                      /{isYearly ? '년' : '월'}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <CheckIcon size={18} className="flex-shrink-0 text-primary" />
-              <Text className="text-sm">
-                <span className="font-semibold">
+              <Text className="typo-sm">
+                <span className="font-emphasize">
                   {totalCredit.toLocaleString()} 크레딧
                 </span>{' '}
                 / 월
@@ -129,8 +148,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({
               <div key={idx} className="flex items-center gap-3">
                 <CheckIcon size={18} className="flex-shrink-0 text-primary" />
                 <div className="flex gap-1">
-                  <Text className={`text-sm ${style}`}>{text}</Text>
-                  {sub && <span className="text-sm"> {sub}</span>}
+                  <Text className={`typo-sm ${style}`}>{text}</Text>
+                  {sub && <span className="typo-sm"> {sub}</span>}
                 </div>
               </div>
             ))}
@@ -138,46 +157,27 @@ export const PlanCard: React.FC<PlanCardProps> = ({
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-end justify-between gap-3">
-            <div className="flex-1">
-              <div className="h-4">
-                {discountRate > 0 && originalPrice && (
-                  <Text className="text-xs text-fg-muted line-through">
-                    {isYearly ? '연' : '월'} {formatPrice(originalPrice)}원
-                  </Text>
-                )}
-              </div>
-              <div className="flex items-baseline gap-1">
-                <Title as="h2" className="text-3xl font-bold">
-                  {formatPrice(price)}원
-                </Title>
-                <Text className="text-sm text-fg-muted">
-                  /{isYearly ? '년' : '월'}
-                </Text>
-              </div>
+          {!compact && (
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-headline text-grey-100">
+                {formatPrice(price)}원
+              </span>
+              <span className="text-sm text-grey-60">
+                /{isYearly ? '년' : '월'}
+              </span>
             </div>
-            <div className="flex h-[40px] w-[72px] flex-shrink-0 items-center justify-center">
-              {discountRate > 0 && (
-                <div className="rounded-full border-2 border-primary bg-primary-100 px-3 py-1.5">
-                  <Text className="text-sm font-bold text-primary">
-                    {discountRate}%
-                  </Text>
-                </div>
-              )}
-            </div>
-          </div>
-
+          )}
           <Button
             variant="outline"
             tone="primary"
             size="md"
             onClick={onSelect}
             disabled={isCurrent}
-            className={`w-full bg-transparent ${
+            className={`w-full ${
               isCurrent
                 ? 'cursor-not-allowed border-surface bg-surface-contrast text-fg-muted'
                 : name === '플러스'
-                  ? 'border-none bg-gradient-to-r from-green-500 via-lime-400 to-amber-200 text-surface'
+                  ? 'border-none bg-gradient-to-r from-green-500 via-lime-400 to-amber-200 text-white'
                   : 'bg-transparent'
             }`}
           >
@@ -188,7 +188,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
                 : '시작하기'}
           </Button>
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+    </div>
   );
 };

@@ -84,7 +84,7 @@ export const LargeContent: Story = {
           >
             <div className="space-y-4">
               {Array.from({ length: 20 }).map((_, i) => (
-                <p key={i} className="text-sm text-fg">
+                <p key={i} className="typo-sm text-fg">
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
                   do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                 </p>

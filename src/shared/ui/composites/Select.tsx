@@ -208,11 +208,11 @@ export const Select: React.FC<SelectProps> = ({
         aria-expanded={isOpen}
         className={cn(
           'flex w-full items-center justify-between gap-2',
-          'rounded-[var(--radius-md)] border-2 border-border bg-surface px-3 py-2',
-          'text-sm text-fg transition-colors duration-200',
-          'hover:border-primary-100',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'rounded-md border-default bg-surface px-3 py-2',
+          'typo-sm text-fg transition-default',
+          'hover:border-primary-subtle',
+          'focus-default',
+          'disabled:disabled-default',
           isOpen && 'border-primary'
         )}
       >
@@ -293,8 +293,8 @@ export const Select: React.FC<SelectProps> = ({
                   }}
                   tabIndex={0}
                   className={cn(
-                    'flex items-center justify-between px-3 py-3 text-sm',
-                    'cursor-pointer transition-colors duration-200',
+                    'flex items-center justify-between px-3 py-3 typo-sm',
+                    'cursor-pointer transition-default',
                     'hover:bg-surface-contrast',
                     item.disabled && 'cursor-not-allowed opacity-50',
                     focusedIndex === index && 'bg-surface-contrast',
@@ -337,7 +337,7 @@ export const Select: React.FC<SelectProps> = ({
             }}
             className={cn(
               'z-popover',
-              'rounded-[var(--radius-md)] border-2 border-border bg-surface shadow-lg'
+              'rounded-md border-default bg-surface shadow-elevated'
             )}
           >
             <ul
@@ -367,11 +367,11 @@ export const Select: React.FC<SelectProps> = ({
                     }}
                     tabIndex={0}
                     className={cn(
-                      'flex items-center justify-between px-3 py-2 text-sm',
-                      'cursor-pointer transition-colors duration-200',
+                      'flex items-center justify-between px-3 py-2 typo-sm',
+                      'cursor-pointer transition-default',
                       'hover:bg-surface-contrast',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-                      item.disabled && 'cursor-not-allowed opacity-50',
+                      'focus-default',
+                      item.disabled && 'disabled-default',
                       focusedIndex === index && 'bg-surface-contrast',
                       selected && 'font-medium text-primary'
                     )}

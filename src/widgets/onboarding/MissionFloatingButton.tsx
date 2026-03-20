@@ -141,14 +141,14 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
           'fixed bottom-6 right-6 z-sticky',
           'flex flex-col items-center justify-center',
           'h-20 w-20 rounded-full',
-          'border-2 border-primary bg-white',
-          'shadow-lg hover:shadow-xl',
-          'transition-all duration-200',
+          'border-2 border-primary bg-surface',
+          'shadow-elevated hover:shadow-prominent',
+          'transition-all duration-normal',
           'hover:scale-105 active:scale-95'
         )}
       >
         <Gift className="h-6 w-6 text-primary" />
-        <span className="mt-1 text-xs font-bold text-primary">
+        <span className="mt-1 typo-xs font-headline text-primary">
           미션 진행 중
         </span>
       </button>
@@ -160,15 +160,15 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
           className={cn(
             'fixed bottom-28 right-6 z-overlay',
             'w-[352px] rounded-2xl',
-            'border border-border bg-white',
-            'shadow-2xl',
-            'animate-in fade-in slide-in-from-bottom-4 duration-200',
+            'border border-border bg-surface',
+            'shadow-prominent',
+            'animate-in fade-in slide-in-from-bottom-4 duration-normal',
             'select-none'
           )}
         >
           <div className="p-6">
             {/* 헤더 */}
-            <h3 className="text-xl font-bold text-fg">신규 가입자 미션</h3>
+            <h3 className="typo-xl font-headline text-fg">신규 가입자 미션</h3>
 
             {/* 진행률 바 */}
             <div className="mt-4 flex items-center gap-3">
@@ -180,7 +180,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
                   }}
                 />
               </div>
-              <span className="text-sm font-medium text-fg-muted">
+              <span className="typo-sm font-medium text-fg-muted">
                 {activeCompletedCount}/{totalSteps} 완료
               </span>
             </div>
@@ -199,9 +199,9 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
                       {/* 체크 아이콘 - QuestStep과 동일한 스타일 */}
                       <div
                         className={cn(
-                          'flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors duration-300',
+                          'flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors duration-slow',
                           isCompleted
-                            ? 'border-primary bg-primary text-white'
+                            ? 'border-primary bg-primary text-primary-fg'
                             : isInProgress
                               ? 'border-primary bg-surface text-primary'
                               : 'border-fg-muted bg-surface text-fg-muted'
@@ -211,11 +211,11 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
                       </div>
                       <span
                         className={cn(
-                          'text-sm font-medium',
+                          'typo-sm font-medium',
                           isCompleted
                             ? 'text-fg'
                             : isInProgress
-                              ? 'font-bold text-fg'
+                              ? 'font-headline text-fg'
                               : 'text-fg-muted'
                         )}
                       >
@@ -223,13 +223,13 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
                       </span>
                     </div>
                     {isCompleted ? (
-                      <span className="text-sm font-medium text-fg-muted">
+                      <span className="typo-sm font-medium text-fg-muted">
                         완료
                       </span>
                     ) : isInProgress ? (
                       <button
                         onClick={() => handleStartMission(quest.id)}
-                        className="text-sm font-bold text-primary hover:text-primary-600 hover:underline"
+                        className="typo-sm font-headline text-primary hover:text-primary-hover hover:underline"
                       >
                         진행하기
                       </button>
@@ -242,7 +242,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
             {/* 남은 기간 */}
             <div className="mt-6">
               {!isAllCompleted && (
-                <p className="text-center text-sm font-bold text-danger">
+                <p className="text-center typo-sm font-headline text-danger">
                   남은 기간 {remainingDays}일
                 </p>
               )}
@@ -253,7 +253,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
               tone="primary"
               variant={isAllCompleted ? 'solid' : 'ghost'}
               size="lg"
-              className="mt-4 w-full font-bold"
+              className="mt-4 w-full font-headline"
               disabled={!isAllCompleted || isLoading || currentLevel >= 7}
               onClick={handleRewardClick}
             >

@@ -1,19 +1,21 @@
 import React from 'react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { cn } from '@/lib/cn';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import { Card, Text } from '@/shared/ui';
 
 export interface ActionCardProps {
   icon: React.ReactNode;
   title: string;
   onClick: () => void;
+  className?: string;
 }
 
 export const ActionCard: React.FC<ActionCardProps> = ({
   icon,
   title,
   onClick,
+  className,
 }) => {
   const handleClick = () => {
     trackEvent(MixpanelEvent.ActionCardClick, { title });
@@ -21,16 +23,19 @@ export const ActionCard: React.FC<ActionCardProps> = ({
   };
 
   return (
-    <Card
-      className="h-40 w-full max-w-[277px] cursor-pointer px-1 py-4 transition-all"
+    <button
+      className={cn(
+        'w-full cursor-pointer rounded-2xl border border-grey-30 bg-white px-1 py-4 transition-all',
+        className
+      )}
       onClick={handleClick}
     >
-      <Card.Body className="flex flex-col items-start justify-center gap-4 p-8 text-center">
-        <div className="rounded-xl border-2 border-b border-border p-2">
+      <div className="flex flex-col items-start justify-center gap-3 px-4 text-center md:gap-4 md:px-6 md:py-4">
+        <div className="flex size-11 items-center justify-center rounded-md border border-grey-30">
           {icon}
         </div>
-        <Text className="font-medium">{title}</Text>
-      </Card.Body>
-    </Card>
+        <p className="action-card-title">{title}</p>
+      </div>
+    </button>
   );
 };

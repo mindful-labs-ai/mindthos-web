@@ -60,7 +60,7 @@ export const SortableSessionCard: React.FC<SortableSessionCardProps> = ({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'relative flex h-[96px] items-center gap-3 rounded-lg border border-surface-strong px-3 py-4',
+        'relative flex h-[96px] items-center gap-3 rounded-lg border border-grey-40 px-3 py-4',
         isDragging && 'z-50 opacity-50'
       )}
     >
@@ -79,13 +79,13 @@ export const SortableSessionCard: React.FC<SortableSessionCardProps> = ({
         <div className="truncate font-medium text-fg">
           {session.title || '제목 없는 기록'}
         </div>
-        <div className="text-xs text-fg-muted">
+        <div className="typo-xs text-fg-muted">
           {formattedDate} {formattedTime}
         </div>
       </div>
 
       {/* 회기 표시 */}
-      <div className="absolute bottom-4 right-3 rounded-md bg-surface-strong px-2 py-1 text-sm font-semibold text-fg">
+      <div className="typo-sm absolute bottom-4 right-3 rounded-md bg-surface-strong px-2 py-1 font-emphasize text-fg">
         {index + 1}회기
       </div>
 

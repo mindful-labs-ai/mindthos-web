@@ -259,7 +259,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       <Modal className="max-w-lg" open={open} onOpenChange={handleClose}>
         <div className="flex flex-col justify-center gap-6 p-6">
           <div className="text-center">
-            <Title as="h3" className="font-bold">
+            <Title as="h3" className="font-headline">
               {getSessionModalTitle(type)}
             </Title>
           </div>
@@ -318,8 +318,8 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
 
               return (
                 <div className="flex justify-center">
-                  <div className="flex w-fit items-center justify-center gap-2 rounded-lg bg-primary-100 px-2">
-                    <Text className="flex items-center gap-1 text-center text-primary-600">
+                  <div className="flex w-fit items-center justify-center gap-2 rounded-lg bg-primary-subtle px-2">
+                    <Text className="flex items-center gap-1 text-center text-primary">
                       {creditInfo.totalCredit}
                       <svg
                         width="14"
@@ -341,7 +341,7 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                         </defs>
                       </svg>
                     </Text>
-                    <Text className="text-center text-primary-600">사용</Text>
+                    <Text className="text-center text-primary">사용</Text>
                   </div>
                 </div>
               );

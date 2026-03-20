@@ -231,10 +231,10 @@ export const TutorialGuideModal: React.FC = () => {
     >
       <div className="flex h-full flex-col items-center px-0 py-6 sm:px-8 sm:py-8 md:px-14 md:py-[38px]">
         {/* Title */}
-        <h2 className="shrink-0 text-xl font-bold text-fg">{config.title}</h2>
+        <h2 className="shrink-0 typo-xl font-headline text-fg">{config.title}</h2>
 
         {/* Subtitle */}
-        <p className="mt-4 shrink-0 text-base font-semibold text-primary">
+        <p className="mt-4 shrink-0 typo-m font-emphasize text-primary">
           {slide.subtitle}
         </p>
 
@@ -247,7 +247,7 @@ export const TutorialGuideModal: React.FC = () => {
                 videoAspectRatio ? { aspectRatio: videoAspectRatio } : undefined
               }
             >
-              <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border-2 border-border">
+              <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border-default">
                 <video
                   ref={videoRef}
                   key={slide.media.src}
@@ -268,7 +268,7 @@ export const TutorialGuideModal: React.FC = () => {
               </div>
               <div className="mt-2 h-1 w-11/12 shrink-0 overflow-hidden rounded-full bg-surface-strong">
                 <div
-                  className="h-full rounded-full bg-primary transition-[width] duration-200 ease-linear"
+                  className="h-full rounded-full bg-primary transition-[width] duration-normal ease-linear"
                   style={{ width: `${videoProgress}%` }}
                 />
               </div>
@@ -284,7 +284,7 @@ export const TutorialGuideModal: React.FC = () => {
         </div>
 
         {/* Description */}
-        <p className="mt-5 shrink-0 whitespace-pre-line text-center text-sm leading-relaxed text-fg">
+        <p className="mt-5 shrink-0 whitespace-pre-line text-center typo-sm leading-relaxed text-fg">
           {slide.description}
         </p>
 
@@ -310,7 +310,7 @@ export const TutorialGuideModal: React.FC = () => {
             tone="neutral"
             size="md"
             className={cn(
-              'h-[41px] font-semibold',
+              'h-[41px] font-emphasize',
               isLastSlide ? 'w-1/4' : 'flex-1'
             )}
             onClick={currentSlide > 0 ? handlePrev : handleClose}
@@ -322,7 +322,7 @@ export const TutorialGuideModal: React.FC = () => {
             tone="primary"
             size="md"
             className={cn(
-              'h-[41px] font-bold',
+              'h-[41px] font-headline',
               isLastSlide ? 'w-3/4' : 'flex-1'
             )}
             onClick={handleNext}

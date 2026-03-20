@@ -6,6 +6,7 @@
 import React from 'react';
 
 import type { ProgressNote } from '@/features/session/types';
+import { XIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
 
 import { CreateProgressNoteView } from './CreateProgressNoteView';
@@ -78,10 +79,10 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
               <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
                 <div className="text-center">
-                  <Title as="h2" className="text-lg font-medium text-fg">
+                  <Title as="h2" className="typo-l font-medium text-fg">
                     상담노트 작성 중...
                   </Title>
-                  <p className="mt-2 text-sm text-fg-muted">
+                  <p className="typo-sm mt-2 text-fg-muted">
                     상담노트를 작성하고 있습니다.
                     <br />
                     잠시만 기다려주세요.
@@ -94,25 +95,22 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
 
         // 템플릿 선택 UI
         if (activeTab in creatingTabs) {
+          const isTemplateSelected = !!creatingTabs[activeTab];
           return (
-            <div className="flex h-full flex-col">
-              {/* 우측 상단 생성 버튼 */}
+            <div className="relative flex h-full flex-col">
+              {/* 상단 헤더 */}
               <div className="flex items-center justify-between px-8 py-4">
-                <div>
-                  <Title as="h2" className="text-base text-fg-muted">
-                    상담 노트 템플릿
-                  </Title>
-                </div>
+                <p className="text-m text-grey-60">상담 노트 템플릿</p>
                 <button
                   onClick={onCreateProgressNote}
-                  disabled={isReadOnly || !creatingTabs[activeTab]}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                    isReadOnly || !creatingTabs[activeTab]
-                      ? 'cursor-not-allowed bg-surface-contrast text-fg-muted'
-                      : 'bg-primary text-white hover:bg-primary-600'
+                  disabled={isReadOnly || !isTemplateSelected}
+                  className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-m font-medium transition-colors ${
+                    isReadOnly || !isTemplateSelected
+                      ? 'cursor-not-allowed bg-grey-30 text-grey-60'
+                      : 'bg-green-80 text-white hover:opacity-90'
                   }`}
                 >
-                  상담 노트 작성하기
+                  상담 노트 만들기
                 </button>
               </div>
               {/* CreateProgressNoteView */}
@@ -134,6 +132,31 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                   columns={2}
                 />
               </div>
+              {/* 하단 배너 (템플릿 선택 시) */}
+              {isTemplateSelected && (
+                <div className="absolute inset-x-0 bottom-4 flex justify-center px-8">
+                  <div className="relative flex w-full max-w-[570px] items-center justify-between rounded-md border border-grey-30 bg-grey-10 py-6 pl-9 pr-11 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => onTemplateSelect(null)}
+                      className="text-grey-50 absolute right-3 top-3 hover:text-grey-80"
+                      aria-label="닫기"
+                    >
+                      <XIcon size={24} />
+                    </button>
+                    <p className="text-sm font-medium text-grey-70">
+                      상담 노트 생성에 10 크레딧을 사용합니다.
+                    </p>
+                    <button
+                      onClick={onCreateProgressNote}
+                      disabled={isReadOnly}
+                      className="rounded-lg border border-grey-40 bg-white px-4 py-2 text-sm font-headline text-grey-100 transition-colors hover:bg-grey-10"
+                    >
+                      상담 노트 만들기
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           );
         }

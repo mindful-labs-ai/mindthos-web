@@ -5,9 +5,6 @@ import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { StarIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
-import { Text } from '@/shared/ui/atoms/Text';
-import { Title } from '@/shared/ui/atoms/Title';
-import { Card } from '@/shared/ui/composites/Card';
 
 export interface TemplateCardProps {
   template: TemplateListItem;
@@ -39,45 +36,45 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   };
 
   return (
-    <Card className="h-48">
-      <Card.Body className="flex h-full flex-col space-y-4 p-6 text-left">
+    <div className="h-[219px] rounded-lg border border-grey-40 bg-white">
+      <div className="flex h-full flex-col space-y-4 p-6 text-left">
         <div className="flex items-start justify-between gap-2">
-          <Title as="h3" className="line-clamp-2 flex-1 text-lg font-bold">
+          <h3 className="line-clamp-2 flex-1 text-l font-headline text-grey-100">
             {template.title}
-          </Title>
+          </h3>
           <button
             type="button"
             onClick={handlePinClick}
-            className="flex-shrink-0 text-fg-muted transition-colors hover:text-accent"
+            className="flex-shrink-0 text-grey-60 transition-colors hover:text-green-80"
             aria-label={template.pin ? '즐겨찾기 해제' : '즐겨찾기 추가'}
           >
             <StarIcon
               size={20}
               fill={template.pin ? 'currentColor' : 'none'}
-              className={template.pin ? 'text-accent' : ''}
+              className={template.pin ? 'text-green-80' : ''}
             />
           </button>
         </div>
 
-        <Text className="flex-1 overflow-y-auto text-left text-sm text-fg">
+        <p className="flex-1 overflow-y-auto text-left text-m font-medium text-grey-100">
           {template.description}
-        </Text>
+        </p>
 
         {template.is_default ? (
-          <div className="inline-flex h-8 w-fit select-none items-center justify-center rounded-[var(--radius-sm)] bg-primary px-3 text-sm font-medium text-surface">
-            기본 노트로 설정함
+          <div className="inline-flex h-8 w-fit select-none items-center justify-center rounded-sm bg-green-80 px-3 text-sm font-medium text-white">
+            기본 노트로 설정됨
           </div>
         ) : (
           <Button
-            tone={template.is_default ? 'primary' : 'neutral'}
+            tone="neutral"
             size="sm"
             onClick={handleDefaultClick}
-            className="w-fit"
+            className="w-fit bg-grey-40"
           >
             기본 노트로 변경하기
           </Button>
         )}
-      </Card.Body>
-    </Card>
+      </div>
+    </div>
   );
 };

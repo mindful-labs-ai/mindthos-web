@@ -13,6 +13,7 @@ import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { formatDurationInTime, formatFileSize } from '@/shared/utils/format';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
+import { MobileSttModelSelector } from '@/widgets/home/MobileSttModelSelector';
 
 // 원형 프로그레스 바 컴포넌트
 const CircularProgress: React.FC<{
@@ -47,7 +48,7 @@ const CircularProgress: React.FC<{
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        className="text-primary transition-all duration-300"
+        className="text-primary transition-all duration-slow"
       />
     </svg>
   );
@@ -61,6 +62,7 @@ interface MultiFileConfigItemProps {
   result?: SessionCreateResult;
   onConfigChange: (config: FileSessionConfig) => void;
   onRemove: (fileId: string) => void;
+  isMobileView?: boolean;
 }
 
 const SttModelToggle: React.FC<{
@@ -73,9 +75,9 @@ const SttModelToggle: React.FC<{
         type="button"
         onClick={() => onChange('whisper')}
         className={cn(
-          'flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors',
+          'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
           value === 'whisper'
-            ? 'bg-primary-100 text-primary'
+            ? 'bg-primary-subtle text-primary'
             : 'text-fg-muted hover:bg-surface-contrast'
         )}
       >
@@ -107,9 +109,9 @@ const SttModelToggle: React.FC<{
         type="button"
         onClick={() => onChange('gemini-3')}
         className={cn(
-          'flex items-center gap-1 rounded-md px-2 py-1 text-sm transition-colors',
+          'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
           value === 'gemini-3'
-            ? 'bg-primary-100 text-primary'
+            ? 'bg-primary-subtle text-primary'
             : 'text-fg-muted hover:bg-surface-contrast'
         )}
       >
@@ -149,6 +151,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
   result,
   onConfigChange,
   onRemove,
+  isMobileView = false,
 }) => {
   const [isClientSelectorOpen, setIsClientSelectorOpen] = React.useState(false);
 
@@ -187,6 +190,101 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
     }
   };
 
+  // 공통 요소
+  const statusBadge = (
+    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center">
+      {isCompleted ? (
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
+          <CheckIcon size={16} className="text-primary-fg" />
+        </div>
+      ) : isFailed ? (
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
+          <XIcon size={16} className="text-primary-fg" />
+        </div>
+      ) : isProcessing ? (
+        <CircularProgress progress={getProgress()} size={32} strokeWidth={3} />
+      ) : (
+        <div className="typo-sm flex h-8 w-8 items-center justify-center rounded-full bg-surface-contrast font-medium text-fg">
+          {index + 1}
+        </div>
+      )}
+    </div>
+  );
+
+  const fileInfo = (
+    <div className="min-w-0 flex-1">
+      <Text className="truncate font-medium text-fg">{file.name}</Text>
+      <Text className="typo-sm text-fg-muted">
+        {formatFileSize(file.size)}
+        {file.duration !== undefined && (
+          <> | {formatDurationInTime(file.duration)}</>
+        )}
+        {isFailed && result?.errorMessage && (
+          <span className="ml-2 text-red-500">({result.errorMessage})</span>
+        )}
+      </Text>
+    </div>
+  );
+
+  const removeButton = (
+    <button
+      type="button"
+      onClick={() => onRemove(file.id)}
+      className="flex-shrink-0 p-1 text-fg-muted transition-colors hover:text-fg"
+      aria-label="파일 제거"
+    >
+      <XIcon size={16} />
+    </button>
+  );
+
+  const sttToggle = (
+    <SttModelToggle value={config.sttModel} onChange={handleSttModelChange} />
+  );
+
+  if (isMobileView) {
+    return (
+      <div
+        className={cn(
+          'flex h-[138px] w-full flex-col justify-between rounded-lg border-2 bg-surface px-4 py-3',
+          isFailed ? 'border-red-300 bg-red-50' : 'border-border'
+        )}
+      >
+        {/* 1줄: 번호 | 파일명+정보 | X */}
+        <div className="flex items-center gap-3">
+          {statusBadge}
+          {fileInfo}
+          {removeButton}
+        </div>
+        {/* 2줄: 클라이언트 버튼 | STT 토글 */}
+        <div className="mt-3 flex items-center justify-between">
+          <ClientSelector
+            clients={clients}
+            selectedClient={selectedClient}
+            onSelect={handleClientSelect}
+            variant="modal"
+            open={isClientSelectorOpen}
+            onOpenChange={setIsClientSelectorOpen}
+            trigger={
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-md border border-grey-30 bg-white px-3 py-1.5 text-fg-muted"
+              >
+                <UserIcon size={16} />
+                <span className="text-sm font-medium">
+                  {selectedClient?.name || '선택 안됨'}
+                </span>
+              </button>
+            }
+          />
+          <MobileSttModelSelector
+            sttModel={config.sttModel}
+            setSttModel={handleSttModelChange}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -194,47 +292,9 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
         isFailed ? 'border-red-300 bg-red-50' : 'border-border'
       )}
     >
-      {/* 순서 번호 또는 진행 상태 */}
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center">
-        {isCompleted ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
-            <CheckIcon size={16} className="text-white" />
-          </div>
-        ) : isFailed ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
-            <XIcon size={16} className="text-white" />
-          </div>
-        ) : isProcessing ? (
-          <CircularProgress
-            progress={getProgress()}
-            size={32}
-            strokeWidth={3}
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-contrast text-sm font-medium text-fg">
-            {index + 1}
-          </div>
-        )}
-      </div>
-
-      {/* 파일 정보 */}
-      <div className="min-w-0 flex-1">
-        <Text className="truncate font-medium text-fg">{file.name}</Text>
-        <Text className="text-sm text-fg-muted">
-          {formatFileSize(file.size)}
-          {file.duration !== undefined && (
-            <> | {formatDurationInTime(file.duration)}</>
-          )}
-          {isFailed && result?.errorMessage && (
-            <span className="ml-2 text-red-500">({result.errorMessage})</span>
-          )}
-        </Text>
-      </div>
-
-      {/* STT 모델 선택 */}
-      <SttModelToggle value={config.sttModel} onChange={handleSttModelChange} />
-
-      {/* 내담자 선택 */}
+      {statusBadge}
+      {fileInfo}
+      {sttToggle}
       <ClientSelector
         clients={clients}
         selectedClient={selectedClient}
@@ -250,22 +310,13 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
             className="flex min-w-[120px] items-center gap-2"
           >
             <UserIcon size={14} />
-            <Text className="truncate text-sm">
+            <Text className="typo-sm truncate">
               {selectedClient?.name || '클라이언트 선택 안됨'}
             </Text>
           </Button>
         }
       />
-
-      {/* 삭제 버튼 */}
-      <button
-        type="button"
-        onClick={() => onRemove(file.id)}
-        className="flex-shrink-0 p-1 text-fg-muted transition-colors hover:text-fg"
-        aria-label="파일 제거"
-      >
-        <XIcon size={16} />
-      </button>
+      {removeButton}
     </div>
   );
 };

@@ -3,8 +3,8 @@ import React from 'react';
 import { getClientDetailRoute } from '@/app/router/constants';
 import { dummyClient } from '@/features/session/constants/dummySessions';
 import { useSessionList } from '@/features/session/hooks/useSessionList';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { useAuthStore } from '@/stores/authStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
@@ -19,6 +19,8 @@ import { ClientListView } from './ClientListView';
 
 export const ClientListContainer: React.FC = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const [searchQuery, setSearchQuery] = React.useState('');
   const { clients, isLoading, error } = useClientList();
   const userId = useAuthStore((state) => state.userId);
@@ -87,6 +89,7 @@ export const ClientListContainer: React.FC = () => {
             onEditClick={handleEditClient}
             isReadOnly={isDummyFlow}
             searchQuery={searchQuery}
+            isMobile={isMobile}
           />
         ))}
       </div>
@@ -96,7 +99,7 @@ export const ClientListContainer: React.FC = () => {
   const clientList = (() => {
     if (error) {
       return (
-        <div className="mb-4 rounded-[var(--radius-md)] bg-danger px-4 py-3 text-sm text-danger">
+        <div className="typo-sm mb-4 rounded-md bg-danger px-4 py-3 text-danger">
           {error}
         </div>
       );
@@ -105,7 +108,7 @@ export const ClientListContainer: React.FC = () => {
     if (isLoading) {
       return (
         <div className="flex min-h-[400px] items-center justify-center">
-          <Text className="text-lg text-fg-muted">로딩 중...</Text>
+          <p className="text-l font-emphasize text-grey-60">로딩 중...</p>
         </div>
       );
     }
@@ -119,7 +122,7 @@ export const ClientListContainer: React.FC = () => {
                 renderClientGroup(
                   group,
                   'h2',
-                  'text-xl font-bold text-fg-muted'
+                  'typo-xl font-headline text-fg-muted'
                 )
               )}
             </div>
@@ -128,7 +131,7 @@ export const ClientListContainer: React.FC = () => {
           {groupedCompletedClients.length > 0 && (
             <div>
               <div className="mb-6 text-left">
-                <Title as="h2" className="text-xl font-bold text-fg-muted">
+                <Title as="h2" className="typo-xl font-headline text-fg-muted">
                   종결된 내담자
                 </Title>
               </div>
@@ -138,7 +141,7 @@ export const ClientListContainer: React.FC = () => {
                   renderClientGroup(
                     group,
                     'h3',
-                    'text-lg font-bold text-fg-muted'
+                    'typo-l font-headline text-fg-muted'
                   )
                 )}
               </div>
@@ -150,7 +153,7 @@ export const ClientListContainer: React.FC = () => {
 
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <Text className="text-lg text-fg-muted">검색 결과 없음</Text>
+        <p className="text-l font-medium text-grey-60">검색 결과 없음</p>
       </div>
     );
   })();
@@ -170,6 +173,7 @@ export const ClientListContainer: React.FC = () => {
       onAddClient={handleAddClient}
       clientList={clientList}
       addClientModal={addClientModal}
+      isMobileView={isMobileView}
     />
   );
 };

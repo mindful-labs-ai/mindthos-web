@@ -68,7 +68,7 @@ export const Accordion: React.FC<AccordionProps> = ({
   return (
     <div
       className={cn(
-        'divide-y divide-border rounded-[var(--radius-lg)] border-2 border-border',
+        'divide-y divide-border rounded-lg border-default',
         className
       )}
     >
@@ -88,15 +88,15 @@ export const Accordion: React.FC<AccordionProps> = ({
                 'flex w-full items-center justify-between px-6 py-4',
                 'text-left font-medium text-fg',
                 'hover:bg-surface-contrast/50',
-                'transition-colors duration-200',
+                'transition-default',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
-                'disabled:cursor-not-allowed disabled:opacity-50'
+                'disabled:disabled-default'
               )}
             >
               <span>{item.header}</span>
               <svg
                 className={cn(
-                  'h-5 w-5 text-fg-muted transition-transform duration-200',
+                  'h-5 w-5 text-fg-muted transition-transform duration-normal',
                   open && 'rotate-180'
                 )}
                 fill="none"

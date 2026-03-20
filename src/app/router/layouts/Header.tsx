@@ -93,7 +93,7 @@ export const Header: React.FC = () => {
   const breadcrumbItems = getBreadcrumbItems();
 
   return (
-    <header className="sticky top-0 hidden h-14 items-center justify-start border-b border-border bg-bg px-6 py-4 sm:flex lg:px-8">
+    <header className="h-header border-header-border bg-header-bg sticky top-0 hidden items-center justify-start border-b px-8 py-4 sm:flex">
       <BreadCrumb items={breadcrumbItems} />
     </header>
   );

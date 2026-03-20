@@ -1,3 +1,4 @@
+//deprecated
 import React from 'react';
 
 import type { Client } from '@/features/client/types';
@@ -45,7 +46,7 @@ const CircularProgress: React.FC<{
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
-        className="text-primary transition-all duration-300"
+        className="duration-slow text-primary transition-all"
       />
     </svg>
   );
@@ -83,7 +84,7 @@ const MobileSttModelToggle: React.FC<{
       {/* 체크 아이콘 (움직이는 원) */}
       <div
         className={cn(
-          'absolute flex h-6 w-6 items-center justify-center rounded-full bg-white shadow transition-all duration-200',
+          'duration-normal absolute flex h-6 w-6 items-center justify-center rounded-full bg-surface shadow transition-all',
           isAdvanced ? 'left-[calc(100%-28px)]' : 'left-1'
         )}
       >
@@ -98,7 +99,7 @@ const MobileSttModelToggle: React.FC<{
       {/* 텍스트 */}
       <span
         className={cn(
-          'absolute text-xs font-medium text-white transition-all duration-200',
+          'typo-xs duration-normal absolute font-medium text-white transition-all',
           isAdvanced ? 'left-2' : 'right-2'
         )}
       >
@@ -179,7 +180,7 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
               strokeWidth={3}
             />
           ) : (
-            <Text className="text-xl font-semibold text-fg-muted">
+            <Text className="typo-xl font-emphasize text-fg-muted">
               {index + 1}
             </Text>
           )}
@@ -192,14 +193,14 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
           {/* 파일 정보 */}
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium text-fg">{file.name}</p>
-            <Text className="text-sm text-fg-muted">
+            <Text className="typo-sm text-fg-muted">
               {formatFileSize(file.size)}
               {file.duration !== undefined && (
                 <> | {formatDurationInTime(file.duration)}</>
               )}
             </Text>
             {isFailed && result?.errorMessage && (
-              <Text className="text-sm text-red-500">
+              <Text className="typo-sm text-red-500">
                 {result.errorMessage}
               </Text>
             )}
@@ -233,7 +234,7 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
                 className="flex items-center gap-2"
               >
                 <UserIcon size={14} />
-                <Text className="truncate text-sm">
+                <Text className="typo-sm truncate">
                   {selectedClient?.name || '클라이언트 선택 안됨'}
                 </Text>
               </Button>

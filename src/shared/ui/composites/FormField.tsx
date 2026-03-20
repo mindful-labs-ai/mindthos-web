@@ -42,7 +42,7 @@ export const FormField: React.FC<FormFieldProps> = ({
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       {label && (
-        <label htmlFor={fieldId} className="text-sm font-medium text-fg">
+        <label htmlFor={fieldId} className="typo-sm font-medium text-fg">
           {label}
           {required && (
             <span className="ml-1 text-danger" aria-label="required">
@@ -53,12 +53,12 @@ export const FormField: React.FC<FormFieldProps> = ({
       )}
       {childElement}
       {error && (
-        <p id={errorId} className="text-sm text-danger" role="alert">
+        <p id={errorId} className="typo-sm text-danger" role="alert">
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p id={helperId} className="text-sm text-fg-muted">
+        <p id={helperId} className="typo-sm text-fg-muted">
           {helperText}
         </p>
       )}

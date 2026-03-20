@@ -373,7 +373,7 @@ const MobileView = () => {
 
         {/* 나의 크레딧 */}
         <div className="mt-12">
-          <Title as="h2" className="mb-4 text-lg font-semibold">
+          <Title as="h2" className="mb-4 typo-l font-emphasize">
             나의 크레딧
           </Title>
           {creditInfo && (
@@ -401,7 +401,7 @@ const MobileView = () => {
             rel="noopener noreferrer"
             className="flex items-center justify-between py-4"
           >
-            <Text className="text-base text-fg">서비스 이용약관</Text>
+            <Text className="typo-m text-fg">서비스 이용약관</Text>
             <ChevronRightIcon size={20} className="text-fg-muted" />
           </Link>
           <Link
@@ -410,11 +410,11 @@ const MobileView = () => {
             rel="noopener noreferrer"
             className="flex items-center justify-between py-4"
           >
-            <Text className="text-base text-fg">개인정보 처리방침</Text>
+            <Text className="typo-m text-fg">개인정보 처리방침</Text>
             <ChevronRightIcon size={20} className="text-fg-muted" />
           </Link>
           <button onClick={handleLogout} className="py-4 text-left">
-            <Text className="text-base text-fg-muted">로그아웃</Text>
+            <Text className="typo-m text-fg-muted">로그아웃</Text>
           </button>
         </div>
       </div>
@@ -435,7 +435,7 @@ const MobileView = () => {
 
         <div className="flex flex-col gap-4">
           <button
-            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 text-xl font-bold"
+            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 typo-xl font-headline"
             onClick={handleUploadClick}
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-lg border">
@@ -444,7 +444,7 @@ const MobileView = () => {
             녹음 파일 업로드하기
           </button>
           <button
-            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 text-xl font-bold"
+            className="flex h-[160px] w-full flex-col items-start justify-center gap-4 rounded-lg border border-surface-strong bg-surface px-8 typo-xl font-headline"
             onClick={handleGuideClick}
           >
             <div className="flex h-11 w-11 items-center justify-center rounded-lg border">
@@ -471,7 +471,7 @@ const MobileView = () => {
         {/* 상담 기록 섹션 */}
         <div className="flex-1">
           <div className="mb-4 flex items-center gap-2">
-            <Title as="h2" className="text-lg font-semibold">
+            <Title as="h2" className="typo-l font-emphasize">
               상담기록
             </Title>
             {isDummyFlow && (
@@ -524,17 +524,17 @@ const MobileView = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="ios-guide-title"
-            className="fixed inset-0 z-modal flex items-center justify-center bg-black/50 px-6"
+            className="fixed inset-0 z-modal flex items-center justify-center bg-overlay-bg px-6"
           >
-            <div className="w-full max-w-sm rounded-2xl bg-white px-6 py-8 text-center">
+            <div className="w-full max-w-sm rounded-2xl bg-surface px-6 py-8 text-center">
               <Title
                 as="h2"
                 id="ios-guide-title"
-                className="mb-6 text-xl font-bold"
+                className="mb-6 typo-xl font-headline"
               >
                 파일 위치 안내
               </Title>
-              <Text className="mb-8 text-base leading-relaxed text-fg">
+              <Text className="mb-8 typo-m leading-relaxed text-fg">
                 아이폰 녹음 앱으로 녹음한 파일은
                 <br />
                 &apos;나의 iPhone&apos; 혹은 &apos;iCloud Drive&apos;안에
@@ -544,7 +544,7 @@ const MobileView = () => {
               <div className="flex gap-3">
                 <button
                   onClick={handleIosGuideDismiss}
-                  className="flex-1 py-3 text-base text-fg-muted"
+                  className="flex-1 py-3 typo-m text-fg-muted"
                 >
                   다시 보지 않기
                 </button>
@@ -574,7 +574,7 @@ const MobileView = () => {
           <button onClick={handlePrevStep} className="p-1">
             <ChevronLeftIcon size={24} />
           </button>
-          <Title as="h2" className="text-lg font-semibold">
+          <Title as="h2" className="typo-l font-emphasize">
             녹음 파일 업로드
           </Title>
         </div>
@@ -603,7 +603,7 @@ const MobileView = () => {
               <div className="flex flex-col items-center justify-center gap-3 rounded-xl border p-6">
                 <UploadIcon size={32} />
                 <Text>파일을 선택해주세요</Text>
-                <Text className="text-sm text-fg-muted">
+                <Text className="typo-sm text-fg-muted">
                   최대 {MULTI_UPLOAD_LIMITS.MAX_FILES}개
                   <br />
                   파일당 최대 500MB
@@ -635,10 +635,10 @@ const MobileView = () => {
         {/* 일괄 설정 */}
         <div className="flex flex-1 flex-col bg-surface px-4 py-4">
           <div>
-            <Text className="mb-3 font-semibold text-fg">일괄 설정</Text>
+            <Text className="mb-3 font-emphasize text-fg">일괄 설정</Text>
 
             <div className="mb-4 flex items-center justify-between">
-              <Text className="text-sm text-fg-muted">내담자 선택</Text>
+              <Text className="typo-sm text-fg-muted">내담자 선택</Text>
               <Button
                 variant="outline"
                 size="sm"
@@ -646,7 +646,7 @@ const MobileView = () => {
                 onClick={() => setIsClientModalOpen(true)}
               >
                 <UserIcon size={14} />
-                <Text className="text-sm">
+                <Text className="typo-sm">
                   {clients.find((c) => c.id === batchConfig.clientId)?.name ||
                     '클라이언트 선택 안됨'}
                 </Text>
@@ -664,7 +664,7 @@ const MobileView = () => {
             </div>
 
             <div className="flex items-center justify-between">
-              <Text className="text-sm text-fg-muted">축어록 종류</Text>
+              <Text className="typo-sm text-fg-muted">축어록 종류</Text>
               <MobileSttModelSelector
                 sttModel={batchConfig.sttModel}
                 setSttModel={handleBatchSttModelChange}
@@ -674,11 +674,11 @@ const MobileView = () => {
 
           {validFiles.length > 0 && (
             <div className="flex flex-1 flex-col justify-center pb-16 text-center">
-              <Text className="font-semibold">
+              <Text className="font-emphasize">
                 <span className="text-primary">{validFiles.length}개</span>의
                 상담기록 생성으로
               </Text>
-              <Text className="font-semibold">
+              <Text className="font-emphasize">
                 총{' '}
                 <span className="text-primary">{step1TotalCredit} 크레딧</span>
                 을 사용합니다.
@@ -712,14 +712,14 @@ const MobileView = () => {
         <button onClick={handlePrevStep} disabled={isCreating} className="p-1">
           <ChevronLeftIcon size={24} />
         </button>
-        <Title as="h2" className="text-lg font-semibold">
+        <Title as="h2" className="typo-l font-emphasize">
           녹음 파일 업로드
         </Title>
       </div>
 
       {/* 파일 설정 목록 */}
       <div className="flex-1 overflow-y-auto bg-surface p-4">
-        <Text className="mb-3 text-sm text-fg-muted">상담기록 세부 설정</Text>
+        <Text className="mb-3 typo-sm text-fg-muted">상담기록 세부 설정</Text>
 
         <div className="mb-16 space-y-3">
           {fileConfigs.map((config, index) => {
@@ -745,8 +745,8 @@ const MobileView = () => {
       <div className="fixed bottom-3 w-full bg-transparent px-4">
         {/* 크레딧 표시 */}
         <div className="mb-3 flex justify-center">
-          <div className="flex items-center gap-1 rounded-lg bg-primary-100 px-3 py-1">
-            <Text className="font-bold text-primary-600">
+          <div className="flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
+            <Text className="font-headline text-primary">
               {step2TotalCredit}
             </Text>
             <svg
@@ -755,7 +755,7 @@ const MobileView = () => {
               viewBox="0 0 14 14"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="text-primary-600"
+              className="text-primary"
             >
               <g clipPath="url(#clip0_credit_mobile)">
                 <path
@@ -769,7 +769,7 @@ const MobileView = () => {
                 </clipPath>
               </defs>
             </svg>
-            <Text className="text-primary-600">사용</Text>
+            <Text className="text-primary">사용</Text>
           </div>
         </div>
 

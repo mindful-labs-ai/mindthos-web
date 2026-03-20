@@ -33,12 +33,12 @@ export const PaymentFail = () => {
           </div>
 
           <div>
-            <Title className="text-2xl font-bold">카드 등록 실패</Title>
+            <Title className="typo-2xl font-headline">카드 등록 실패</Title>
             <Text className="mt-2 text-gray-600">
               {errorMessage || '카드 등록 중 오류가 발생했습니다.'}
             </Text>
             {errorCode && (
-              <Text className="mt-1 text-sm text-gray-500">
+              <Text className="mt-1 typo-sm text-gray-500">
                 에러 코드: {errorCode}
               </Text>
             )}

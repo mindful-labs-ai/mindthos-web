@@ -36,9 +36,9 @@ export const CustomLabel: Story = {
 
 export const InContext: Story = {
   render: () => (
-    <div className="flex flex-col items-center gap-4 rounded-lg border-2 border-border bg-surface p-8">
+    <div className="flex flex-col items-center gap-4 rounded-lg border-default bg-surface p-8">
       <Spinner size="lg" />
-      <p className="text-sm text-fg-muted">Loading your data...</p>
+      <p className="typo-sm text-fg-muted">Loading your data...</p>
     </div>
   ),
 };

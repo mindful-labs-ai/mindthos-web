@@ -92,10 +92,10 @@ export function RenderStep({
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <Check className="h-8 w-8 text-green-600" />
           </div>
-          <h3 className="mt-4 text-lg font-semibold text-fg">
+          <h3 className="mt-4 typo-l font-emphasize text-fg">
             가계도가 생성되었습니다!
           </h3>
-          <p className="mt-2 text-sm text-fg-muted">
+          <p className="mt-2 typo-sm text-fg-muted">
             캔버스에서 가계도를 확인하고 편집할 수 있습니다.
           </p>
         </div>

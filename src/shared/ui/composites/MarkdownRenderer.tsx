@@ -73,7 +73,7 @@ export const MarkdownRenderer = React.memo(
           : {};
 
         const editableCellClass = editable
-          ? ' bg-primary-50 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:rounded cursor-text'
+          ? ' bg-primary-subtle focus:outline-none focus:ring-1 focus:ring-primary/50 focus:rounded cursor-text'
           : '';
         const headingComponents = disableHeadings
           ? {
@@ -106,7 +106,7 @@ export const MarkdownRenderer = React.memo(
               h1: ({ children }: { children?: React.ReactNode }) => (
                 <Title
                   as="h1"
-                  className={`mb-4 mt-8 text-2xl font-bold text-fg first:mt-0${editableCellClass}`}
+                  className={`mb-4 mt-8 typo-2xl-headline text-fg first:mt-0${editableCellClass}`}
                   {...(editable && !disableHeadings ? editableProps : {})}
                 >
                   {cleanBrokenMarkdown(children)}
@@ -115,7 +115,7 @@ export const MarkdownRenderer = React.memo(
               h2: ({ children }: { children?: React.ReactNode }) => (
                 <Title
                   as="h2"
-                  className={`mb-3 mt-6 text-xl font-semibold text-fg first:mt-0${editableCellClass}`}
+                  className={`mb-3 mt-6 typo-xl-emphasize text-fg first:mt-0${editableCellClass}`}
                   {...(editable && !disableHeadings ? editableProps : {})}
                 >
                   {cleanBrokenMarkdown(children)}
@@ -124,7 +124,7 @@ export const MarkdownRenderer = React.memo(
               h3: ({ children }: { children?: React.ReactNode }) => (
                 <Title
                   as="h3"
-                  className={`mb-2 mt-4 text-lg font-semibold text-fg first:mt-0${editableCellClass}`}
+                  className={`mb-2 mt-4 typo-l-emphasize text-fg first:mt-0${editableCellClass}`}
                   {...(editable && !disableHeadings ? editableProps : {})}
                 >
                   {cleanBrokenMarkdown(children)}
@@ -162,7 +162,7 @@ export const MarkdownRenderer = React.memo(
           ),
           br: () => <span className="block h-4" />,
           strong: ({ children }: { children?: React.ReactNode }) => (
-            <strong className="font-semibold text-fg">
+            <strong className="font-emphasize text-fg">
               {cleanBrokenMarkdown(children)}
             </strong>
           ),
@@ -175,7 +175,7 @@ export const MarkdownRenderer = React.memo(
             </blockquote>
           ),
           code: ({ children }: { children?: React.ReactNode }) => (
-            <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-sm text-fg">
+            <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono typo-sm text-fg">
               {cleanBrokenMarkdown(children)}
             </code>
           ),
@@ -186,7 +186,7 @@ export const MarkdownRenderer = React.memo(
           ),
           table: ({ children }: { children?: React.ReactNode }) => (
             <div className="mb-4 overflow-x-auto rounded-lg border border-border">
-              <table className="min-w-full divide-y divide-border text-sm">
+              <table className="min-w-full divide-y divide-border typo-sm">
                 {children}
               </table>
             </div>
@@ -204,7 +204,7 @@ export const MarkdownRenderer = React.memo(
           ),
           th: ({ children }: { children?: React.ReactNode }) => (
             <th
-              className={`whitespace-nowrap px-4 py-3 text-left font-semibold text-fg${editableCellClass}`}
+              className={`whitespace-nowrap px-4 py-3 text-left font-emphasize text-fg${editableCellClass}`}
               {...editableProps}
             >
               {cleanBrokenMarkdown(children)}

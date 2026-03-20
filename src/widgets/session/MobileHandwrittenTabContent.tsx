@@ -37,19 +37,19 @@ export const MobileHandwrittenTabContent: React.FC<MobileHandwrittenTabContentPr
         <div
           key="handwritten-container"
           ref={contentScrollRef}
-          className="flex flex-col rounded-lg py-4 transition-colors"
+          className="flex min-h-[calc(100dvh-250px)] flex-col rounded-lg px-4 py-4 transition-colors md:px-6"
         >
           {isEditing ? (
             <>
               <textarea
-                className="m-0 min-h-0 flex-1 resize-none overflow-y-auto whitespace-pre-wrap bg-transparent leading-relaxed text-fg focus:outline-none"
+                className="m-0 flex-1 resize-none overflow-y-auto whitespace-pre-wrap bg-transparent text-sm leading-relaxed text-grey-100 focus:outline-none md:text-m"
                 value={editContent}
                 onChange={(e) => onContentChange(e.target.value)}
                 placeholder="상담 내용을 입력하세요..."
                 disabled={isSaving}
               />
               <Text
-                className={`mt-2 flex-shrink-0 text-right text-sm ${
+                className={`mt-2 flex-shrink-0 text-right typo-sm ${
                   isOverLimit || isUnderLimit ? 'text-red-500' : 'text-fg-muted'
                 }`}
               >
@@ -59,7 +59,7 @@ export const MobileHandwrittenTabContent: React.FC<MobileHandwrittenTabContentPr
               </Text>
             </>
           ) : transcribe && typeof transcribe.contents === 'string' ? (
-            <div className="h-full w-full overflow-y-auto whitespace-pre-wrap break-words leading-relaxed text-fg">
+            <div className="h-full w-full overflow-y-auto whitespace-pre-wrap break-words text-sm leading-relaxed text-grey-100 md:text-m">
               {transcribe.contents}
             </div>
           ) : (

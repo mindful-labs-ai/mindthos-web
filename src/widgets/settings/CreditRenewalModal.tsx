@@ -13,7 +13,9 @@ import {
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
-import { ChevronRightIcon, CreditIcon } from '@/shared/icons';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { ArrowRightIcon, CreditIcon } from '@/shared/icons';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { ProgressCircle } from '@/shared/ui/atoms/ProgressCircle';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -44,6 +46,8 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const { creditInfo } = useCreditInfo();
   const { cardInfo } = useCardInfo();
   const { monthlyPlans } = usePlansByPeriod();
@@ -169,104 +173,118 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
   const currentPercentage =
     total > 0 ? Math.floor((remaining / total) * 100) : 0;
 
+  // 공통: 현재 크레딧 카드
+  const currentCreditCard = (
+    <div className={`flex flex-col items-center gap-4 rounded-lg border border-grey-30 p-6 ${isMobile ? 'flex-row' : ''}`}>
+      <p className="w-full text-l font-emphasize text-grey-100">현재 크레딧</p>
+      <div className={isMobile ? 'flex items-center gap-4' : 'flex flex-col items-center gap-4'}>
+        <ProgressCircle value={currentPercentage} size={isMobile ? 80 : 100} strokeWidth={16} showValue={false} />
+        <div className={isMobile ? '' : 'text-center'}>
+          <p className="flex items-center gap-1 text-l font-headline text-green-80">
+            {remaining.toLocaleString()} <CreditIcon />
+          </p>
+          <p className="text-sm text-grey-60">
+            {formatUsageDate(creditInfo.subscription.end_at ?? creditInfo.subscription.reset_at)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 공통: 충전 후 크레딧 카드
+  const afterCreditCard = (
+    <div className={`flex flex-col items-center gap-4 rounded-lg border border-grey-30 p-6 ${isMobile ? 'flex-row' : ''}`}>
+      <p className="w-full text-l font-emphasize text-grey-100">충전 후 크레딧</p>
+      <div className={isMobile ? 'flex items-center gap-4' : 'flex flex-col items-center gap-4'}>
+        <ProgressCircle value={100} size={isMobile ? 80 : 100} strokeWidth={16} showValue={false} />
+        <div className={isMobile ? '' : 'text-center'}>
+          <p className="flex items-center gap-1 text-l font-headline text-green-80">
+            {total.toLocaleString()} <CreditIcon />
+          </p>
+          <p className="text-sm text-grey-60">
+            {(() => {
+              const nextMonth = new Date();
+              nextMonth.setMonth(nextMonth.getMonth() + 1);
+              return formatUsageDate(nextMonth.toISOString());
+            })()}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // 공통: 충전량 안내
+  const chargeInfo = (
+    <p className="text-center text-m font-medium text-grey-100">
+      총 <span className="font-headline text-green-80">{addedCredits.toLocaleString()} 크레딧</span>을 충전합니다.
+    </p>
+  );
+
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="flex h-[836px] max-h-[90%] w-full max-w-[870px] items-center justify-center px-12 py-10"
+      className={isMobileView ? 'flex flex-col' : 'flex h-[836px] max-h-[90%] w-full max-w-[870px] items-center justify-center px-12 py-10'}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
+      closeOnOverlay={!isCardModalOpen}
     >
-      <div className="flex w-full flex-col items-center">
-        {/* 헤더 */}
-        <div className="mb-10 items-stretch text-center">
-          <Title as="h2" className="mb-[46px] text-2xl font-semibold">
-            크레딧 충전하기
-          </Title>
+      {isMobileView ? (
+        <>
+          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+            <BackButton onClick={() => onOpenChange(false)} />
+            <p className="text-l font-medium text-grey-80">크레딧 충전하기</p>
+          </div>
+          <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
+            <div className="mb-8 text-center">
+              <p className="text-l font-emphasize text-grey-100">크레딧을 충전하시겠습니까?</p>
+              <p className="mt-2 text-sm text-grey-60">
+                충전에 필요한 크레딧의 양에 따라 가격이 결정됩니다.
+                {isMobile ? ' ' : <br />}
+                충전을 완료하면 플랜 이용기간은 오늘부터 1개월로 변경됩니다.
+              </p>
+            </div>
 
-          <div className="flex flex-col gap-[18px]">
-            <Text className="mt-2 text-lg font-semibold text-fg">
-              크레딧을 충전하시겠습니까?
-            </Text>
+            <div className={isMobile ? 'flex flex-col items-center gap-4' : 'flex items-center gap-4'}>
+              <div className={isMobile ? 'w-full' : 'flex-1'}>{currentCreditCard}</div>
+              <div className="flex-shrink-0">
+                <ArrowRightIcon size={24} className={`text-grey-60 ${isMobile ? 'rotate-90' : ''}`} />
+              </div>
+              <div className={isMobile ? 'w-full' : 'flex-1'}>{afterCreditCard}</div>
+            </div>
 
-            <Text className="mt-2 text-fg-muted">
-              충전에 필요한 크레딧의 양에 따라 가격이 결정됩니다.
-              <br />
+            <div className="mt-8">{chargeInfo}</div>
+          </div>
+          <div className="flex-shrink-0 px-4 pb-4 md:px-10">
+            <Button variant="solid" tone="primary" size="lg" onClick={handleContinue} disabled={isLoadingPreview} className="w-full">
+              {isLoadingPreview ? '불러오는 중...' : '이어서 진행하기'}
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="flex w-full flex-col items-center">
+          <div className="mb-10 text-center">
+            <Title as="h2" className="mb-[46px] text-2xl font-emphasize text-grey-100">크레딧 충전하기</Title>
+            <p className="mt-2 text-l font-emphasize text-grey-100">크레딧을 충전하시겠습니까?</p>
+            <p className="mt-4 text-grey-60">
+              충전에 필요한 크레딧의 양에 따라 가격이 결정됩니다.<br />
               충전을 완료하면 플랜 이용기간은 오늘부터 1개월로 변경됩니다.
-            </Text>
+            </p>
           </div>
+
+          <div className="mb-12 flex w-full items-center justify-center gap-8 px-32">
+            <div className="flex-1">{currentCreditCard}</div>
+            <ArrowRightIcon size={24} className="text-grey-60" />
+            <div className="flex-1">{afterCreditCard}</div>
+          </div>
+
+          <div className="mb-10">{chargeInfo}</div>
+
+          <Button variant="solid" tone="primary" size="lg" onClick={handleContinue} disabled={isLoadingPreview} className="w-full max-w-sm">
+            {isLoadingPreview ? '불러오는 중...' : '이어서 진행하기'}
+          </Button>
         </div>
-
-        {/* 크레딧 비교 */}
-        <div className="mb-12 flex w-full items-center justify-center gap-8 px-32">
-          {/* 현재 */}
-          <div className="flex flex-1 flex-col items-center justify-evenly gap-6 rounded-lg border border-surface-strong px-7 py-6">
-            <Text className="w-full text-xl font-semibold text-fg">
-              현재 크레딧
-            </Text>
-            <ProgressCircle
-              value={currentPercentage}
-              size={100}
-              strokeWidth={16}
-              showValue={false}
-            />
-            <Text className="flex items-center gap-1 text-lg font-bold text-primary-500">
-              {remaining.toLocaleString()} <CreditIcon />
-            </Text>
-            <Text className="text-sm font-normal text-fg-muted">
-              {formatUsageDate(
-                creditInfo.subscription.end_at ??
-                  creditInfo.subscription.reset_at
-              )}
-            </Text>
-          </div>
-
-          {/* 화살표 */}
-          <ChevronRightIcon size={24} />
-
-          {/* 충전 후 */}
-          <div className="flex flex-1 flex-col items-center justify-evenly gap-6 rounded-lg border border-surface-strong px-7 py-6">
-            <Text className="w-full text-xl font-semibold text-fg">
-              충전 후 크레딧
-            </Text>{' '}
-            <ProgressCircle
-              value={100}
-              size={100}
-              strokeWidth={16}
-              showValue={false}
-            />
-            <Text className="flex items-center gap-1 text-lg font-bold text-primary-500">
-              {total.toLocaleString()} <CreditIcon />
-            </Text>
-            <Text className="text-sm font-normal text-fg-muted">
-              {(() => {
-                const nextMonth = new Date();
-                nextMonth.setMonth(nextMonth.getMonth() + 1);
-                return formatUsageDate(nextMonth.toISOString());
-              })()}
-            </Text>
-          </div>
-        </div>
-
-        {/* 충전량 안내 */}
-        <Text className="mb-10 text-center text-base font-medium">
-          총{' '}
-          <span className="font-bold text-primary">
-            {addedCredits.toLocaleString()}
-          </span>{' '}
-          크레딧을 충전합니다.
-        </Text>
-
-        {/* 이어서 진행하기 버튼 */}
-        <Button
-          variant="solid"
-          tone="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={isLoadingPreview}
-          className="w-full max-w-sm"
-        >
-          {isLoadingPreview ? '불러오는 중...' : '이어서 진행하기'}
-        </Button>
-      </div>
+      )}
 
       <CardRegistrationModal
         isOpen={isCardModalOpen}

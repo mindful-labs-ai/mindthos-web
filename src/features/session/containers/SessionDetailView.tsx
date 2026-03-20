@@ -10,7 +10,6 @@ export interface SessionDetailViewProps {
   tabContent: React.ReactNode;
   audioPlayer: React.ReactNode;
   tabChangeModal: React.ReactNode;
-  editGuideModal: React.ReactNode;
 }
 
 /**
@@ -26,10 +25,9 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
   tabContent,
   audioPlayer,
   tabChangeModal,
-  editGuideModal,
 }) => {
   return (
-    <div className="mx-auto flex h-full w-full max-w-[min(100vw-535px,1332px)] flex-col overflow-hidden bg-surface-contrast">
+    <div className="mx-auto flex h-full w-full max-w-[min(100vw-535px,1332px)] flex-col overflow-hidden bg-grey-20">
       {audioElement}
 
       <div className="flex-shrink-0">{header}</div>
@@ -38,7 +36,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
         <div className="flex-shrink-0 select-none px-6 pt-2">{tab}</div>
 
         <div
-          className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-primary-500 bg-[#FDFFFE]' : 'border-surface-strong bg-surface'}`}
+          className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'border-grey-30 bg-white'}`}
         >
           {toolbar}
           {tabContent}
@@ -50,7 +48,6 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
       )}
 
       {tabChangeModal}
-      {editGuideModal}
     </div>
   );
 };

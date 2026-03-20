@@ -33,7 +33,6 @@ import { MobileTranscriptToolbar } from '@/widgets/session/MobileTranscriptToolb
 import { ProgressNoteTabContent } from '@/widgets/session/ProgressNoteTabContent';
 import { SessionHeader } from '@/widgets/session/SessionHeader';
 import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
-import { TranscriptEditGuideModal } from '@/widgets/session/TranscriptEditGuideModal';
 import { TranscriptTabContent } from '@/widgets/session/TranscriptTabContent';
 import { TranscriptToolbar } from '@/widgets/session/TranscriptToolbar';
 
@@ -45,7 +44,6 @@ import { useSessionDetail } from '../hooks/useSessionDetail';
 import { useTabNavigation } from '../hooks/useTabNavigation';
 import { useTitleEdit } from '../hooks/useTitleEdit';
 import { useTranscriptCopy } from '../hooks/useTranscriptCopy';
-import { useTranscriptEditGuide } from '../hooks/useTranscriptEditGuide';
 import { useTranscriptEditSession } from '../hooks/useTranscriptEditSession';
 import { useTranscriptSync } from '../hooks/useTranscriptSync';
 import type { HandwrittenTranscribe, Transcribe } from '../types';
@@ -159,22 +157,6 @@ export const SessionDetailContainer: React.FC = () => {
     transcriptLabel,
   });
 
-  const userId = useAuthStore((state) =>
-    state.userId ? Number(state.userId) : undefined
-  );
-  const {
-    handleScroll: handleGuideScroll,
-    isGuideActive,
-    checkIsGuideLevel,
-    nextLevel: nextGuideLevel,
-    endGuide: endTranscriptEditGuide,
-    scrollToTop: scrollTranscriptToTop,
-  } = useTranscriptEditGuide({
-    activeTab,
-    isDummySession,
-    userId,
-  });
-
   React.useEffect(() => {
     if (contentScrollRef.current) {
       contentScrollRef.current.scrollTop = 0;
@@ -211,9 +193,6 @@ export const SessionDetailContainer: React.FC = () => {
     transcribeId: transcribe?.id,
     isDummySession,
     isReadOnly,
-    checkIsGuideLevel,
-    nextGuideLevel,
-    scrollToTop: scrollTranscriptToTop,
   });
 
   const segments = React.useMemo(
@@ -360,7 +339,7 @@ export const SessionDetailContainer: React.FC = () => {
     handleSeekTo,
     handlePlaybackRateChange,
     handleTimeUpdate,
-  } = useAudioPlayer(audioUrl, { disabled: isGuideActive });
+  } = useAudioPlayer(audioUrl);
 
   const { currentSegmentIndex, activeSegmentRef } = useTranscriptSync({
     segments,
@@ -620,7 +599,7 @@ export const SessionDetailContainer: React.FC = () => {
       onValueChange={handleTabChange}
       size="sm"
       fullWidth
-      className={isMobileView ? 'px-2' : 'px-8'}
+      className={isMobileView ? '' : 'px-8'}
       variant={isMobileView ? 'card-nav' : 'underline'}
     />
   );
@@ -671,7 +650,6 @@ export const SessionDetailContainer: React.FC = () => {
           onSaveEdit={handleSaveAllEdits}
           onCancelEdit={handleCancelEdit}
           onCopy={handleCopyTranscript}
-          checkIsGuideLevel={checkIsGuideLevel}
         />
       )
     ) : null;
@@ -716,10 +694,6 @@ export const SessionDetailContainer: React.FC = () => {
           onSpeakerChange={handleSpeakerChange}
           onAddSegment={handleAddSegment}
           onDeleteSegment={handleDeleteSegment}
-          checkIsGuideLevel={checkIsGuideLevel}
-          nextGuideLevel={nextGuideLevel}
-          endGuide={endTranscriptEditGuide}
-          onGuideScroll={handleGuideScroll}
         />
       ) : (
         <TranscriptTabContent
@@ -739,10 +713,6 @@ export const SessionDetailContainer: React.FC = () => {
           onSpeakerChange={handleSpeakerChange}
           onAddSegment={handleAddSegment}
           onDeleteSegment={handleDeleteSegment}
-          checkIsGuideLevel={checkIsGuideLevel}
-          nextGuideLevel={nextGuideLevel}
-          endGuide={endTranscriptEditGuide}
-          onGuideScroll={handleGuideScroll}
         />
       )
     ) : isMobileView ? (
@@ -822,8 +792,6 @@ export const SessionDetailContainer: React.FC = () => {
     />
   );
 
-  const editGuideModal = <TranscriptEditGuideModal />;
-
   const isContentEditing =
     (isEditing || isEditingHandwritten) && activeTab === 'transcript';
 
@@ -839,7 +807,6 @@ export const SessionDetailContainer: React.FC = () => {
         tabContent={tabContent}
         audioPlayer={audioPlayer}
         tabChangeModal={tabChangeModal}
-        editGuideModal={editGuideModal}
       />
     );
   }
@@ -854,7 +821,6 @@ export const SessionDetailContainer: React.FC = () => {
       tabContent={tabContent}
       audioPlayer={audioPlayer}
       tabChangeModal={tabChangeModal}
-      editGuideModal={editGuideModal}
     />
   );
 };
