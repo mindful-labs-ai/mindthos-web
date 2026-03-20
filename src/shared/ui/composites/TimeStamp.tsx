@@ -61,7 +61,7 @@ export const TimeStamp: React.FC<TimeStampProps> = ({
   return (
     <time
       dateTime={date.toISOString()}
-      className={cn('text-sm text-fg-muted', className)}
+      className={cn('typo-sm text-fg-muted', className)}
     >
       {displayText}
     </time>

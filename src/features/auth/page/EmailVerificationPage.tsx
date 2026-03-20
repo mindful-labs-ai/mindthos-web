@@ -6,7 +6,6 @@ import { ROUTES } from '@/app/router/constants';
 import { authService } from '@/shared/api/services/auth/authService';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { MailIcon } from '@/shared/icons';
-import { Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 
@@ -50,11 +49,11 @@ export default function EmailVerificationPage() {
 
   if (!email) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+      <div className="flex h-[200px] items-center justify-center bg-white px-4">
         <div className="w-full max-w-md text-center">
-          <div className="rounded-xl bg-white p-8">
-            <Text className="text-muted">
-              잘못된 접근입니다. 로그인 페이지로 이동합니다...
+          <div className="rounded-xl bg-grey-20 p-8">
+            <Text className="text-m font-medium text-grey-100">
+              잘못된 접근입니다. <br /> 로그인 페이지로 이동합니다...
             </Text>
           </div>
         </div>
@@ -63,23 +62,21 @@ export default function EmailVerificationPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+    <div className="flex min-h-screen items-center justify-center bg-grey-10 md:px-4">
       <div className="w-full max-w-md">
         <div className="rounded-xl bg-white p-8 text-center">
           <div className="mb-6 flex justify-center">
-            <div className="rounded-full bg-primary-50 p-4">
-              <MailIcon className="h-12 w-12 text-primary-500" />
+            <div className="rounded-full bg-green-80 p-4">
+              <MailIcon className="h-12 w-12 text-grey-100" />
             </div>
           </div>
 
-          <Title as="h2" className="mb-2">
-            이메일을 확인해주세요
-          </Title>
+          <h2 className="mb-2">이메일을 확인해주세요</h2>
 
-          <Text className="mb-6 text-muted">
+          <p className="mb-6 text-grey-100">
             {email ? (
               <>
-                <span className="text-foreground font-medium">{email}</span>로
+                <span className="font-medium text-grey-100">{email}</span>로
                 인증 메일을 발송했습니다.
                 <br />
                 이메일의 링크를 클릭하여 회원가입을 완료해주세요.
@@ -91,14 +88,14 @@ export default function EmailVerificationPage() {
                 이메일의 링크를 클릭하여 회원가입을 완료해주세요.
               </>
             )}
-          </Text>
+          </p>
 
           {resendMessage && (
             <div
-              className={`mb-4 rounded-lg p-3 text-sm ${
+              className={`mb-4 rounded-md p-3 text-sm font-medium ${
                 resendMessage.includes('발송')
-                  ? 'bg-green-50 text-green-600'
-                  : 'bg-red-50 text-red-600'
+                  ? 'bg-green-50 text-green-80'
+                  : 'bg-red-20 text-red-80'
               }`}
             >
               {resendMessage}
@@ -128,8 +125,8 @@ export default function EmailVerificationPage() {
             </Button>
           </div>
 
-          <div className="mt-6 rounded-lg bg-gray-50 p-4">
-            <Text className="text-muted">
+          <div className="mt-6 rounded-md bg-grey-20 p-4">
+            <Text className="text-grey-100">
               💡 이메일이 보이지 않나요?
               <br />
               스팸 메일함을 확인하거나 위 버튼을 눌러 이메일을 다시 받아보세요.

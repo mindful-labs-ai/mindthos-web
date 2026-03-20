@@ -40,7 +40,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         {(author || time) && (
           <div
             className={cn(
-              'flex items-center gap-2 text-xs text-fg-muted',
+              'flex items-center gap-2 typo-xs text-fg-muted',
               mine && 'flex-row-reverse'
             )}
           >
@@ -50,9 +50,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         )}
         <div
           className={cn(
-            'rounded-[var(--radius-lg)] px-4 py-2',
+            'rounded-lg px-4 py-2',
             mine
-              ? 'rounded-br-sm bg-primary text-surface'
+              ? 'rounded-br-sm bg-primary text-primary-fg'
               : 'rounded-bl-sm bg-surface-contrast text-fg'
           )}
         >

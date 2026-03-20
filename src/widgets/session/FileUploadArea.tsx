@@ -105,8 +105,8 @@ export const FileUploadArea: React.FC<FileUploadAreaProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={onDrop}
-        className={`rounded-lg border-2 border-dashed p-8 text-center transition-colors duration-200 ${
-          isDragging ? 'border-primary bg-primary-100' : 'border-surface-strong'
+        className={`rounded-lg border-2 border-dashed p-8 text-center transition-default ${
+          isDragging ? 'border-primary bg-primary-subtle' : 'border-surface-strong'
         } ${selectedFile ? 'bg-surface' : ''}`}
       >
         {!selectedFile ? (

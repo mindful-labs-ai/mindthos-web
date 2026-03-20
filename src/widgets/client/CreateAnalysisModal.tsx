@@ -26,7 +26,10 @@ import {
 
 import type { ClientTemplateGroups } from '@/features/client/types/clientAnalysis.types';
 import type { Session } from '@/features/session/types';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { CreditIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -53,6 +56,8 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
   sessions,
   onCreateAnalysis,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const [orderedSessionIds, setOrderedSessionIds] = React.useState<string[]>(
     []
   );
@@ -156,123 +161,146 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     setAiSupervisionTemplateId('1');
   }, [templates]);
 
+  // 공통: 세션 리스트
+  const sessionListContent =
+    availableSessions.length === 0 ? (
+      <div className="flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-grey-30">
+        <Text className="text-center text-grey-60">
+          분석 가능한 상담기록이 없습니다.
+          <br />
+          완료된 상담기록이 필요합니다.
+        </Text>
+      </div>
+    ) : (
+      <div className="min-h-0 flex-1 overflow-clip">
+        <div className="h-full overflow-y-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+            modifiers={[
+              restrictToVerticalAxis,
+              restrictToFirstScrollableAncestor,
+            ]}
+          >
+            <SortableContext
+              items={orderedSessionIds}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {orderedSessions.map((session, index) => (
+                  <div key={session.id} className="flex items-center gap-3">
+                    <span className="w-6 text-center text-m font-medium text-grey-100">
+                      {index + 1}
+                    </span>
+                    <div className="flex-1">
+                      <SortableSessionCard
+                        session={session}
+                        index={index}
+                        onRemove={handleRemoveSession}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
+      </div>
+    );
+
+  // 공통: 하단 크레딧 + 버튼
+  const bottomSection = (
+    <div className={isMobileView ? 'shrink-0 px-4 pb-4' : 'shrink-0 p-6 pt-0'}>
+      <div className="flex items-center justify-center py-3">
+        <div className="flex items-center justify-center gap-1 rounded-md bg-green-20 px-1.5 py-1">
+          <span className="text-m font-medium text-green-80">30</span>
+          <CreditIcon size={14} />
+          <span className="text-m font-medium text-green-80">사용</span>
+        </div>
+      </div>
+      <Button
+        variant="solid"
+        tone="primary"
+        size="lg"
+        onClick={handleCreateAnalysis}
+        disabled={!canSubmit}
+        className="w-full"
+      >
+        {isCreating ? '분석 중...' : '분석하기'}
+      </Button>
+    </div>
+  );
+
+  // 공통: 분석 기법 + 세션 선택
+  const formContent = (
+    <>
+      <div className="flex items-center justify-between border-b border-grey-30 pb-4">
+        <p className="text-m font-medium text-grey-100">분석 기법</p>
+        <div className="w-32">
+          <Select
+            items={aiSupervisionItems}
+            value={aiSupervisionTemplateId}
+            onChange={(value) => setAiSupervisionTemplateId(value as string)}
+            placeholder="선택"
+            disabled={aiSupervisionItems.length === 0}
+            maxDropdownHeight={120}
+            className="truncate"
+          />
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-y-5">
+        <div className="flex items-center justify-between">
+          <p className="text-m font-medium text-grey-100">
+            분석에 반영할 상담 기록 선택
+          </p>
+          <p className="text-sm font-medium text-green-80">
+            총 {orderedSessionIds.length}회기 선택됨
+          </p>
+        </div>
+        {sessionListContent}
+      </div>
+    </>
+  );
+
   return (
     <Modal
-      className="flex h-[788px] max-w-[670px] flex-col"
+      className={
+        isMobileView ? 'flex flex-col' : 'flex h-[788px] max-w-[670px] flex-col'
+      }
       open={open}
       onOpenChange={handleClose}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
     >
-      {/* 상단 콘텐츠 영역 */}
-      <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 pb-0">
-        {/* 헤더 */}
-        <div className="text-center">
-          <Title as="h3" className="text-xl font-bold">
+      {/* 헤더 */}
+      {isMobileView ? (
+        <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
+          <BackButton onClick={handleClose} />
+          <p className="text-l font-medium text-grey-80">클라이언트 분석하기</p>
+        </div>
+      ) : (
+        <div className="p-6 pb-0 text-center">
+          <Title as="h3" className="text-xl font-headline text-grey-100">
             클라이언트 분석하기
           </Title>
         </div>
+      )}
 
-        {/* 분석 기법 선택 */}
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <Text className="text-base font-medium text-fg">분석 기법</Text>
-          <div className="w-32">
-            <Select
-              items={aiSupervisionItems}
-              value={aiSupervisionTemplateId}
-              onChange={(value) => setAiSupervisionTemplateId(value as string)}
-              placeholder="선택"
-              disabled={aiSupervisionItems.length === 0}
-              maxDropdownHeight={120}
-              className="truncate"
-            />
-          </div>
-        </div>
-
-        {/* 세션 선택 섹션 */}
-        <div className="flex min-h-0 flex-1 flex-col gap-y-7">
-          <div className="flex items-center justify-between">
-            <Text className="text-base font-medium text-fg">
-              분석에 반영할 상담 기록 선택
-            </Text>
-            <Text className="text-sm font-medium text-primary">
-              총 {orderedSessionIds.length}회기 선택됨
-            </Text>
-          </div>
-
-          {availableSessions.length === 0 ? (
-            <div className="flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface">
-              <Text className="text-center text-fg-muted">
-                분석 가능한 상담기록이 없습니다.
-                <br />
-                완료된 상담기록이 필요합니다.
-              </Text>
-            </div>
-          ) : (
-            <div className="min-h-0 flex-1 overflow-clip">
-              <div className="h-full overflow-y-auto">
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                  modifiers={[
-                    restrictToVerticalAxis,
-                    restrictToFirstScrollableAncestor,
-                  ]}
-                >
-                  <SortableContext
-                    items={orderedSessionIds}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-3">
-                      {orderedSessions.map((session, index) => (
-                        <div
-                          key={session.id}
-                          className="flex items-center gap-3"
-                        >
-                          <span className="w-6 text-center text-sm text-fg-muted">
-                            {index + 1}
-                          </span>
-                          <div className="flex-1">
-                            <SortableSessionCard
-                              session={session}
-                              index={index}
-                              onRemove={handleRemoveSession}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              </div>
-            </div>
-          )}
-        </div>
+      {/* 콘텐츠 */}
+      <div
+        className={
+          isMobileView
+            ? 'flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 md:px-10'
+            : 'flex min-h-0 flex-1 flex-col gap-6 overflow-hidden p-6 pb-0'
+        }
+      >
+        {formContent}
       </div>
 
-      {/* 하단 고정 영역 */}
-      <div className="shrink-0 p-6 pt-0">
-        <div className="flex items-center justify-center gap-2 rounded-lg py-3">
-          <div className="flex items-center gap-1 rounded-full bg-primary-200 px-2 py-0.5">
-            <span className="text-lg font-bold text-success">50</span>
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-success text-xs font-bold text-white">
-              C
-            </div>
-          </div>
-          <span className="text-sm font-medium text-fg">사용</span>
-        </div>
-
-        {/* 분석하기 버튼 */}
-        <Button
-          variant="solid"
-          tone="primary"
-          size="lg"
-          onClick={handleCreateAnalysis}
-          disabled={!canSubmit}
-          className="w-full"
-        >
-          {isCreating ? '분석 중...' : '분석하기'}
-        </Button>
-      </div>
+      {/* 하단 */}
+      {bottomSection}
     </Modal>
   );
 };

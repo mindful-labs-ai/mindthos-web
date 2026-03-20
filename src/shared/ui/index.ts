@@ -3,6 +3,9 @@ export { VisuallyHidden } from './primitives/VisuallyHidden';
 export type { VisuallyHiddenProps } from './primitives/VisuallyHidden';
 
 // Atoms
+export { BackButton } from './atoms/BackButton';
+export type { BackButtonProps } from './atoms/BackButton';
+
 export { Button } from './atoms/Button';
 export type {
   ButtonProps,

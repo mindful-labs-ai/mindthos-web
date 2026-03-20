@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { SessionRecord } from '@/features/session/types';
 import { extractTextOnly } from '@/features/session/utils/parseNonverbalText';
+import { cn } from '@/lib/cn';
 import {
   assignClientToSession,
   deleteSession,
@@ -12,17 +13,47 @@ import {
 } from '@/shared/api/supabase/sessionQueries';
 import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { MoreVerticalIcon, Trash2Icon, UserCircle2Icon } from '@/shared/icons';
+import {
+  MoreVerticalIcon,
+  TitleEdit,
+  Trash2Icon,
+  UserCircle2Icon,
+} from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
-import { Card } from '@/shared/ui/composites/Card';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { formatKoreanDateTime } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
+
+const CardWrapper: React.FC<{
+  className?: string;
+  onClick?: (e: React.MouseEvent) => void;
+  children: React.ReactNode;
+}> = ({ className, onClick, children }) =>
+  onClick ? (
+    <div
+      role="button"
+      tabIndex={0}
+      className={cn('session-card-base transition-all', className)}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(e as unknown as React.MouseEvent);
+        }
+      }}
+    >
+      {children}
+    </div>
+  ) : (
+    <div className={cn('session-card-base transition-all', className)}>
+      {children}
+    </div>
+  );
 
 interface SessionRecordCardProps {
   record: SessionRecord;
@@ -50,12 +81,20 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const menuClosedAtRef = React.useRef(0);
 
   // 제목 수정 관련 상태
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
   const [editedTitle, setEditedTitle] = React.useState('');
   const [isSavingTitle, setIsSavingTitle] = React.useState(false);
   const titleInputRef = React.useRef<HTMLInputElement>(null);
+  const titleMeasureRef = React.useRef<HTMLSpanElement>(null);
+
+  React.useLayoutEffect(() => {
+    if (isEditingTitle && titleMeasureRef.current && titleInputRef.current) {
+      titleInputRef.current.style.width = `${titleMeasureRef.current.offsetWidth + 8}px`;
+    }
+  }, [editedTitle, isEditingTitle]);
 
   const { clients } = useClientList();
 
@@ -140,12 +179,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     setTimeout(() => titleInputRef.current?.focus(), 0);
   };
 
-  // 제목 저장 (버튼 클릭용)
-  const handleSaveTitleClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // 버튼 클릭 시 카드 클릭 방지
-    await handleSaveTitle();
-  };
-
   // 제목 저장 로직
   const handleSaveTitle = async () => {
     const trimmedTitle = editedTitle.trim();
@@ -185,12 +218,6 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     }
   };
 
-  // 제목 수정 취소 (버튼 클릭용)
-  const handleCancelEditTitleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleCancelEditTitle();
-  };
-
   // 제목 수정 취소 로직
   const handleCancelEditTitle = () => {
     setIsEditingTitle(false);
@@ -210,6 +237,17 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const handleCardClick = (e: React.MouseEvent) => {
     // PopUp 영역 클릭 시 카드 클릭 이벤트 무시
     if ((e.target as HTMLElement).closest('[data-popup-wrapper]')) {
+      return;
+    }
+    // 메뉴가 열려있거나 방금 닫힌 직후 카드 클릭 무시 (모바일 바텀시트 딤 클릭 시 click-through 방지)
+    if (
+      isMenuOpen ||
+      isClientSelectorFromMenuOpen ||
+      isClientSelectorPopupOpen
+    ) {
+      return;
+    }
+    if (Date.now() - menuClosedAtRef.current < 300) {
       return;
     }
     // 제목 수정 중에는 카드 클릭 무시
@@ -310,6 +348,9 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       showReadOnlyToast();
       return;
     }
+    if (!open) {
+      menuClosedAtRef.current = Date.now();
+    }
     setIsMenuOpen(open);
   };
 
@@ -358,21 +399,19 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   );
 
   const mobileMenuContent = (
-    <div className="w-full space-y-1">
+    <div className="mb-16 w-full space-y-1">
       <button
         type="button"
         onClick={handleOpenClientSelectorFromMenu}
-        className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
       >
-        <UserCircle2Icon size={18} className="text-fg-muted" />
-        <Text className="text-fg">클라이언트 변경</Text>
+        <span className="text-m text-grey-100 md:text-l">클라이언트 변경</span>
       </button>
       <button
         onClick={handleDelete}
-        className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
       >
-        <Trash2Icon size={18} className="text-fg-muted" />
-        <Text className="text-fg">상담 기록 삭제</Text>
+        <span className="text-m text-red-80 md:text-l">상담 기록 삭제</span>
       </button>
     </div>
   );
@@ -430,24 +469,24 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       className="max-w-sm"
     >
       <div className="space-y-4">
-        <Text className="text-base font-bold text-fg">
+        <Text className="typo-m font-headline text-fg">
           상담기록 {displayTitle}을 삭제하시겠습니까?
         </Text>
-        <Text className="text-sm text-fg-muted">
+        <Text className="typo-sm text-fg-muted">
           해당 상담기록 데이터가 영구히 삭제됩니다.
         </Text>
         <div className="flex justify-center gap-2 pt-2">
           <button
             onClick={() => setIsDeleteModalOpen(false)}
             disabled={isLoading}
-            className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors disabled:opacity-50"
+            className="hover:bg-surface-hover typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors disabled:opacity-50"
           >
             취소
           </button>
           <button
             onClick={handleConfirmDelete}
             disabled={isLoading}
-            className="hover:bg-danger/90 w-full rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white transition-colors disabled:opacity-50"
+            className="hover:bg-danger/90 typo-sm w-full rounded-lg bg-danger px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50"
           >
             {isLoading ? '삭제 중...' : '삭제'}
           </button>
@@ -456,11 +495,39 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     </Modal>
   );
 
+  const renderTitleEditButtons = () =>
+    isEditingTitle ? (
+      <div className="absolute bottom-4 right-4 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleSaveTitle();
+          }}
+          disabled={isSavingTitle}
+          className="whitespace-nowrap rounded-md bg-green-80 px-4 py-1 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+        >
+          {isSavingTitle ? '저장...' : '편집 완료'}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCancelEditTitle();
+          }}
+          disabled={isSavingTitle}
+          className="whitespace-nowrap rounded-md border border-grey-30 bg-white px-4 py-1 text-sm font-medium text-grey-70 transition-opacity hover:opacity-80 disabled:opacity-50"
+        >
+          취소
+        </button>
+      </div>
+    ) : null;
+
   const renderClientInfo = () => (
-    <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="flex h-9 flex-nowrap items-center justify-between gap-2 overflow-x-hidden">
       <div className="flex gap-2" data-popup-wrapper>
         {hasClient ? (
-          <Text className="font-semibold" as="span">
+          <Text className="font-emphasize" as="span">
             {record.client_name}
           </Text>
         ) : (
@@ -490,23 +557,33 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           />
         )}
       </div>
-      <div className="hidden gap-2 sm:flex md:flex lg:flex">
-        {record.note_types.slice(0, 4).map((type, index) => (
-          <Badge
-            key={`${type}-${index}`}
-            tone="neutral"
-            variant="solid"
-            size="md"
-          >
-            {type}
-          </Badge>
-        ))}
-        {record.note_types.length > 4 && (
-          <Badge key="more-tags" tone="neutral" variant="solid" size="md">
-            +{record.note_types.length - 4}
-          </Badge>
-        )}
-      </div>
+      {!isEditingTitle ? (
+        <div
+          className={`ml-auto min-w-0 gap-2 overflow-x-auto ${isMobile ? 'hidden' : 'flex'}`}
+        >
+          {record.note_types.slice(0, isTablet ? 2 : 4).map((type, index) => (
+            <Badge
+              key={`${type}-${index}`}
+              tone="neutral"
+              variant="solid"
+              size="md"
+            >
+              {type}
+            </Badge>
+          ))}
+          {isTablet
+            ? record.note_types.length > 2 && (
+                <Badge key="more-tags" tone="neutral" variant="solid" size="md">
+                  +{record.note_types.length - 2}
+                </Badge>
+              )
+            : record.note_types.length > 4 && (
+                <Badge key="more-tags" tone="neutral" variant="solid" size="md">
+                  +{record.note_types.length - 4}
+                </Badge>
+              )}
+        </div>
+      ) : null}
     </div>
   );
 
@@ -516,97 +593,73 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   if (sessionState === 'succeeded') {
     return (
       <>
-        <Card
-          className="cursor-pointer bg-surface transition-all"
-          onClick={handleCardClick}
-        >
-          <Card.Body className="space-y-3 p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                {isEditingTitle ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      ref={titleInputRef}
-                      type="text"
-                      value={editedTitle}
-                      onChange={(e) => setEditedTitle(e.target.value)}
-                      onKeyDown={handleTitleKeyDown}
-                      className="focus:ring-primary/20 w-full min-w-[200px] max-w-[300px] rounded-lg border border-border bg-bg px-2 py-1 text-lg font-bold focus:border-primary focus:outline-none focus:ring-2"
-                      disabled={isSavingTitle}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSaveTitleClick}
-                      disabled={isSavingTitle}
-                      className="whitespace-nowrap rounded-lg bg-primary px-3 py-1.5 text-xs text-white hover:bg-primary-600 disabled:opacity-50"
-                    >
-                      {isSavingTitle ? '저장...' : '완료'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCancelEditTitleClick}
-                      disabled={isSavingTitle}
-                      className="hover:bg-surface-hover whitespace-nowrap rounded-lg bg-surface px-3 py-1.5 text-xs text-fg disabled:opacity-50"
-                    >
-                      취소
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <Title
-                      as="h3"
-                      className="truncate text-left text-lg font-bold"
-                    >
-                      {truncatedTitle + (isTruncated ? '...' : '')}
-                    </Title>
-                    <button
-                      type="button"
-                      onClick={handleStartEditTitle}
-                      className="hidden p-2 text-fg-muted hover:text-fg sm:flex"
-                      aria-label="제목 수정"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="transition-colors"
-                      >
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                    </button>
-                  </>
-                )}
-              </div>
+        <CardWrapper className="cursor-pointer" onClick={handleCardClick}>
+          <div className="flex items-start justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              {isEditingTitle ? (
+                <div className="relative inline-flex min-w-0 flex-1">
+                  <span
+                    ref={titleMeasureRef}
+                    className="session-card-title invisible absolute whitespace-pre"
+                    aria-hidden="true"
+                  >
+                    {editedTitle || ' '}
+                  </span>
+                  <input
+                    ref={titleInputRef}
+                    type="text"
+                    value={editedTitle}
+                    onChange={(e) => setEditedTitle(e.target.value)}
+                    onKeyDown={handleTitleKeyDown}
+                    style={{ width: 'auto' }}
+                    className="session-card-title rounded bg-green-20 px-1 outline-none"
+                    disabled={isSavingTitle}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              ) : (
+                <>
+                  <h3 className="session-card-title px-1 text-left">
+                    {truncatedTitle + (isTruncated ? '...' : '')}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={handleStartEditTitle}
+                    className="flex size-[30px] items-center justify-center text-fg-muted hover:text-fg"
+                    aria-label="제목 수정"
+                  >
+                    <TitleEdit size={20} />
+                  </button>
+                </>
+              )}
+            </div>
+            <div className={isEditingTitle ? 'invisible' : ''}>
               {renderCardMenu()}
             </div>
+          </div>
 
-            <Text className="line-clamp-2 overflow-hidden text-left text-sm text-fg">
-              {extractTextOnly(record.content)}
-            </Text>
+          <Text className="typo-sm line-clamp-2 overflow-hidden px-1 text-left text-fg">
+            {extractTextOnly(record.content)}
+          </Text>
 
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-1">
-                <Text className="text-xs text-fg-muted">
-                  {formatKoreanDateTime(record.created_at)}
-                </Text>
-                <Text className="text-xs text-fg-muted">|</Text>
-                <Text className="text-xs text-fg-muted">
-                  {record.is_handwritten
-                    ? '직접 입력'
-                    : (record.stt_model === 'whisper' && '일반 축어록') ||
-                      (record.stt_model === 'gemini-3' && '고급 축어록')}
-                </Text>
-              </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-1">
+              <span className="typo-xs text-grey-70">
+                {formatKoreanDateTime(record.created_at)}
+              </span>
+              <span className="typo-xs text-grey-70">|</span>
+              <span className="typo-xs text-grey-70">
+                {record.is_handwritten
+                  ? '직접 입력'
+                  : (record.stt_model === 'whisper' && '일반 축어록') ||
+                    (record.stt_model === 'gemini-3' && '고급 축어록')}
+              </span>
             </div>
+          </div>
 
-            {renderClientInfo()}
-          </Card.Body>
-        </Card>
+          {!isMobile && renderClientInfo()}
+          {renderTitleEditButtons()}
+        </CardWrapper>
 
         {renderDeleteModal()}
       </>
@@ -635,60 +688,58 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
     return (
       <>
-        <Card className="cursor-not-allowed opacity-75 transition-all">
-          <Card.Body className="space-y-3 p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <Title
-                  as="h3"
-                  className="truncate text-left text-lg font-bold text-fg-muted"
-                >
-                  {truncatedTitle + (isTruncated ? '...' : '')}
-                </Title>
-                <Badge tone="primary" variant="soft" size="sm">
-                  {getProgressLabel()}
-                </Badge>
-              </div>
-              {renderCardMenu()}
+        <CardWrapper className="cursor-not-allowed opacity-75">
+          <div className="flex items-start justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <Title
+                as="h3"
+                className="typo-l truncate text-left font-headline text-fg-muted"
+              >
+                {truncatedTitle + (isTruncated ? '...' : '')}
+              </Title>
+              <Badge tone="primary" variant="soft" size="sm">
+                {getProgressLabel()}
+              </Badge>
             </div>
+            {renderCardMenu()}
+          </div>
 
-            {/* 프로그레스 바 */}
-            {record.progress_percentage !== undefined && (
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Text className="text-xs text-fg-muted">
-                    {record.current_step || '처리 중...'}
-                  </Text>
-                  <Text className="text-xs font-medium text-primary-700">
-                    {record.progress_percentage}%
-                  </Text>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
-                  <div
-                    className="h-full bg-primary-500 transition-all duration-300 ease-out"
-                    style={{
-                      width: `${record.progress_percentage}%`,
-                      background:
-                        'linear-gradient(90deg, var(--color-primary-500) 30%, var(--color-primary-100) 50%, var(--color-primary-500) 90%)',
-                      backgroundSize: '200% 100%',
-                      animation: 'progress-flow 2.5s linear infinite',
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Text className="text-xs text-fg-muted">
-                  {formatKoreanDateTime(record.created_at)}
+          {/* 프로그레스 바 */}
+          {record.progress_percentage !== undefined && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Text className="typo-xs text-grey-70">
+                  {record.current_step || '처리 중...'}
+                </Text>
+                <Text className="typo-xs text-primary-700 font-medium">
+                  {record.progress_percentage}%
                 </Text>
               </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
+                <div
+                  className="bg-primary-500 h-full transition-all duration-slow ease-out"
+                  style={{
+                    width: `${record.progress_percentage}%`,
+                    background:
+                      'linear-gradient(90deg, var(--color-primary-500) 30%, var(--color-primary-100) 50%, var(--color-primary-500) 90%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'progress-flow 2.5s linear infinite',
+                  }}
+                />
+              </div>
             </div>
+          )}
 
-            {renderClientInfo()}
-          </Card.Body>
-        </Card>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Text className="typo-xs text-grey-70">
+                {formatKoreanDateTime(record.created_at)}
+              </Text>
+            </div>
+          </div>
+
+          {!isMobile && renderClientInfo()}
+        </CardWrapper>
 
         {renderDeleteModal()}
       </>
@@ -700,38 +751,36 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   // ==========================================
   return (
     <>
-      <Card className="cursor-not-allowed opacity-75 transition-all">
-        <Card.Body className="space-y-3 p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <Title
-                as="h3"
-                className="truncate text-left text-lg font-bold text-fg-muted"
-              >
-                {truncatedTitle + (isTruncated ? '...' : '')}
-              </Title>
-              <Badge tone="error" variant="soft" size="sm">
-                실패
-              </Badge>
-            </div>
-            {renderCardMenu()}
+      <CardWrapper className="cursor-not-allowed opacity-75">
+        <div className="flex items-start justify-between">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Title
+              as="h3"
+              className="typo-l truncate text-left font-headline text-fg-muted"
+            >
+              {truncatedTitle + (isTruncated ? '...' : '')}
+            </Title>
+            <Badge tone="error" variant="soft" size="sm">
+              실패
+            </Badge>
           </div>
+          {renderCardMenu()}
+        </div>
 
-          <Text className="line-clamp-2 overflow-hidden text-left text-sm">
-            상담 기록 작성에 실패했습니다.
-          </Text>
+        <Text className="typo-sm line-clamp-2 overflow-hidden text-left">
+          상담 기록 작성에 실패했습니다.
+        </Text>
 
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Text className="text-xs text-fg-muted">
-                {formatKoreanDateTime(record.created_at)}
-              </Text>
-            </div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Text className="typo-xs text-grey-70">
+              {formatKoreanDateTime(record.created_at)}
+            </Text>
           </div>
+        </div>
 
-          {renderClientInfo()}
-        </Card.Body>
-      </Card>
+        {!isMobile && renderClientInfo()}
+      </CardWrapper>
 
       {renderDeleteModal()}
     </>

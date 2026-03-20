@@ -98,9 +98,9 @@ export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
           onKeyDown={handleKeyDown}
           className={cn(
             'relative inline-flex items-center rounded-full',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-            'disabled:cursor-not-allowed disabled:opacity-50',
+            'transition-default',
+            'focus-default',
+            'disabled:disabled-default',
             checked ? 'bg-primary' : 'bg-border',
             sizeStyles[size].track,
             className
@@ -109,7 +109,7 @@ export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
         >
           <span
             className={cn(
-              'inline-block rounded-full bg-surface transition-transform duration-200',
+              'inline-block rounded-full bg-surface transition-transform duration-normal',
               sizeStyles[size].thumb,
               checked ? sizeStyles[size].translate : 'translate-x-0.5'
             )}

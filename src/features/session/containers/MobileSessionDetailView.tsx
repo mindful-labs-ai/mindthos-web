@@ -10,7 +10,6 @@ export interface MobileSessionDetailViewProps {
   tabContent: React.ReactNode;
   audioPlayer: React.ReactNode;
   tabChangeModal: React.ReactNode;
-  editGuideModal: React.ReactNode;
 }
 
 export const MobileSessionDetailView: React.FC<
@@ -25,25 +24,26 @@ export const MobileSessionDetailView: React.FC<
   tabContent,
   audioPlayer,
   tabChangeModal,
-  editGuideModal,
 }) => {
   return (
-    <div className="mx-auto flex h-full w-full max-w-full flex-col overflow-hidden bg-surface-contrast">
+    <div className="mx-auto flex h-full w-full max-w-full flex-col overflow-hidden bg-grey-20">
       {audioElement}
 
       <div className="flex-shrink-0">{header}</div>
 
       {/* 모바일: tab+mobileHeader+콘텐츠가 하나의 스크롤 영역 */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        <div className="flex-shrink-0 select-none px-1.5 pt-3">{tab}</div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto md:px-9">
+        <div className="flex-shrink-0 select-none px-2 pt-3 md:px-0">{tab}</div>
 
         {mobileHeader && <div className="flex-shrink-0">{mobileHeader}</div>}
 
         <div
-          className={`relative mx-0 mb-0 flex-1 ${isContentEditing ? 'border-primary-500 bg-[#FDFFFE]' : 'bg-surface'}`}
+          className={`relative mx-0 mb-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-grey-40 ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'bg-white'}`}
         >
           {toolbar}
-          {tabContent}
+          <div className="md:h-full md:overflow-auto">
+            {tabContent}
+          </div>
         </div>
       </div>
 
@@ -52,7 +52,6 @@ export const MobileSessionDetailView: React.FC<
       )}
 
       {tabChangeModal}
-      {editGuideModal}
     </div>
   );
 };

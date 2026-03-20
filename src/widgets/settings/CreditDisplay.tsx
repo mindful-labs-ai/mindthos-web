@@ -42,7 +42,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
 
   if (variant === 'detailed') {
     return (
-      <div className="relative flex h-full w-full items-center justify-between gap-4 rounded-lg border border-primary-500 px-9 py-6">
+      <div className="relative flex h-full w-full items-center justify-between gap-4 rounded-md border border-green-80 px-9 py-8 lg:border-none">
         <div className="flex items-center gap-6">
           <ProgressCircle
             value={percentage}
@@ -52,11 +52,11 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
           />
           <div className="flex-1 space-y-2">
             <div className="flex flex-col content-end gap-2 text-left">
-              <Text className="text-lg font-medium text-fg">
+              <Text className="typo-l font-medium text-fg">
                 마음토스 크레딧
               </Text>
-              <Text className="flex gap-2 text-lg">
-                <span className="flex items-center gap-1 font-bold text-primary">
+              <Text className="typo-l flex gap-2">
+                <span className="flex items-center gap-1 font-headline text-primary">
                   {remaining.toLocaleString()}{' '}
                   <svg
                     width="20"
@@ -72,7 +72,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
                   </svg>
                 </span>
                 /
-                <span className="flex items-center gap-1 font-bold">
+                <span className="flex items-center gap-1 font-headline">
                   {totalCredit.toLocaleString()}
                   <svg
                     width="20"
@@ -93,7 +93,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
         </div>
         {!isFree && onRenewal && usedCredit >= totalCredit / 2 && (
           <button
-            className="absolute bottom-2 right-2.5 px-3.5 py-1.5 text-sm font-medium text-primary-500"
+            className="typo-sm absolute bottom-2 right-2.5 px-3.5 py-1.5 font-medium text-primary"
             onClick={onRenewal}
           >
             크레딧 충전
@@ -107,7 +107,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
   if (variant === 'mobile') {
     return (
       <div className="flex w-full flex-col gap-3 rounded-lg border border-surface-strong bg-surface px-5 py-4">
-        <Text className="text-sm font-medium text-fg-muted">
+        <Text className="typo-sm font-medium text-fg-muted">
           마음토스 크레딧
         </Text>
         <div className="flex items-center gap-3">
@@ -117,8 +117,8 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
             strokeWidth={5}
             showValue={false}
           />
-          <Text className="flex items-center gap-2 text-xl">
-            <span className="flex items-center gap-1 font-bold text-primary-400">
+          <Text className="typo-xl flex items-center gap-2">
+            <span className="text-primary-400 flex items-center gap-1 font-headline">
               {remaining.toLocaleString()}
               <svg
                 width="18"
@@ -141,7 +141,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
               </svg>
             </span>
             <span className="text-fg-muted">/</span>
-            <span className="flex items-center gap-1 font-bold text-fg">
+            <span className="flex items-center gap-1 font-headline text-fg">
               {totalCredit.toLocaleString()}
               <svg
                 width="18"
@@ -158,7 +158,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
             </span>
           </Text>
         </div>
-        <Text className="text-sm text-fg-muted">
+        <Text className="typo-sm text-fg-muted">
           {isFree
             ? '유료 플랜으로 전환하세요'
             : daysUntilReset !== undefined &&
@@ -175,9 +175,9 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
       onClick={handleClick}
       onKeyDown={(e) => e.stopPropagation()}
       tabIndex={0}
-      className="mx-3 mb-6 flex select-none flex-col gap-y-2 rounded-lg border-t border-border bg-surface-contrast px-1 pb-2 pt-3 text-left"
+      className="sidebar-credit-display"
     >
-      <Text className="relative px-3 text-xs font-medium text-fg-muted">
+      <Text className="sidebar-credit-display-title relative px-3">
         마음토스 크레딧
         <button
           className="absolute right-3 top-0"
@@ -207,8 +207,8 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
           showValue={false}
         />
         <div className="flex-1 text-left">
-          <Text className="flex gap-2 text-sm text-fg">
-            <span className="flex items-center gap-1 font-semibold text-primary-400">
+          <Text className="typo-sm flex gap-2 text-fg">
+            <span className="flex items-center gap-1 font-emphasize text-primary">
               {remaining.toLocaleString()}{' '}
               <svg
                 width="14"
@@ -251,7 +251,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
       </div>
 
       <div className="flex flex-col items-center justify-center gap-2">
-        <Text className="px-3 text-center text-xs font-medium text-fg-muted">
+        <Text className="px-3 text-center text-sm font-medium text-fg-muted">
           {isFree
             ? '유료 플랜으로 전환하세요'
             : daysUntilReset !== undefined &&
@@ -262,7 +262,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
             size="free"
             variant="outline"
             tone="primary"
-            className="w-full rounded-md px-1 py-0.5 text-xs"
+            className="typo-xs w-full rounded-md px-1 py-0.5"
             onClick={() => openModal('planChange')}
           >
             업그레이드

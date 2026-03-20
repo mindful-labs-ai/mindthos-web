@@ -133,8 +133,8 @@ export const CustomContent: Story = {
             </svg>
           </div>
           <div>
-            <p className="text-sm font-semibold text-fg">Upload Images</p>
-            <p className="text-xs text-fg-muted">PNG, JPG up to 10MB</p>
+            <p className="typo-sm font-emphasize text-fg">Upload Images</p>
+            <p className="typo-xs text-fg-muted">PNG, JPG up to 10MB</p>
           </div>
         </div>
       </FileDrop>
@@ -176,14 +176,14 @@ export const WithPreview: Story = {
           />
           {files.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-fg">
+              <p className="typo-sm font-medium text-fg">
                 Selected {files.length} file(s):
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {previews.map((preview, index) => (
                   <div
                     key={index}
-                    className="aspect-square overflow-hidden rounded-lg border-2 border-border"
+                    className="aspect-square overflow-hidden rounded-lg border-default"
                   >
                     <img
                       src={preview}
@@ -193,7 +193,7 @@ export const WithPreview: Story = {
                   </div>
                 ))}
               </div>
-              <ul className="text-xs text-fg-muted">
+              <ul className="typo-xs text-fg-muted">
                 {files.map((file, index) => (
                   <li key={index}>
                     {file.name} ({Math.round(file.size / 1024)}KB)
@@ -233,12 +233,12 @@ export const WithValidation: Story = {
           />
           {error && (
             <div className="border-danger/20 bg-danger/10 rounded-lg border-2 p-3">
-              <p className="text-sm text-danger">{error}</p>
+              <p className="typo-sm text-danger">{error}</p>
             </div>
           )}
           {success && (
             <div className="border-success/20 bg-success/10 rounded-lg border-2 p-3">
-              <p className="text-sm text-success">{success}</p>
+              <p className="typo-sm text-success">{success}</p>
             </div>
           )}
         </div>

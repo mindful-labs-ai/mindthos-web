@@ -186,15 +186,15 @@ export const CompleteMissionModal = ({
       <div className="flex flex-col items-center px-8 py-6 text-center">
         {isFinalReward ? (
           <>
-            <h2 className="mb-8 text-2xl font-bold leading-tight text-fg">
+            <h2 className="mb-8 typo-2xl font-headline leading-tight text-fg">
               이제 마음토스가 늘 곁에 있을게요
             </h2>
-            <div className="mb-6 whitespace-pre-wrap text-lg font-bold leading-relaxed text-fg">
+            <div className="mb-6 whitespace-pre-wrap typo-l font-headline leading-relaxed text-fg">
               상담에만 온전히 집중하실 수 있도록,
               <br />
               1개월 무료 이용권으로 첫걸음을 응원합니다.
             </div>
-            <p className="mb-8 text-sm font-medium text-fg-muted">
+            <p className="mb-8 typo-sm font-medium text-fg-muted">
               *{dateString}부터 한 달 동안
               <br />
               스타터 플랜(500 크레딧 지급)이 적용됩니다.
@@ -214,9 +214,9 @@ export const CompleteMissionModal = ({
           </>
         ) : (
           <>
-            <h2 className="text-xl font-semibold text-fg">{content?.title}</h2>
+            <h2 className="typo-xl font-emphasize text-fg">{content?.title}</h2>
 
-            <div className="mt-6 whitespace-pre-wrap text-base leading-relaxed text-fg">
+            <div className="mt-6 whitespace-pre-wrap typo-m leading-relaxed text-fg">
               {content?.description}
             </div>
 
@@ -224,7 +224,7 @@ export const CompleteMissionModal = ({
               onClick={handleNextMission}
               tone="primary"
               size="lg"
-              className="mt-6 w-full max-w-[375px] font-bold"
+              className="mt-6 w-full max-w-[375px] font-headline"
             >
               다음 미션 시작하기
             </Button>

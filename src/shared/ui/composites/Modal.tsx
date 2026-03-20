@@ -98,34 +98,37 @@ export const Modal: React.FC<ModalProps> = ({
   // fullScreen 모달: history 기반 depth 처리 (모바일 뒤로 스와이프 지원)
   const isFullScreenDepth = mobileVariant === 'fullScreen';
   const historyPushedRef = React.useRef(false);
+  const modalIdRef = React.useRef(Math.random().toString(36).slice(2));
+  const onOpenChangeRef = React.useRef(onOpenChange);
+  onOpenChangeRef.current = onOpenChange;
 
   React.useEffect(() => {
     if (!isFullScreenDepth) return;
 
     if (open) {
-      // 모달 열릴 때 history에 state 추가
-      window.history.pushState({ modalDepth: true }, '');
+      const modalId = modalIdRef.current;
+      window.history.pushState({ modalId }, '');
       historyPushedRef.current = true;
 
       const handlePopState = (_e: PopStateEvent) => {
-        // 뒤로가기 시 모달 닫기
-        if (historyPushedRef.current) {
-          historyPushedRef.current = false;
-          onOpenChange(false);
-        }
+        if (!historyPushedRef.current) return;
+        // pop된 후 현재 state에 modalId가 있으면
+        // → 아직 자기 또는 자기보다 위의 모달 entry가 남아있으므로 무시
+        if (window.history.state?.modalId) return;
+        historyPushedRef.current = false;
+        onOpenChangeRef.current(false);
       };
 
       window.addEventListener('popstate', handlePopState);
       return () => {
         window.removeEventListener('popstate', handlePopState);
-        // 모달이 프로그래밍적으로 닫힐 때 (뒤로가기가 아닌 경우) history 정리
         if (historyPushedRef.current) {
           historyPushedRef.current = false;
           window.history.back();
         }
       };
     }
-  }, [open, isFullScreenDepth, onOpenChange]);
+  }, [open, isFullScreenDepth]);
 
   // Sentinel 포커스 핸들러: 모달 경계에 도달하면 반대쪽으로 순환
   const handleSentinelFocus = React.useCallback((position: 'start' | 'end') => {
@@ -140,6 +143,65 @@ export const Modal: React.FC<ModalProps> = ({
     }
   }, []);
 
+  // 바텀시트 드래그 닫기
+  const dragStartY = React.useRef<number | null>(null);
+  const dragCurrentY = React.useRef<number>(0);
+
+  const handleDragStart = React.useCallback((clientY: number) => {
+    dragStartY.current = clientY;
+    dragCurrentY.current = 0;
+    if (contentRef.current) {
+      contentRef.current.style.transition = 'none';
+    }
+  }, []);
+
+  const handleDragMove = React.useCallback((clientY: number) => {
+    if (dragStartY.current === null) return;
+    const delta = clientY - dragStartY.current;
+    dragCurrentY.current = Math.max(0, delta);
+    if (contentRef.current) {
+      contentRef.current.style.transform = `translateY(${dragCurrentY.current}px)`;
+    }
+  }, []);
+
+  const handleDragEnd = React.useCallback(() => {
+    if (dragStartY.current === null) return;
+    dragStartY.current = null;
+    if (contentRef.current) {
+      contentRef.current.style.transition = 'transform 0.2s ease-out';
+      if (dragCurrentY.current > 80) {
+        contentRef.current.style.transform = 'translateY(100%)';
+        setTimeout(() => onOpenChange(false), 200);
+      } else {
+        contentRef.current.style.transform = 'translateY(0)';
+      }
+    }
+    dragCurrentY.current = 0;
+  }, [onOpenChange]);
+
+  const handleTouchStart = React.useCallback(
+    (e: React.TouchEvent) => handleDragStart(e.touches[0].clientY),
+    [handleDragStart]
+  );
+  const handleTouchMove = React.useCallback(
+    (e: React.TouchEvent) => handleDragMove(e.touches[0].clientY),
+    [handleDragMove]
+  );
+  const handleMouseDown = React.useCallback(
+    (e: React.MouseEvent) => {
+      handleDragStart(e.clientY);
+      const onMouseMove = (ev: MouseEvent) => handleDragMove(ev.clientY);
+      const onMouseUp = () => {
+        handleDragEnd();
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    },
+    [handleDragStart, handleDragMove, handleDragEnd]
+  );
+
   if (!open) return null;
 
   // 모바일 variant별 wrapper/content 스타일
@@ -147,12 +209,12 @@ export const Modal: React.FC<ModalProps> = ({
     'fixed inset-0 z-modal',
     // center (기본): PC와 동일
     mobileVariant === 'center' && 'flex items-center justify-center p-4',
-    // bottomSheet: 모바일에서 하단 정렬, sm 이상에서는 center
+    // bottomSheet: 모바일/태블릿에서 하단 정렬, lg 이상에서는 center
     mobileVariant === 'bottomSheet' &&
-      'flex items-end sm:items-center sm:justify-center sm:p-4',
-    // fullScreen: 모바일에서 전체 화면, sm 이상에서는 center
+      'flex items-end lg:items-center lg:justify-center lg:p-4',
+    // fullScreen: 모바일/태블릿에서 전체 화면, lg 이상에서는 center
     mobileVariant === 'fullScreen' &&
-      'flex items-stretch sm:items-center sm:justify-center sm:p-4'
+      'flex items-stretch lg:items-center lg:justify-center lg:p-4'
   );
 
   const contentClass = cn(
@@ -163,39 +225,38 @@ export const Modal: React.FC<ModalProps> = ({
     mobileVariant === 'center' && [
       'overflow-auto',
       'max-h-[90vh] w-full',
-      'rounded-[var(--radius-lg)] border-2 border-border shadow-xl',
+      'rounded-lg border-default shadow-prominent',
       'animate-scaleIn',
       'px-6 py-4',
     ],
 
-    // bottomSheet: 모바일에서 바텀시트(콘텐츠 높이, 최대 80vh), sm+ 에서 center
+    // bottomSheet: 모바일/태블릿에서 바텀시트(콘텐츠 높이, 최대 80vh), lg+ 에서 center
     mobileVariant === 'bottomSheet' && [
-      // 모바일: 하단 시트 - 콘텐츠에 맞게 높이 조정, 최대 80vh
+      // 모바일/태블릿: 하단 시트 - 콘텐츠에 맞게 높이 조정, 최대 80vh
       'flex flex-col overflow-hidden',
       'max-h-[80vh] w-full',
-      'rounded-t-2xl border-x-2 border-t-2 border-border shadow-xl',
+      'rounded-t-2xl border-x-2 border-t-2 border-border shadow-prominent',
       'animate-slideUpFull',
       'px-6 pt-4',
-      // sm+: 센터 팝업 (overflow-auto로 복원)
-      'sm:max-h-[90vh] sm:max-w-lg',
-      'sm:overflow-auto',
-      'sm:rounded-[var(--radius-lg)] sm:border-2',
-      'sm:animate-scaleIn',
-      'sm:pb-4',
+      // lg+: 센터 팝업 (overflow-auto로 복원)
+      'lg:max-h-[90vh] lg:max-w-lg',
+      'lg:overflow-auto',
+      'lg:rounded-lg lg:border-2',
+      'lg:animate-scaleIn',
+      'lg:pb-4',
     ],
 
-    // fullScreen: 모바일에서 전체 화면(좌측 슬라이드), sm+ 에서 center
+    // fullScreen: 모바일/태블릿에서 전체 화면(좌측 슬라이드), lg+ 에서 center
     mobileVariant === 'fullScreen' && [
-      // 모바일: 풀스크린 - 좌측에서 슬라이드
+      // 모바일/태블릿: 풀스크린 - 좌측에서 슬라이드
       'overflow-auto',
       'h-full w-full',
       'animate-slideInFromLeft',
-      'px-4 py-4',
-      // sm+: 센터 팝업
-      'sm:h-auto sm:max-h-[90vh] sm:w-auto sm:max-w-lg',
-      'sm:rounded-[var(--radius-lg)] sm:border-2 sm:border-border sm:shadow-xl',
-      'sm:animate-scaleIn',
-      'sm:px-6',
+      // lg+: 센터 팝업
+      'lg:h-auto lg:max-h-[90vh] lg:w-auto lg:max-w-lg',
+      'lg:rounded-lg lg:border-2 lg:border-border lg:shadow-prominent',
+      'lg:animate-scaleIn',
+      'lg:px-6 lg:py-4',
     ],
 
     className
@@ -206,9 +267,9 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Backdrop */}
       <div
         className={cn(
-          'fixed inset-0 bg-black/50 backdrop-blur-sm',
+          'fixed inset-0 bg-overlay-bg backdrop-blur-sm',
           mobileVariant === 'fullScreen'
-            ? 'hidden sm:block sm:animate-[fadeIn_0.2s_ease-out]'
+            ? 'hidden lg:block lg:animate-[fadeIn_0.2s_ease-out]'
             : 'animate-fadeIn'
         )}
         onClick={() => closeOnOverlay && onOpenChange(false)}
@@ -233,20 +294,27 @@ export const Modal: React.FC<ModalProps> = ({
         aria-describedby={description ? 'modal-description' : undefined}
         className={contentClass}
       >
-        {/* Bottom sheet handle */}
+        {/* Bottom sheet handle (드래그로 닫기 지원) */}
         {mobileVariant === 'bottomSheet' && (
-          <div className="mb-3 flex justify-center sm:hidden">
+          <div
+            role="presentation"
+            className="mb-3 flex cursor-grab justify-center py-1 active:cursor-grabbing lg:hidden"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleDragEnd}
+            onMouseDown={handleMouseDown}
+          >
             <div className="h-1 w-10 rounded-full bg-border" />
           </div>
         )}
 
         {/* fullScreen 모바일 닫기 버튼 */}
         {mobileVariant === 'fullScreen' && !hideCloseButton && (
-          <div className="mb-4 flex items-center sm:hidden">
+          <div className="mb-4 flex items-center lg:hidden">
             <button
               onClick={() => onOpenChange(false)}
               aria-label="닫기"
-              className="flex items-center gap-1.5 text-sm text-fg-muted hover:text-fg"
+              className="flex items-center gap-1.5 typo-sm text-fg-muted hover:text-fg"
             >
               <svg
                 className="h-5 w-5"
@@ -270,12 +338,12 @@ export const Modal: React.FC<ModalProps> = ({
         {(title || description) && (
           <>
             {title && (
-              <h2 id="modal-title" className="text-xl font-semibold text-fg">
+              <h2 id="modal-title" className="typo-xl-emphasize text-fg">
                 {title}
               </h2>
             )}
             {description && (
-              <p id="modal-description" className="mt-1 text-sm text-fg-muted">
+              <p id="modal-description" className="mt-1 typo-sm text-fg-muted">
                 {description}
               </p>
             )}
@@ -285,25 +353,24 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* Body */}
         {mobileVariant === 'bottomSheet' ? (
-          <div className="flex-1 overflow-y-auto overscroll-contain pb-6 sm:overflow-visible sm:pb-0">
+          <div className="flex-1 overflow-y-auto overscroll-contain pb-6 lg:overflow-visible lg:pb-0">
             {children}
           </div>
         ) : (
           children
         )}
 
-        {/* Close button */}
-        {!hideCloseButton && (
+        {/* Close button (bottomSheet는 핸들 드래그로 닫기 지원하므로 숨김) */}
+        {!hideCloseButton && mobileVariant !== 'bottomSheet' && (
           <button
             onClick={() => onOpenChange(false)}
             aria-label="Close dialog"
             className={cn(
               'absolute right-4 top-4',
-              'rounded-[var(--radius-sm)] p-1',
+              'rounded-sm p-1',
               'text-fg-muted hover:bg-surface-contrast hover:text-fg',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              mobileVariant === 'bottomSheet' && 'top-5 sm:top-4'
+              'transition-default',
+              'focus-default'
             )}
           >
             <svg

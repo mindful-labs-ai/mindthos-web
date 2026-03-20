@@ -41,15 +41,15 @@ const ToolTipContainer = ({
 }: TooltipContainerProps) => (
   <div className="flex w-full max-w-[200px] flex-col justify-center gap-2">
     {level && LEVEL_MAP[level] && (
-      <p className="text-xs font-semibold text-primary">
+      <p className="typo-xs font-emphasize text-primary">
         미션 - {LEVEL_MAP[level].mission}
       </p>
     )}
-    <h4 className="mb-2 text-base font-bold text-fg">{title}</h4>
-    <div className="mb-4 break-keep text-sm">{message}</div>
-    {submessage && <div className="mb-4 text-sm">{submessage}</div>}
+    <h4 className="mb-2 typo-m font-headline text-fg">{title}</h4>
+    <div className="mb-4 break-keep typo-sm">{message}</div>
+    {submessage && <div className="mb-4 typo-sm">{submessage}</div>}
     {step && level && LEVEL_MAP[level] && (
-      <p className="mt-2 text-center text-xs font-semibold text-fg-muted">
+      <p className="mt-2 text-center typo-xs font-emphasize text-fg-muted">
         {step}/{LEVEL_MAP[level].totalStep} 단계 진행 중
       </p>
     )}
@@ -109,7 +109,7 @@ export const TranscriptScrollTooltip = () => (
     message={
       <span>
         마음토스의 고급 축어록에서는{' '}
-        <p className="font-semibold">침묵, 감정표현 등의 비언어적 표현</p>도
+        <p className="font-emphasize">침묵, 감정표현 등의 비언어적 표현</p>도
         잡아낼 수 있어요.
       </span>
     }
@@ -154,7 +154,7 @@ export const NoteScrollTooltip = () => (
     message={
       <p>
         마음토스 상담노트는 자동으로{' '}
-        <span className="font-semibold">상담 이론을 감지</span>해서 적합한
+        <span className="font-emphasize">상담 이론을 감지</span>해서 적합한
         노트를 작성해줘요.
       </p>
     }
@@ -258,20 +258,20 @@ export const MissionCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
 // Step 3: 새 상담 기록 버튼 안내 (SideTab)
 export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <div className="flex w-full max-w-[200px] flex-col justify-center gap-2">
-    <p className="text-xs font-semibold text-primary">
+    <p className="typo-xs font-emphasize text-primary">
       미션 - {LEVEL_MAP[3].mission}
     </p>
-    <h4 className="mb-2 text-base font-bold text-fg">녹음 파일 업로드하기</h4>
-    <div className="mb-4 break-keep text-sm">
+    <h4 className="mb-2 typo-m font-headline text-fg">녹음 파일 업로드하기</h4>
+    <div className="mb-4 break-keep typo-sm">
       이제 직접 상담 기록을 추가해볼까요? [녹음 파일 업로드하기] 버튼을 눌러서
       실제 내담자의 상담 기록을 올려보세요.
     </div>
-    <div className="mb-4 text-sm">
+    <div className="mb-4 typo-sm">
       선생님의 상담 기록을 생성하면 미션을 달성할 수 있어요.
     </div>
     <button
       onClick={onConfirm}
-      className="mt-2 w-full rounded-md bg-primary-50 py-2 font-medium text-primary"
+      className="mt-2 w-full rounded-md bg-primary-subtle py-2 font-medium text-primary"
     >
       확인
     </button>

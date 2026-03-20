@@ -148,7 +148,7 @@ export const Remain: React.FC<RemainProps> = ({
       aria-live="polite"
       aria-atomic="true"
       className={cn(
-        'inline-flex items-center gap-2 text-sm font-medium',
+        'inline-flex items-center gap-2 typo-sm font-medium',
         toneStyles[effectiveTone],
         className
       )}

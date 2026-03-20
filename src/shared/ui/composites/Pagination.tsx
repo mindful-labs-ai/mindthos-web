@@ -148,12 +148,12 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={disabled || !canGoPrevious}
           aria-label="Go to first page"
           className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)]',
-            'border-2 border-border bg-surface text-fg',
-            'transition-colors duration-200',
+            'flex h-9 w-9 items-center justify-center rounded-md',
+            'border-default bg-surface text-fg',
+            'transition-default',
             'hover:bg-surface-contrast',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface'
+            'focus-default',
+            'disabled:disabled-default disabled:hover:bg-surface'
           )}
         >
           <ChevronsLeftIcon />
@@ -166,12 +166,12 @@ export const Pagination: React.FC<PaginationProps> = ({
         disabled={disabled || !canGoPrevious}
         aria-label="Go to previous page"
         className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)]',
-          'border-2 border-border bg-surface text-fg',
-          'transition-colors duration-200',
+          'flex h-9 w-9 items-center justify-center rounded-md',
+          'border-default bg-surface text-fg',
+          'transition-default',
           'hover:bg-surface-contrast',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface'
+          'focus-default',
+          'disabled:disabled-default disabled:hover:bg-surface'
         )}
       >
         <ChevronLeftIcon />
@@ -201,14 +201,14 @@ export const Pagination: React.FC<PaginationProps> = ({
             aria-label={`Go to page ${pageNumber}`}
             aria-current={isCurrent ? 'page' : undefined}
             className={cn(
-              'flex h-9 min-w-[2.25rem] items-center justify-center rounded-[var(--radius-md)] px-2',
-              'border-2 text-sm font-medium',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'flex h-9 min-w-[2.25rem] items-center justify-center rounded-md px-2',
+              'border-2 typo-sm font-medium',
+              'transition-default',
+              'focus-default',
+              'disabled:disabled-default',
               isCurrent
-                ? 'border-primary bg-primary text-surface'
-                : 'border-border bg-surface text-fg hover:bg-surface-contrast disabled:hover:bg-surface'
+                ? 'border-primary bg-primary text-primary-fg'
+                : 'border-default bg-surface text-fg hover:bg-surface-contrast disabled:hover:bg-surface'
             )}
           >
             {pageNumber}
@@ -222,12 +222,12 @@ export const Pagination: React.FC<PaginationProps> = ({
         disabled={disabled || !canGoNext}
         aria-label="Go to next page"
         className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)]',
-          'border-2 border-border bg-surface text-fg',
-          'transition-colors duration-200',
+          'flex h-9 w-9 items-center justify-center rounded-md',
+          'border-default bg-surface text-fg',
+          'transition-default',
           'hover:bg-surface-contrast',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-          'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface'
+          'focus-default',
+          'disabled:disabled-default disabled:hover:bg-surface'
         )}
       >
         <ChevronRightIcon />
@@ -240,12 +240,12 @@ export const Pagination: React.FC<PaginationProps> = ({
           disabled={disabled || !canGoNext}
           aria-label="Go to last page"
           className={cn(
-            'flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)]',
-            'border-2 border-border bg-surface text-fg',
-            'transition-colors duration-200',
+            'flex h-9 w-9 items-center justify-center rounded-md',
+            'border-default bg-surface text-fg',
+            'transition-default',
             'hover:bg-surface-contrast',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-surface'
+            'focus-default',
+            'disabled:disabled-default disabled:hover:bg-surface'
           )}
         >
           <ChevronsRightIcon />

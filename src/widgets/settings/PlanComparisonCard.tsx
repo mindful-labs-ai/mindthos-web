@@ -42,16 +42,16 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
         {/* 현재 플랜 */}
         <Card className="w-48 border border-border">
           <Card.Body className="p-4 text-center">
-            <Text className="text-xs text-fg-muted">현재 플랜</Text>
-            <Title as="h4" className="mt-1 text-lg font-bold">
+            <Text className="typo-xs text-fg-muted">현재 플랜</Text>
+            <Title as="h4" className="mt-1 typo-l font-headline">
               {currentPlan.type}
             </Title>
-            <Text className="mt-2 text-xl font-semibold">
+            <Text className="mt-2 typo-xl font-emphasize">
               {formatPrice(currentPlan.price)}원
             </Text>
-            <Text className="text-xs text-fg-muted">/월</Text>
+            <Text className="typo-xs text-fg-muted">/월</Text>
             <div className="mt-3 rounded-lg bg-bg-subtle p-2">
-              <Text className="text-sm font-medium">
+              <Text className="typo-sm font-medium">
                 {currentPlan.totalCredit.toLocaleString()} 크레딧
               </Text>
             </div>
@@ -60,7 +60,7 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
 
         {/* 화살표 */}
         <div className="flex flex-col items-center">
-          <Text className="text-2xl text-fg-muted">→</Text>
+          <Text className="typo-2xl text-fg-muted">→</Text>
         </div>
 
         {/* 새 플랜 */}
@@ -68,20 +68,20 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
           className={`w-48 border-2 ${type === 'cancel' ? 'border-danger' : 'border-warning'}`}
         >
           <Card.Body className="p-4 text-center">
-            <Text className="text-xs text-fg-muted">
+            <Text className="typo-xs text-fg-muted">
               {type === 'cancel' ? '해지 후' : '변경 후'}
             </Text>
-            <Title as="h4" className="mt-1 text-lg font-bold">
+            <Title as="h4" className="mt-1 typo-l font-headline">
               {newPlan.type}
             </Title>
-            <Text className="mt-2 text-xl font-semibold">
+            <Text className="mt-2 typo-xl font-emphasize">
               {newPlan.price === 0 ? '무료' : `${formatPrice(newPlan.price)}원`}
             </Text>
             {newPlan.price > 0 && (
-              <Text className="text-xs text-fg-muted">/월</Text>
+              <Text className="typo-xs text-fg-muted">/월</Text>
             )}
             <div className="mt-3 rounded-lg bg-bg-subtle p-2">
-              <Text className="text-sm font-medium">
+              <Text className="typo-sm font-medium">
                 {newPlan.totalCredit.toLocaleString()} 크레딧
               </Text>
             </div>
@@ -92,19 +92,19 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
       {/* 잃게 되는 혜택 */}
       {lostFeatures.length > 0 && (
         <div className="border-warning bg-warning/5 rounded-lg border p-4">
-          <Text className="text-warning mb-3 font-semibold">
+          <Text className="text-warning mb-3 font-emphasize">
             잃게 되는 혜택
           </Text>
           <div className="space-y-2">
             {lostFeatures.map((feature, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <XIcon size={16} className="text-danger" />
-                <Text className="text-sm text-fg-muted">{feature}</Text>
+                <Text className="typo-sm text-fg-muted">{feature}</Text>
               </div>
             ))}
             <div className="flex items-center gap-2">
               <XIcon size={16} className="text-danger" />
-              <Text className="text-sm text-fg-muted">
+              <Text className="typo-sm text-fg-muted">
                 크레딧{' '}
                 {(
                   currentPlan.totalCredit - newPlan.totalCredit
@@ -119,14 +119,14 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
       {/* 유지되는 혜택 */}
       {newFeatures.length > 0 && (
         <div className="rounded-lg border border-border bg-bg-subtle p-4">
-          <Text className="mb-3 font-semibold text-fg-muted">
+          <Text className="mb-3 font-emphasize text-fg-muted">
             유지되는 혜택
           </Text>
           <div className="space-y-2">
             {newFeatures.map((feature, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <CheckIcon size={16} className="text-success" />
-                <Text className="text-sm">{feature}</Text>
+                <Text className="typo-sm">{feature}</Text>
               </div>
             ))}
           </div>

@@ -79,7 +79,7 @@ export const UsageStates: Story = {
   render: () => (
     <div className="flex w-[300px] flex-col gap-4">
       <div className="space-y-2">
-        <p className="text-xs text-fg-muted">Normal (50%)</p>
+        <p className="typo-xs text-fg-muted">Normal (50%)</p>
         <Credit
           used={150}
           total={300}
@@ -89,7 +89,7 @@ export const UsageStates: Story = {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-xs text-fg-muted">Warning (85%)</p>
+        <p className="typo-xs text-fg-muted">Warning (85%)</p>
         <Credit
           used={255}
           total={300}
@@ -99,7 +99,7 @@ export const UsageStates: Story = {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-xs text-fg-muted">Danger (98%)</p>
+        <p className="typo-xs text-fg-muted">Danger (98%)</p>
         <Credit
           used={294}
           total={300}
@@ -109,7 +109,7 @@ export const UsageStates: Story = {
         />
       </div>
       <div className="space-y-2">
-        <p className="text-xs text-fg-muted">Full (100%)</p>
+        <p className="typo-xs text-fg-muted">Full (100%)</p>
         <Credit
           used={300}
           total={300}
@@ -185,10 +185,10 @@ export const HighUsage: Story = {
 export const InContext: Story = {
   render: () => (
     <div className="w-[400px] space-y-4">
-      <div className="rounded-lg border-2 border-border bg-surface p-6">
+      <div className="rounded-lg border-default bg-surface p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-fg">내 계정</h3>
+            <h3 className="typo-l font-emphasize text-fg">내 계정</h3>
             <Credit used={250} total={300} variant="minimal" />
           </div>
           <div className="space-y-3">
@@ -214,7 +214,7 @@ export const InContext: Story = {
               showPercentage
             />
           </div>
-          <button className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface hover:opacity-90">
+          <button className="w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90">
             크레딧 구매
           </button>
         </div>
@@ -227,7 +227,7 @@ export const AllSizesAllVariants: Story = {
   render: () => (
     <div className="w-[400px] space-y-8">
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-fg">Small</h4>
+        <h4 className="typo-sm font-emphasize text-fg">Small</h4>
         <Credit used={250} total={300} label="Default" size="sm" />
         <Credit used={250} total={300} label="Bar" variant="bar" size="sm" />
         <Credit
@@ -239,7 +239,7 @@ export const AllSizesAllVariants: Story = {
         />
       </div>
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-fg">Medium</h4>
+        <h4 className="typo-sm font-emphasize text-fg">Medium</h4>
         <Credit used={250} total={300} label="Default" size="md" />
         <Credit used={250} total={300} label="Bar" variant="bar" size="md" />
         <Credit
@@ -251,7 +251,7 @@ export const AllSizesAllVariants: Story = {
         />
       </div>
       <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-fg">Large</h4>
+        <h4 className="typo-sm font-emphasize text-fg">Large</h4>
         <Credit used={250} total={300} label="Default" size="lg" />
         <Credit used={250} total={300} label="Bar" variant="bar" size="lg" />
         <Credit

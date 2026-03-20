@@ -247,7 +247,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
   };
 
   return createPortal(
-    <div className="animate-in fade-in pointer-events-none fixed inset-0 z-spotlight overflow-hidden duration-300">
+    <div className="animate-in fade-in pointer-events-none fixed inset-0 z-spotlight overflow-hidden duration-slow">
       {onClose && (
         <button
           onClick={(e) => {
@@ -301,7 +301,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
 
       {/* Visual Hole */}
       <div
-        className="pointer-events-none absolute shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] transition-all duration-300 ease-out"
+        className="pointer-events-none absolute shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] transition-all duration-slow ease-out"
         style={{
           left: rect.left - padding,
           top: rect.top - padding,
@@ -317,11 +317,11 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
           ref={tooltipRef}
           style={finalTooltipStyles}
           className={cn(
-            'animate-in fade-in zoom-in relative min-w-48 max-w-xs rounded-xl border border-border bg-surface p-4 shadow-2xl duration-300',
+            'animate-in fade-in zoom-in relative min-w-48 max-w-xs rounded-xl border border-border bg-surface p-4 shadow-prominent duration-slow',
             className
           )}
         >
-          <div className="text-sm leading-relaxed text-fg">{tooltip}</div>
+          <div className="typo-sm leading-relaxed text-fg">{tooltip}</div>
           <div
             className={cn(
               'absolute h-3 w-3 rotate-45 border-border bg-surface',

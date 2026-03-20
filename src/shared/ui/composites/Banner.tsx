@@ -70,24 +70,24 @@ export const Banner: React.FC<BannerProps> = ({
       aria-label="Banner"
       className={cn(
         'flex items-start gap-4 p-4',
-        'rounded-[var(--radius-lg)] border-2',
+        'rounded-lg border-2',
         styles.bg,
         styles.border,
         className
       )}
     >
       <div className="flex-1">
-        <div className={cn('font-semibold', styles.text)}>{title}</div>
+        <div className={cn('font-emphasize', styles.text)}>{title}</div>
         {description && (
-          <div className="mt-1 text-sm text-fg-muted">{description}</div>
+          <div className="mt-1 typo-sm text-fg-muted">{description}</div>
         )}
         {action && (
           <button
             onClick={action.onClick}
             className={cn(
-              'mt-2 text-sm font-medium',
+              'mt-2 typo-sm font-medium',
               styles.text,
-              'transition-opacity duration-200 hover:opacity-80'
+              'transition-opacity duration-normal hover:opacity-80'
             )}
           >
             {action.label}
@@ -99,9 +99,9 @@ export const Banner: React.FC<BannerProps> = ({
           onClick={onDismiss}
           aria-label="Dismiss banner"
           className={cn(
-            'flex-shrink-0 rounded-[var(--radius-sm)] p-1',
-            'hover:bg-black/5 dark:hover:bg-white/5',
-            'transition-colors duration-200',
+            'flex-shrink-0 rounded-sm p-1',
+            'hover:bg-neutral-active',
+            'transition-default',
             styles.text
           )}
         >

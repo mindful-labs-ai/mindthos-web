@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <nav
       className={cn(
         'flex flex-col gap-1 py-2',
-        'border-r-2 border-border bg-surface',
+        'border-r border-border bg-sidebar-bg',
 
         className
       )}
@@ -100,12 +100,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }}
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
-              'flex items-center gap-3 rounded-[var(--radius-md)] p-2',
-              'text-left text-sm font-medium',
-              'transition-colors duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+              'flex items-center gap-3 rounded-md p-2',
+              'text-left typo-sm font-medium',
+              'transition-default',
+              'focus-default',
               'active:bg-surface-strong',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'disabled:disabled-default',
               isActive
                 ? 'bg-surface-contrast text-fg'
                 : 'text-fg-muted hover:bg-surface-contrast'

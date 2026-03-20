@@ -109,8 +109,8 @@ export const Extended: Story = {
 
 export const InContext: Story = {
   render: () => (
-    <div className="w-[600px] space-y-4 rounded-lg border-2 border-border bg-surface p-6">
-      <h2 className="text-xl font-bold text-fg">Article Title</h2>
+    <div className="w-[600px] space-y-4 rounded-lg border-default bg-surface p-6">
+      <h2 className="typo-xl font-headline text-fg">Article Title</h2>
       <FootPrint
         items={[
           { icon: <UserIcon />, label: 'Author', value: 'John Doe' },
@@ -118,7 +118,7 @@ export const InContext: Story = {
           { icon: <EyeIcon />, label: 'Views', value: '5,678' },
         ]}
       />
-      <p className="text-sm text-fg-muted">
+      <p className="typo-sm text-fg-muted">
         This is a sample article content that demonstrates how the FootPrint
         component can be used to display metadata about a post or article.
       </p>

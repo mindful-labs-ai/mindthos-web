@@ -81,10 +81,10 @@ export const Controlled: Story = {
       return (
         <div className="flex flex-col gap-4">
           <Radio options={options} value={value} onChange={setValue} />
-          <p className="text-sm text-fg-muted">Selected: {value}</p>
+          <p className="typo-sm text-fg-muted">Selected: {value}</p>
           <button
             onClick={() => setValue('2')}
-            className="rounded-lg bg-primary px-4 py-2 text-sm text-surface"
+            className="rounded-lg bg-primary px-4 py-2 typo-sm text-surface"
           >
             Select Option 2
           </button>
@@ -113,8 +113,8 @@ export const InContext: Story = {
     const Component = () => {
       const [plan, setPlan] = useState('standard');
       return (
-        <div className="w-[400px] rounded-lg border-2 border-border bg-surface p-6">
-          <h3 className="mb-4 text-lg font-semibold text-fg">
+        <div className="w-[400px] rounded-lg border-default bg-surface p-6">
+          <h3 className="mb-4 typo-l font-emphasize text-fg">
             Choose your plan
           </h3>
           <Radio
@@ -123,7 +123,7 @@ export const InContext: Story = {
             onChange={setPlan}
             size="md"
           />
-          <button className="mt-6 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-surface hover:opacity-90">
+          <button className="mt-6 w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90">
             Continue with {plan.charAt(0).toUpperCase() + plan.slice(1)}
           </button>
         </div>

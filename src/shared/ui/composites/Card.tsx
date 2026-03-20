@@ -23,7 +23,7 @@ const CardRoot = React.forwardRef<HTMLElement, CardProps>(
       <Component
         ref={ref as React.Ref<HTMLDivElement>}
         className={cn(
-          'rounded-[var(--radius-lg)] border-2 border-border bg-surface',
+          'card-base',
           className
         )}
         {...props}

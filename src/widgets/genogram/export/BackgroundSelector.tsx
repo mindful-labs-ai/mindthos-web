@@ -14,7 +14,7 @@ export function BackgroundSelector({
 }: BackgroundSelectorProps) {
   return (
     <div>
-      <span className="mb-2 block select-none text-base font-semibold text-fg">
+      <span className="mb-2 block select-none typo-m font-emphasize text-fg">
         이미지 배경
       </span>
       <div className="flex gap-3">

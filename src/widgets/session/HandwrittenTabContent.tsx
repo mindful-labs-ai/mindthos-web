@@ -56,7 +56,7 @@ export const HandwrittenTabContent: React.FC<HandwrittenTabContentProps> =
                 disabled={isSaving}
               />
               <Text
-                className={`mt-2 flex-shrink-0 text-right text-sm ${
+                className={`mt-2 flex-shrink-0 text-right typo-sm ${
                   isOverLimit || isUnderLimit ? 'text-red-500' : 'text-fg-muted'
                 }`}
               >

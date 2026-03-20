@@ -21,10 +21,7 @@ import { RadioGroup } from '@/shared/ui/atoms/Radio';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
-import { Spotlight } from '@/shared/ui/composites/Spotlight';
 import { useToast } from '@/shared/ui/composites/Toast';
-
-import { SpeakerSelectTooltip } from './TranscriptEditGuideTooltips';
 
 interface SpeakerEditPopupProps {
   open: boolean;
@@ -38,12 +35,6 @@ interface SpeakerEditPopupProps {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
   }) => Promise<void>;
-  /** 현재 가이드 레벨 (4: 화자 라벨, 5: 화자 선택 모달) */
-  guideLevel?: 4 | 5 | null;
-  /** 다음 가이드 레벨로 진행 (Level 4 → 5) */
-  onGuideNext?: () => void;
-  /** 가이드 완료 (Level 5 완료 시) */
-  onGuideComplete?: () => void;
 }
 
 export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
@@ -54,26 +45,13 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   allSegments,
   clientId,
   triggerElement,
-  guideLevel,
-  onGuideNext,
-  onGuideComplete,
   onApply,
 }) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   const { clients } = useClientList();
   const { toast } = useToast();
-  const [popupContentElement, setPopupContentElement] =
-    React.useState<HTMLDivElement | null>(null);
-
-  // 팝업이 열릴 때 가이드 Level 4 → 5 전환
-  React.useEffect(() => {
-    if (open && guideLevel === 4 && onGuideNext) {
-      onGuideNext();
-    }
-  }, [open, guideLevel, onGuideNext]);
-
-  const [range, setRange] = React.useState<SpeakerRangeOption>('single');
+const [range, setRange] = React.useState<SpeakerRangeOption>('single');
   const [selectionType, setSelectionType] = React.useState<
     'client' | 'custom' | string
   >('default_counselor');
@@ -233,10 +211,6 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       // 7. 성공 시 PopUp 닫기
       onOpenChange(false);
 
-      // 8. 가이드 Level 5 완료 처리
-      if (guideLevel === 5 && onGuideComplete) {
-        onGuideComplete();
-      }
     } catch {
       // 에러는 부모 컴포넌트에서 처리 (toast 표시)
     } finally {
@@ -245,10 +219,10 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   };
 
   const popupContent = (
-    <div ref={setPopupContentElement} className="space-y-4 p-4">
+    <div className="space-y-4 p-4">
       {/* Section 1: 참석자 선택 */}
       <div>
-        <Text className="mb-2 text-sm font-semibold text-fg">참석자 변경</Text>
+        <Text className="mb-2 typo-sm font-emphasize text-fg">참석자 변경</Text>
         <RadioGroup
           options={[
             // speakers 배열 기반 동적 옵션
@@ -277,14 +251,14 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
             placeholder="이름 입력"
-            className="mt-2 w-full rounded-lg border-2 border-border bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors focus:border-primary"
+            className="mt-2 w-full rounded-lg border-default bg-surface px-3 py-2 typo-sm text-fg outline-none transition-colors focus:border-primary"
           />
         )}
       </div>
 
       {/* Section 2: 구간 선택 */}
       <div>
-        <Text className="mb-2 text-sm font-semibold text-fg">구간 선택</Text>
+        <Text className="mb-2 typo-sm font-emphasize text-fg">구간 선택</Text>
         <RadioGroup
           options={[
             { value: 'single', label: '이 구간만' },
@@ -352,25 +326,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         placement="bottom-right"
         triggerClassName=""
         content={popupContent}
-        disableOutsideClick={guideLevel === 5}
       />
-      {/* Level 5: 화자 선택 모달에 Spotlight */}
-      {guideLevel === 5 && open && popupContentElement && (
-        <Spotlight
-          isActive={true}
-          tooltip={
-            <SpeakerSelectTooltip
-              onComplete={() => {
-                onOpenChange(false);
-                onGuideComplete?.();
-              }}
-            />
-          }
-          tooltipPosition="left"
-          targetElement={popupContentElement}
-          store="featureGuide"
-        />
-      )}
     </>
   );
 };

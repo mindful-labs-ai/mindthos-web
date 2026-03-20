@@ -51,7 +51,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <Text className="text-destructive">{error}</Text>
-          <Text className="mt-2 text-sm text-fg-muted">
+          <Text className="mt-2 typo-sm text-fg-muted">
             페이지를 새로고침하거나 다시 시도해주세요.
           </Text>
         </div>
@@ -94,7 +94,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
       {/* 전사 텍스트 없음 경고 */}
       {!transcribedText && (
         <div className="border-warning rounded-lg border p-4">
-          <Text className="text-warning-foreground text-sm">
+          <Text className="text-warning-foreground typo-sm">
             전사 내용이 없어 상담 노트를 작성할 수 없습니다.
           </Text>
         </div>
@@ -138,12 +138,12 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
                     className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
                       isSelected
                         ? 'bg-primary'
-                        : 'border-2 border-border bg-surface'
+                        : 'border-default bg-surface'
                     }`}
                   >
                     {isSelected && (
                       <svg
-                        className="h-4 w-4 text-white"
+                        className="h-4 w-4 text-primary-fg"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >

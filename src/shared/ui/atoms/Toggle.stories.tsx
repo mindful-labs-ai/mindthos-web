@@ -48,7 +48,7 @@ export const Controlled: Story = {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <Toggle checked={enabled} onChange={setEnabled} />
-            <span className="text-sm">{enabled ? 'Enabled' : 'Disabled'}</span>
+            <span className="typo-sm">{enabled ? 'Enabled' : 'Disabled'}</span>
           </div>
         </div>
       );

@@ -25,9 +25,9 @@ export const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
       <div ref={ref} className={cn('w-full', className)}>
         {label && (
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm text-fg-muted">{label}</span>
+            <span className="typo-sm text-fg-muted">{label}</span>
             {!indeterminate && (
-              <span className="text-sm text-fg-muted">{clampedValue}%</span>
+              <span className="typo-sm text-fg-muted">{clampedValue}%</span>
             )}
           </div>
         )}
@@ -44,7 +44,7 @@ export const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
         >
           <div
             className={cn(
-              'h-full bg-primary transition-all duration-300',
+              'h-full bg-primary transition-all duration-slow',
               indeterminate &&
                 'absolute w-1/3 animate-[shimmer_1.5s_ease-in-out_infinite]'
             )}

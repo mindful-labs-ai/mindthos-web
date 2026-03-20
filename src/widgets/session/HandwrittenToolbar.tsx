@@ -45,7 +45,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
             <>
               <button
                 type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
+                className="rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-primary-fg transition-colors hover:bg-primary-600 disabled:opacity-50"
                 onClick={onSaveEdit}
                 disabled={isSaving}
               >
@@ -53,7 +53,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
               </button>
               <button
                 type="button"
-                className="hover:bg-surface-hover rounded-lg bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
+                className="hover:bg-surface-hover rounded-lg bg-surface px-4 py-2 typo-sm font-medium text-fg transition-colors"
                 onClick={onCancelEdit}
                 disabled={isSaving}
               >
@@ -64,7 +64,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
             <>
               <button
                 type="button"
-                className="mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 text-sm font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                className="mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 typo-sm font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
                 onClick={onEditStart}
                 title="편집"
               >

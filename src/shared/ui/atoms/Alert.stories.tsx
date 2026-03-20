@@ -102,7 +102,7 @@ export const Dismissible: Story = {
         return (
           <button
             onClick={() => setVisible(true)}
-            className="text-sm text-primary"
+            className="typo-sm text-primary"
           >
             Show alert again
           </button>
@@ -189,8 +189,8 @@ export const CustomIcon: Story = {
 export const InContext: Story = {
   render: () => (
     <div className="w-[600px] space-y-4">
-      <div className="rounded-lg border-2 border-border bg-surface p-6">
-        <h2 className="mb-4 text-xl font-bold text-fg">Account Settings</h2>
+      <div className="rounded-lg border-default bg-surface p-6">
+        <h2 className="mb-4 typo-xl font-headline text-fg">Account Settings</h2>
         <div className="space-y-4">
           <Alert tone="warn" title="Email not verified">
             Please verify your email address to access all features.
@@ -198,14 +198,14 @@ export const InContext: Story = {
           <div className="space-y-2">
             <label
               htmlFor="email-input"
-              className="text-sm font-medium text-fg"
+              className="typo-sm font-medium text-fg"
             >
               Email
             </label>
             <input
               id="email-input"
               type="email"
-              className="w-full rounded-lg border-2 border-border bg-surface px-3 py-2 text-fg"
+              className="w-full rounded-lg border-default bg-surface px-3 py-2 text-fg"
               value="user@example.com"
               readOnly
             />

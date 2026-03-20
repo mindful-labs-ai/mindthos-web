@@ -34,20 +34,20 @@ export function VerifyStep({
   return (
     <div className="flex flex-col gap-6">
       {/* 상단 배너 */}
-      <div className="rounded-xl bg-primary-50 px-6 py-5 text-center">
-        <p className="text-base font-bold text-fg">
+      <div className="rounded-xl bg-primary-subtle px-6 py-5 text-center">
+        <p className="typo-m font-headline text-fg">
           모든 검수가 끝난 후에
           <br />
           보고서 생성이 가능합니다.
         </p>
-        <p className="mt-2 text-sm text-fg-muted">
+        <p className="mt-2 typo-sm text-fg-muted">
           아래 내용을 확인하며 검수를 완료해주세요.
         </p>
       </div>
 
       {/* 가계도 스냅샷 */}
       <div>
-        <p className="mb-3 text-base font-medium text-fg">
+        <p className="mb-3 typo-m font-medium text-fg">
           최종 가계도는 아래 형태로 보고서에 반영됩니다.
         </p>
         {snapshotImage ? (
@@ -68,7 +68,7 @@ export function VerifyStep({
 
         return (
           <div key={i}>
-            <p className="mb-3 text-base font-bold text-fg">
+            <p className="mb-3 typo-m font-headline text-fg">
               {i + 1}. {item.question}
             </p>
             <div
@@ -81,7 +81,7 @@ export function VerifyStep({
                     key={j}
                     type="button"
                     onClick={() => handleAnswer(i, j)}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-left text-sm transition-colors ${
+                    className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-left typo-sm transition-colors ${
                       isSelected
                         ? 'text-primary'
                         : 'text-fg-muted hover:bg-surface-contrast'
@@ -95,10 +95,10 @@ export function VerifyStep({
                       }`}
                     >
                       {isSelected && (
-                        <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                        <Check className="h-3 w-3 text-primary-fg" strokeWidth={3} />
                       )}
                     </span>
-                    <span className={isSelected ? 'font-semibold' : ''}>
+                    <span className={isSelected ? 'font-emphasize' : ''}>
                       {option}
                     </span>
                   </button>
@@ -106,7 +106,7 @@ export function VerifyStep({
               })}
             </div>
             {isWrong && (
-              <p className="mt-2 px-4 text-sm text-red-500">{item.warning}</p>
+              <p className="mt-2 px-4 typo-sm text-red-500">{item.warning}</p>
             )}
           </div>
         );

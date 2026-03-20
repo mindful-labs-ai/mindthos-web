@@ -41,8 +41,8 @@ const AuthCallbackPage = () => {
   return (
     <div className="flex h-screen items-center justify-center">
       <div className="text-center">
-        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-        <p className="text-gray-600">로그인 처리 중...</p>
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-green-80 border-t-transparent" />
+        <p className="text-grey-100">로그인 처리 중...</p>
       </div>
     </div>
   );

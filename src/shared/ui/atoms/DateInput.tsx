@@ -10,9 +10,9 @@ export interface DateInputProps
 }
 
 const sizeStyles: Record<DateInputSize, string> = {
-  sm: 'h-8 px-3 text-sm rounded-[var(--radius-sm)]',
-  md: 'h-10 px-4 text-sm rounded-[var(--radius-md)]',
-  lg: 'h-12 px-5 text-base rounded-[var(--radius-lg)]',
+  sm: 'h-8 px-3 typo-sm rounded-sm',
+  md: 'h-10 px-4 typo-sm rounded-md',
+  lg: 'h-12 px-5 typo-m rounded-lg',
   free: '',
 };
 
@@ -31,11 +31,11 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
         ref={ref}
         type="date"
         className={cn(
-          'border-2 border-border bg-surface',
-          'placeholder:text-fg-muted',
-          'transition-colors duration-200',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-          'disabled:cursor-not-allowed disabled:opacity-50',
+          'border-default bg-input-bg',
+          'placeholder:text-input-placeholder',
+          'transition-default',
+          'focus-default',
+          'disabled:disabled-default',
           sizeStyles[size],
           className
         )}

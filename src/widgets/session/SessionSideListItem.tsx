@@ -40,7 +40,7 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
       <div className="">
         <Title
           as="h4"
-          className="flex items-center justify-between text-sm font-semibold text-fg"
+          className="flex items-center justify-between typo-sm font-emphasize text-fg"
         >
           {title}
           {isAdvancedTranscript && (
@@ -59,7 +59,7 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
           )}
         </Title>
         <div className="flex items-center justify-between gap-2">
-          <Text className="text-xs text-fg-muted">
+          <Text className="typo-xs text-fg-muted">
             {isHandwritten
               ? '직접 입력'
               : duration

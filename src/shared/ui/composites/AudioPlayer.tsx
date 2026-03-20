@@ -78,11 +78,11 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
     <div
       className={cn(
         'flex flex-col gap-2 p-4',
-        'rounded-[var(--radius-lg)] border-2 border-border bg-surface',
+        'card-base',
         className
       )}
     >
-      {title && <div className="text-sm font-medium text-fg">{title}</div>}
+      {title && <div className="typo-sm font-medium text-fg">{title}</div>}
 
       <div className="flex items-center gap-3">
         <button
@@ -91,9 +91,9 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
           className={cn(
             'flex items-center justify-center',
             'h-10 w-10 rounded-full',
-            'bg-primary text-surface',
-            'transition-opacity duration-200 hover:opacity-90',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
+            'bg-primary text-primary-fg',
+            'transition-opacity duration-normal hover:opacity-90',
+            'focus-default'
           )}
         >
           {isPlaying ? (
@@ -128,7 +128,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             )}
           />
           {timecode && (
-            <div className="flex justify-between text-xs text-fg-muted">
+            <div className="flex justify-between typo-xs text-fg-muted">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>

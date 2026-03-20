@@ -60,34 +60,30 @@ const SignUpForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="auth-error-area">{error}</div>}
 
       <div className="space-y-4">
         <FormField>
-          <Input
+          <input
             type="email"
             placeholder="이메일 주소"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            className="h-12 text-base"
+            className="auth-input"
             disabled={isSubmitting}
           />
         </FormField>
         <FormField>
-          <Input
+          <input
             type="password"
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
-            className="h-12 text-base"
+            className="auth-input"
             disabled={isSubmitting}
           />
         </FormField>
@@ -101,13 +97,13 @@ const SignUpForm = () => {
               onChange={(e) => setTermsAccepted(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="terms" className="text-sm text-muted">
+            <label htmlFor="terms" className="font-sub text-grey-80 text-sm">
               <span>서비스 이용약관에 동의합니다.</span>
               <HyperLink
                 href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 external
                 underline="hover"
-                className="ml-1 text-primary-500 hover:text-primary-600"
+                className="text-green-80 hover:text-green-40 ml-1"
               >
                 [보기]
               </HyperLink>
@@ -122,13 +118,13 @@ const SignUpForm = () => {
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="privacy" className="text-sm text-muted">
+            <label htmlFor="privacy" className="font-sub text-grey-80 text-sm">
               <span>개인정보 처리방침에 동의합니다.</span>
               <HyperLink
                 href={getTermsRoute(TERMS_TYPES.PRIVACY)}
                 external
                 underline="hover"
-                className="ml-1 text-primary-500 hover:text-primary-600"
+                className="text-green-80 hover:text-green-40 ml-1"
               >
                 [보기]
               </HyperLink>
@@ -137,16 +133,13 @@ const SignUpForm = () => {
         </div>
       </div>
 
-      <Button
+      <button
         type="submit"
-        tone="primary"
-        size="lg"
-        variant="solid"
         disabled={!termsAccepted || !privacyAccepted || isSubmitting}
-        className="h-12 w-full bg-primary-500 text-base hover:bg-primary-600 disabled:cursor-not-allowed"
+        className="auth-button"
       >
         {isSubmitting ? '처리 중...' : '이메일 인증하기'}
-      </Button>
+      </button>
     </form>
   );
 };

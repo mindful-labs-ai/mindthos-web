@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn';
 
 interface MobileSttModelSelectorProps {
   sttModel: SttModel;
-  setSttModel: React.Dispatch<React.SetStateAction<SttModel>>;
+  setSttModel: React.Dispatch<React.SetStateAction<SttModel>> | ((value: SttModel) => void);
 }
 
 export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({
@@ -17,18 +17,13 @@ export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({
       <button
         type="button"
         onClick={() => setSttModel('whisper')}
-        className={cn(
-          'flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors',
-          sttModel === 'whisper'
-            ? 'bg-primary-100 text-primary'
-            : 'text-fg-muted hover:bg-surface-contrast'
-        )}
+        className={cn('typo-sm flex items-center gap-1 rounded-md px-3 py-1.5')}
       >
         일반
         <div
           className={cn(
-            'flex h-5 w-5 items-center justify-center rounded-full',
-            sttModel === 'whisper' ? 'bg-primary' : 'bg-surface-strong'
+            'flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-slow',
+            sttModel === 'whisper' ? 'bg-green-80' : 'bg-grey-40'
           )}
         >
           <svg
@@ -51,18 +46,13 @@ export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({
       <button
         type="button"
         onClick={() => setSttModel('gemini-3')}
-        className={cn(
-          'flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors',
-          sttModel === 'gemini-3'
-            ? 'bg-primary-100 text-primary'
-            : 'text-fg-muted hover:bg-surface-contrast'
-        )}
+        className={cn('typo-sm flex items-center gap-1 rounded-md px-3 py-1.5')}
       >
         고급
         <div
           className={cn(
-            'flex h-5 w-5 items-center justify-center rounded-full',
-            sttModel === 'gemini-3' ? 'bg-primary' : 'bg-surface-strong'
+            'flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-slow',
+            sttModel === 'gemini-3' ? 'bg-green-80' : 'bg-grey-40'
           )}
         >
           <svg

@@ -18,17 +18,17 @@ describe('Button', () => {
   describe('sizes', () => {
     it('applies small size styles', () => {
       const { container } = render(<Button size="sm">Small</Button>);
-      expect(container.firstChild).toHaveClass('h-8', 'px-3', 'text-sm');
+      expect(container.firstChild).toHaveClass('h-8', 'px-3', 'typo-sm');
     });
 
     it('applies medium size styles', () => {
       const { container } = render(<Button size="md">Medium</Button>);
-      expect(container.firstChild).toHaveClass('h-10', 'px-4', 'text-sm');
+      expect(container.firstChild).toHaveClass('h-10', 'px-4', 'typo-sm');
     });
 
     it('applies large size styles', () => {
       const { container } = render(<Button size="lg">Large</Button>);
-      expect(container.firstChild).toHaveClass('h-12', 'px-5', 'text-base');
+      expect(container.firstChild).toHaveClass('h-12', 'px-5', 'typo-m');
     });
   });
 

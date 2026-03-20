@@ -49,23 +49,23 @@ const TermsAgreementPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
+      <div className="flex min-h-screen items-center justify-center bg-grey-20">
         <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-contrast p-4">
+    <div className="flex min-h-screen items-center justify-center bg-surface-contrast lg:p-4">
       {isError ? (
         <div className="text-center">
-          <p className="text-base text-muted">
+          <p className="text-m font-sub text-grey-100">
             약관 정보를 불러오는 중 오류가 발생했습니다.
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-2 text-sm text-primary-500 hover:text-primary-600"
+            className="typo-sm text-primary-500 hover:text-primary-600 mt-2"
           >
             다시 시도
           </button>

@@ -10,7 +10,6 @@ import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
-import { Card } from '@/shared/ui/composites/Card';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -24,6 +23,7 @@ interface ClientCardProps {
   onEditClick?: (client: Client) => void;
   isReadOnly?: boolean;
   searchQuery?: string;
+  isMobile?: boolean;
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({
@@ -32,6 +32,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   onEditClick,
   isReadOnly = false,
   searchQuery = '',
+  isMobile = false,
 }) => {
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
@@ -199,62 +200,63 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 
   return (
     <>
-      <Card
+      <div
         data-client-id={client.id}
-        className={`cursor-pointer transition-all ${
+        className={`cursor-pointer rounded-xl border border-grey-30 bg-white p-5 transition-all hover:border-grey-50 md:p-6 ${
           client.counsel_done ? 'opacity-50' : ''
         }`}
         onClick={handleCardClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
       >
-        <Card.Body className="space-y-1 p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 text-left">
-              <Text className="mb-1 text-lg font-bold">
-                <Highlight text={client.name} query={searchQuery} />
-              </Text>
-              <Text className="text-sm text-fg">
-                <Highlight text={client.phone_number} query={searchQuery} />
-              </Text>
-            </div>
-            <ClientCardMenu
-              isOpen={isMenuOpen}
-              onOpenChange={(open) => {
-                if (isReadOnly && open) {
-                  showReadOnlyToast();
-                  return;
-                }
-                setIsMenuOpen(open);
-              }}
-              isCounselDone={client.counsel_done}
-              onCloseSession={handleCloseSession}
-              onRestartCounseling={handleRestartCounseling}
-              onEditClient={handleEditClient}
-              onDeleteClient={handleDeleteClient}
-            />
+        <div className="flex items-start justify-between">
+          <div className="flex-1 text-left">
+            <p className="mb-1 text-l font-headline text-grey-100">
+              <Highlight text={client.name} query={searchQuery} />
+            </p>
+            <p className="text-sm text-grey-80">
+              <Highlight text={client.phone_number} query={searchQuery} />
+            </p>
           </div>
+          <ClientCardMenu
+            isOpen={isMenuOpen}
+            onOpenChange={(open) => {
+              if (isReadOnly && open) {
+                showReadOnlyToast();
+                return;
+              }
+              setIsMenuOpen(open);
+            }}
+            isCounselDone={client.counsel_done}
+            onCloseSession={handleCloseSession}
+            onRestartCounseling={handleRestartCounseling}
+            onEditClient={handleEditClient}
+            onDeleteClient={handleDeleteClient}
+          />
+        </div>
 
-          <div className="flex justify-between">
-            <div className="flex items-end gap-2">
-              <Text className="text-sm text-fg">
-                총 {client.session_count ?? 0}개의 상담
-              </Text>
-              <Text className="text-sm font-medium text-fg-muted">|</Text>
-              <Text className="text-sm font-medium text-fg-muted">
-                {client.counsel_theme}
-              </Text>
-              <Text className="text-sm font-medium text-fg-muted">|</Text>
-              <Text className="text-sm font-medium text-fg-muted">
-                {client.counsel_number}회기
-              </Text>
-            </div>
-            {canAnalyze && (
-              <Badge tone="primary" variant="outline" size="md">
-                클라이언트 분석 가능
-              </Badge>
-            )}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-grey-60">
+              총 {client.session_count ?? 0}개의 상담 기록
+            </span>
+            <span className="text-sm text-grey-40">|</span>
+            <span className="text-sm text-grey-60">
+              {client.counsel_theme || '상담 주제 없음'}
+            </span>
+            <span className="text-sm text-grey-40">|</span>
+            <span className="text-sm text-grey-60">
+              {client.counsel_number ? `${client.counsel_number}회기` : '회기 정보 없음'}
+            </span>
           </div>
-        </Card.Body>
-      </Card>
+          {!isMobile && canAnalyze && (
+            <Badge tone="primary" variant="outline" size="md">
+              클라이언트 분석 가능
+            </Badge>
+          )}
+        </div>
+      </div>
 
       <Modal
         open={isCloseSessionModalOpen}
@@ -263,10 +265,10 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         className="max-w-sm"
       >
         <div className="space-y-4">
-          <Text className="text-base font-bold text-fg">
+          <Text className="typo-m font-headline text-fg">
             {client.name} 내담자의 상담을 종결하시겠습니까?
           </Text>
-          <Text className="text-sm text-fg-muted">
+          <Text className="typo-sm text-fg-muted">
             상담을 종결하면 더이상 내담자에게 상담 기록을 추가할 수 없어요.
           </Text>
           <div className="flex justify-center pt-2">
@@ -291,10 +293,10 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         className="max-w-sm"
       >
         <div className="space-y-4">
-          <Text className="text-base font-bold text-fg">
+          <Text className="typo-m font-headline text-fg">
             {client.name} 내담자의 상담을 재시작하시겠습니까?
           </Text>
-          <Text className="text-sm text-fg-muted">
+          <Text className="typo-sm text-fg-muted">
             상담을 재시작하면 다시 상담 기록을 추가할 수 있어요.
           </Text>
           <div className="flex justify-center pt-2">
@@ -319,10 +321,10 @@ export const ClientCard: React.FC<ClientCardProps> = ({
         className="max-w-sm"
       >
         <div className="space-y-4">
-          <Text className="text-base font-bold text-fg">
+          <Text className="typo-m font-headline text-fg">
             {client.name} 클라이언트를 삭제하시겠습니까?
           </Text>
-          <Text className="text-sm text-fg-muted">
+          <Text className="typo-sm text-fg-muted">
             삭제하면 클라이언트 정보와 관련된 모든 데이터가 영구적으로
             삭제됩니다.
           </Text>

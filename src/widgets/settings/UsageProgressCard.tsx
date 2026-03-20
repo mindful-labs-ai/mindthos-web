@@ -32,11 +32,11 @@ export const UsageProgressCard: React.FC<UsageProgressCardProps> = ({
       />
 
       <div className="text-left">
-        <Title as="h4" className="mb-1 text-base font-semibold">
+        <Title as="h4" className="mb-1 typo-m font-emphasize">
           {title}
         </Title>
-        <Text className="text-sm text-fg">
-          <span className="font-bold text-primary">
+        <Text className="typo-sm text-fg">
+          <span className="font-headline text-primary">
             {remaining}
             {unit} 남음
           </span>{' '}

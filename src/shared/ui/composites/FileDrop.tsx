@@ -171,10 +171,10 @@ export const FileDrop: React.FC<FileDropProps> = ({
       onDrop={handleDrop}
       className={cn(
         'relative flex flex-col items-center justify-center gap-4',
-        'min-h-[200px] rounded-[var(--radius-lg)] border-2 border-dashed',
+        'min-h-[200px] rounded-lg border-2 border-dashed',
         'px-6 py-8 text-center',
-        'transition-all duration-200',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'transition-all duration-normal',
+        'focus-default',
         disabled
           ? 'border-border/50 bg-surface-contrast/50 cursor-not-allowed opacity-50'
           : isDragOver
@@ -198,12 +198,12 @@ export const FileDrop: React.FC<FileDropProps> = ({
         <>
           <UploadIcon />
           <div className="space-y-1">
-            <p className="text-sm font-medium text-fg">
+            <p className="typo-sm font-medium text-fg">
               {isDragOver
                 ? 'Drop files here'
                 : 'Click to upload or drag and drop'}
             </p>
-            <p className="text-xs text-fg-muted">
+            <p className="typo-xs text-fg-muted">
               {accept && `Accepted: ${accept}`}
               {maxSize && ` • Max size: ${Math.round(maxSize / 1024 / 1024)}MB`}
               {multiple && ' • Multiple files allowed'}

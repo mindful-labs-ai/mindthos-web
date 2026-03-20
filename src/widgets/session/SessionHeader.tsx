@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
-import { ChevronLeftIcon } from '@/shared/icons';
+import { ChevronLeftIcon, PenIcon } from '@/shared/icons';
 import { formatDuration, formatKoreanDateTime } from '@/shared/utils/date';
 
 export interface EditActions {
@@ -132,16 +132,16 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   if (variant === 'compact-nav') {
     const actions = editActions;
     return (
-      <div className="flex items-center gap-3 bg-surface px-4 py-2.5">
+      <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 bg-white px-4 py-2.5 md:gap-7">
         <button
           type="button"
           onClick={() => navigate(ROUTES.SESSIONS)}
-          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-border text-fg-muted"
+          className="flex size-8 flex-shrink-0 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-70"
           aria-label="상담 기록 목록으로"
         >
-          <ChevronLeftIcon size={20} />
+          <ChevronLeftIcon size={24} />
         </button>
-        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold text-fg">
+        <h1 className="min-w-0 flex-1 truncate text-l font-medium text-grey-80">
           {title}
         </h1>
         {actions && (
@@ -150,7 +150,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
               type="button"
               onClick={actions.onSave}
               disabled={actions.isSaving}
-              className="rounded-lg bg-primary px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50"
+              className="typo-sm hover:bg-primary-600 rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-fg disabled:opacity-50"
             >
               {actions.isSaving ? '저장 중...' : actions.label}
             </button>
@@ -158,7 +158,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
               type="button"
               onClick={actions.onCancel}
               disabled={actions.isSaving}
-              className="hover:bg-surface-hover rounded-lg bg-surface px-3 py-1.5 text-sm font-medium text-fg disabled:opacity-50"
+              className="hover:bg-surface-hover typo-sm rounded-lg bg-surface px-3 py-1.5 font-medium text-fg disabled:opacity-50"
             >
               취소
             </button>
@@ -173,7 +173,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   if (variant === 'meta-only') {
     const hasExternalControl = !!externalTitleEdit;
     return (
-      <div className="flex items-center gap-2 px-4 py-2.5">
+      <div className="flex items-center gap-2 bg-grey-20 px-6 py-5 md:px-3 md:py-7">
         <div className="flex w-1/2 min-w-0 items-center gap-2">
           {isEditing ? (
             <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -183,7 +183,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="focus:ring-primary/20 min-w-0 flex-1 rounded-lg border border-border bg-bg px-3 py-1.5 text-base font-bold focus:border-primary focus:outline-none focus:ring-2"
+                className="focus:ring-primary/20 typo-m min-w-0 flex-1 rounded-lg border border-border bg-bg px-3 py-1.5 font-headline focus:border-primary focus:outline-none focus:ring-2"
                 disabled={isSaving}
               />
               {!hasExternalControl && (
@@ -192,7 +192,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                     type="button"
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="flex-shrink-0 rounded-lg bg-primary px-3 py-1.5 text-sm text-white hover:bg-primary-600 disabled:opacity-50"
+                    className="typo-sm hover:bg-primary-600 flex-shrink-0 rounded-lg bg-primary px-3 py-1.5 text-primary-fg disabled:opacity-50"
                   >
                     {isSaving ? '저장 중...' : '완료'}
                   </button>
@@ -200,7 +200,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                     type="button"
                     onClick={handleCancel}
                     disabled={isSaving}
-                    className="hover:bg-surface-hover flex-shrink-0 rounded-lg bg-surface px-3 py-1.5 text-sm text-fg disabled:opacity-50"
+                    className="hover:bg-surface-hover typo-sm flex-shrink-0 rounded-lg bg-surface px-3 py-1.5 text-fg disabled:opacity-50"
                   >
                     취소
                   </button>
@@ -209,7 +209,9 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
             </div>
           ) : (
             <>
-              <h2 className="truncate text-base font-bold text-fg">{title}</h2>
+              <h2 className="truncate text-l font-headline text-grey-100 md:text-2xl">
+                {title}
+              </h2>
               {onTitleUpdate && (
                 <button
                   type="button"
@@ -217,23 +219,13 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                   className="flex-shrink-0 text-fg-muted hover:text-fg"
                   aria-label="제목 수정"
                 >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
+                  <PenIcon size={16} className="text-grey-60" />
                 </button>
               )}
             </>
           )}
         </div>
-        <span className="w-1/2 truncate text-right text-sm text-fg-muted">
+        <span className="w-1/2 truncate text-right text-sm text-grey-70">
           {formatKoreanDateTime(new Date(createdAt))}
           {!isHandwritten && duration > 0 && ` ${formatDuration(duration)}`}
         </span>
@@ -254,14 +246,14 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="focus:ring-primary/20 rounded-lg border border-border bg-bg px-3 py-1.5 text-2xl font-bold focus:border-primary focus:outline-none focus:ring-2"
+                className="rounded-lg border border-border bg-bg px-3 py-1.5 text-2xl font-emphasize focus:border-green-80 focus:outline-none focus:ring-2"
                 disabled={isSaving}
               />
               <button
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="rounded-lg bg-primary px-3 py-1.5 text-sm text-white hover:bg-primary-600 disabled:opacity-50"
+                className="typo-sm hover:bg-primary-600 rounded-lg bg-primary px-3 py-1.5 text-primary-fg disabled:opacity-50"
               >
                 {isSaving ? '저장 중...' : '완료'}
               </button>
@@ -269,14 +261,14 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                 type="button"
                 onClick={handleCancel}
                 disabled={isSaving}
-                className="hover:bg-surface-hover rounded-lg bg-surface px-3 py-1.5 text-sm text-fg disabled:opacity-50"
+                className="hover:bg-surface-hover typo-sm rounded-lg bg-surface px-3 py-1.5 text-fg disabled:opacity-50"
               >
                 취소
               </button>
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold">{title}</h1>
+              <h1 className="text-2xl font-emphasize">{title}</h1>
               {onTitleUpdate && (
                 <button
                   type="button"
@@ -284,23 +276,13 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                   className="text-fg-muted hover:text-fg"
                   aria-label="제목 수정"
                 >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
+                  <PenIcon size={16} className="text-grey-60" />
                 </button>
               )}
             </>
           )}
         </div>
-        <span className="text-sm text-fg-muted">
+        <span className="typo-sm text-fg-muted">
           {formatKoreanDateTime(new Date(createdAt))}
           {!isHandwritten && duration > 0 && ` ${formatDuration(duration)}`}
         </span>

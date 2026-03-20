@@ -33,7 +33,7 @@ export function PreviewExportButton({
       <button
         type="button"
         onClick={onBackToList}
-        className="w-full rounded-xl border border-primary py-3.5 text-center text-base font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+        className="w-full rounded-xl border border-primary py-3.5 text-center typo-m font-emphasize text-primary transition-colors hover:bg-primary hover:text-primary-fg"
       >
         목록으로 돌아가기
       </button>
@@ -45,7 +45,7 @@ export function PreviewExportButton({
       type="button"
       onClick={handleExport}
       disabled={disabled || isCountingDown}
-      className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center text-base font-semibold text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400 disabled:disabled-default"
     >
       {isCountingDown ? (
         <>

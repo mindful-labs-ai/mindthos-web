@@ -100,9 +100,9 @@ export const OnIcon: Story = {
 
 export const InContext: Story = {
   render: () => (
-    <div className="w-[400px] space-y-4 rounded-lg border-2 border-border bg-surface p-6">
+    <div className="w-[400px] space-y-4 rounded-lg border-default bg-surface p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-fg">Settings</h3>
+        <h3 className="typo-l font-emphasize text-fg">Settings</h3>
         <Tooltip content="Click to learn more about settings">
           <button className="rounded p-1 hover:bg-surface-contrast">
             <svg
@@ -124,7 +124,7 @@ export const InContext: Story = {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-fg">Notifications</span>
+            <span className="typo-sm text-fg">Notifications</span>
             <Tooltip content="Enable to receive email notifications">
               <svg
                 className="h-4 w-4 text-fg-muted"
@@ -145,7 +145,7 @@ export const InContext: Story = {
         </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-fg">Auto-save</span>
+            <span className="typo-sm text-fg">Auto-save</span>
             <Tooltip content="Automatically save changes every 5 minutes">
               <svg
                 className="h-4 w-4 text-fg-muted"

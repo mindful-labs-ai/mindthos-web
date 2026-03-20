@@ -69,6 +69,9 @@ body {
 }
 
 @layer components {
+  /* ========================================
+   * Layout
+   * ======================================== */
   .layout-page {
     @apply px-page py-page;
   }
@@ -78,11 +81,288 @@ body {
   .layout-modal {
     @apply px-modal py-modal;
   }
+
+  /* ========================================
+   * Typography 조합 클래스
+   *
+   * 네이밍: typo-{size}-{weight}
+   *   size:   xs(12) sm(14) m(16) l(20) xl(24) 2xl(28)
+   *   weight: sub(400) default(500, 생략) emphasize(600) headline(700) extrabold(800)
+   *   lineHeight: 기본 150%, chip 변형은 leading-chip 추가
+   *
+   * 사용법:
+   *   <h1 className="typo-xl-headline">제목</h1>
+   *   <p className="typo-sm">본문 (medium 기본)</p>
+   *   <span className="typo-xs-sub leading-chip">칩 텍스트</span>
+   * ======================================== */
+
+  /* --- xs (12px) --- */
+  .typo-xs-sub {
+    @apply text-xs font-sub;
+  }
+  .typo-xs {
+    @apply text-xs font-medium;
+  }
+  .typo-xs-emphasize {
+    @apply text-xs font-emphasize;
+  }
+  .typo-xs-headline {
+    @apply text-xs font-headline;
+  }
+
+  /* --- sm (14px) --- */
+  .typo-sm-sub {
+    @apply text-sm font-sub;
+  }
+  .typo-sm {
+    @apply text-sm font-medium;
+  }
+  .typo-sm-emphasize {
+    @apply text-sm font-emphasize;
+  }
+  .typo-sm-headline {
+    @apply text-sm font-headline;
+  }
+
+  /* --- m (16px) --- */
+  .typo-m-sub {
+    @apply text-m font-sub;
+  }
+  .typo-m {
+    @apply text-m font-medium;
+  }
+  .typo-m-emphasize {
+    @apply text-m font-emphasize;
+  }
+  .typo-m-headline {
+    @apply text-m font-headline;
+  }
+
+  /* --- l (20px) --- */
+  .typo-l-sub {
+    @apply text-l font-sub;
+  }
+  .typo-l {
+    @apply text-l font-medium;
+  }
+  .typo-l-emphasize {
+    @apply text-l font-emphasize;
+  }
+  .typo-l-headline {
+    @apply text-l font-headline;
+  }
+  .typo-l-extrabold {
+    @apply text-l font-extrabold;
+  }
+
+  /* --- xl (24px) --- */
+  .typo-xl-sub {
+    @apply text-xl font-sub;
+  }
+  .typo-xl {
+    @apply text-xl font-medium;
+  }
+  .typo-xl-emphasize {
+    @apply text-xl font-emphasize;
+  }
+  .typo-xl-headline {
+    @apply text-xl font-headline;
+  }
+  .typo-xl-extrabold {
+    @apply text-xl font-extrabold;
+  }
+
+  /* --- 2xl (28px) --- */
+  .typo-2xl-sub {
+    @apply text-2xl font-sub;
+  }
+  .typo-2xl {
+    @apply text-2xl font-medium;
+  }
+  .typo-2xl-emphasize {
+    @apply text-2xl font-emphasize;
+  }
+  .typo-2xl-headline {
+    @apply text-2xl font-headline;
+  }
+  .typo-2xl-extrabold {
+    @apply text-2xl font-extrabold;
+  }
+
+  /* --- Atom --- */
+  .main-logo-size {
+    @apply h-[36px] w-[140px];
+  }
+  .main-logo-mobile-size {
+    @apply h-[30px] w-[118px];
+  }
+  .new-session-padding {
+    @apply py-[22px];
+  }
+  .nav-label {
+    @apply px-3 py-4 text-sm font-medium text-fg;
+  }
+  .nav-content {
+    @apply transition-default flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-m font-medium active:bg-nav-click-bg;
+  }
+  .active-nav {
+    @apply bg-nav-active-bg text-nav-active-text;
+  }
+  .inactive-nav {
+    @apply text-nav-inactive-text opacity-90 hover:bg-nav-hover-bg;
+  }
+  .sidebar-credit-display {
+    @apply mb-5 flex select-none flex-col gap-y-3 rounded-md bg-bg-whisper px-1 py-3 text-left;
+  }
+  .sidebar-credit-display-title {
+    @apply text-sm font-medium text-fg;
+  }
+  .welcome-banner-height {
+    @apply h-[180px];
+  }
+  .welcome-banner-title {
+    @apply truncate text-l font-headline text-white;
+  }
+  .welcome-banner-content {
+    @apply truncate text-m font-medium text-white;
+  }
+  .action-card-title {
+    @apply text-start text-m font-headline md:text-l;
+  }
+  .greeting-section-typo {
+    @apply truncate text-xl font-headline md:text-2xl;
+  }
+  .session-card-title {
+    @apply truncate text-l font-headline text-grey-100;
+  }
+  .auth-error-area {
+    @apply truncate rounded-md bg-red-20 p-4 text-sm text-red-80;
+  }
+  .auth-input {
+    @apply focus-default transition-default h-12 w-full rounded-md border border-grey-40 bg-grey-10 px-3 py-3.5 text-m font-sub text-grey-100 placeholder:text-m placeholder:font-sub placeholder:text-grey-100;
+  }
+  .auth-button {
+    @apply focus-default h-12 w-full rounded-md bg-green-80 text-m font-headline text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:bg-green-40;
+  }
+  .terms-content-typo {
+    @apply text-m font-medium text-grey-80 md:text-l;
+  }
+
+  /* ========================================
+   * Interactive State 조합 클래스
+   *
+   * idle → hover → active 3단계를 하나의 클래스로 묶음
+   * 네이밍: interact-{tone}-{property}
+   *
+   * 사용법:
+   *   <button className="interact-primary-bg text-primary-fg">확인</button>
+   *   <button className="interact-danger-bg text-danger-fg">삭제</button>
+   *   <button className="interact-neutral-bg text-neutral-fg">취소</button>
+   *   <div className="interact-primary-border">카드</div>
+   * ======================================== */
+
+  /* Primary */
+  .interact-primary-bg {
+    @apply bg-primary hover:bg-primary-hover active:bg-primary-active;
+  }
+  .interact-primary-text {
+    @apply text-primary hover:text-primary-hover active:text-primary-active;
+  }
+  .interact-primary-border {
+    @apply border-primary hover:border-primary-hover active:border-primary-active;
+  }
+
+  /* Danger */
+  .interact-danger-bg {
+    @apply bg-danger hover:bg-danger-hover active:bg-danger-active;
+  }
+  .interact-danger-text {
+    @apply text-danger hover:text-danger-hover active:text-danger-active;
+  }
+  .interact-danger-border {
+    @apply border-danger hover:border-danger-hover active:border-danger-active;
+  }
+
+  /* Neutral */
+  .interact-neutral-bg {
+    @apply bg-neutral hover:bg-neutral-hover active:bg-neutral-active;
+  }
+  .interact-neutral-text {
+    @apply text-neutral hover:text-neutral-hover active:text-neutral-active;
+  }
+  .interact-neutral-border {
+    @apply border-neutral hover:border-neutral-hover active:border-neutral-active;
+  }
+
+  /* ========================================
+   * Common UI 조합 클래스
+   *
+   * 반복되는 multi-class 패턴을 단일 클래스로 묶음
+   * ======================================== */
+
+  /* --- Transition --- */
+  /* transition-colors duration-200 (39회) → 한 클래스 */
+  .transition-default {
+    @apply transition-colors duration-normal;
+  }
+
+  /* --- Border --- */
+  /* border-2 border-border (74회) → 한 클래스 */
+  .border-default {
+    @apply border-2 border-border;
+  }
+
+  /* --- Focus ring --- */
+  /* focus-visible 4속성 세트 (34회) — .focus-default은 utilities에 이미 존재 */
+
+  /* --- Disabled --- */
+  /* disabled 상태 조합 (55회) */
+  .disabled-default {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  /* --- Overlay (backdrop) --- */
+  /* bg-black/50 backdrop-blur-sm (10회) */
+  .overlay-default {
+    @apply bg-black/50 backdrop-blur-sm;
+  }
+
+  /* --- Spinner --- */
+  /* 로딩 스피너 (11회) */
+  .spinner {
+    @apply h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary;
+  }
+  .spinner-sm {
+    @apply h-6 w-6 animate-spin rounded-full border-2 border-surface-strong border-t-primary;
+  }
+
+  /* --- Shadow elevation --- */
+  /* Tailwind config의 boxShadow 토큰으로 매핑됨:
+   * shadow-subtle, shadow-default, shadow-elevated, shadow-prominent
+   * → 별도 조합 클래스 불필요, Tailwind 유틸리티로 직접 사용 */
+
+  /* --- Card base --- */
+  /* border-default + rounded + bg-surface (자주 쓰이는 카드 패턴) */
+  .card-base {
+    @apply border-default rounded-lg bg-surface;
+  }
+  .card-elevated {
+    @apply card-base shadow-default;
+  }
+  .session-card-base {
+    @apply relative space-y-3 rounded-2xl border border-grey-40 bg-white pb-4 pl-4 pr-3 pt-4 md:pb-5 md:pl-6 md:pr-5 md:pt-6;
+  }
+
+  /* --- Dialog panel --- */
+  /* 모달/다이얼로그 콘텐츠 영역 */
+  .dialog-panel {
+    @apply border-default rounded-lg bg-surface shadow-prominent;
+  }
 }
 
 @layer utilities {
   .focus-default {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface;
   }
 
   @keyframes slideUpFull {

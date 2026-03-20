@@ -29,22 +29,22 @@ export const TabChangeConfirmModal: React.FC<TabChangeConfirmModalProps> =
         className="max-w-sm"
       >
         <div className="space-y-4">
-          <Text className="text-base text-fg">
+          <Text className="typo-m text-fg">
             편집 중인 내용이 있습니다. 저장하지 않고 나가시겠습니까?
           </Text>
-          <Text className="text-sm text-fg-muted">
+          <Text className="typo-sm text-fg-muted">
             지금 나가면 편집 중인 내용이 모두 사라집니다.
           </Text>
           <div className="flex justify-center gap-2 pt-2">
             <button
               onClick={onCancel}
-              className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-fg transition-colors"
+              className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 typo-sm font-medium text-fg transition-colors"
             >
               취소
             </button>
             <button
               onClick={onConfirm}
-              className="hover:bg-primary/90 w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors"
+              className="hover:bg-primary/90 w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-primary-fg transition-colors"
             >
               확인
             </button>

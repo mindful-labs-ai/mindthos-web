@@ -4,7 +4,7 @@ export const GiftBoxAnimation = ({ className }: { className?: string }) => {
   return (
     <div
       className={cn(
-        'relative flex h-[220px] w-full items-center justify-center overflow-hidden rounded-2xl border border-primary-100 bg-gradient-to-b from-primary-50 to-white/30 backdrop-blur-sm',
+        'relative flex h-[220px] w-full items-center justify-center overflow-hidden rounded-2xl border border-primary-subtle bg-gradient-to-b from-primary-subtle to-white/30 backdrop-blur-sm',
         className
       )}
     >
@@ -35,7 +35,7 @@ export const GiftBoxAnimation = ({ className }: { className?: string }) => {
           viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="drop-shadow-2xl"
+          className="drop-shadow-prominent"
         >
           {/* Box Body */}
           <rect
@@ -147,19 +147,19 @@ export const GiftBoxAnimation = ({ className }: { className?: string }) => {
       {/* Floating Star Icons */}
       <div className="pointer-events-none absolute inset-0 select-none">
         <span
-          className="absolute right-1/4 top-1/4 animate-ping text-sm text-primary-400 duration-500"
+          className="absolute right-1/4 top-1/4 animate-ping typo-sm text-primary-400 duration-500"
           style={{ animationDelay: '0.8s' }}
         >
           ✦
         </span>
         <span
-          className="absolute bottom-4 right-1/3 animate-ping text-sm text-primary"
+          className="absolute bottom-4 right-1/3 animate-ping typo-sm text-primary"
           style={{ animationDelay: '1.2s' }}
         >
           ✦
         </span>
         <span
-          className="absolute left-1/4 top-1/2 animate-ping text-base text-primary-300 duration-200"
+          className="absolute left-1/4 top-1/2 animate-ping typo-m text-primary-300 duration-normal"
           style={{ animationDelay: '1.5s' }}
         >
           ✦

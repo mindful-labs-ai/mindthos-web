@@ -2,6 +2,8 @@ import React from 'react';
 
 import { useAddClientForm } from '@/features/client/hooks/useAddClientForm';
 import type { Client } from '@/features/client/types';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -23,6 +25,8 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
   onClientCreated,
 }) => {
   const isEditMode = !!initialData;
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const form = useAddClientForm(initialData);
 
   const handleClose = () => {
@@ -45,17 +49,28 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="max-w-lg text-left"
+      className={isMobileView ? 'flex flex-col' : 'max-w-lg text-left'}
       closeOnOverlay={false}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
     >
-      <form onSubmit={handleSubmit} className="space-y-6 py-4">
-        <div className="flex items-start justify-between">
-          <Title as="h2" className="px-6 text-2xl font-bold">
-            {isEditMode ? '클라이언트 정보 수정' : '새로운 클라이언트 등록하기'}
-          </Title>
-        </div>
+      <form onSubmit={handleSubmit} className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}>
+        {isMobileView ? (
+          <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
+            <BackButton onClick={handleClose} />
+            <p className="text-l font-medium text-grey-80">
+              {isEditMode ? '클라이언트 정보 수정' : '클라이언트 추가하기'}
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between">
+            <Title as="h2" className="px-6 typo-2xl font-headline">
+              {isEditMode ? '클라이언트 정보 수정' : '새로운 클라이언트 등록하기'}
+            </Title>
+          </div>
+        )}
 
-        <div className="space-y-4 px-6">
+        <div className={isMobileView ? 'flex-1 space-y-4 overflow-y-auto px-4 py-4 md:px-6' : 'space-y-4 px-6'}>
           <FormField label="이름" required error={form.errors.name}>
             <Input
               type="text"
@@ -130,20 +145,20 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
 
         {form.submitError && (
           <div
-            className="mx-6 rounded-[var(--radius-md)] bg-danger px-4 py-3 text-sm text-danger"
+            className="mx-6 rounded-md bg-danger px-4 py-3 typo-sm text-danger"
             role="alert"
           >
             {form.submitError}
           </div>
         )}
 
-        <div className="flex justify-center px-6 pt-4">
+        <div className={isMobileView ? 'px-4 pb-4 md:px-6' : 'flex justify-center px-6 pt-4'}>
           <Button
             type="submit"
             variant="solid"
             tone="primary"
             size="lg"
-            className="w-full max-w-md"
+            className={isMobileView ? 'w-full' : 'w-full max-w-md'}
             disabled={form.isSubmitting}
           >
             {form.isSubmitting
@@ -152,7 +167,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
                 : '등록 중...'
               : isEditMode
                 ? '정보 수정'
-                : '클라이언트 등록'}
+                : '클라이언트 추가하기'}
           </Button>
         </div>
       </form>

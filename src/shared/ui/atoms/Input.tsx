@@ -17,15 +17,15 @@ export interface InputProps
 }
 
 const sizeStyles: Record<InputSize, string> = {
-  sm: 'h-8 px-3 text-sm rounded-[var(--radius-sm)]',
-  md: 'h-10 px-4 text-sm rounded-[var(--radius-md)]',
-  lg: 'h-12 px-5 text-base rounded-[var(--radius-lg)]',
+  sm: 'h-8 px-3 typo-sm rounded-sm',
+  md: 'h-10 px-4 typo-sm rounded-md',
+  lg: 'h-12 px-5 typo-m rounded-lg',
   free: '',
 };
 
 const variantStyles: Record<InputVariant, string> = {
   solid: 'bg-surface-contrast border-transparent',
-  outline: 'bg-surface border-border',
+  outline: 'bg-input-bg border-input-border',
   ghost: 'bg-transparent border-transparent',
   soft: 'bg-surface-contrast/50 border-transparent',
 };
@@ -61,12 +61,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         aria-invalid={error || undefined}
         className={cn(
           'w-full bg-transparent outline-none',
-          'placeholder:text-fg-muted',
+          'placeholder:text-input-placeholder',
           'disabled:cursor-not-allowed',
           !hasAffixes && [
             'border-2',
-            'transition-colors duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
+            'transition-default',
+            'focus-default',
             sizeStyles[size],
             variantStyles[variant],
             error && 'border-danger focus-visible:ring-danger',
@@ -83,12 +83,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div
           className={cn(
             'flex items-center gap-2 border-2',
-            'transition-colors duration-200',
+            'transition-default',
             'focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-surface',
             sizeStyles[size],
             variantStyles[variant],
             error && 'border-danger focus-within:ring-danger',
-            disabled && 'cursor-not-allowed opacity-50'
+            disabled && 'disabled-default'
           )}
         >
           {prefix && (

@@ -14,15 +14,15 @@ export interface ChipProps {
 }
 
 const sizeStyles: Record<ChipSize, string> = {
-  sm: 'px-2 py-0.5 text-xs gap-1',
-  md: 'px-3 py-1 text-sm gap-1.5',
-  lg: 'px-4 py-1.5 text-base gap-2',
+  sm: 'px-2 py-0.5 typo-xs gap-1 leading-chip',
+  md: 'px-3 py-1 typo-sm gap-1.5 leading-chip',
+  lg: 'px-4 py-1.5 typo-m gap-2 leading-chip',
   free: '',
 };
 
 const toneStyles: Record<ChipTone, string> = {
   primary: 'bg-primary/10 text-primary',
-  secondary: 'bg-secondary/10 text-secondary',
+  secondary: 'bg-neutral/10 text-neutral-fg',
   accent: 'bg-accent/10 text-accent',
   neutral: 'bg-surface-contrast text-fg',
 };
@@ -59,9 +59,9 @@ export const Chip: React.FC<ChipProps> = ({
           aria-label={`Remove ${label}`}
           className={cn(
             'inline-flex items-center justify-center rounded-full',
-            'hover:bg-black/10 dark:hover:bg-white/10',
+            'hover:bg-neutral-active',
             'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-current',
-            'transition-colors duration-200',
+            'transition-default',
             size === 'sm' && 'h-3 w-3',
             size === 'md' && 'h-4 w-4',
             size === 'lg' && 'h-5 w-5'

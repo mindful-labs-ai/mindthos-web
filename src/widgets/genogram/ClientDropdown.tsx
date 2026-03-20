@@ -90,7 +90,7 @@ export function ClientDropdown({
     return (
       <Button
         variant="outline"
-        className="gap-2 bg-white shadow-sm"
+        className="gap-2 bg-surface shadow-sm"
         onClick={onAddClient}
       >
         <Plus className="h-[18px] w-[18px]" />
@@ -104,7 +104,7 @@ export function ClientDropdown({
       {/* Trigger 버튼 */}
       <Button
         variant="outline"
-        className="gap-2 bg-white"
+        className="gap-2 bg-surface"
         onClick={() => setIsOpen(!isOpen)}
       >
         <GenogramIcon size={18} />
@@ -113,7 +113,7 @@ export function ClientDropdown({
 
       {/* 드롭다운 패널 */}
       {isOpen && (
-        <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-2xl border border-border bg-white p-4 shadow-lg">
+        <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-2xl border border-border bg-surface p-4 shadow-elevated">
           {/* 검색 입력 */}
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-fg-muted" />
@@ -123,20 +123,20 @@ export function ClientDropdown({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="클라이언트 검색"
-              className="w-full border-b border-border bg-transparent py-2.5 pl-10 pr-3 text-base placeholder:text-fg-muted focus:border-primary focus:outline-none"
+              className="w-full border-b border-border bg-transparent py-2.5 pl-10 pr-3 typo-m placeholder:text-fg-muted focus:border-primary focus:outline-none"
             />
           </div>
 
           {/* 최근 추가한 고객 */}
           {!searchQuery && recentClients.length > 0 && (
             <div className="mb-4">
-              <p className="mb-2 text-sm text-fg-muted">최근 추가한 고객</p>
+              <p className="mb-2 typo-sm text-fg-muted">최근 추가한 고객</p>
               <div className="flex flex-wrap gap-2">
                 {recentClients.map((client) => (
                   <button
                     key={client.id}
                     onClick={() => handleSelect(client)}
-                    className={`rounded-lg border px-3 py-1 text-sm font-medium transition-colors ${
+                    className={`rounded-lg border px-3 py-1 typo-sm font-medium transition-colors ${
                       selectedClient?.id === client.id
                         ? 'bg-primary/10 border-primary text-primary'
                         : 'hover:bg-primary/5 border-border bg-surface-strong text-fg hover:border-primary'
@@ -151,10 +151,10 @@ export function ClientDropdown({
 
           {/* 모든 고객 */}
           <div>
-            <p className="mb-2 text-sm text-fg-muted">모든 고객</p>
+            <p className="mb-2 typo-sm text-fg-muted">모든 고객</p>
             <div className="max-h-[240px] space-y-1 overflow-y-auto">
               {filteredClients.length === 0 ? (
-                <p className="py-4 text-center text-sm text-fg-muted">
+                <p className="py-4 text-center typo-sm text-fg-muted">
                   검색 결과가 없습니다
                 </p>
               ) : (
@@ -164,13 +164,13 @@ export function ClientDropdown({
                     onClick={() => handleSelect(client)}
                     className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-surface ${
                       selectedClient?.id === client.id
-                        ? 'bg-primary-50 font-semibold text-fg'
+                        ? 'bg-primary-subtle font-emphasize text-fg'
                         : 'text-fg'
                     }`}
                   >
-                    <span className="text-base">{client.name}</span>
+                    <span className="typo-m">{client.name}</span>
                     {selectedClient?.id === client.id && (
-                      <span className="text-sm font-medium text-primary">
+                      <span className="typo-sm font-medium text-primary">
                         선택됨
                       </span>
                     )}

@@ -70,7 +70,7 @@ export function GenogramExportModal({
     >
       {/* 헤더 */}
       <div className="px-6 pt-8">
-        <h2 className="select-none text-center text-2xl font-semibold text-fg">
+        <h2 className="select-none text-center typo-2xl font-emphasize text-fg">
           가계도 이미지 출력하기
         </h2>
       </div>
@@ -81,7 +81,7 @@ export function GenogramExportModal({
         <div>
           <label
             htmlFor="export-filename"
-            className="mb-2 block select-none text-base font-semibold text-fg"
+            className="mb-2 block select-none typo-m font-emphasize text-fg"
           >
             파일명
           </label>
@@ -91,7 +91,7 @@ export function GenogramExportModal({
             value={fileName}
             onChange={(e) => setFileName(e.target.value)}
             placeholder={defaultFileName}
-            className="w-full rounded-lg border border-border bg-surface-contrast px-4 py-3 text-sm outline-none transition-colors focus:border-primary"
+            className="w-full rounded-lg border border-border bg-surface-contrast px-4 py-3 typo-sm outline-none transition-colors focus:border-primary"
           />
         </div>
 
@@ -105,10 +105,10 @@ export function GenogramExportModal({
         <div className="relative">
           <div className="flex items-center justify-between">
             <div className="flex select-none items-center gap-2">
-              <span className="text-base font-semibold text-fg">
+              <span className="typo-m font-emphasize text-fg">
                 워터마크 제거
               </span>
-              <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
+              <span className="rounded-full bg-primary px-2 py-0.5 typo-xs font-medium text-primary-fg">
                 프로
               </span>
             </div>
@@ -122,7 +122,7 @@ export function GenogramExportModal({
               } ${!isPro ? 'opacity-50' : ''}`}
             >
               <span
-                className={`text-sm font-bold text-white transition-opacity ${
+                className={`typo-sm font-headline text-primary-fg transition-opacity ${
                   !showWatermark ? 'opacity-100' : 'opacity-0'
                 }`}
               >
@@ -133,7 +133,7 @@ export function GenogramExportModal({
 
           {/* 업그레이드 팝업 */}
           {showUpgradeTooltip && !isPro && (
-            <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-white p-4 shadow-md">
+            <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-surface p-4 shadow-md">
               <button
                 type="button"
                 className="absolute right-2 top-2 text-fg-muted hover:text-fg"
@@ -141,17 +141,17 @@ export function GenogramExportModal({
               >
                 <X className="h-4 w-4" />
               </button>
-              <p className="flex gap-[7px] pr-4 text-sm text-fg">
+              <p className="flex gap-[7px] pr-4 typo-sm text-fg">
                 플랜 업그레이드 후 이용 가능합니다.
                 <button
                   type="button"
                   onClick={() => openModal('planChange')}
-                  className="font-semibold text-primary underline"
+                  className="font-emphasize text-primary underline"
                 >
                   플랜 보기
                 </button>
               </p>
-              <p className="mt-1 text-xs text-fg-muted">
+              <p className="mt-1 typo-xs text-fg-muted">
                 마음토스의 더 많은 기능을 만나보세요.
               </p>
             </div>
@@ -163,7 +163,7 @@ export function GenogramExportModal({
           type="button"
           onClick={handleDownload}
           disabled={!previewUrl || isProcessing}
-          className="mt-2 w-full rounded-lg bg-primary py-4 text-base font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed"
+          className="mt-2 w-full rounded-lg bg-primary py-4 typo-m font-medium text-primary-fg transition-colors hover:bg-primary-400 disabled:cursor-not-allowed"
         >
           이미지 출력하기
         </button>

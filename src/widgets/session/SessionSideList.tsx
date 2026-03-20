@@ -79,7 +79,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
     <aside className="flex h-full w-64 flex-col border-r border-border bg-bg">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-3">
-        <Title as="h2" className="text-sm font-medium text-fg">
+        <Title as="h2" className="typo-sm font-medium text-fg">
           상담 기록
         </Title>
         <div className="inline-block">
@@ -101,7 +101,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
               />
             }
             placement="bottom-right"
-            className="!p-4"
+            className="p-4"
           />
         </div>
       </div>
@@ -113,7 +113,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
             {groupedSessions.map((group) => (
               <div key={group.date}>
                 {/* 날짜 헤더 */}
-                <Text className="mb-2 px-2 text-left text-xs font-medium text-fg-muted">
+                <Text className="mb-2 px-2 text-left typo-xs font-medium text-fg-muted">
                   {group.date}
                 </Text>
 
@@ -138,7 +138,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
           </div>
         ) : (
           <div className="flex min-h-[200px] items-center justify-center">
-            <Text className="text-sm text-fg-muted">상담 기록이 없습니다.</Text>
+            <Text className="typo-sm text-fg-muted">상담 기록이 없습니다.</Text>
           </div>
         )}
       </div>

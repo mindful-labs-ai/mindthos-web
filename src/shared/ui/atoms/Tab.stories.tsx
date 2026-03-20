@@ -53,7 +53,7 @@ export const Controlled: Story = {
       return (
         <div className="flex flex-col gap-4">
           <Tab items={items} value={value} onValueChange={setValue} />
-          <p className="text-sm text-fg-muted">Selected: {value}</p>
+          <p className="typo-sm text-fg-muted">Selected: {value}</p>
         </div>
       );
     };
@@ -71,7 +71,7 @@ export const WithContent: Story = {
       return (
         <div className="flex flex-col gap-4">
           <Tab items={items} value={value} onValueChange={setValue} />
-          <div className="rounded-md border-2 border-border p-4">
+          <div className="rounded-md border-default p-4">
             {value === 'tab1' && <p>Content for First Tab</p>}
             {value === 'tab2' && <p>Content for Second Tab</p>}
             {value === 'tab3' && <p>Content for Third Tab</p>}
@@ -98,7 +98,7 @@ export const UnderlineSizes: Story = {
   render: () => (
     <div className="flex flex-col gap-8">
       <div className="space-y-2">
-        <p className="text-sm text-fg-muted">Small</p>
+        <p className="typo-sm text-fg-muted">Small</p>
         <div className="border-b border-border">
           <Tab
             items={items}
@@ -109,7 +109,7 @@ export const UnderlineSizes: Story = {
         </div>
       </div>
       <div className="space-y-2">
-        <p className="text-sm text-fg-muted">Medium</p>
+        <p className="typo-sm text-fg-muted">Medium</p>
         <div className="border-b border-border">
           <Tab
             items={items}
@@ -120,7 +120,7 @@ export const UnderlineSizes: Story = {
         </div>
       </div>
       <div className="space-y-2">
-        <p className="text-sm text-fg-muted">Large</p>
+        <p className="typo-sm text-fg-muted">Large</p>
         <div className="border-b border-border">
           <Tab
             items={items}

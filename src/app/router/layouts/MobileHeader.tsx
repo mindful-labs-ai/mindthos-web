@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 import { MenuIcon, PlusIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
+import { useModalStore } from '@/stores/modalStore';
 
 import { getRouteLabel } from '../navigationConfig';
 
@@ -27,28 +28,41 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   }, [location.pathname]);
 
   return (
-    <header className="sticky top-0 z-header flex h-14 items-center justify-between border-b border-border bg-bg px-4">
+    <header className="h-header border-header-border bg-header-bg sticky top-0 z-header flex items-center justify-between border-b px-4 md:px-6">
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onMenuOpen}
-          className="flex items-center justify-center rounded-lg border border-border p-1.5 text-fg-muted transition-colors hover:bg-surface-contrast"
+          className="transition-default flex size-8 items-center justify-center rounded-md border border-border p-1.5 text-fg-muted"
           aria-label="메뉴 열기"
         >
-          <MenuIcon size={20} />
+          <MenuIcon size={24} />
         </button>
-        <span className="text-base font-medium text-fg">{pageTitle}</span>
+        <span className="typo-m text-fg">{pageTitle}</span>
       </div>
 
-      <Button
-        tone="primary"
-        variant="outline"
-        size="sm"
-        icon={<PlusIcon size={16} />}
-        onClick={onNewSession}
-      >
-        새 상담 기록
-      </Button>
+      {location.pathname === '/clients' ? (
+        <Button
+          tone="primary"
+          variant="solid"
+          size="md"
+          onClick={() => useModalStore.getState().openModal('addClient')}
+          className="truncate"
+        >
+          클라이언트 추가하기
+        </Button>
+      ) : (
+        <Button
+          tone="primary"
+          variant="outline"
+          size="md"
+          icon={<PlusIcon size={16} />}
+          onClick={onNewSession}
+          className="truncate"
+        >
+          새 상담 기록
+        </Button>
+      )}
     </header>
   );
 };

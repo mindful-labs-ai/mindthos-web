@@ -91,8 +91,8 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
         className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
-          <span className="text-xs text-fg-muted">정렬</span>
-          <span className="text-sm font-medium text-fg">{sortLabel}</span>
+          <span className="typo-xs text-fg-muted">정렬</span>
+          <span className="typo-sm font-medium text-fg">{sortLabel}</span>
         </div>
         <svg
           className="h-4 w-4 text-fg-muted"
@@ -116,8 +116,8 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
         className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
-          <span className="text-xs text-fg-muted">클라이언트</span>
-          <span className="text-sm font-medium text-fg">{clientLabel}</span>
+          <span className="typo-xs text-fg-muted">클라이언트</span>
+          <span className="typo-sm font-medium text-fg">{clientLabel}</span>
         </div>
         <svg
           className="h-4 w-4 text-fg-muted"
@@ -144,7 +144,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
           trackEvent(MixpanelEvent.SessionFilterReset);
           onReset();
         }}
-        className="w-full rounded-lg px-4 py-2 text-sm font-medium text-fg hover:bg-surface-contrast"
+        className="w-full rounded-lg px-4 py-2 typo-sm font-medium text-fg hover:bg-surface-contrast"
       >
         초기화
       </button>

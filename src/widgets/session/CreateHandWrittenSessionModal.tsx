@@ -12,7 +12,10 @@ import {
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { sessionQueryKeys } from '@/shared/constants/queryKeys';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { CreditIcon, UserIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -36,6 +39,8 @@ export const CreateHandWrittenSessionModal: React.FC<
 > = ({ open, onOpenChange }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const userId = useAuthStore((state) => state.userId);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const { clients } = useClientList();
@@ -48,6 +53,9 @@ export const CreateHandWrittenSessionModal: React.FC<
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTitleError, setShowTitleError] = useState(false);
   const [shakeTitle, setShakeTitle] = useState(false);
+
+  // 모바일 클라이언트 선택 모달
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
   // 크레딧 부족 에러 상태
   const [creditErrorSnackBar, setCreditErrorSnackBar] = useState({
@@ -190,151 +198,206 @@ export const CreateHandWrittenSessionModal: React.FC<
     !isOverLimit &&
     !isSubmitting;
 
+  // 공통 요소
+  const textAreaHeight = isMobile
+    ? 'h-[34vh] min-h-[200px]'
+    : isTablet
+      ? 'h-[41.6vh] min-h-[200px]'
+      : 'h-full min-h-[300px]';
+
+  const textArea = (
+    <div className="flex flex-1 flex-col">
+      <textarea
+        value={contents}
+        onChange={(e) => setContents(e.target.value)}
+        placeholder="상담 내용을 입력해주세요."
+        className={`w-full resize-none rounded-lg border bg-grey-10 p-4 text-grey-100 outline-none transition-colors ${textAreaHeight} ${
+          isOverLimit
+            ? 'border-red-80 focus:border-red-80'
+            : 'border-grey-40 focus:border-green-80'
+        }`}
+        disabled={isSubmitting}
+      />
+      <p
+        className={`mt-2 text-center text-sm font-sub ${
+          isOverLimit || isUnderLimit ? 'text-red-80' : 'text-grey-100'
+        }`}
+      >
+        글자 수 {contentLength.toLocaleString()} /{' '}
+        {MAX_CONTENT_LENGTH.toLocaleString()}자
+      </p>
+    </div>
+  );
+
+  const titleInput = (
+    <div className="flex flex-col gap-2">
+      <Text className="text-m font-medium text-grey-100 lg:text-l">
+        상담 기록 제목
+      </Text>
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => {
+          setTitle(e.target.value);
+          if (e.target.value.trim()) {
+            setShowTitleError(false);
+          }
+        }}
+        placeholder={
+          selectedClient
+            ? `${selectedClient.name} ${(selectedClient.session_count ?? selectedClient.counsel_number) + 1}회기`
+            : '제목을 입력해주세요'
+        }
+        className={`w-full rounded-lg border bg-grey-10 px-3 py-2 text-m text-grey-100 outline-none transition-colors ${
+          showTitleError && isTitleEmpty
+            ? 'border-red-500 focus:border-red-500'
+            : 'border-grey-40 focus:border-green-80'
+        } ${shakeTitle ? 'animate-shake' : ''}`}
+        disabled={isSubmitting}
+      />
+      {showTitleError && isTitleEmpty && (
+        <Text className="typo-xs text-red-500">
+          상담기록 제목을 입력해주세요.
+        </Text>
+      )}
+    </div>
+  );
+
+  const creditBadge = (
+    <div className="flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
+      <span className="text-m font-medium text-green-80">
+        {HAND_WRITTEN_CREDIT}
+      </span>
+      <CreditIcon size={14} />
+      <span className="text-m font-medium text-green-80">사용</span>
+    </div>
+  );
+
+  const submitButton = (
+    <Button
+      variant="solid"
+      tone="primary"
+      size="lg"
+      onClick={handleSubmit}
+      disabled={!canSubmit}
+      className={isMobileView ? 'w-full' : 'w-full max-w-[375px]'}
+    >
+      {isSubmitting ? '파일 업로드 중...' : '상담 기록 만들기'}
+    </Button>
+  );
+
+  const creditSnackBar = (
+    <SnackBar
+      open={creditErrorSnackBar.open}
+      message={creditErrorSnackBar.message}
+      onOpenChange={(open) =>
+        setCreditErrorSnackBar((prev) => ({ ...prev, open }))
+      }
+      action={{
+        label: '플랜 업그레이드',
+        onClick: () => openModal('planChange'),
+      }}
+      duration={8000}
+    />
+  );
+
   return (
     <Modal
-      className="flex h-[730px] max-w-[1056px] flex-col gap-8"
+      className={
+        isMobileView
+          ? 'flex flex-col'
+          : 'flex h-[730px] max-w-[1056px] flex-col gap-8'
+      }
       open={open}
       onOpenChange={handleClose}
-      closeOnOverlay={!isSubmitting}
+      closeOnOverlay={!isSubmitting && !isClientModalOpen}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
     >
       {/* 헤더 */}
-      <div className="pt-4 text-center">
-        <Title as="h3" className="font-bold">
-          직접 입력하여 상담 기록 추가하기
-        </Title>
-      </div>
+      {isMobileView ? (
+        <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
+          <BackButton onClick={() => handleClose(false)} />
+          <p className="text-l font-medium text-grey-80">직접 입력하기</p>
+        </div>
+      ) : (
+        <div className="pt-4 text-center">
+          <Title as="h3" className="font-headline">
+            직접 입력하여 상담 기록 추가하기
+          </Title>
+        </div>
+      )}
 
       {/* 메인 컨텐츠 */}
-      <div className="flex flex-1 gap-8 px-8">
-        {/* 왼쪽: 텍스트 입력 영역 */}
-        <div className="flex flex-1 flex-col">
-          <textarea
-            value={contents}
-            onChange={(e) => setContents(e.target.value)}
-            placeholder="상담 내용을 입력해주세요."
-            className={`h-full min-h-[400px] w-full resize-none rounded-lg border-2 bg-surface-contrast p-4 text-fg outline-none transition-colors ${
-              isOverLimit
-                ? 'border-red-500 focus:border-red-500'
-                : 'border-border focus:border-primary'
-            }`}
-            disabled={isSubmitting}
-          />
-          <Text
-            className={`mt-2 text-center text-sm ${
-              isOverLimit || isUnderLimit ? 'text-red-500' : 'text-fg-muted'
-            }`}
-          >
-            글자 수 {contentLength.toLocaleString()} (최소{' '}
-            {MIN_CONTENT_LENGTH.toLocaleString()}자 / 최대{' '}
-            {MAX_CONTENT_LENGTH.toLocaleString()}자)
-          </Text>
-        </div>
+      {isMobileView ? (
+        <div className="flex flex-1 flex-col overflow-y-auto p-6 md:p-12">
+          {textArea}
 
-        {/* 오른쪽: 설정 영역 */}
-        <div className="flex w-[280px] flex-col gap-6">
-          <Title as="h4" className="text-lg font-semibold text-fg">
-            기록 설정
-          </Title>
+          {/* 설정 영역 */}
+          <div className="mt-6 flex-1">
+            <p className="mb-4 text-l font-emphasize text-fg">기록 설정</p>
+            {titleInput}
 
-          {/* 상담기록 제목 */}
-          <div className="flex flex-col gap-2">
-            <Text className="text-sm font-semibold text-fg">
-              상담기록 제목 <span className="font-semibold text-danger">*</span>
-            </Text>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                if (e.target.value.trim()) {
-                  setShowTitleError(false);
-                }
-              }}
-              placeholder={
-                selectedClient
-                  ? `${selectedClient.name} ${(selectedClient.session_count ?? selectedClient.counsel_number) + 1}회기`
-                  : '제목을 입력해주세요'
-              }
-              className={`w-full rounded-lg border-2 bg-surface px-3 py-2 text-sm text-fg outline-none transition-colors ${
-                showTitleError && isTitleEmpty
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-border focus:border-primary'
-              } ${shakeTitle ? 'animate-shake' : ''}`}
-              disabled={isSubmitting}
-            />
-            {showTitleError && isTitleEmpty && (
-              <Text className="text-xs text-red-500">
-                상담기록 제목을 입력해주세요.
-              </Text>
-            )}
-          </div>
-
-          {/* 내담자 선택 */}
-          <div className="flex flex-col gap-2">
-            <Text className="text-sm font-semibold text-fg">내담자 선택</Text>
-            <ClientSelector
-              clients={clients}
-              selectedClient={selectedClient}
-              onSelect={handleClientSelect}
-              variant="default"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* 하단 버튼 */}
-      <div className="flex flex-col items-center gap-2 pb-4">
-        <div className="flex items-center gap-1 rounded-lg bg-primary-100 px-3 py-1">
-          <Text className="font-bold text-primary-600">
-            {HAND_WRITTEN_CREDIT}
-          </Text>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 14 14"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-primary-600"
-          >
-            <g clipPath="url(#clip0_credit_handwritten)">
-              <path
-                d="M7 14C10.866 14 14 10.866 14 7C14 3.134 10.866 0 7 0C3.134 0 0 3.134 0 7C0.00418359 10.8643 3.13573 13.9958 7 14ZM4.1125 4.1125C5.70836 2.52055 8.29164 2.52055 9.8875 4.1125C10.1113 4.34424 10.1049 4.71352 9.87317 4.93732C9.64712 5.15566 9.28873 5.15566 9.06268 4.93732C7.92351 3.79846 6.07677 3.79868 4.9379 4.93787C3.79903 6.07707 3.79925 7.92378 4.93845 9.06265C6.07742 10.2013 7.92373 10.2013 9.0627 9.06265C9.29444 8.83884 9.66372 8.84527 9.88753 9.07701C10.1058 9.30306 10.1058 9.66142 9.88753 9.8875C8.29281 11.4822 5.70724 11.4822 4.11253 9.8875C2.51779 8.29279 2.51779 5.70721 4.1125 4.1125Z"
-                fill="currentColor"
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-m font-medium text-grey-100">내담자 선택</p>
+              <button
+                type="button"
+                onClick={() => setIsClientModalOpen(true)}
+                className="flex items-center gap-2 rounded-md border border-grey-30 bg-white px-3 py-2 text-fg-muted"
+              >
+                <UserIcon size={18} />
+                <span
+                  className={`text-sm font-medium ${selectedClient ? 'text-grey-100' : 'text-grey-60'}`}
+                >
+                  {selectedClient?.name || '선택 안됨'}
+                </span>
+              </button>
+              <ClientSelector
+                clients={clients}
+                selectedClient={selectedClient}
+                onSelect={handleClientSelect}
+                variant="modal"
+                open={isClientModalOpen}
+                onOpenChange={setIsClientModalOpen}
               />
-            </g>
-            <defs>
-              <clipPath id="clip0_credit_handwritten">
-                <rect width="14" height="14" fill="white" />
-              </clipPath>
-            </defs>
-          </svg>
-          <Text className="text-primary-600">사용</Text>
+            </div>
+          </div>
         </div>
-        <Button
-          variant="solid"
-          tone="primary"
-          size="lg"
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className="w-full max-w-[375px]"
-        >
-          {isSubmitting ? '생성 중...' : '상담기록 만들기'}
-        </Button>
+      ) : (
+        <div className="flex flex-1 gap-8 px-8">
+          {textArea}
+
+          <div className="flex w-[280px] flex-col gap-6">
+            <h4 className="text-l font-emphasize text-grey-100">기록 설정</h4>
+            {titleInput}
+            <div className="flex flex-col gap-2">
+              <p className="text-m font-medium text-grey-100 lg:text-l">
+                내담자 선택
+              </p>
+              <ClientSelector
+                clients={clients}
+                selectedClient={selectedClient}
+                onSelect={handleClientSelect}
+                variant="default"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 하단 */}
+      <div
+        className={
+          isMobileView
+            ? 'flex flex-col items-center gap-2 px-4 pb-4'
+            : 'flex flex-col items-center gap-2 pb-4'
+        }
+      >
+        {creditBadge}
+        {submitButton}
       </div>
 
-      {/* 크레딧 부족 SnackBar */}
-      <SnackBar
-        open={creditErrorSnackBar.open}
-        message={creditErrorSnackBar.message}
-        onOpenChange={(open) =>
-          setCreditErrorSnackBar((prev) => ({ ...prev, open }))
-        }
-        action={{
-          label: '플랜 업그레이드',
-          onClick: () => openModal('planChange'),
-        }}
-        duration={8000}
-      />
+      {creditSnackBar}
     </Modal>
   );
 };

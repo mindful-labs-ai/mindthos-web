@@ -39,7 +39,7 @@ export const TermItemRow = ({
           size="md"
           className="items-center"
           label={
-            <span className={cn('text-base')}>
+            <span className={cn('terms-content-typo')}>
               {prefix} {term.title}
             </span>
           }
@@ -52,7 +52,7 @@ export const TermItemRow = ({
                 onDetail(term.type);
               }
             }}
-            className="shrink-0 p-1 text-fg-muted transition-colors hover:text-fg"
+            className="terms-content-typo shrink-0 p-1 transition-colors"
             aria-label={`${term.title} 상세 보기`}
           >
             <ChevronRightIcon size={18} />
@@ -60,7 +60,7 @@ export const TermItemRow = ({
         )}
       </div>
       {term.type === 'marketing' && (
-        <p className="ml-7 mt-1 text-sm text-fg-muted">
+        <p className="ml-7 mt-1 text-sm font-medium text-grey-70 md:text-m">
           마음토스에서 상담사 선생님들을 위해 제공하는 쿠폰과
           <br />
           이벤트 혜택에 대한 정보를 받으실 수 있습니다.

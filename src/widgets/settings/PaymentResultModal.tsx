@@ -98,26 +98,26 @@ export const PaymentResultModal: React.FC<PaymentResultModalProps> = ({
       }}
       className="max-w-lg"
     >
-      <div className="space-y-8 p-4">
+      <div className="-mx-2 space-y-8 py-2 md:mx-0 md:p-4">
         <div className="space-y-4 text-center">
           <div
-            className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${isSuccess ? 'bg-primary-100 text-primary' : 'bg-danger/10 text-danger'}`}
+            className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${isSuccess ? 'bg-primary-subtle text-primary' : 'bg-danger/10 text-danger'}`}
           >
             {isSuccess ? <CheckIcon size={28} /> : <HelpCircleIcon size={28} />}
           </div>
-          <Title as="h2" className="text-2xl font-bold">
+          <Title as="h2" className="typo-2xl font-headline">
             {title}
           </Title>
-          <Text className="text-lg font-semibold text-fg">{description}</Text>
+          <Text className="typo-l font-emphasize text-fg">{description}</Text>
         </div>
 
         <div className="rounded-2xl border border-border bg-surface-contrast p-6">
           <div className="space-y-6">
             {infoItems.map((item) => (
               <div key={item.label} className="space-y-1 text-start">
-                <Text className="text-sm text-fg-muted">{item.label}</Text>
+                <Text className="typo-sm text-fg-muted">{item.label}</Text>
                 <Text
-                  className={`text-base ${item.bold ? 'font-bold text-fg' : 'font-semibold text-fg'}`}
+                  className={`typo-m ${item.bold ? 'font-headline text-fg' : 'font-emphasize text-fg'}`}
                 >
                   {item.value}
                 </Text>

@@ -21,7 +21,7 @@ export const PublicOnlyRoute: React.FC<PublicOnlyRouteProps> = ({
       <div className="flex min-h-screen items-center justify-center bg-bg">
         <div className="text-center">
           <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
-          <p className="text-sm text-muted">로딩 중...</p>
+          <p className="typo-sm text-muted">로딩 중...</p>
         </div>
       </div>
     );

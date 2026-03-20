@@ -106,7 +106,7 @@ export function GenogramPageHeader({
         {onShowBasicInfo && selectedClient && (
           <button
             onClick={onShowBasicInfo}
-            className="flex h-10 items-center rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+            className="flex h-10 items-center rounded-md border-default bg-surface px-4 typo-sm text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
           >
             가족 구성원 정보
           </button>
@@ -116,8 +116,8 @@ export function GenogramPageHeader({
             onClick={onShowReport}
             className={
               hasReportAccess
-                ? 'flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-50 px-4 text-sm text-primary transition-colors hover:bg-primary-100'
-                : 'flex h-10 items-center gap-1.5 rounded-md border-2 border-border bg-white px-4 text-sm text-fg-muted transition-colors hover:bg-surface-contrast'
+                ? 'flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-subtle px-4 typo-sm text-primary transition-colors hover:bg-primary-subtle'
+                : 'flex h-10 items-center gap-1.5 rounded-md border-default bg-surface px-4 typo-sm text-fg-muted transition-colors hover:bg-surface-contrast'
             }
           >
             {hasReportAccess ? (
@@ -133,11 +133,11 @@ export function GenogramPageHeader({
       {/* 우측 상단: 저장 상태 + 액션 버튼들 */}
       {showActions && (
         <div
-          className="absolute top-4 z-10 flex items-center gap-3 transition-[right] duration-200"
+          className="absolute top-4 z-10 flex items-center gap-3 transition-[right] duration-normal"
           style={{ right: isPanelOpen ? PANEL_WIDTH + 16 : 16 }}
         >
           {/* 저장 상태 표시 */}
-          <div className="flex select-none items-center gap-2 text-sm text-fg-muted">
+          <div className="flex select-none items-center gap-2 typo-sm text-fg-muted">
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -152,7 +152,7 @@ export function GenogramPageHeader({
           </div>
 
           {/* 액션 버튼들 */}
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-white p-3 shadow-sm">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
             <button
               onClick={onUndo}
               title="실행 취소"
@@ -209,14 +209,14 @@ export function GenogramPageHeader({
                   </button>
 
                   {isMenuOpen && (
-                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[128px] rounded-lg border border-border bg-white py-1 shadow-lg">
+                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[128px] rounded-lg border border-border bg-surface py-1 shadow-elevated">
                       <button
                         onClick={() => {
                           setIsMenuOpen(false);
                           onReset();
                         }}
                         disabled={isResetting}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left typo-sm text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                       >
                         <span>가계도 초기화</span>
                       </button>

@@ -178,7 +178,7 @@ export const PaymentSuccess = () => {
           </div>
 
           <div>
-            <Title className="text-2xl font-bold">
+            <Title className="typo-2xl font-headline">
               {planId ? '플랜 업그레이드 처리 중' : '카드 등록 처리 중'}
             </Title>
             <Text className="mt-2 text-gray-600">

@@ -88,10 +88,10 @@ export const Stepper: React.FC<StepperProps> = ({
                 aria-current={isCurrent ? 'step' : undefined}
                 className={cn(
                   'relative flex items-center justify-center rounded-full',
-                  'h-10 w-10 border-2 font-semibold transition-all duration-200',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'h-10 w-10 border-2 font-emphasize transition-all duration-normal',
+                  'focus-default',
                   isCompleted
-                    ? 'border-primary bg-primary text-surface'
+                    ? 'border-primary bg-primary text-primary-fg'
                     : isCurrent
                       ? 'border-primary bg-surface text-primary'
                       : 'border-border bg-surface text-fg-muted',
@@ -109,14 +109,14 @@ export const Stepper: React.FC<StepperProps> = ({
               >
                 <span
                   className={cn(
-                    'text-sm font-medium',
+                    'typo-sm font-medium',
                     isCurrent ? 'text-fg' : 'text-fg-muted'
                   )}
                 >
                   {step.label}
                 </span>
                 {step.description && (
-                  <span className="text-xs text-fg-muted">
+                  <span className="typo-xs text-fg-muted">
                     {step.description}
                   </span>
                 )}

@@ -23,14 +23,14 @@ export function GuideStep({
         <Title
           as="h2"
           id="onboarding-title"
-          className="text-left text-xl font-bold text-fg"
+          className="text-left typo-xl font-headline text-fg"
         >
           {title}
         </Title>
         {children}
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="typo-sm text-red-600">{error}</p>}
 
       <Button
         onClick={onNext}
@@ -56,7 +56,7 @@ export function CompleteStep({
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 id="onboarding-title" className="text-2xl font-bold text-fg">
+        <h2 id="onboarding-title" className="typo-2xl font-headline text-fg">
           준비 완료!
         </h2>
         <p className="mt-4 text-fg-muted">
@@ -65,7 +65,7 @@ export function CompleteStep({
         <div className="mt-6 text-4xl">🎉</div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="typo-sm text-red-600">{error}</p>}
 
       <Button
         onClick={onComplete}

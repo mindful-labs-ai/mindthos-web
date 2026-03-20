@@ -12,6 +12,7 @@ export type ModalType =
   | 'missionPanel'
   | 'planChange'
   | 'createMultiSession'
+  | 'sessionTypeSelect'
   | 'comingSoon'
   | 'couponModal'
   | 'addClient';
@@ -26,6 +27,7 @@ export interface ModalData {
   missionPanel: undefined;
   planChange: undefined;
   createMultiSession: undefined;
+  sessionTypeSelect: undefined;
   comingSoon: { source: string };
   couponModal: undefined;
   addClient: { onClientCreated?: (clientId: string) => void } | undefined;

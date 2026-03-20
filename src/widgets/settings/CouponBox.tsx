@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 
 import type { Coupon } from '@/features/settings/types/coupon';
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -45,7 +47,7 @@ const CouponCard: React.FC<CouponCardProps> = ({
         selectable && 'cursor-pointer transition-colors hover:bg-[#ECECEC]',
         selectable &&
           selected &&
-          'hover:bg-primary-10 border border-primary bg-primary-50'
+          'hover:bg-primary-10 border border-primary bg-primary-subtle'
       )}
       onClick={selectable ? onClick : undefined}
       onKeyDown={
@@ -63,8 +65,8 @@ const CouponCard: React.FC<CouponCardProps> = ({
         <div className="items flex flex-1 flex-col">
           <Text
             className={cn(
-              'font-semibold leading-relaxed text-[#333]',
-              size === 'lg' ? 'text-lg' : 'text-base'
+              'font-emphasize leading-relaxed text-[#333]',
+              size === 'lg' ? 'typo-l' : 'typo-m'
             )}
           >
             {coupon.title}
@@ -72,7 +74,7 @@ const CouponCard: React.FC<CouponCardProps> = ({
           <Text
             className={cn(
               'text-fg-muted',
-              size === 'lg' ? 'mt-2 text-sm' : 'mt-1 text-xs'
+              size === 'lg' ? 'mt-2 typo-sm' : 'mt-1 typo-xs'
             )}
           >
             {formatExpiresAt(coupon.expiresAt)}
@@ -134,6 +136,8 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
   registerError,
   isRegistering,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const [code, setCode] = useState('');
 
   const handleRegister = async () => {
@@ -148,80 +152,113 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
     }
   };
 
+  // 공통: 쿠폰 등록 폼
+  const registerForm = (
+    <div className="w-full">
+      <p className="mb-2 text-m font-medium text-grey-100">쿠폰 등록하기</p>
+      <div className="flex gap-2">
+        <Input
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="번호를 입력해주세요."
+          size="md"
+          variant="outline"
+          className="flex-1"
+        />
+        <Button
+          variant="outline"
+          tone="neutral"
+          size="md"
+          onClick={handleRegister}
+          disabled={isRegistering}
+          className="min-w-[72px]"
+        >
+          {isRegistering ? '등록 중' : '등록'}
+        </Button>
+      </div>
+      {registerError && (
+        <p className="ml-1 mt-1 text-sm text-red-80">{registerError}</p>
+      )}
+    </div>
+  );
+
+  // 공통: 쿠폰 리스트
+  const couponList = (
+    <div className="w-full space-y-3">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Spinner size="sm" ariaLabel="쿠폰 불러오는 중" />
+        </div>
+      ) : coupons.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <p className="text-grey-60">보유 중인 쿠폰이 없습니다.</p>
+        </div>
+      ) : (
+        coupons.map((coupon) => (
+          <CouponCard key={coupon.id} coupon={coupon} />
+        ))
+      )}
+    </div>
+  );
+
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="max-w-lg px-6 py-8"
+      className={isMobileView ? 'flex flex-col' : 'max-w-lg px-6 py-8'}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
     >
-      <div className="flex flex-col items-center">
-        <Title as="h2" className="mb-6 text-2xl font-bold">
-          나의 쿠폰함
-        </Title>
+      {isMobileView ? (
+        <>
+          {/* 헤더 */}
+          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+            <BackButton onClick={() => onOpenChange(false)} />
+            <p className="text-l font-medium text-grey-80">나의 쿠폰함</p>
+          </div>
 
-        {/* 쿠폰 등록 */}
-        <div className="w-full">
-          <Text className="mb-2 text-sm font-medium text-fg">
-            쿠폰 등록하기
-          </Text>
-          <div className="flex gap-2">
-            <Input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="번호를 입력해주세요."
-              size="md"
-              variant="outline"
-              className="flex-1"
-            />
+          {/* 콘텐츠 */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">
+            {registerForm}
+            <hr className="my-6 border-grey-30" />
+            {couponList}
+          </div>
+
+          {/* 하단 버튼 */}
+          <div className="flex-shrink-0 px-4 pb-4 md:px-10">
             <Button
-              variant="outline"
-              tone="neutral"
-              size="md"
-              onClick={handleRegister}
-              disabled={isRegistering}
-              className="min-w-[72px]"
+              variant="solid"
+              tone="primary"
+              size="lg"
+              onClick={() => onOpenChange(false)}
+              className="w-full"
             >
-              {isRegistering ? '등록 중' : '등록'}
+              확인
             </Button>
           </div>
-          {registerError && (
-            <Text className="ml-1 mt-1 text-sm text-red-500">
-              {registerError}
-            </Text>
-          )}
+        </>
+      ) : (
+        <div className="flex flex-col items-center">
+          <Title as="h2" className="mb-6 text-2xl font-headline text-grey-100">
+            나의 쿠폰함
+          </Title>
+          {registerForm}
+          <hr className="my-6 w-full border-grey-30" />
+          <div className="custom-scrollbar max-h-[400px] w-full overflow-y-auto">
+            {couponList}
+          </div>
+          <Button
+            variant="solid"
+            tone="primary"
+            size="lg"
+            onClick={() => onOpenChange(false)}
+            className="mt-8 w-full max-w-sm"
+          >
+            확인
+          </Button>
         </div>
-
-        <hr className="my-6 w-full border-border" />
-
-        {/* 쿠폰 리스트 */}
-        <div className="custom-scrollbar max-h-[400px] w-full space-y-3 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Spinner size="sm" ariaLabel="쿠폰 불러오는 중" />
-            </div>
-          ) : coupons.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <Text className="text-fg-muted">보유 중인 쿠폰이 없습니다.</Text>
-            </div>
-          ) : (
-            coupons.map((coupon) => (
-              <CouponCard key={coupon.id} coupon={coupon} />
-            ))
-          )}
-        </div>
-
-        {/* 확인 버튼 */}
-        <Button
-          variant="solid"
-          tone="primary"
-          size="lg"
-          onClick={() => onOpenChange(false)}
-          className="mt-8 w-full max-w-sm"
-        >
-          확인
-        </Button>
-      </div>
+      )}
     </Modal>
   );
 };
@@ -254,11 +291,11 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
   return (
     <div
       className={cn(
-        'w-[320px] rounded-xl border-2 border-border bg-surface p-5 shadow-xl',
+        'w-[320px] rounded-xl border-default bg-surface p-5 shadow-prominent',
         'animate-[scaleIn_0.15s_ease-out]'
       )}
     >
-      <Title as="h3" className="mb-4 text-lg font-bold">
+      <Title as="h3" className="mb-4 typo-l font-headline">
         사용 가능한 쿠폰
       </Title>
 

@@ -70,9 +70,9 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
     const getToneClass = () => {
       const toneMap: Record<CheckBoxTone, string> = {
         primary: 'checked:bg-primary checked:border-primary',
-        secondary: 'checked:bg-secondary checked:border-secondary',
+        secondary: 'checked:bg-neutral checked:border-neutral',
         accent: 'checked:bg-accent checked:border-accent',
-        neutral: 'checked:bg-secondary-600 checked:border-secondary-600',
+        neutral: 'checked:bg-grey-90 checked:border-grey-90',
       };
       return toneMap[tone];
     };
@@ -87,11 +87,11 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
             disabled={disabled}
             aria-checked={indeterminate ? 'mixed' : undefined}
             className={cn(
-              'peer appearance-none rounded-[var(--radius-sm)] border-2 border-border',
+              'peer appearance-none rounded-sm border-default',
               'cursor-pointer bg-surface',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
-              'transition-colors duration-200',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'focus-default',
+              'transition-default',
+              'disabled:disabled-default',
               sizeStyles[size],
               getToneClass()
             )}
@@ -99,8 +99,8 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
           />
           <div
             className={cn(
-              'pointer-events-none absolute inset-0 flex items-center justify-center text-white',
-              'opacity-0 transition-opacity duration-200',
+              'pointer-events-none absolute inset-0 flex items-center justify-center text-primary-fg',
+              'opacity-0 transition-opacity duration-normal',
               'peer-checked:opacity-100',
               disabled && 'opacity-50'
             )}
@@ -118,8 +118,8 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
               <label
                 htmlFor={checkboxId}
                 className={cn(
-                  'cursor-pointer text-sm font-medium text-fg',
-                  disabled && 'cursor-not-allowed opacity-50'
+                  'cursor-pointer typo-sm text-fg',
+                  disabled && 'disabled-default'
                 )}
               >
                 {label}
@@ -128,7 +128,7 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
             {description && (
               <p
                 className={cn(
-                  'text-xs text-fg-muted',
+                  'typo-xs text-fg-muted',
                   disabled && 'opacity-50'
                 )}
               >

@@ -4,6 +4,9 @@ import { useInView } from 'react-intersection-observer';
 
 import { useCreditLogs } from '@/features/settings/hooks/useCreditLogs';
 import type { CreditLog } from '@/shared/api/supabase/creditQueries';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -17,6 +20,8 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
   open,
   onOpenChange,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const {
     data,
     fetchNextPage,
@@ -80,81 +85,103 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
 
   const logs = data?.pages.flatMap((page) => page) || [];
 
+  // 공통: 테이블 본문
+  const tableBody = isLoading ? (
+    <div className="flex items-center justify-center py-20">
+      <p className="text-grey-60">불러오는 중...</p>
+    </div>
+  ) : isError ? (
+    <div className="flex items-center justify-center py-20">
+      <p className="text-red-80">오류가 발생했습니다.</p>
+    </div>
+  ) : logs.length === 0 ? (
+    <div className="flex items-center justify-center py-20">
+      <p className="text-grey-60">크레딧 사용 내역이 없습니다.</p>
+    </div>
+  ) : (
+    <div className="space-y-1">
+      {logs.map((log) => (
+        <div
+          key={log.id}
+          className="grid grid-cols-[1.5fr_1.5fr_1fr] rounded-lg px-4 py-3 text-center text-sm transition-colors hover:bg-grey-10"
+        >
+          <p className="text-grey-100">{formatLogDate(log.created_at)}</p>
+          <p className="font-medium text-grey-100">{getUsageLabel(log)}</p>
+          <p className="text-grey-100">{log.use_amount.toLocaleString()} 크레딧</p>
+        </div>
+      ))}
+      <div ref={ref} className="h-4 w-full">
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-2">
+            <p className="text-xs text-grey-60">더 불러오는 중...</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // 공통: 테이블 헤더
+  const tableHeader = (
+    <div className="mb-4 grid grid-cols-[1.5fr_1.5fr_1fr] px-4 text-center">
+      <p className="text-sm font-medium text-grey-60">날짜 / 시간</p>
+      <p className="text-sm font-medium text-grey-60">사용처</p>
+      <p className="text-sm font-medium text-grey-60">사용량</p>
+    </div>
+  );
+
   return (
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      className="max-w-2xl px-0 py-10"
+      className={isMobileView ? 'flex flex-col' : 'max-w-2xl px-0 py-10'}
+      mobileVariant={isMobileView ? 'fullScreen' : 'center'}
+      hideCloseButton={isMobileView}
     >
-      <div className="flex flex-col items-center">
-        <Title as="h2" className="mb-10 text-2xl font-bold">
-          크레딧 사용 내역
-        </Title>
-
-        <div className="mb-6 w-[560px] rounded-xl bg-[#F8F9FD] p-6 lg:w-[600px]">
-          {/* Table Header */}
-          <div className="mb-4 grid grid-cols-[1.5fr_1.5fr_1fr] px-4 text-center">
-            <Text className="text-sm font-medium text-[#9E9E9E]">
-              날짜 / 시간
-            </Text>
-            <Text className="text-sm font-medium text-[#9E9E9E]">사용처</Text>
-            <Text className="text-sm font-medium text-[#9E9E9E]">사용량</Text>
+      {isMobileView ? (
+        <>
+          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+            <BackButton onClick={() => onOpenChange(false)} />
+            <p className="text-l font-medium text-grey-80">크레딧 사용 내역</p>
           </div>
-
-          {/* Table Body */}
-          <div className="custom-scrollbar max-h-[400px] overflow-y-auto pr-2">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Text className="text-fg-muted">불러오는 중...</Text>
+          <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">
+            <div className="overflow-x-auto rounded-xl bg-grey-10 p-4 md:p-6">
+              <div className="min-w-[480px]">
+                {tableHeader}
+                {tableBody}
               </div>
-            ) : isError ? (
-              <div className="flex items-center justify-center py-20">
-                <Text className="text-danger">오류가 발생했습니다.</Text>
-              </div>
-            ) : logs.length === 0 ? (
-              <div className="flex items-center justify-center py-20">
-                <Text className="text-fg-muted">
-                  크레딧 사용 내역이 없습니다.
-                </Text>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {logs.map((log) => (
-                  <div
-                    key={log.id}
-                    className="grid grid-cols-[1.5fr_1.5fr_1fr] rounded-lg px-4 py-3 text-center text-sm transition-colors hover:bg-white"
-                  >
-                    <Text className="text-[#333333]">
-                      {formatLogDate(log.created_at)}
-                    </Text>
-                    <Text className="font-medium text-[#333333]">
-                      {getUsageLabel(log)}
-                    </Text>
-                    <Text className="text-[#333333]">
-                      {log.use_amount.toLocaleString()} 크레딧
-                    </Text>
-                  </div>
-                ))}
-
-                {/* Infinite Scroll Trigger */}
-                <div ref={ref} className="h-4 w-full">
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center py-2">
-                      <Text className="text-xs text-fg-muted">
-                        더 불러오는 중...
-                      </Text>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            </div>
+            <p className="mt-4 text-center text-xs text-grey-60">
+              *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
+            </p>
           </div>
+          <div className="flex-shrink-0 px-4 pb-4 md:px-10">
+            <Button
+              variant="solid"
+              tone="primary"
+              size="lg"
+              onClick={() => onOpenChange(false)}
+              className="w-full"
+            >
+              확인
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col items-center">
+          <Title as="h2" className="mb-10 text-2xl font-headline text-grey-100">
+            크레딧 사용 내역
+          </Title>
+          <div className="mb-6 w-[560px] rounded-xl bg-grey-10 p-6 lg:w-[600px]">
+            {tableHeader}
+            <div className="custom-scrollbar max-h-[400px] overflow-y-auto pr-2">
+              {tableBody}
+            </div>
+          </div>
+          <p className="mt-4 text-center text-sm text-grey-60">
+            *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
+          </p>
         </div>
-
-        <Text className="mt-4 text-center text-sm text-[#9E9E9E]">
-          *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
-        </Text>
-      </div>
+      )}
     </Modal>
   );
 };

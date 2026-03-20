@@ -129,7 +129,7 @@ export function ReportPreviewModal({
       {/* Backdrop */}
       <div
         role="presentation"
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-overlay-bg"
         onClick={() => onOpenChange(false)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') onOpenChange(false);
@@ -137,10 +137,10 @@ export function ReportPreviewModal({
       />
 
       {/* Modal */}
-      <div className="relative z-10 flex h-[90vh] w-full max-w-[900px] flex-col rounded-2xl bg-white shadow-xl">
+      <div className="relative z-10 flex h-[90vh] w-full max-w-[900px] flex-col rounded-2xl bg-surface shadow-prominent">
         {/* 헤더 */}
         <div className="flex items-center justify-between border-b border-border px-6 py-4">
-          <h2 className="text-lg font-semibold text-fg">
+          <h2 className="typo-l font-emphasize text-fg">
             가계도 분석 보고서 미리보기
           </h2>
           <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ export function ReportPreviewModal({
               type="button"
               onClick={handleDownload}
               disabled={!pdfUrl || loading}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-primary-fg transition-colors hover:bg-primary-400 disabled:disabled-default"
             >
               <Download className="h-4 w-4" />
               PDF 다운로드

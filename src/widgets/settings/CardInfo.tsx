@@ -85,7 +85,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-surface p-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-grey-30 bg-white p-3">
       <div className="flex flex-1 items-center gap-3">
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-md">
           <svg
@@ -103,19 +103,19 @@ export const CardInfo: React.FC<CardInfoProps> = ({
         <div className="flex flex-col">
           {isRegistered ? (
             <>
-              <Text className="text-left text-sm font-medium text-fg">
+              <Text className="typo-sm text-left font-medium text-fg">
                 {getCardBrandName(company) || cardType}카드
               </Text>
-              <Text className="text-xs text-fg-muted">
+              <Text className="typo-xs text-fg-muted">
                 {formatCardNumber(cardNumber)}
               </Text>
             </>
           ) : (
             <>
-              <Text className="text-left text-sm font-medium text-fg">
+              <Text className="typo-sm text-left font-medium text-fg">
                 등록된 카드가 없습니다.
               </Text>
-              <Text className="text-xs text-fg-muted">
+              <Text className="typo-xs text-fg-muted">
                 첫 결제 시 카드 등록이 함께 진행됩니다.
               </Text>
             </>
@@ -123,24 +123,20 @@ export const CardInfo: React.FC<CardInfoProps> = ({
         </div>
       </div>
       {isRegistered ? (
-        <Button
+        <button
           onClick={handleDeleteClick}
           disabled={isDeleting}
-          variant="ghost"
-          size="sm"
-          className="hover:text-error text-fg-muted"
+          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-red-80 transition-colors hover:bg-grey-10 hover:text-red-50"
         >
           {isDeleting ? '삭제 중...' : '삭제'}
-        </Button>
+        </button>
       ) : (
-        <Button
+        <button
           onClick={onAdd}
-          variant="outline"
-          size="sm"
-          className="whitespace-nowrap"
+          className="whitespace-nowrap rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
         >
           카드 등록
-        </Button>
+        </button>
       )}
 
       {/* 카드 삭제 확인 모달 */}
@@ -151,10 +147,10 @@ export const CardInfo: React.FC<CardInfoProps> = ({
         className="max-w-sm"
       >
         <div className="space-y-4">
-          <Text className="text-base text-fg">
+          <Text className="typo-m text-fg">
             등록된 카드를 삭제하시겠습니까?
           </Text>
-          <Text className="text-sm text-fg-muted">
+          <Text className="typo-sm text-fg-muted">
             삭제 후에는 결제 시 카드를 다시 등록해야 합니다.
           </Text>
           <div className="flex justify-center gap-2 pt-2">

@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import type { ProgressNote } from '@/features/session/types';
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
 import { CheckIcon, CopyIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -111,6 +112,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
   onEditStateChange,
 }) => {
   const { toast } = useToast();
+  const { isTablet } = useDevice();
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [_copiedAll, setCopiedAll] = useState(false);
   const [isRegenerateModalOpen, setIsRegenerateModalOpen] = useState(false);
@@ -270,17 +272,17 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
     return (
       <div className="space-y-4 text-left">
         <div className="mb-6 flex items-center justify-between">
-          <Title as="h2" className="text-base font-bold text-fg-muted">
+          <Title as="h2" className="typo-m font-headline text-fg-muted">
             {note.title || '상담 노트'}
           </Title>
         </div>
         <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
           <div className="text-center">
-            <Text className="text-lg font-medium text-fg">
+            <Text className="typo-l font-medium text-fg">
               상담노트 작성 중...
             </Text>
-            <Text className="mt-2 text-sm text-fg-muted">
+            <Text className="mt-2 typo-sm text-fg-muted">
               {note.processing_status === 'pending'
                 ? '대기 중입니다. 잠시만 기다려주세요.'
                 : 'AI가 상담 내용을 분석하고 있습니다.'}
@@ -295,7 +297,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
     return (
       <div className="space-y-4 text-left">
         <div className="mb-6 flex items-center justify-between">
-          <Title as="h2" className="text-base font-bold text-fg-muted">
+          <Title as="h2" className="typo-m font-headline text-fg-muted">
             {note.title || '상담 노트'}
           </Title>
         </div>
@@ -314,10 +316,10 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
             />
           </svg>
           <div className="text-center">
-            <Text className="text-lg font-medium text-danger">
+            <Text className="typo-l font-medium text-danger">
               상담노트 작성 실패
             </Text>
-            <Text className="mt-2 text-sm text-fg-muted">
+            <Text className="mt-2 typo-sm text-fg-muted">
               {note.error_message || '상담노트 작성 중 오류가 발생했습니다.'}
             </Text>
           </div>
@@ -328,118 +330,121 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
 
   return (
     <div className="space-y-4 text-left">
-      {/* 모바일 sticky 헤더 + 케밥 메뉴 */}
-      <div className="sticky top-0 z-10 mb-6 flex items-center justify-between bg-surface px-4 py-2">
-        <Title as="h2" className="text-base font-bold text-fg-muted">
-          {note.title || '상담 노트'}
-        </Title>
-        <div className="flex items-center gap-2">
-          {!isEditing && (
-            <>
-              <button
-                type="button"
-                className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
-                onClick={() => setIsMenuOpen(true)}
-                aria-label="추가 메뉴"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+      {/* 노트 헤더 */}
+      <div className="px-4 py-4 md:px-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-l font-headline text-grey-100 md:text-xl">
+            {note.title || '상담 노트'}
+          </h2>
+          <div className="flex items-center gap-2">
+            {!isEditing && (
+              <>
+                {/* 태블릿: 편집/복사 인라인 */}
+                {isTablet && (
+                  <>
+                    {onSaveSummary && !isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={handleEditStart}
+                        disabled={isRegenerating}
+                        className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                      >
+                        편집
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleCopyAll}
+                      className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                    >
+                      <CopyIcon size={20} /> 복사하기
+                    </button>
+                  </>
+                )}
+                {/* 케밥 메뉴 */}
+                <button
+                  type="button"
+                  className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+                  onClick={() => setIsMenuOpen(true)}
+                  aria-label="추가 메뉴"
                 >
-                  <circle cx="12" cy="12" r="1" />
-                  <circle cx="12" cy="5" r="1" />
-                  <circle cx="12" cy="19" r="1" />
-                </svg>
-              </button>
-              <Modal
-                open={isMenuOpen}
-                onOpenChange={setIsMenuOpen}
-                mobileVariant="bottomSheet"
-              >
-                <div className="w-full space-y-1">
-                  {onSaveSummary && !isReadOnly && (
-                    <button
-                      onClick={() => {
-                        handleEditStart();
-                        setIsMenuOpen(false);
-                      }}
-                      disabled={isRegenerating}
-                      className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="text-fg-muted"
-                      >
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                      <span className="text-sm text-fg">편집</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      handleCopyAll();
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <CopyIcon size={18} className="text-fg-muted" />
-                    <span className="text-sm text-fg">복사하기</span>
-                  </button>
-                  {onRegenerate && (
-                    <button
-                      onClick={() => {
-                        handleRegenerateClick();
-                        setIsMenuOpen(false);
-                      }}
-                      disabled={isReadOnly || isRegenerating}
-                      className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface disabled:opacity-50"
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        className="text-fg-muted"
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="12" cy="5" r="1" />
+                    <circle cx="12" cy="19" r="1" />
+                  </svg>
+                </button>
+                <Modal
+                  open={isMenuOpen}
+                  onOpenChange={setIsMenuOpen}
+                  mobileVariant="bottomSheet"
+                >
+                  <div className="mb-16 w-full space-y-1">
+                    {!isTablet && onSaveSummary && !isReadOnly && (
+                      <button
+                        onClick={() => {
+                          handleEditStart();
+                          setIsMenuOpen(false);
+                        }}
+                        disabled={isRegenerating}
+                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
                       >
-                        <path
-                          d="M8.33447 13.3333H4.16781V17.5M11.6678 6.66667H15.8345V2.5M3.82031 7.50284C4.28755 6.34638 5.06984 5.3442 6.07826 4.61019C7.08669 3.87618 8.28185 3.4396 9.52593 3.35042C10.77 3.26125 12.0134 3.52284 13.1162 4.10551C14.219 4.68819 15.1355 5.56878 15.7629 6.64677M16.1824 12.4976C15.7152 13.654 14.9329 14.6562 13.9245 15.3902C12.9161 16.1242 11.7221 16.5602 10.478 16.6494C9.23395 16.7386 7.98953 16.477 6.88672 15.8944C5.78391 15.3117 4.86682 14.4313 4.23942 13.3533"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span className="text-sm text-fg">
-                        {isRegenerating ? '재생성 중...' : '노트 재생성'}
-                      </span>
-                    </button>
-                  )}
-                </div>
-              </Modal>
-            </>
-          )}
+                        <span className="text-m text-grey-100 md:text-l">편집</span>
+                      </button>
+                    )}
+                    {!isTablet && (
+                      <button
+                        onClick={() => {
+                          handleCopyAll();
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                      >
+                        <span className="text-m text-grey-100 md:text-l">복사하기</span>
+                      </button>
+                    )}
+                    {onRegenerate && (
+                      <button
+                        onClick={() => {
+                          handleRegenerateClick();
+                          setIsMenuOpen(false);
+                        }}
+                        disabled={isReadOnly || isRegenerating}
+                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface disabled:opacity-50"
+                      >
+                        <span className="text-m text-grey-100 md:text-l">
+                          {isRegenerating ? '재생성 중...' : '노트 재생성'}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                </Modal>
+              </>
+            )}
+          </div>
         </div>
+        {/* 서브타이틀 */}
+        <p className="mt-1 text-xs text-grey-60 md:text-sm">
+          {note.created_at && `${new Date(note.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 작성됨`}
+        </p>
+        {/* 구분선 */}
+        <div className="mt-4 border-b border-grey-30" />
       </div>
 
       {/* 마크다운 문서 렌더링 */}
       {note.summary ? (
-        <div className="relative">
+        <div className="relative px-4 md:px-10">
           {sections.length === 0 ? (
-            <div className="rounded-lg px-2 py-1">
+            <div className="rounded-lg py-1">
               <MarkdownRenderer content={note.summary} editable={isEditing} />
             </div>
           ) : (
@@ -447,7 +452,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
               {sections.map((section, index) => (
                 <div
                   key={index}
-                  className={`group relative rounded-lg px-2 py-1 ${!isEditing ? 'hover:bg-surface-contrast' : ''}`}
+                  className={`group relative rounded-lg py-1 ${!isEditing ? 'hover:bg-grey-10' : ''}`}
                 >
                   <div className="mb-3 flex items-start justify-between">
                     <Title
@@ -459,7 +464,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                           : undefined
                       }
                       as="h3"
-                      className={`text-lg font-semibold text-fg${isEditing ? 'focus:ring-primary/50 cursor-text bg-primary-50 focus:rounded focus:outline-none focus:ring-1' : ''}`}
+                      className={`text-m font-emphasize text-grey-100 md:text-l ${isEditing ? 'focus:ring-primary/50 cursor-text bg-primary-subtle focus:rounded focus:outline-none focus:ring-1' : ''}`}
                       {...(isEditing
                         ? {
                             contentEditable: true,
@@ -482,7 +487,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         ) : (
                           <CopyIcon />
                         )}
-                        <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs text-bg opacity-0 transition-opacity hover:opacity-100">
+                        <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 typo-xs text-bg opacity-0 transition-opacity hover:opacity-100">
                           {copiedIndex === index ? '복사됨' : '복사'}
                         </span>
                       </button>

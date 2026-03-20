@@ -37,10 +37,10 @@ export function NoticeDetail({ noticeId, onBack }: NoticeDetailProps) {
     <div className="flex flex-1 flex-col">
       {/* 헤더: 제목 + 날짜 */}
       <div className="py-10 text-center">
-        <Title as="h1" className="text-2xl font-bold">
+        <Title as="h1" className="typo-2xl font-headline">
           {notice.title}
         </Title>
-        <Text className="mt-2 text-sm text-fg-muted">{notice.date}</Text>
+        <Text className="mt-2 typo-sm text-fg-muted">{notice.date}</Text>
       </div>
 
       {/* 썸네일 */}

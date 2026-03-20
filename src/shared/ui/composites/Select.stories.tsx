@@ -59,7 +59,7 @@ export const ControlledSingle: Story = {
             value={value}
             onChange={(v) => setValue(v as string)}
           />
-          <p className="text-sm text-fg-muted">Selected: {value || 'None'}</p>
+          <p className="typo-sm text-fg-muted">Selected: {value || 'None'}</p>
         </div>
       );
     };
@@ -79,7 +79,7 @@ export const ControlledMultiple: Story = {
             value={values}
             onChange={(v) => setValues(v as string[])}
           />
-          <p className="text-sm text-fg-muted">
+          <p className="typo-sm text-fg-muted">
             Selected: {values.length > 0 ? values.join(', ') : 'None'}
           </p>
         </div>
