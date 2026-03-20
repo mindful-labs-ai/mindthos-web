@@ -6,7 +6,7 @@ interface ExportPreviewProps {
 export function ExportPreview({ imageUrl, isLoading }: ExportPreviewProps) {
   return (
     <div>
-      <span className="mb-2 block select-none typo-m font-emphasize text-fg">
+      <span className="typo-m mb-2 block select-none font-emphasize text-fg">
         미리보기
       </span>
       <div

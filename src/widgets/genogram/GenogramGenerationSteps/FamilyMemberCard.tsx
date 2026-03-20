@@ -51,7 +51,7 @@ function AutoResizeTextarea({
       value={value}
       onChange={onChange}
       className={cn(
-        'resize-none rounded-md bg-primary-subtle px-2 py-2 typo-sm text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
+        'typo-sm resize-none rounded-md bg-primary-subtle px-2 py-2 text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
         className
       )}
       {...props}
@@ -141,7 +141,7 @@ function CustomSelect({
         type="button"
         onClick={handleOpen}
         className={cn(
-          'flex h-[22px] w-full items-center justify-between rounded-md border border-border bg-surface px-[6px] typo-xs text-fg',
+          'typo-xs flex h-[22px] w-full items-center justify-between rounded-md border border-border bg-surface px-[6px] text-fg',
           className
         )}
       >
@@ -168,7 +168,7 @@ function CustomSelect({
                 type="button"
                 onClick={() => handleSelect(opt.value)}
                 className={cn(
-                  'flex w-full items-center px-4 py-2 typo-sm hover:bg-surface-contrast',
+                  'typo-sm flex w-full items-center px-4 py-2 hover:bg-surface-contrast',
                   opt.value === value ? 'font-medium text-fg' : 'text-fg-muted'
                 )}
               >
@@ -307,15 +307,15 @@ function DeleteConfirmModal({
         </button>
 
         {/* 제목 */}
-        <h2 className="mb-8 text-center typo-xl font-headline text-fg">
+        <h2 className="typo-xl mb-8 text-center font-headline text-fg">
           구성원 삭제
         </h2>
 
         {/* 내용 */}
-        <p className="mb-2 text-center typo-l font-medium text-fg">
+        <p className="typo-l mb-2 text-center font-medium text-fg">
           {name} 가족 구성원을 삭제하시겠습니까?
         </p>
-        <p className="mb-10 text-center typo-sm text-fg-muted">
+        <p className="typo-sm mb-10 text-center text-fg-muted">
           한 번 삭제하면 해당 정보를 다시 불러올 수 없어요.
           <br />
           그래도 삭제하시겠습니까?
@@ -324,7 +324,7 @@ function DeleteConfirmModal({
         {/* 삭제 버튼 */}
         <button
           onClick={onConfirm}
-          className="h-14 w-full rounded-xl bg-primary typo-l font-medium text-primary-fg transition-colors hover:bg-primary-600"
+          className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
         >
           삭제하기
         </button>
@@ -348,7 +348,7 @@ function Chip({
   return (
     <span
       className={cn(
-        'h-[22px] items-center truncate rounded-md border border-border bg-surface-contrast px-1.5 py-1 typo-xs text-fg',
+        'typo-xs h-[22px] items-center truncate rounded-md border border-border bg-surface-contrast px-1.5 py-1 text-fg',
         className
       )}
     >
@@ -517,7 +517,7 @@ export function FamilyMemberCard({
         {relations.map((rel, idx) => (
           <span
             key={`${rel.type}-${rel.targetId}-${idx}`}
-            className="inline-flex h-[22px] items-center gap-1 rounded-md border border-border bg-surface-contrast px-2 typo-xs text-fg"
+            className="typo-xs inline-flex h-[22px] items-center gap-1 rounded-md border border-border bg-surface-contrast px-2 text-fg"
           >
             {rel.targetId}-{RELATION_TYPE_LABELS[rel.type] || rel.type}
             <button
@@ -553,20 +553,20 @@ export function FamilyMemberCard({
               }}
               className="w-[260px] rounded-xl border border-border bg-surface p-4 shadow-elevated"
             >
-              <h4 className="mb-3 typo-sm font-medium text-fg-muted">
+              <h4 className="typo-sm mb-3 font-medium text-fg-muted">
                 관계 추가하기
               </h4>
 
               {/* 대상 선택 */}
               <div className="mb-3 flex items-center gap-3">
-                <span className="w-16 shrink-0 typo-sm text-fg">대상</span>
+                <span className="typo-sm w-16 shrink-0 text-fg">대상</span>
                 <div className="relative flex-1">
                   <select
                     value={newRelationTarget ?? ''}
                     onChange={(e) =>
                       setNewRelationTarget(Number(e.target.value))
                     }
-                    className="h-8 w-full appearance-none rounded-md border border-border bg-surface px-2 pr-7 typo-sm text-fg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="typo-sm h-8 w-full appearance-none rounded-md border border-border bg-surface px-2 pr-7 text-fg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {availableTargets.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -580,14 +580,14 @@ export function FamilyMemberCard({
 
               {/* 관계 종류 선택 */}
               <div className="mb-4 flex items-center gap-3">
-                <span className="w-16 shrink-0 typo-sm text-fg">관계 종류</span>
+                <span className="typo-sm w-16 shrink-0 text-fg">관계 종류</span>
                 <div className="relative flex-1">
                   <select
                     value={newRelationType}
                     onChange={(e) =>
                       setNewRelationType(e.target.value as RelationType)
                     }
-                    className="h-8 w-full appearance-none rounded-md border border-border bg-surface px-2 pr-7 typo-sm text-fg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="typo-sm h-8 w-full appearance-none rounded-md border border-border bg-surface px-2 pr-7 text-fg focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {RELATION_TYPE_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -603,7 +603,7 @@ export function FamilyMemberCard({
               <button
                 onClick={handleAddRelation}
                 disabled={newRelationTarget === null}
-                className="h-10 w-full rounded-lg bg-primary typo-sm font-medium text-primary-fg transition-colors hover:bg-primary-600 disabled:disabled-default"
+                className="typo-sm hover:bg-primary-600 disabled:disabled-default h-10 w-full rounded-lg bg-primary font-medium text-primary-fg transition-colors"
               >
                 추가하기
               </button>
@@ -634,13 +634,13 @@ export function FamilyMemberCard({
          ───────────────────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 justify-between px-3 pt-3">
         {/* 순서 배지 */}
-        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#BABAC0] typo-xs font-headline text-primary-fg">
+        <div className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-[#BABAC0] font-headline text-primary-fg">
           {index + 1}
         </div>
 
         {/* 내담자 배지 */}
         {subject.isIP && (
-          <div className="flex h-[27px] w-[54px] items-center justify-center rounded-md border border-primary typo-sm font-medium text-primary">
+          <div className="typo-sm flex h-[27px] w-[54px] items-center justify-center rounded-md border border-primary font-medium text-primary">
             내담자
           </div>
         )}
@@ -657,7 +657,7 @@ export function FamilyMemberCard({
             {/* 성별에 따른 도형 */}
             <div
               className={cn(
-                'flex h-[60px] w-[60px] items-center justify-center border-2 border-fg typo-xl font-emphasize',
+                'typo-xl flex h-[60px] w-[60px] items-center justify-center border-2 border-fg font-emphasize',
                 subject.gender === 'Female' && 'rounded-full',
                 subject.gender === 'Male' && 'rounded-none',
                 (!subject.gender ||
@@ -673,10 +673,10 @@ export function FamilyMemberCard({
                 value={subject.name || ''}
                 onChange={(e) => handleFieldChange('name', e.target.value)}
                 placeholder={`인물 ${subject.id}`}
-                className="mt-1 w-full bg-primary-subtle text-center typo-sm font-medium text-fg placeholder:text-fg-muted focus:outline-none"
+                className="typo-sm mt-1 w-full bg-primary-subtle text-center font-medium text-fg placeholder:text-fg-muted focus:outline-none"
               />
             ) : (
-              <span className="mt-1 max-w-[100px] truncate typo-sm font-medium text-fg">
+              <span className="typo-sm mt-1 max-w-[100px] truncate font-medium text-fg">
                 {subject.name || `인물 ${subject.id}`}
               </span>
             )}
@@ -685,7 +685,7 @@ export function FamilyMemberCard({
           {/* 성별/상태 영역 - 편집/보기 모드 동일 레이아웃 */}
           <div className="flex w-[108px] flex-col gap-2">
             <div className="flex w-full items-center gap-2">
-              <span className="w-8 shrink-0 typo-xs text-fg-muted">성별</span>
+              <span className="typo-xs w-8 shrink-0 text-fg-muted">성별</span>
               {isEditing ? (
                 <CustomSelect
                   value={subject.gender || ''}
@@ -699,7 +699,7 @@ export function FamilyMemberCard({
               )}
             </div>
             <div className="flex w-full items-center gap-2">
-              <span className="w-8 shrink-0 typo-xs text-fg-muted">상태</span>
+              <span className="typo-xs w-8 shrink-0 text-fg-muted">상태</span>
               {isEditing ? (
                 <CustomSelect
                   value={subject.illness || 'None'}
@@ -723,7 +723,7 @@ export function FamilyMemberCard({
           <div className="space-y-2">
             {/* 나이 */}
             <div className="flex items-center gap-2">
-              <span className="w-8 shrink-0 typo-xs text-fg-muted">나이</span>
+              <span className="typo-xs w-8 shrink-0 text-fg-muted">나이</span>
               {isEditing ? (
                 <input
                   type="number"
@@ -744,7 +744,7 @@ export function FamilyMemberCard({
 
             {/* 직업 */}
             <div className="flex items-center gap-2">
-              <span className="w-8 shrink-0 typo-xs text-fg-muted">직업</span>
+              <span className="typo-xs w-8 shrink-0 text-fg-muted">직업</span>
               {isEditing ? (
                 <input
                   type="text"
@@ -762,7 +762,7 @@ export function FamilyMemberCard({
 
             {/* 관계 */}
             <div className="flex items-start gap-2">
-              <span className="w-8 shrink-0 pt-1 typo-xs text-fg-muted">
+              <span className="typo-xs w-8 shrink-0 pt-1 text-fg-muted">
                 관계
               </span>
               <div className="flex-1">
@@ -778,7 +778,7 @@ export function FamilyMemberCard({
 
             {/* 메모 */}
             <div className="flex items-start gap-2">
-              <span className="w-8 shrink-0 pt-2 typo-xs text-fg-muted">
+              <span className="typo-xs w-8 shrink-0 pt-2 text-fg-muted">
                 메모
               </span>
               {isEditing ? (
@@ -791,7 +791,7 @@ export function FamilyMemberCard({
                   className="flex-1"
                 />
               ) : (
-                <span className="min-h-[40px] flex-1 break-all rounded-md px-2 py-2 typo-sm text-fg">
+                <span className="typo-sm min-h-[40px] flex-1 break-all rounded-md px-2 py-2 text-fg">
                   {subject.memo || '-'}
                 </span>
               )}
@@ -816,7 +816,7 @@ export function FamilyMemberCard({
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}
-            className="flex h-[27px] w-[50px] items-center justify-center rounded-md bg-primary typo-sm text-primary-fg hover:bg-primary-600"
+            className="typo-sm hover:bg-primary-600 flex h-[27px] w-[50px] items-center justify-center rounded-md bg-primary text-primary-fg"
           >
             저장
           </button>

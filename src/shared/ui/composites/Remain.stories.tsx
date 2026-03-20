@@ -40,19 +40,19 @@ export const DifferentDurations: Story = {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <span className="w-32 typo-sm text-fg-muted">30 seconds:</span>
+          <span className="typo-sm w-32 text-fg-muted">30 seconds:</span>
           <Remain endTime={new Date(now + 30 * 1000)} format="short" />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-32 typo-sm text-fg-muted">5 minutes:</span>
+          <span className="typo-sm w-32 text-fg-muted">5 minutes:</span>
           <Remain endTime={new Date(now + 5 * 60 * 1000)} format="short" />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-32 typo-sm text-fg-muted">1 hour:</span>
+          <span className="typo-sm w-32 text-fg-muted">1 hour:</span>
           <Remain endTime={new Date(now + 60 * 60 * 1000)} format="short" />
         </div>
         <div className="flex items-center gap-3">
-          <span className="w-32 typo-sm text-fg-muted">1 day:</span>
+          <span className="typo-sm w-32 text-fg-muted">1 day:</span>
           <Remain
             endTime={new Date(now + 24 * 60 * 60 * 1000)}
             format="short"
@@ -154,7 +154,7 @@ export const InContext: Story = {
     const now = Date.now();
     return (
       <div className="w-[400px] space-y-4">
-        <div className="rounded-lg border-default bg-surface p-4">
+        <div className="border-default rounded-lg bg-surface p-4">
           <div className="flex items-center justify-between">
             <h3 className="font-emphasize text-fg">Flash Sale</h3>
             <Remain
@@ -162,7 +162,7 @@ export const InContext: Story = {
               format="short"
             />
           </div>
-          <p className="mt-2 typo-sm text-fg-muted">
+          <p className="typo-sm mt-2 text-fg-muted">
             Get 50% off on selected items. Hurry up!
           </p>
         </div>
@@ -176,7 +176,7 @@ export const InContext: Story = {
               tone="warn"
             />
           </div>
-          <p className="mt-2 typo-sm text-fg-muted">
+          <p className="typo-sm mt-2 text-fg-muted">
             Your session will expire soon. Please save your work.
           </p>
         </div>

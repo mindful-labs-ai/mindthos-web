@@ -43,10 +43,10 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
         <Card className="w-48 border border-border">
           <Card.Body className="p-4 text-center">
             <Text className="typo-xs text-fg-muted">현재 플랜</Text>
-            <Title as="h4" className="mt-1 typo-l font-headline">
+            <Title as="h4" className="typo-l mt-1 font-headline">
               {currentPlan.type}
             </Title>
-            <Text className="mt-2 typo-xl font-emphasize">
+            <Text className="typo-xl mt-2 font-emphasize">
               {formatPrice(currentPlan.price)}원
             </Text>
             <Text className="typo-xs text-fg-muted">/월</Text>
@@ -71,10 +71,10 @@ export const PlanComparisonCard: React.FC<PlanComparisonCardProps> = ({
             <Text className="typo-xs text-fg-muted">
               {type === 'cancel' ? '해지 후' : '변경 후'}
             </Text>
-            <Title as="h4" className="mt-1 typo-l font-headline">
+            <Title as="h4" className="typo-l mt-1 font-headline">
               {newPlan.type}
             </Title>
-            <Text className="mt-2 typo-xl font-emphasize">
+            <Text className="typo-xl mt-2 font-emphasize">
               {newPlan.price === 0 ? '무료' : `${formatPrice(newPlan.price)}원`}
             </Text>
             {newPlan.price > 0 && (

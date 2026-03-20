@@ -68,7 +68,7 @@ export const Accordion: React.FC<AccordionProps> = ({
   return (
     <div
       className={cn(
-        'divide-y divide-border rounded-lg border-default',
+        'border-default divide-y divide-border rounded-lg',
         className
       )}
     >

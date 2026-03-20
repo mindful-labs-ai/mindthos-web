@@ -106,7 +106,7 @@ export const MarkdownRenderer = React.memo(
               h1: ({ children }: { children?: React.ReactNode }) => (
                 <Title
                   as="h1"
-                  className={`mb-4 mt-8 typo-2xl-headline text-fg first:mt-0${editableCellClass}`}
+                  className={`typo-2xl-headline mb-4 mt-8 text-fg first:mt-0${editableCellClass}`}
                   {...(editable && !disableHeadings ? editableProps : {})}
                 >
                   {cleanBrokenMarkdown(children)}
@@ -115,7 +115,7 @@ export const MarkdownRenderer = React.memo(
               h2: ({ children }: { children?: React.ReactNode }) => (
                 <Title
                   as="h2"
-                  className={`mb-3 mt-6 typo-xl-emphasize text-fg first:mt-0${editableCellClass}`}
+                  className={`typo-xl-emphasize mb-3 mt-6 text-fg first:mt-0${editableCellClass}`}
                   {...(editable && !disableHeadings ? editableProps : {})}
                 >
                   {cleanBrokenMarkdown(children)}
@@ -124,7 +124,7 @@ export const MarkdownRenderer = React.memo(
               h3: ({ children }: { children?: React.ReactNode }) => (
                 <Title
                   as="h3"
-                  className={`mb-2 mt-4 typo-l-emphasize text-fg first:mt-0${editableCellClass}`}
+                  className={`typo-l-emphasize mb-2 mt-4 text-fg first:mt-0${editableCellClass}`}
                   {...(editable && !disableHeadings ? editableProps : {})}
                 >
                   {cleanBrokenMarkdown(children)}
@@ -175,7 +175,7 @@ export const MarkdownRenderer = React.memo(
             </blockquote>
           ),
           code: ({ children }: { children?: React.ReactNode }) => (
-            <code className="rounded bg-surface-contrast px-1.5 py-0.5 font-mono typo-sm text-fg">
+            <code className="typo-sm rounded bg-surface-contrast px-1.5 py-0.5 font-mono text-fg">
               {cleanBrokenMarkdown(children)}
             </code>
           ),
@@ -186,7 +186,7 @@ export const MarkdownRenderer = React.memo(
           ),
           table: ({ children }: { children?: React.ReactNode }) => (
             <div className="mb-4 overflow-x-auto rounded-lg border border-border">
-              <table className="min-w-full divide-y divide-border typo-sm">
+              <table className="typo-sm min-w-full divide-y divide-border">
                 {children}
               </table>
             </div>

@@ -64,7 +64,7 @@ export const SnackBar: React.FC<SnackBarProps> = ({
       className={cn(
         'fixed bottom-4 left-4 right-4 z-toast sm:left-1/2 sm:right-auto sm:-translate-x-1/2',
         'w-auto sm:min-w-[300px] sm:max-w-md',
-        'rounded-lg border-default bg-surface-contrast shadow-elevated',
+        'border-default rounded-lg bg-surface-contrast shadow-elevated',
         'px-4 py-3',
         'flex items-center justify-between gap-4',
         'animate-[slideUp_0.2s_ease-out]',
@@ -80,7 +80,7 @@ export const SnackBar: React.FC<SnackBarProps> = ({
               onOpenChange(false);
             }}
             className={cn(
-              'rounded-sm typo-sm font-medium text-primary hover:text-primary-hover',
+              'typo-sm rounded-sm font-medium text-primary hover:text-primary-hover',
               'transition-default',
               'focus-default'
             )}

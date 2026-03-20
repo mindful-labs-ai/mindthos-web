@@ -40,7 +40,7 @@ export function NoticeDetail({ noticeId, onBack }: NoticeDetailProps) {
         <Title as="h1" className="typo-2xl font-headline">
           {notice.title}
         </Title>
-        <Text className="mt-2 typo-sm text-fg-muted">{notice.date}</Text>
+        <Text className="typo-sm mt-2 text-fg-muted">{notice.date}</Text>
       </div>
 
       {/* 썸네일 */}

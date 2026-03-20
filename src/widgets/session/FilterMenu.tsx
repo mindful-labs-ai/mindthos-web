@@ -144,7 +144,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
           trackEvent(MixpanelEvent.SessionFilterReset);
           onReset();
         }}
-        className="w-full rounded-lg px-4 py-2 typo-sm font-medium text-fg hover:bg-surface-contrast"
+        className="typo-sm w-full rounded-lg px-4 py-2 font-medium text-fg hover:bg-surface-contrast"
       >
         초기화
       </button>

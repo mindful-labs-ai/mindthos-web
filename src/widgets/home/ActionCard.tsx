@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { trackEvent } from '@/lib/mixpanel';
 import { cn } from '@/lib/cn';
+import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 export interface ActionCardProps {

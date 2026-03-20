@@ -5,9 +5,7 @@ import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { HyperLink } from '@/shared/ui';
-import { Button } from '@/shared/ui/atoms/Button';
 import { CheckBox } from '@/shared/ui/atoms/CheckBox';
-import { Input } from '@/shared/ui/atoms/Input';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -97,13 +95,13 @@ const SignUpForm = () => {
               onChange={(e) => setTermsAccepted(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="terms" className="font-sub text-grey-80 text-sm">
+            <label htmlFor="terms" className="text-sm font-sub text-grey-80">
               <span>서비스 이용약관에 동의합니다.</span>
               <HyperLink
                 href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 external
                 underline="hover"
-                className="text-green-80 hover:text-green-40 ml-1"
+                className="ml-1 text-green-80 hover:text-green-40"
               >
                 [보기]
               </HyperLink>
@@ -118,13 +116,13 @@ const SignUpForm = () => {
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
               disabled={isSubmitting}
             />
-            <label htmlFor="privacy" className="font-sub text-grey-80 text-sm">
+            <label htmlFor="privacy" className="text-sm font-sub text-grey-80">
               <span>개인정보 처리방침에 동의합니다.</span>
               <HyperLink
                 href={getTermsRoute(TERMS_TYPES.PRIVACY)}
                 external
                 underline="hover"
-                className="text-green-80 hover:text-green-40 ml-1"
+                className="ml-1 text-green-80 hover:text-green-40"
               >
                 [보기]
               </HyperLink>

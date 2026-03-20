@@ -51,7 +51,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   const isMobileView = isMobile || isTablet;
   const { clients } = useClientList();
   const { toast } = useToast();
-const [range, setRange] = React.useState<SpeakerRangeOption>('single');
+  const [range, setRange] = React.useState<SpeakerRangeOption>('single');
   const [selectionType, setSelectionType] = React.useState<
     'client' | 'custom' | string
   >('default_counselor');
@@ -210,7 +210,6 @@ const [range, setRange] = React.useState<SpeakerRangeOption>('single');
 
       // 7. 성공 시 PopUp 닫기
       onOpenChange(false);
-
     } catch {
       // 에러는 부모 컴포넌트에서 처리 (toast 표시)
     } finally {
@@ -222,7 +221,7 @@ const [range, setRange] = React.useState<SpeakerRangeOption>('single');
     <div className="space-y-4 p-4">
       {/* Section 1: 참석자 선택 */}
       <div>
-        <Text className="mb-2 typo-sm font-emphasize text-fg">참석자 변경</Text>
+        <Text className="typo-sm mb-2 font-emphasize text-fg">참석자 변경</Text>
         <RadioGroup
           options={[
             // speakers 배열 기반 동적 옵션
@@ -251,14 +250,14 @@ const [range, setRange] = React.useState<SpeakerRangeOption>('single');
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
             placeholder="이름 입력"
-            className="mt-2 w-full rounded-lg border-default bg-surface px-3 py-2 typo-sm text-fg outline-none transition-colors focus:border-primary"
+            className="border-default typo-sm mt-2 w-full rounded-lg bg-surface px-3 py-2 text-fg outline-none transition-colors focus:border-primary"
           />
         )}
       </div>
 
       {/* Section 2: 구간 선택 */}
       <div>
-        <Text className="mb-2 typo-sm font-emphasize text-fg">구간 선택</Text>
+        <Text className="typo-sm mb-2 font-emphasize text-fg">구간 선택</Text>
         <RadioGroup
           options={[
             { value: 'single', label: '이 구간만' },

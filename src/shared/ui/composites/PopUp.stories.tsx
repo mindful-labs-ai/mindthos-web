@@ -24,7 +24,7 @@ export const Default: Story = {
     content: (
       <div>
         <h3 className="font-emphasize text-fg">Popup Title</h3>
-        <p className="mt-2 typo-sm text-fg-muted">
+        <p className="typo-sm mt-2 text-fg-muted">
           This is the popup content. It can contain any React elements.
         </p>
       </div>

@@ -70,7 +70,7 @@ export function GenogramExportModal({
     >
       {/* 헤더 */}
       <div className="px-6 pt-8">
-        <h2 className="select-none text-center typo-2xl font-emphasize text-fg">
+        <h2 className="typo-2xl select-none text-center font-emphasize text-fg">
           가계도 이미지 출력하기
         </h2>
       </div>
@@ -81,7 +81,7 @@ export function GenogramExportModal({
         <div>
           <label
             htmlFor="export-filename"
-            className="mb-2 block select-none typo-m font-emphasize text-fg"
+            className="typo-m mb-2 block select-none font-emphasize text-fg"
           >
             파일명
           </label>
@@ -91,7 +91,7 @@ export function GenogramExportModal({
             value={fileName}
             onChange={(e) => setFileName(e.target.value)}
             placeholder={defaultFileName}
-            className="w-full rounded-lg border border-border bg-surface-contrast px-4 py-3 typo-sm outline-none transition-colors focus:border-primary"
+            className="typo-sm w-full rounded-lg border border-border bg-surface-contrast px-4 py-3 outline-none transition-colors focus:border-primary"
           />
         </div>
 
@@ -108,7 +108,7 @@ export function GenogramExportModal({
               <span className="typo-m font-emphasize text-fg">
                 워터마크 제거
               </span>
-              <span className="rounded-full bg-primary px-2 py-0.5 typo-xs font-medium text-primary-fg">
+              <span className="typo-xs rounded-full bg-primary px-2 py-0.5 font-medium text-primary-fg">
                 프로
               </span>
             </div>
@@ -141,7 +141,7 @@ export function GenogramExportModal({
               >
                 <X className="h-4 w-4" />
               </button>
-              <p className="flex gap-[7px] pr-4 typo-sm text-fg">
+              <p className="typo-sm flex gap-[7px] pr-4 text-fg">
                 플랜 업그레이드 후 이용 가능합니다.
                 <button
                   type="button"
@@ -151,7 +151,7 @@ export function GenogramExportModal({
                   플랜 보기
                 </button>
               </p>
-              <p className="mt-1 typo-xs text-fg-muted">
+              <p className="typo-xs mt-1 text-fg-muted">
                 마음토스의 더 많은 기능을 만나보세요.
               </p>
             </div>
@@ -163,7 +163,7 @@ export function GenogramExportModal({
           type="button"
           onClick={handleDownload}
           disabled={!previewUrl || isProcessing}
-          className="mt-2 w-full rounded-lg bg-primary py-4 typo-m font-medium text-primary-fg transition-colors hover:bg-primary-400 disabled:cursor-not-allowed"
+          className="typo-m hover:bg-primary-400 mt-2 w-full rounded-lg bg-primary py-4 font-medium text-primary-fg transition-colors disabled:cursor-not-allowed"
         >
           이미지 출력하기
         </button>

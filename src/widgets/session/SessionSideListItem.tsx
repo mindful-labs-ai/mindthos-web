@@ -40,7 +40,7 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
       <div className="">
         <Title
           as="h4"
-          className="flex items-center justify-between typo-sm font-emphasize text-fg"
+          className="typo-sm flex items-center justify-between font-emphasize text-fg"
         >
           {title}
           {isAdvancedTranscript && (

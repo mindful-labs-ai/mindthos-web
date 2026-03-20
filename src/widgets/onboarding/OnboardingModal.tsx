@@ -65,7 +65,7 @@ export function OnboardingModal() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-1 text-wrap text-left typo-sm text-fg-muted">
+              <p className="typo-sm mt-1 text-wrap text-left text-fg-muted">
                 상담 노트가 필요한 경우에는 일반축어록을, 수퍼바이저에게 제출할
                 고퀄리티 축어록이 필요한 경우에는 고급 축어록을 사용해보세요.
               </p>
@@ -97,7 +97,7 @@ export function OnboardingModal() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-1 text-wrap text-left typo-sm text-fg-muted">
+              <p className="typo-sm mt-1 text-wrap text-left text-fg-muted">
                 양식에 맞는 노트 작성은 모두 마음토스에게 맡겨주세요. 선생님이
                 더욱 내담자에게 집중할 수 있도록, 시간이 걸리는 일은 저희가
                 해결해드려요.
@@ -131,7 +131,7 @@ export function OnboardingModal() {
                   className="h-full w-full object-cover"
                 />
               </div>
-              <p className="mt-1 text-wrap text-left typo-sm text-fg-muted">
+              <p className="typo-sm mt-1 text-wrap text-left text-fg-muted">
                 지금까지 진행된 회기의 축어록 내용을 AI가 분석하고 선생님에게 꼭
                 필요한 수퍼비전을 작성해드려요. 이제 마음토스와 함께 더 나은
                 상담을 함께 준비해보세요.
@@ -164,7 +164,7 @@ export function OnboardingModal() {
       <div
         className={cn(
           'relative w-full max-w-md',
-          'rounded-lg border-default bg-surface shadow-prominent',
+          'border-default rounded-lg bg-surface shadow-prominent',
           'p-8'
         )}
       >

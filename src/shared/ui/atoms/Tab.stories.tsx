@@ -71,7 +71,7 @@ export const WithContent: Story = {
       return (
         <div className="flex flex-col gap-4">
           <Tab items={items} value={value} onValueChange={setValue} />
-          <div className="rounded-md border-default p-4">
+          <div className="border-default rounded-md p-4">
             {value === 'tab1' && <p>Content for First Tab</p>}
             {value === 'tab2' && <p>Content for Second Tab</p>}
             {value === 'tab3' && <p>Content for Third Tab</p>}

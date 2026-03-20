@@ -495,7 +495,7 @@ export function GenogramClientContainer() {
         onChange={handleCanvasChange}
         emptyStateActions={
           hasRecords && (
-            <div className="flex items-center gap-2 typo-sm">
+            <div className="typo-sm flex items-center gap-2">
               <span className="text-fg-muted">
                 혹시 처음부터 그리는게 어렵나요?
               </span>

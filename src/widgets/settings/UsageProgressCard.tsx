@@ -32,7 +32,7 @@ export const UsageProgressCard: React.FC<UsageProgressCardProps> = ({
       />
 
       <div className="text-left">
-        <Title as="h4" className="mb-1 typo-m font-emphasize">
+        <Title as="h4" className="typo-m mb-1 font-emphasize">
           {title}
         </Title>
         <Text className="typo-sm text-fg">

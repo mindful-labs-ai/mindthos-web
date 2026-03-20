@@ -55,7 +55,7 @@ export function InfoStep({
         >
           마음토스에 오신 것을 환영합니다!
         </Title>
-        <Text className="mt-2 typo-sm text-fg-muted">
+        <Text className="typo-sm mt-2 text-fg-muted">
           사용하기 앞서 선생님의 원활한 마음토스 사용을 도와드릴게요.
           <br />
           먼저, 기본 정보를 입력해주세요.

@@ -40,7 +40,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
         {(author || time) && (
           <div
             className={cn(
-              'flex items-center gap-2 typo-xs text-fg-muted',
+              'typo-xs flex items-center gap-2 text-fg-muted',
               mine && 'flex-row-reverse'
             )}
           >

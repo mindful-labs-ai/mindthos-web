@@ -127,15 +127,15 @@ export const InContext: Story = {
       const [country, setCountry] = useState('');
 
       return (
-        <div className="w-[400px] rounded-lg border-default bg-surface p-6">
-          <h3 className="mb-4 typo-l font-emphasize text-fg">
+        <div className="border-default w-[400px] rounded-lg bg-surface p-6">
+          <h3 className="typo-l mb-4 font-emphasize text-fg">
             Developer Survey
           </h3>
           <div className="space-y-4">
             <div>
               <label
                 htmlFor="framework-combobox"
-                className="mb-1.5 block typo-sm font-medium text-fg"
+                className="typo-sm mb-1.5 block font-medium text-fg"
               >
                 Favorite Framework
               </label>
@@ -149,7 +149,7 @@ export const InContext: Story = {
             <div>
               <label
                 htmlFor="country-combobox"
-                className="mb-1.5 block typo-sm font-medium text-fg"
+                className="typo-sm mb-1.5 block font-medium text-fg"
               >
                 Country
               </label>
@@ -161,7 +161,7 @@ export const InContext: Story = {
               />
             </div>
             <button
-              className="w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-surface hover:opacity-90 disabled:opacity-50"
+              className="typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface hover:opacity-90 disabled:opacity-50"
               disabled={!framework || !country}
             >
               Submit

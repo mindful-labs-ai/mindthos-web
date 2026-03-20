@@ -106,7 +106,7 @@ export function GenogramPageHeader({
         {onShowBasicInfo && selectedClient && (
           <button
             onClick={onShowBasicInfo}
-            className="flex h-10 items-center rounded-md border-default bg-surface px-4 typo-sm text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+            className="border-default typo-sm flex h-10 items-center rounded-md bg-surface px-4 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
           >
             가족 구성원 정보
           </button>
@@ -116,8 +116,8 @@ export function GenogramPageHeader({
             onClick={onShowReport}
             className={
               hasReportAccess
-                ? 'flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-subtle px-4 typo-sm text-primary transition-colors hover:bg-primary-subtle'
-                : 'flex h-10 items-center gap-1.5 rounded-md border-default bg-surface px-4 typo-sm text-fg-muted transition-colors hover:bg-surface-contrast'
+                ? 'typo-sm flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-subtle px-4 text-primary transition-colors hover:bg-primary-subtle'
+                : 'border-default typo-sm flex h-10 items-center gap-1.5 rounded-md bg-surface px-4 text-fg-muted transition-colors hover:bg-surface-contrast'
             }
           >
             {hasReportAccess ? (
@@ -137,7 +137,7 @@ export function GenogramPageHeader({
           style={{ right: isPanelOpen ? PANEL_WIDTH + 16 : 16 }}
         >
           {/* 저장 상태 표시 */}
-          <div className="flex select-none items-center gap-2 typo-sm text-fg-muted">
+          <div className="typo-sm flex select-none items-center gap-2 text-fg-muted">
             {isSaving ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -216,7 +216,7 @@ export function GenogramPageHeader({
                           onReset();
                         }}
                         disabled={isResetting}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left typo-sm text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                        className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                       >
                         <span>가계도 초기화</span>
                       </button>

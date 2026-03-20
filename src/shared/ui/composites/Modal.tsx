@@ -98,9 +98,12 @@ export const Modal: React.FC<ModalProps> = ({
   // fullScreen 모달: history 기반 depth 처리 (모바일 뒤로 스와이프 지원)
   const isFullScreenDepth = mobileVariant === 'fullScreen';
   const historyPushedRef = React.useRef(false);
-  const modalIdRef = React.useRef(Math.random().toString(36).slice(2));
+  const modalId = React.useId();
+  const modalIdRef = React.useRef(modalId);
   const onOpenChangeRef = React.useRef(onOpenChange);
-  onOpenChangeRef.current = onOpenChange;
+  React.useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+  }, [onOpenChange]);
 
   React.useEffect(() => {
     if (!isFullScreenDepth) return;
@@ -225,7 +228,7 @@ export const Modal: React.FC<ModalProps> = ({
     mobileVariant === 'center' && [
       'overflow-auto',
       'max-h-[90vh] w-full',
-      'rounded-lg border-default shadow-prominent',
+      'border-default rounded-lg shadow-prominent',
       'animate-scaleIn',
       'px-6 py-4',
     ],
@@ -314,7 +317,7 @@ export const Modal: React.FC<ModalProps> = ({
             <button
               onClick={() => onOpenChange(false)}
               aria-label="닫기"
-              className="flex items-center gap-1.5 typo-sm text-fg-muted hover:text-fg"
+              className="typo-sm flex items-center gap-1.5 text-fg-muted hover:text-fg"
             >
               <svg
                 className="h-5 w-5"
@@ -343,7 +346,7 @@ export const Modal: React.FC<ModalProps> = ({
               </h2>
             )}
             {description && (
-              <p id="modal-description" className="mt-1 typo-sm text-fg-muted">
+              <p id="modal-description" className="typo-sm mt-1 text-fg-muted">
                 {description}
               </p>
             )}

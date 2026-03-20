@@ -38,13 +38,13 @@ export const TabChangeConfirmModal: React.FC<TabChangeConfirmModalProps> =
           <div className="flex justify-center gap-2 pt-2">
             <button
               onClick={onCancel}
-              className="hover:bg-surface-hover w-full rounded-lg border border-border bg-surface px-4 py-2 typo-sm font-medium text-fg transition-colors"
+              className="hover:bg-surface-hover typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors"
             >
               취소
             </button>
             <button
               onClick={onConfirm}
-              className="hover:bg-primary/90 w-full rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-primary-fg transition-colors"
+              className="hover:bg-primary/90 typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
             >
               확인
             </button>

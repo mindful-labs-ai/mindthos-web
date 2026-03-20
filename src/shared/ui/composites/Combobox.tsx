@@ -156,11 +156,11 @@ export const Combobox: React.FC<ComboboxProps> = ({
           aria-expanded={isOpen}
           aria-controls="combobox-listbox"
           className={cn(
-            'w-full rounded-md border-default bg-input-bg px-3 py-2 pr-10',
-            'typo-sm text-fg transition-default',
+            'border-default w-full rounded-md bg-input-bg px-3 py-2 pr-10',
+            'typo-sm transition-default text-fg',
             'placeholder:text-input-placeholder',
             'hover:border-primary/50',
-            'focus-visible:border-primary focus-default',
+            'focus-default focus-visible:border-primary',
             'disabled:disabled-default'
           )}
         />
@@ -186,12 +186,12 @@ export const Combobox: React.FC<ComboboxProps> = ({
           className={cn(
             'absolute z-popover mt-1 w-full',
             'max-h-60 overflow-auto',
-            'rounded-md border-default bg-surface shadow-elevated',
+            'border-default rounded-md bg-surface shadow-elevated',
             'py-1'
           )}
         >
           {filteredItems.length === 0 ? (
-            <li className="px-3 py-2 typo-sm text-fg-muted">
+            <li className="typo-sm px-3 py-2 text-fg-muted">
               No results found
             </li>
           ) : (
@@ -208,7 +208,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
                   }
                 }}
                 className={cn(
-                  'cursor-pointer px-3 py-2 typo-sm transition-default',
+                  'typo-sm transition-default cursor-pointer px-3 py-2',
                   'hover:bg-surface-contrast',
                   item.disabled && 'cursor-not-allowed opacity-50',
                   focusedIndex === index && 'bg-surface-contrast',

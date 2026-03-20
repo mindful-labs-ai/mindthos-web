@@ -147,19 +147,19 @@ export const GiftBoxAnimation = ({ className }: { className?: string }) => {
       {/* Floating Star Icons */}
       <div className="pointer-events-none absolute inset-0 select-none">
         <span
-          className="absolute right-1/4 top-1/4 animate-ping typo-sm text-primary-400 duration-500"
+          className="typo-sm text-primary-400 absolute right-1/4 top-1/4 animate-ping duration-500"
           style={{ animationDelay: '0.8s' }}
         >
           ✦
         </span>
         <span
-          className="absolute bottom-4 right-1/3 animate-ping typo-sm text-primary"
+          className="typo-sm absolute bottom-4 right-1/3 animate-ping text-primary"
           style={{ animationDelay: '1.2s' }}
         >
           ✦
         </span>
         <span
-          className="absolute left-1/4 top-1/2 animate-ping typo-m text-primary-300 duration-normal"
+          className="typo-m text-primary-300 absolute left-1/4 top-1/2 animate-ping duration-normal"
           style={{ animationDelay: '1.5s' }}
         >
           ✦

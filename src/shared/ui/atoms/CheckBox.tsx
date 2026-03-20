@@ -87,7 +87,7 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
             disabled={disabled}
             aria-checked={indeterminate ? 'mixed' : undefined}
             className={cn(
-              'peer appearance-none rounded-sm border-default',
+              'border-default peer appearance-none rounded-sm',
               'cursor-pointer bg-surface',
               'focus-default',
               'transition-default',
@@ -118,7 +118,7 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
               <label
                 htmlFor={checkboxId}
                 className={cn(
-                  'cursor-pointer typo-sm text-fg',
+                  'typo-sm cursor-pointer text-fg',
                   disabled && 'disabled-default'
                 )}
               >

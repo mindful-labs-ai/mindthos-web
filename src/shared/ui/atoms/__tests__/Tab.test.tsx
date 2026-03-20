@@ -1,8 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { Tab } from '../Tab';
+
+beforeAll(() => {
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
 const items = [
   { value: 'tab1', label: 'Tab 1' },
@@ -142,7 +146,7 @@ describe('Tab', () => {
   it('applies custom size', () => {
     const { container } = render(<Tab items={items} size="lg" />);
     const tab = container.querySelector('button[role="tab"]');
-    expect(tab).toHaveClass('px-5', 'py-2.5', 'text-base');
+    expect(tab).toHaveClass('px-5', 'py-2.5', 'typo-m');
   });
 
   it('applies custom className', () => {

@@ -100,7 +100,7 @@ export const OnIcon: Story = {
 
 export const InContext: Story = {
   render: () => (
-    <div className="w-[400px] space-y-4 rounded-lg border-default bg-surface p-6">
+    <div className="border-default w-[400px] space-y-4 rounded-lg bg-surface p-6">
       <div className="flex items-center justify-between">
         <h3 className="typo-l font-emphasize text-fg">Settings</h3>
         <Tooltip content="Click to learn more about settings">

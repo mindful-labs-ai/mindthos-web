@@ -45,11 +45,11 @@ const ToolTipContainer = ({
         미션 - {LEVEL_MAP[level].mission}
       </p>
     )}
-    <h4 className="mb-2 typo-m font-headline text-fg">{title}</h4>
-    <div className="mb-4 break-keep typo-sm">{message}</div>
-    {submessage && <div className="mb-4 typo-sm">{submessage}</div>}
+    <h4 className="typo-m mb-2 font-headline text-fg">{title}</h4>
+    <div className="typo-sm mb-4 break-keep">{message}</div>
+    {submessage && <div className="typo-sm mb-4">{submessage}</div>}
     {step && level && LEVEL_MAP[level] && (
-      <p className="mt-2 text-center typo-xs font-emphasize text-fg-muted">
+      <p className="typo-xs mt-2 text-center font-emphasize text-fg-muted">
         {step}/{LEVEL_MAP[level].totalStep} 단계 진행 중
       </p>
     )}
@@ -261,12 +261,12 @@ export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
     <p className="typo-xs font-emphasize text-primary">
       미션 - {LEVEL_MAP[3].mission}
     </p>
-    <h4 className="mb-2 typo-m font-headline text-fg">녹음 파일 업로드하기</h4>
-    <div className="mb-4 break-keep typo-sm">
+    <h4 className="typo-m mb-2 font-headline text-fg">녹음 파일 업로드하기</h4>
+    <div className="typo-sm mb-4 break-keep">
       이제 직접 상담 기록을 추가해볼까요? [녹음 파일 업로드하기] 버튼을 눌러서
       실제 내담자의 상담 기록을 올려보세요.
     </div>
-    <div className="mb-4 typo-sm">
+    <div className="typo-sm mb-4">
       선생님의 상담 기록을 생성하면 미션을 달성할 수 있어요.
     </div>
     <button

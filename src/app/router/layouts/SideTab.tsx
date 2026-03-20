@@ -75,7 +75,7 @@ const NavItem: React.FC<NavItemProps> = ({
           className={cn(
             'rounded-md px-1 py-0.5 text-xs font-bold',
             badge === 'beta'
-              ? 'text-primary-fg bg-primary'
+              ? 'bg-primary text-primary-fg'
               : 'bg-nav-inactive-text text-surface'
           )}
         >
@@ -145,7 +145,7 @@ export const SideTab: React.FC<SideTabProps> = ({
     <>
       {/* Logo Section - 데스크탑 사이드바에서만 표시 */}
       {!isDrawer && (
-        <div className="border-sidebar-border h-header flex w-full items-center justify-between border-b">
+        <div className="flex h-header w-full items-center justify-between border-b border-sidebar-border">
           <button
             onClick={() => navigateWithUtm('/')}
             className="main-logo-size items-center gap-2 hover:opacity-80"
@@ -185,14 +185,14 @@ export const SideTab: React.FC<SideTabProps> = ({
               <div className="w-[200px] space-y-1">
                 <button
                   onClick={handleAudioUploadClick}
-                  className="transition-default hover:bg-nav-hover-bg flex w-full items-center gap-3 rounded-lg px-4 py-3"
+                  className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-nav-hover-bg"
                 >
                   <UploadIcon size={18} className="" />
                   <Text>녹음 파일 업로드</Text>
                 </button>
                 <button
                   onClick={handleDirectInputClick}
-                  className="transition-default hover:bg-nav-hover-bg flex w-full items-center gap-3 rounded-lg px-4 py-3"
+                  className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-nav-hover-bg"
                 >
                   <Edit3Icon size={18} className="" />
                   <Text>직접 입력하기</Text>
@@ -265,7 +265,7 @@ export const SideTab: React.FC<SideTabProps> = ({
             variant="sidebar"
           />
         )}
-        <div className="border-sidebar-border border-t py-3">
+        <div className="border-t border-sidebar-border py-3">
           <nav className="flex flex-col gap-1">
             {BOTTOM_NAV_ITEMS.map((item) => (
               <NavItem
@@ -303,7 +303,7 @@ export const SideTab: React.FC<SideTabProps> = ({
   return (
     <aside
       className={cn(
-        'border-sidebar-border bg-sidebar-bg duration-slow relative z-sidebar flex h-full flex-col overflow-hidden border-r transition-all',
+        'relative z-sidebar flex h-full flex-col overflow-hidden border-r border-sidebar-border bg-sidebar-bg transition-all duration-slow',
         'w-sidetab',
         'px-5'
       )}

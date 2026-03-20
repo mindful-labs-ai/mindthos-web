@@ -148,7 +148,7 @@ export function ReportPreviewModal({
               type="button"
               onClick={handleDownload}
               disabled={!pdfUrl || loading}
-              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 typo-sm font-medium text-primary-fg transition-colors hover:bg-primary-400 disabled:disabled-default"
+              className="typo-sm hover:bg-primary-400 disabled:disabled-default flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
             >
               <Download className="h-4 w-4" />
               PDF 다운로드

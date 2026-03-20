@@ -57,7 +57,7 @@ export function GenogramEmptyState({
           className={genogramButtonStyle}
         >
           {canGenerateFromRecords && (
-            <div className="rounded-md bg-primary px-[15px] py-[7px] typo-m font-headline text-primary-fg">
+            <div className="typo-m rounded-md bg-primary px-[15px] py-[7px] font-headline text-primary-fg">
               AI 자동 생성
             </div>
           )}
@@ -73,7 +73,7 @@ export function GenogramEmptyState({
             상담기록으로 자동 생성하기
           </h3>
           {!canGenerateFromRecords && (
-            <div className="rounded-lg bg-surface-strong px-1.5 py-1 typo-sm">
+            <div className="typo-sm rounded-lg bg-surface-strong px-1.5 py-1">
               {hasRecords ? '준비 중' : '상담 기록 없음'}
             </div>
           )}

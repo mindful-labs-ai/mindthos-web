@@ -77,19 +77,21 @@ export function GenogramGuideModal({
       <div className="flex flex-col items-center px-8 py-10">
         {/* 헤더 */}
         <div className="mb-6 flex items-center gap-2">
-          <span className="rounded-full bg-primary px-3 py-1 typo-sm font-emphasize tracking-tighter text-primary-fg">
+          <span className="typo-sm rounded-full bg-primary px-3 py-1 font-emphasize tracking-tighter text-primary-fg">
             Beta
           </span>
-          <h2 className="typo-2xl font-emphasize text-fg">가계도 그리기 안내</h2>
+          <h2 className="typo-2xl font-emphasize text-fg">
+            가계도 그리기 안내
+          </h2>
         </div>
 
         {/* 서브 타이틀 */}
-        <p className="mb-6 typo-xl font-emphasize text-primary">
+        <p className="typo-xl mb-6 font-emphasize text-primary">
           이제 가계도 완성까지 한걸음 남았어요
         </p>
 
         {/* 스텝 인디케이터 */}
-        <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary-subtle typo-l font-headline text-primary">
+        <div className="typo-l mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary-subtle font-headline text-primary">
           {currentStepIndex + 1}
         </div>
 
@@ -103,12 +105,12 @@ export function GenogramGuideModal({
         </div>
 
         {/* 메인 텍스트 */}
-        <p className="mb-4 whitespace-pre-line text-center typo-m leading-relaxed text-fg">
+        <p className="typo-m mb-4 whitespace-pre-line text-center leading-relaxed text-fg">
           {parseTextWithBold(currentStep.mainText)}
         </p>
 
         {/* 서브 텍스트 */}
-        <p className="mb-8 text-center typo-sm text-fg-muted">
+        <p className="typo-sm mb-8 text-center text-fg-muted">
           {currentStep.subText}
         </p>
 
@@ -118,14 +120,14 @@ export function GenogramGuideModal({
             <button
               type="button"
               onClick={handleDontShowAgain}
-              className="flex-1 rounded-xl border border-border bg-surface py-4 typo-m font-emphasize text-fg transition-colors hover:bg-surface-contrast"
+              className="typo-m flex-1 rounded-xl border border-border bg-surface py-4 font-emphasize text-fg transition-colors hover:bg-surface-contrast"
             >
               다시 보지 않기
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 rounded-xl bg-primary py-4 typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
+              className="typo-m hover:bg-primary-400 flex-1 rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
             >
               확인
             </button>
@@ -134,7 +136,7 @@ export function GenogramGuideModal({
           <button
             type="button"
             onClick={handleNext}
-            className="w-full rounded-xl bg-primary py-4 typo-m font-emphasize text-primary-fg transition-colors hover:bg-primary-400"
+            className="typo-m hover:bg-primary-400 w-full rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
           >
             다음
           </button>

@@ -28,7 +28,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   }, [location.pathname]);
 
   return (
-    <header className="h-header border-header-border bg-header-bg sticky top-0 z-header flex items-center justify-between border-b px-4 md:px-6">
+    <header className="sticky top-0 z-header flex h-header items-center justify-between border-b border-header-border bg-header-bg px-4 md:px-6">
       <div className="flex items-center gap-3">
         <button
           type="button"

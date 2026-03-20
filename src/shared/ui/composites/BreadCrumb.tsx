@@ -59,7 +59,7 @@ export const BreadCrumb: React.FC<BreadCrumbProps> = ({
 
   return (
     <nav aria-label="Breadcrumb" className={cn('', className)}>
-      <ol className="flex items-center gap-2 typo-sm">
+      <ol className="typo-sm flex items-center gap-2">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
 
@@ -70,9 +70,9 @@ export const BreadCrumb: React.FC<BreadCrumbProps> = ({
                   to={item.href}
                   onClick={(e) => handleClick(e, item, index)}
                   className={cn(
-                    'flex items-center gap-1.5 transition-default',
+                    'transition-default flex items-center gap-1.5',
                     'cursor-pointer text-fg-muted hover:text-fg',
-                    'rounded-sm focus-default'
+                    'focus-default rounded-sm'
                   )}
                 >
                   {item.icon && (
@@ -84,7 +84,7 @@ export const BreadCrumb: React.FC<BreadCrumbProps> = ({
                 <span
                   aria-current={isLast ? 'page' : undefined}
                   className={cn(
-                    'flex items-center gap-1.5 transition-default',
+                    'transition-default flex items-center gap-1.5',
                     'font-medium text-fg'
                   )}
                 >

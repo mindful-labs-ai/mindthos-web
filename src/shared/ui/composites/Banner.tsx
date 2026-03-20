@@ -79,13 +79,13 @@ export const Banner: React.FC<BannerProps> = ({
       <div className="flex-1">
         <div className={cn('font-emphasize', styles.text)}>{title}</div>
         {description && (
-          <div className="mt-1 typo-sm text-fg-muted">{description}</div>
+          <div className="typo-sm mt-1 text-fg-muted">{description}</div>
         )}
         {action && (
           <button
             onClick={action.onClick}
             className={cn(
-              'mt-2 typo-sm font-medium',
+              'typo-sm mt-2 font-medium',
               styles.text,
               'transition-opacity duration-normal hover:opacity-80'
             )}

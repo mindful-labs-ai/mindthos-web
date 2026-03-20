@@ -467,44 +467,45 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         )}
         {!isMobileView && (
           <div className="flex flex-col items-center gap-y-2">
-        <Text className="typo-sm text-fg">
-          <a
-            href={getTermsRoute(TERMS_TYPES.SERVICE)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline transition-colors hover:text-primary-hover"
-          >
-            결제 약관
-          </a>
-          에 동의합니다.
-        </Text>
-        <Button
-          variant="solid"
-          tone="primary"
-          size="lg"
-          disabled={
-            !selectedPlanId ||
-            isLoading ||
-            isUpgrading ||
-            selectedPlanId === currentPlanId
-          }
-          onClick={handleUpgrade}
-          className="w-full max-w-lg"
-        >
-          {isUpgrading
-            ? '처리 중...'
-            : selectedPlanId
-              ? (() => {
-                  const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
-                    (p) => p.id === selectedPlanId
-                  );
-                  if (!selectedPlan) return '플랜 변경';
-                  return selectedPlan.price > currentPlanPrice
-                    ? '플랜 업그레이드'
-                    : '플랜 다운그레이드';
-                })()
-              : '플랜 변경'}
-          </Button>
+            <Text className="typo-sm text-fg">
+              <a
+                href={getTermsRoute(TERMS_TYPES.SERVICE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline transition-colors hover:text-primary-hover"
+              >
+                결제 약관
+              </a>
+              에 동의합니다.
+            </Text>
+            <Button
+              variant="solid"
+              tone="primary"
+              size="lg"
+              disabled={
+                !selectedPlanId ||
+                isLoading ||
+                isUpgrading ||
+                selectedPlanId === currentPlanId
+              }
+              onClick={handleUpgrade}
+              className="w-full max-w-lg"
+            >
+              {isUpgrading
+                ? '처리 중...'
+                : selectedPlanId
+                  ? (() => {
+                      const selectedPlan = [
+                        ...monthlyPlans,
+                        ...yearlyPlans,
+                      ].find((p) => p.id === selectedPlanId);
+                      if (!selectedPlan) return '플랜 변경';
+                      return selectedPlan.price > currentPlanPrice
+                        ? '플랜 업그레이드'
+                        : '플랜 다운그레이드';
+                    })()
+                  : '플랜 변경'}
+            </Button>
           </div>
         )}
       </div>
@@ -542,9 +543,10 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
                 ? '처리 중...'
                 : selectedPlanId
                   ? (() => {
-                      const selectedPlan = [...monthlyPlans, ...yearlyPlans].find(
-                        (p) => p.id === selectedPlanId
-                      );
+                      const selectedPlan = [
+                        ...monthlyPlans,
+                        ...yearlyPlans,
+                      ].find((p) => p.id === selectedPlanId);
                       if (!selectedPlan) return '플랜 변경';
                       return selectedPlan.price > currentPlanPrice
                         ? '플랜 업그레이드'

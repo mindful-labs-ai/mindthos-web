@@ -83,7 +83,7 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
 
       <div className="flex justify-between">
         <div className="flex flex-1 items-start justify-start">
-          <span className="min-w-[48px] typo-sm font-medium text-fg">
+          <span className="typo-sm min-w-[48px] font-medium text-fg">
             {formatTime(currentTime)}
           </span>
         </div>
@@ -122,7 +122,7 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
 
           <button
             type="button"
-            className="rounded-full p-2.5 text-fg transition-transform active:scale-75 disabled:disabled-default"
+            className="disabled:disabled-default rounded-full p-2.5 text-fg transition-transform active:scale-75"
             aria-label={isLoading ? '로딩 중' : isPlaying ? '일시정지' : '재생'}
             onClick={handlePlayPauseClick}
             disabled={isLoading}
@@ -195,12 +195,12 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
         </div>
 
         <div className="flex flex-1 flex-col items-end justify-end">
-          <span className="min-w-[48px] text-right typo-sm font-medium text-fg-muted">
+          <span className="typo-sm min-w-[48px] text-right font-medium text-fg-muted">
             {formatTime(duration)}
           </span>
           <button
             type="button"
-            className="min-w-[64px] rounded-lg px-3 py-2 typo-sm font-medium text-fg transition-all hover:bg-surface hover:text-primary active:scale-95"
+            className="typo-sm min-w-[64px] rounded-lg px-3 py-2 font-medium text-fg transition-all hover:bg-surface hover:text-primary active:scale-95"
             aria-label="재생 속도 변경"
             onClick={handlePlaybackRateClick}
           >

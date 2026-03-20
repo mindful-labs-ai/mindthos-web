@@ -50,7 +50,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       {/* Backdrop - blur + dim */}
       <div
         className={cn(
-          'bg-overlay-bg duration-slow absolute inset-0 backdrop-blur-sm transition-opacity',
+          'absolute inset-0 bg-overlay-bg backdrop-blur-sm transition-opacity duration-slow',
           open ? 'opacity-100' : 'opacity-0'
         )}
         onClick={onClose}
@@ -60,12 +60,12 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
       {/* Drawer panel */}
       <aside
         className={cn(
-          'w-sidetab bg-sidebar-bg shadow-prominent duration-slow absolute inset-y-0 left-0 flex flex-col px-5 transition-transform ease-out',
+          'absolute inset-y-0 left-0 flex w-sidetab flex-col bg-sidebar-bg px-5 shadow-prominent transition-transform duration-slow ease-out',
           open ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Drawer header with close button */}
-        <div className="border-sidebar-border h-header flex w-full items-center justify-between border-b">
+        <div className="flex h-header w-full items-center justify-between border-b border-sidebar-border">
           <button
             onClick={() => window.location.assign('/')}
             className="main-logo-mobile-size items-center gap-2"

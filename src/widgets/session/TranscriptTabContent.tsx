@@ -125,13 +125,15 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         segment={segment}
                         speakers={speakers}
                         isActive={
-                          enableTimestampFeatures && index === currentSegmentIndex
+                          enableTimestampFeatures &&
+                          index === currentSegmentIndex
                         }
                         isEditable={isEditing && !isReadOnly}
                         isAnonymized={isAnonymized}
                         sttModel={transcribe?.stt_model}
                         segmentRef={
-                          enableTimestampFeatures && index === currentSegmentIndex
+                          enableTimestampFeatures &&
+                          index === currentSegmentIndex
                             ? activeSegmentRef
                             : undefined
                         }
@@ -141,7 +143,9 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         speakerUtteranceIndex={speakerUtteranceIndex}
                         allSegments={segments}
                         clientId={clientId}
-                        onSpeakerChange={isReadOnly ? undefined : onSpeakerChange}
+                        onSpeakerChange={
+                          isReadOnly ? undefined : onSpeakerChange
+                        }
                         onAddSegment={
                           isEditing && !isReadOnly ? onAddSegment : undefined
                         }

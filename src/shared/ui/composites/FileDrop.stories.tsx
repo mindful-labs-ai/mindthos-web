@@ -183,7 +183,7 @@ export const WithPreview: Story = {
                 {previews.map((preview, index) => (
                   <div
                     key={index}
-                    className="aspect-square overflow-hidden rounded-lg border-default"
+                    className="border-default aspect-square overflow-hidden rounded-lg"
                   >
                     <img
                       src={preview}

@@ -203,7 +203,7 @@ function CustomSelect({
         type="button"
         onClick={handleOpen}
         className={cn(
-          'flex h-8 w-full items-center justify-between rounded-md bg-primary-subtle px-2 typo-sm text-fg',
+          'typo-sm flex h-8 w-full items-center justify-between rounded-md bg-primary-subtle px-2 text-fg',
           className
         )}
       >
@@ -226,7 +226,7 @@ function CustomSelect({
           >
             {options.map((group) => (
               <div key={group.group}>
-                <div className="px-4 py-1 typo-xs font-medium text-fg-muted">
+                <div className="typo-xs px-4 py-1 font-medium text-fg-muted">
                   {group.group}
                 </div>
                 {group.options.map((opt) => (
@@ -235,7 +235,7 @@ function CustomSelect({
                     type="button"
                     onClick={() => handleSelect(opt.value)}
                     className={cn(
-                      'flex w-full items-center px-4 py-2 typo-sm hover:bg-surface-contrast',
+                      'typo-sm flex w-full items-center px-4 py-2 hover:bg-surface-contrast',
                       opt.value === value
                         ? 'font-medium text-fg'
                         : 'text-fg-muted'
@@ -291,15 +291,15 @@ function DeleteConfirmModal({
         </button>
 
         {/* 제목 */}
-        <h2 className="mb-8 text-center typo-xl font-headline text-fg">
+        <h2 className="typo-xl mb-8 text-center font-headline text-fg">
           관계 삭제
         </h2>
 
         {/* 내용 */}
-        <p className="mb-2 text-center typo-l font-medium text-fg">
+        <p className="typo-l mb-2 text-center font-medium text-fg">
           이 관계를 삭제하시겠습니까?
         </p>
-        <p className="mb-10 text-center typo-sm text-fg-muted">
+        <p className="typo-sm mb-10 text-center text-fg-muted">
           한 번 삭제하면 해당 정보를 다시 불러올 수 없어요.
           <br />
           그래도 삭제하시겠습니까?
@@ -308,7 +308,7 @@ function DeleteConfirmModal({
         {/* 삭제 버튼 */}
         <button
           onClick={onConfirm}
-          className="h-14 w-full rounded-xl bg-primary typo-l font-medium text-primary-fg transition-colors hover:bg-primary-600"
+          className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
         >
           삭제하기
         </button>
@@ -318,15 +318,13 @@ function DeleteConfirmModal({
   );
 }
 
-
-
 // ─────────────────────────────────────────────────────────────────────────────
 // 칩 컴포넌트
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex h-8 items-center rounded-md border border-border bg-surface-contrast px-2 typo-xs text-fg">
+    <span className="typo-xs inline-flex h-8 items-center rounded-md border border-border bg-surface-contrast px-2 text-fg">
       {children}
     </span>
   );
@@ -477,7 +475,7 @@ function PersonCard({
   const renderAvatar = () => (
     <div
       className={cn(
-        'flex h-16 w-16 items-center justify-center border-2 typo-xl font-emphasize',
+        'typo-xl flex h-16 w-16 items-center justify-center border-2 font-emphasize',
         person?.gender === 'Female' && 'rounded-full',
         person?.gender === 'Male' && 'rounded-none',
         (!person?.gender ||
@@ -495,7 +493,7 @@ function PersonCard({
     person ? (
       <>
         {renderAvatar()}
-        <span className="mt-2 typo-sm font-medium text-fg">{name}</span>
+        <span className="typo-sm mt-2 font-medium text-fg">{name}</span>
       </>
     ) : (
       <Plus className="h-8 w-8 text-fg-muted" />
@@ -521,11 +519,11 @@ function PersonCard({
             type="button"
             onClick={() => handleSelectPerson(s.id)}
             className={cn(
-              'flex w-full items-center gap-2 px-4 py-2 typo-sm hover:bg-surface-contrast',
+              'typo-sm flex w-full items-center gap-2 px-4 py-2 hover:bg-surface-contrast',
               s.id === personId ? 'font-medium text-fg' : 'text-fg-muted'
             )}
           >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast typo-xs">
+            <span className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast">
               {s.id}
             </span>
             {s.name || `인물 ${s.id}`}
@@ -1043,7 +1041,7 @@ export function RelationCard({
     >
       {/* 경고 메시지 */}
       {showWarning && (
-        <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-danger px-3 py-1 typo-xs font-medium text-primary-fg">
+        <div className="typo-xs absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-danger px-3 py-1 font-medium text-primary-fg">
           두 인물을 모두 선택해주세요
         </div>
       )}
@@ -1072,7 +1070,7 @@ export function RelationCard({
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 pl-2">
         {/* 관계 유형 */}
         <div className="flex h-8 items-center gap-3">
-          <span className="w-8 shrink-0 typo-xs text-fg-muted">관계</span>
+          <span className="typo-xs w-8 shrink-0 text-fg-muted">관계</span>
           {isEditing ? (
             <CustomSelect
               value={data.status}
@@ -1087,17 +1085,17 @@ export function RelationCard({
 
         {/* 메모 */}
         <div className="flex items-start gap-3">
-          <span className="w-8 shrink-0 pt-2 typo-xs text-fg-muted">메모</span>
+          <span className="typo-xs w-8 shrink-0 pt-2 text-fg-muted">메모</span>
           {isEditing ? (
             <textarea
               value={data.description || ''}
               onChange={(e) => handleFieldChange('description', e.target.value)}
               placeholder="관계에 대한 메모를 입력하세요"
               rows={2}
-              className="flex-1 resize-none rounded-md bg-primary-subtle px-2 py-2 typo-sm text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-primary"
+              className="typo-sm flex-1 resize-none rounded-md bg-primary-subtle px-2 py-2 text-fg placeholder:text-fg-muted focus:outline-none focus:ring-1 focus:ring-primary"
             />
           ) : (
-            <span className="min-h-[52px] flex-1 break-all rounded-md px-2 py-2 typo-sm text-fg">
+            <span className="typo-sm min-h-[52px] flex-1 break-all rounded-md px-2 py-2 text-fg">
               {data.description || '-'}
             </span>
           )}
@@ -1122,9 +1120,9 @@ export function RelationCard({
             onClick={() => setIsEditing(false)}
             disabled={!canSave}
             className={cn(
-              'flex h-[27px] w-[50px] items-center justify-center rounded-md typo-sm text-primary-fg',
+              'typo-sm flex h-[27px] w-[50px] items-center justify-center rounded-md text-primary-fg',
               canSave
-                ? 'bg-primary hover:bg-primary-600'
+                ? 'hover:bg-primary-600 bg-primary'
                 : 'cursor-not-allowed bg-fg-muted'
             )}
           >

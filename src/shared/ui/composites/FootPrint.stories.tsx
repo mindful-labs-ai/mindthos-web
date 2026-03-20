@@ -109,7 +109,7 @@ export const Extended: Story = {
 
 export const InContext: Story = {
   render: () => (
-    <div className="w-[600px] space-y-4 rounded-lg border-default bg-surface p-6">
+    <div className="border-default w-[600px] space-y-4 rounded-lg bg-surface p-6">
       <h2 className="typo-xl font-headline text-fg">Article Title</h2>
       <FootPrint
         items={[

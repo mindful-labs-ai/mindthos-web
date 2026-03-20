@@ -55,7 +55,7 @@ export const TextLines: Story = {
 
 export const ProfileCard: Story = {
   render: () => (
-    <div className="w-[300px] rounded-lg border-default bg-surface p-6">
+    <div className="border-default w-[300px] rounded-lg bg-surface p-6">
       <div className="flex items-center gap-4">
         <Skeleton variant="circle" width={60} height={60} />
         <div className="flex-1 space-y-2">

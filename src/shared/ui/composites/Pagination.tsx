@@ -202,7 +202,7 @@ export const Pagination: React.FC<PaginationProps> = ({
             aria-current={isCurrent ? 'page' : undefined}
             className={cn(
               'flex h-9 min-w-[2.25rem] items-center justify-center rounded-md px-2',
-              'border-2 typo-sm font-medium',
+              'typo-sm border-2 font-medium',
               'transition-default',
               'focus-default',
               'disabled:disabled-default',

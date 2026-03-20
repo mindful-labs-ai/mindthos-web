@@ -5,7 +5,9 @@ import { cn } from '@/lib/cn';
 
 interface MobileSttModelSelectorProps {
   sttModel: SttModel;
-  setSttModel: React.Dispatch<React.SetStateAction<SttModel>> | ((value: SttModel) => void);
+  setSttModel:
+    | React.Dispatch<React.SetStateAction<SttModel>>
+    | ((value: SttModel) => void);
 }
 
 export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({

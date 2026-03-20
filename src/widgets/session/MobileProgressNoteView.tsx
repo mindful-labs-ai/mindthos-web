@@ -282,7 +282,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
             <Text className="typo-l font-medium text-fg">
               상담노트 작성 중...
             </Text>
-            <Text className="mt-2 typo-sm text-fg-muted">
+            <Text className="typo-sm mt-2 text-fg-muted">
               {note.processing_status === 'pending'
                 ? '대기 중입니다. 잠시만 기다려주세요.'
                 : 'AI가 상담 내용을 분석하고 있습니다.'}
@@ -319,7 +319,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
             <Text className="typo-l font-medium text-danger">
               상담노트 작성 실패
             </Text>
-            <Text className="mt-2 typo-sm text-fg-muted">
+            <Text className="typo-sm mt-2 text-fg-muted">
               {note.error_message || '상담노트 작성 중 오류가 발생했습니다.'}
             </Text>
           </div>
@@ -398,7 +398,9 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         disabled={isRegenerating}
                         className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100 md:text-l">편집</span>
+                        <span className="text-m text-grey-100 md:text-l">
+                          편집
+                        </span>
                       </button>
                     )}
                     {!isTablet && (
@@ -409,7 +411,9 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         }}
                         className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100 md:text-l">복사하기</span>
+                        <span className="text-m text-grey-100 md:text-l">
+                          복사하기
+                        </span>
                       </button>
                     )}
                     {onRegenerate && (
@@ -434,7 +438,8 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
         </div>
         {/* 서브타이틀 */}
         <p className="mt-1 text-xs text-grey-60 md:text-sm">
-          {note.created_at && `${new Date(note.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 작성됨`}
+          {note.created_at &&
+            `${new Date(note.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })} 작성됨`}
         </p>
         {/* 구분선 */}
         <div className="mt-4 border-b border-grey-30" />
@@ -487,7 +492,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         ) : (
                           <CopyIcon />
                         )}
-                        <span className="pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 typo-xs text-bg opacity-0 transition-opacity hover:opacity-100">
+                        <span className="typo-xs pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-bg opacity-0 transition-opacity hover:opacity-100">
                           {copiedIndex === index ? '복사됨' : '복사'}
                         </span>
                       </button>

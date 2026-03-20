@@ -53,7 +53,7 @@ export const HyperLink = React.forwardRef<HTMLAnchorElement, HyperLinkProps>(
         className={cn(
           'text-primary hover:text-primary-hover',
           'transition-default',
-          'rounded-sm focus-default',
+          'focus-default rounded-sm',
           underlineStyles[String(underline)],
           className
         )}

@@ -32,9 +32,9 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
       <div className="flex flex-col items-center px-8 pb-6 pt-10">
         {Icon && <Icon size={96} />}
 
-        <h2 className="mt-6 typo-xl font-headline text-fg">{access.name}</h2>
+        <h2 className="typo-xl mt-6 font-headline text-fg">{access.name}</h2>
 
-        <p className="mt-3 typo-sm text-fg-muted">
+        <p className="typo-sm mt-3 text-fg-muted">
           {formatGrantedDate(access.grantedAt)}
         </p>
 

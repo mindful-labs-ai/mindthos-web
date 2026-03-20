@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={cn(
               'flex items-center gap-3 rounded-md p-2',
-              'text-left typo-sm font-medium',
+              'typo-sm text-left font-medium',
               'transition-default',
               'focus-default',
               'active:bg-surface-strong',

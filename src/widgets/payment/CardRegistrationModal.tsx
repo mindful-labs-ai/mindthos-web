@@ -82,7 +82,7 @@ export const CardRegistrationModal = ({
       <div className="flex flex-col gap-6 p-6">
         <div>
           <Text className="typo-xl font-emphasize">카드 등록</Text>
-          <Text className="mt-2 typo-sm text-gray-600">
+          <Text className="typo-sm mt-2 text-gray-600">
             정기 결제를 위한 카드 정보를 등록해주세요.
           </Text>
         </div>
@@ -92,7 +92,7 @@ export const CardRegistrationModal = ({
             <Text className="typo-sm text-red-800">
               결제 시스템 초기화 실패: {sdkError.message}
             </Text>
-            <Text className="mt-1 typo-xs text-red-600">
+            <Text className="typo-xs mt-1 text-red-600">
               환경 변수(VITE_TOSS_PAYMENTS_CLIENT_KEY)를 확인해주세요.
             </Text>
           </div>

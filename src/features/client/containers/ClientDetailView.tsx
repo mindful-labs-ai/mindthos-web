@@ -135,11 +135,11 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
         </div>
 
         {/* 콘텐츠 영역 */}
-        <div className={`min-h-0 flex-1 ${activeTab === 'analyze' ? 'flex flex-col overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'}`}>
+        <div
+          className={`min-h-0 flex-1 ${activeTab === 'analyze' ? 'flex flex-col overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'}`}
+        >
           {/* 모바일: 탭이 스크롤에 포함 */}
-          <div className="px-4 pt-5 md:hidden">
-            {tabButtons}
-          </div>
+          <div className="px-4 pt-5 md:hidden">{tabButtons}</div>
 
           {activeTab === 'history' ? (
             <div className="px-4 py-4 md:px-10 md:py-6">
@@ -151,7 +151,9 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                   className="flex w-full items-center justify-between px-4 py-3"
                 >
                   <div className="flex items-center gap-1">
-                    <span className="text-sm text-grey-60">클라이언트 정보</span>
+                    <span className="text-sm text-grey-60">
+                      클라이언트 정보
+                    </span>
                     <ChevronDownIcon
                       size={16}
                       className={`text-grey-60 transition-transform ${isInfoOpen ? 'rotate-180' : ''}`}
@@ -183,7 +185,9 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                   </h2>
                   <button
                     type="button"
-                    onClick={() => onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')}
+                    onClick={() =>
+                      onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
+                    }
                     className="flex items-center gap-1.5 rounded-lg border border-grey-30 bg-white px-3 py-1.5 text-sm font-medium text-grey-70 transition-colors hover:bg-grey-10"
                   >
                     <SortDescIcon size={16} />
