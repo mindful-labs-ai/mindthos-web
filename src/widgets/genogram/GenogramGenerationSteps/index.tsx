@@ -2,6 +2,7 @@ import { AlertCircle } from 'lucide-react';
 
 import type { AIGenogramOutput } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 
 import { AnalyzeLoadingAnimation } from '../GenogramLoadingAnimation';
@@ -21,6 +22,8 @@ interface GenogramGenerationStepsProps {
   isRenderPending?: boolean;
   /** 편집 모드 여부 (애니메이션 대기 건너뛰기) */
   isEditMode?: boolean;
+  /** 모바일/태블릿 여부 */
+  isMobileView?: boolean;
 
   // 콜백
   onConfirm: () => void;
@@ -40,6 +43,7 @@ export function GenogramGenerationSteps({
   clientName,
   isRenderPending = false,
   isEditMode = false,
+  isMobileView = false,
   onConfirm,
   onAiOutputChange,
   onNextToRender,
@@ -89,6 +93,7 @@ export function GenogramGenerationSteps({
             onNext={onNextToRender}
             buttonText="가계도에 적용하기"
             isEditMode
+            isMobileView={isMobileView}
           />
         );
       }
@@ -152,11 +157,18 @@ export function GenogramGenerationSteps({
 
     // confirm 단계
     if (currentStep === 'confirm') {
-      return <ConfirmStep onConfirm={onConfirm} />;
+      return <ConfirmStep onConfirm={onConfirm} isMobileView={isMobileView} />;
     }
 
     // analyze 단계 - 로딩 중
     if (isLoading) {
+      if (isMobileView) {
+        return (
+          <div className="flex flex-1 flex-col items-center justify-center px-4 md:px-10">
+            <AnalyzeLoadingAnimation />
+          </div>
+        );
+      }
       return (
         <div className="flex flex-col items-center justify-center py-12">
           <AnalyzeLoadingAnimation />
@@ -171,6 +183,7 @@ export function GenogramGenerationSteps({
           data={aiOutput}
           onChange={onAiOutputChange}
           onNext={onNextToRender}
+          isMobileView={isMobileView}
         />
       );
     }
@@ -183,63 +196,89 @@ export function GenogramGenerationSteps({
     );
   };
 
+  // 공통 스테퍼
+  const stepper = (
+    <div className="flex shrink-0 select-none flex-col items-center py-4">
+      <div className="flex items-center">
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full text-l font-headline',
+            stepIndex >= 0
+              ? 'bg-green-80 text-white'
+              : 'border-2 border-grey-70 text-grey-70'
+          )}
+        >
+          1
+        </div>
+        <div
+          className={cn(
+            'h-0.5 w-32 md:w-52',
+            stepIndex >= 1 ? 'bg-green-80' : 'bg-grey-30'
+          )}
+        />
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full text-l font-headline',
+            stepIndex >= 1
+              ? 'bg-green-80 text-white'
+              : 'border-2 border-grey-70 text-grey-70'
+          )}
+        >
+          2
+        </div>
+      </div>
+      <div className="mt-2 flex items-start">
+        <span className="w-40 text-center text-sm text-grey-100">
+          1단계 : 가족 구성원 분석
+        </span>
+        <div className="w-8 md:w-24" />
+        <span className="w-40 text-center text-sm text-grey-100">
+          2단계 : 가계도 그리기
+        </span>
+      </div>
+    </div>
+  );
+
+  if (isMobileView) {
+    return (
+      <div className="flex h-full flex-col bg-grey-20">
+        {/* 헤더 */}
+        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 bg-white px-4">
+          <BackButton onClick={() => onCancel?.()} />
+          <p className="text-l font-medium text-grey-80">
+            상담기록으로 가계도 생성하기
+          </p>
+        </div>
+
+        {/* 스테퍼 */}
+        <div className="flex-shrink-0 bg-white pb-2 pt-2">{stepper}</div>
+
+        {/* 콘텐츠 */}
+        <div
+          className={cn(
+            'flex-1 bg-white',
+            currentStep === 'confirm' ||
+              (currentStep === 'analyze' && isLoading)
+              ? 'flex flex-col'
+              : 'overflow-y-auto'
+          )}
+        >
+          {renderStepContent()}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
-      <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-elevated">
-        <h2 className="typo-xl mb-4 shrink-0 font-emphasize text-fg">
+      <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-grey-30 bg-white p-6 shadow-lg">
+        <h2 className="mb-4 shrink-0 text-xl font-emphasize text-grey-100">
           {clientName
             ? `${clientName}님의 상담기록으로 자동 생성하기`
             : '상담기록으로 자동 생성하기'}
         </h2>
 
-        {/* 커스텀 스테퍼 */}
-        <div className="flex shrink-0 select-none flex-col items-center py-4">
-          {/* 원형 배지 + 연결선 */}
-          <div className="flex items-center">
-            {/* Step 1 배지 */}
-            <div
-              className={cn(
-                'typo-l flex h-10 w-10 items-center justify-center rounded-full font-headline',
-                stepIndex >= 0
-                  ? 'bg-primary text-primary-fg'
-                  : 'border-default text-fg-muted'
-              )}
-            >
-              1
-            </div>
-
-            {/* 연결선 */}
-            <div
-              className={cn(
-                'h-0.5 w-52',
-                stepIndex >= 1 ? 'bg-primary' : 'bg-border'
-              )}
-            />
-
-            {/* Step 2 배지 */}
-            <div
-              className={cn(
-                'typo-l flex h-10 w-10 items-center justify-center rounded-full font-headline',
-                stepIndex >= 1
-                  ? 'bg-primary text-primary-fg'
-                  : 'border-default text-fg-muted'
-              )}
-            >
-              2
-            </div>
-          </div>
-
-          {/* 라벨 */}
-          <div className="mt-2 flex items-start">
-            <span className="typo-sm w-40 text-center text-fg">
-              1단계 : 가족 구성원 분석
-            </span>
-            <div className="w-24" />
-            <span className="typo-sm w-40 text-center text-fg">
-              2단계 : 가계도 그리기
-            </span>
-          </div>
-        </div>
+        {stepper}
 
         <div className="mt-6 min-h-0 flex-1 overflow-hidden">
           {renderStepContent()}

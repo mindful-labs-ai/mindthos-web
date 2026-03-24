@@ -34,6 +34,8 @@ interface FamilyMemberListStepProps {
   buttonText?: string;
   /** 편집 모드 여부 (확인 모달 스킵) */
   isEditMode?: boolean;
+  /** 모바일/태블릿 여부 */
+  isMobileView?: boolean;
 }
 
 export function FamilyMemberListStep({
@@ -42,6 +44,7 @@ export function FamilyMemberListStep({
   onNext,
   buttonText = '가계도 자동 생성하기',
   isEditMode = false,
+  isMobileView = false,
 }: FamilyMemberListStepProps) {
   // 스크롤 컨테이너 ref (팝오버 Portal 대상)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -428,19 +431,33 @@ export function FamilyMemberListStep({
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      {/* 스크롤 가능한 컨텐츠 영역 - 스크롤바 6px 보정 */}
+      {/* 스크롤 가능한 컨텐츠 영역 */}
       <div
         ref={scrollContainerRef}
-        className="relative min-h-0 flex-1 overflow-y-auto rounded-lg bg-surface-contrast pl-6 pr-[18px]"
+        className={`relative min-h-0 flex-1 overflow-y-auto ${
+          isMobileView
+            ? 'bg-grey-20 px-4 md:px-10'
+            : 'rounded-lg bg-surface-contrast pl-6 pr-[18px]'
+        }`}
       >
+        {/* 헤더 */}
+        <div className="my-4 flex items-center justify-between">
+          <span className="text-sm text-grey-60">
+            {data.subjects[0]?.name || ''} 가족 구성원 분석
+          </span>
+          <span className="text-sm text-grey-60">
+            총 {data.subjects.length}명
+          </span>
+        </div>
+
         {/* 구성원 섹션 */}
-        <div className="my-6">
-          <h3 className="typo-sm mb-3 font-medium text-fg">
-            가족 구성원 ({data.subjects.length}명)
+        <div className="mb-6">
+          <h3 className="mb-3 text-sm font-medium text-grey-100">
+            가족 구성원
           </h3>
 
           {/* 카드 그리드 */}
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className={`grid gap-5 ${isMobileView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
             {data.subjects.map((subject, index) => (
               <FamilyMemberCard
                 key={subject.id}
@@ -471,9 +488,9 @@ export function FamilyMemberListStep({
         </div>
 
         {/* 구성원 관계 섹션 */}
-        <div className="border-t border-border pt-4">
-          <h3 className="typo-sm mb-3 font-medium text-fg">
-            구성원 관계 ({relationDataList.length}개)
+        <div className="border-t border-grey-30 pt-4">
+          <h3 className="mb-3 text-sm font-medium text-grey-100">
+            구성원 관계
           </h3>
 
           {/* 관계 카드 목록 */}
@@ -508,11 +525,10 @@ export function FamilyMemberListStep({
       </div>
 
       {/* 하단 고정 버튼 */}
-      <div className="mt-4 flex shrink-0 justify-center pt-4">
+      <div className={`flex shrink-0 justify-center ${isMobileView ? 'px-4 pb-4 md:px-10' : 'mt-4 pt-4'}`}>
         <button
           onClick={() => {
             if (isEditMode) {
-              // 편집 모드: 확인 모달 없이 바로 진행
               trackEvent(MixpanelEvent.GenogramEditApplyClick, {
                 member_count: data.subjects.length,
                 relation_count: relationDataList.length,
@@ -522,7 +538,7 @@ export function FamilyMemberListStep({
               setShowConfirmModal(true);
             }
           }}
-          className="typo-l hover:bg-primary-600 h-12 w-full max-w-[500px] rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+          className={`h-12 w-full rounded-xl bg-green-80 text-l font-medium text-white transition-colors hover:bg-green-80/90 ${isMobileView ? '' : 'max-w-[500px]'}`}
         >
           {buttonText}
         </button>
