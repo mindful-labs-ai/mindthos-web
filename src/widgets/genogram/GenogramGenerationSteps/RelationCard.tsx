@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-import { ChevronDown, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import type {
@@ -8,6 +8,14 @@ import type {
   AIInfluenceStatus,
 } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { Modal } from '@/shared/ui/composites/Modal';
+
+import {
+  Chip,
+  FlatCustomSelect as CustomSelect,
+  DeleteConfirmModal,
+} from './components';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 옵션 데이터
@@ -35,11 +43,8 @@ const INFLUENCE_OPTIONS = [
   { value: 'focused_on_negatively', label: '부정적 과잉관심' },
 ];
 
-// 통합 옵션 (relation + influence)
-const ALL_STATUS_OPTIONS = [
-  { group: '관계', options: RELATION_OPTIONS },
-  { group: '영향', options: INFLUENCE_OPTIONS },
-];
+// 통합 옵션 (flat)
+const ALL_STATUS_FLAT_OPTIONS = [...RELATION_OPTIONS, ...INFLUENCE_OPTIONS];
 
 const STATUS_LABELS: Record<string, string> = Object.fromEntries([
   ...RELATION_OPTIONS.map((o) => [o.value, o.label]),
@@ -112,222 +117,6 @@ interface RelationCardProps {
   onEditChange?: (isEditing: boolean) => void;
   /** 저장 필요 경고 표시 */
   showWarning?: boolean;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 커스텀 드롭다운 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
-interface OptionGroup {
-  group: string;
-  options: SelectOption[];
-}
-
-interface CustomSelectProps {
-  value: string;
-  options: OptionGroup[];
-  onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-}
-
-function CustomSelect({
-  value,
-  options,
-  onChange,
-  placeholder = '선택',
-  className,
-}: CustomSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // 선택된 라벨 찾기
-  const selectedLabel =
-    options.flatMap((g) => g.options).find((opt) => opt.value === value)
-      ?.label || placeholder;
-
-  // 드롭다운 위치 계산
-  const updatePosition = useCallback(() => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: Math.max(rect.width, 120),
-      });
-    }
-  }, []);
-
-  // 외부 클릭 감지
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleOpen = () => {
-    updatePosition();
-    setIsOpen(true);
-  };
-
-  const handleSelect = (optValue: string) => {
-    onChange(optValue);
-    setIsOpen(false);
-  };
-
-  return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={handleOpen}
-        className={cn(
-          'typo-sm flex h-8 w-full items-center justify-between rounded-md bg-primary-subtle px-2 text-fg',
-          className
-        )}
-      >
-        <span className="truncate">{selectedLabel}</span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-fg-muted" />
-      </button>
-
-      {isOpen &&
-        createPortal(
-          <div
-            ref={dropdownRef}
-            style={{
-              position: 'fixed',
-              top: position.top,
-              left: position.left,
-              minWidth: position.width,
-              zIndex: 1100,
-            }}
-            className="max-h-[300px] overflow-y-auto rounded-xl bg-surface py-2 shadow-elevated"
-          >
-            {options.map((group) => (
-              <div key={group.group}>
-                <div className="typo-xs px-4 py-1 font-medium text-fg-muted">
-                  {group.group}
-                </div>
-                {group.options.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => handleSelect(opt.value)}
-                    className={cn(
-                      'typo-sm flex w-full items-center px-4 py-2 hover:bg-surface-contrast',
-                      opt.value === value
-                        ? 'font-medium text-fg'
-                        : 'text-fg-muted'
-                    )}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>,
-          document.body
-        )}
-    </>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 삭제 확인 모달 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface DeleteConfirmModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-}
-
-function DeleteConfirmModal({
-  isOpen,
-  onClose,
-  onConfirm,
-}: DeleteConfirmModalProps) {
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-overlay flex items-center justify-center">
-      {/* 백드롭 */}
-      <button
-        type="button"
-        className="absolute inset-0 bg-overlay-bg"
-        onClick={onClose}
-        aria-label="모달 닫기"
-      />
-      {/* 모달 */}
-      <div className="relative w-[400px] rounded-2xl bg-surface px-8 py-10">
-        {/* 닫기 버튼 */}
-        <button
-          onClick={onClose}
-          aria-label="관계 삭제 모달 닫기"
-          className="absolute right-4 top-4 p-1 text-fg-muted hover:text-fg"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
-        {/* 제목 */}
-        <h2 className="typo-xl mb-8 text-center font-headline text-fg">
-          관계 삭제
-        </h2>
-
-        {/* 내용 */}
-        <p className="typo-l mb-2 text-center font-medium text-fg">
-          이 관계를 삭제하시겠습니까?
-        </p>
-        <p className="typo-sm mb-10 text-center text-fg-muted">
-          한 번 삭제하면 해당 정보를 다시 불러올 수 없어요.
-          <br />
-          그래도 삭제하시겠습니까?
-        </p>
-
-        {/* 삭제 버튼 */}
-        <button
-          onClick={onConfirm}
-          className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
-        >
-          삭제하기
-        </button>
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 칩 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-function Chip({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="typo-xs inline-flex h-8 items-center rounded-md border border-border bg-surface-contrast px-2 text-fg">
-      {children}
-    </span>
-  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -425,6 +214,8 @@ function PersonCard({
   });
   const cardRef = useRef<HTMLButtonElement & HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   // 드롭다운 위치 계산
   const updateDropdownPosition = useCallback(() => {
@@ -437,8 +228,9 @@ function PersonCard({
     }
   }, []);
 
-  // 외부 클릭 감지
+  // 외부 클릭 감지 (데스크탑만)
   useEffect(() => {
+    if (isMobileView) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -456,11 +248,11 @@ function PersonCard({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showDropdown]);
+  }, [showDropdown, isMobileView]);
 
   const handleCardClick = () => {
     if (!isEditing) return;
-    updateDropdownPosition();
+    if (!isMobileView) updateDropdownPosition();
     setShowDropdown(true);
   };
 
@@ -493,49 +285,91 @@ function PersonCard({
     person ? (
       <>
         {renderAvatar()}
-        <span className="typo-sm mt-2 font-medium text-fg">{name}</span>
+        <span className="mt-2 max-w-[100px] truncate text-m font-emphasize text-grey-100">
+          {name}
+        </span>
       </>
     ) : (
       <Plus className="h-8 w-8 text-fg-muted" />
     );
 
   // 드롭다운 렌더링 (편집 모드에서만)
-  const renderDropdown = () =>
-    showDropdown &&
-    createPortal(
-      <div
-        ref={dropdownRef}
-        style={{
-          position: 'fixed',
-          top: dropdownPosition.top,
-          left: dropdownPosition.left,
-          zIndex: 1100,
-        }}
-        className="max-h-[200px] min-w-[140px] overflow-y-auto rounded-xl bg-surface py-2 shadow-elevated"
-      >
-        {allSubjects.map((s) => (
-          <button
-            key={s.id}
-            type="button"
-            onClick={() => handleSelectPerson(s.id)}
-            className={cn(
-              'typo-sm flex w-full items-center gap-2 px-4 py-2 hover:bg-surface-contrast',
-              s.id === personId ? 'font-medium text-fg' : 'text-fg-muted'
-            )}
-          >
-            <span className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast">
-              {s.id}
-            </span>
-            {s.name || `인물 ${s.id}`}
-          </button>
-        ))}
-      </div>,
-      document.body
+  const personOptions = allSubjects.map((s) => ({
+    id: s.id,
+    label: s.name || `인물 ${s.id}`,
+  }));
+
+  const renderDropdown = () => {
+    if (isMobileView) {
+      return (
+        <Modal
+          open={showDropdown}
+          onOpenChange={setShowDropdown}
+          mobileVariant="bottomSheet"
+          hideCloseButton
+        >
+          <div className="space-y-1 pb-4">
+            {personOptions.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => handleSelectPerson(s.id)}
+                className={cn(
+                  'flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors',
+                  s.id === personId
+                    ? 'font-medium text-green-80'
+                    : 'text-grey-80 hover:bg-grey-10'
+                )}
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-grey-20 text-xs text-grey-60">
+                  {s.id}
+                </span>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </Modal>
+      );
+    }
+
+    return (
+      showDropdown &&
+      createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'fixed',
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            zIndex: 1100,
+          }}
+          className="max-h-[200px] min-w-[140px] overflow-y-auto rounded-xl bg-surface py-2 shadow-elevated"
+        >
+          {personOptions.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => handleSelectPerson(s.id)}
+              className={cn(
+                'typo-sm flex w-full items-center gap-2 px-4 py-2 hover:bg-surface-contrast',
+                s.id === personId ? 'font-medium text-fg' : 'text-fg-muted'
+              )}
+            >
+              <span className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-surface-contrast">
+                {s.id}
+              </span>
+              {s.label}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )
     );
+  };
 
   // 공통 카드 스타일
   const baseCardClass =
-    'relative flex h-[137px] w-[137px] flex-col items-center justify-center rounded-2xl border bg-surface';
+    'relative flex h-[120px] w-[120px] flex-shrink-0 flex-col items-center justify-center rounded-2xl border bg-white';
 
   // 순서 배지 위치 (편집: 좌상단, 보기: 우상단)
   const badgeClass =
@@ -565,7 +399,7 @@ function PersonCard({
         {personId > 0 && <div className={badgeClass}>{personId}</div>}
         {renderCardContent()}
       </Wrapper>
-      {isEditing && renderDropdown()}
+      {renderDropdown()}
     </>
   );
 }
@@ -580,7 +414,7 @@ interface ConnectionSvgProps {
 }
 
 function ConnectionSvg({ status, id }: ConnectionSvgProps) {
-  const width = 120;
+  const width = 80;
   const height = 60;
   const midY = height / 2;
 
@@ -1035,7 +869,7 @@ export function RelationCard({
   return (
     <div
       className={cn(
-        'relative flex h-[169px] w-full justify-center gap-4 rounded-xl border bg-surface p-4 transition-colors',
+        'relative flex w-full flex-col gap-4 rounded-xl border bg-white p-4 transition-colors md:h-[169px] md:flex-row md:justify-center',
         showWarning ? 'animate-shake border-2 border-danger' : 'border-border'
       )}
     >
@@ -1074,9 +908,9 @@ export function RelationCard({
           {isEditing ? (
             <CustomSelect
               value={data.status}
-              options={ALL_STATUS_OPTIONS}
+              options={ALL_STATUS_FLAT_OPTIONS}
               onChange={(v) => handleFieldChange('status', v as RelationStatus)}
-              className="flex-1"
+              className="max-w-[68px]"
             />
           ) : (
             <Chip>{statusLabel}</Chip>
@@ -1142,6 +976,8 @@ export function RelationCard({
       {/* 삭제 확인 모달 */}
       <DeleteConfirmModal
         isOpen={showDeleteModal}
+        title="관계 삭제"
+        closeAriaLabel="관계 삭제 모달 닫기"
         onClose={() => setShowDeleteModal(false)}
         onConfirm={() => {
           onDelete();

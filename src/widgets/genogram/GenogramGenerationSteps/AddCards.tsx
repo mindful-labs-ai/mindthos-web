@@ -14,7 +14,7 @@ export function AddMemberCard({ onClick, disabled }: AddCardProps) {
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex h-[276px] max-w-[489px] items-center justify-center rounded-xl border border-dashed transition-colors',
+        'flex h-[276px] items-center justify-center rounded-xl border border-dashed transition-colors',
         disabled
           ? 'cursor-not-allowed border-border opacity-50'
           : 'border-fg-muted hover:border-fg'
