@@ -306,7 +306,7 @@ export const TutorialGuideModal: React.FC = () => {
         </div>
 
         {/* Buttons */}
-        <div className="mt-6 flex w-full max-w-[372px] shrink-0 gap-3">
+        <div className="mt-6 flex w-full max-w-[372px] shrink-0 gap-3 px-6 md:px-2">
           <Button
             variant="outline"
             tone="neutral"
