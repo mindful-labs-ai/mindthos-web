@@ -8,6 +8,8 @@ interface GenogramEmptyStateProps {
   onStartFromRecords?: () => void;
   isGenerating?: boolean;
   hasRecords?: boolean;
+  isMobileView?: boolean;
+  isMobile?: boolean;
 }
 
 export function GenogramEmptyState({
@@ -15,6 +17,8 @@ export function GenogramEmptyState({
   onStartFromRecords,
   isGenerating = false,
   hasRecords = false,
+  isMobileView = false,
+  isMobile = false,
 }: GenogramEmptyStateProps) {
   const canGenerateFromRecords = hasRecords && onStartFromRecords;
 
@@ -32,52 +36,110 @@ export function GenogramEmptyState({
     onStartFromRecords?.();
   };
 
-  const genogramButtonStyle =
+  const desktopButtonStyle =
     'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-surface px-6 pb-[36px] shadow-sm transition-all hover:border-primary hover:shadow-md disabled:disabled-default';
 
-  return (
-    <div className="flex h-full items-center justify-center bg-surface">
-      <div className="flex gap-6">
-        {/* 직접 가계도 그리기 */}
-        <button
-          onClick={handleStartEmpty}
-          disabled={isGenerating}
-          className={genogramButtonStyle}
-        >
-          <div className="flex h-[198px] w-full items-center justify-center">
-            <GenogramIllustration />
-          </div>
-          <h3 className="font-emphasize text-fg">직접 가계도 그리기</h3>
-        </button>
+  const tabletButtonStyle =
+    'flex flex-1 flex-col items-center justify-end gap-2.5 rounded-2xl border border-grey-30 bg-white px-6 pb-6 pt-4 shadow-sm transition-all hover:border-green-80 hover:shadow-md disabled:opacity-50';
 
-        {/* 상담기록으로 자동 생성하기 */}
-        <button
-          onClick={canGenerateFromRecords ? handleStartFromRecords : undefined}
-          disabled={!canGenerateFromRecords || isGenerating}
-          className={genogramButtonStyle}
+  const mobileButtonStyle =
+    'flex h-[203px] w-full flex-col items-center justify-end gap-2.5 rounded-2xl border border-grey-30 bg-white px-6 pb-6 pt-4 shadow-sm transition-all hover:border-green-80 hover:shadow-md disabled:opacity-50';
+
+  const buttonStyle = isMobile
+    ? mobileButtonStyle
+    : isMobileView
+      ? tabletButtonStyle
+      : desktopButtonStyle;
+
+  // 빈 화면으로 시작하기 버튼
+  const emptyButton = (
+    <button
+      onClick={handleStartEmpty}
+      disabled={isGenerating}
+      className={buttonStyle}
+    >
+      <div
+        className={`flex w-full items-center justify-center ${isMobile ? 'h-[100px]' : isMobileView ? 'h-[140px]' : 'h-[198px]'}`}
+      >
+        <div
+          className={isMobile ? 'scale-[60%]' : isMobileView ? 'scale-90' : ''}
         >
-          {canGenerateFromRecords && (
-            <div className="typo-m rounded-md bg-primary px-[15px] py-[7px] font-headline text-primary-fg">
-              AI 자동 생성
-            </div>
-          )}
-          <div className="flex h-[198px] w-full items-center justify-center gap-4">
-            {isGenerating ? (
-              <GenogramLoadingAnimationLoop />
-            ) : (
-              <AIGenogramIllustration />
-            )}
+          <GenogramIllustration />
+        </div>
+      </div>
+      <h3
+        className={`font-emphasize text-grey-60 ${isMobileView ? 'text-sm' : ''}`}
+      >
+        빈 화면으로 시작하기
+      </h3>
+    </button>
+  );
+
+  // 상담기록으로 자동 생성하기 버튼
+  const aiButton = (
+    <button
+      onClick={canGenerateFromRecords ? handleStartFromRecords : undefined}
+      disabled={!canGenerateFromRecords || isGenerating}
+      className={`relative ${buttonStyle}`}
+    >
+      {canGenerateFromRecords && (
+        <div
+          className={`rounded-md bg-green-80 px-[15px] py-0.5 text-sm font-headline text-white md:py-[7px] ${isMobile ? 'absolute right-4 top-4' : ''}`}
+        >
+          AI 자동 생성
+        </div>
+      )}
+      <div
+        className={`flex w-full items-center justify-center gap-4 ${isMobile ? 'h-[100px]' : isMobileView ? 'h-[140px]' : 'h-[198px]'}`}
+      >
+        {isGenerating ? (
+          <GenogramLoadingAnimationLoop />
+        ) : (
+          <div
+            className={
+              isMobile ? 'scale-[60%]' : isMobileView ? 'scale-90' : ''
+            }
+          >
+            <AIGenogramIllustration />
           </div>
-          <h3 className="flex gap-0.5 font-emphasize text-fg">
-            <SparkleIcon />
-            상담기록으로 자동 생성하기
-          </h3>
-          {!canGenerateFromRecords && (
-            <div className="typo-sm rounded-lg bg-surface-strong px-1.5 py-1">
-              {hasRecords ? '준비 중' : '상담 기록 없음'}
-            </div>
-          )}
-        </button>
+        )}
+      </div>
+      <h3
+        className={`flex gap-0.5 font-emphasize text-grey-100 ${isMobileView ? 'text-sm' : ''}`}
+      >
+        <SparkleIcon />
+        상담기록으로 자동 생성하기
+      </h3>
+      {!canGenerateFromRecords && (
+        <div className="rounded-lg bg-grey-20 px-1.5 py-1 text-xs text-grey-60">
+          {hasRecords ? '준비 중' : '상담 기록 없음'}
+        </div>
+      )}
+    </button>
+  );
+
+  return (
+    <div className="flex h-full items-center justify-center bg-grey-20">
+      <div
+        className={
+          isMobile
+            ? 'flex w-full flex-col gap-4 px-4'
+            : isMobileView
+              ? 'flex w-full max-w-[700px] gap-4 px-10'
+              : 'flex gap-6'
+        }
+      >
+        {isMobile ? (
+          <>
+            {aiButton}
+            {emptyButton}
+          </>
+        ) : (
+          <>
+            {emptyButton}
+            {aiButton}
+          </>
+        )}
       </div>
     </div>
   );

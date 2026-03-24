@@ -5,6 +5,8 @@ import { X } from 'lucide-react';
 import { useGenogramExport } from '@/features/genogram/hooks/useGenogramExport';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { isProPlan } from '@/features/settings/utils/planUtils';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useModalStore } from '@/stores/modalStore';
 
@@ -28,6 +30,8 @@ export function GenogramExportModal({
 }: GenogramExportModalProps) {
   const [fileName, setFileName] = useState(defaultFileName);
   const [showUpgradeTooltip, setShowUpgradeTooltip] = useState(false);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   const { creditInfo } = useCreditInfo();
   const openModal = useModalStore((state) => state.openModal);
@@ -132,7 +136,7 @@ export function GenogramExportModal({
           </div>
 
           {/* 업그레이드 팝업 */}
-          {showUpgradeTooltip && !isPro && (
+          {showUpgradeTooltip && !isPro && !isMobileView && (
             <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-surface p-4 shadow-md">
               <button
                 type="button"
@@ -155,6 +159,44 @@ export function GenogramExportModal({
                 마음토스의 더 많은 기능을 만나보세요.
               </p>
             </div>
+          )}
+
+          {/* 모바일/태블릿: 업그레이드 모달 */}
+          {isMobileView && (
+            <Modal
+              open={showUpgradeTooltip && !isPro}
+              onOpenChange={setShowUpgradeTooltip}
+              disableHistory
+              className="mx-4 max-w-sm px-6 py-8"
+            >
+              <div className="flex flex-col items-center gap-6 text-center">
+                <h2 className="text-xl font-emphasize text-grey-100">
+                  프로 기능 안내
+                </h2>
+                <div className="flex flex-col gap-2">
+                  <p className="text-m font-emphasize text-grey-100">
+                    플랜 업그레이드 후 이용 가능합니다.
+                  </p>
+                  <p className="text-sm text-grey-60">
+                    플랜 업그레이드를 통해
+                    <br />
+                    마음토스의 더 많은 기능을 만나보세요.
+                  </p>
+                </div>
+                <Button
+                  variant="solid"
+                  tone="primary"
+                  size="lg"
+                  onClick={() => {
+                    setShowUpgradeTooltip(false);
+                    openModal('planChange');
+                  }}
+                  className="w-full"
+                >
+                  플랜 보기
+                </Button>
+              </div>
+            </Modal>
           )}
         </div>
 

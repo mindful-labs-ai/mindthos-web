@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { Download } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
@@ -17,9 +18,13 @@ import {
   clientQueryKeys,
   genogramQueryKeys,
 } from '@/shared/constants/queryKeys';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { Button } from '@/shared/ui/atoms/Button';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
+import { useGenogramNoticeStore } from '@/stores/genogramNoticeStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { GenogramExportModal } from '@/widgets/genogram/export';
 import { GenogramEmptyState } from '@/widgets/genogram/GenogramEmptyState';
@@ -50,6 +55,8 @@ export function GenogramClientContainer() {
   const clientId = searchParams.get('clientId');
   const { setSearchParamsWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
@@ -84,6 +91,13 @@ export function GenogramClientContainer() {
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
+  const [isMobileNoticeOpen, setIsMobileNoticeOpen] = useState(() => {
+    if (!isMobileView) return false;
+    const { shown, markShown } = useGenogramNoticeStore.getState();
+    if (shown) return false;
+    markShown();
+    return true;
+  });
 
   const preparedCanvasJsonRef = useRef<string | null>(null);
   const originalCanvasRef = useRef<SerializedGenogram | null>(null);
@@ -387,7 +401,25 @@ export function GenogramClientContainer() {
 
   // --- Build widget slots ---
 
-  const header = (
+  const header = isMobileView ? (
+    showCanvas && clientId && !steps.isOpen ? (
+      <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-3">
+        <button
+          onClick={handleShowBasicInfo}
+          className="flex h-10 items-center rounded-md border border-grey-30 bg-white px-4 text-sm text-grey-60 shadow-sm transition-colors hover:bg-grey-10"
+        >
+          가계도 기본 정보
+        </button>
+        <button
+          onClick={handleExport}
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-grey-30 bg-white shadow-sm transition-colors hover:bg-grey-10"
+          aria-label="가계도 내보내기"
+        >
+          <Download className="h-5 w-5 text-grey-80" />
+        </button>
+      </div>
+    ) : null
+  ) : (
     <GenogramPageHeader
       clients={clients}
       selectedClient={selectedClient}
@@ -430,6 +462,7 @@ export function GenogramClientContainer() {
           key="temporary"
           ref={genogramRef}
           onChange={updateGenogramState}
+          readOnly={isMobile}
         />
       );
     }
@@ -442,10 +475,11 @@ export function GenogramClientContainer() {
             ref={genogramRef}
             onChange={updateGenogramState}
             hideToolbar
+            readOnly={isMobile}
           />
-          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
-            <div className="flex h-[200px] w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-surface p-8 text-center backdrop-blur-sm">
-              <p className="typo-l font-medium text-fg-muted">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
+            <div className="flex h-[200px] w-full max-w-[512px] flex-col justify-center rounded-lg border border-dashed border-grey-30 bg-white p-8 text-center backdrop-blur-sm">
+              <p className="text-l font-medium text-grey-60">
                 클라이언트를 선택해주세요
               </p>
             </div>
@@ -464,6 +498,7 @@ export function GenogramClientContainer() {
           clientName={selectedClient?.name}
           isRenderPending={false}
           isEditMode={isEditModeRef.current}
+          isMobileView={isMobileView}
           onConfirm={handleConfirm}
           onAiOutputChange={steps.updateAiOutput}
           onNextToRender={
@@ -483,6 +518,8 @@ export function GenogramClientContainer() {
           onStartFromRecords={handleStartFromRecords}
           isGenerating={false}
           hasRecords={hasRecords}
+          isMobileView={isMobileView}
+          isMobile={isMobile}
         />
       );
     }
@@ -493,6 +530,7 @@ export function GenogramClientContainer() {
         ref={genogramRef}
         initialData={initialData ?? undefined}
         onChange={handleCanvasChange}
+        readOnly={isMobile}
         emptyStateActions={
           hasRecords && (
             <div className="typo-sm flex items-center gap-2">
@@ -563,15 +601,50 @@ export function GenogramClientContainer() {
   );
 
   return (
-    <GenogramClientView
-      header={header}
-      content={content}
-      addClientModal={addClientModal}
-      resetModal={resetModal}
-      exportModal={exportModal}
-      guideModal={guideModal}
-      reportModal={reportModal}
-    />
+    <>
+      <GenogramClientView
+        header={header}
+        content={content}
+        addClientModal={addClientModal}
+        resetModal={resetModal}
+        exportModal={exportModal}
+        guideModal={guideModal}
+        reportModal={reportModal}
+        isMobileView={false}
+      />
+
+      {/* 모바일/태블릿 이용 안내 모달 */}
+      <Modal
+        open={isMobileNoticeOpen}
+        onOpenChange={setIsMobileNoticeOpen}
+        className="mx-4 max-w-sm px-6 py-8"
+      >
+        <div className="flex flex-col items-center gap-6 text-center">
+          <h2 className="text-xl font-emphasize text-grey-100">
+            {isMobile ? '모바일' : '태블릿'} 이용 안내
+          </h2>
+          <div className="flex flex-col gap-2">
+            <p className="text-m font-emphasize text-grey-100">
+              가계도 편집 기능은 PC에서 이용 가능합니다.
+            </p>
+            <p className="text-sm text-grey-60">
+              세부적인 편집이 필요한 경우에는
+              <br />
+              PC 사용을 권장드립니다.
+            </p>
+          </div>
+          <Button
+            variant="solid"
+            tone="primary"
+            size="lg"
+            onClick={() => setIsMobileNoticeOpen(false)}
+            className="w-full"
+          >
+            확인
+          </Button>
+        </div>
+      </Modal>
+    </>
   );
 }
 
