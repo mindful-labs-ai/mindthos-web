@@ -18,6 +18,8 @@ export interface ModalProps {
   className?: string;
   /** 모바일(<sm)에서의 모달 형태. 기본값 'center' */
   mobileVariant?: ModalMobileVariant;
+  /** fullScreen에서 history 관리 비활성화 (중첩 모달에서 history 충돌 방지) */
+  disableHistory?: boolean;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -55,6 +57,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   className,
   mobileVariant = 'center',
+  disableHistory = false,
 }) => {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const previousFocusRef = React.useRef<HTMLElement | null>(null);
@@ -96,7 +99,7 @@ export const Modal: React.FC<ModalProps> = ({
   }, [open, onOpenChange]);
 
   // fullScreen 모달: history 기반 depth 처리 (모바일 뒤로 스와이프 지원)
-  const isFullScreenDepth = mobileVariant === 'fullScreen';
+  const isFullScreenDepth = mobileVariant === 'fullScreen' && !disableHistory;
   const historyPushedRef = React.useRef(false);
   const modalId = React.useId();
   const modalIdRef = React.useRef(modalId);
