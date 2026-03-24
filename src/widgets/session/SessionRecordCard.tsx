@@ -11,7 +11,7 @@ import {
   deleteSession,
   updateSessionTitle,
 } from '@/shared/api/supabase/sessionQueries';
-import { sessionQueryKeys } from '@/shared/constants/queryKeys';
+import { clientQueryKeys, sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
   MoreVerticalIcon,
@@ -559,9 +559,10 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       setIsLoading(true);
       try {
         await assignClientToSession(record.session_id, client.id);
-        await queryClient.invalidateQueries({
-          queryKey: sessionQueryKeys.all(Number(userId)),
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: sessionQueryKeys.all(Number(userId)) }),
+          queryClient.invalidateQueries({ queryKey: clientQueryKeys.all }),
+        ]);
         onChangeClient?.(record);
       } catch {
         toast({
