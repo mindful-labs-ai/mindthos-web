@@ -11,7 +11,7 @@ import { cn } from '@/lib/cn';
 import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Edit3Icon, PlusIcon, SideLockIcon, UploadIcon } from '@/shared/icons';
-import { Button, Text } from '@/shared/ui';
+import { Text } from '@/shared/ui';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useModalStore } from '@/stores/modalStore';
 import { CreateHandWrittenSessionModal } from '@/widgets/session/CreateHandWrittenSessionModal';
@@ -168,18 +168,14 @@ export const SideTab: React.FC<SideTabProps> = ({
             onOpenChange={setIsNewRecordMenuOpen}
             placement="bottom-right"
             trigger={
-              <Button
-                variant="outline"
-                tone="primary"
-                size="md"
-                className="w-full justify-center"
-                icon={<PlusIcon size={18} />}
+              <button
+                className="focus-default inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-green-80 bg-green-20 px-4 text-m font-medium text-primary transition-opacity hover:opacity-75"
                 onClick={async () => {
                   setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
                 }}
               >
-                새 상담 기록
-              </Button>
+                <PlusIcon size={18} />새 상담 기록
+              </button>
             }
             content={
               <div className="w-[200px] space-y-1">

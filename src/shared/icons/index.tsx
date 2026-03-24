@@ -1074,6 +1074,24 @@ export const GoogleIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
+export const KakaoIcon: React.FC<CustomIconProps> = ({
+  size = 20,
+  className,
+}) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+  >
+    <path
+      fill="#000000"
+      d="M12 3C6.48 3 2 6.44 2 10.61c0 2.68 1.78 5.03 4.46 6.36-.14.5-.91 3.22-.94 3.44 0 0-.02.16.08.22.1.06.22.01.22.01.29-.04 3.37-2.2 3.9-2.57.73.1 1.49.16 2.28.16 5.52 0 10-3.44 10-7.61C22 6.44 17.52 3 12 3z"
+    />
+  </svg>
+);
+
 // 편의를 위한 네임스페이스 export
 export const Icons = {
   // Stroke 버전

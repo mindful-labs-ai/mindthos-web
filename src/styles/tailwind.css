@@ -200,22 +200,22 @@ body {
     @apply py-[22px];
   }
   .nav-label {
-    @apply px-3 py-4 text-sm font-medium text-fg;
+    @apply px-3 py-4 text-sm font-medium text-grey-100;
   }
   .nav-content {
-    @apply transition-default flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-m font-medium active:bg-nav-click-bg;
+    @apply transition-default flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-m font-medium;
   }
   .active-nav {
-    @apply bg-nav-active-bg text-nav-active-text;
+    @apply bg-grey-20 text-grey-100;
   }
   .inactive-nav {
-    @apply text-nav-inactive-text opacity-90 hover:bg-nav-hover-bg;
+    @apply text-grey-60 opacity-90 hover:bg-grey-20;
   }
   .sidebar-credit-display {
-    @apply mb-5 flex select-none flex-col gap-y-3 rounded-md bg-bg-whisper px-1 py-3 text-left;
+    @apply relative mb-5 flex select-none flex-col gap-y-2.5 rounded-md bg-bg-whisper px-4 py-3 text-left;
   }
   .sidebar-credit-display-title {
-    @apply text-sm font-medium text-fg;
+    @apply text-sm font-medium text-grey-100;
   }
   .welcome-banner-height {
     @apply h-[180px];

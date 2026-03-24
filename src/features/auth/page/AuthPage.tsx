@@ -3,7 +3,7 @@ import React from 'react';
 import { trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import { GoogleIcon } from '@/shared/icons';
+import { GoogleIcon, KakaoIcon } from '@/shared/icons';
 import SignInForm from '@/widgets/auth/SignInForm';
 import SignUpForm from '@/widgets/auth/SignUpForm';
 
@@ -12,6 +12,7 @@ type FormStateType = 'signIn' | 'signUp';
 const AuthPage = () => {
   const [formState, setFormState] = React.useState<FormStateType>('signIn');
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [isKakaoLoading, setIsKakaoLoading] = React.useState(false);
   const [error, setError] = React.useState('');
 
   const handleStateChange = () => {
@@ -26,7 +27,6 @@ const AuthPage = () => {
     try {
       trackEvent(MixpanelEvent.LoginAttempt, { method: 'google' });
       await authService.loginWithGoogle();
-      // OAuth는 리다이렉트로 처리됨 (성공 트래킹은 OAuth 콜백에서 처리)
     } catch (err) {
       trackEvent(MixpanelEvent.LoginFailed, {
         method: 'google',
@@ -38,6 +38,27 @@ const AuthPage = () => {
           : 'Google 로그인에 실패했습니다. 다시 시도해주세요.'
       );
       setIsGoogleLoading(false);
+    }
+  };
+
+  const handleKakaoLogin = async () => {
+    setError('');
+    setIsKakaoLoading(true);
+
+    try {
+      trackEvent(MixpanelEvent.LoginAttempt, { method: 'kakao' });
+      await authService.loginWithKakao();
+    } catch (err) {
+      trackEvent(MixpanelEvent.LoginFailed, {
+        method: 'kakao',
+        error: err instanceof Error ? err.message : 'Unknown error',
+      });
+      setError(
+        err instanceof Error
+          ? err.message
+          : '카카오 로그인에 실패했습니다. 다시 시도해주세요.'
+      );
+      setIsKakaoLoading(false);
     }
   };
   return (
@@ -87,8 +108,8 @@ const AuthPage = () => {
                 </div>
               </div>
 
-              {/* Google Login Button */}
-              <div className="mb-6">
+              {/* OAuth Login Buttons */}
+              <div className="mb-6 flex flex-col gap-3">
                 <button
                   className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity hover:opacity-60"
                   onClick={handleGoogleLogin}
@@ -99,9 +120,20 @@ const AuthPage = () => {
                     ? 'Google에 연결 중...'
                     : 'Google로 계속하기'}
                 </button>
+                <button
+                  className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity hover:opacity-60"
+                  onClick={handleKakaoLogin}
+                  disabled={isKakaoLoading}
+                >
+                  <KakaoIcon size={20} className="mr-2" />
+                  {isKakaoLoading
+                    ? '카카오에 연결 중...'
+                    : '카카오로 계속하기'}
+                </button>
                 {formState === 'signUp' && (
                   <p className="mt-2 text-center text-xs text-grey-80">
-                    Google로 회원가입 시 위의 약관에 대한 동의로 취급 됩니다.
+                    소셜 로그인으로 회원가입 시 위의 약관에 대한 동의로 취급
+                    됩니다.
                   </p>
                 )}
               </div>

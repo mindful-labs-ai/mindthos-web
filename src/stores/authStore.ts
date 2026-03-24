@@ -22,6 +22,7 @@ interface AuthState {
 interface AuthActions {
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithKakao: () => Promise<void>;
   signup: (
     email: string,
     password: string,
@@ -137,6 +138,10 @@ export const useAuthStore = create<AuthStore>()(
 
       loginWithGoogle: async () => {
         await authService.loginWithGoogle();
+      },
+
+      loginWithKakao: async () => {
+        await authService.loginWithKakao();
       },
 
       signup: async (email, password, metadata) => {
