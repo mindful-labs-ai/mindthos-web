@@ -51,6 +51,10 @@ export const ClientListContainer: React.FC = () => {
     navigateWithUtm(getClientDetailRoute(client.id));
   };
 
+  const handleAnalyzeClick = (client: Client) => {
+    navigateWithUtm(`${getClientDetailRoute(client.id)}?tab=analyze`);
+  };
+
   const handleAddClient = () => {
     setSelectedClient(null);
     setIsAddModalOpen(true);
@@ -87,6 +91,7 @@ export const ClientListContainer: React.FC = () => {
             client={client}
             onClick={handleClientClick}
             onEditClick={handleEditClient}
+            onAnalyzeClick={handleAnalyzeClick}
             isReadOnly={isDummyFlow}
             searchQuery={searchQuery}
             isMobile={isMobile}

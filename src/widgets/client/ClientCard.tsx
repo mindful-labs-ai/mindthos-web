@@ -21,6 +21,7 @@ interface ClientCardProps {
   client: Client;
   onClick?: (client: Client) => void;
   onEditClick?: (client: Client) => void;
+  onAnalyzeClick?: (client: Client) => void;
   isReadOnly?: boolean;
   searchQuery?: string;
   isMobile?: boolean;
@@ -30,6 +31,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   client,
   onClick,
   onEditClick,
+  onAnalyzeClick,
   isReadOnly = false,
   searchQuery = '',
   isMobile = false,
@@ -253,7 +255,16 @@ export const ClientCard: React.FC<ClientCardProps> = ({
             </span>
           </div>
           {!isMobile && canAnalyze && (
-            <Badge tone="primary" variant="outline" size="md">
+            <Badge
+              tone="primary"
+              variant="outline"
+              size="md"
+              className="cursor-pointer transition-colors hover:bg-green-10"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                onAnalyzeClick?.(client);
+              }}
+            >
               클라이언트 분석 가능
             </Badge>
           )}
