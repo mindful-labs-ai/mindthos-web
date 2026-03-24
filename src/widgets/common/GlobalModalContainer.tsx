@@ -11,6 +11,7 @@ import {
 } from '@/features/settings/hooks/useCoupons';
 import { couponService } from '@/features/settings/services/couponService';
 import { clientQueryKeys } from '@/shared/constants/queryKeys';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
@@ -56,6 +57,8 @@ export const GlobalModalContainer = () => {
   const { currentLevel, completeNextStep } = useQuestStore();
   const user = useAuthStore((state) => state.user);
   const location = useLocation();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const isGenogramRoute = location.pathname.includes(ROUTES.GENOGRAM);
   const isTermsAgreementRoute = location.pathname === ROUTES.TERMS_AGREEMENT;
   const isPaymentRoute = location.pathname.startsWith('/payment');
@@ -178,9 +181,12 @@ export const GlobalModalContainer = () => {
       )}
 
       {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram/약관 동의 라우트에서는 숨김 */}
-      {!isGenogramRoute && !isTermsAgreementRoute && !isPaymentRoute && (
-        <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
-      )}
+      {!isMobileView &&
+        !isGenogramRoute &&
+        !isTermsAgreementRoute &&
+        !isPaymentRoute && (
+          <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
+        )}
 
       {/* 사용자 정보 수정 모달 */}
       <UserEditModal
