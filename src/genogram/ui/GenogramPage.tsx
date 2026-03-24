@@ -75,6 +75,8 @@ export interface GenogramPageProps {
   hideToolbar?: boolean;
   /** 빈 상태 패널 하단에 표시할 커스텀 액션 */
   emptyStateActions?: React.ReactNode;
+  /** 읽기 전용 모드 (이동/줌만 가능, 편집 불가) */
+  readOnly?: boolean;
 }
 
 export interface GenogramPageHandle {
@@ -258,7 +260,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         return null;
       }
 
-      const pixelRatio = 2;
+      // 모바일에서 뷰포트가 작으므로 pixelRatio를 높여 선명하게 캡처
+      const pixelRatio = Math.max(2, Math.ceil(1920 / paneWidth));
       const VISUAL_PADDING = 24;
       const cropX = Math.max(0, domMinX - VISUAL_PADDING);
       const cropY = Math.max(0, domMinY - VISUAL_PADDING);
@@ -726,11 +729,11 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onPaneClick={handlePaneClick}
-          onNodeClick={handleNodeClick}
-          onEdgeClick={handleEdgeClick}
+          onNodesChange={props.readOnly ? undefined : onNodesChange}
+          onEdgesChange={props.readOnly ? undefined : onEdgesChange}
+          onPaneClick={props.readOnly ? undefined : handlePaneClick}
+          onNodeClick={props.readOnly ? undefined : handleNodeClick}
+          onEdgeClick={props.readOnly ? undefined : handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           nodeOrigin={[0.5, 0.5]}
@@ -742,7 +745,16 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
           defaultEdgeOptions={{ type: 'relationship', interactionWidth: 20 }}
           proOptions={{ hideAttribution: true }}
           style={{ backgroundColor: '#F4F5FA' }}
-          {...flowInteraction}
+          {...(props.readOnly
+            ? {
+                nodesDraggable: false,
+                nodesConnectable: false,
+                elementsSelectable: false,
+                panOnDrag: true,
+                zoomOnPinch: true,
+                zoomOnScroll: false,
+              }
+            : flowInteraction)}
           {...KEYBOARD_DISABLED_PROPS}
         >
           {visibility.grid && (
@@ -756,10 +768,12 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
               <HorizontalGridLines gap={180} color={GRID_DOT_COLOR} />
             </>
           )}
-          {!props.hideToolbar && <Controls position="bottom-left" />}
+          {!props.hideToolbar && !props.readOnly && (
+            <Controls position="bottom-left" />
+          )}
 
           {/* 하단 중앙 툴바 */}
-          {!props.hideToolbar && (
+          {!props.hideToolbar && !props.readOnly && (
             <Panel position="bottom-center" className="mb-4">
               <GenogramToolbar
                 toolMode={toolMode}
@@ -774,8 +788,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             </Panel>
           )}
 
-          {/* 빈 상태 안내 */}
-          {nodes.length === 0 && (
+          {/* 빈 상태 안내 — hideToolbar 모드(클라이언트 미선택)에서는 숨김 */}
+          {nodes.length === 0 && !props.hideToolbar && (
             <EmptyStatePanel actions={props.emptyStateActions} />
           )}
 

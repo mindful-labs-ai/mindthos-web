@@ -8,179 +8,16 @@ import type {
   AIGenogramOutput,
 } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { Modal } from '@/shared/ui/composites/Modal';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Auto-resize Textarea 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface AutoResizeTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  minRows?: number;
-  maxRows?: number;
-}
-
-function AutoResizeTextarea({
-  value,
-  onChange,
-  minRows = 2,
-  maxRows = 6,
-  className,
-  ...props
-}: AutoResizeTextareaProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    // 높이 초기화 후 scrollHeight로 설정
-    textarea.style.height = 'auto';
-    const lineHeight = 20; // 대략적인 line-height
-    const minHeight = minRows * lineHeight;
-    const maxHeight = maxRows * lineHeight;
-    const newHeight = Math.min(
-      Math.max(textarea.scrollHeight, minHeight),
-      maxHeight
-    );
-    textarea.style.height = `${newHeight}px`;
-  }, [value, minRows, maxRows]);
-
-  return (
-    <textarea
-      ref={textareaRef}
-      value={value}
-      onChange={onChange}
-      className={cn(
-        'typo-sm resize-none rounded-md bg-primary-subtle px-2 py-2 text-fg placeholder:text-fg-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary',
-        className
-      )}
-      {...props}
-    />
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 커스텀 드롭다운 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
-interface CustomSelectProps {
-  value: string;
-  options: SelectOption[];
-  onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-}
-
-function CustomSelect({
-  value,
-  options,
-  onChange,
-  placeholder = '선택',
-  className,
-}: CustomSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const selectedLabel =
-    options.find((opt) => opt.value === value)?.label || placeholder;
-
-  // 드롭다운 위치 계산
-  const updatePosition = useCallback(() => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: Math.max(rect.width, 100),
-      });
-    }
-  }, []);
-
-  // 외부 클릭 감지
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleOpen = () => {
-    updatePosition();
-    setIsOpen(true);
-  };
-
-  const handleSelect = (optValue: string) => {
-    onChange(optValue);
-    setIsOpen(false);
-  };
-
-  return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={handleOpen}
-        className={cn(
-          'typo-xs flex h-[22px] w-full items-center justify-between rounded-md border border-border bg-surface px-[6px] text-fg',
-          className
-        )}
-      >
-        <span className="truncate">{selectedLabel}</span>
-        <ChevronDown className="h-3 w-3 shrink-0 text-fg-muted" />
-      </button>
-
-      {isOpen &&
-        createPortal(
-          <div
-            ref={dropdownRef}
-            style={{
-              position: 'fixed',
-              top: position.top,
-              left: position.left,
-              minWidth: position.width,
-              zIndex: 1100,
-            }}
-            className="rounded-xl bg-surface py-2 shadow-elevated"
-          >
-            {options.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => handleSelect(opt.value)}
-                className={cn(
-                  'typo-sm flex w-full items-center px-4 py-2 hover:bg-surface-contrast',
-                  opt.value === value ? 'font-medium text-fg' : 'text-fg-muted'
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>,
-          document.body
-        )}
-    </>
-  );
-}
+import {
+  AutoResizeTextarea,
+  Chip,
+  FlatCustomSelect as CustomSelect,
+  DeleteConfirmModal,
+} from './components';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 옵션 데이터
@@ -269,95 +106,6 @@ interface FamilyMemberCardProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 삭제 확인 모달 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface DeleteConfirmModalProps {
-  isOpen: boolean;
-  name: string;
-  onClose: () => void;
-  onConfirm: () => void;
-}
-
-function DeleteConfirmModal({
-  isOpen,
-  name,
-  onClose,
-  onConfirm,
-}: DeleteConfirmModalProps) {
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-overlay flex items-center justify-center">
-      {/* 백드롭 */}
-      <button
-        type="button"
-        className="absolute inset-0 bg-overlay-bg"
-        onClick={onClose}
-        aria-label="모달 닫기"
-      />
-      {/* 모달 */}
-      <div className="relative w-[400px] rounded-2xl bg-surface px-8 py-10">
-        {/* 닫기 버튼 */}
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 p-1 text-fg-muted hover:text-fg"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
-        {/* 제목 */}
-        <h2 className="typo-xl mb-8 text-center font-headline text-fg">
-          구성원 삭제
-        </h2>
-
-        {/* 내용 */}
-        <p className="typo-l mb-2 text-center font-medium text-fg">
-          {name} 가족 구성원을 삭제하시겠습니까?
-        </p>
-        <p className="typo-sm mb-10 text-center text-fg-muted">
-          한 번 삭제하면 해당 정보를 다시 불러올 수 없어요.
-          <br />
-          그래도 삭제하시겠습니까?
-        </p>
-
-        {/* 삭제 버튼 */}
-        <button
-          onClick={onConfirm}
-          className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
-        >
-          삭제하기
-        </button>
-      </div>
-    </div>,
-    document.body
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 칩 컴포넌트
-// ─────────────────────────────────────────────────────────────────────────────
-
-function Chip({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={cn(
-        'typo-xs h-[22px] items-center truncate rounded-md border border-border bg-surface-contrast px-1.5 py-1 text-fg',
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // 메인 컴포넌트
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -374,6 +122,9 @@ export function FamilyMemberCard({
   isEditing: controlledIsEditing,
   onEditChange,
 }: FamilyMemberCardProps) {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   // 외부 제어 또는 내부 상태 사용
   const [internalIsEditing, setInternalIsEditing] = useState(false);
   const isEditing = controlledIsEditing ?? internalIsEditing;
@@ -517,7 +268,7 @@ export function FamilyMemberCard({
         {relations.map((rel, idx) => (
           <span
             key={`${rel.type}-${rel.targetId}-${idx}`}
-            className="typo-xs inline-flex h-[22px] items-center gap-1 rounded-md border border-border bg-surface-contrast px-2 text-fg"
+            className="inline-flex items-center rounded-md border border-grey-40 bg-grey-10 px-1.5 py-0.5 text-sm font-sub text-grey-100"
           >
             {rel.targetId}-{RELATION_TYPE_LABELS[rel.type] || rel.type}
             <button
@@ -539,8 +290,57 @@ export function FamilyMemberCard({
           <Plus className="h-3 w-3" />
         </button>
 
-        {/* 관계 추가 팝오버 (Portal로 스크롤 컨테이너에 렌더링) */}
-        {showAddPopover &&
+        {/* 관계 추가 팝오버 */}
+        {isMobileView ? (
+          <Modal
+            open={showAddPopover}
+            onOpenChange={setShowAddPopover}
+            mobileVariant="fullScreen"
+            hideCloseButton
+            disableHistory
+            className="flex flex-col"
+          >
+            <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
+              <BackButton onClick={() => setShowAddPopover(false)} />
+              <p className="text-l font-medium text-grey-80">관계 추가하기</p>
+            </div>
+            <div className="flex-1 px-4 py-6 md:px-10">
+              <div className="flex items-center justify-between py-4">
+                <span className="text-m font-medium text-grey-100">대상</span>
+                <CustomSelect
+                  value={String(newRelationTarget ?? '')}
+                  options={availableTargets.map((s) => ({
+                    value: String(s.id),
+                    label: s.name || `인물 ${s.id}`,
+                  }))}
+                  onChange={(v) => setNewRelationTarget(Number(v))}
+                  className="w-[100px]"
+                />
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <span className="text-m font-medium text-grey-100">
+                  관계 종류
+                </span>
+                <CustomSelect
+                  value={newRelationType}
+                  options={RELATION_TYPE_OPTIONS}
+                  onChange={(v) => setNewRelationType(v as RelationType)}
+                  className="w-[80px]"
+                />
+              </div>
+            </div>
+            <div className="flex-shrink-0 px-4 pb-4 md:px-10">
+              <button
+                onClick={handleAddRelation}
+                disabled={newRelationTarget === null}
+                className="hover:bg-green-80/90 h-12 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-colors disabled:bg-grey-20 disabled:text-grey-60"
+              >
+                추가하기
+              </button>
+            </div>
+          </Modal>
+        ) : (
+          showAddPopover &&
           portalContainer &&
           createPortal(
             <div
@@ -609,7 +409,8 @@ export function FamilyMemberCard({
               </button>
             </div>,
             portalContainer
-          )}
+          )
+        )}
       </div>
     );
   };
@@ -626,7 +427,7 @@ export function FamilyMemberCard({
   return (
     <div
       className={cn(
-        'relative flex h-[276px] max-w-[489px] flex-col rounded-xl border border-border bg-surface'
+        'relative flex h-[276px] flex-col rounded-xl border border-grey-30 bg-white'
       )}
     >
       {/* ─────────────────────────────────────────────────────────────────────
@@ -673,10 +474,10 @@ export function FamilyMemberCard({
                 value={subject.name || ''}
                 onChange={(e) => handleFieldChange('name', e.target.value)}
                 placeholder={`인물 ${subject.id}`}
-                className="typo-sm mt-1 w-full bg-primary-subtle text-center font-medium text-fg placeholder:text-fg-muted focus:outline-none"
+                className="mt-1 w-full bg-primary-subtle text-center text-m font-emphasize text-grey-100 placeholder:text-fg-muted focus:outline-none"
               />
             ) : (
-              <span className="typo-sm mt-1 max-w-[100px] truncate font-medium text-fg">
+              <span className="mt-1 max-w-[100px] truncate text-center text-m font-emphasize text-grey-100">
                 {subject.name || `인물 ${subject.id}`}
               </span>
             )}

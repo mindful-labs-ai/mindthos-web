@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from 'react';
 
+import { BackButton } from '@/shared/ui/atoms/BackButton';
+
 export interface GenogramClientViewProps {
   header: ReactNode;
   content: ReactNode;
@@ -8,6 +10,10 @@ export interface GenogramClientViewProps {
   exportModal: ReactNode;
   guideModal: ReactNode;
   reportModal: ReactNode;
+  isMobileView?: boolean;
+  mobileHeaderTitle?: string;
+  mobileHeaderRight?: ReactNode;
+  onBack?: () => void;
 }
 
 export const GenogramClientView: FC<GenogramClientViewProps> = ({
@@ -18,28 +24,40 @@ export const GenogramClientView: FC<GenogramClientViewProps> = ({
   exportModal,
   guideModal,
   reportModal,
+  isMobileView = false,
+  mobileHeaderTitle,
+  mobileHeaderRight,
+  onBack,
 }) => {
   return (
-    <div className="relative h-full">
-      {/* 캔버스 위 오버레이: 드롭다운 + 액션 버튼 */}
-      {header}
+    <div className="relative flex h-full flex-col">
+      {isMobileView ? (
+        <>
+          <div className="flex h-[67px] flex-shrink-0 items-center justify-between border-b border-grey-30 bg-white px-4">
+            <div className="flex items-center gap-3">
+              {onBack && <BackButton onClick={onBack} />}
+              <p className="text-l font-medium text-grey-80">
+                {mobileHeaderTitle || '가계도'}
+              </p>
+            </div>
+            {mobileHeaderRight}
+          </div>
+          <div className="relative flex-1 overflow-hidden">
+            {header}
+            {content}
+          </div>
+        </>
+      ) : (
+        <>
+          {header}
+          {content}
+        </>
+      )}
 
-      {/* 콘텐츠 영역 */}
-      {content}
-
-      {/* 클라이언트 추가 모달 */}
       {addClientModal}
-
-      {/* 가계도 초기화 확인 모달 */}
       {resetModal}
-
-      {/* 이미지 내보내기 모달 */}
       {exportModal}
-
-      {/* 가계도 안내 모달 */}
       {guideModal}
-
-      {/* 가계도 분석 보고서 모달 */}
       {reportModal}
     </div>
   );

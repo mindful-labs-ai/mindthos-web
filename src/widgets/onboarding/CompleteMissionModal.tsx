@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import { useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 
@@ -57,17 +55,7 @@ export const CompleteMissionModal = ({
 
   const isFinalReward = showCompleteModalStep === 5;
 
-  useEffect(() => {
-    if (isOpen) {
-      // 강렬한 단일 폭죽 효과
-      confetti({
-        particleCount: 150,
-        spread: 70,
-        origin: { y: 0.6 }, // 모달 위치 근처에서 시작
-        zIndex: 1300,
-      });
-    }
-  }, [isOpen]);
+  // 컨페티는 questStore에서 미션 완료 시 즉시 발사하므로 여기서는 생략
 
   if (!content && !isFinalReward) return null;
 

@@ -177,10 +177,10 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
       tabIndex={0}
       className="sidebar-credit-display"
     >
-      <Text className="sidebar-credit-display-title relative px-3">
+      <Text className="sidebar-credit-display-title">
         마음토스 크레딧
         <button
-          className="absolute right-3 top-0"
+          className="absolute right-2 top-2"
           onClick={(e) => e.stopPropagation()}
         >
           <CreditPricingTooltip placement="right">
@@ -199,7 +199,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
           </CreditPricingTooltip>
         </button>
       </Text>
-      <div className="flex items-center gap-2 px-3">
+      <div className="flex items-center gap-2">
         <ProgressCircle
           value={percentage}
           size={28}
