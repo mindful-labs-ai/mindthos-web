@@ -31,18 +31,18 @@ export const QuestMissionModal = () => {
     >
       <div className="flex flex-col items-center px-8 py-6 text-center">
         {/* Title */}
-        <h2 className="typo-2xl font-headline text-fg">반가워요, 상담사님!</h2>
+        <h2 className="typo-xl font-headline text-fg">반가워요, 상담사님!</h2>
 
         {/* Description */}
         <div className="mt-8">
-          <p className="typo-l font-headline leading-relaxed text-fg">
+          <p className="typo-m font-emphasize leading-relaxed text-fg">
             상담사의 든든한 임상 파트너, 마음토스
           </p>
-          <p className="typo-l font-headline leading-relaxed text-fg">
+          <p className="typo-m font-emphasize leading-relaxed text-fg">
             100% 활용하기 위한 <span className="text-primary">4가지 미션</span>
             을 완료하면
           </p>
-          <p className="typo-l font-headline leading-relaxed text-fg">
+          <p className="typo-m font-emphasize leading-relaxed text-fg">
             <span className="text-primary">스타터 플랜 1개월*</span>을 선물로
             드려요!
           </p>
@@ -69,7 +69,7 @@ export const QuestMissionModal = () => {
               <span className="typo-m font-normal text-surface">
                 마음토스 스타터 플랜
               </span>
-              <p className="text-3xl font-extrabold text-white drop-shadow-sm">
+              <p className="text-2xl font-extrabold text-white drop-shadow-sm">
                 1개월 무료 이용권
               </p>
             </div>
