@@ -3,10 +3,7 @@ export type { AutoResizeTextareaProps } from './AutoResizeTextarea';
 
 export { Chip } from './Chip';
 
-export {
-  FlatCustomSelect,
-  GroupedCustomSelect,
-} from './CustomSelect';
+export { FlatCustomSelect, GroupedCustomSelect } from './CustomSelect';
 export type {
   SelectOption,
   OptionGroup,

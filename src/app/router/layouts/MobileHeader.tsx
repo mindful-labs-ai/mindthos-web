@@ -32,9 +32,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   }, [location.pathname]);
 
   // 가계도 라우트: 클라이언트 드롭다운
-  const genogramRightSlot = isGenogram ? (
-    <GenogramClientButton />
-  ) : null;
+  const genogramRightSlot = isGenogram ? <GenogramClientButton /> : null;
 
   const rightSlot = (() => {
     if (genogramRightSlot) return genogramRightSlot;
@@ -137,7 +135,10 @@ function GenogramClientButton() {
                     // fullScreen history.back() 완료 후 URL 변경
                     const onPop = () => {
                       window.removeEventListener('popstate', onPop);
-                      setTimeout(() => setSearchParamsWithUtm({ clientId: id }), 50);
+                      setTimeout(
+                        () => setSearchParamsWithUtm({ clientId: id }),
+                        50
+                      );
                     };
                     window.addEventListener('popstate', onPop);
                   }}
@@ -147,9 +148,13 @@ function GenogramClientButton() {
                       : 'border-grey-30 bg-white hover:bg-grey-10'
                   }`}
                 >
-                  <span className="text-m font-medium text-grey-100">{client.name}</span>
+                  <span className="text-m font-medium text-grey-100">
+                    {client.name}
+                  </span>
                   {selectedClient?.id === client.id && (
-                    <span className="text-sm font-medium text-green-80">선택됨</span>
+                    <span className="text-sm font-medium text-green-80">
+                      선택됨
+                    </span>
                   )}
                 </button>
               ))}

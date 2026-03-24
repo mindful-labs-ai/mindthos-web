@@ -457,7 +457,9 @@ export function FamilyMemberListStep({
           </h3>
 
           {/* 카드 그리드 */}
-          <div className={`grid gap-5 ${isMobileView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+          <div
+            className={`grid gap-5 ${isMobileView ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
+          >
             {data.subjects.map((subject, index) => (
               <FamilyMemberCard
                 key={subject.id}
@@ -525,7 +527,9 @@ export function FamilyMemberListStep({
       </div>
 
       {/* 하단 고정 버튼 */}
-      <div className={`flex shrink-0 justify-center ${isMobileView ? 'px-4 pb-4 md:px-10' : 'mt-4 pt-4'}`}>
+      <div
+        className={`flex shrink-0 justify-center ${isMobileView ? 'px-4 pb-4 md:px-10' : 'mt-4 pt-4'}`}
+      >
         <button
           onClick={() => {
             if (isEditMode) {
@@ -538,7 +542,7 @@ export function FamilyMemberListStep({
               setShowConfirmModal(true);
             }
           }}
-          className={`h-12 w-full rounded-xl bg-green-80 text-l font-medium text-white transition-colors hover:bg-green-80/90 ${isMobileView ? '' : 'max-w-[500px]'}`}
+          className={`hover:bg-green-80/90 h-12 w-full rounded-xl bg-green-80 text-l font-medium text-white transition-colors ${isMobileView ? '' : 'max-w-[500px]'}`}
         >
           {buttonText}
         </button>

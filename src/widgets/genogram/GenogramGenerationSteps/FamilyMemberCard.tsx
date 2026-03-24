@@ -318,7 +318,9 @@ export function FamilyMemberCard({
                 />
               </div>
               <div className="flex items-center justify-between py-4">
-                <span className="text-m font-medium text-grey-100">관계 종류</span>
+                <span className="text-m font-medium text-grey-100">
+                  관계 종류
+                </span>
                 <CustomSelect
                   value={newRelationType}
                   options={RELATION_TYPE_OPTIONS}
@@ -331,7 +333,7 @@ export function FamilyMemberCard({
               <button
                 onClick={handleAddRelation}
                 disabled={newRelationTarget === null}
-                className="h-12 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-colors hover:bg-green-80/90 disabled:bg-grey-20 disabled:text-grey-60"
+                className="hover:bg-green-80/90 h-12 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-colors disabled:bg-grey-20 disabled:text-grey-60"
               >
                 추가하기
               </button>

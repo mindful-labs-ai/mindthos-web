@@ -768,7 +768,9 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
               <HorizontalGridLines gap={180} color={GRID_DOT_COLOR} />
             </>
           )}
-          {!props.hideToolbar && !props.readOnly && <Controls position="bottom-left" />}
+          {!props.hideToolbar && !props.readOnly && (
+            <Controls position="bottom-left" />
+          )}
 
           {/* 하단 중앙 툴바 */}
           {!props.hideToolbar && !props.readOnly && (

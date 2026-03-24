@@ -126,9 +126,7 @@ const AuthPage = () => {
                   disabled={isKakaoLoading}
                 >
                   <KakaoIcon size={20} className="mr-2" />
-                  {isKakaoLoading
-                    ? '카카오에 연결 중...'
-                    : '카카오로 계속하기'}
+                  {isKakaoLoading ? '카카오에 연결 중...' : '카카오로 계속하기'}
                 </button>
                 {formState === 'signUp' && (
                   <p className="mt-2 text-center text-xs text-grey-80">
