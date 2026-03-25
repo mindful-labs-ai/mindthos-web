@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import type { TemplateListItem } from '@/features/template/types';
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { StarIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
+import { Modal } from '@/shared/ui/composites/Modal';
 
 export interface TemplateCardProps {
   template: TemplateListItem;
@@ -26,13 +27,20 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
     onTogglePin?.(template);
   };
 
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   const handleDefaultClick = () => {
     if (!template.is_default) {
-      trackEvent(MixpanelEvent.TemplateSetDefault, {
-        template_id: template.id,
-      });
-      onSetDefault?.(template);
+      setIsConfirmOpen(true);
     }
+  };
+
+  const handleConfirmDefault = () => {
+    trackEvent(MixpanelEvent.TemplateSetDefault, {
+      template_id: template.id,
+    });
+    onSetDefault?.(template);
+    setIsConfirmOpen(false);
   };
 
   return (
@@ -75,6 +83,40 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
           </Button>
         )}
       </div>
+      <Modal
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        className="max-w-sm"
+      >
+        <div className="flex flex-col items-center gap-4 p-2 text-center">
+          <p className="text-l font-emphasize text-grey-100">
+            기본 노트를 변경하시겠습니까?
+          </p>
+          <p className="text-sm text-grey-60">
+            '{template.title}'을(를) 기본 노트로 설정합니다.
+          </p>
+          <div className="flex w-full gap-3">
+            <Button
+              variant="outline"
+              tone="neutral"
+              size="md"
+              className="flex-1"
+              onClick={() => setIsConfirmOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              variant="solid"
+              tone="primary"
+              size="md"
+              className="flex-1"
+              onClick={handleConfirmDefault}
+            >
+              변경하기
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
