@@ -75,6 +75,7 @@ export interface ConnectionLayout {
   strokeWidth: (typeof StrokeWidth)[keyof typeof StrokeWidth];
   strokeColor: string;
   textColor: string;
+  fontSize?: number;
 }
 
 // Connection

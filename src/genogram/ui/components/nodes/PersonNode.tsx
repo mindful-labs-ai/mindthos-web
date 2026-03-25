@@ -32,6 +32,8 @@ export interface PersonNodeData {
   isDead?: boolean;
   isSelected?: boolean;
   lifeSpanLabel?: string | null;
+  birthYear?: string | null;
+  deathYear?: string | null;
   detailTexts?: string[];
   shortNote?: string | null;
   illness?: Illness;
@@ -39,6 +41,7 @@ export interface PersonNodeData {
   sizePx?: number;
   bgColor?: string;
   textColor?: string;
+  fontSize?: number;
   [key: string]: unknown;
 }
 
@@ -127,6 +130,8 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
     isDead,
     illness,
     lifeSpanLabel,
+    birthYear,
+    deathYear,
     detailTexts,
     shortNote,
   } = nodeData;
@@ -136,6 +141,11 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
   const textColor = nodeData.textColor || COLORS.text;
   const strokeColor = COLORS.stroke;
   const strokeWidth = STROKE_WIDTH_NODE;
+  const fsOffset = nodeData.fontSize ?? 0;
+  const fName = FONT_SIZE_NAME + fsOffset;
+  const fDetail = FONT_SIZE_DETAIL + fsOffset;
+  const fXXS = FONT_SIZE_XXS + fsOffset;
+  const fSymbol = FONT_SIZE_SYMBOL + fsOffset;
 
   const renderShape = () => {
     const c = S / 2; // 중심
@@ -356,7 +366,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
               x={c}
               y={c + 5}
               textAnchor="middle"
-              fontSize={FONT_SIZE_SYMBOL}
+              fontSize={fSymbol}
               fill={textColor}
             >
               ?
@@ -684,7 +694,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
   const haloOffset = (haloSize - S) / 2;
 
   return (
-    <div className="relative">
+    <div className="pointer-events-none relative">
       {/* 선택 시 초록색 반투명 원 배경 */}
       {selected && (
         <div
@@ -700,13 +710,44 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
         />
       )}
 
-      {/* 상단: 생몰연도 */}
-      {lifeSpanLabel && (
+      {/* 상단: 생몰연도 — '-'이 항상 도형 중앙, 좌측에 출생, 우측에 사망 */}
+      {(birthYear || deathYear) && (
+        <div
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-fg"
+          style={{
+            bottom: S + 2 + Math.max(0, fsOffset) * 0.8,
+            fontSize: fXXS,
+            textShadow:
+              '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
+          }}
+        >
+          <span
+            className="inline-block text-right"
+            style={{ width: fXXS * 2.5 }}
+          >
+            {birthYear ?? ''}
+          </span>
+          <span
+            className="inline-block text-center"
+            style={{ width: fXXS * 0.6 }}
+          >
+            -
+          </span>
+          <span
+            className="inline-block text-left"
+            style={{ width: fXXS * 2.5 }}
+          >
+            {deathYear ?? ''}
+          </span>
+        </div>
+      )}
+      {/* fallback: birthYear/deathYear 미제공 시 기존 lifeSpanLabel */}
+      {!birthYear && !deathYear && lifeSpanLabel && (
         <div
           className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-fg"
           style={{
-            bottom: S + 2,
-            fontSize: FONT_SIZE_XXS,
+            bottom: S + 2 + Math.max(0, fsOffset) * 0.8,
+            fontSize: fXXS,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
@@ -720,7 +761,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
         width={S}
         height={S}
         viewBox={`0 0 ${S} ${S}`}
-        className="cursor-pointer"
+        className="pointer-events-auto cursor-pointer"
       >
         <defs>{renderClipPath()}</defs>
         {renderShape()}
@@ -735,7 +776,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
           <span
             className="font-bold"
             style={{
-              fontSize: FONT_SIZE_DETAIL,
+              fontSize: fDetail,
               color: textColor,
               textShadow:
                 '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
@@ -751,9 +792,10 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
         <div
           className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-normal italic text-fg"
           style={{
-            left: S + 8,
+            left: S + 8 + Math.max(0, fsOffset) * 0.8,
             color: textColor,
-            fontSize: FONT_SIZE_DETAIL,
+            fontSize: fDetail,
+            lineHeight: `${fDetail + 6}px`,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
@@ -769,14 +811,14 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
         <div
           className="absolute whitespace-normal font-normal italic text-fg"
           style={{
-            left: S + 8,
+            left: S + 8 + Math.max(0, fsOffset) * 0.8,
             top: hasDetail
-              ? `calc(50% + ${(detailTexts.length * 20) / 2 + 4}px)`
+              ? `calc(50% + ${(detailTexts.length * (fDetail + 6)) / 2 + 4}px)`
               : '50%',
             color: textColor,
-            fontSize: FONT_SIZE_DETAIL - 2,
-            width: 160,
-            maxWidth: 160,
+            fontSize: fDetail - 2,
+            width: 160 + Math.max(0, fsOffset) * 4,
+            maxWidth: 160 + Math.max(0, fsOffset) * 4,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
@@ -789,8 +831,8 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       <div
         className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-semibold text-fg"
         style={{
-          fontSize: FONT_SIZE_NAME,
-          top: S + 4,
+          fontSize: fName,
+          top: S + 4 + Math.max(0, fsOffset) * 0.5,
           textShadow:
             '-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, -1px -2px 0 #fff, 1px -2px 0 #fff, -1px 2px 0 #fff, 1px 2px 0 #fff, -2px -1px 0 #fff, 2px -1px 0 #fff, -2px 1px 0 #fff, 2px 1px 0 #fff',
         }}
