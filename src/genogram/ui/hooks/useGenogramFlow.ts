@@ -103,7 +103,7 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
     (typeof InfluenceStatus)[keyof typeof InfluenceStatus]
   >(InfluenceStatus.Focused_On);
   const [pendingConnectionKind, setPendingConnectionKind] = useState<
-    'relation' | 'influence' | 'partner' | 'child'
+    'relation' | 'influence' | 'partner' | 'child' | 'parent'
   >('relation');
 
   // 도메인 → ReactFlow 동기화
@@ -535,11 +535,11 @@ export const useGenogramFlow = (options: UseGenogramFlowOptions = {}) => {
 
   // 부모 쌍 복합 생성 (자동 선택)
   const addParentPair = useCallback(
-    (childId: string) => {
+    (childId: string, centerPosition?: { x: number; y: number }) => {
       const editor = getEditor();
       if (!editor) return null;
 
-      const result = editor.addParentPair(childId);
+      const result = editor.addParentPair(childId, centerPosition);
       editor.select([result.fatherId, result.motherId], true);
       return result;
     },
