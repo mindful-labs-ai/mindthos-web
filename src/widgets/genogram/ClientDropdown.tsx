@@ -104,7 +104,7 @@ export function ClientDropdown({
       {/* Trigger 버튼 */}
       <Button
         variant="outline"
-        className="gap-2 bg-surface"
+        className={`gap-2 bg-surface ${!selectedClient && !isTemporaryMode ? 'animate-pulse-glow-subtle' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         <GenogramIcon size={18} />
