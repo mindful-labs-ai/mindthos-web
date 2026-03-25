@@ -101,7 +101,7 @@ function GenogramClientButton() {
     <>
       <Button
         variant="outline"
-        className="gap-2 bg-surface"
+        className={`gap-2 bg-surface ${!clientId ? 'animate-pulse-glow-subtle' : ''}`}
         onClick={() => setIsOpen(true)}
       >
         <GenogramIcon size={18} />

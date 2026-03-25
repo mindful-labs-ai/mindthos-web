@@ -441,6 +441,24 @@ body {
     animation: pulse-glow 1.5s ease-in-out infinite;
   }
 
+  /* outline 버튼용 - border 색상 기반 펄스 글로우 */
+  @keyframes pulse-glow-subtle {
+    0% {
+      box-shadow: 0 0 0 0 rgba(156, 163, 175, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(156, 163, 175, 0);
+    }
+  }
+
+  .animate-pulse-glow-subtle {
+    animation: pulse-glow-subtle 1.5s ease-in-out infinite;
+  }
+
+  /* 부모 생성 모드에서 파트너선 hover 시 커서 포인터 */
+  [data-parent-mode='true'] [data-edge-type='Partner_Line']:hover {
+    cursor: pointer;
+  }
   /* 미션 진행 중 버튼 - 쉬머 프로그레스 애니메이션 */
   @keyframes shimmer-progress {
     0% {

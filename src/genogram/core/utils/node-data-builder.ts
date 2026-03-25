@@ -27,6 +27,25 @@ export function buildLifeSpanLabel(
 }
 
 /**
+ * 출생/사망 연도를 분리하여 반환합니다.
+ * 출생연도는 왼쪽, 사망연도는 오른쪽에 고정 배치하기 위함.
+ */
+export function buildLifeSpanParts(
+  personAttr: PersonAttribute | null,
+  visibility: Visibility
+): { birthYear: string | null; deathYear: string | null } {
+  const birthYear =
+    visibility.birthDate && personAttr?.lifeSpan.birth
+      ? personAttr.lifeSpan.birth.slice(0, 4)
+      : null;
+  const deathYear =
+    visibility.deathDate && personAttr?.isDead && personAttr.lifeSpan.death
+      ? personAttr.lifeSpan.death.slice(0, 4)
+      : null;
+  return { birthYear, deathYear };
+}
+
+/**
  * 상세정보 텍스트 배열을 생성합니다.
  */
 export function buildDetailTexts(personAttr: PersonAttribute | null): string[] {

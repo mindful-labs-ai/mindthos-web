@@ -29,6 +29,7 @@ import {
 } from '@/genogram/core/types/enums';
 
 import { AnnotationPropertyPanel } from './components/AnnotationPropertyPanel';
+import { ConnectionCursor } from './components/ConnectionCursor';
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
 import { EmptyStatePanel } from './components/EmptyStatePanel';
@@ -467,6 +468,19 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       pendingRelationStatus,
       pendingInfluenceStatus,
       fabSourceId,
+      onParentCreateAtPosition: useCallback(
+        (childId: string, position: { x: number; y: number }) => {
+          addParentPair(childId, position);
+        },
+        [addParentPair]
+      ),
+      onParentNodeClick: useCallback(
+        (parentId: string, childId: string) => {
+          // 기존 노드를 부모로, fabSourceId(자식)를 자식으로 연결
+          addChildConnectionToParentRef(parentId, childId, pendingChildStatus);
+        },
+        [addChildConnectionToParentRef, pendingChildStatus]
+      ),
       onPartnerCreateAtPosition: handlePartnerCreateAtPosition,
       onChildCreateAtPosition: handleChildCreateAtPosition,
       onChildNodeClick: useCallback(
@@ -493,6 +507,9 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       onAnnotationCreate: addAnnotation,
       onMultiSelectToggle: deselectNode,
       edges,
+      onConnectionComplete: useCallback(() => {
+        setToolMode(ToolMode.Select_Tool);
+      }, [setToolMode]),
     });
 
     // 속성 패널 닫기
@@ -614,7 +631,10 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         switch (action) {
           case 'add-parent':
             if (context.type === 'single-subject') {
-              addParentPair(context.subjectId);
+              // 부모 생성 도구 모드 진입: 소스(자식) 설정 + Create_Connection_Tool + parent kind
+              setFabSourceId(context.subjectId);
+              setPendingConnectionKind('parent');
+              setToolMode(ToolMode.Create_Connection_Tool);
             }
             break;
           case 'add-sibling':
@@ -707,7 +727,6 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         }
       },
       [
-        addParentPair,
         addSibling,
         addPartnerConnection,
         addRelationConnection,
@@ -723,6 +742,12 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       <div
         ref={canvasRef}
         className={`relative h-full ${cursorClass}`}
+        data-parent-mode={
+          pendingConnectionKind === 'parent' &&
+          toolMode === ToolMode.Create_Connection_Tool
+            ? 'true'
+            : undefined
+        }
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
@@ -798,6 +823,15 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             <ConnectionPreviewLine preview={connectionPreview} />
           )}
         </ReactFlow>
+
+        {/* 연결 모드: 마우스 따라다니는 관계선 아이콘 */}
+        <ConnectionCursor
+          connectionKind={pendingConnectionKind}
+          relationStatus={pendingRelationStatus}
+          influenceStatus={pendingInfluenceStatus}
+          childStatus={pendingChildStatus}
+          visible={toolMode === ToolMode.Create_Connection_Tool}
+        />
 
         {/* CreateNode 모드: ghost 미리보기 */}
         {isCreateMode && ghost && (
