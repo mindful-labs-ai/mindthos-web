@@ -35,6 +35,14 @@ import { ParentChildIcon } from './icons/ParentChildIcon';
 import { PartnerIcon } from './icons/PartnerIcon';
 import { RelationIcon } from './icons/RelationIcon';
 
+const FONT_SIZE_ITEMS = [
+  { label: '매우 작게', value: '-10' },
+  { label: '작게', value: '-6' },
+  { label: '보통', value: '0' },
+  { label: '크게', value: '6' },
+  { label: '매우 크게', value: '14' },
+];
+
 // ── 메인 컴포넌트 ──
 
 interface GenogramPropertyPanelProps {
@@ -149,7 +157,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   );
 
   const updateConnLayout = useCallback(
-    (field: keyof ConnectionLayout, value: string) => {
+    (field: keyof ConnectionLayout, value: string | number) => {
       if (!connection || !onConnectionUpdate) return;
       onConnectionUpdate(connection.id, {
         layout: {
@@ -303,6 +311,9 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
     const isPartner = type === ConnectionType.Partner_Line;
     const isGroup = type === ConnectionType.Group_Line;
+    const isRelationOrInfluence =
+      type === ConnectionType.Relation_Line ||
+      type === ConnectionType.Influence_Line;
     const partnerAttr = isPartner ? (attribute as PartnerAttribute) : null;
 
     return (
@@ -447,13 +458,25 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             />
           </section>
 
-          {/* 텍스트 색상 — Group_Line에서는 숨김 */}
-          {!isGroup && (
+          {/* 텍스트 색상 — relation/influence/group에서는 텍스트 렌더링이 없으므로 숨김 */}
+          {!isRelationOrInfluence && !isGroup && (
             <section className="flex items-center justify-between">
               <h3 className="text-base font-medium text-fg">텍스트 색상</h3>
               <ColorPicker
                 value={connection.layout.textColor}
                 onChange={(v) => updateConnLayout('textColor', v)}
+              />
+            </section>
+          )}
+
+          {/* 글자 크기 — relation/influence/group에서는 텍스트 렌더링이 없으므로 숨김 */}
+          {!isRelationOrInfluence && !isGroup && (
+            <section className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-fg">글자 크기</h3>
+              <InlineDropdown
+                items={FONT_SIZE_ITEMS}
+                value={String(connection.layout.fontSize ?? 0)}
+                onChange={(v) => updateConnLayout('fontSize', Number(v))}
               />
             </section>
           )}
@@ -793,6 +816,16 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
               <ColorPicker
                 value={style.textColor}
                 onChange={(v) => updateStyle('textColor', v)}
+              />
+            </section>
+
+            {/* 글자 크기 */}
+            <section className="flex items-center justify-between">
+              <h3 className="text-base font-medium text-fg">글자 크기</h3>
+              <InlineDropdown
+                items={FONT_SIZE_ITEMS}
+                value={String(style.fontSize ?? 0)}
+                onChange={(v) => updateStyle('fontSize', Number(v))}
               />
             </section>
           </div>
