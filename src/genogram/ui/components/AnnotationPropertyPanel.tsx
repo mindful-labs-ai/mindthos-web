@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 import { FONT_SIZE_ANNOTATION } from '@/genogram/core/constants/typography';
 import type {
@@ -25,6 +25,12 @@ interface AnnotationPropertyPanelProps {
 export const AnnotationPropertyPanel: React.FC<
   AnnotationPropertyPanelProps
 > = ({ annotation, onUpdate }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, [annotation.id]);
+
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onUpdate(annotation.id, { text: e.target.value });
@@ -76,7 +82,7 @@ export const AnnotationPropertyPanel: React.FC<
         <section>
           <h3 className="mb-2 text-base font-medium text-fg">내용</h3>
           <textarea
-            ref={(el) => el?.focus()}
+            ref={textareaRef}
             value={annotation.text}
             onChange={handleTextChange}
             placeholder="메모를 추가하세요."

@@ -471,25 +471,11 @@ export class GenogramEditor {
     }
 
     const gap = GRID_GAP;
+    const baseX = centerPosition?.x ?? childLayout.position.x;
+    const baseY = centerPosition?.y ?? childLayout.position.y - 5 * gap;
 
-    // centerPosition이 제공되면 해당 위치 기준, 아니면 자식 위치 기준
-    const basePos = centerPosition ?? {
-      x: childLayout.position.x,
-      y: childLayout.position.y - 5 * gap,
-    };
-
-    const fatherPos = {
-      x: centerPosition
-        ? basePos.x - 3 * gap
-        : childLayout.position.x - 3 * gap,
-      y: centerPosition ? basePos.y : childLayout.position.y - 5 * gap,
-    };
-    const motherPos = {
-      x: centerPosition
-        ? basePos.x + 3 * gap
-        : childLayout.position.x + 3 * gap,
-      y: centerPosition ? basePos.y : childLayout.position.y - 5 * gap,
-    };
+    const fatherPos = { x: baseX - 3 * gap, y: baseY };
+    const motherPos = { x: baseX + 3 * gap, y: baseY };
 
     const fatherCmd = this.createAddSubjectCmd(
       createPersonSubject(GenderEnum.Male, fatherPos),

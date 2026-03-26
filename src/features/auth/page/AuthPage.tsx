@@ -71,6 +71,14 @@ const AuthPage = () => {
             alt="마음토스 로고"
             className="main-logo-size"
           />
+          <a
+            href="https://open.kakao.com/me/Mindthos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="] rounded-md border border-grey-40 px-6 py-1.5 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+          >
+            문의하기
+          </a>
         </div>
 
         <div className="flex flex-1 items-center justify-center md:p-8">
