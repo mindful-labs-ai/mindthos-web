@@ -204,7 +204,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     <>
       <div
         data-client-id={client.id}
-        className={`hover:border-grey-50 cursor-pointer rounded-xl border border-grey-30 bg-white p-5 transition-all md:p-6 ${
+        className={`hover:border-grey-50 cursor-pointer rounded-xl border border-grey-40 bg-white p-5 transition-all md:p-6 ${
           client.counsel_done ? 'opacity-50' : ''
         }`}
         onClick={handleCardClick}
