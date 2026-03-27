@@ -363,7 +363,7 @@ export const CreateMultiSessionModal: React.FC<
     <input
       ref={fileInputRef}
       type="file"
-      accept="audio/*"
+      accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac,.wma,.aiff,.opus"
       multiple
       onChange={handleFileInputChange}
       className="hidden"
