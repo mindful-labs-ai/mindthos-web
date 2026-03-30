@@ -142,9 +142,9 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
           'flex flex-col items-center justify-center',
           'h-20 w-20 rounded-full',
           'border-2 border-primary bg-surface',
-          'shadow-elevated hover:shadow-prominent',
+          'shadow-elevated lg:hover:shadow-prominent',
           'transition-all duration-normal',
-          'hover:scale-105 active:scale-95'
+          'active:scale-95 lg:hover:scale-105'
         )}
       >
         <Gift className="h-6 w-6 text-primary" />
@@ -229,7 +229,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
                     ) : isInProgress ? (
                       <button
                         onClick={() => handleStartMission(quest.id)}
-                        className="typo-sm font-headline text-primary hover:text-primary-hover hover:underline"
+                        className="typo-sm font-headline text-primary lg:hover:text-primary-hover lg:hover:underline"
                       >
                         진행하기
                       </button>

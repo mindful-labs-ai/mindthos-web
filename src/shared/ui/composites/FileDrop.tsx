@@ -179,7 +179,7 @@ export const FileDrop: React.FC<FileDropProps> = ({
           ? 'border-border/50 bg-surface-contrast/50 cursor-not-allowed opacity-50'
           : isDragOver
             ? 'bg-primary/5 cursor-copy border-primary'
-            : 'hover:border-primary/50 cursor-pointer border-border bg-surface hover:bg-surface-contrast',
+            : 'lg:hover:border-primary/50 cursor-pointer border-border bg-surface lg:hover:bg-surface-contrast',
         className
       )}
     >

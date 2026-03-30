@@ -1,6 +1,8 @@
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
 import { getCardBrandName } from '@/shared/constants/card';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -52,6 +54,12 @@ export const PaymentResultModal: React.FC<PaymentResultModalProps> = ({
   reason,
   onClose,
 }) => {
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.PaymentResultModalView, { status });
+    }
+  }, [open, status]);
+
   const isSuccess = status === 'success';
   const title = isSuccess ? '결제 성공' : '결제 실패';
   const description = isSuccess

@@ -49,12 +49,12 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
   return (
     <div className="flex h-full w-full flex-col space-y-4">
       {/* 헤더 */}
-      <div className="flex items-center gap-2 border-b border-border pb-3">
-        {showBackButton && (
+      {showBackButton && (
+        <div className="flex items-center gap-2 border-b border-border pb-3">
           <button
             type="button"
             onClick={onBack}
-            className="rounded p-1 hover:bg-surface"
+            className="rounded p-1 lg:hover:bg-surface"
             aria-label="뒤로가기"
           >
             <svg
@@ -71,9 +71,9 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
               />
             </svg>
           </button>
-        )}
-        <h3 className="typo-sm font-emphasize text-fg">클라이언트 선택</h3>
-      </div>
+          <h3 className="typo-sm font-emphasize text-fg">클라이언트 선택</h3>
+        </div>
+      )}
 
       {/* 검색 입력 */}
       <div>
@@ -82,7 +82,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
           placeholder="이름 또는 전화번호 검색"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="focus:ring-primary/20 typo-sm w-full rounded-lg border border-border bg-bg px-3 py-2 text-fg placeholder-fg-muted focus:border-primary focus:outline-none focus:ring-2"
+          className="focus:ring-primary/20 typo-m w-full rounded-lg border border-border bg-bg px-3 py-2 text-fg placeholder-fg-muted focus:border-primary focus:outline-none focus:ring-2"
         />
       </div>
 
@@ -91,7 +91,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
         <button
           type="button"
           onClick={handleClearSelection}
-          className="hover:bg-surface-hover typo-sm w-full rounded-lg bg-surface px-4 py-2 font-medium text-fg"
+          className="typo-m w-full rounded-md border border-grey-40 bg-surface px-4 py-2 font-medium text-fg lg:hover:bg-surface-contrast"
         >
           선택 초기화 ({selectedClientIds.length}명 선택됨)
         </button>
@@ -110,19 +110,19 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
                 onClick={() => handleToggleClient(client.id)}
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors ${
                   isSelected
-                    ? 'bg-primary-subtle hover:bg-primary-subtle'
-                    : 'hover:bg-surface-contrast'
+                    ? 'lg:hover:er:bg-primary-subtle bg-primary-subtle'
+                    : 'lg:hover:er:bg-surface-contrast'
                 }`}
               >
                 <span
-                  className={`typo-sm flex-1 text-fg ${
+                  className={`typo-m flex-1 text-fg ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >
                   {client.name}
                 </span>
                 <span
-                  className={`typo-xs text-fg-muted ${
+                  className={`typo-sm text-fg-muted ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >

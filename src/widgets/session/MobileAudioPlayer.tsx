@@ -55,6 +55,24 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
     onPlayPause();
   };
 
+  const handleBackwardClick = () => {
+    trackEvent(MixpanelEvent.AudioBackward);
+    onBackward();
+  };
+
+  const handleForwardClick = () => {
+    trackEvent(MixpanelEvent.AudioForward);
+    onForward();
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    trackEvent(MixpanelEvent.AudioSeek, {
+      from: Math.floor(currentTime),
+      duration: Math.floor(duration),
+    });
+    onProgressClick(e);
+  };
+
   return (
     <div className="px-4 pb-2">
       <div className="flex items-center gap-4">
@@ -67,7 +85,7 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
           aria-valuemax={Math.floor(duration)}
           aria-valuetext={`${formatTime(currentTime)} / ${formatTime(duration)}`}
           className="group relative flex-1 cursor-pointer py-2 focus:outline-none"
-          onClick={onProgressClick}
+          onClick={handleProgressClick}
           onKeyDown={handleProgressKeyDown}
         >
           <div className="h-1.5 bg-surface-strong transition-all">
@@ -93,7 +111,7 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
             type="button"
             className="rounded-full p-2.5 text-fg transition-transform active:scale-95"
             aria-label="5초 뒤로"
-            onClick={onBackward}
+            onClick={handleBackwardClick}
           >
             <svg
               width="24"
@@ -166,7 +184,7 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
             type="button"
             className="rounded-full p-2.5 text-fg transition-transform active:scale-95"
             aria-label="5초 앞으로"
-            onClick={onForward}
+            onClick={handleForwardClick}
           >
             <svg
               width="24"
@@ -200,7 +218,7 @@ export const MobileAudioPlayer: React.FC<MobileAudioPlayerProps> = ({
           </span>
           <button
             type="button"
-            className="typo-sm min-w-[64px] rounded-lg px-3 py-2 font-medium text-fg transition-all hover:bg-surface hover:text-primary active:scale-95"
+            className="typo-sm min-w-[64px] rounded-lg px-3 py-2 font-medium text-fg transition-all active:scale-95 lg:hover:bg-surface lg:hover:text-primary"
             aria-label="재생 속도 변경"
             onClick={handlePlaybackRateClick}
           >

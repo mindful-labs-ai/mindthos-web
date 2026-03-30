@@ -320,7 +320,7 @@ export const Modal: React.FC<ModalProps> = ({
             <button
               onClick={() => onOpenChange(false)}
               aria-label="닫기"
-              className="typo-sm flex items-center gap-1.5 text-fg-muted hover:text-fg"
+              className="typo-sm flex items-center gap-1.5 text-fg-muted lg:hover:text-fg"
             >
               <svg
                 className="h-5 w-5"
@@ -374,7 +374,7 @@ export const Modal: React.FC<ModalProps> = ({
             className={cn(
               'absolute right-4 top-4',
               'rounded-sm p-1',
-              'text-fg-muted hover:bg-surface-contrast hover:text-fg',
+              'text-fg-muted lg:hover:bg-surface-contrast lg:hover:text-fg',
               'transition-default',
               'focus-default'
             )}

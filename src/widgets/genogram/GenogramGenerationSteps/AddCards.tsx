@@ -17,7 +17,7 @@ export function AddMemberCard({ onClick, disabled }: AddCardProps) {
         'flex h-[276px] items-center justify-center rounded-xl border border-dashed transition-colors',
         disabled
           ? 'cursor-not-allowed border-border opacity-50'
-          : 'border-fg-muted hover:border-fg'
+          : 'border-fg-muted lg:hover:border-fg'
       )}
     >
       <Plus className={cn('h-8 w-8', disabled ? 'text-fg-muted' : 'text-fg')} />
@@ -35,7 +35,7 @@ export function AddRelationCard({ onClick, disabled }: AddCardProps) {
         'flex h-[169px] w-full items-center justify-center rounded-xl border border-dashed transition-colors',
         disabled
           ? 'cursor-not-allowed border-border opacity-50'
-          : 'border-fg-muted hover:border-fg'
+          : 'border-fg-muted lg:hover:border-fg'
       )}
     >
       <Plus className={cn('h-8 w-8', disabled ? 'text-fg-muted' : 'text-fg')} />

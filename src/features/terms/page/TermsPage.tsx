@@ -57,7 +57,7 @@ const TermsPageContent = ({ type }: { type: TermsType }) => {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="mt-2 text-m text-green-80 hover:opacity-80"
+            className="mt-2 text-m text-green-80 lg:hover:opacity-80"
           >
             다시 시도
           </button>

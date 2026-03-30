@@ -133,6 +133,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   // 모달이 열릴 때 초기 데이터 설정
   React.useEffect(() => {
     if (open) {
+      trackEvent(MixpanelEvent.UserInfoEditModalOpen);
       setFormData({
         name: userName || '',
         organization: organization || '',
@@ -214,6 +215,8 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    trackEvent(MixpanelEvent.UserInfoEditAttempt);
+
     const result = formSchema.safeParse(formData);
 
     if (!result.success) {
@@ -245,7 +248,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         {isMobileView ? (
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">
+            <p className="text-m font-medium text-grey-100">
               회원 정보 수정하기
             </p>
           </div>

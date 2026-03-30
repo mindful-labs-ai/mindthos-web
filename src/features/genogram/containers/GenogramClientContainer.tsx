@@ -8,12 +8,14 @@ import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
+import { trackEvent } from '@/lib/mixpanel';
 import {
   fetchRawAIOutput,
   initFamilySummary,
   saveFamilySummary,
 } from '@/shared/api/supabase/genogramAIQueries';
 import { genogramService } from '@/shared/api/supabase/genogramQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import {
   clientQueryKeys,
   genogramQueryKeys,
@@ -155,6 +157,10 @@ export function GenogramClientContainer() {
 
   const handleConfirm = useCallback(async () => {
     if (!clientId) return;
+    trackEvent(MixpanelEvent.GenogramStepChange, {
+      from: steps.currentStep,
+      to: 'analyze',
+    });
     steps.setStep('analyze');
     steps.setLoading(true);
     steps.setError(null);
@@ -192,6 +198,10 @@ export function GenogramClientContainer() {
       const canvasJson = JSON.stringify(canvasData);
       preparedCanvasJsonRef.current = canvasJson;
       originalCanvasRef.current = null;
+      trackEvent(MixpanelEvent.GenogramStepChange, {
+        from: steps.currentStep,
+        to: 'render',
+      });
       steps.setStep('render');
     } catch {
       steps.setError('JSON 변환 중 오류가 발생했습니다.');
@@ -376,11 +386,13 @@ export function GenogramClientContainer() {
   }, [clientId, userId, queryClient, toast]);
 
   const handleUndo = useCallback(() => {
+    trackEvent(MixpanelEvent.GenogramUndo);
     genogramRef.current?.undo();
     updateGenogramState();
   }, [updateGenogramState]);
 
   const handleRedo = useCallback(() => {
+    trackEvent(MixpanelEvent.GenogramRedo);
     genogramRef.current?.redo();
     updateGenogramState();
   }, [updateGenogramState]);
@@ -406,13 +418,13 @@ export function GenogramClientContainer() {
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-3">
         <button
           onClick={handleShowBasicInfo}
-          className="flex h-10 items-center rounded-md border border-grey-30 bg-white px-4 text-sm text-grey-60 shadow-sm transition-colors hover:bg-grey-10"
+          className="flex h-10 items-center rounded-md border border-grey-30 bg-white px-4 text-sm text-grey-60 shadow-sm transition-colors lg:hover:bg-grey-10"
         >
           가계도 기본 정보
         </button>
         <button
           onClick={handleExport}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-grey-30 bg-white shadow-sm transition-colors hover:bg-grey-10"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-grey-30 bg-white shadow-sm transition-colors lg:hover:bg-grey-10"
           aria-label="가계도 내보내기"
         >
           <Download className="h-5 w-5 text-grey-80" />
@@ -539,7 +551,7 @@ export function GenogramClientContainer() {
               </span>
               <button
                 onClick={() => handleStartFromRecords(true)}
-                className="rounded-md border border-border bg-surface px-3 py-1.5 font-medium text-fg transition-colors hover:bg-surface-strong"
+                className="rounded-md border border-border bg-surface px-3 py-1.5 font-medium text-fg transition-colors lg:hover:bg-surface-strong"
               >
                 AI로 자동 생성하기
               </button>

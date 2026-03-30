@@ -14,7 +14,7 @@ export interface HyperLinkProps extends React.ComponentPropsWithoutRef<'a'> {
 
 const underlineStyles: Record<string, string> = {
   auto: 'underline',
-  hover: 'no-underline hover:underline',
+  hover: 'no-underline lg:hover:underline',
   always: 'underline',
   false: 'no-underline',
 };
@@ -51,7 +51,7 @@ export const HyperLink = React.forwardRef<HTMLAnchorElement, HyperLinkProps>(
         ref={ref}
         href={href}
         className={cn(
-          'text-primary hover:text-primary-hover',
+          'text-primary lg:hover:text-primary-hover',
           'transition-default',
           'focus-default rounded-sm',
           underlineStyles[String(underline)],

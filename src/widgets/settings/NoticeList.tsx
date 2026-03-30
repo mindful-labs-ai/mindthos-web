@@ -32,7 +32,7 @@ function NoticeCard({
     <button
       type="button"
       onClick={onClick}
-      className="hover:border-primary-500 flex w-full cursor-pointer overflow-hidden rounded-2xl border border-border bg-surface text-left transition-colors"
+      className="lg:hover:border-primary-500 flex w-full cursor-pointer overflow-hidden rounded-2xl border border-border bg-surface text-left transition-colors"
     >
       {notice.thumbnail && (
         <img

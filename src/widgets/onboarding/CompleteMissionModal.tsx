@@ -1,7 +1,11 @@
+import { useEffect } from 'react';
+
 import { useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 
 import { cn } from '@/lib/cn';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -52,6 +56,12 @@ export const CompleteMissionModal = ({
   const content = showCompleteModalStep
     ? MISSION_CONTENT[showCompleteModalStep]
     : null;
+
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(MixpanelEvent.QuestMissionCompleteView);
+    }
+  }, [isOpen]);
 
   const isFinalReward = showCompleteModalStep === 5;
 

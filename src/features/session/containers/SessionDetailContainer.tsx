@@ -70,7 +70,6 @@ export const SessionDetailContainer: React.FC = () => {
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
-  const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
   const [hasUserInteracted, setHasUserInteracted] = React.useState(false);
   const contentScrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -365,17 +364,6 @@ export const SessionDetailContainer: React.FC = () => {
     };
     fetchPresignedUrl();
   }, [sessionId, hasS3Key]);
-
-  React.useEffect(() => {
-    if (isReadOnly && session && !hasShownDummyToast) {
-      toast({
-        title: '읽기 전용',
-        description: '예시에서는 편집 기능이 비활성화됩니다.',
-        duration: 3000,
-      });
-      setHasShownDummyToast(true);
-    }
-  }, [isReadOnly, session, hasShownDummyToast, toast]);
 
   React.useEffect(() => {
     if (!isLoading && !session && sessionId) {

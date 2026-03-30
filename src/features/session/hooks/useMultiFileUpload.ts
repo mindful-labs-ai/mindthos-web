@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
 import {
   FILE_UPLOAD_LIMITS,
   MULTI_UPLOAD_LIMITS,
 } from '@/shared/constants/fileUpload';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 import type { MultiFileInfo } from '../types';
 
@@ -135,6 +137,10 @@ export function useMultiFileUpload(): UseMultiFileUploadReturn {
 
       if (filesToAdd.length === 0) return;
 
+      trackEvent(MixpanelEvent.MultiSessionFileAdd, {
+        file_count: filesToAdd.length,
+      });
+
       // 임시 pending 상태로 추가
       const pendingFiles: MultiFileInfo[] = filesToAdd.map((file) => ({
         id: generateId(),
@@ -172,6 +178,7 @@ export function useMultiFileUpload(): UseMultiFileUploadReturn {
   );
 
   const removeFile = useCallback((fileId: string) => {
+    trackEvent(MixpanelEvent.MultiSessionFileRemove);
     setFiles((prev) => prev.filter((f) => f.id !== fileId));
     setProcessingIds((prev) => {
       const next = new Set(prev);

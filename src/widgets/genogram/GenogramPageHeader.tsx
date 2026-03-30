@@ -106,7 +106,7 @@ export function GenogramPageHeader({
         {onShowBasicInfo && selectedClient && (
           <button
             onClick={onShowBasicInfo}
-            className="border-default typo-sm flex h-10 items-center rounded-md bg-surface px-4 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+            className="border-default typo-sm flex h-10 items-center rounded-md bg-surface px-4 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
           >
             가족 구성원 정보
           </button>
@@ -116,8 +116,8 @@ export function GenogramPageHeader({
             onClick={onShowReport}
             className={
               hasReportAccess
-                ? 'typo-sm flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-subtle px-4 text-primary transition-colors hover:bg-primary-subtle'
-                : 'border-default typo-sm flex h-10 items-center gap-1.5 rounded-md bg-surface px-4 text-fg-muted transition-colors hover:bg-surface-contrast'
+                ? 'typo-sm flex h-10 items-center gap-1.5 rounded-md border-2 border-primary bg-primary-subtle px-4 text-primary transition-colors lg:hover:bg-primary-subtle'
+                : 'border-default typo-sm flex h-10 items-center gap-1.5 rounded-md bg-surface px-4 text-fg-muted transition-colors lg:hover:bg-surface-contrast'
             }
           >
             {hasReportAccess ? (
@@ -158,7 +158,7 @@ export function GenogramPageHeader({
               title="실행 취소"
               aria-label="실행 취소"
               disabled={!canUndo}
-              className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-30"
+              className="rounded-md p-2 text-fg transition-colors disabled:cursor-not-allowed disabled:opacity-30 lg:hover:bg-surface-strong"
             >
               <UndoIcon size={18} />
             </button>
@@ -167,7 +167,7 @@ export function GenogramPageHeader({
               title="다시 실행"
               aria-label="다시 실행"
               disabled={!canRedo}
-              className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-30"
+              className="rounded-md p-2 text-fg transition-colors disabled:cursor-not-allowed disabled:opacity-30 lg:hover:bg-surface-strong"
             >
               <RedoIcon size={18} />
             </button>
@@ -176,7 +176,7 @@ export function GenogramPageHeader({
               title="내보내기"
               aria-label="가계도 내보내기"
               disabled={isExported}
-              className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong disabled:opacity-50"
+              className="rounded-md p-2 text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-strong"
             >
               {isExported ? (
                 <Check className="h-[18px] w-[18px] text-primary" />
@@ -189,7 +189,7 @@ export function GenogramPageHeader({
               title="저장"
               aria-label="가계도 저장"
               disabled={isSaving}
-              className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong disabled:opacity-50"
+              className="rounded-md p-2 text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-strong"
             >
               <Save className="h-[18px] w-[18px]" />
             </button>
@@ -203,7 +203,7 @@ export function GenogramPageHeader({
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     title="더보기"
                     aria-label="더 많은 옵션"
-                    className="rounded-md p-2 text-fg transition-colors hover:bg-surface-strong"
+                    className="rounded-md p-2 text-fg transition-colors lg:hover:bg-surface-strong"
                   >
                     <MoreVertical className="h-[18px] w-[18px]" />
                   </button>
@@ -216,7 +216,7 @@ export function GenogramPageHeader({
                           onReset();
                         }}
                         disabled={isResetting}
-                        className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                        className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
                       >
                         <span>가계도 초기화</span>
                       </button>

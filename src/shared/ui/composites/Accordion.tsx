@@ -87,7 +87,7 @@ export const Accordion: React.FC<AccordionProps> = ({
               className={cn(
                 'flex w-full items-center justify-between px-6 py-4',
                 'text-left font-medium text-fg',
-                'hover:bg-surface-contrast/50',
+                'lg:hover:bg-surface-contrast/50',
                 'transition-default',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring',
                 'disabled:disabled-default'

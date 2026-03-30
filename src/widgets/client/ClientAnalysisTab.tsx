@@ -9,7 +9,7 @@ import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
-import { CheckIcon, CopyIcon } from '@/shared/icons';
+import { CheckIcon, ChevronRightIcon, CopyIcon } from '@/shared/icons';
 import { Modal } from '@/shared/ui';
 import type { TabItem } from '@/shared/ui/atoms/Tab';
 import { Tab } from '@/shared/ui/atoms/Tab';
@@ -19,6 +19,7 @@ import type { SelectItem } from '@/shared/ui/composites/Select';
 import { Select } from '@/shared/ui/composites/Select';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
+import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 import { LockedFeatureModal } from './LockedFeatureModal';
 
@@ -178,7 +179,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   // 클립보드 복사
   const handleCopy = async (content: string) => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(stripMarkdown(content));
       setCopiedKey('ai_supervision');
 
       trackEvent(MixpanelEvent.AnalysisCopy, { tab: activeTab });
@@ -255,7 +256,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                         <button
                           type="button"
                           onClick={handleEditStart}
-                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                         >
                           편집
                         </button>
@@ -263,7 +264,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopy(analysis.content || '')}
-                        className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                        className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         {copiedKey === 'ai_supervision' ? (
                           <>
@@ -283,7 +284,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                             trackEvent(MixpanelEvent.SupervisionRetry);
                             onCreateAnalysis();
                           }}
-                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                         >
                           보고서 재생성
                         </button>
@@ -297,7 +298,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                         <button
                           type="button"
                           onClick={handleEditStart}
-                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                          className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                         >
                           편집
                         </button>
@@ -305,7 +306,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopy(analysis.content || '')}
-                        className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                        className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         <CopyIcon size={20} /> 복사하기
                       </button>
@@ -316,7 +317,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                     <>
                       <button
                         type="button"
-                        className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+                        className="rounded-lg p-2 text-grey-60 transition-colors lg:hover:bg-grey-20 lg:hover:text-grey-80"
                         onClick={() => setIsMenuOpen(true)}
                         aria-label="추가 메뉴"
                       >
@@ -347,9 +348,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                                 handleEditStart();
                                 setIsMenuOpen(false);
                               }}
-                              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                              className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                             >
-                              <span className="text-m text-grey-100">편집</span>
+                              <span className="text-l text-grey-100">편집</span>
+                              <ChevronRightIcon size={20} className="text-grey-70" />
                             </button>
                           )}
                           {!isTablet && (
@@ -358,11 +360,12 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                                 handleCopy(analysis.content || '');
                                 setIsMenuOpen(false);
                               }}
-                              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                              className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                             >
-                              <span className="text-m text-grey-100">
+                              <span className="text-l text-grey-100">
                                 복사하기
                               </span>
+                              <ChevronRightIcon size={20} className="text-grey-70" />
                             </button>
                           )}
                           {onCreateAnalysis && (
@@ -372,11 +375,12 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                                 onCreateAnalysis();
                                 setIsMenuOpen(false);
                               }}
-                              className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                              className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                             >
-                              <span className="text-m text-grey-100">
+                              <span className="text-l text-grey-100">
                                 보고서 재생성
                               </span>
+                              <ChevronRightIcon size={20} className="text-grey-70" />
                             </button>
                           )}
                         </div>
@@ -393,7 +397,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                     type="button"
                     onClick={handleCancelEdit}
                     disabled={isSaving}
-                    className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+                    className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
                   >
                     취소
                   </button>
@@ -403,7 +407,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                     disabled={!hasEdits || isSaving}
                     className={`rounded-md px-3.5 py-1 text-m font-medium transition-colors ${
                       hasEdits && !isSaving
-                        ? 'bg-green-80 text-white hover:opacity-90'
+                        ? 'bg-green-80 text-white lg:hover:opacity-90'
                         : 'cursor-not-allowed bg-grey-20 text-grey-60'
                     }`}
                   >
@@ -524,7 +528,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             <button
               type="button"
               onClick={onCreateAnalysis}
-              className="rounded-lg bg-green-80 px-8 py-3 text-m font-medium text-white transition-colors hover:opacity-90"
+              className="rounded-lg bg-green-80 px-8 py-3 text-m font-medium text-white transition-colors lg:hover:opacity-90"
             >
               AI 수퍼비전 받기
             </button>

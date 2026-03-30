@@ -1,3 +1,7 @@
+import { useEffect } from 'react';
+
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface GenerationConfirmModalProps {
@@ -19,6 +23,12 @@ export function GenerationConfirmModal({
   onClose,
   onConfirm,
 }: GenerationConfirmModalProps) {
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(MixpanelEvent.GenogramGenerationConfirmModalOpen);
+    }
+  }, [isOpen]);
+
   return (
     <Modal
       open={isOpen}
@@ -42,7 +52,7 @@ export function GenerationConfirmModal({
             </p>
             <button
               onClick={onClose}
-              className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+              className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
             >
               확인
             </button>
@@ -59,7 +69,7 @@ export function GenerationConfirmModal({
             </p>
             <button
               onClick={onConfirm}
-              className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+              className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
             >
               생성 시작하기
             </button>

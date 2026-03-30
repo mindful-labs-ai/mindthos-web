@@ -1,3 +1,7 @@
+import { useEffect } from 'react';
+
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useQuestStore } from '@/stores/questStore';
@@ -14,11 +18,18 @@ export const QuestMissionModal = () => {
   const isOpen =
     currentLevel === 1 && shouldShowOnboarding && !hasShownMissionModal;
 
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(MixpanelEvent.QuestMissionModalOpen);
+    }
+  }, [isOpen]);
+
   const handleClose = () => {
     setHasShownMissionModal(true);
   };
 
   const handleStart = () => {
+    trackEvent(MixpanelEvent.QuestMissionStartClick);
     setHasShownMissionModal(true);
     setTutorialGuideLevel(1);
   };

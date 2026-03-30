@@ -5,6 +5,8 @@
 
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -21,6 +23,12 @@ interface TabChangeConfirmModalProps {
 
 export const TabChangeConfirmModal: React.FC<TabChangeConfirmModalProps> =
   React.memo(({ open, onOpenChange, onCancel, onConfirm }) => {
+    React.useEffect(() => {
+      if (open) {
+        trackEvent(MixpanelEvent.SessionTabChangeConfirmView);
+      }
+    }, [open]);
+
     return (
       <Modal
         open={open}
@@ -37,14 +45,20 @@ export const TabChangeConfirmModal: React.FC<TabChangeConfirmModalProps> =
           </Text>
           <div className="flex justify-center gap-2 pt-2">
             <button
-              onClick={onCancel}
-              className="hover:bg-surface-hover typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors"
+              onClick={() => {
+                trackEvent(MixpanelEvent.SessionTabChangeCancel);
+                onCancel();
+              }}
+              className="lg:hover:bg-surface-hover typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors"
             >
               취소
             </button>
             <button
-              onClick={onConfirm}
-              className="hover:bg-primary/90 typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
+              onClick={() => {
+                trackEvent(MixpanelEvent.SessionTabChangeConfirm);
+                onConfirm();
+              }}
+              className="lg:hover:bg-primary/90 typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
             >
               확인
             </button>

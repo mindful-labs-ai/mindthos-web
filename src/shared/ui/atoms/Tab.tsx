@@ -195,7 +195,7 @@ export const Tab: React.FC<TabProps> = ({
           className={cn(
             'flex-shrink-0 rounded-full p-1 transition-colors',
             canGoPrev
-              ? 'text-fg hover:bg-surface-strong'
+              ? 'text-fg lg:hover:bg-surface-strong'
               : 'cursor-default text-fg-muted opacity-30'
           )}
         >
@@ -246,7 +246,7 @@ export const Tab: React.FC<TabProps> = ({
                     cardNavSizeStyles[size],
                     isSelected
                       ? 'bg-white text-grey-100'
-                      : 'bg-grey-10 text-grey-60 hover:opacity-80'
+                      : 'bg-grey-10 text-grey-60 lg:hover:opacity-80'
                   )}
                 >
                   {item.label}
@@ -274,7 +274,7 @@ export const Tab: React.FC<TabProps> = ({
           className={cn(
             'flex-shrink-0 rounded-full p-1 transition-colors',
             canGoNext
-              ? 'text-fg hover:bg-surface-strong'
+              ? 'text-fg lg:hover:bg-surface-strong'
               : 'cursor-default text-fg-muted opacity-30'
           )}
         >
@@ -343,13 +343,13 @@ export const Tab: React.FC<TabProps> = ({
                       'focus-visible:ring-offset-2 focus-visible:ring-offset-surface-strong',
                       isSelected
                         ? 'bg-surface text-fg shadow-subtle'
-                        : 'bg-transparent text-fg-muted hover:text-fg'
+                        : 'bg-transparent text-fg-muted lg:hover:text-fg'
                     )
                   : cn(
                       'relative rounded-t-lg border border-transparent',
                       isSelected
                         ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-primary shadow-subtle'
-                        : 'border-b-0 border-l-border border-r-border border-t-border text-fg-muted hover:text-fg'
+                        : 'border-b-0 border-l-border border-r-border border-t-border text-fg-muted lg:hover:text-fg'
                     )
               )}
             >
@@ -365,7 +365,7 @@ export const Tab: React.FC<TabProps> = ({
           <button
             type="button"
             aria-label="이전 탭"
-            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-subtle ring-1 ring-border transition hover:bg-surface-strong"
+            className="absolute left-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-subtle ring-1 ring-border transition lg:hover:bg-surface-strong"
             onClick={() => handleScrollBy('left')}
           >
             <svg
@@ -394,7 +394,7 @@ export const Tab: React.FC<TabProps> = ({
           <button
             type="button"
             aria-label="다음 탭"
-            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-subtle ring-1 ring-border transition hover:bg-surface-strong"
+            className="absolute right-0 top-1/2 -translate-y-1/2 rounded-full bg-surface shadow-subtle ring-1 ring-border transition lg:hover:bg-surface-strong"
             onClick={() => handleScrollBy('right')}
           >
             <svg

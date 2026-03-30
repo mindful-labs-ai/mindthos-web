@@ -22,7 +22,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
         className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
           sttModel === 'whisper'
             ? 'border-primary'
-            : 'border-border bg-bg hover:border-fg-muted'
+            : 'border-border bg-bg lg:hover:border-fg-muted'
         }`}
       >
         <div className="flex h-full flex-col justify-start">
@@ -100,7 +100,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
         className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
           sttModel === 'gemini-3'
             ? 'border-primary'
-            : 'border-border bg-bg hover:border-fg-muted'
+            : 'border-border bg-bg lg:hover:border-fg-muted'
         }`}
       >
         <div className="flex h-full flex-col justify-start">
@@ -157,7 +157,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       }
                     }}
                     aria-label="프리미엄 모델 정보"
-                    className="ml-1 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors hover:bg-surface-strong hover:text-fg"
+                    className="ml-1 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors lg:hover:bg-surface-strong lg:hover:text-fg"
                   >
                     <svg
                       width="12"

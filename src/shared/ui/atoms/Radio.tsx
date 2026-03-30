@@ -153,8 +153,8 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
                   sizeStyles[size].radio,
                   isSelected
                     ? 'border-primary bg-primary'
-                    : 'hover:border-primary/50 border-border bg-surface',
-                  isDisabled && 'hover:border-border',
+                    : 'lg:hover:border-primary/50 border-border bg-surface',
+                  isDisabled && 'lg:hover:border-border',
                   'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2'
                 )}
               >

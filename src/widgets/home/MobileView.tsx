@@ -493,7 +493,6 @@ const MobileView = () => {
                     key={record.session_id}
                     record={record}
                     isReadOnly={isDummyFlow}
-                    isMobile={true}
                   />
                 ))}
 
@@ -501,7 +500,7 @@ const MobileView = () => {
                 {hasMoreSessions && (
                   <button
                     onClick={handleLoadMore}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-surface-strong bg-surface py-4 text-fg-muted transition-colors hover:bg-surface-contrast"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-surface-strong bg-surface py-4 text-fg-muted transition-colors lg:hover:bg-surface-contrast"
                   >
                     <PlusIcon size={20} />
                     더보기

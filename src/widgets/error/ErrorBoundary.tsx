@@ -46,7 +46,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             </p>
             {this.state.error && (
               <details className="mb-8 text-left">
-                <summary className="typo-sm text-muted cursor-pointer hover:text-fg">
+                <summary className="typo-sm text-muted cursor-pointer lg:hover:text-fg">
                   오류 상세 정보
                 </summary>
                 <pre className="typo-xs mt-2 overflow-auto rounded-lg bg-surface-contrast p-4 text-left text-fg">
@@ -58,13 +58,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               <HyperLink
                 underline="hover"
                 href={ROUTES.ROOT}
-                className="typo-m hover:bg-primary-600 inline-block rounded-lg bg-primary px-6 py-3 text-center font-medium text-primary-fg hover:text-primary-fg"
+                className="typo-m lg:hover:bg-primary-600 inline-block rounded-lg bg-primary px-6 py-3 text-center font-medium text-primary-fg lg:hover:text-primary-fg"
               >
                 홈으로 돌아가기
               </HyperLink>
               <button
                 onClick={() => window.location.reload()}
-                className="border-default typo-m inline-block rounded-lg bg-surface px-6 py-3 font-medium text-fg hover:bg-surface-contrast"
+                className="border-default typo-m inline-block rounded-lg bg-surface px-6 py-3 font-medium text-fg lg:hover:bg-surface-contrast"
               >
                 새로고침
               </button>

@@ -76,7 +76,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
         if (activeCreatingTab?.isProcessing) {
           return (
             <div className="flex h-full flex-col">
-              <div className="flex h-full flex-col items-center justify-center gap-4 px-8 py-6">
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 px-8 py-6">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
                 <div className="text-center">
                   <Title as="h2" className="typo-l font-medium text-fg">
@@ -107,7 +107,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                   className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-m font-medium transition-colors ${
                     isReadOnly || !isTemplateSelected
                       ? 'cursor-not-allowed bg-grey-30 text-grey-60'
-                      : 'bg-green-80 text-white hover:opacity-90'
+                      : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
                   상담 노트 만들기
@@ -139,7 +139,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                     <button
                       type="button"
                       onClick={() => onTemplateSelect(null)}
-                      className="text-grey-50 absolute right-3 top-3 hover:text-grey-80"
+                      className="text-grey-50 absolute right-3 top-3 lg:hover:text-grey-80"
                       aria-label="닫기"
                     >
                       <XIcon size={24} />
@@ -150,7 +150,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                     <button
                       onClick={onCreateProgressNote}
                       disabled={isReadOnly}
-                      className="rounded-lg border border-grey-40 bg-white px-4 py-2 text-sm font-headline text-grey-100 transition-colors hover:bg-grey-10"
+                      className="rounded-lg border border-grey-40 bg-white px-4 py-2 text-sm font-headline text-grey-100 transition-colors lg:hover:bg-grey-10"
                     >
                       상담 노트 만들기
                     </button>

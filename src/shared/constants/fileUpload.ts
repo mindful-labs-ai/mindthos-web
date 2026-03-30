@@ -5,7 +5,7 @@ export const MULTI_UPLOAD_LIMITS = {
 export const FILE_UPLOAD_LIMITS = {
   AUDIO: {
     MAX_SIZE_MB: 500,
-    FORMATS: ['MP3', 'WAV', 'M4A', 'MP4', 'WEBM', 'OGG', 'AAC', 'FLAC', 'WMA'],
+    FORMATS: ['MP3', 'WAV', 'M4A', 'WEBM', 'OGG', 'AAC', 'FLAC', 'WMA'],
   },
   PDF: {
     MAX_SIZE_MB: 500,
@@ -51,7 +51,6 @@ const EXTENSION_TO_MIME: Record<string, string> = {
   MP3: 'audio/mpeg',
   WAV: 'audio/wav',
   M4A: 'audio/x-m4a',
-  MP4: 'video/mp4',
   WEBM: 'audio/webm',
   OGG: 'audio/ogg',
   AAC: 'audio/aac',
@@ -63,7 +62,7 @@ const EXTENSION_TO_MIME: Record<string, string> = {
 /**
  * FORMATS 배열을 input accept 속성 문자열로 변환
  * @example
- * getAcceptString('audio') // "audio/*,.mp3,.wav,.m4a,.mp4,.webm,.ogg,.aac,.flac,.wma,audio/mpeg,audio/wav,..."
+ * getAcceptString('audio') // "audio/*,.mp3,.wav,.m4a,.webm,.ogg,.aac,.flac,.wma,audio/mpeg,audio/wav,..."
  */
 export const getAcceptString = (type: 'audio' | 'pdf'): string => {
   const formats =

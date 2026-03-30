@@ -4,7 +4,9 @@ import { useSetDefaultTemplate } from '@/features/template/hooks/useSetDefaultTe
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
 import { useToggleTemplatePin } from '@/features/template/hooks/useToggleTemplatePin';
 import type { TemplateListItem } from '@/features/template/types';
+import { trackEvent } from '@/lib/mixpanel';
 import { TEMPLATE_REQUEST_FORM_URL } from '@/shared/constants/externalUrls';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -28,6 +30,7 @@ export const TemplateListPage: React.FC = () => {
   };
 
   const handleRequestTemplate = () => {
+    trackEvent(MixpanelEvent.TemplateRequestClick);
     window.open(TEMPLATE_REQUEST_FORM_URL, '_blank', 'noopener,noreferrer');
   };
 
@@ -94,7 +97,7 @@ export const TemplateListPage: React.FC = () => {
                   tone="neutral"
                   size="md"
                   onClick={handleRequestTemplate}
-                  className="w-full bg-white text-green-80 hover:bg-white/90"
+                  className="w-full bg-white text-green-80 lg:hover:bg-white/90"
                 >
                   템플릿 신청하기
                 </Button>

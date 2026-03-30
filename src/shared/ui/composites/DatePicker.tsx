@@ -216,7 +216,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           'flex h-10 w-full items-center justify-between',
           'border-default rounded-md bg-surface px-4',
           'typo-sm transition-default',
-          'hover:border-primary-subtle',
+          'lg:hover:border-primary-subtle',
           'focus-default',
           'disabled:disabled-default',
           isOpen && 'border-primary',
@@ -251,7 +251,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               <button
                 type="button"
                 onClick={handlePrevMonth}
-                className="rounded-md p-1.5 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+                className="rounded-md p-1.5 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -259,7 +259,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewYear}
                   onChange={(e) => setViewYear(Number(e.target.value))}
-                  className="typo-sm cursor-pointer rounded bg-surface px-1 py-0.5 font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="typo-sm cursor-pointer rounded bg-surface px-1 py-0.5 font-emphasize text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hover:bg-surface-contrast"
                 >
                   {Array.from(
                     { length: new Date().getFullYear() - 1970 + 3 },
@@ -273,7 +273,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                 <select
                   value={viewMonth}
                   onChange={(e) => setViewMonth(Number(e.target.value))}
-                  className="typo-sm cursor-pointer rounded bg-surface px-1 py-0.5 font-emphasize text-fg hover:bg-surface-contrast focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="typo-sm cursor-pointer rounded bg-surface px-1 py-0.5 font-emphasize text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:hover:bg-surface-contrast"
                 >
                   {Array.from({ length: 12 }, (_, i) => i).map((m) => (
                     <option key={m} value={m}>
@@ -285,7 +285,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               <button
                 type="button"
                 onClick={handleNextMonth}
-                className="rounded-md p-1.5 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+                className="rounded-md p-1.5 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -355,7 +355,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                         !isOutOfRange &&
                           isCurrentMonth &&
                           !isSelected &&
-                          'text-fg hover:bg-primary-subtle',
+                          'text-fg lg:hover:bg-primary-subtle',
                         !isOutOfRange &&
                           isToday &&
                           !isSelected &&

@@ -2,6 +2,8 @@ import React from 'react';
 
 import { useAddClientForm } from '@/features/client/hooks/useAddClientForm';
 import type { Client } from '@/features/client/types';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -25,11 +27,19 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
   onClientCreated,
 }) => {
   const isEditMode = !!initialData;
+
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.ClientCreateModalOpen);
+    }
+  }, [open]);
+
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   const form = useAddClientForm(initialData);
 
   const handleClose = () => {
+    trackEvent(MixpanelEvent.ClientCreateModalClose);
     form.resetForm();
     onOpenChange(false);
   };
@@ -61,7 +71,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
         {isMobileView ? (
           <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={handleClose} />
-            <p className="text-l font-medium text-grey-80">
+            <p className="text-m font-medium text-grey-100">
               {isEditMode ? '클라이언트 정보 수정' : '클라이언트 추가하기'}
             </p>
           </div>

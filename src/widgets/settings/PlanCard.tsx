@@ -81,7 +81,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   const getBorderClass = () => {
     if (isCurrent) return 'border-2 border-grey-20';
     if (isSelected) return 'border-2 border-green-80';
-    return 'border border-border hover:border-2';
+    return 'border border-border lg:hover:border-2';
   };
 
   return (

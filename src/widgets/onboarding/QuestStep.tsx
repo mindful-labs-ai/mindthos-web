@@ -369,13 +369,32 @@ export const QuestStep = ({
             getStatus={getQuestStatus}
             className="w-full"
           />
-          <CurrentQuestAction
-            label={currentQuest.label}
-            buttonLabel={currentButtonLabel}
-            isLoading={isLoading}
-            onClick={handleCurrentQuestClick}
-            className="w-full"
-          />
+          {isAllCompleted ? (
+            <div className="flex w-full flex-col items-center gap-2">
+              <Button
+                variant="solid"
+                tone="primary"
+                className="w-full"
+                disabled={isLoading || currentLevel >= 7}
+                onClick={() => {
+                  if (email)
+                    useQuestStore.getState().setShowCompleteModalStep(5);
+                }}
+              >
+                {currentLevel >= 7
+                  ? '보상 받기 완료!'
+                  : '이벤트 보상 받기'}
+              </Button>
+            </div>
+          ) : (
+            <CurrentQuestAction
+              label={currentQuest.label}
+              buttonLabel={currentButtonLabel}
+              isLoading={isLoading}
+              onClick={handleCurrentQuestClick}
+              className="w-full"
+            />
+          )}
         </div>
       </div>
     );
@@ -398,12 +417,14 @@ export const QuestStep = ({
               size="sm"
               className="w-full"
             />
-            <CurrentQuestAction
-              label={currentQuest.label}
-              buttonLabel={currentButtonLabel}
-              isLoading={isLoading}
-              onClick={handleCurrentQuestClick}
-            />
+            {!isAllCompleted && (
+              <CurrentQuestAction
+                label={currentQuest.label}
+                buttonLabel={currentButtonLabel}
+                isLoading={isLoading}
+                onClick={handleCurrentQuestClick}
+              />
+            )}
           </div>
           <RewardCard
             isAllCompleted={isAllCompleted}
@@ -473,7 +494,7 @@ export const QuestStep = ({
                             className={cn(
                               'typo-sm line-clamp-1 h-9 w-full truncate shadow-none',
                               !isInProgress &&
-                                'cursor-not-allowed bg-surface-contrast text-fg-muted hover:bg-surface-contrast',
+                                'cursor-not-allowed bg-surface-contrast text-fg-muted lg:hover:bg-surface-contrast',
                               isInProgress &&
                                 !isAlreadyStarted &&
                                 'animate-pulse-glow'

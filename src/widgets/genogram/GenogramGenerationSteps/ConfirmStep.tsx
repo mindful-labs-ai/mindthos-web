@@ -54,7 +54,7 @@ export function ConfirmStep({
         isLoadingCredits
           ? 'bg-green-80/50 text-white'
           : hasEnoughCredits
-            ? 'hover:bg-green-80/90 bg-green-80 text-white'
+            ? 'lg:hover:bg-green-80/90 bg-green-80 text-white'
             : 'bg-grey-30 text-grey-60'
       )}
     >

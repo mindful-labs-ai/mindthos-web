@@ -92,7 +92,7 @@ export function ReportListStep({
                 type="button"
                 onClick={() => onPreviewReport(report)}
                 title="미리보기"
-                className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+                className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
               >
                 <Eye className="h-5 w-5" />
               </button>
@@ -101,7 +101,7 @@ export function ReportListStep({
                   type="button"
                   onClick={() => onDownloadReport(report)}
                   title="다운로드"
-                  className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+                  className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
                 >
                   <Download className="h-5 w-5" />
                 </button>
@@ -114,7 +114,7 @@ export function ReportListStep({
               type="button"
               onClick={() => onRetryReport(report.id)}
               disabled={retryingId === report.id}
-              className="shrink-0 rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+              className="shrink-0 rounded-lg p-2 text-red-500 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
             >
               {retryingId === report.id ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -138,7 +138,7 @@ function CreateReportButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="border-primary-400 typo-m text-primary-400 flex w-full max-w-[265px] items-center justify-center gap-2 rounded-lg border-2 bg-primary-subtle py-2.5 font-medium transition-colors hover:border-primary hover:bg-primary-subtle"
+      className="border-primary-400 typo-m text-primary-400 flex w-full max-w-[265px] items-center justify-center gap-2 rounded-lg border-2 bg-primary-subtle py-2.5 font-medium transition-colors lg:hover:border-primary lg:hover:bg-primary-subtle"
     >
       <Plus className="h-5 w-5" />
       새로운 보고서 만들기

@@ -64,6 +64,12 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
   effectiveAt,
   onConfirm,
 }) => {
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.PlanDowngradeConfirmModalOpen);
+    }
+  }, [open]);
+
   const { toast } = useToast();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -232,7 +238,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
         <>
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">플랜 다운그레이드</p>
+            <p className="text-m font-medium text-grey-100">플랜 다운그레이드</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">

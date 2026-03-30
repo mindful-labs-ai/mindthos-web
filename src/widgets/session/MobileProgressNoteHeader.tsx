@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 
-import { CopyIcon } from '@/shared/icons';
+import { ChevronRightIcon, CopyIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -47,7 +47,7 @@ export const MobileProgressNoteHeader: React.FC<
           <>
             <button
               type="button"
-              className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+              className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
               onClick={() => setIsMenuOpen(true)}
               aria-label="추가 메뉴"
             >
@@ -79,7 +79,7 @@ export const MobileProgressNoteHeader: React.FC<
                       setIsMenuOpen(false);
                     }}
                     disabled={isRegenerating}
-                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                    className="flex w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface"
                   >
                     <svg
                       width="18"
@@ -95,7 +95,8 @@ export const MobileProgressNoteHeader: React.FC<
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
-                    <span className="typo-sm text-fg">편집</span>
+                    <span className="typo-m text-fg">편집</span>
+                    <ChevronRightIcon size={20} className="text-grey-70" />
                   </button>
                 )}
                 <button
@@ -103,10 +104,11 @@ export const MobileProgressNoteHeader: React.FC<
                     onCopyAll();
                     setIsMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface"
                 >
                   <CopyIcon size={18} className="text-fg-muted" />
-                  <span className="typo-sm text-fg">복사하기</span>
+                  <span className="typo-m text-fg">복사하기</span>
+                  <ChevronRightIcon size={20} className="text-grey-70" />
                 </button>
                 {canRegenerate && (
                   <button
@@ -115,7 +117,7 @@ export const MobileProgressNoteHeader: React.FC<
                       setIsMenuOpen(false);
                     }}
                     disabled={isReadOnly || isRegenerating}
-                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface disabled:opacity-50"
+                    className="flex w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition-colors disabled:opacity-50 lg:hover:bg-surface"
                   >
                     <svg
                       width="18"
@@ -132,9 +134,10 @@ export const MobileProgressNoteHeader: React.FC<
                         strokeLinejoin="round"
                       />
                     </svg>
-                    <span className="typo-sm text-fg">
+                    <span className="typo-m text-fg">
                       {isRegenerating ? '재생성 중...' : '노트 재생성'}
                     </span>
+                    <ChevronRightIcon size={20} className="text-grey-70" />
                   </button>
                 )}
               </div>

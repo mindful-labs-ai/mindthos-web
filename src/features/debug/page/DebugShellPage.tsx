@@ -1,3 +1,5 @@
+// TODO : 제거
+
 import React from 'react';
 
 import type { TermItem } from '@/features/terms-agreement/types';
@@ -660,7 +662,7 @@ function AuthPagesPreview() {
 
                   <div className="mb-6">
                     <button
-                      className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity hover:opacity-60"
+                      className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity lg:hover:opacity-60"
                       onClick={(e) => e.preventDefault()}
                       disabled={isGoogleLoading}
                     >
@@ -683,7 +685,7 @@ function AuthPagesPreview() {
                       onClick={() =>
                         setAuthForm(authForm === 'signIn' ? 'signUp' : 'signIn')
                       }
-                      className="text-m font-medium text-green-80 hover:opacity-80"
+                      className="text-m font-medium text-green-80 lg:hover:opacity-80"
                     >
                       {authForm === 'signIn'
                         ? '아직 계정이 없으신가요? 회원가입하기'
@@ -744,7 +746,7 @@ function ErrorPagesPreview() {
               일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
             </p>
             <details className="mb-8 text-left">
-              <summary className="typo-sm text-muted cursor-pointer hover:text-fg">
+              <summary className="typo-sm text-muted cursor-pointer lg:hover:text-fg">
                 오류 상세 정보
               </summary>
               <pre className="typo-xs mt-2 overflow-auto rounded-lg bg-surface-contrast p-4 text-left text-fg">
@@ -756,12 +758,12 @@ function ErrorPagesPreview() {
               <HyperLink
                 underline="hover"
                 href="#"
-                className="bg-primary-500 typo-m hover:bg-primary-600 inline-block rounded-lg px-6 py-3 font-medium text-primary-fg hover:text-primary-fg"
+                className="bg-primary-500 typo-m lg:hover:bg-primary-600 inline-block rounded-lg px-6 py-3 font-medium text-primary-fg lg:hover:text-primary-fg"
                 onClick={(e: React.MouseEvent) => e.preventDefault()}
               >
                 홈으로 돌아가기
               </HyperLink>
-              <button className="border-default typo-m inline-block rounded-lg bg-surface px-6 py-3 font-medium text-fg hover:bg-surface-contrast">
+              <button className="border-default typo-m inline-block rounded-lg bg-surface px-6 py-3 font-medium text-fg lg:hover:bg-surface-contrast">
                 새로고침
               </button>
             </div>
@@ -782,7 +784,7 @@ function ErrorPagesPreview() {
             <HyperLink
               underline="hover"
               href="#"
-              className="bg-primary-500 typo-m hover:bg-primary-600 inline-block rounded-lg px-6 py-3 font-medium text-primary-fg hover:text-primary-fg"
+              className="bg-primary-500 typo-m lg:hover:bg-primary-600 inline-block rounded-lg px-6 py-3 font-medium text-primary-fg lg:hover:text-primary-fg"
               onClick={(e: React.MouseEvent) => e.preventDefault()}
             >
               홈으로 돌아가기
@@ -833,7 +835,7 @@ function TermsPagesPreview() {
             </p>
             <button
               type="button"
-              className="mt-2 text-m font-medium text-green-80 hover:opacity-80"
+              className="mt-2 text-m font-medium text-green-80 lg:hover:opacity-80"
             >
               다시 시도
             </button>
@@ -887,7 +889,7 @@ function TermsPagesPreview() {
             </p>
             <button
               type="button"
-              className="mt-2 text-m text-green-80 hover:opacity-80"
+              className="mt-2 text-m text-green-80 lg:hover:opacity-80"
             >
               다시 시도
             </button>

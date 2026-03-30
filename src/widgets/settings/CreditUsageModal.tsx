@@ -3,7 +3,9 @@ import React from 'react';
 import { useInView } from 'react-intersection-observer';
 
 import { useCreditLogs } from '@/features/settings/hooks/useCreditLogs';
+import { trackEvent } from '@/lib/mixpanel';
 import type { CreditLog } from '@/shared/api/supabase/creditQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -31,6 +33,12 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
   } = useCreditLogs();
 
   const { ref, inView } = useInView();
+
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.CreditUsageModalOpen);
+    }
+  }, [open]);
 
   React.useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
@@ -102,7 +110,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
       {logs.map((log) => (
         <div
           key={log.id}
-          className="grid grid-cols-[1.5fr_1.5fr_1fr] rounded-lg px-4 py-3 text-center text-sm transition-colors hover:bg-grey-10"
+          className="grid grid-cols-[1.5fr_1.5fr_1fr] rounded-lg px-4 py-3 text-center text-sm transition-colors lg:hover:bg-grey-10"
         >
           <p className="text-grey-100">{formatLogDate(log.created_at)}</p>
           <p className="font-medium text-grey-100">{getUsageLabel(log)}</p>
@@ -142,7 +150,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         <>
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">크레딧 사용 내역</p>
+            <p className="text-m font-medium text-grey-100">크레딧 사용 내역</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">
             <div className="overflow-x-auto rounded-xl bg-grey-10 p-4 md:p-6">

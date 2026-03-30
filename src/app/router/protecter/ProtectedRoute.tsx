@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
 import { useTermsCheck } from '@/features/terms-agreement/hooks/useTermsCheck';
+import { SplashLoading } from '@/shared/ui/composites/SplashLoading';
 import { useAuthStore } from '@/stores/authStore';
 import { useUtmStore } from '@/stores/utmStore';
 import { GlobalModalContainer } from '@/widgets/common/GlobalModalContainer';
@@ -32,24 +33,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     isAuthenticated && !skipTermsCheck
   );
 
-  if (isLoading || (isAuthenticated && !skipTermsCheck && isTermsLoading)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg">
-        <div className="text-center">
-          <div className="border-primary-500 mb-4 h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"></div>
-          <p className="typo-sm text-muted">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
+  const isBusy =
+    isLoading || (isAuthenticated && !skipTermsCheck && isTermsLoading);
 
-  if (!isAuthenticated) {
+  if (!isBusy && !isAuthenticated) {
     const search = utmParams ? `?${utmParams}` : '';
     return <Navigate to={{ pathname: ROUTES.AUTH, search }} replace />;
   }
 
-  // 약관 미동의 시 약관 동의 페이지로 리다이렉트
-  if (!skipTermsCheck && !agreedAll) {
+  if (!isBusy && !skipTermsCheck && !agreedAll) {
     const search = utmParams ? `?${utmParams}` : '';
     return (
       <Navigate to={{ pathname: ROUTES.TERMS_AGREEMENT, search }} replace />
@@ -58,8 +50,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   return (
     <>
-      {children}
-      <GlobalModalContainer />
+      {!isBusy && children}
+      {!isBusy && <GlobalModalContainer />}
+      <SplashLoading visible={isBusy} />
     </>
   );
 };

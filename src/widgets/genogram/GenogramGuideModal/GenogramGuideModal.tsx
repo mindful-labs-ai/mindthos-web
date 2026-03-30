@@ -1,5 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import type { GenogramGuideModalProps } from './types';
@@ -30,6 +32,20 @@ export function GenogramGuideModal({
 }: GenogramGuideModalProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
+  useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.GenogramGuideModalOpen);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.GenogramGuideStepChange, {
+        step: currentStepIndex + 1,
+      });
+    }
+  }, [currentStepIndex, open]);
+
   const isLastStep = currentStepIndex === steps.length - 1;
   const currentStep = steps[currentStepIndex];
 
@@ -42,6 +58,7 @@ export function GenogramGuideModal({
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
+      trackEvent(MixpanelEvent.GenogramGuideComplete);
       onComplete?.();
       closeAndReset();
     } else {
@@ -120,14 +137,14 @@ export function GenogramGuideModal({
             <button
               type="button"
               onClick={handleDontShowAgain}
-              className="typo-m flex-1 rounded-xl border border-border bg-surface py-4 font-emphasize text-fg transition-colors hover:bg-surface-contrast"
+              className="typo-m flex-1 rounded-xl border border-border bg-surface py-4 font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
             >
               다시 보지 않기
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="typo-m hover:bg-primary-400 flex-1 rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
+              className="typo-m lg:hover:bg-primary-400 flex-1 rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
             >
               확인
             </button>
@@ -136,7 +153,7 @@ export function GenogramGuideModal({
           <button
             type="button"
             onClick={handleNext}
-            className="typo-m hover:bg-primary-400 w-full rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
+            className="typo-m lg:hover:bg-primary-400 w-full rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
           >
             다음
           </button>

@@ -74,7 +74,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         >
           <MenuIcon size={24} />
         </button>
-        <span className="typo-m text-fg">{pageTitle}</span>
+        <span className="text-m font-medium text-grey-100">{pageTitle}</span>
       </div>
 
       {rightSlot}
@@ -117,7 +117,7 @@ function GenogramClientButton() {
       >
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
           <BackButton onClick={() => setIsOpen(false)} />
-          <p className="text-l font-medium text-grey-80">클라이언트 선택</p>
+          <p className="text-m font-medium text-grey-100">클라이언트 선택</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {activeClients.length === 0 ? (
@@ -145,7 +145,7 @@ function GenogramClientButton() {
                   className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition-colors ${
                     selectedClient?.id === client.id
                       ? 'border-green-80 bg-green-10'
-                      : 'border-grey-30 bg-white hover:bg-grey-10'
+                      : 'border-grey-30 bg-white lg:hover:bg-grey-10'
                   }`}
                 >
                   <span className="text-m font-medium text-grey-100">

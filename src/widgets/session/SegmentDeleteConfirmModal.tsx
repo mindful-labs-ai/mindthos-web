@@ -1,3 +1,7 @@
+import React from 'react';
+
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface SegmentDeleteConfirmModalProps {
@@ -11,6 +15,12 @@ export function SegmentDeleteConfirmModal({
   onClose,
   onConfirm,
 }: SegmentDeleteConfirmModalProps) {
+  React.useEffect(() => {
+    if (isOpen) {
+      trackEvent(MixpanelEvent.TranscriptSegmentDeleteConfirmView);
+    }
+  }, [isOpen]);
+
   return (
     <Modal
       open={isOpen}
@@ -33,8 +43,11 @@ export function SegmentDeleteConfirmModal({
 
         {/* 초기화 버튼 */}
         <button
-          onClick={onConfirm}
-          className="hover:bg-primary-500/90 typo-l mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-primary-fg transition-colors"
+          onClick={() => {
+            trackEvent(MixpanelEvent.TranscriptSegmentDeleteConfirm);
+            onConfirm();
+          }}
+          className="lg:hover:bg-primary-500/90 typo-l mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-primary-fg transition-colors"
         >
           삭제하기
         </button>

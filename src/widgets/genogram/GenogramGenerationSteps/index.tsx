@@ -107,8 +107,8 @@ export function GenogramGenerationSteps({
     };
 
     return (
-      <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
-        <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-border bg-surface p-6 shadow-elevated">
+      <div className="flex h-full flex-col items-center justify-center overflow-hidden md:p-8">
+        <div className="flex h-full w-full flex-col border border-border bg-surface shadow-elevated md:h-[90%] md:max-w-[min(90%,1018px)] md:rounded-xl md:p-6">
           {/* 콘텐츠 (스테퍼 없음) */}
           <div className="min-h-0 flex-1 overflow-hidden">
             {renderEditContent()}
@@ -121,8 +121,8 @@ export function GenogramGenerationSteps({
   // render 단계: 전체 화면 모달로 표시
   if (currentStep === 'render') {
     return (
-      <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
-        <div className="flex w-full max-w-md flex-col rounded-xl border border-border bg-surface p-8 shadow-elevated">
+      <div className="flex h-full flex-col items-center justify-center overflow-hidden md:p-8">
+        <div className="flex w-full max-w-md flex-col border border-border bg-surface shadow-elevated md:rounded-xl md:p-8">
           <RenderStep
             error={error}
             isPending={isRenderPending}
@@ -245,7 +245,7 @@ export function GenogramGenerationSteps({
         {/* 헤더 */}
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 bg-white px-4">
           <BackButton onClick={() => onCancel?.()} />
-          <p className="text-l font-medium text-grey-80">
+          <p className="text-m font-medium text-grey-100">
             상담기록으로 가계도 생성하기
           </p>
         </div>

@@ -126,7 +126,7 @@ export function FlatCustomSelect({
                   'flex w-full items-center px-4 py-3 text-sm transition-colors',
                   opt.value === value
                     ? 'font-medium text-green-80'
-                    : 'text-grey-80 hover:bg-grey-10'
+                    : 'text-grey-80 lg:hover:bg-grey-10'
                 )}
               >
                 {opt.label}
@@ -154,7 +154,7 @@ export function FlatCustomSelect({
                 type="button"
                 onClick={() => handleSelect(opt.value)}
                 className={cn(
-                  'typo-sm flex w-full items-center px-4 py-2 hover:bg-surface-contrast',
+                  'typo-sm flex w-full items-center px-4 py-2 lg:hover:bg-surface-contrast',
                   opt.value === value ? 'font-medium text-fg' : 'text-fg-muted'
                 )}
               >
@@ -280,7 +280,7 @@ export function GroupedCustomSelect({
                     type="button"
                     onClick={() => handleSelect(opt.value)}
                     className={cn(
-                      'typo-sm flex w-full items-center px-4 py-2 hover:bg-surface-contrast',
+                      'typo-sm flex w-full items-center px-4 py-2 lg:hover:bg-surface-contrast',
                       opt.value === value
                         ? 'font-medium text-fg'
                         : 'text-fg-muted'

@@ -78,7 +78,7 @@ const SttModelToggle: React.FC<{
           'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
           value === 'whisper'
             ? 'bg-primary-subtle text-primary'
-            : 'text-fg-muted hover:bg-surface-contrast'
+            : 'text-fg-muted lg:hover:bg-surface-contrast'
         )}
       >
         일반
@@ -112,7 +112,7 @@ const SttModelToggle: React.FC<{
           'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
           value === 'gemini-3'
             ? 'bg-primary-subtle text-primary'
-            : 'text-fg-muted hover:bg-surface-contrast'
+            : 'text-fg-muted lg:hover:bg-surface-contrast'
         )}
       >
         고급
@@ -230,7 +230,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
     <button
       type="button"
       onClick={() => onRemove(file.id)}
-      className="flex-shrink-0 p-1 text-fg-muted transition-colors hover:text-fg"
+      className="flex-shrink-0 p-1 text-fg-muted transition-colors lg:hover:text-fg"
       aria-label="파일 제거"
     >
       <XIcon size={16} />

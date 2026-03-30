@@ -209,7 +209,7 @@ body {
     @apply bg-grey-20 text-grey-100;
   }
   .inactive-nav {
-    @apply text-grey-60 opacity-90 hover:bg-grey-20;
+    @apply text-grey-60 opacity-90 lg:hover:bg-grey-20;
   }
   .sidebar-credit-display {
     @apply relative mb-5 flex select-none flex-col gap-y-2.5 rounded-md bg-bg-whisper px-4 py-3 text-left;
@@ -242,7 +242,7 @@ body {
     @apply focus-default transition-default h-12 w-full rounded-md border border-grey-40 bg-grey-10 px-3 py-3.5 text-m font-sub text-grey-100 placeholder:text-m placeholder:font-sub placeholder:text-grey-100;
   }
   .auth-button {
-    @apply focus-default h-12 w-full rounded-md bg-green-80 text-m font-headline text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:bg-green-40;
+    @apply focus-default h-12 w-full rounded-md bg-green-80 text-m font-headline text-white transition-opacity disabled:cursor-not-allowed disabled:bg-green-40 lg:hover:opacity-80;
   }
   .terms-content-typo {
     @apply text-m font-medium text-grey-80 md:text-l;
@@ -263,35 +263,35 @@ body {
 
   /* Primary */
   .interact-primary-bg {
-    @apply bg-primary hover:bg-primary-hover active:bg-primary-active;
+    @apply bg-primary active:bg-primary-active lg:hover:bg-primary-hover;
   }
   .interact-primary-text {
-    @apply text-primary hover:text-primary-hover active:text-primary-active;
+    @apply text-primary active:text-primary-active lg:hover:text-primary-hover;
   }
   .interact-primary-border {
-    @apply border-primary hover:border-primary-hover active:border-primary-active;
+    @apply border-primary active:border-primary-active lg:hover:border-primary-hover;
   }
 
   /* Danger */
   .interact-danger-bg {
-    @apply bg-danger hover:bg-danger-hover active:bg-danger-active;
+    @apply bg-danger active:bg-danger-active lg:hover:bg-danger-hover;
   }
   .interact-danger-text {
-    @apply text-danger hover:text-danger-hover active:text-danger-active;
+    @apply text-danger active:text-danger-active lg:hover:text-danger-hover;
   }
   .interact-danger-border {
-    @apply border-danger hover:border-danger-hover active:border-danger-active;
+    @apply border-danger active:border-danger-active lg:hover:border-danger-hover;
   }
 
   /* Neutral */
   .interact-neutral-bg {
-    @apply bg-neutral hover:bg-neutral-hover active:bg-neutral-active;
+    @apply bg-neutral active:bg-neutral-active lg:hover:bg-neutral-hover;
   }
   .interact-neutral-text {
-    @apply text-neutral hover:text-neutral-hover active:text-neutral-active;
+    @apply text-neutral active:text-neutral-active lg:hover:text-neutral-hover;
   }
   .interact-neutral-border {
-    @apply border-neutral hover:border-neutral-hover active:border-neutral-active;
+    @apply border-neutral active:border-neutral-active lg:hover:border-neutral-hover;
   }
 
   /* ========================================

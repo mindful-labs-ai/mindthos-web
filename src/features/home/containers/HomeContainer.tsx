@@ -14,7 +14,9 @@ import type {
 } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { trackEvent } from '@/lib/mixpanel';
 import { GUIDE_URL } from '@/shared/constants/externalUrls';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
@@ -58,9 +60,8 @@ const HomeContainer = () => {
     userId: parseInt(userId || '0'),
     enabled: !!userId,
     onSessionComplete: (session) => {
-      const isHandwritten = session.audio_meta_data === null;
       toast({
-        title: isHandwritten ? '상담 기록 생성 완료' : '음성 파일 처리 완료',
+        title: '상담 기록 생성 완료',
         description: session.title
           ? `"${session.title}" 생성 완료 되었습니다.`
           : '생성 완료 되었습니다.',
@@ -180,20 +181,23 @@ const HomeContainer = () => {
   };
   const remainingDays = calculateRemainingDays(startedAt);
 
+  React.useEffect(() => {
+    if (isWelcomeBannerVisible && isChecked && !shouldShowOnboarding) {
+      trackEvent(MixpanelEvent.WelcomeBannerView);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isChecked, shouldShowOnboarding]);
+
   const handleGuideClick = () => {
     window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
   };
 
   const handleUploadClick = () => {
-    if (isMobileView) {
-      openModal('sessionTypeSelect');
-    } else {
-      openModal('createMultiSession');
-    }
+    openModal('createMultiSession');
   };
 
   const handleAddCustomerClick = () => {
-    navigateWithUtm(ROUTES.CLIENTS);
+    openModal('addClient');
   };
 
   const handleViewAllRecordsClick = () => {
@@ -201,6 +205,9 @@ const HomeContainer = () => {
   };
 
   const handleSessionClick = (record: SessionRecord) => {
+    trackEvent(MixpanelEvent.SessionCardClick, {
+      session_id: record.session_id,
+    });
     navigateWithUtm(getSessionDetailRoute(record.session_id));
   };
 
@@ -235,7 +242,10 @@ const HomeContainer = () => {
             description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
             buttonText="더 알아보기"
             onButtonClick={handleGuideClick}
-            onClose={() => setIsWelcomeBannerVisible(false)}
+            onClose={() => {
+              trackEvent(MixpanelEvent.WelcomeBannerDismiss);
+              setIsWelcomeBannerVisible(false);
+            }}
           />
         )
       )}
@@ -312,7 +322,7 @@ const HomeContainer = () => {
           <button
             type="button"
             onClick={handleViewAllRecordsClick}
-            className="border-default typo-sm w-full rounded-lg bg-surface px-6 py-2.5 font-medium text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+            className="border-default typo-sm w-full rounded-lg bg-surface px-6 py-2.5 font-medium text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
           >
             더보기
           </button>

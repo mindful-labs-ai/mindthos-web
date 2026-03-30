@@ -54,7 +54,7 @@ const MobileCouponSelectModal: React.FC<{
     >
       <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
         <BackButton onClick={() => onOpenChange(false)} />
-        <p className="text-l font-medium text-grey-80">사용 가능한 쿠폰</p>
+        <p className="text-m font-medium text-grey-100">사용 가능한 쿠폰</p>
       </div>
       <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10">
         <div className="space-y-3">
@@ -229,6 +229,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
   // 모달 열릴 때 / 쿠폰 목록 변경 시: 드롭다운 닫고, 최대 할인 쿠폰 자동 적용
   useEffect(() => {
     if (!open) return;
+    trackEvent(MixpanelEvent.PlanUpgradeConfirmModalOpen);
     setIsCouponDropdownOpen(false);
     if (coupons.length > 0) {
       const best = coupons.reduce(
@@ -293,7 +294,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         {coupons.length > 0 && (
           <button
             onClick={() => setIsCouponDropdownOpen((prev) => !prev)}
-            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-70 transition-colors hover:bg-grey-10"
+            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
           >
             쿠폰 사용하기({coupons.length})
           </button>
@@ -450,7 +451,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
           href={getTermsRoute(TERMS_TYPES.SERVICE)}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline transition-colors hover:text-grey-80"
+          className="underline transition-colors lg:hover:text-grey-80"
         >
           결제 약관
         </a>
@@ -486,7 +487,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         <>
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">
+            <p className="text-m font-medium text-grey-100">
               {title || '마음토스 플랜 업그레이드'}
             </p>
           </div>

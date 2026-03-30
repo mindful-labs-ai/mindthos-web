@@ -139,7 +139,7 @@ export function ClientDropdown({
                     className={`typo-sm rounded-lg border px-3 py-1 font-medium transition-colors ${
                       selectedClient?.id === client.id
                         ? 'bg-primary/10 border-primary text-primary'
-                        : 'hover:bg-primary/5 border-border bg-surface-strong text-fg hover:border-primary'
+                        : 'lg:hover:bg-primary/5 border-border bg-surface-strong text-fg lg:hover:border-primary'
                     }`}
                   >
                     {client.name}
@@ -162,7 +162,7 @@ export function ClientDropdown({
                   <button
                     key={client.id}
                     onClick={() => handleSelect(client)}
-                    className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors hover:bg-surface ${
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left transition-colors lg:hover:bg-surface ${
                       selectedClient?.id === client.id
                         ? 'bg-primary-subtle font-emphasize text-fg'
                         : 'text-fg'

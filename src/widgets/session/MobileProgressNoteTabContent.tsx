@@ -72,7 +72,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
         if (activeCreatingTab?.isProcessing) {
           return (
             <div className="flex h-full flex-col">
-              <div className="flex h-full flex-col items-center justify-center gap-4 py-4">
+              <div className="flex flex-1 flex-col items-center justify-center gap-4 py-4">
                 <div className="h-12 w-12 animate-spin rounded-full border-4 border-surface-strong border-t-primary"></div>
                 <div className="text-center">
                   <Title as="h2" className="typo-l font-medium text-fg">
@@ -103,7 +103,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                   className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors md:text-m ${
                     isReadOnly || !isTemplateSelected
                       ? 'cursor-not-allowed bg-grey-30 text-grey-60'
-                      : 'bg-green-80 text-white hover:opacity-90'
+                      : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
                   상담 노트 만들기

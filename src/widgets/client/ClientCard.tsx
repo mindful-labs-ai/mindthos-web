@@ -69,6 +69,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       return;
     }
     setIsMenuOpen(false);
+    trackEvent(MixpanelEvent.ClientSessionCloseConfirmView, {
+      client_id: client.id,
+    });
     setIsCloseSessionModalOpen(true);
   };
 
@@ -112,6 +115,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       return;
     }
     setIsMenuOpen(false);
+    trackEvent(MixpanelEvent.ClientSessionRestartConfirmView, {
+      client_id: client.id,
+    });
     setIsRestartCounselingModalOpen(true);
   };
 
@@ -164,6 +170,9 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       return;
     }
     setIsMenuOpen(false);
+    trackEvent(MixpanelEvent.ClientDeleteConfirmView, {
+      client_id: client.id,
+    });
     setIsDeleteModalOpen(true);
   };
 
@@ -204,7 +213,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
     <>
       <div
         data-client-id={client.id}
-        className={`hover:border-grey-50 cursor-pointer rounded-xl border border-grey-40 bg-white p-5 transition-all md:p-6 ${
+        className={`lg:hover:border-grey-50 cursor-pointer rounded-xl border border-grey-40 bg-white p-5 transition-all md:p-6 ${
           client.counsel_done ? 'opacity-50' : ''
         }`}
         onClick={handleCardClick}
@@ -259,7 +268,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
               tone="primary"
               variant="outline"
               size="md"
-              className="cursor-pointer transition-colors hover:bg-green-10"
+              className="cursor-pointer transition-colors lg:hover:bg-green-10"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 onAnalyzeClick?.(client);

@@ -1,6 +1,8 @@
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
 import { BADGE_ICON_MAP } from '@/shared/constants/badgeIcons';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import type { UserAccess } from '@/shared/hooks/useFeatureAccess';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -21,6 +23,12 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
   onOpenChange,
   access,
 }) => {
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.BadgeDetailModalOpen);
+    }
+  }, [open]);
+
   const Icon = BADGE_ICON_MAP[access.type];
 
   return (

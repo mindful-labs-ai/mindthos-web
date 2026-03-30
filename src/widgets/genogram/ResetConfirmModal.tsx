@@ -1,5 +1,9 @@
+import { useEffect } from 'react';
+
 import { Loader2 } from 'lucide-react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface ResetConfirmModalProps {
@@ -17,6 +21,17 @@ export function ResetConfirmModal({
   onConfirm,
   isLoading = false,
 }: ResetConfirmModalProps) {
+  useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.GenogramResetConfirmView);
+    }
+  }, [open]);
+
+  const handleConfirm = () => {
+    trackEvent(MixpanelEvent.GenogramResetConfirm);
+    onConfirm();
+  };
+
   return (
     <Modal open={open} onOpenChange={onOpenChange} className="max-w-[480px]">
       <div className="flex flex-col items-center px-4 py-6">
@@ -37,9 +52,9 @@ export function ResetConfirmModal({
 
         {/* 초기화 버튼 */}
         <button
-          onClick={onConfirm}
+          onClick={handleConfirm}
           disabled={isLoading}
-          className="hover:bg-primary/90 typo-l mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 font-medium text-primary-fg transition-colors disabled:opacity-50"
+          className="lg:hover:bg-primary/90 typo-l mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 font-medium text-primary-fg transition-colors disabled:opacity-50"
         >
           {isLoading ? (
             <>

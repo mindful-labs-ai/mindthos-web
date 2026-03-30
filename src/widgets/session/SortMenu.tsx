@@ -23,7 +23,7 @@ export const SortMenu: React.FC<SortMenuProps> = ({
           <button
             type="button"
             onClick={onBack}
-            className="rounded p-1 hover:bg-surface"
+            className="rounded p-1 lg:hover:bg-surface"
             aria-label="뒤로가기"
           >
             <svg

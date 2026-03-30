@@ -11,6 +11,7 @@ import { MarkdownRenderer } from '@/shared/ui/composites/MarkdownRenderer';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { domToMarkdown } from '@/shared/utils/domToMarkdown';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
+import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 import { RegenerateProgressNoteModal } from './RegenerateProgressNoteModal';
 
@@ -198,7 +199,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
 
   const handleCopy = async (content: string, index: number) => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(stripMarkdown(content));
       setCopiedIndex(index);
       trackEvent(MixpanelEvent.ProgressNoteCopy, { section_index: index });
       toast({
@@ -220,7 +221,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
   const handleCopyAll = async () => {
     if (!note.summary) return;
     try {
-      await navigator.clipboard.writeText(note.summary);
+      await navigator.clipboard.writeText(stripMarkdown(note.summary));
       setCopiedAll(true);
       trackEvent(MixpanelEvent.ProgressNoteCopyAll);
       toast({
@@ -315,7 +316,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                     type="button"
                     onClick={handleEditStart}
                     disabled={isRegenerating}
-                    className={`rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100 ${
+                    className={`rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:er:bg-grey-lg:hover:hover:text-grey-100 ${
                       isRegenerating ? 'cursor-not-allowed opacity-50' : ''
                     }`}
                     aria-label="노트 편집"
@@ -326,7 +327,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                 <button
                   type="button"
                   onClick={handleCopyAll}
-                  className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                  className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:er:bg-grey-lg:hover:hover:text-grey-100"
                   aria-label="전체 복사"
                 >
                   {copiedAll ? (
@@ -349,7 +350,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                     className={`flex items-center gap-1.5 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors ${
                       isReadOnly || isRegenerating
                         ? 'cursor-not-allowed opacity-50'
-                        : 'hover:bg-grey-10 hover:text-grey-100'
+                        : 'lg:hover:er:bg-grey-lg:hover:hover:text-grey-100'
                     }`}
                     aria-label="노트 재생성"
                   >
@@ -382,7 +383,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                   type="button"
                   onClick={handleCancelEdit}
                   disabled={isSaving}
-                  className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+                  className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:er:bg-grey-10"
                 >
                   취소
                 </button>
@@ -392,7 +393,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                   disabled={!hasEdits || isSaving}
                   className={`rounded-md px-3.5 py-1 text-m font-medium transition-colors ${
                     hasEdits && !isSaving
-                      ? 'bg-green-80 text-white hover:opacity-90'
+                      ? 'bg-green-80 text-white lg:hover:er:opacity-90'
                       : 'cursor-not-allowed bg-grey-20 text-grey-60'
                   }`}
                 >
@@ -422,7 +423,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
               {sections.map((section, index) => (
                 <div
                   key={index}
-                  className={`group relative rounded-lg px-2 py-1 ${!isEditing ? 'hover:bg-surface-contrast' : ''}`}
+                  className={`group relative rounded-lg px-2 py-1 ${!isEditing ? 'lg:hover:er:bg-surface-contrast' : ''}`}
                 >
                   <div className="mb-3 flex items-start justify-between">
                     <Title
@@ -450,7 +451,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopy(section.content, index)}
-                        className="relative flex-shrink-0 rounded-lg p-2 text-fg-muted opacity-0 transition-all hover:bg-surface-contrast hover:text-fg group-hover:opacity-100"
+                        className="relative flex-shrink-0 rounded-lg p-2 text-fg-muted opacity-0 transition-all lg:hover:er:bg-surface-contralg:hover:hover:text-fg lg:hover:lg:hover:opacity-100"
                         aria-label="복사"
                       >
                         {copiedIndex === index ? (
@@ -458,7 +459,7 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                         ) : (
                           <CopyIcon />
                         )}
-                        <span className="typo-xs pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-bg opacity-0 transition-opacity hover:opacity-100">
+                        <span className="typo-xs pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-bg opacity-0 transition-opacity lg:hover:er:opacity-100">
                           {copiedIndex === index ? '복사됨' : '복사'}
                         </span>
                       </button>

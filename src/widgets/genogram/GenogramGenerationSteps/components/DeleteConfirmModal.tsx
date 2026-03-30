@@ -49,7 +49,7 @@ export function DeleteConfirmModal({
         <button
           onClick={onClose}
           aria-label={closeAriaLabel}
-          className="absolute right-4 top-4 p-1 text-fg-muted hover:text-fg"
+          className="absolute right-4 top-4 p-1 text-fg-muted lg:hover:text-fg"
         >
           <X className="h-5 w-5" />
         </button>
@@ -72,7 +72,7 @@ export function DeleteConfirmModal({
         {/* 삭제 버튼 */}
         <button
           onClick={onConfirm}
-          className="typo-l hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+          className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
         >
           삭제하기
         </button>

@@ -53,7 +53,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
           <button
             type="button"
             onClick={handlePinClick}
-            className="flex-shrink-0 text-grey-60 transition-colors hover:text-green-80"
+            className="flex-shrink-0 text-grey-60 transition-colors lg:hover:text-green-80"
             aria-label={template.pin ? '즐겨찾기 해제' : '즐겨찾기 추가'}
           >
             <StarIcon

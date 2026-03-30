@@ -62,7 +62,7 @@ const ErrorTestPage = () => {
             </p>
             <a
               href="/invalid-page-url"
-              className="bg-primary-500 typo-sm hover:bg-primary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
+              className="bg-primary-500 typo-sm lg:hover:bg-primary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
             >
               404 페이지로 이동
             </a>
@@ -78,13 +78,13 @@ const ErrorTestPage = () => {
             <div className="flex gap-2">
               <a
                 href="/terms"
-                className="bg-secondary-500 typo-sm hover:bg-secondary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
+                className="bg-secondary-500 typo-sm lg:hover:bg-secondary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
               >
                 /terms (404로 리다이렉팅)
               </a>
               <a
                 href="/terms?type=invalid"
-                className="bg-secondary-500 typo-sm hover:bg-secondary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
+                className="bg-secondary-500 typo-sm lg:hover:bg-secondary-600 inline-block rounded-lg px-4 py-2 font-medium text-primary-fg"
               >
                 /terms?type=invalid (404로 리다이렉팅)
               </a>
@@ -112,7 +112,7 @@ const ErrorTestPage = () => {
           <div className="mt-8">
             <a
               href="/auth"
-              className="typo-sm text-primary-500 hover:text-primary-600"
+              className="typo-sm text-primary-500 lg:hover:text-primary-600"
             >
               ← 인증 페이지로 돌아가기
             </a>

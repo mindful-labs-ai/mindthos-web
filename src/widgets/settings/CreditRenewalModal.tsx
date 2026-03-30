@@ -63,6 +63,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
   // 모달 열릴 때 Step 1로 초기화
   useEffect(() => {
     if (open) {
+      trackEvent(MixpanelEvent.CreditRenewalModalOpen);
       setStep(1);
       setPreviewData(null);
     }
@@ -270,7 +271,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
         <>
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">크레딧 충전하기</p>
+            <p className="text-m font-medium text-grey-100">크레딧 충전하기</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">

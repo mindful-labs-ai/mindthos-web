@@ -27,7 +27,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
       {onClose && (
         <button
           onClick={onClose}
-          className="hover:bg-primary-fg/20 absolute right-6 top-4 rounded-full p-1"
+          className="lg:hover:bg-primary-fg/20 absolute right-6 top-4 rounded-full p-1"
           aria-label="배너 닫기"
         >
           <XIcon size={20} />
@@ -43,7 +43,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
         onClick={onButtonClick}
         variant="solid"
         size="md"
-        className="hover:bg-surface/90 absolute bottom-6 right-4 bg-surface px-8 text-primary"
+        className="lg:hover:bg-surface/90 absolute bottom-6 right-4 bg-surface px-8 text-primary"
       >
         {buttonText}
       </Button>

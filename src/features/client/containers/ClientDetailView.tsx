@@ -2,8 +2,8 @@ import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { ROUTES } from '@/app/router/constants';
-import { ChevronDownIcon, ChevronLeftIcon, SortDescIcon } from '@/shared/icons';
+import { ChevronDownIcon, SortDescIcon } from '@/shared/icons';
+import { BackButton } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
 
 import type { Client } from '../types';
@@ -82,7 +82,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
         className={`relative px-1 py-4 text-l font-medium transition-colors ${
           activeTab === 'analyze'
             ? 'text-grey-100'
-            : 'text-grey-60 hover:text-grey-80'
+            : 'text-grey-60 lg:hover:text-grey-80'
         }`}
       >
         클라이언트 분석
@@ -95,7 +95,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
         className={`relative px-1 py-4 text-l font-medium transition-colors ${
           activeTab === 'history'
             ? 'text-grey-100'
-            : 'text-grey-60 hover:text-grey-80'
+            : 'text-grey-60 lg:hover:text-grey-80'
         }`}
       >
         상담 기록 및 정보
@@ -111,16 +111,9 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
       <div className="flex h-dvh w-full flex-col bg-app-bg">
         {/* 자체 헤더 */}
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 bg-white px-4 py-3 md:gap-7">
-          <button
-            type="button"
-            onClick={() => navigate(ROUTES.CLIENTS)}
-            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-60"
-            aria-label="클라이언트 목록으로"
-          >
-            <ChevronLeftIcon size={20} />
-          </button>
+          <BackButton onClick={() => navigate(-1)} />
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="truncate text-l font-medium text-grey-80">
+            <span className="truncate text-m font-medium text-grey-100">
               {client.name}
             </span>
             <span className="flex-shrink-0 text-sm text-grey-60">
@@ -165,7 +158,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                       e.stopPropagation();
                       onEditClientClick();
                     }}
-                    className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+                    className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
                   >
                     편집
                   </button>
@@ -188,7 +181,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                     onClick={() =>
                       onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
                     }
-                    className="flex items-center gap-1.5 rounded-lg border border-grey-30 bg-white px-3 py-1.5 text-sm font-medium text-grey-70 transition-colors hover:bg-grey-10"
+                    className="flex items-center gap-1.5 rounded-lg border border-grey-30 bg-white px-3 py-1.5 text-sm font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
                   >
                     <SortDescIcon size={16} />
                     {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
@@ -245,7 +238,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                   onClick={() =>
                     onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
                   }
-                  className="flex items-center gap-1.5 px-1 py-1.5 text-sm font-medium text-grey-100 transition-colors hover:opacity-80"
+                  className="flex items-center gap-1.5 px-1 py-1.5 text-sm font-medium text-grey-100 transition-colors lg:hover:opacity-80"
                 >
                   <SortDescIcon size={16} />
                   {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
@@ -263,7 +256,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                     <h2 className="text-sm text-grey-60">클라이언트 정보</h2>
                     <button
                       onClick={onEditClientClick}
-                      className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+                      className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
                     >
                       편집
                     </button>

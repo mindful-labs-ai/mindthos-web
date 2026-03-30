@@ -476,9 +476,12 @@ export function FamilyMemberListStep({
                 }}
                 portalContainer={scrollContainerRef.current}
                 isEditing={editingMemberIndex === index}
-                onEditChange={(isEditing) =>
-                  setEditingMemberIndex(isEditing ? index : null)
-                }
+                onEditChange={(isEditing) => {
+                  if (isEditing) {
+                    trackEvent(MixpanelEvent.GenogramFamilyMemberEdit);
+                  }
+                  setEditingMemberIndex(isEditing ? index : null);
+                }}
               />
             ))}
             {/* 구성원 추가 더미 카드 */}
@@ -528,7 +531,7 @@ export function FamilyMemberListStep({
 
       {/* 하단 고정 버튼 */}
       <div
-        className={`flex shrink-0 justify-center ${isMobileView ? 'px-4 pb-4 md:px-10' : 'mt-4 pt-4'}`}
+        className={`flex shrink-0 justify-center ${isMobileView ? 'bg-grey-20 px-4 pb-4 md:px-10' : 'mt-4 pt-4'}`}
       >
         <button
           onClick={() => {
@@ -542,7 +545,7 @@ export function FamilyMemberListStep({
               setShowConfirmModal(true);
             }
           }}
-          className={`hover:bg-green-80/90 h-12 w-full rounded-xl bg-green-80 text-l font-medium text-white transition-colors ${isMobileView ? '' : 'max-w-[500px]'}`}
+          className={`lg:hover:bg-green-80/90 h-12 w-full rounded-xl bg-green-80 text-l font-medium text-white transition-colors ${isMobileView ? '' : 'max-w-[500px]'}`}
         >
           {buttonText}
         </button>

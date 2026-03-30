@@ -86,7 +86,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({
             'flex items-center justify-center',
             'h-10 w-10 rounded-full',
             'bg-primary text-primary-fg',
-            'transition-opacity duration-normal hover:opacity-90',
+            'transition-opacity duration-normal lg:hover:opacity-90',
             'focus-default'
           )}
         >

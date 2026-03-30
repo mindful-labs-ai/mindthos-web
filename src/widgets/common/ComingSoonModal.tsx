@@ -43,7 +43,7 @@ export function ComingSoonModal({
         {/* 완료 버튼 */}
         <button
           onClick={() => onOpenChange(false)}
-          className="typo-l hover:bg-primary-400 mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2 font-medium text-primary-fg transition-colors"
+          className="typo-l lg:hover:bg-primary-400 mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2 font-medium text-primary-fg transition-colors"
         >
           확인
         </button>

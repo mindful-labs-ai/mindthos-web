@@ -340,10 +340,10 @@ export function useProgressNoteTabs({
 
     // 템플릿 선택 중인 탭
     Object.entries(creatingTabs).forEach(([tabId, templateId]) => {
-      let label = '빈 노트';
+      let label = '노트를 골라주세요';
       if (templateId) {
         const template = templates.find((t) => t.id === templateId);
-        label = template ? template.title : '빈 노트';
+        label = template ? template.title : '노트를 골라주세요';
       }
       items.push({ value: tabId, label });
     });

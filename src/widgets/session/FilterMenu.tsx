@@ -88,7 +88,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
       <button
         type="button"
         onClick={() => setCurrentView('sort')}
-        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-surface-contrast"
+        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left lg:hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
           <span className="typo-xs text-fg-muted">정렬</span>
@@ -113,7 +113,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
       <button
         type="button"
         onClick={() => setCurrentView('client')}
-        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-surface-contrast"
+        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left lg:hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
           <span className="typo-xs text-fg-muted">클라이언트</span>
@@ -144,7 +144,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
           trackEvent(MixpanelEvent.SessionFilterReset);
           onReset();
         }}
-        className="typo-sm w-full rounded-lg px-4 py-2 font-medium text-fg hover:bg-surface-contrast"
+        className="typo-sm w-full rounded-lg px-4 py-2 font-medium text-fg lg:hover:bg-surface-contrast"
       >
         초기화
       </button>

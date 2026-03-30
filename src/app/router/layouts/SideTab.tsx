@@ -148,7 +148,7 @@ export const SideTab: React.FC<SideTabProps> = ({
         <div className="flex h-header w-full items-center justify-between border-b border-sidebar-border">
           <button
             onClick={() => navigateWithUtm('/')}
-            className="main-logo-size items-center gap-2 hover:opacity-80"
+            className="main-logo-size items-center gap-2 lg:hover:opacity-80"
           >
             <img
               src="/title_mindthos_logo.png"
@@ -169,7 +169,7 @@ export const SideTab: React.FC<SideTabProps> = ({
             placement="bottom-right"
             trigger={
               <button
-                className="focus-default inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-green-80 bg-green-20 px-4 text-m font-medium text-primary transition-opacity hover:opacity-75"
+                className="focus-default inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-green-80 bg-green-20 px-4 text-m font-medium text-primary transition-opacity lg:hover:opacity-75"
                 onClick={async () => {
                   setIsNewRecordMenuOpen(!isNewRecordMenuOpen);
                 }}
@@ -181,14 +181,14 @@ export const SideTab: React.FC<SideTabProps> = ({
               <div className="w-[200px] space-y-1">
                 <button
                   onClick={handleAudioUploadClick}
-                  className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-nav-hover-bg"
+                  className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 lg:hover:bg-nav-hover-bg"
                 >
                   <UploadIcon size={18} className="" />
                   <Text>녹음 파일 업로드</Text>
                 </button>
                 <button
                   onClick={handleDirectInputClick}
-                  className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 hover:bg-nav-hover-bg"
+                  className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 lg:hover:bg-nav-hover-bg"
                 >
                   <Edit3Icon size={18} className="" />
                   <Text>직접 입력하기</Text>
@@ -247,7 +247,7 @@ export const SideTab: React.FC<SideTabProps> = ({
         </div>
       </div>
 
-      <div>
+      <div className="mt-5">
         {/* Credit Display */}
         {creditInfo && (
           <CreditDisplay

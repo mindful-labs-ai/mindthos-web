@@ -208,7 +208,7 @@ export const CancelSubscriptionModal: React.FC<
         <>
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">
+            <p className="text-m font-medium text-grey-100">
               정기 결제 중단하기
             </p>
           </div>

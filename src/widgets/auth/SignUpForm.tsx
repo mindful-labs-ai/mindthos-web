@@ -30,6 +30,7 @@ const SignUpForm = () => {
 
     setError('');
     setIsSubmitting(true);
+    trackEvent(MixpanelEvent.SignupAttempt, { method: 'email' });
 
     try {
       await signup(email, password, {
@@ -101,7 +102,7 @@ const SignUpForm = () => {
                 href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 external
                 underline="hover"
-                className="ml-1 text-green-80 hover:text-green-40"
+                className="ml-1 text-green-80 lg:hover:text-green-40"
               >
                 [보기]
               </HyperLink>
@@ -122,7 +123,7 @@ const SignUpForm = () => {
                 href={getTermsRoute(TERMS_TYPES.PRIVACY)}
                 external
                 underline="hover"
-                className="ml-1 text-green-80 hover:text-green-40"
+                className="ml-1 text-green-80 lg:hover:text-green-40"
               >
                 [보기]
               </HyperLink>

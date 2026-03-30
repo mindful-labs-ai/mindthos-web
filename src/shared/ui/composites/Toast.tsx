@@ -139,7 +139,7 @@ const ToastItem: React.FC<ToastItemProps> = ({
                 onClose();
               }}
               className={cn(
-                'typo-sm mt-2 rounded-sm font-medium text-primary hover:text-primary-hover',
+                'typo-sm mt-2 rounded-sm font-medium text-primary lg:hover:text-primary-hover',
                 'transition-default',
                 'focus-default'
               )}
@@ -153,8 +153,8 @@ const ToastItem: React.FC<ToastItemProps> = ({
           aria-label="Close notification"
           className={cn(
             'flex-shrink-0 rounded-sm p-1',
-            'text-fg-muted hover:text-fg',
-            'hover:bg-surface-contrast',
+            'text-fg-muted lg:hover:text-fg',
+            'lg:hover:bg-surface-contrast',
             'transition-default',
             'focus-default'
           )}

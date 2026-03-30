@@ -22,6 +22,7 @@ import {
 import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
+  ChevronRightIcon,
   CouponIcon,
   SettingPageEmailIcon,
   SettingPageLocationIcon,
@@ -91,6 +92,7 @@ export const SettingsContainer: React.FC = () => {
 
   const handleOpenNoticeList = () => {
     trackEvent(MixpanelEvent.NoticeListView);
+    trackEvent(MixpanelEvent.SettingsSectionChange, { section: 'noticeList' });
     setSelectedNoticeId(null);
     setView('noticeList');
     scrollToTop();
@@ -98,12 +100,16 @@ export const SettingsContainer: React.FC = () => {
 
   const handleSelectNotice = (noticeId: string) => {
     trackEvent(MixpanelEvent.NoticeDetailView, { notice_id: noticeId });
+    trackEvent(MixpanelEvent.SettingsSectionChange, {
+      section: 'noticeDetail',
+    });
     setSelectedNoticeId(noticeId);
     setView('noticeDetail');
     scrollToTop();
   };
 
   const handleBackToList = () => {
+    trackEvent(MixpanelEvent.SettingsSectionChange, { section: 'noticeList' });
     setSelectedNoticeId(null);
     setView('noticeList');
     scrollToTop();
@@ -341,7 +347,7 @@ export const SettingsContainer: React.FC = () => {
             tone="neutral"
             size="sm"
             onClick={handleCancelSubscription}
-            className="text-fg-muted hover:text-danger"
+            className="text-fg-muted lg:hover:text-danger"
           >
             구독 해지
           </Button>
@@ -401,7 +407,7 @@ export const SettingsContainer: React.FC = () => {
           <>
             <button
               type="button"
-              className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+              className="rounded-lg p-2 text-grey-60 transition-colors lg:hover:bg-grey-20 lg:hover:text-grey-80"
               onClick={() => setIsUsageMenuOpen(true)}
             >
               <svg
@@ -430,18 +436,20 @@ export const SettingsContainer: React.FC = () => {
                     handleOpenCouponModal();
                     setIsUsageMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                 >
-                  <span className="text-m text-grey-100">보유 중인 쿠폰</span>
+                  <span className="text-l text-grey-100">보유 중인 쿠폰</span>
+                  <ChevronRightIcon size={20} className="text-grey-70" />
                 </button>
                 <button
                   onClick={() => {
                     handleCreditUsageLog();
                     setIsUsageMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                 >
-                  <span className="text-m text-grey-100">크레딧 사용 내역</span>
+                  <span className="text-l text-grey-100">크레딧 사용 내역</span>
+                  <ChevronRightIcon size={20} className="text-grey-70" />
                 </button>
               </div>
             </Modal>
@@ -451,14 +459,14 @@ export const SettingsContainer: React.FC = () => {
             <button
               type="button"
               onClick={handleOpenCouponModal}
-              className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+              className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
             >
               <CouponIcon /> 보유 중인 쿠폰
             </button>
             <button
               type="button"
               onClick={handleCreditUsageLog}
-              className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+              className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
             >
               크레딧 사용 내역
             </button>
@@ -475,14 +483,14 @@ export const SettingsContainer: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenCouponModal}
-            className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+            className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
           >
             <CouponIcon /> 보유 중인 쿠폰
           </button>
           <button
             type="button"
             onClick={handleCreditUsageLog}
-            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
           >
             크레딧 사용 내역
           </button>
@@ -605,7 +613,7 @@ export const SettingsContainer: React.FC = () => {
         <button
           type="button"
           onClick={handleEditInfo}
-          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
         >
           정보 수정
         </button>
@@ -623,7 +631,7 @@ export const SettingsContainer: React.FC = () => {
         <button
           type="button"
           onClick={handleOpenNoticeList}
-          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+          className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
         >
           공지사항
         </button>
@@ -632,7 +640,7 @@ export const SettingsContainer: React.FC = () => {
           to={termsTo}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+          className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
         >
           서비스 약관
         </Link>
@@ -640,7 +648,7 @@ export const SettingsContainer: React.FC = () => {
         <button
           type="button"
           onClick={handleLogoutClick}
-          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+          className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
         >
           로그아웃
         </button>
@@ -650,7 +658,7 @@ export const SettingsContainer: React.FC = () => {
             <button
               type="button"
               onClick={handleDeleteAccount}
-              className="font-medium text-grey-60 transition-colors hover:text-red-80"
+              className="font-medium text-grey-60 transition-colors lg:hover:text-red-80"
             >
               계정 탈퇴
             </button>

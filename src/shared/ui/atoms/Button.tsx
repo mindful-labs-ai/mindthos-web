@@ -35,42 +35,43 @@ const toneVariantStyles: Record<ButtonTone, Record<ButtonVariant, string>> = {
   primary: {
     solid: 'interact-primary-bg text-primary-fg',
     outline:
-      'border border-primary text-primary bg-primary-subtle hover:bg-primary-hover',
-    ghost: 'bg-transparent text-primary hover:bg-primary-subtle',
-    soft: 'bg-primary-subtle text-primary hover:bg-primary-hover',
+      'border border-primary text-primary bg-primary-subtle lg:hover:bg-primary-hover',
+    ghost: 'bg-transparent text-primary lg:hover:bg-primary-subtle',
+    soft: 'bg-primary-subtle text-primary lg:hover:bg-primary-hover',
   },
   secondary: {
-    solid: 'bg-neutral text-neutral-fg hover:bg-neutral-hover',
+    solid: 'bg-neutral text-neutral-fg lg:hover:bg-neutral-hover',
     outline:
-      'border border-neutral text-neutral-fg bg-transparent hover:bg-neutral-active',
-    ghost: 'bg-transparent text-neutral-fg hover:bg-neutral-active',
-    soft: 'bg-neutral-active text-neutral-fg hover:bg-neutral-hover',
+      'border border-neutral text-neutral-fg bg-transparent lg:hover:bg-neutral-active',
+    ghost: 'bg-transparent text-neutral-fg lg:hover:bg-neutral-active',
+    soft: 'bg-neutral-active text-neutral-fg lg:hover:bg-neutral-hover',
   },
   accent: {
-    solid: 'bg-accent text-primary-fg hover:opacity-90',
+    solid: 'bg-accent text-primary-fg lg:hover:opacity-90',
     outline:
-      'border border-accent text-accent bg-transparent hover:bg-accent/10',
-    ghost: 'bg-transparent text-accent hover:bg-accent/10',
-    soft: 'bg-accent/10 text-accent hover:bg-accent/20',
+      'border border-accent text-accent bg-transparent lg:hover:bg-accent/10',
+    ghost: 'bg-transparent text-accent lg:hover:bg-accent/10',
+    soft: 'bg-accent/10 text-accent lg:hover:bg-accent/20',
   },
   neutral: {
-    solid: 'bg-surface-contrast text-fg hover:bg-neutral',
-    outline: 'border-default text-fg bg-transparent hover:bg-surface-contrast',
-    ghost: 'bg-transparent text-fg hover:bg-surface-contrast',
-    soft: 'bg-surface-contrast text-fg hover:bg-neutral',
+    solid: 'bg-surface-contrast text-fg lg:hover:bg-neutral',
+    outline:
+      'border-default text-fg bg-transparent lg:hover:bg-surface-contrast',
+    ghost: 'bg-transparent text-fg lg:hover:bg-surface-contrast',
+    soft: 'bg-surface-contrast text-fg lg:hover:bg-neutral',
   },
   surface: {
-    solid: 'bg-surface text-fg-muted hover:bg-neutral',
-    outline: 'border-default text-fg bg-transparent hover:bg-surface',
-    ghost: 'bg-transparent text-fg hover:bg-surface',
-    soft: 'bg-surface-contrast text-fg hover:bg-neutral',
+    solid: 'bg-surface text-fg-muted lg:hover:bg-neutral',
+    outline: 'border-default text-fg bg-transparent lg:hover:bg-surface',
+    ghost: 'bg-transparent text-fg lg:hover:bg-surface',
+    soft: 'bg-surface-contrast text-fg lg:hover:bg-neutral',
   },
   danger: {
     solid: 'interact-danger-bg text-danger-fg',
     outline:
-      'border border-danger text-danger bg-transparent hover:bg-danger-subtle',
-    ghost: 'bg-transparent text-danger hover:bg-danger-subtle',
-    soft: 'bg-danger-subtle text-danger hover:bg-danger-hover',
+      'border border-danger text-danger bg-transparent lg:hover:bg-danger-subtle',
+    ghost: 'bg-transparent text-danger lg:hover:bg-danger-subtle',
+    soft: 'bg-danger-subtle text-danger lg:hover:bg-danger-hover',
   },
 };
 

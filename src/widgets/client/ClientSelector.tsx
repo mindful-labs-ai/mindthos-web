@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import type { Client } from '@/features/client/types';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { SearchIcon, UserIcon, XIcon } from '@/shared/icons';
+import { BackButton } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -122,7 +123,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   const addClientBtn = (
     <button
       onClick={handleOpenAddClient}
-      className="typo-sm mb-2 w-full rounded-md bg-surface py-2.5 text-fg-muted transition-colors hover:bg-surface-contrast"
+      className="typo-sm lg:hover:er:bg-surface-contrast mb-2 w-full rounded-md bg-surface py-2.5 text-fg-muted transition-colors"
     >
       + 새로운 클라이언트 등록하기
     </button>
@@ -162,10 +163,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   e.stopPropagation();
                   handleSelectClient(client);
                 }}
-                className="group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-contrast"
+                className="lg:hover:er:bg-surface-contrast group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors"
               >
                 <Text className="typo-sm">{client.name}</Text>
-                <Text className="typo-xs font-medium text-surface transition-colors group-hover:text-primary">
+                <Text className="typo-xs group-lg:hover:er:text-primary font-medium text-surface transition-colors">
                   선택
                 </Text>
               </button>
@@ -202,9 +203,18 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             open={isOpen}
             onOpenChange={setIsOpen}
             mobileVariant="fullScreen"
-            className="px-4 py-4"
+            hideCloseButton
+            className="flex flex-col"
           >
-            <div className="space-y-2 p-3">{renderClientList()}</div>
+            <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+              <BackButton onClick={() => setIsOpen(false)} />
+              <p className="text-m font-medium text-grey-100">
+                클라이언트 선택
+              </p>
+            </div>
+            <div className="flex-1 space-y-2 overflow-y-auto p-4">
+              {renderClientList()}
+            </div>
           </Modal>
         </>
       );
@@ -265,9 +275,16 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           open={isOpen}
           onOpenChange={handleCloseModal}
           mobileVariant="fullScreen"
-          className="flex flex-col px-4 py-4"
+          hideCloseButton
+          className="flex flex-col"
         >
-          <div className="flex min-h-0 flex-1 flex-col gap-4">
+          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
+            <BackButton onClick={handleCloseModal} />
+            <p className="text-m font-medium text-grey-100">
+              클라이언트 선택
+            </p>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 py-4">
             {/* 검색 */}
             <div className="relative flex-shrink-0">
               <SearchIcon
@@ -331,7 +348,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                         className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
                           pendingClient?.id === client.id
                             ? 'bg-primary-subtle'
-                            : 'hover:bg-surface-contrast'
+                            : 'lg:hover:er:bg-surface-contrast'
                         }`}
                       >
                         <Text
@@ -416,7 +433,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   tone="neutral"
                   variant="soft"
                   size="sm"
-                  className="bg-primary-subtle hover:bg-primary-subtle"
+                  className="lg:hover:er:bg-primary-subtle bg-primary-subtle"
                 >
                   {client.name}
                 </Badge>
@@ -442,10 +459,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   e.stopPropagation();
                   handleSelectClient(client);
                 }}
-                className="group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-contrast"
+                className="lg:hover:er:bg-surface-contrast group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors"
               >
                 <Text className="typo-sm">{client.name}</Text>
-                <Text className="typo-xs font-medium text-surface transition-colors group-hover:text-primary">
+                <Text className="typo-xs group-lg:hover:er:text-primary font-medium text-surface transition-colors">
                   선택
                 </Text>
               </button>
@@ -483,7 +500,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           </Text>
           <button
             onClick={handleClearSelection}
-            className="rounded p-1 hover:bg-surface"
+            className="lg:hover:er:bg-surface rounded p-1"
           >
             <XIcon size={16} className="text-muted" />
           </button>

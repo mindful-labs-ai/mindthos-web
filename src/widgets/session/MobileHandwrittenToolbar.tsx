@@ -8,7 +8,7 @@ import React from 'react';
 
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { CopyIcon } from '@/shared/icons';
+import { ChevronRightIcon, CopyIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -61,14 +61,14 @@ export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
                   <button
                     type="button"
                     onClick={onEditStart}
-                    className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                    className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
                     편집
                   </button>
                   <button
                     type="button"
                     onClick={onCopy}
-                    className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                    className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
                     <CopyIcon size={20} /> 복사하기
                   </button>
@@ -79,7 +79,7 @@ export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
                 <>
                   <button
                     type="button"
-                    className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+                    className="rounded-lg p-2 text-grey-60 transition-colors lg:hover:bg-grey-20 lg:hover:text-grey-80"
                     onClick={() => setIsMenuOpen(true)}
                     aria-label="추가 메뉴"
                   >
@@ -96,18 +96,20 @@ export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
                           onEditStart();
                           setIsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100">편집</span>
+                        <span className="text-l text-grey-100">편집</span>
+                        <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                       <button
                         onClick={() => {
                           onCopy();
                           setIsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100">복사하기</span>
+                        <span className="text-l text-grey-100">복사하기</span>
+                        <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                     </div>
                   </Modal>

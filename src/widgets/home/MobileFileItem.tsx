@@ -142,7 +142,7 @@ export const MobileFileItem: React.FC<MobileFileItemProps> = ({
       <button
         type="button"
         onClick={() => onRemove(file.id)}
-        className="flex-shrink-0 p-2 text-fg-muted transition-colors hover:text-fg"
+        className="flex-shrink-0 p-2 text-fg-muted transition-colors lg:hover:text-fg"
         aria-label="파일 제거"
       >
         <XIcon size={20} />

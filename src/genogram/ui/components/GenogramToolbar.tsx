@@ -368,7 +368,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
                 <button
                   key={item.label}
                   type="button"
-                  className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
                   onClick={() => handleSubjectSelect(item.subTool)}
                 >
                   {item.subTool.kind === 'family' ? (
@@ -381,7 +381,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
               ))}
               <button
                 type="button"
-                className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-contrast"
+                className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
                 onClick={() => setSubjectDepth('secondary')}
               >
                 <GenderIcon value={SubjectType.Animal} />그 외
@@ -391,7 +391,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
             <div className="flex flex-col gap-0.5 px-1 py-1.5">
               <button
                 type="button"
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-fg-muted hover:text-fg"
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-fg-muted lg:hover:text-fg"
                 onClick={() => setSubjectDepth('primary')}
               >
                 <ChevronLeft size={24} />
@@ -400,7 +400,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
                 <button
                   key={item.label}
                   type="button"
-                  className="inline-flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-xs font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  className="inline-flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-xs font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
                   onClick={() => handleSubjectSelect(item.subTool)}
                 >
                   <GenderIcon value={getSubjectIconValue(item.subTool)} />
@@ -421,7 +421,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
                 <button
                   key={item.label}
                   type="button"
-                  className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
                   onClick={() => handleConnectionSelect(item.subTool)}
                 >
                   <RelationIcon value={item.subTool.status} />
@@ -430,7 +430,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
               ))}
               <button
                 type="button"
-                className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors hover:bg-surface-contrast"
+                className="inline-flex flex-col items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
                 onClick={() => setConnectionDepth('secondary')}
               >
                 <ConnectionIcon size={24} />그 외
@@ -440,7 +440,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
             <div className="flex flex-col gap-0.5 px-1 py-1.5">
               <button
                 type="button"
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-fg-muted hover:text-fg"
+                className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-fg-muted lg:hover:text-fg"
                 onClick={() => setConnectionDepth('primary')}
               >
                 <ChevronLeft size={24} />
@@ -449,7 +449,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
                 <button
                   key={item.label}
                   type="button"
-                  className="inline-flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-xs font-medium text-fg transition-colors hover:bg-surface-contrast"
+                  className="inline-flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-xs font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
                   onClick={() => handleConnectionSelect(item.subTool)}
                 >
                   <RelationIcon value={item.subTool.status} />
@@ -468,7 +468,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
             {VISIBILITY_ITEMS.map((item) => (
               <label
                 key={item.key}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-fg transition-colors hover:bg-surface-contrast"
+                className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
               >
                 <input
                   type="checkbox"
@@ -503,7 +503,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
                     className={`inline-flex items-center justify-center rounded-md p-2 text-sm font-medium transition-colors ${
                       isActive
                         ? 'bg-surface-contrast'
-                        : 'text-fg hover:bg-surface-contrast'
+                        : 'text-fg lg:hover:bg-surface-contrast'
                     }`}
                     onClick={() => handleToolClick(tool.mode)}
                     aria-pressed={isActive}
@@ -524,7 +524,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
             className={`inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium transition-colors ${
               openMenu === 'visibility'
                 ? 'bg-surface-contrast'
-                : 'text-fg hover:bg-surface-contrast'
+                : 'text-fg lg:hover:bg-surface-contrast'
             }`}
             onClick={() => {
               setOpenMenu(openMenu === 'visibility' ? null : 'visibility');
@@ -536,7 +536,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
         <SimpleTooltip content="삭제">
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-red-500 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-red-50"
             onClick={onDelete}
             disabled={!hasSelection}
           >

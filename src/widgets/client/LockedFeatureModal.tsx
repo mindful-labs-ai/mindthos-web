@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -11,6 +13,12 @@ interface LockedFeatureModalProps {
 
 export const LockedFeatureModal: React.FC<LockedFeatureModalProps> = React.memo(
   ({ open, onOpenChange }) => {
+    React.useEffect(() => {
+      if (open) {
+        trackEvent(MixpanelEvent.LockedFeatureModalOpen);
+      }
+    }, [open]);
+
     return (
       <Modal open={open} onOpenChange={onOpenChange} className="max-w-md">
         <div className="flex flex-col items-center py-4">
@@ -32,7 +40,7 @@ export const LockedFeatureModal: React.FC<LockedFeatureModalProps> = React.memo(
           <div className="flex w-full max-w-[375px] gap-2 pt-2">
             <button
               onClick={() => onOpenChange(false)}
-              className="typo-sm hover:bg-primary-600 w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-fg transition-colors"
+              className="typo-sm lg:hover:bg-primary-600 w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-fg transition-colors"
             >
               확인
             </button>

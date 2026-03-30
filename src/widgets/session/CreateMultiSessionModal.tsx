@@ -14,7 +14,10 @@ import { calculateTotalCredit } from '@/features/session/utils/creditCalculator'
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { cn } from '@/lib/cn';
 import { trackError, trackEvent } from '@/lib/mixpanel';
-import { MULTI_UPLOAD_LIMITS } from '@/shared/constants/fileUpload';
+import {
+  getAcceptString,
+  MULTI_UPLOAD_LIMITS,
+} from '@/shared/constants/fileUpload';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -156,6 +159,7 @@ export const CreateMultiSessionModal: React.FC<
   const handleClose = useCallback(
     (isOpen: boolean) => {
       if (!isOpen) {
+        trackEvent(MixpanelEvent.MultiSessionCreateModalClose);
         setStep('upload');
         clearFiles();
         setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
@@ -165,6 +169,13 @@ export const CreateMultiSessionModal: React.FC<
     },
     [clearFiles, onOpenChange]
   );
+
+  // 모달 오픈 트래킹
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.MultiSessionCreateModalOpen);
+    }
+  }, [open]);
 
   // 크레딧 계산 (Step 1)
   const step1TotalCredit = useMemo(() => {
@@ -255,6 +266,11 @@ export const CreateMultiSessionModal: React.FC<
       });
       return;
     }
+    trackEvent(MixpanelEvent.MultiSessionStepChange, {
+      from: 'upload',
+      to: 'config',
+      file_count: validFiles.length,
+    });
     // Step 2로 이동 시 개별 설정 초기화
     setFileConfigs(
       validFiles.map((file, index) => ({
@@ -269,6 +285,10 @@ export const CreateMultiSessionModal: React.FC<
 
   // 이전 단계로
   const handlePrevStep = () => {
+    trackEvent(MixpanelEvent.MultiSessionStepChange, {
+      from: 'config',
+      to: 'upload',
+    });
     setStep('upload');
   };
 
@@ -292,6 +312,11 @@ export const CreateMultiSessionModal: React.FC<
       });
       return;
     }
+
+    trackEvent(MixpanelEvent.MultiSessionCreateAttempt, {
+      file_count: fileConfigs.length,
+      total_credit: step2TotalCredit,
+    });
 
     const finalResults = await createSessions(fileConfigs, validFiles);
 
@@ -363,7 +388,7 @@ export const CreateMultiSessionModal: React.FC<
     <input
       ref={fileInputRef}
       type="file"
-      accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac,.wma,.aiff,.opus"
+      accept={getAcceptString('audio')}
       multiple
       onChange={handleFileInputChange}
       className="hidden"
@@ -398,7 +423,9 @@ export const CreateMultiSessionModal: React.FC<
           </div>
           <div className="space-y-2 text-center">
             <Text className="text-fg">
-              오디오 파일을 여기에 끌어다 놓으세요
+              {isMobileView
+                ? '오디오 파일을 추가해주세요'
+                : '오디오 파일을 여기에 끌어다 놓으세요'}
             </Text>
             <Text className="text-fg-muted">
               최대 {MULTI_UPLOAD_LIMITS.MAX_FILES}개 파일
@@ -477,11 +504,21 @@ export const CreateMultiSessionModal: React.FC<
   const step2Buttons = (
     <div className="flex flex-col gap-2">
       <div className="flex justify-center">
-        <div className="flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
-          <Text className="font-headline text-primary">{step2TotalCredit}</Text>
-          <CreditIcon size={14} />
-          <Text className="text-primary">사용</Text>
-        </div>
+        {isCreating ? (
+          <div className="flex items-center gap-1 rounded-lg bg-danger-subtle px-3 py-1">
+            <Text className="text-sm font-medium text-danger">
+              업로드 중입니다. 페이지를 벗어나지 마세요.
+            </Text>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
+            <Text className="font-headline text-primary">
+              {step2TotalCredit}
+            </Text>
+            <CreditIcon size={14} />
+            <Text className="text-primary">사용</Text>
+          </div>
+        )}
       </div>
       <div className="flex gap-2">
         <Button
@@ -523,7 +560,7 @@ export const CreateMultiSessionModal: React.FC<
       {isMobileView ? (
         <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
           <BackButton onClick={() => handleClose(false)} />
-          <p className="text-l font-medium text-grey-80">
+          <p className="text-m font-medium text-grey-100">
             녹음 파일 업로드하기
           </p>
         </div>

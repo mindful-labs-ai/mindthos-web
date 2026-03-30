@@ -200,11 +200,11 @@ export const MarkdownRenderer = React.memo(
             </tbody>
           ),
           tr: ({ children }: { children?: React.ReactNode }) => (
-            <tr className="hover:bg-surface-contrast/50">{children}</tr>
+            <tr className="lg:hover:bg-surface-contrast/50">{children}</tr>
           ),
           th: ({ children }: { children?: React.ReactNode }) => (
             <th
-              className={`whitespace-nowrap px-4 py-3 text-left font-emphasize text-fg${editableCellClass}`}
+              className={`min-w-[160px] whitespace-nowrap px-4 py-3 text-left font-emphasize text-fg${editableCellClass}`}
               {...editableProps}
             >
               {cleanBrokenMarkdown(children)}
@@ -212,7 +212,7 @@ export const MarkdownRenderer = React.memo(
           ),
           td: ({ children }: { children?: React.ReactNode }) => (
             <td
-              className={`px-4 py-3 text-fg${editableCellClass}`}
+              className={`min-w-[160px] px-4 py-3 text-fg${editableCellClass}`}
               {...editableProps}
             >
               {cleanBrokenMarkdown(children)}

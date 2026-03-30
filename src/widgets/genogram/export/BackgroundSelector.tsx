@@ -26,7 +26,7 @@ export function BackgroundSelector({
             className={`h-10 w-10 rounded-md border transition-all ${
               value === option.id
                 ? 'border-2 border-primary'
-                : 'border-border hover:border-fg-muted'
+                : 'border-border lg:hover:border-fg-muted'
             }`}
             style={{
               background:

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { X } from 'lucide-react';
 
 import { useGenogramExport } from '@/features/genogram/hooks/useGenogramExport';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
-import { isProPlan } from '@/features/settings/utils/planUtils';
+import { isPlusOrAbove } from '@/features/settings/utils/planUtils';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -35,7 +37,7 @@ export function GenogramExportModal({
 
   const { creditInfo } = useCreditInfo();
   const openModal = useModalStore((state) => state.openModal);
-  const isPro = isProPlan(creditInfo?.plan.type);
+  const isPro = isPlusOrAbove(creditInfo?.plan.type);
 
   const {
     backgroundId,
@@ -50,9 +52,19 @@ export function GenogramExportModal({
     watermarkSrc,
   });
 
+  useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.GenogramExportModalOpen);
+    }
+  }, [open]);
+
   const handleWatermarkClick = () => {
     if (isPro) {
-      setShowWatermark(!showWatermark);
+      const nextValue = !showWatermark;
+      setShowWatermark(nextValue);
+      trackEvent(MixpanelEvent.GenogramExportWatermarkToggle, {
+        enabled: !nextValue,
+      });
     } else {
       setShowUpgradeTooltip(true);
     }
@@ -62,6 +74,7 @@ export function GenogramExportModal({
   const displayFileName = fileName || defaultFileName;
 
   const handleDownload = () => {
+    trackEvent(MixpanelEvent.GenogramExportDownload);
     download(displayFileName);
     onOpenChange(false);
   };
@@ -103,7 +116,15 @@ export function GenogramExportModal({
         <ExportPreview imageUrl={previewUrl} isLoading={isProcessing} />
 
         {/* 이미지 배경 */}
-        <BackgroundSelector value={backgroundId} onChange={setBackgroundId} />
+        <BackgroundSelector
+          value={backgroundId}
+          onChange={(id) => {
+            setBackgroundId(id);
+            trackEvent(MixpanelEvent.GenogramExportBackgroundChange, {
+              background: id,
+            });
+          }}
+        />
 
         {/* 워터마크 제거 */}
         <div className="relative">
@@ -113,7 +134,7 @@ export function GenogramExportModal({
                 워터마크 제거
               </span>
               <span className="typo-xs rounded-full bg-primary px-2 py-0.5 font-medium text-primary-fg">
-                프로
+                플러스
               </span>
             </div>
             <button
@@ -140,7 +161,7 @@ export function GenogramExportModal({
             <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-surface p-4 shadow-md">
               <button
                 type="button"
-                className="absolute right-2 top-2 text-fg-muted hover:text-fg"
+                className="absolute right-2 top-2 text-fg-muted lg:hover:text-fg"
                 onClick={() => setShowUpgradeTooltip(false)}
               >
                 <X className="h-4 w-4" />
@@ -171,7 +192,7 @@ export function GenogramExportModal({
             >
               <div className="flex flex-col items-center gap-6 text-center">
                 <h2 className="text-xl font-emphasize text-grey-100">
-                  프로 기능 안내
+                  플러스 기능 안내
                 </h2>
                 <div className="flex flex-col gap-2">
                   <p className="text-m font-emphasize text-grey-100">
@@ -205,7 +226,7 @@ export function GenogramExportModal({
           type="button"
           onClick={handleDownload}
           disabled={!previewUrl || isProcessing}
-          className="typo-m hover:bg-primary-400 mt-2 w-full rounded-lg bg-primary py-4 font-medium text-primary-fg transition-colors disabled:cursor-not-allowed"
+          className="typo-m lg:hover:bg-primary-400 mt-2 w-full rounded-lg bg-primary py-4 font-medium text-primary-fg transition-colors disabled:cursor-not-allowed"
         >
           이미지 출력하기
         </button>

@@ -136,7 +136,7 @@ export const FullForm: Story = {
           <FormField label="Bio">
             <TextArea placeholder="Tell us about yourself" rows={3} />
           </FormField>
-          <button className="typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface hover:opacity-90">
+          <button className="typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface lg:hover:opacity-90">
             Create Account
           </button>
         </div>

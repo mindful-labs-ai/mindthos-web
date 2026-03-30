@@ -68,6 +68,7 @@ export const CreateHandWrittenSessionModal: React.FC<
   const handleClose = useCallback(
     (isOpen: boolean) => {
       if (!isOpen && !isSubmitting) {
+        trackEvent(MixpanelEvent.HandWrittenSessionCreateModalClose);
         setContents('');
         setTitle('');
         setSelectedClient(null);
@@ -77,6 +78,13 @@ export const CreateHandWrittenSessionModal: React.FC<
     },
     [isSubmitting, onOpenChange]
   );
+
+  // 모달 오픈 트래킹
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.HandWrittenSessionCreateModalOpen);
+    }
+  }, [open]);
 
   // 내담자 선택 핸들러
   const handleClientSelect = (client: Client | null) => {
@@ -135,6 +143,10 @@ export const CreateHandWrittenSessionModal: React.FC<
     }
 
     setIsSubmitting(true);
+    trackEvent(MixpanelEvent.HandWrittenSessionCreateAttempt, {
+      has_client: !!selectedClient,
+      content_length: contents.length,
+    });
 
     try {
       const response = await createHandWrittenSession({
@@ -318,7 +330,7 @@ export const CreateHandWrittenSessionModal: React.FC<
       {isMobileView ? (
         <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
           <BackButton onClick={() => handleClose(false)} />
-          <p className="text-l font-medium text-grey-80">직접 입력하기</p>
+          <p className="text-m font-medium text-grey-100">직접 입력하기</p>
         </div>
       ) : (
         <div className="pt-4 text-center">
