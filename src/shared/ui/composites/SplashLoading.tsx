@@ -18,9 +18,7 @@ interface SplashLoadingProps {
 }
 
 const SplashLoading = ({ visible }: SplashLoadingProps) => {
-  const [phase, setPhase] = useState<'animate' | 'fadeout' | 'done'>(
-    'animate'
-  );
+  const [phase, setPhase] = useState<'animate' | 'fadeout' | 'done'>('animate');
   const mountTime = useRef(0);
   useEffect(() => {
     mountTime.current = Date.now();
@@ -49,22 +47,28 @@ const SplashLoading = ({ visible }: SplashLoadingProps) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-white transition-opacity ease-out ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-opacity ease-out ${
         phase === 'fadeout' ? 'opacity-0' : 'opacity-100'
       }`}
       style={{ transitionDuration: `${FADEOUT_MS}ms` }}
     >
-      {/* 원형 확산 배경 */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="h-0 w-0 animate-splash-circle rounded-full bg-green-80" />
-      </div>
-
-      {/* 로고 드롭 */}
-      <img
-        src="/loading_logo.png"
-        alt="마음토스"
-        className="relative z-10 animate-logo-drop object-contain opacity-0"
-      />
+      <svg
+        viewBox="0 0 600 400"
+        fill="none"
+        className="h-20 w-20 md:h-28 md:w-28"
+        aria-label="마음토스"
+      >
+        <path
+          d="M 75 345 L 75 130 C 75 35 205 35 205 130 L 205 270 C 205 365 335 365 335 270 L 335 200 C 335 120 445 120 445 200 L 445 250"
+          stroke="#44ce4b"
+          strokeWidth="62"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength="1"
+          style={{ strokeDasharray: 1 }}
+          className="animate-logo-draw"
+        />
+      </svg>
     </div>
   );
 };

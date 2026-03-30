@@ -248,17 +248,11 @@ export default {
           '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-4px)' },
           '20%, 40%, 60%, 80%': { transform: 'translateX(4px)' },
         },
-        'splash-circle': {
-          '0%': { width: '0', height: '0', opacity: '0.6' },
-          '60%': { opacity: '1' },
-          '100%': { width: '300vmax', height: '300vmax', opacity: '1' },
-        },
-        'logo-drop': {
-          '0%': { opacity: '0', transform: 'translateY(120px) scale(0.5)' },
-          '50%': { opacity: '0' },
-          '70%': { opacity: '1', transform: 'translateY(-12px) scale(1.03)' },
-          '85%': { transform: 'translateY(4px) scale(0.99)' },
-          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+        'logo-draw': {
+          '0%': { 'stroke-dashoffset': '1' },
+          '45%': { 'stroke-dashoffset': '0' },
+          '55%': { 'stroke-dashoffset': '0' },
+          '100%': { 'stroke-dashoffset': '-1' },
         },
       },
       animation: {
@@ -269,9 +263,7 @@ export default {
         scaleIn: 'scaleIn 0.2s ease-out',
         shimmer: 'shimmer 1.5s ease-in-out infinite',
         shake: 'shake 0.5s ease-in-out',
-        'splash-circle':
-          'splash-circle 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
-        'logo-drop': 'logo-drop 1s 0.5s both',
+        'logo-draw': 'logo-draw 2.5s ease-in-out infinite',
       },
     },
   },
