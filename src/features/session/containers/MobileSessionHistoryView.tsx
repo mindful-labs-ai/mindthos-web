@@ -97,6 +97,7 @@ export const MobileSessionHistoryView: React.FC<
                   onReset={onFilterReset}
                   initialView="client"
                   showCtaButton
+                  onCtaClick={() => setIsClientFilterOpen(false)}
                 />
               </div>
             </Modal>

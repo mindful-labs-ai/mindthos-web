@@ -11,6 +11,7 @@ interface ClientFilterMenuProps {
   onBack: () => void;
   showBackButton?: boolean; // 뒤로가기 버튼 표시 여부
   showCtaButton?: boolean; // 하단 선택 CTA 버튼 표시 여부
+  onCtaClick?: () => void; // CTA 클릭 시 (모달 닫기)
 }
 
 export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
@@ -21,6 +22,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
   onBack,
   showBackButton = true,
   showCtaButton = false,
+  onCtaClick,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
   const { isMobile, isTablet } = useDevice();
@@ -152,9 +154,9 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
         <div className="flex-shrink-0 border-t border-grey-30 pt-3">
           <button
             type="button"
-            onClick={onBack}
+            onClick={onCtaClick}
             disabled={selectedClientIds.length === 0}
-            className="lg:hover:bg-green-80/90 w-full rounded-xl bg-green-80 py-3 text-m font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-grey-40 disabled:text-grey-70"
+            className="w-full rounded-xl bg-green-80 py-3 text-m font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-grey-40 disabled:text-grey-70 lg:hover:bg-green-80/90"
           >
             선택 ({selectedClientIds.length}명)
           </button>
