@@ -313,11 +313,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ percentage, stepLabel }) => (
     </div>
     <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
       <div
-        className="bg-primary-500 h-full transition-all duration-slow ease-out"
+        className="h-full bg-green-80 transition-all duration-slow ease-out"
         style={{
           width: `${percentage}%`,
           background:
-            'linear-gradient(90deg, var(--color-primary-500) 30%, var(--color-primary-100) 50%, var(--color-primary-500) 90%)',
+            'linear-gradient(90deg, var(--color-green-80) 30%, var(--color-green-40) 50%, var(--color-green-80) 90%)',
           backgroundSize: '200% 100%',
           animation: 'progress-flow 2.5s linear infinite',
         }}
@@ -366,7 +366,7 @@ const DeleteConfirmModal: React.FC<DeleteModalProps> = ({
         <button
           onClick={onConfirm}
           disabled={isLoading}
-          className="typo-sm w-full rounded-lg bg-danger px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50 lg:hover:bg-danger/90"
+          className="typo-sm lg:hover:bg-danger/90 w-full rounded-lg bg-danger px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50"
         >
           {isLoading ? '삭제 중...' : '삭제'}
         </button>
@@ -642,18 +642,14 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 onClick={handleOpenClientSelectorFromMenu}
                 className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
               >
-                <span className="text-l text-grey-100">
-                  클라이언트 변경
-                </span>
+                <span className="text-l text-grey-100">클라이언트 변경</span>
                 <ChevronRightIcon size={20} className="text-grey-70" />
               </button>
               <button
                 onClick={handleDelete}
                 className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
               >
-                <span className="text-l text-red-80">
-                  상담 기록 삭제
-                </span>
+                <span className="text-l text-red-80">상담 기록 삭제</span>
                 <ChevronRightIcon size={20} className="text-grey-70" />
               </button>
             </div>
