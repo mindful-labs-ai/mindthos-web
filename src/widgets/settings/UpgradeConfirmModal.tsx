@@ -387,7 +387,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
       {/* 총 결제 금액 */}
       <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
         <Text className="font-medium">총 결제 금액</Text>
-        <Title as="h2" className="typo-2xl font-headline">
+        <Title as="h2" className="typo-xl font-headline">
           {formatPrice(finalAmount)}원
         </Title>
       </div>
@@ -411,7 +411,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
 
           <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
             <Text className="font-medium">할인 적용 결제 금액</Text>
-            <Title as="h2" className="typo-2xl font-headline">
+            <Title as="h2" className="typo-xl font-headline">
               {formatPrice(totalAmount)}원
             </Title>
           </div>

@@ -241,7 +241,7 @@ export function GenogramGenerationSteps({
 
   if (isMobileView) {
     return (
-      <div className="flex h-full flex-col bg-grey-20">
+      <div className="fixed inset-0 z-50 flex flex-col bg-grey-20">
         {/* 헤더 */}
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 bg-white px-4">
           <BackButton onClick={() => onCancel?.()} />

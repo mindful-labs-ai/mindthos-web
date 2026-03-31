@@ -37,9 +37,7 @@ export function GenerationConfirmModal({
     >
       <div className="py-4 text-center">
         {/* 제목 */}
-        <h2 className="typo-2xl mb-8 font-headline text-fg">
-          가계도 생성 시작
-        </h2>
+        <h2 className="typo-xl mb-8 font-headline text-fg">가계도 생성 시작</h2>
 
         {/* 내용 */}
         {hasUnsavedChanges ? (

@@ -36,7 +36,7 @@ export function ResetConfirmModal({
     <Modal open={open} onOpenChange={onOpenChange} className="max-w-[480px]">
       <div className="flex flex-col items-center px-4 py-6">
         {/* 제목 */}
-        <h2 className="typo-2xl font-headline text-fg">가계도 초기화</h2>
+        <h2 className="typo-xl font-headline text-fg">가계도 초기화</h2>
 
         {/* 확인 문구 */}
         <p className="typo-l mt-8 text-center font-medium text-fg">

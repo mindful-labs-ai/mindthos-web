@@ -184,7 +184,7 @@ export const CompleteMissionModal = ({
       <div className="flex flex-col items-center px-8 py-6 text-center">
         {isFinalReward ? (
           <>
-            <h2 className="typo-2xl mb-8 font-headline leading-tight text-fg">
+            <h2 className="typo-xl mb-8 font-headline leading-tight text-fg">
               이제 마음토스가 늘 곁에 있을게요
             </h2>
             <div className="typo-l mb-6 whitespace-pre-wrap font-headline leading-relaxed text-fg">

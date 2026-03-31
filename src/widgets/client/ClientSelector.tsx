@@ -123,7 +123,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   const addClientBtn = (
     <button
       onClick={handleOpenAddClient}
-      className="typo-sm lg:hover:er:bg-surface-contrast mb-2 w-full rounded-md bg-surface py-2.5 text-fg-muted transition-colors"
+      className="typo-sm mb-2 w-full rounded-md bg-surface py-2.5 text-fg-muted transition-colors lg:hover:bg-surface-contrast"
     >
       + 새로운 클라이언트 등록하기
     </button>
@@ -163,10 +163,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   e.stopPropagation();
                   handleSelectClient(client);
                 }}
-                className="lg:hover:er:bg-surface-contrast group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors"
+                className="group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors lg:hover:bg-surface-contrast"
               >
                 <Text className="typo-sm">{client.name}</Text>
-                <Text className="typo-xs group-lg:hover:er:text-primary font-medium text-surface transition-colors">
+                <Text className="typo-xs group-lg:hover:text-primary font-medium text-surface transition-colors">
                   선택
                 </Text>
               </button>
@@ -280,9 +280,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
         >
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={handleCloseModal} />
-            <p className="text-m font-medium text-grey-100">
-              클라이언트 선택
-            </p>
+            <p className="text-m font-medium text-grey-100">클라이언트 선택</p>
           </div>
           <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 py-4">
             {/* 검색 */}
@@ -305,7 +303,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               {/* 최근 추가한 고객 */}
               {searchQuery === '' && recentClients.length > 0 && (
                 <div className="mb-4">
-                  <Text className="typo-sm mb-2 text-fg-muted">
+                  <Text className="typo-m mb-2 text-fg-muted">
                     최근 추가한 클라이언트
                   </Text>
                   <div className="flex flex-wrap gap-2">
@@ -317,7 +315,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                         <Badge
                           tone="neutral"
                           variant="soft"
-                          size="md"
+                          size="lg"
                           className={`px-4 py-2 ${
                             pendingClient?.id === client.id
                               ? ''
@@ -335,7 +333,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               {/* 모든 고객 */}
               <div>
                 {searchQuery === '' && (
-                  <Text className="typo-sm mb-2 text-fg-muted">
+                  <Text className="typo-m mb-2 text-fg-muted">
                     모든 클라이언트
                   </Text>
                 )}
@@ -348,11 +346,11 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                         className={`flex w-full items-center rounded-lg px-2 py-2.5 text-left transition-colors ${
                           pendingClient?.id === client.id
                             ? 'bg-primary-subtle'
-                            : 'lg:hover:er:bg-surface-contrast'
+                            : 'lg:hover:bg-surface-contrast'
                         }`}
                       >
                         <Text
-                          className={`typo-m ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}
+                          className={`typo-l ${pendingClient?.id === client.id ? 'font-medium text-primary' : ''}`}
                         >
                           {client.name}
                         </Text>
@@ -433,7 +431,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   tone="neutral"
                   variant="soft"
                   size="sm"
-                  className="lg:hover:er:bg-primary-subtle bg-primary-subtle"
+                  className="bg-primary-subtle lg:hover:bg-primary-subtle"
                 >
                   {client.name}
                 </Badge>
@@ -459,10 +457,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   e.stopPropagation();
                   handleSelectClient(client);
                 }}
-                className="lg:hover:er:bg-surface-contrast group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors"
+                className="group flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors lg:hover:bg-surface-contrast"
               >
                 <Text className="typo-sm">{client.name}</Text>
-                <Text className="typo-xs group-lg:hover:er:text-primary font-medium text-surface transition-colors">
+                <Text className="typo-xs group-lg:hover:text-primary font-medium text-surface transition-colors">
                   선택
                 </Text>
               </button>
@@ -500,7 +498,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           </Text>
           <button
             onClick={handleClearSelection}
-            className="lg:hover:er:bg-surface rounded p-1"
+            className="rounded p-1 lg:hover:bg-surface"
           >
             <XIcon size={16} className="text-muted" />
           </button>

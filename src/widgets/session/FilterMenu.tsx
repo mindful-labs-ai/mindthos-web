@@ -16,6 +16,7 @@ interface FilterMenuProps {
   onClientChange: (clientIds: string[]) => void;
   onReset: () => void;
   initialView?: 'main' | 'sort' | 'client'; // 초기 뷰 설정
+  showCtaButton?: boolean; // fullScreen용 하단 CTA
 }
 
 type MenuView = 'main' | 'sort' | 'client';
@@ -29,6 +30,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
   onClientChange,
   onReset,
   initialView = 'main',
+  showCtaButton = false,
 }) => {
   const [currentView, setCurrentView] = React.useState<MenuView>(initialView);
 
@@ -77,6 +79,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
         }}
         onBack={() => setCurrentView('main')}
         showBackButton={showBackButton}
+        showCtaButton={showCtaButton}
       />
     );
   }

@@ -97,9 +97,7 @@ export function GenogramGuideModal({
           <span className="typo-sm rounded-full bg-primary px-3 py-1 font-emphasize tracking-tighter text-primary-fg">
             Beta
           </span>
-          <h2 className="typo-2xl font-emphasize text-fg">
-            가계도 그리기 안내
-          </h2>
+          <h2 className="typo-xl font-emphasize text-fg">가계도 그리기 안내</h2>
         </div>
 
         {/* 서브 타이틀 */}

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useDevice } from '@/shared/hooks/useDevice';
 import { RadioGroup } from '@/shared/ui/atoms/Radio';
 
 interface SortMenuProps {
@@ -15,6 +16,9 @@ export const SortMenu: React.FC<SortMenuProps> = ({
   onBack,
   showBackButton = true,
 }) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   return (
     <div className="flex w-full flex-col gap-4">
       {/* 헤더 */}
@@ -41,7 +45,7 @@ export const SortMenu: React.FC<SortMenuProps> = ({
             </svg>
           </button>
         )}
-        <h3 className="typo-sm font-emphasize text-fg">정렬</h3>
+        <h3 className="typo-m font-emphasize text-fg">정렬</h3>
       </div>
 
       {/* 정렬 옵션 */}
@@ -52,7 +56,7 @@ export const SortMenu: React.FC<SortMenuProps> = ({
           { value: 'newest', label: '최신순' },
           { value: 'oldest', label: '오래된순' },
         ]}
-        size="sm"
+        size={isMobileView ? 'lg' : 'sm'}
         orientation="vertical"
       />
     </div>

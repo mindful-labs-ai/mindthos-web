@@ -29,7 +29,7 @@ export function SegmentDeleteConfirmModal({
     >
       <div className="flex flex-col items-center px-0 py-4 lg:px-6">
         {/* 제목 */}
-        <h2 className="typo-2xl font-headline text-fg">대화 내용 삭제</h2>
+        <h2 className="typo-xl font-headline text-fg">대화 내용 삭제</h2>
 
         {/* 확인 문구 */}
         <p className="typo-l mt-4 text-center font-medium text-fg">

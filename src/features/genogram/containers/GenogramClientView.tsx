@@ -11,6 +11,7 @@ export interface GenogramClientViewProps {
   guideModal: ReactNode;
   reportModal: ReactNode;
   isMobileView?: boolean;
+  hideMobileHeader?: boolean;
   mobileHeaderTitle?: string;
   mobileHeaderRight?: ReactNode;
   onBack?: () => void;
@@ -25,6 +26,7 @@ export const GenogramClientView: FC<GenogramClientViewProps> = ({
   guideModal,
   reportModal,
   isMobileView = false,
+  hideMobileHeader = false,
   mobileHeaderTitle,
   mobileHeaderRight,
   onBack,
@@ -33,15 +35,17 @@ export const GenogramClientView: FC<GenogramClientViewProps> = ({
     <div className="relative flex h-full flex-col">
       {isMobileView ? (
         <>
-          <div className="flex h-[67px] flex-shrink-0 items-center justify-between border-b border-grey-30 bg-white px-4">
-            <div className="flex items-center gap-3">
-              {onBack && <BackButton onClick={onBack} />}
-              <p className="text-m font-medium text-grey-100">
-                {mobileHeaderTitle || '가계도'}
-              </p>
+          {!hideMobileHeader && (
+            <div className="flex h-[67px] flex-shrink-0 items-center justify-between border-b border-grey-30 bg-white px-4">
+              <div className="flex items-center gap-3">
+                {onBack && <BackButton onClick={onBack} />}
+                <p className="text-m font-medium text-grey-100">
+                  {mobileHeaderTitle || '가계도'}
+                </p>
+              </div>
+              {mobileHeaderRight}
             </div>
-            {mobileHeaderRight}
-          </div>
+          )}
           <div className="relative flex-1 overflow-hidden">
             {header}
             {content}

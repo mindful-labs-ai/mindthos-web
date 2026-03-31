@@ -259,7 +259,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                 <Text className="typo-sm mb-1 font-headline text-primary">
                   마지막 미션
                 </Text>
-                <Title as="h2" className="typo-2xl font-headline">
+                <Title as="h2" className="typo-xl font-headline">
                   선생님의 성함은 무엇인가요?
                 </Title>
                 <Text className="typo-sm mt-3 leading-relaxed text-fg-muted">
@@ -270,7 +270,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
               </>
             )}
             {!isQuestMode && (
-              <Title as="h2" className="typo-2xl font-headline">
+              <Title as="h2" className="typo-xl font-headline">
                 정보 입력하기
               </Title>
             )}

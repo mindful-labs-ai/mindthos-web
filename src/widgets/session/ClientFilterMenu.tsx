@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { Client } from '@/features/client/types';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 interface ClientFilterMenuProps {
   selectedClientIds: string[];
@@ -9,6 +10,7 @@ interface ClientFilterMenuProps {
   onClientChange: (clientIds: string[]) => void;
   onBack: () => void;
   showBackButton?: boolean; // 뒤로가기 버튼 표시 여부
+  showCtaButton?: boolean; // 하단 선택 CTA 버튼 표시 여부
 }
 
 export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
@@ -18,8 +20,12 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
   onClientChange,
   onBack,
   showBackButton = true,
+  showCtaButton = false,
 }) => {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  const nameClass = isMobileView ? 'typo-l' : 'typo-m';
 
   const safeClients = clients || [];
   const filteredClients = !searchQuery.trim()
@@ -47,7 +53,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
   };
 
   return (
-    <div className="flex h-full w-full flex-col space-y-4">
+    <div className="flex h-full w-full flex-col space-y-4 lg:max-h-[60vh]">
       {/* 헤더 */}
       {showBackButton && (
         <div className="flex items-center gap-2 border-b border-border pb-3">
@@ -99,7 +105,10 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
 
       {/* 고객 목록 */}
       <div className="flex-1 space-y-1 overflow-y-auto">
-        {/* 고객 목록 */}
+        <div className="flex w-full items-center justify-between px-3 py-2 text-left text-m text-grey-60">
+          <span>이름</span>
+          <span>상담 기록 수</span>
+        </div>
         {filteredClients.length > 0 ? (
           filteredClients.map((client) => {
             const isSelected = selectedClientIds.includes(client.id);
@@ -108,21 +117,21 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
                 key={client.id}
                 type="button"
                 onClick={() => handleToggleClient(client.id)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors ${
+                className={`flex w-full items-center justify-between rounded-lg px-4 py-2 text-left transition-colors ${
                   isSelected
-                    ? 'lg:hover:er:bg-primary-subtle bg-primary-subtle'
-                    : 'lg:hover:er:bg-surface-contrast'
+                    ? 'bg-primary-subtle lg:hover:bg-primary-subtle'
+                    : 'lg:hover:bg-surface-contrast'
                 }`}
               >
                 <span
-                  className={`typo-m flex-1 text-fg ${
+                  className={`${nameClass} flex-1 text-grey-100 ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >
                   {client.name}
                 </span>
                 <span
-                  className={`typo-sm text-fg-muted ${
+                  className={`typo-m text-grey-100 ${
                     isSelected ? 'font-medium' : ''
                   }`}
                 >
@@ -137,6 +146,20 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
           </p>
         )}
       </div>
+
+      {/* 하단 CTA */}
+      {showCtaButton && (
+        <div className="flex-shrink-0 border-t border-grey-30 pt-3">
+          <button
+            type="button"
+            onClick={onBack}
+            disabled={selectedClientIds.length === 0}
+            className="lg:hover:bg-green-80/90 w-full rounded-xl bg-green-80 py-3 text-m font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-grey-40 disabled:text-grey-70"
+          >
+            선택 ({selectedClientIds.length}명)
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -84,7 +84,7 @@ export function VerifyStep({
                     className={`typo-sm flex items-center gap-3 rounded-lg px-4 py-2.5 text-left transition-colors ${
                       isSelected
                         ? 'text-primary'
-                        : 'text-fg-muted lg:hover:er:bg-surface-contrast'
+                        : 'text-fg-muted lg:hover:bg-surface-contrast'
                     }`}
                   >
                     <span

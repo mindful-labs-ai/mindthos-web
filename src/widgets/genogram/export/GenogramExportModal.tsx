@@ -87,7 +87,7 @@ export function GenogramExportModal({
     >
       {/* 헤더 */}
       <div className="px-6 pt-8">
-        <h2 className="typo-2xl select-none text-center font-emphasize text-fg">
+        <h2 className="typo-xl select-none text-center font-emphasize text-fg">
           가계도 이미지 출력하기
         </h2>
       </div>

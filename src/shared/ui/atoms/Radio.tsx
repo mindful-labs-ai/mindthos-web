@@ -28,9 +28,9 @@ const sizeStyles: Record<
   RadioSize,
   { radio: string; text: string; desc: string }
 > = {
-  sm: { radio: 'h-4 w-4', text: 'typo-sm', desc: 'typo-xs' },
-  md: { radio: 'h-5 w-5', text: 'typo-m', desc: 'typo-sm' },
-  lg: { radio: 'h-6 w-6', text: 'typo-m', desc: 'typo-m' },
+  sm: { radio: 'h-4 w-4', text: 'text-sm font-medium', desc: 'typo-xs' },
+  md: { radio: 'h-5 w-5', text: 'text-m font-medium', desc: 'typo-sm' },
+  lg: { radio: 'h-6 w-6', text: 'text-l font-medium', desc: 'typo-m' },
 };
 
 /**

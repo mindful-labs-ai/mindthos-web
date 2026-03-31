@@ -77,7 +77,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
           </div>
         ) : (
           <div className="flex items-start justify-between">
-            <Title as="h2" className="typo-2xl px-6 font-headline">
+            <Title as="h2" className="typo-xl px-6 font-headline">
               {isEditMode
                 ? '클라이언트 정보 수정'
                 : '새로운 클라이언트 등록하기'}

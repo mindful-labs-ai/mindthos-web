@@ -113,7 +113,7 @@ export const PaymentResultModal: React.FC<PaymentResultModalProps> = ({
           >
             {isSuccess ? <CheckIcon size={28} /> : <HelpCircleIcon size={28} />}
           </div>
-          <Title as="h2" className="typo-2xl font-headline">
+          <Title as="h2" className="typo-xl font-headline">
             {title}
           </Title>
           <Text className="typo-l font-emphasize text-fg">{description}</Text>
