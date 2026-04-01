@@ -400,7 +400,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
               <Text className="typo-sm font-medium text-primary">
                 쿠폰 사용 ({selectedCoupon.title})
               </Text>
-              <span className="bg-primary-500 typo-xs rounded-full px-2.5 py-0.5 font-medium text-primary-fg">
+              <span className="typo-xs rounded-full bg-green-80 px-2.5 py-0.5 font-medium text-primary-fg">
                 {selectedCoupon.discount}% 할인
               </span>
             </div>
