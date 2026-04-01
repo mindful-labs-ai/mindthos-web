@@ -456,7 +456,10 @@ export class GenogramEditor {
    * 부모 쌍 복합 생성: 아버지 + 어머니 + 파트너선 + 부모-자녀선
    * 선택된 자녀 Subject의 위쪽에 배치. 단일 트랜잭션으로 undo 한 번에 전체 롤백.
    */
-  addParentPair(childId: UUID): {
+  addParentPair(
+    childId: UUID,
+    centerPosition?: { x: number; y: number }
+  ): {
     fatherId: UUID;
     motherId: UUID;
     partnerLineId: UUID;
@@ -468,16 +471,11 @@ export class GenogramEditor {
     }
 
     const gap = GRID_GAP;
-    const childPos = childLayout.position;
+    const baseX = centerPosition?.x ?? childLayout.position.x;
+    const baseY = centerPosition?.y ?? childLayout.position.y - 5 * gap;
 
-    const fatherPos = {
-      x: childPos.x - 3 * gap,
-      y: childPos.y - 5 * gap,
-    };
-    const motherPos = {
-      x: childPos.x + 3 * gap,
-      y: childPos.y - 5 * gap,
-    };
+    const fatherPos = { x: baseX - 3 * gap, y: baseY };
+    const motherPos = { x: baseX + 3 * gap, y: baseY };
 
     const fatherCmd = this.createAddSubjectCmd(
       createPersonSubject(GenderEnum.Male, fatherPos),

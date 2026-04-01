@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
-import { preloadTutorialAssets } from '@/feature/onboarding/components/TutorialGuideModal';
 import { trackEvent } from '@/lib/mixpanel';
-import { onboardingService } from '@/services/onboarding/onboardingService';
+import { onboardingService } from '@/shared/api/services/onboarding/onboardingService';
 import {
   OnboardingState,
   type OnboardingStateType,
   type OnboardingSuccessResponse,
-} from '@/services/onboarding/types';
+} from '@/shared/api/services/onboarding/types';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { preloadTutorialAssets } from '@/widgets/onboarding/TutorialGuideModal';
 
 /**
  * 서버의 [state, step] 조합을 프론트엔드 퀘스트 레벨(0~7)로 매핑하는 함수
@@ -174,7 +175,7 @@ export const useQuestStore = create<QuestStore>()(
               await onboardingService.start({ email });
 
               // 퍼널 시작점: 신규 유저 서비스 첫 입장
-              trackEvent('onboarding_funnel_started', {
+              trackEvent(MixpanelEvent.OnboardingFunnelStarted, {
                 funnel_step: 'service_first_entry',
               });
 
@@ -258,14 +259,28 @@ export const useQuestStore = create<QuestStore>()(
               'quest/next_success'
             );
 
-            // 미션 완료 모달 표시
+            // 미션 완료 처리
             // 1: 상담기록 예시 (L1->L2), 2: 다회기 분석 예시 (L2->L3)
             // 3: 녹음 파일 업로드 (L4->L5), 4: 내 정보 입력 완료 및 보상 유도 (L5->L6)
             if ([1, 2, 4, 5].includes(prevLevel)) {
               let modalStep = prevLevel;
               if (prevLevel === 4) modalStep = 3;
-              if (prevLevel === 5) modalStep = 5; // 마지막 미션 완료 시 5번(보상) 모달 표시
-              get().setShowCompleteModalStep(modalStep);
+              if (prevLevel === 5) modalStep = 5;
+
+              // 컨페티 즉시 발사
+              import('canvas-confetti').then(({ default: confetti }) => {
+                confetti({
+                  particleCount: 150,
+                  spread: 70,
+                  origin: { y: 0.6 },
+                  zIndex: 1300,
+                });
+              });
+
+              // 모달은 딜레이 후 표시 (라우팅 후 페이지를 먼저 보게)
+              setTimeout(() => {
+                get().setShowCompleteModalStep(modalStep);
+              }, 10000);
             }
           } catch (error) {
             console.error('Moving to next quest step failed:', error);

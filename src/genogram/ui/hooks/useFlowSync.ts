@@ -40,6 +40,7 @@ import {
 import {
   buildDetailTexts,
   buildLifeSpanLabel,
+  buildLifeSpanParts,
   resolveVisibleName,
 } from '@/genogram/core/utils/node-data-builder';
 
@@ -98,6 +99,10 @@ export const useFlowSync = (
       const fetusAttr = isFetus ? (attr as FetusAttribute) : null;
 
       const lifeSpanLabel = buildLifeSpanLabel(personAttr, visibility);
+      const { birthYear, deathYear } = buildLifeSpanParts(
+        personAttr,
+        visibility
+      );
       const detailTexts = buildDetailTexts(personAttr);
       const sizePx = getSubjectSizePx(subject, NODE_SIZE_PX);
       const visibleName = resolveVisibleName(subject, visibility);
@@ -116,6 +121,8 @@ export const useFlowSync = (
           illness: visibility.illness ? personAttr?.illness : undefined,
           isSelected: nodeLayout.isSelected,
           lifeSpanLabel,
+          birthYear,
+          deathYear,
           detailTexts: visibility.extraInfo ? detailTexts : [],
           shortNote:
             visibility.extraInfo && personAttr?.extraInfo?.enable
@@ -125,6 +132,7 @@ export const useFlowSync = (
           fetusStatus: fetusAttr?.status,
           bgColor: subject.layout.style.bgColor,
           textColor: subject.layout.style.textColor,
+          fontSize: subject.layout.style.fontSize,
         },
         selected: nodeLayout.isSelected,
       });
@@ -203,6 +211,7 @@ export const useFlowSync = (
             textColor: style.textColor,
             borderStyle: style.borderStyle,
             borderColor: style.borderColor,
+            fontSize: style.fontSize,
             isSelected: textLayout.isSelected,
           } satisfies AnnotationNodeData,
           zIndex: textLayout.zIndex,
@@ -294,6 +303,7 @@ export const useFlowSync = (
           strokeColor: conn.layout.strokeColor,
           strokeWidth: conn.layout.strokeWidth,
           textColor: conn.layout.textColor,
+          fontSize: conn.layout.fontSize,
         },
         selected: edgeLayout.isSelected,
       });

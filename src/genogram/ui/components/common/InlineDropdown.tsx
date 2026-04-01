@@ -36,7 +36,7 @@ export const InlineDropdown: React.FC<InlineDropdownProps> = ({
     <div ref={ref} className={`relative ${className ?? ''}`}>
       <button
         type="button"
-        className="inline-flex h-8 w-full items-center justify-between gap-2 rounded-md bg-surface px-4 text-sm transition-colors hover:bg-surface-contrast"
+        className="inline-flex h-8 w-full items-center justify-between gap-2 rounded-md bg-surface px-4 text-sm transition-colors lg:hover:bg-surface-contrast"
         onClick={() => setOpen((o) => !o)}
       >
         <span className="truncate">{selectedLabel}</span>
@@ -52,7 +52,7 @@ export const InlineDropdown: React.FC<InlineDropdownProps> = ({
               key={item.value}
               role="option"
               aria-selected={item.value === value}
-              className={`flex cursor-pointer justify-center rounded-md px-4 py-2 text-sm transition-colors hover:bg-surface-contrast ${
+              className={`flex cursor-pointer justify-center rounded-md px-4 py-2 text-sm transition-colors lg:hover:bg-surface-contrast ${
                 item.value === value ? 'bg-surface-contrast font-medium' : ''
               }`}
               onMouseDown={() => {

@@ -29,6 +29,7 @@ import {
 } from '@/genogram/core/types/enums';
 
 import { AnnotationPropertyPanel } from './components/AnnotationPropertyPanel';
+import { ConnectionCursor } from './components/ConnectionCursor';
 import { ConnectionPreviewLine } from './components/ConnectionPreviewLine';
 import { RelationshipEdge } from './components/edges/RelationshipEdge';
 import { EmptyStatePanel } from './components/EmptyStatePanel';
@@ -75,6 +76,8 @@ export interface GenogramPageProps {
   hideToolbar?: boolean;
   /** 빈 상태 패널 하단에 표시할 커스텀 액션 */
   emptyStateActions?: React.ReactNode;
+  /** 읽기 전용 모드 (이동/줌만 가능, 편집 불가) */
+  readOnly?: boolean;
 }
 
 export interface GenogramPageHandle {
@@ -258,7 +261,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         return null;
       }
 
-      const pixelRatio = 2;
+      // 모바일에서 뷰포트가 작으므로 pixelRatio를 높여 선명하게 캡처
+      const pixelRatio = Math.max(2, Math.ceil(1920 / paneWidth));
       const VISUAL_PADDING = 24;
       const cropX = Math.max(0, domMinX - VISUAL_PADDING);
       const cropY = Math.max(0, domMinY - VISUAL_PADDING);
@@ -464,6 +468,19 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       pendingRelationStatus,
       pendingInfluenceStatus,
       fabSourceId,
+      onParentCreateAtPosition: useCallback(
+        (childId: string, position: { x: number; y: number }) => {
+          addParentPair(childId, position);
+        },
+        [addParentPair]
+      ),
+      onParentNodeClick: useCallback(
+        (parentId: string, childId: string) => {
+          // 기존 노드를 부모로, fabSourceId(자식)를 자식으로 연결
+          addChildConnectionToParentRef(parentId, childId, pendingChildStatus);
+        },
+        [addChildConnectionToParentRef, pendingChildStatus]
+      ),
       onPartnerCreateAtPosition: handlePartnerCreateAtPosition,
       onChildCreateAtPosition: handleChildCreateAtPosition,
       onChildNodeClick: useCallback(
@@ -490,6 +507,9 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       onAnnotationCreate: addAnnotation,
       onMultiSelectToggle: deselectNode,
       edges,
+      onConnectionComplete: useCallback(() => {
+        setToolMode(ToolMode.Select_Tool);
+      }, [setToolMode]),
     });
 
     // 속성 패널 닫기
@@ -611,7 +631,10 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         switch (action) {
           case 'add-parent':
             if (context.type === 'single-subject') {
-              addParentPair(context.subjectId);
+              // 부모 생성 도구 모드 진입: 소스(자식) 설정 + Create_Connection_Tool + parent kind
+              setFabSourceId(context.subjectId);
+              setPendingConnectionKind('parent');
+              setToolMode(ToolMode.Create_Connection_Tool);
             }
             break;
           case 'add-sibling':
@@ -704,7 +727,6 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
         }
       },
       [
-        addParentPair,
         addSibling,
         addPartnerConnection,
         addRelationConnection,
@@ -720,17 +742,23 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       <div
         ref={canvasRef}
         className={`relative h-full ${cursorClass}`}
+        data-parent-mode={
+          pendingConnectionKind === 'parent' &&
+          toolMode === ToolMode.Create_Connection_Tool
+            ? 'true'
+            : undefined
+        }
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onPaneClick={handlePaneClick}
-          onNodeClick={handleNodeClick}
-          onEdgeClick={handleEdgeClick}
+          onNodesChange={props.readOnly ? undefined : onNodesChange}
+          onEdgesChange={props.readOnly ? undefined : onEdgesChange}
+          onPaneClick={props.readOnly ? undefined : handlePaneClick}
+          onNodeClick={props.readOnly ? undefined : handleNodeClick}
+          onEdgeClick={props.readOnly ? undefined : handleEdgeClick}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           nodeOrigin={[0.5, 0.5]}
@@ -742,7 +770,25 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
           defaultEdgeOptions={{ type: 'relationship', interactionWidth: 20 }}
           proOptions={{ hideAttribution: true }}
           style={{ backgroundColor: '#F4F5FA' }}
-          {...flowInteraction}
+          {...(nodes.length === 0
+            ? {
+                panOnDrag: false,
+                zoomOnPinch: false,
+                zoomOnScroll: false,
+                nodesDraggable: false,
+                nodesConnectable: false,
+                elementsSelectable: false,
+              }
+            : props.readOnly
+              ? {
+                  nodesDraggable: false,
+                  nodesConnectable: false,
+                  elementsSelectable: false,
+                  panOnDrag: true,
+                  zoomOnPinch: true,
+                  zoomOnScroll: false,
+                }
+              : flowInteraction)}
           {...KEYBOARD_DISABLED_PROPS}
         >
           {visibility.grid && (
@@ -756,10 +802,12 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
               <HorizontalGridLines gap={180} color={GRID_DOT_COLOR} />
             </>
           )}
-          {!props.hideToolbar && <Controls position="bottom-left" />}
+          {!props.hideToolbar && !props.readOnly && (
+            <Controls position="bottom-left" />
+          )}
 
           {/* 하단 중앙 툴바 */}
-          {!props.hideToolbar && (
+          {!props.hideToolbar && !props.readOnly && (
             <Panel position="bottom-center" className="mb-4">
               <GenogramToolbar
                 toolMode={toolMode}
@@ -774,8 +822,8 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             </Panel>
           )}
 
-          {/* 빈 상태 안내 */}
-          {nodes.length === 0 && (
+          {/* 빈 상태 안내 — hideToolbar 모드(클라이언트 미선택)에서는 숨김 */}
+          {nodes.length === 0 && !props.hideToolbar && (
             <EmptyStatePanel actions={props.emptyStateActions} />
           )}
 
@@ -784,6 +832,15 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             <ConnectionPreviewLine preview={connectionPreview} />
           )}
         </ReactFlow>
+
+        {/* 연결 모드: 마우스 따라다니는 관계선 아이콘 */}
+        <ConnectionCursor
+          connectionKind={pendingConnectionKind}
+          relationStatus={pendingRelationStatus}
+          influenceStatus={pendingInfluenceStatus}
+          childStatus={pendingChildStatus}
+          visible={toolMode === ToolMode.Create_Connection_Tool}
+        />
 
         {/* CreateNode 모드: ghost 미리보기 */}
         {isCreateMode && ghost && (

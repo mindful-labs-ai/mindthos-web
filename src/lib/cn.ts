@@ -1,9 +1,11 @@
 import clsx, { type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * 클래스명 병합 유틸리티
- * @example cn('base-class', condition && 'conditional', className)
+ * clsx로 조건부 결합 → twMerge로 충돌 해소
+ * @example cn('bg-surface', className) // className의 bg-*가 우선
  */
 export function cn(...inputs: ClassValue[]): string {
-  return clsx(inputs);
+  return twMerge(clsx(inputs));
 }

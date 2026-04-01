@@ -58,6 +58,7 @@ export interface SubjectStyle {
   size: (typeof NodeSize)[keyof typeof NodeSize];
   bgColor: string;
   textColor: string;
+  fontSize?: number;
 }
 
 // Subject Layout (style은 layout 하위)

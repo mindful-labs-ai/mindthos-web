@@ -15,9 +15,9 @@ export const EmptyStatePanel: React.FC<EmptyStatePanelProps> = ({
   return (
     <Panel
       position="top-left"
-      className="pointer-events-none !absolute !inset-0 !m-0 flex items-center justify-center"
+      className="pointer-events-none !absolute !inset-0 !z-[4] !m-0 flex items-center justify-center"
     >
-      <div className="flex w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-white/80 p-8 text-center backdrop-blur-sm">
+      <div className="pointer-events-auto flex w-[512px] flex-col justify-center rounded-lg border border-dashed border-border bg-white/80 p-8 text-center backdrop-blur-sm">
         <div className="mb-4 flex justify-center">
           <Plus size={32} className="text-fg-muted" />
         </div>
@@ -28,7 +28,7 @@ export const EmptyStatePanel: React.FC<EmptyStatePanelProps> = ({
           캔버스를 클릭하여 추가합니다
         </p>
         {actions && (
-          <div className="pointer-events-auto mt-4 flex justify-center border-t border-border pt-4">
+          <div className="mt-4 flex justify-center border-t border-border pt-4">
             {actions}
           </div>
         )}

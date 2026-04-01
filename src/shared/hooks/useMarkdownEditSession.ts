@@ -10,8 +10,9 @@
 
 import React from 'react';
 
-import { useToast } from '@/components/ui/composites/Toast';
 import { trackError, trackEvent } from '@/lib/mixpanel';
+import { MixpanelError } from '@/shared/constants/mixpanelEvents';
+import { useToast } from '@/shared/ui/composites/Toast';
 import { domToMarkdown } from '@/shared/utils/domToMarkdown';
 
 interface UseMarkdownEditSessionOptions {
@@ -165,7 +166,7 @@ export function useMarkdownEditSession({
         duration: 3000,
       });
     } catch (error) {
-      trackError('markdown_edit_save_error', error, trackingMeta);
+      trackError(MixpanelError.MarkdownEditSaveError, error, trackingMeta);
       toast({
         title: '저장 실패',
         description: '내용 저장에 실패했습니다. 다시 시도해주세요.',
