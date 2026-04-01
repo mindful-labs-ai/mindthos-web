@@ -42,7 +42,7 @@ export function GenerationConfirmModal({
         {/* 내용 */}
         {hasUnsavedChanges ? (
           <>
-            <p className="typo-l mb-2 font-medium text-fg">
+            <p className="typo-m mb-2 font-medium text-fg">
               저장하지 않은 구성원/관계가 있습니다.
             </p>
             <p className="typo-sm mb-8 text-fg-muted">
@@ -57,7 +57,7 @@ export function GenerationConfirmModal({
           </>
         ) : (
           <>
-            <p className="typo-l mb-2 font-medium text-fg">
+            <p className="typo-m mb-2 font-medium text-fg">
               이 내용으로 가계도를 제작할까요?
             </p>
             <p className="typo-sm mb-8 text-fg-muted">
@@ -67,7 +67,7 @@ export function GenerationConfirmModal({
             </p>
             <button
               onClick={onConfirm}
-              className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+              className="typo-m h-14 w-full rounded-xl bg-green-80 font-medium text-primary-fg transition-colors lg:hover:bg-green-40"
             >
               생성 시작하기
             </button>

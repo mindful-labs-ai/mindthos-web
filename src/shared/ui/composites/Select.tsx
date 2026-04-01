@@ -293,7 +293,7 @@ export const Select: React.FC<SelectProps> = ({
                   }}
                   tabIndex={0}
                   className={cn(
-                    'typo-sm flex items-center justify-between px-3 py-3',
+                    'flex items-center justify-between px-3 py-3 text-m',
                     'transition-default cursor-pointer',
                     'lg:hover:bg-surface-contrast',
                     item.disabled && 'cursor-not-allowed opacity-50',
@@ -369,7 +369,7 @@ export const Select: React.FC<SelectProps> = ({
                     }}
                     tabIndex={0}
                     className={cn(
-                      'typo-sm flex items-center justify-between px-3 py-2',
+                      'flex items-center justify-between px-3 py-2 text-m',
                       'transition-default cursor-pointer',
                       'lg:hover:bg-surface-contrast',
                       'focus-default',

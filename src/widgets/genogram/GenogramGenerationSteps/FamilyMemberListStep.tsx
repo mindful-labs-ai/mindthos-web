@@ -545,7 +545,7 @@ export function FamilyMemberListStep({
               setShowConfirmModal(true);
             }
           }}
-          className={`lg:hover:bg-green-80/90 h-12 w-full rounded-xl bg-green-80 text-l font-medium text-white transition-colors ${isMobileView ? '' : 'max-w-[500px]'}`}
+          className={`lg:hover:bg-green-80/90 h-12 w-full rounded-xl bg-green-80 text-m font-medium text-white transition-colors ${isMobileView ? '' : 'max-w-[500px]'}`}
         >
           {buttonText}
         </button>

@@ -230,7 +230,7 @@ export const Modal: React.FC<ModalProps> = ({
     // center: 항상 센터 팝업
     mobileVariant === 'center' && [
       'overflow-auto',
-      'max-h-[90vh] w-full',
+      'max-h-[80vh] w-full',
       'border-default rounded-lg shadow-prominent',
       'animate-scaleIn',
       'px-6 py-4',

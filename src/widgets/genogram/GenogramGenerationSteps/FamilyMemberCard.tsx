@@ -613,7 +613,7 @@ export function FamilyMemberCard({
       </div>
 
       {/* 편집/저장 버튼 (우측 하단 고정) */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2">
+      <div className="absolute bottom-4 left-4 flex items-center gap-2">
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}
