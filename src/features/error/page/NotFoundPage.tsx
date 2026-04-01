@@ -15,7 +15,7 @@ const NotFoundPage = () => {
         <HyperLink
           underline="hover"
           href={ROUTES.ROOT}
-          className="bg-primary-500 typo-m lg:hover:bg-primary-600 inline-block rounded-lg px-6 py-3 font-medium text-primary-fg lg:hover:text-primary-fg"
+          className="typo-m inline-block rounded-lg bg-green-80 px-6 py-3 font-medium text-primary-fg lg:hover:bg-green-40 lg:hover:text-primary-fg"
         >
           홈으로 돌아가기
         </HyperLink>

@@ -47,7 +47,7 @@ export function SegmentDeleteConfirmModal({
             trackEvent(MixpanelEvent.TranscriptSegmentDeleteConfirm);
             onConfirm();
           }}
-          className="lg:hover:bg-primary-500/90 typo-l mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-medium text-primary-fg transition-colors"
+          className="typo-l mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-green-80 py-3 font-medium text-primary-fg transition-colors lg:hover:bg-green-40"
         >
           삭제하기
         </button>
