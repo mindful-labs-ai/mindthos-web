@@ -46,6 +46,7 @@ export interface RelationshipEdgeData {
   strokeColor?: string;
   strokeWidth?: string; // StrokeWidth enum value ('THIN' | 'DEFAULT' | 'THICK')
   textColor?: string;
+  fontSize?: number;
   [key: string]: unknown;
 }
 
@@ -1033,12 +1034,15 @@ export const RelationshipEdge = memo(
       strokeColor: dataStrokeColor,
       strokeWidth: dataStrokeWidth,
       textColor: dataTextColor,
+      fontSize: dataFontSize,
     } = edgeData;
     const ct = connectionType || ConnectionType.Partner_Line;
 
     const baseColor = dataStrokeColor || STROKE;
     const baseSw = getStrokeWidthPx(dataStrokeWidth);
     const baseTxtColor = dataTextColor || TEXT_COLOR;
+    const fsOffset = dataFontSize ?? 0;
+    const edgeFontSize = 12 + fsOffset; // base 12px (text-xs)
 
     let renderResult: EdgeRenderResult;
     let labelX: number;
@@ -1129,7 +1133,7 @@ export const RelationshipEdge = memo(
     const hitW = Math.max(HIT_WIDTH, (spreadWidth ?? 0) + 8);
 
     return (
-      <>
+      <g data-edge-type={ct}>
         {/* 히트 영역: 투명한 두꺼운 path (클릭 가능 영역 확대) */}
         {hitPaths.map((hp, i) => (
           <path
@@ -1199,8 +1203,9 @@ export const RelationshipEdge = memo(
             return (
               <EdgeLabelRenderer>
                 <div
-                  className="nodrag nopan pointer-events-none absolute text-xs"
+                  className="nodrag nopan pointer-events-none absolute"
                   style={{
+                    fontSize: edgeFontSize,
                     transform: `translate(-50%, -100%) translate(${labelX}px, ${labelY - 6}px)`,
                     color: baseTxtColor,
                     textShadow:
@@ -1216,8 +1221,9 @@ export const RelationshipEdge = memo(
         {label && (
           <EdgeLabelRenderer>
             <div
-              className="nodrag nopan pointer-events-auto absolute rounded bg-white px-2 py-0.5 text-xs text-fg-muted shadow-sm"
+              className="nodrag nopan pointer-events-auto absolute rounded bg-white px-2 py-0.5 text-fg-muted shadow-sm"
               style={{
+                fontSize: edgeFontSize,
                 transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               }}
             >
@@ -1225,7 +1231,7 @@ export const RelationshipEdge = memo(
             </div>
           </EdgeLabelRenderer>
         )}
-      </>
+      </g>
     );
   }
 );

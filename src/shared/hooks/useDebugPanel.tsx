@@ -93,7 +93,7 @@ function DebugPanelUI({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-[60] rounded bg-gray-800 px-3 py-1.5 text-xs text-white opacity-60 hover:opacity-100"
+        className="typo-xs fixed bottom-4 right-4 z-debug rounded bg-gray-800 px-3 py-1.5 text-white opacity-60 lg:hover:opacity-100"
       >
         DEBUG
       </button>
@@ -101,13 +101,13 @@ function DebugPanelUI({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-[60] w-72 rounded-lg border border-gray-300 bg-white p-3 text-xs shadow-xl">
+    <div className="typo-xs fixed bottom-4 right-4 z-debug w-72 rounded-lg border border-gray-300 bg-surface p-3 shadow-prominent">
       <div className="mb-2 flex items-center justify-between">
-        <span className="font-bold text-gray-700">{title}</span>
+        <span className="font-headline text-gray-700">{title}</span>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="text-gray-400 hover:text-gray-700"
+          className="text-gray-400 lg:hover:text-gray-700"
         >
           X
         </button>
@@ -191,7 +191,7 @@ export function DebugChip({
       className={`rounded px-2 py-0.5 ${
         active
           ? 'bg-blue-600 text-white'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          : 'bg-gray-100 text-gray-600 lg:hover:bg-gray-200'
       }`}
     >
       {label}

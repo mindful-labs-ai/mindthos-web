@@ -1,11 +1,21 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
+import { FONT_SIZE_ANNOTATION } from '@/genogram/core/constants/typography';
 import type {
   Annotation,
   AnnotationUpdate,
 } from '@/genogram/core/models/text-annotation';
 
 import { ColorPicker } from './common/ColorPicker';
+import { InlineDropdown } from './common/InlineDropdown';
+
+const FONT_SIZE_OPTIONS = [
+  { label: '매우 작게', value: '14' },
+  { label: '작게', value: '18' },
+  { label: '기본', value: String(FONT_SIZE_ANNOTATION) },
+  { label: '크게', value: '28' },
+  { label: '매우 크게', value: '36' },
+];
 
 interface AnnotationPropertyPanelProps {
   annotation: Annotation;
@@ -15,11 +25,32 @@ interface AnnotationPropertyPanelProps {
 export const AnnotationPropertyPanel: React.FC<
   AnnotationPropertyPanelProps
 > = ({ annotation, onUpdate }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, [annotation.id]);
+
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       onUpdate(annotation.id, { text: e.target.value });
     },
     [annotation.id, onUpdate]
+  );
+
+  const handleFontSizeChange = useCallback(
+    (value: number) => {
+      onUpdate(annotation.id, {
+        layout: {
+          ...annotation.layout,
+          style: {
+            ...annotation.layout.style,
+            fontSize: value,
+          },
+        },
+      });
+    },
+    [annotation, onUpdate]
   );
 
   const handleStyleChange = useCallback(
@@ -51,11 +82,24 @@ export const AnnotationPropertyPanel: React.FC<
         <section>
           <h3 className="mb-2 text-base font-medium text-fg">내용</h3>
           <textarea
+            ref={textareaRef}
             value={annotation.text}
             onChange={handleTextChange}
             placeholder="메모를 추가하세요."
             rows={5}
             className="w-full resize-none rounded-md border-2 border-border bg-surface p-3 text-sm outline-none transition-colors placeholder:text-fg-muted"
+          />
+        </section>
+
+        {/* 글씨 크기 */}
+        <section className="flex items-center justify-between">
+          <h3 className="text-base font-medium text-fg">글씨 크기</h3>
+          <InlineDropdown
+            items={FONT_SIZE_OPTIONS}
+            value={String(
+              annotation.layout.style.fontSize ?? FONT_SIZE_ANNOTATION
+            )}
+            onChange={(v) => handleFontSizeChange(Number(v))}
           />
         </section>
 

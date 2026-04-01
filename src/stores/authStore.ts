@@ -3,8 +3,9 @@ import { devtools } from 'zustand/middleware';
 
 import { identifyUser, resetMixpanel } from '@/lib/mixpanel';
 import { queryClient } from '@/lib/queryClient';
-import { authService } from '@/services/auth/authService';
-import type { User, UserData } from '@/services/auth/types';
+import { authService } from '@/shared/api/services/auth/authService';
+import type { User, UserData } from '@/shared/api/services/auth/types';
+import { userQueryKeys } from '@/shared/constants/queryKeys';
 
 interface AuthState {
   user: User | null;
@@ -21,6 +22,7 @@ interface AuthState {
 interface AuthActions {
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  loginWithKakao: () => Promise<void>;
   signup: (
     email: string,
     password: string,
@@ -107,7 +109,7 @@ export const useAuthStore = create<AuthStore>()(
         const user = get().user;
         if (user?.email) {
           queryClient.invalidateQueries({
-            queryKey: ['user', 'data', user.email],
+            queryKey: userQueryKeys.data(user.email!),
           });
         }
       },
@@ -136,6 +138,10 @@ export const useAuthStore = create<AuthStore>()(
 
       loginWithGoogle: async () => {
         await authService.loginWithGoogle();
+      },
+
+      loginWithKakao: async () => {
+        await authService.loginWithKakao();
       },
 
       signup: async (email, password, metadata) => {
@@ -172,7 +178,7 @@ export const useAuthStore = create<AuthStore>()(
         // 캐시에 있으면 캐시에서 가져오고, 없으면 fetch 후 캐싱
         const userData = user.email
           ? await queryClient.fetchQuery({
-              queryKey: ['user', 'data', user.email],
+              queryKey: userQueryKeys.data(user.email!),
               queryFn: () => authService.getUserDataByEmail(user.email!),
               staleTime: Infinity, // 캐시 무한 유지
             })

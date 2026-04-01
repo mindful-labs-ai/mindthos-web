@@ -36,7 +36,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
     <div ref={ref} className={`relative ${className ?? ''}`}>
       <button
         type="button"
-        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 text-sm transition-colors hover:bg-surface-contrast"
+        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-border bg-surface px-3 text-sm transition-colors lg:hover:bg-surface-contrast"
         onClick={() => setOpen((o) => !o)}
       >
         <span className="flex items-center gap-2 truncate">
@@ -51,7 +51,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
               key={item.value}
               role="option"
               aria-selected={item.value === value}
-              className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 pl-4 text-sm transition-colors hover:bg-surface-contrast ${
+              className={`flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 pl-4 text-sm transition-colors lg:hover:bg-surface-contrast ${
                 item.value === value ? 'bg-surface-contrast font-medium' : ''
               }`}
               onMouseDown={() => {

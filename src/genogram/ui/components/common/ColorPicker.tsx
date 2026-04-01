@@ -45,7 +45,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
       {/* 미리보기 버튼 */}
       <button
         type="button"
-        className="h-8 w-8 rounded-md border-2 border-border transition-shadow hover:border-fg-muted"
+        className="h-8 w-8 rounded-md border-2 border-border transition-shadow lg:hover:border-fg-muted"
         style={{
           backgroundColor: isTransparentValue ? '#FFFFFF' : value,
         }}
@@ -83,7 +83,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                     className={`h-8 w-8 shrink-0 rounded-md border-2 transition-shadow ${
                       isSelected
                         ? 'border-fg shadow-sm'
-                        : 'border-border hover:border-fg-muted'
+                        : 'border-border lg:hover:border-fg-muted'
                     }`}
                     style={{
                       backgroundColor: isTransparent ? '#FFFFFF' : color,

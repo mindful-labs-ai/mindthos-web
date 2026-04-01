@@ -1,0 +1,66 @@
+import React from 'react';
+
+import { cn } from '@/lib/cn';
+
+export interface ChatBubbleProps {
+  avatar?: React.ReactNode;
+  author?: string;
+  time?: React.ReactNode;
+  mine?: boolean;
+  children: React.ReactNode;
+  className?: string;
+}
+
+/**
+ * ChatBubble - 채팅 말풍선 컴포넌트
+ * mine prop으로 좌/우 정렬 자동 처리
+ * avatar, author, time 선택적 표시
+ *
+ * @example
+ * <ChatBubble mine author="You" time="2:30 PM">안녕하세요!</ChatBubble>
+ */
+export const ChatBubble: React.FC<ChatBubbleProps> = ({
+  avatar,
+  author,
+  time,
+  mine = false,
+  children,
+  className,
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex max-w-[80%] gap-3',
+        mine ? 'ml-auto flex-row-reverse' : 'mr-auto',
+        className
+      )}
+    >
+      {avatar && <div className="flex-shrink-0">{avatar}</div>}
+      <div className={cn('flex flex-col gap-1', mine && 'items-end')}>
+        {(author || time) && (
+          <div
+            className={cn(
+              'typo-xs flex items-center gap-2 text-fg-muted',
+              mine && 'flex-row-reverse'
+            )}
+          >
+            {author && <span className="font-medium">{author}</span>}
+            {time && <span>{time}</span>}
+          </div>
+        )}
+        <div
+          className={cn(
+            'rounded-lg px-4 py-2',
+            mine
+              ? 'rounded-br-sm bg-primary text-primary-fg'
+              : 'rounded-bl-sm bg-surface-contrast text-fg'
+          )}
+        >
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ChatBubble.displayName = 'ChatBubble';

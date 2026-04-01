@@ -29,8 +29,13 @@ export interface UseCanvasInteractionOptions {
   onAnimalCreate?: (position: { x: number; y: number }) => void;
   /** 현재 서브툴 모드 ('person' | 'family' | 'animal') */
   subjectCreateMode?: 'person' | 'family' | 'animal';
-  /** 현재 연결 종류 ('relation' | 'influence' | 'partner' | 'child') */
-  pendingConnectionKind?: 'relation' | 'influence' | 'partner' | 'child';
+  /** 현재 연결 종류 ('relation' | 'influence' | 'partner' | 'child' | 'parent') */
+  pendingConnectionKind?:
+    | 'relation'
+    | 'influence'
+    | 'partner'
+    | 'child'
+    | 'parent';
   /** 현재 관계 상태 */
   pendingRelationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   /** 현재 영향 상태 */
@@ -42,6 +47,13 @@ export interface UseCanvasInteractionOptions {
     sourceId: string,
     position: { x: number; y: number }
   ) => void;
+  /** 부모 모드에서 빈 곳 클릭 시 부모트리 생성 */
+  onParentCreateAtPosition?: (
+    childId: string,
+    position: { x: number; y: number }
+  ) => void;
+  /** 부모 모드에서 기존 노드/파트너선 클릭 시 자식으로 연결 */
+  onParentNodeClick?: (parentId: string, childId: string) => void;
   /** 자녀 모드에서 빈 곳 클릭 시 자녀 생성 + 부모-자녀선 연결 */
   onChildCreateAtPosition?: (
     sourceId: string,
@@ -57,6 +69,8 @@ export interface UseCanvasInteractionOptions {
   onMultiSelectToggle?: (nodeId: string) => void;
   /** 현재 엣지 목록 (자녀 모드에서 파트너선 중심 계산용) */
   edges?: Edge[];
+  /** 연결 완료 후 Select 모드로 복귀 */
+  onConnectionComplete?: () => void;
 }
 
 /** 연결 미리보기에 필요한 정보 */
@@ -66,7 +80,7 @@ export interface ConnectionPreview {
   /** 마우스의 현재 flow 좌표 */
   mousePosition: { x: number; y: number };
   /** 연결 종류 */
-  connectionKind: 'relation' | 'influence' | 'partner' | 'child';
+  connectionKind: 'relation' | 'influence' | 'partner' | 'child' | 'parent';
   /** 관계 상태 (connectionKind === 'relation'일 때) */
   relationStatus?: (typeof RelationStatus)[keyof typeof RelationStatus];
   /** 영향 상태 (connectionKind === 'influence'일 때) */
@@ -91,6 +105,8 @@ export const useCanvasInteraction = ({
   pendingRelationStatus,
   pendingInfluenceStatus,
   fabSourceId,
+  onParentCreateAtPosition,
+  onParentNodeClick,
   onPartnerCreateAtPosition,
   onChildCreateAtPosition,
   onChildNodeClick,
@@ -98,6 +114,7 @@ export const useCanvasInteraction = ({
   onAnnotationCreate,
   onMultiSelectToggle,
   edges = [],
+  onConnectionComplete,
 }: UseCanvasInteractionOptions) => {
   const { screenToFlowPosition, flowToScreenPosition, getZoom, getNode } =
     useReactFlow();
@@ -116,6 +133,7 @@ export const useCanvasInteraction = ({
   const isConnectionMode = toolMode === ToolMode.Create_Connection_Tool;
   const isPartnerMode = isConnectionMode && pendingConnectionKind === 'partner';
   const isChildMode = isConnectionMode && pendingConnectionKind === 'child';
+  const isParentMode = isConnectionMode && pendingConnectionKind === 'parent';
   const effectiveSourceId = fabSourceId ?? pendingSourceId;
 
   // 노드 중심 좌표 가져오기 (nodeOrigin=[0.5,0.5]이므로 position이 곧 중심)
@@ -268,6 +286,19 @@ export const useCanvasInteraction = ({
         return;
       }
 
+      // 부모 모드에서 빈 영역 클릭 → 클릭 위치 기준 부모트리 생성
+      if (isParentMode && fabSourceId) {
+        const position = screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        });
+        onParentCreateAtPosition?.(fabSourceId, position);
+        setPendingSourceId(null);
+        setConnectionPreview(null);
+        onFabComplete?.();
+        return;
+      }
+
       // 자녀 모드에서 빈 영역 클릭 → 자녀 생성 + 연결
       if (isChildMode && fabSourceId) {
         const position = screenToFlowPosition({
@@ -298,11 +329,13 @@ export const useCanvasInteraction = ({
       isConnectionMode,
       isPartnerMode,
       isChildMode,
+      isParentMode,
       effectiveSourceId,
       fabSourceId,
       onFamilyCreate,
       onAnimalCreate,
       onAnnotationCreate,
+      onParentCreateAtPosition,
       onPartnerCreateAtPosition,
       onChildCreateAtPosition,
       onFabComplete,
@@ -323,6 +356,15 @@ export const useCanvasInteraction = ({
       }
 
       if (!isConnectionMode) return;
+
+      // 부모 모드: 기존 노드 클릭 → 해당 노드의 자식으로 연결
+      if (isParentMode && fabSourceId) {
+        onParentNodeClick?.(node.id, fabSourceId);
+        setPendingSourceId(null);
+        setConnectionPreview(null);
+        onFabComplete?.();
+        return;
+      }
 
       // 자녀 모드: 기존 노드 클릭 → 부모-자녀선 연결
       if (isChildMode && fabSourceId) {
@@ -345,29 +387,49 @@ export const useCanvasInteraction = ({
         setConnectionPreview(null);
         // FAB 1회성 연결 완료
         if (fabSourceId) onFabComplete?.();
+        // 1회성 연결 완료 → Select 모드로 복귀
+        onConnectionComplete?.();
       }
     },
     [
       isMultiSelectMode,
       isConnectionMode,
       isChildMode,
+      isParentMode,
       effectiveSourceId,
       fabSourceId,
       onConnectionCreate,
       onChildNodeClick,
+      onParentNodeClick,
       onFabComplete,
+      onConnectionComplete,
       onMultiSelectToggle,
     ]
   );
 
-  // 엣지 클릭 핸들러 (Multi_Select_Tool: 선택된 엣지 클릭 시 toggle deselect)
+  // 엣지 클릭 핸들러
   const handleEdgeClick = useCallback(
     (_event: React.MouseEvent, edge: Edge) => {
       if (isMultiSelectMode && edge.selected) {
         onMultiSelectToggle?.(edge.id);
+        return;
+      }
+      // 부모 모드: 파트너선 클릭 → 파트너선의 자식으로 연결
+      if (isParentMode && fabSourceId) {
+        onParentNodeClick?.(edge.id, fabSourceId);
+        setPendingSourceId(null);
+        setConnectionPreview(null);
+        onFabComplete?.();
       }
     },
-    [isMultiSelectMode, onMultiSelectToggle]
+    [
+      isMultiSelectMode,
+      isParentMode,
+      fabSourceId,
+      onMultiSelectToggle,
+      onParentNodeClick,
+      onFabComplete,
+    ]
   );
 
   // ToolMode별 ReactFlow 동작 설정
@@ -430,7 +492,7 @@ export const useCanvasInteraction = ({
       case ToolMode.Create_Subject_Tool:
         return 'cursor-copy';
       case ToolMode.Create_Connection_Tool:
-        return 'cursor-crosshair';
+        return 'cursor-default';
       case ToolMode.Create_Annotation_Tool:
         return 'cursor-text';
       case ToolMode.Select_Tool:
