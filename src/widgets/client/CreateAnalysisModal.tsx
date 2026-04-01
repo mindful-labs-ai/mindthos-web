@@ -290,7 +290,9 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
       {isMobileView ? (
         <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
           <BackButton onClick={handleClose} />
-          <p className="text-m font-medium text-grey-100">클라이언트 분석하기</p>
+          <p className="text-m font-medium text-grey-100">
+            클라이언트 분석하기
+          </p>
         </div>
       ) : (
         <div className="p-6 pb-0 text-center">

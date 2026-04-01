@@ -23,8 +23,7 @@ const AuthCallbackPage = () => {
         const session = await authService.getSession();
 
         if (session) {
-          const method =
-            session.user?.app_metadata?.provider ?? 'unknown';
+          const method = session.user?.app_metadata?.provider ?? 'unknown';
           trackEvent(MixpanelEvent.LoginOAuthCallback, { method });
           // 세션이 있으면 사용자 정보 초기화
           await initialize();
@@ -42,8 +41,7 @@ const AuthCallbackPage = () => {
       } catch (error) {
         trackEvent(MixpanelEvent.LoginFailed, {
           method: 'oauth',
-          error:
-            error instanceof Error ? error.message : 'callback_error',
+          error: error instanceof Error ? error.message : 'callback_error',
         });
         console.error('OAuth callback error:', error);
         // 에러 발생 시 로그인 페이지로 (UTM 파라미터 유지)

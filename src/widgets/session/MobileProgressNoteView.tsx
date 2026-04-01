@@ -399,9 +399,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         disabled={isRegenerating}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
-                        <span className="text-l text-grey-100">
-                          편집
-                        </span>
+                        <span className="text-l text-grey-100">편집</span>
                         <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                     )}
@@ -413,9 +411,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         }}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
-                        <span className="text-l text-grey-100">
-                          복사하기
-                        </span>
+                        <span className="text-l text-grey-100">복사하기</span>
                         <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                     )}

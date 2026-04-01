@@ -381,9 +381,7 @@ export const QuestStep = ({
                     useQuestStore.getState().setShowCompleteModalStep(5);
                 }}
               >
-                {currentLevel >= 7
-                  ? '보상 받기 완료!'
-                  : '이벤트 보상 받기'}
+                {currentLevel >= 7 ? '보상 받기 완료!' : '이벤트 보상 받기'}
               </Button>
             </div>
           ) : (

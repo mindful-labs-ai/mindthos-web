@@ -156,7 +156,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
             type="button"
             onClick={onCtaClick}
             disabled={selectedClientIds.length === 0}
-            className="w-full rounded-xl bg-green-80 py-3 text-m font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-grey-40 disabled:text-grey-70 lg:hover:bg-green-80/90"
+            className="lg:hover:bg-green-80/90 w-full rounded-xl bg-green-80 py-3 text-m font-medium text-white transition-colors disabled:cursor-not-allowed disabled:bg-grey-40 disabled:text-grey-70"
           >
             선택 ({selectedClientIds.length}명)
           </button>
