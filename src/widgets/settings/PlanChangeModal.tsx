@@ -320,7 +320,11 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     }
   };
 
-  const basePlans = period === 'monthly' ? monthlyPlans : yearlyPlans;
+  const CORE_PLAN_TYPES = ['starter', 'plus', 'pro'];
+  const allPlans = period === 'monthly' ? monthlyPlans : yearlyPlans;
+  const basePlans = allPlans.filter((p) =>
+    CORE_PLAN_TYPES.includes(p.type.toLowerCase())
+  );
   // 모바일: 플러스 플랜을 최상단으로
   const currentPlans = isMobileView
     ? [...basePlans].sort((a, b) => {
