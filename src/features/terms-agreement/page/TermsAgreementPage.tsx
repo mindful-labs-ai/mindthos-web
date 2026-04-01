@@ -65,7 +65,7 @@ const TermsAgreementPage = () => {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="typo-sm text-primary-500 lg:hover:text-primary-600 mt-2"
+            className="typo-sm mt-2 text-green-80 lg:hover:text-green-40"
           >
             다시 시도
           </button>
