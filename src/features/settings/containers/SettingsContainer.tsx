@@ -14,6 +14,7 @@ import {
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { BADGE_ICON_MAP } from '@/shared/constants/badgeIcons';
 import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import {
   MixpanelError,
@@ -21,6 +22,10 @@ import {
 } from '@/shared/constants/mixpanelEvents';
 import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
+import {
+  useUserAccesses,
+  type UserAccess,
+} from '@/shared/hooks/useFeatureAccess';
 import {
   ChevronRightIcon,
   CouponIcon,
@@ -37,6 +42,7 @@ import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { CardRegistrationModal } from '@/widgets/payment/CardRegistrationModal';
+import { BadgeDetailModal } from '@/widgets/settings/BadgeDetailModal';
 import { CancelSubscriptionModal } from '@/widgets/settings/CancelSubscriptionModal';
 import { CardInfo } from '@/widgets/settings/CardInfo';
 import { CreditDisplay } from '@/widgets/settings/CreditDisplay';
@@ -61,6 +67,10 @@ export const SettingsContainer: React.FC = () => {
 
   const { creditInfo } = useCreditInfo();
   const { cardInfo } = useCardInfo();
+  const { accesses: badges } = useUserAccesses();
+  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(
+    null
+  );
 
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
@@ -262,34 +272,56 @@ export const SettingsContainer: React.FC = () => {
     ) : null;
 
   const userInfoContent = (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <SettingPageNameIcon
-          size={isMobile ? 16 : 20}
-          className="text-grey-70"
-        />
-        <Text className="text-m font-emphasize md:text-xl">
-          {userName || '이름 없음'}
-        </Text>
+    <div className="flex items-end justify-between">
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <SettingPageNameIcon
+            size={isMobile ? 16 : 20}
+            className="text-grey-70"
+          />
+          <Text className="text-m font-emphasize md:text-xl">
+            {userName || '이름 없음'}
+          </Text>
+        </div>
+        <div className="flex items-center gap-3">
+          <SettingPageEmailIcon
+            size={isMobile ? 16 : 20}
+            className="text-grey-70"
+          />
+          <Text className="text-m font-emphasize md:text-xl">
+            {user?.email || '이메일 없음'}
+          </Text>
+        </div>
+        <div className="flex items-center gap-3">
+          <SettingPageLocationIcon
+            size={isMobile ? 16 : 20}
+            className="text-grey-70"
+          />
+          <Text className="text-m font-emphasize md:text-xl">
+            {organization || '소속 기관 없음'}
+          </Text>
+        </div>
       </div>
-      <div className="flex items-center gap-3">
-        <SettingPageEmailIcon
-          size={isMobile ? 16 : 20}
-          className="text-grey-70"
-        />
-        <Text className="text-m font-emphasize md:text-xl">
-          {user?.email || '이메일 없음'}
-        </Text>
-      </div>
-      <div className="flex items-center gap-3">
-        <SettingPageLocationIcon
-          size={isMobile ? 16 : 20}
-          className="text-grey-70"
-        />
-        <Text className="text-m font-emphasize md:text-xl">
-          {organization || '소속 기관 없음'}
-        </Text>
-      </div>
+
+      {badges.length > 0 && (
+        <div className="flex gap-2">
+          {badges.map((badge) => {
+            const Icon = BADGE_ICON_MAP[badge.type];
+            if (!Icon) return null;
+            return (
+              <button
+                key={badge.id}
+                type="button"
+                onClick={() => setSelectedBadge(badge)}
+                className="transition-transform lg:hover:scale-105"
+                aria-label={`${badge.name} 뱃지 상세 보기`}
+              >
+                <Icon size={isMobile ? 48 : 60} />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 
@@ -368,7 +400,7 @@ export const SettingsContainer: React.FC = () => {
         className={
           isMobileView
             ? 'flex flex-col gap-4'
-            : 'flex w-full justify-center gap-6 px-8'
+            : 'flex w-full justify-center gap-6 overflow-x-clip px-8'
         }
       >
         <div
@@ -677,6 +709,15 @@ export const SettingsContainer: React.FC = () => {
       {cardRegistrationModal}
       {creditUsageModal}
       {creditRenewalModal}
+      {selectedBadge && (
+        <BadgeDetailModal
+          open={!!selectedBadge}
+          onOpenChange={(open) => {
+            if (!open) setSelectedBadge(null);
+          }}
+          access={selectedBadge}
+        />
+      )}
     </>
   );
 
