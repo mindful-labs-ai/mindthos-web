@@ -45,7 +45,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
       {/* 미리보기 버튼 */}
       <button
         type="button"
-        className="h-8 w-8 rounded-md border-2 border-border transition-shadow lg:hover:border-fg-muted"
+        className="h-8 w-8 rounded-md border-2 border-grey-40 transition-shadow lg:hover:border-grey-70"
         style={{
           backgroundColor: isTransparentValue ? '#FFFFFF' : value,
         }}
@@ -67,7 +67,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 
       {/* 드롭다운 팔레트 */}
       {open && (
-        <div className="absolute right-0 top-10 z-20 flex flex-col gap-2 rounded-2xl border border-border bg-white p-3 shadow-lg">
+        <div className="absolute right-0 top-10 z-20 flex flex-col gap-2 rounded-2xl border border-grey-40 bg-white p-3 shadow-lg">
           {[PALETTE.slice(0, 6), PALETTE.slice(6)].map((row, ri) => (
             <div key={ri} className="flex gap-2">
               {row.map((color) => {
@@ -83,7 +83,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                     className={`h-8 w-8 shrink-0 rounded-md border-2 transition-shadow ${
                       isSelected
                         ? 'border-fg shadow-sm'
-                        : 'border-border lg:hover:border-fg-muted'
+                        : 'border-grey-40 lg:hover:border-grey-70'
                     }`}
                     style={{
                       backgroundColor: isTransparent ? '#FFFFFF' : color,

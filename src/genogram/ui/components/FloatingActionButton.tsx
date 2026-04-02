@@ -367,14 +367,14 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       {/* 드롭다운 (우측에 펼침) */}
       {isOpen && (
         <div
-          className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-xl border border-border bg-white p-2 py-1.5 shadow-lg"
+          className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-xl border border-grey-40 bg-white p-2 py-1.5 shadow-lg"
           style={{ minWidth: 'max-content' }}
         >
           {showChildSub ? (
             <>
               <button
                 type="button"
-                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors lg:hover:bg-surface-contrast"
+                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors lg:hover:bg-grey-20"
                 onClick={() => setShowChildSub(false)}
               >
                 ← 자녀 선택
@@ -384,7 +384,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
                   <button
                     key={value}
                     type="button"
-                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
+                    className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
                     onClick={() =>
                       handleChildSelect(
                         value as (typeof ParentChildStatus)[keyof typeof ParentChildStatus]
@@ -401,7 +401,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             <>
               <button
                 type="button"
-                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors lg:hover:bg-surface-contrast"
+                className="text-fg/60 mb-1 flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs transition-colors lg:hover:bg-grey-20"
                 onClick={() => setShowRelationSub(false)}
               >
                 ← 관계 선택
@@ -410,7 +410,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
                 <button
                   key={value}
                   type="button"
-                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
+                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
                   onClick={() =>
                     handleRelationSelect(
                       value as (typeof RelationStatus)[keyof typeof RelationStatus]
@@ -429,7 +429,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
                 <button
                   key={item.action}
                   type="button"
-                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-fg transition-colors lg:hover:bg-surface-contrast"
+                  className="flex w-full items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
                   onClick={() => handleItemClick(item.action)}
                 >
                   <Icon />

@@ -1221,7 +1221,7 @@ export const RelationshipEdge = memo(
         {label && (
           <EdgeLabelRenderer>
             <div
-              className="nodrag nopan pointer-events-auto absolute rounded bg-white px-2 py-0.5 text-fg-muted shadow-sm"
+              className="nodrag nopan pointer-events-auto absolute rounded bg-white px-2 py-0.5 text-grey-70 shadow-sm"
               style={{
                 fontSize: edgeFontSize,
                 transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
