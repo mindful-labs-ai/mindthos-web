@@ -69,7 +69,7 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
 
     const getToneClass = () => {
       const toneMap: Record<CheckBoxTone, string> = {
-        primary: 'checked:bg-primary checked:border-primary',
+        primary: 'checked:bg-green-80 checked:border-green-80',
         secondary: 'checked:bg-neutral checked:border-neutral',
         accent: 'checked:bg-accent checked:border-accent',
         neutral: 'checked:bg-grey-90 checked:border-grey-90',
@@ -99,7 +99,7 @@ export const CheckBox = React.forwardRef<HTMLInputElement, CheckBoxProps>(
           />
           <div
             className={cn(
-              'pointer-events-none absolute inset-0 flex items-center justify-center text-primary-fg',
+              'pointer-events-none absolute inset-0 flex items-center justify-center text-white',
               'opacity-0 transition-opacity duration-normal',
               'peer-checked:opacity-100',
               disabled && 'opacity-50'
