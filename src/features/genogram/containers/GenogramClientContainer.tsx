@@ -463,7 +463,7 @@ export function GenogramClientContainer() {
     if (isLoading || isStarting) {
       return (
         <div className="flex h-full items-center justify-center">
-          <span className="text-fg-muted">불러오는 중...</span>
+          <span className="text-grey-70">불러오는 중...</span>
         </div>
       );
     }
@@ -546,12 +546,12 @@ export function GenogramClientContainer() {
         emptyStateActions={
           hasRecords && (
             <div className="typo-sm flex items-center gap-2">
-              <span className="text-fg-muted">
+              <span className="text-grey-70">
                 혹시 처음부터 그리는게 어렵나요?
               </span>
               <button
                 onClick={() => handleStartFromRecords(true)}
-                className="rounded-md border border-border bg-surface px-3 py-1.5 font-medium text-fg transition-colors lg:hover:bg-surface-strong"
+                className="rounded-md border border-grey-40 bg-white px-3 py-1.5 font-medium text-grey-100 transition-colors lg:hover:bg-grey-30"
               >
                 AI로 자동 생성하기
               </button>
