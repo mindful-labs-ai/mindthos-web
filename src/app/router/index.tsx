@@ -1,61 +1,28 @@
-import { Suspense, lazy } from 'react';
-
 import { createBrowserRouter } from 'react-router-dom';
 
-import { Spinner } from '@/shared/ui/composites/Spinner';
+import AuthCallbackPage from '@/features/auth/page/AuthCallbackPage';
+import AuthPage from '@/features/auth/page/AuthPage';
+import EmailVerificationPage from '@/features/auth/page/EmailVerificationPage';
+import ClientDetailPage from '@/features/client/page/ClientDetailPage';
+import ClientListPage from '@/features/client/page/ClientListPage';
+import ErrorPage from '@/features/error/page/ErrorPage';
+import NotFoundPage from '@/features/error/page/NotFoundPage';
+import GenogramClientPage from '@/features/genogram/pages/GenogramClientPage';
+import HomePage from '@/features/home/page/HomePage';
+import SessionDetailPage from '@/features/session/page/SessionDetailPage';
+import SessionHistoryPage from '@/features/session/page/SessionHistoryPage';
+import SettingsPage from '@/features/settings/page/SettingsPage';
+import TemplateListPage from '@/features/template/page/TemplateListPage';
+import TermsPage from '@/features/terms/page/TermsPage';
+import TermsAgreementPage from '@/features/terms-agreement/page/TermsAgreementPage';
+import PaymentFail from '@/widgets/payment/PaymentFail';
+import PaymentSuccess from '@/widgets/payment/PaymentSuccess';
 
 import { ROUTES } from './constants';
 import RootLayout from './layouts/RootLayout';
 import SideTabLayout from './layouts/SideTabLayout';
 import { ProtectedRoute } from './protecter/ProtectedRoute';
 import { PublicOnlyRoute } from './protecter/PublicOnlyRoute';
-
-// Lazy-loaded page components
-const HomePage = lazy(() => import('@/features/home/page/HomePage'));
-const ClientListPage = lazy(
-  () => import('@/features/client/page/ClientListPage')
-);
-const ClientDetailPage = lazy(
-  () => import('@/features/client/page/ClientDetailPage')
-);
-const SessionHistoryPage = lazy(
-  () => import('@/features/session/page/SessionHistoryPage')
-);
-const SessionDetailPage = lazy(
-  () => import('@/features/session/page/SessionDetailPage')
-);
-const TemplateListPage = lazy(
-  () => import('@/features/template/page/TemplateListPage')
-);
-const GenogramClientPage = lazy(
-  () => import('@/features/genogram/pages/GenogramClientPage')
-);
-const SettingsPage = lazy(
-  () => import('@/features/settings/page/SettingsPage')
-);
-const AuthPage = lazy(() => import('@/features/auth/page/AuthPage'));
-const AuthCallbackPage = lazy(
-  () => import('@/features/auth/page/AuthCallbackPage')
-);
-const EmailVerificationPage = lazy(
-  () => import('@/features/auth/page/EmailVerificationPage')
-);
-const TermsPage = lazy(() => import('@/features/terms/page/TermsPage'));
-const TermsAgreementPage = lazy(
-  () => import('@/features/terms-agreement/page/TermsAgreementPage')
-);
-const PaymentSuccess = lazy(() => import('@/widgets/payment/PaymentSuccess'));
-const PaymentFail = lazy(() => import('@/widgets/payment/PaymentFail'));
-const ErrorPage = lazy(() => import('@/features/error/page/ErrorPage'));
-const NotFoundPage = lazy(() => import('@/features/error/page/NotFoundPage'));
-
-const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Suspense
-    fallback={<Spinner className="flex h-full items-center justify-center" />}
-  >
-    {children}
-  </Suspense>
-);
 
 /**
  * 애플리케이션 라우터 설정
@@ -66,11 +33,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.ROOT,
     element: <RootLayout />,
-    errorElement: (
-      <SuspenseWrapper>
-        <ErrorPage />
-      </SuspenseWrapper>
-    ),
+    errorElement: <ErrorPage />,
     children: [
       {
         element: (
@@ -81,69 +44,37 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: (
-              <SuspenseWrapper>
-                <HomePage />
-              </SuspenseWrapper>
-            ),
+            element: <HomePage />,
           },
           {
             path: ROUTES.CLIENTS,
-            element: (
-              <SuspenseWrapper>
-                <ClientListPage />
-              </SuspenseWrapper>
-            ),
+            element: <ClientListPage />,
           },
           {
             path: '/clients/:clientId',
-            element: (
-              <SuspenseWrapper>
-                <ClientDetailPage />
-              </SuspenseWrapper>
-            ),
+            element: <ClientDetailPage />,
           },
           {
             path: ROUTES.SESSIONS,
-            element: (
-              <SuspenseWrapper>
-                <SessionHistoryPage />
-              </SuspenseWrapper>
-            ),
+            element: <SessionHistoryPage />,
             children: [
               {
                 path: ':sessionId',
-                element: (
-                  <SuspenseWrapper>
-                    <SessionDetailPage />
-                  </SuspenseWrapper>
-                ),
+                element: <SessionDetailPage />,
               },
             ],
           },
           {
             path: ROUTES.TEMPLATE,
-            element: (
-              <SuspenseWrapper>
-                <TemplateListPage />
-              </SuspenseWrapper>
-            ),
+            element: <TemplateListPage />,
           },
           {
             path: ROUTES.GENOGRAM,
-            element: (
-              <SuspenseWrapper>
-                <GenogramClientPage />
-              </SuspenseWrapper>
-            ),
+            element: <GenogramClientPage />,
           },
           {
             path: ROUTES.SETTINGS,
-            element: (
-              <SuspenseWrapper>
-                <SettingsPage />
-              </SuspenseWrapper>
-            ),
+            element: <SettingsPage />,
           },
         ],
       },
@@ -151,53 +82,35 @@ export const router = createBrowserRouter([
         path: ROUTES.AUTH,
         element: (
           <PublicOnlyRoute>
-            <SuspenseWrapper>
-              <AuthPage />
-            </SuspenseWrapper>
+            <AuthPage />
           </PublicOnlyRoute>
         ),
       },
       {
         path: ROUTES.AUTH_CALLBACK,
-        element: (
-          <SuspenseWrapper>
-            <AuthCallbackPage />
-          </SuspenseWrapper>
-        ),
+        element: <AuthCallbackPage />,
       },
       {
         path: ROUTES.EMAIL_VERIFICATION,
-        element: (
-          <SuspenseWrapper>
-            <EmailVerificationPage />
-          </SuspenseWrapper>
-        ),
+        element: <EmailVerificationPage />,
       },
       {
         path: ROUTES.TERMS_AGREEMENT,
         element: (
           <ProtectedRoute skipTermsCheck>
-            <SuspenseWrapper>
-              <TermsAgreementPage />
-            </SuspenseWrapper>
+            <TermsAgreementPage />
           </ProtectedRoute>
         ),
       },
       {
         path: ROUTES.TERMS,
-        element: (
-          <SuspenseWrapper>
-            <TermsPage />
-          </SuspenseWrapper>
-        ),
+        element: <TermsPage />,
       },
       {
         path: ROUTES.PAYMENT_SUCCESS,
         element: (
           <ProtectedRoute>
-            <SuspenseWrapper>
-              <PaymentSuccess />
-            </SuspenseWrapper>
+            <PaymentSuccess />
           </ProtectedRoute>
         ),
       },
@@ -205,19 +118,13 @@ export const router = createBrowserRouter([
         path: ROUTES.PAYMENT_FAIL,
         element: (
           <ProtectedRoute>
-            <SuspenseWrapper>
-              <PaymentFail />
-            </SuspenseWrapper>
+            <PaymentFail />
           </ProtectedRoute>
         ),
       },
       {
         path: ROUTES.NOT_FOUND,
-        element: (
-          <SuspenseWrapper>
-            <NotFoundPage />
-          </SuspenseWrapper>
-        ),
+        element: <NotFoundPage />,
       },
     ],
   },

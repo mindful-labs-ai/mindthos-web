@@ -50,9 +50,11 @@ export const useTermsAgreement = (terms: TermItem[]) => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: termsAgreementQueryKeys.check(),
-      });
+      queryClient.setQueryData(termsAgreementQueryKeys.check(), (old: any) => ({
+        ...old,
+        agreedAll: true,
+        pendingTerms: [],
+      }));
     },
   });
 
