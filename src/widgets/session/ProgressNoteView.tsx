@@ -88,7 +88,21 @@ const parseSummary = (summary: string): NoteSection[] => {
   });
 
   if (currentSection) sections.push(currentSection);
-  return sections;
+
+  const getHeadingLevel = (rawHeading: string): number => {
+    const match = rawHeading.match(/^(#{1,4})\s/);
+    return match ? match[1].length : 0;
+  };
+
+  return sections.filter((section, i) => {
+    if (section.content.trim()) return true;
+    const currentLevel = getHeadingLevel(section.rawHeading);
+    if (currentLevel > 0 && i + 1 < sections.length) {
+      const nextLevel = getHeadingLevel(sections[i + 1].rawHeading);
+      if (nextLevel > currentLevel) return false;
+    }
+    return true;
+  });
 };
 
 export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
