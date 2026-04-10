@@ -137,7 +137,7 @@ export const CreateMultiSessionModal: React.FC<
 
   // 일괄 설정 (Step 1)
   const [batchConfig, setBatchConfig] = useState<BatchSessionConfig>({
-    sttModel: 'gemini-3',
+    sttModel: 'advanced',
     clientId: undefined,
   });
 
@@ -162,7 +162,7 @@ export const CreateMultiSessionModal: React.FC<
         trackEvent(MixpanelEvent.MultiSessionCreateModalClose);
         setStep('upload');
         clearFiles();
-        setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
+        setBatchConfig({ sttModel: 'advanced', clientId: undefined });
         setFileConfigs([]);
       }
       onOpenChange(isOpen);
@@ -184,7 +184,7 @@ export const CreateMultiSessionModal: React.FC<
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
         transcribeType:
-          batchConfig.sttModel === 'gemini-3' ? 'advanced' : 'basic',
+          batchConfig.sttModel === 'advanced' ? 'advanced' : 'basic',
         durationSeconds: file.duration,
       });
       return sum + totalCredit;
@@ -198,7 +198,7 @@ export const CreateMultiSessionModal: React.FC<
       if (!file || file.duration === undefined) return sum;
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
-        transcribeType: config.sttModel === 'gemini-3' ? 'advanced' : 'basic',
+        transcribeType: config.sttModel === 'advanced' ? 'advanced' : 'basic',
         durationSeconds: file.duration,
       });
       return sum + totalCredit;

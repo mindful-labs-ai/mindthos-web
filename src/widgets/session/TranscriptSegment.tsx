@@ -5,8 +5,10 @@ import { Plus, Trash2 } from 'lucide-react';
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
 import { formatTime } from '@/features/session/utils/formatTime';
 import { getSpeakerInfo } from '@/features/session/utils/getSpeakerInfo';
+import { extractDeidText } from '@/features/session/utils/parseDeidText';
 import {
   parseNonverbalText,
+  parseNvTagText,
   renderTextWithNonverbal,
 } from '@/features/session/utils/parseNonverbalText';
 
@@ -18,6 +20,7 @@ interface TranscriptSegmentProps {
   isActive: boolean;
   isEditable?: boolean;
   isAnonymized?: boolean;
+  showDeid?: boolean; // 비식별화 표시 여부
   sttModel?: string | null;
   segmentRef?: React.RefObject<HTMLDivElement | null>;
   onClick: (startTime: number) => void;
@@ -43,6 +46,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   isActive,
   isEditable = false,
   isAnonymized = false,
+  showDeid = false,
   sttModel,
   segmentRef,
   onClick,
@@ -65,8 +69,14 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   const showTimestampDisplay =
     showTimestamp && segment.start !== null && segment.end !== null;
 
-  // 텍스트 비언어적 표현 분리
-  const textParts = parseNonverbalText(segment.text);
+  // deid가 있으면 먼저 처리 (비식별화 OFF면 원본으로 치환, ON이면 [라벨]로 치환)
+  const hasDeid = segment.deid && Object.keys(segment.deid).length > 0;
+  const textForNv = hasDeid
+    ? extractDeidText(segment.text, segment.deid, showDeid)
+    : segment.text;
+  const textParts = segment.nv && segment.nv.length > 0
+    ? parseNvTagText(textForNv, segment.nv)
+    : parseNonverbalText(textForNv);
 
   // 편집 모드이고 타임스탬프가 없는 경우 (gemini-3) 클릭 비활성화
   const isClickable =

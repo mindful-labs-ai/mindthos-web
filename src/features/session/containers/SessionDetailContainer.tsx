@@ -118,7 +118,7 @@ export const SessionDetailContainer: React.FC = () => {
 
   const transcriptLabel = isHandwrittenSession ? (
     '입력된 텍스트'
-  ) : (transcribe as Transcribe | null)?.stt_model === 'gemini-3' ? (
+  ) : ((transcribe as Transcribe | null)?.stt_model === 'gemini-3' || (transcribe as Transcribe | null)?.stt_model === 'advanced') ? (
     <span className="flex items-center justify-center gap-1.5">
       고급 축어록
       <svg

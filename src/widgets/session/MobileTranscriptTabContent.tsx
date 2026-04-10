@@ -23,6 +23,7 @@ interface MobileTranscriptTabContentProps {
   isReadOnly: boolean;
   isEditing: boolean;
   isAnonymized: boolean;
+  showDeid?: boolean;
   enableTimestampFeatures: boolean;
   currentSegmentIndex: number;
   activeSegmentRef: React.RefObject<HTMLDivElement | null>;
@@ -48,6 +49,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       isReadOnly,
       isEditing,
       isAnonymized,
+      showDeid = false,
       enableTimestampFeatures,
       currentSegmentIndex,
       activeSegmentRef,
@@ -113,6 +115,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         }
                         isEditable={isEditing && !isReadOnly}
                         isAnonymized={isAnonymized}
+                        showDeid={showDeid}
                         sttModel={transcribe?.stt_model}
                         segmentRef={
                           enableTimestampFeatures &&

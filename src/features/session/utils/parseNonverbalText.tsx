@@ -98,10 +98,60 @@ const TAG_STYLES: Record<string, { bg: string; text: string; border: string }> =
   };
 
 /**
+ * ⟪nv:KEY⟫ + nv[] 배열을 파싱하여 텍스트와 비언어 태그로 분리 (advanced 포맷)
+ * 예시:
+ * - text: "⟪nv:a1⟫ 저는 그냥 답답해요.", nv: ["a1:한숨"]
+ *   → [{ type: 'nonverbal', tagType: 'A', content: '한숨' }, { type: 'text', content: ' 저는 그냥 답답해요.' }]
+ */
+export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
+  if (!nv || nv.length === 0) {
+    return [{ type: 'text', content: text }];
+  }
+
+  // nv 배열에서 KEY→{tagType, label} 매핑 생성
+  const nvMap = new Map<string, { tagType: 'A' | 'E'; label: string }>();
+  for (const entry of nv) {
+    const colonIdx = entry.indexOf(':');
+    if (colonIdx === -1) continue;
+    const key = entry.slice(0, colonIdx);
+    const label = entry.slice(colonIdx + 1);
+    const tagType = key.startsWith('e') ? 'E' : 'A';
+    nvMap.set(key, { tagType, label });
+  }
+
+  const parts: TextPart[] = [];
+  const regex = /⟪nv:([^⟫]+)⟫/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+
+    const key = match[1];
+    const entry = nvMap.get(key);
+    if (entry) {
+      parts.push({ type: 'nonverbal', content: entry.label, tagType: entry.tagType });
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+
+  return parts;
+}
+
+/**
  * 비언어 태그를 제거하고 순수 텍스트만 추출
  */
-export function extractTextOnly(text: string): string {
-  const parts = parseNonverbalText(text);
+export function extractTextOnly(text: string, nv?: string[]): string {
+  const parts = nv && nv.length > 0
+    ? parseNvTagText(text, nv)
+    : parseNonverbalText(text);
   return parts
     .filter((part) => part.type === 'text')
     .map((part) => part.content)
@@ -115,8 +165,8 @@ export function renderTextWithNonverbal(
   parts: TextPart[],
   sttModel: string | null | undefined
 ): React.ReactNode {
-  // gemini-3가 아니면 원본 텍스트 그대로 반환
-  if (sttModel !== 'gemini-3') {
+  // 비언어 태그 렌더링이 필요한 모델만 칩으로 표시
+  if (sttModel !== 'gemini-3' && sttModel !== 'advanced') {
     return parts.map((p) => p.content).join('');
   }
 

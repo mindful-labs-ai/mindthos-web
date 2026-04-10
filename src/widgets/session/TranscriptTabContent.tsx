@@ -31,6 +31,8 @@ interface TranscriptTabContentProps {
   isEditing: boolean;
   /** 익명화 모드 여부 */
   isAnonymized: boolean;
+  /** 비식별화 표시 여부 */
+  showDeid?: boolean;
   /** 타임스탬프 기능 활성화 여부 */
   enableTimestampFeatures: boolean;
   /** 현재 활성 세그먼트 인덱스 */
@@ -65,6 +67,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       isReadOnly,
       isEditing,
       isAnonymized,
+      showDeid = false,
       enableTimestampFeatures,
       currentSegmentIndex,
       activeSegmentRef,
@@ -130,6 +133,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         }
                         isEditable={isEditing && !isReadOnly}
                         isAnonymized={isAnonymized}
+                        showDeid={showDeid}
                         sttModel={transcribe?.stt_model}
                         segmentRef={
                           enableTimestampFeatures &&
