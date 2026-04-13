@@ -37,6 +37,7 @@ import { TranscriptTabContent } from '@/widgets/session/TranscriptTabContent';
 import { TranscriptToolbar } from '@/widgets/session/TranscriptToolbar';
 
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useDeidentification } from '../hooks/useDeidentification';
 import { useHandwrittenEdit } from '../hooks/useHandwrittenEdit';
 import { useProgressNoteCreation } from '../hooks/useProgressNoteCreation';
 import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
@@ -67,6 +68,7 @@ export const SessionDetailContainer: React.FC = () => {
 
   const [isAnonymized, setIsAnonymized] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { showDeid, hasActivatedOnce: hasActivatedDeid, handleDeidentify, deidModal } = useDeidentification();
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
@@ -624,6 +626,9 @@ export const SessionDetailContainer: React.FC = () => {
           onToggleAnonymized={() => setIsAnonymized(!isAnonymized)}
           onEditStart={handleEditStart}
           onCopy={handleCopyTranscript}
+          onDeidentify={!isReadOnly ? handleDeidentify : undefined}
+          showDeid={showDeid}
+          hasActivatedDeid={hasActivatedDeid}
         />
       ) : (
         <TranscriptToolbar
@@ -638,6 +643,9 @@ export const SessionDetailContainer: React.FC = () => {
           onSaveEdit={handleSaveAllEdits}
           onCancelEdit={handleCancelEdit}
           onCopy={handleCopyTranscript}
+          onDeidentify={!isReadOnly ? handleDeidentify : undefined}
+          showDeid={showDeid}
+          hasActivatedDeid={hasActivatedDeid}
         />
       )
     ) : null;
@@ -674,6 +682,7 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           isAnonymized={isAnonymized}
+          showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
           currentSegmentIndex={currentSegmentIndex}
           activeSegmentRef={activeSegmentRef}
@@ -693,6 +702,7 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           isAnonymized={isAnonymized}
+          showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
           currentSegmentIndex={currentSegmentIndex}
           activeSegmentRef={activeSegmentRef}
@@ -780,6 +790,7 @@ export const SessionDetailContainer: React.FC = () => {
     />
   );
 
+
   const isContentEditing =
     (isEditing || isEditingHandwritten) && activeTab === 'transcript';
 
@@ -794,7 +805,7 @@ export const SessionDetailContainer: React.FC = () => {
         toolbar={toolbar}
         tabContent={tabContent}
         audioPlayer={audioPlayer}
-        tabChangeModal={tabChangeModal}
+        tabChangeModal={<>{tabChangeModal}{deidModal}</>}
       />
     );
   }
@@ -808,7 +819,7 @@ export const SessionDetailContainer: React.FC = () => {
       toolbar={toolbar}
       tabContent={tabContent}
       audioPlayer={audioPlayer}
-      tabChangeModal={tabChangeModal}
+      tabChangeModal={<>{tabChangeModal}{deidModal}</>}
     />
   );
 };

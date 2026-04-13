@@ -32,6 +32,9 @@
   --primitive-green-40: #cfe5d0;
   --primitive-green-80: #44ce4b;
 
+  /* Orange */
+  --primitive-orange-100: #ff8059;
+
   /* Red */
   --primitive-red-20: #ffc8c8;
   --primitive-red-50: #f77575;
@@ -154,6 +157,9 @@
   --color-green-20: var(--primitive-green-20);
   --color-green-40: var(--primitive-green-40);
   --color-green-80: var(--primitive-green-80);
+
+  /* --- Orange palette (Tailwind 유틸리티용) --- */
+  --color-orange-100: var(--primitive-orange-100);
 
   /* --- Red palette (Tailwind 유틸리티용) --- */
   --color-red-20: var(--primitive-red-20);

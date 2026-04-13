@@ -117,6 +117,9 @@ export default {
           40: 'var(--color-green-40)',
           80: 'var(--color-green-80)',
         },
+        orange: {
+          100: 'var(--color-orange-100)',
+        },
         red: {
           20: 'var(--color-red-20)',
           50: 'var(--color-red-50)',

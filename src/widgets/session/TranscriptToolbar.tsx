@@ -5,7 +5,7 @@
 
 import React from 'react';
 
-import { CopyIcon } from '@/shared/icons';
+import { CopyIcon, DeidentificationIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -33,6 +33,12 @@ interface TranscriptToolbarProps {
   onCancelEdit: () => void;
   /** 복사 핸들러 */
   onCopy: () => void;
+  /** 비식별화 버튼 클릭 핸들러 */
+  onDeidentify?: () => void;
+  /** 비식별화 활성화 상태 */
+  showDeid?: boolean;
+  /** 비식별화 최초 실행 여부 */
+  hasActivatedDeid?: boolean;
 }
 
 export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
@@ -48,6 +54,9 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     onSaveEdit,
     onCancelEdit,
     onCopy,
+    onDeidentify,
+    showDeid = false,
+    hasActivatedDeid = false,
   }) => {
     const sharedMenuItems = (
       <>
@@ -175,6 +184,27 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
               >
                 <CopyIcon size={20} /> 복사하기
               </button>
+              {onDeidentify && (
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 rounded-md border px-3.5 py-1 text-m font-medium transition-colors ${
+                    !hasActivatedDeid
+                      ? 'border-green-80 text-green-80 lg:hover:opacity-80'
+                      : showDeid
+                        ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
+                        : 'border border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                  }`}
+                  onClick={onDeidentify}
+                  aria-label="축어록 비식별화"
+                >
+                  <DeidentificationIcon />
+                  {!hasActivatedDeid
+                    ? '비식별화 하기'
+                    : showDeid
+                      ? '비식별화 ON'
+                      : '비식별화 OFF'}
+                </button>
+              )}
               <div className="inline-block">
                 <PopUp
                   open={isMenuOpen}

@@ -7,7 +7,11 @@ import React from 'react';
 
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { ChevronRightIcon, CopyIcon } from '@/shared/icons';
+import {
+  ChevronRightIcon,
+  CopyIcon,
+  DeidentificationIcon,
+} from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -22,6 +26,9 @@ interface MobileTranscriptToolbarProps {
   onToggleAnonymized: () => void;
   onEditStart: () => void;
   onCopy: () => void;
+  onDeidentify?: () => void;
+  showDeid?: boolean;
+  hasActivatedDeid?: boolean;
 }
 
 export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
@@ -36,6 +43,9 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
       onToggleAnonymized,
       onEditStart,
       onCopy,
+      onDeidentify,
+      showDeid = false,
+      hasActivatedDeid = false,
     }) => {
       const { isTablet } = useDevice();
 
@@ -89,6 +99,27 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                       >
                         <CopyIcon size={20} /> 복사하기
                       </button>
+                      {onDeidentify && (
+                        <button
+                          type="button"
+                          className={`flex items-center gap-1.5 rounded-md border px-3.5 py-1 text-m font-medium transition-colors ${
+                            !hasActivatedDeid
+                              ? 'border-green-80 text-green-80 lg:hover:opacity-80'
+                              : showDeid
+                                ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
+                                : 'border border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                          }`}
+                          onClick={onDeidentify}
+                          aria-label="축어록 비식별화"
+                        >
+                          <DeidentificationIcon />
+                          {!hasActivatedDeid
+                            ? '비식별화 하기'
+                            : showDeid
+                              ? '비식별화 ON'
+                              : '비식별화 OFF'}
+                        </button>
+                      )}
                     </>
                   )}
                   <button
@@ -136,19 +167,74 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                           />
                         </button>
                       )}
+                      {!isTablet && onDeidentify && !hasActivatedDeid && (
+                        <button
+                          onClick={() => {
+                            onDeidentify();
+                            setIsMenuOpen(false);
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
+                        >
+                          <span className="text-l text-grey-100">
+                            비식별화 하기
+                          </span>
+                          <ChevronRightIcon
+                            size={20}
+                            className="text-grey-70"
+                          />
+                        </button>
+                      )}
+                      {!isTablet && onDeidentify && hasActivatedDeid && (
+                        <button
+                          onClick={() => {
+                            onDeidentify();
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
+                        >
+                          <span className="text-l text-orange-100">
+                            비식별화 활성화
+                          </span>
+                          <div
+                            className={`relative h-[26px] w-[46px] rounded-full border transition-colors ${
+                              showDeid
+                                ? 'border-green-80/30 bg-green-80'
+                                : 'border-grey-40 bg-grey-30'
+                            }`}
+                          >
+                            <div
+                              className={`absolute top-[2px] h-[20px] w-[20px] rounded-full border border-white bg-white shadow transition-transform ${
+                                showDeid
+                                  ? 'translate-x-[22px]'
+                                  : '!bg-grey-50 translate-x-[2px]'
+                              }`}
+                            />
+                          </div>
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           onToggleAnonymized();
-                          setIsMenuOpen(false);
                         }}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
                         <span className="text-l text-grey-100">
-                          {isAnonymized
-                            ? '참석자 가리기 해제'
-                            : '참석자 가리기'}
+                          참석자 가리기
                         </span>
-                        <ChevronRightIcon size={20} className="text-grey-70" />
+                        <div
+                          className={`relative h-[26px] w-[46px] rounded-full border transition-colors ${
+                            isAnonymized
+                              ? 'border-green-80/30 bg-green-80'
+                              : 'border-grey-40 bg-grey-30'
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-[2px] h-[20px] w-[20px] rounded-full border border-white bg-white shadow transition-transform ${
+                              isAnonymized
+                                ? 'translate-x-[22px]'
+                                : '!bg-grey-50 translate-x-[2px]'
+                            }`}
+                          />
+                        </div>
                       </button>
                       {enableTimestampFeatures && (
                         <button
