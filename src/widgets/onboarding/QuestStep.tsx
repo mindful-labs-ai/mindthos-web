@@ -81,7 +81,7 @@ const StepBadge: React.FC<{
         isCompleted
           ? 'border-green-80 bg-green-80 text-white'
           : isInProgress
-            ? 'scale-150 border-green-80 bg-white text-green-80'
+            ? 'scale-125 border-green-80 bg-white text-green-80'
             : 'border-grey-40 bg-white text-grey-40',
         className
       )}

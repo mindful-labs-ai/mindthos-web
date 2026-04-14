@@ -309,7 +309,7 @@ body {
   /* --- Border --- */
   /* border-2 border-border (74회) → 한 클래스 */
   .border-default {
-    @apply border-2 border-border;
+    @apply border border-border;
   }
 
   /* --- Focus ring --- */

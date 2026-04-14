@@ -38,6 +38,8 @@ export interface GeminiSegment {
   end: null;
   text: string;
   speaker: number; // 변환된 숫자 ID
+  nv?: string[]; // 비언어 매핑 (advanced만) - ["a1:한숨", "e1:슬픔"]
+  deid?: Record<string, string>; // 비식별화 매핑 - {"d1": "인물1"}
 }
 
 // Whisper 세그먼트 (타임스탬프 포함)
@@ -47,6 +49,8 @@ export interface WhisperSegment {
   end: number; // 종료 시간(초)
   text: string;
   speaker: number; // 화자 ID
+  nv?: string[]; // 비언어 매핑 (advanced만) - ["a1:한숨", "e1:슬픔"]
+  deid?: Record<string, string>; // 비식별화 매핑 - {"d1": "인물1"}
 }
 
 // 전사 세그먼트 (Union type)
@@ -59,7 +63,7 @@ export interface Speaker {
   customName?: string; // 커스텀 표시 이름
 }
 
-export type SttModel = 'gemini-3' | 'whisper';
+export type SttModel = 'gemini-3' | 'whisper' | 'basic' | 'advanced';
 
 // 전사 결과
 export interface TranscribeResult {
@@ -73,7 +77,7 @@ export interface TranscriptJson {
   segments: TranscribeSegment[];
   text: string;
   raw_output: string;
-  stt_model: 'gemini-3' | 'whisper';
+  stt_model: SttModel;
   speakers?: Speaker[]; // 화자 정보 (customName 포함)
 }
 
@@ -196,14 +200,14 @@ export interface CreateSessionBackgroundRequest {
   file_size_mb: number;
   duration_seconds: number;
   client_id?: string | null;
-  stt_model: 'whisper' | 'gemini-3';
+  stt_model: SttModel;
   template_id: number;
 }
 
 export interface CreateSessionBackgroundResponse {
   session_id: string;
   status: 'accepted' | 'failed';
-  stt_model: 'whisper' | 'gemini-3';
+  stt_model: SttModel;
   message: string;
 }
 

@@ -142,6 +142,28 @@ export function applyBulkSpeakerChanges(
   return updated;
 }
 
+/** 다수 nv 편집 일괄 적용 */
+export function applyBulkNvEdits(
+  contents: Contents,
+  edits: Record<number, string[]>
+): Contents {
+  if (Object.keys(edits).length === 0) return contents;
+  return mapSegments(contents, (seg) =>
+    seg.id in edits ? { ...seg, nv: edits[seg.id] } : seg
+  );
+}
+
+/** 다수 deid 편집 일괄 적용 */
+export function applyBulkDeidEdits(
+  contents: Contents,
+  edits: Record<number, Record<string, string>>
+): Contents {
+  if (Object.keys(edits).length === 0) return contents;
+  return mapSegments(contents, (seg) =>
+    seg.id in edits ? { ...seg, deid: edits[seg.id] } : seg
+  );
+}
+
 /** contents 깊은 복사 */
 export function deepCloneContents(contents: Contents): Contents {
   return JSON.parse(JSON.stringify(contents));

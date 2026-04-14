@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import AuthCallbackPage from '@/features/auth/page/AuthCallbackPage';
 import AuthPage from '@/features/auth/page/AuthPage';
 import EmailVerificationPage from '@/features/auth/page/EmailVerificationPage';
+import UserVerifyPage from '@/features/auth/page/UserVerifyPage';
 import ClientDetailPage from '@/features/client/page/ClientDetailPage';
 import ClientListPage from '@/features/client/page/ClientListPage';
 import ErrorPage from '@/features/error/page/ErrorPage';
@@ -97,8 +98,16 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.TERMS_AGREEMENT,
         element: (
-          <ProtectedRoute skipTermsCheck>
+          <ProtectedRoute skipTermsCheck skipSignupCheck>
             <TermsAgreementPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.USER_VERIFY,
+        element: (
+          <ProtectedRoute skipSignupCheck>
+            <UserVerifyPage />
           </ProtectedRoute>
         ),
       },

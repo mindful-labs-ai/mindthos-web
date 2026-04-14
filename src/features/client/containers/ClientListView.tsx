@@ -33,7 +33,7 @@ export const ClientListView: React.FC<ClientListViewProps> = ({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             prefix={<SearchIcon size={18} className="text-grey-60" />}
-            className="w-full rounded-lg border-grey-30 bg-grey-10"
+            className="w-full border-grey-30 bg-grey-10"
           />
 
           {/* 클라이언트 리스트 */}

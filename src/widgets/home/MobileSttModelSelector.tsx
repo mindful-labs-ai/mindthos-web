@@ -18,14 +18,14 @@ export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => setSttModel('whisper')}
+        onClick={() => setSttModel('basic')}
         className={cn('typo-sm flex items-center gap-1 rounded-md px-3 py-1.5')}
       >
         일반
         <div
           className={cn(
             'flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-slow',
-            sttModel === 'whisper' ? 'bg-green-80' : 'bg-grey-40'
+            sttModel === 'basic' ? 'bg-green-80' : 'bg-grey-40'
           )}
         >
           <svg
@@ -47,14 +47,14 @@ export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({
       </button>
       <button
         type="button"
-        onClick={() => setSttModel('gemini-3')}
+        onClick={() => setSttModel('advanced')}
         className={cn('typo-sm flex items-center gap-1 rounded-md px-3 py-1.5')}
       >
         고급
         <div
           className={cn(
             'flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-slow',
-            sttModel === 'gemini-3' ? 'bg-green-80' : 'bg-grey-40'
+            sttModel === 'advanced' ? 'bg-green-80' : 'bg-grey-40'
           )}
         >
           <svg

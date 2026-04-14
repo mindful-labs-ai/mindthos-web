@@ -18,7 +18,8 @@ interface UseTranscriptCopyReturn {
   handleCopyTranscript: (
     segments: TranscribeSegment[],
     speakers: Speaker[],
-    isAnonymized: boolean
+    isAnonymized: boolean,
+    showDeid?: boolean
   ) => Promise<void>;
   /**
    * 직접 입력 텍스트를 클립보드에 복사
@@ -34,7 +35,8 @@ export function useTranscriptCopy({
   const handleCopyTranscript = async (
     segments: TranscribeSegment[],
     speakers: Speaker[],
-    isAnonymized: boolean
+    isAnonymized: boolean,
+    showDeid = false
   ) => {
     if (isReadOnly) {
       toast({
@@ -57,16 +59,40 @@ export function useTranscriptCopy({
           speakerCounters[speakerId] = (speakerCounters[speakerId] || 0) + 1;
           const speakerIndex = speakerCounters[speakerId];
 
-          // {%X%내용%} 또는 {%X%} 형태의 비언어적 표현을 (내용) 로 변환
-          // {%A%웃음%} -> (웃음), {%S%} -> (침묵), {%E%강조%} -> (강조)
-          let cleanedText = segment.text.replace(
-            /\{%[SAEO]%([^%]+)%\}/g,
-            '($1)'
-          );
-          // {%X%} 형태 처리 (내용 없는 경우)
+          // 비언어 태그 변환
+          let cleanedText = segment.text;
+
+          // 신규 ⟪nv:KEY⟫ + nv[] 배열 처리
+          if (segment.nv && segment.nv.length > 0) {
+            const nvMap = new Map<string, string>();
+            for (const entry of segment.nv) {
+              const colonIdx = entry.indexOf(':');
+              if (colonIdx !== -1) {
+                nvMap.set(entry.slice(0, colonIdx), entry.slice(colonIdx + 1));
+              }
+            }
+            cleanedText = cleanedText.replace(/⟪nv:([^⟫]+)⟫/g, (_, key) => {
+              const label = nvMap.get(key);
+              return label ? `(${label})` : '';
+            });
+          }
+
+          // 레거시 {%X%내용%} 또는 {%X%} 형태 처리
+          cleanedText = cleanedText.replace(/\{%[SAEO]%([^%]+)%\}/g, '($1)');
           cleanedText = cleanedText.replace(/\{%S%\}/g, '(침묵)');
           cleanedText = cleanedText.replace(/\{%O%\}/g, '(겹침)');
-          cleanedText = cleanedText.replace(/\{%[AE]%\}/g, ''); // A, E는 내용 없으면 제거
+          cleanedText = cleanedText.replace(/\{%[AE]%\}/g, '');
+
+          // 비식별화 태그: showDeid ON이면 라벨로, OFF면 원본으로 치환
+          if (showDeid && segment.deid) {
+            const deidMap = segment.deid;
+            cleanedText = cleanedText.replace(
+              /⟪deid:(\w+)\|([^⟫]+)⟫/g,
+              (_, key) => `[${deidMap[key] || key}]`
+            );
+          } else {
+            cleanedText = cleanedText.replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1');
+          }
 
           // 익명화 모드일 경우 화자 정보 제외
           if (isAnonymized) {

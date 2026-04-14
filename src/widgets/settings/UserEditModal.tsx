@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 
+import {
+  PhoneVerificationField,
+  type PhoneVerificationFieldHandle,
+} from '@/features/auth/components/PhoneVerificationField';
 import { qualificationService } from '@/features/settings/services/qualificationService';
 import { trackEvent } from '@/lib/mixpanel';
 import {
@@ -59,19 +63,6 @@ type UserEditFormData = z.infer<typeof formSchema> & {
   referralSourceCustom?: string;
 };
 
-// 휴대전화 번호 포맷팅 (하이픈 자동 추가)
-const formatPhoneNumber = (value: string): string => {
-  const numbersOnly = value.replace(/[^0-9]/g, '');
-
-  if (numbersOnly.length <= 3) {
-    return numbersOnly;
-  } else if (numbersOnly.length <= 7) {
-    return `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3)}`;
-  } else {
-    return `${numbersOnly.slice(0, 3)}-${numbersOnly.slice(3, 7)}-${numbersOnly.slice(7, 11)}`;
-  }
-};
-
 interface UserEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -124,6 +115,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
     referralSourceCustom: '',
   });
 
+  // 모달 열릴 때의 휴대폰 번호 스냅샷 — 변경 여부 판단용 (PhoneVerificationField 에 전달)
+  const [initialPhoneNumber, setInitialPhoneNumber] = React.useState('');
+  const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
+
   const hasReferralOther = formData.referralSource === 'other';
 
   const [errors, setErrors] = React.useState<
@@ -134,27 +129,22 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   React.useEffect(() => {
     if (open) {
       trackEvent(MixpanelEvent.UserInfoEditModalOpen);
+      const phoneSnapshot = userPhoneNumber || '';
       setFormData({
         name: userName || '',
         organization: organization || '',
-        phoneNumber: userPhoneNumber || '',
+        phoneNumber: phoneSnapshot,
         qualification: userQualifications?.map((q) => q.name) ?? [],
         referralSource: '',
         referralSourceCustom: '',
       });
+      setInitialPhoneNumber(phoneSnapshot);
       setErrors({});
     }
   }, [open, userName, organization, userPhoneNumber, userQualifications]);
 
   const handleChange = (field: keyof UserEditFormData, value: string) => {
-    let processedValue = value;
-
-    // 휴대전화 번호는 자동 포맷팅 적용
-    if (field === 'phoneNumber') {
-      processedValue = formatPhoneNumber(value);
-    }
-
-    setFormData((prev) => ({ ...prev, [field]: processedValue }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -228,6 +218,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       setErrors(fieldErrors);
       return;
     }
+
+    // 번호가 변경된 경우에만 PhoneVerificationField 가 verify 를 요구한다.
+    const verified = await phoneFieldRef.current?.ensureVerified();
+    if (verified === false) return;
 
     mutation.mutate(formData);
   };
@@ -306,16 +300,23 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             />
           </FormField>
 
-          <FormField label="휴대폰 번호" required error={errors.phoneNumber}>
-            <Input
-              type="tel"
-              placeholder="010-1234-5678"
-              value={formData.phoneNumber}
-              onChange={(e) => handleChange('phoneNumber', e.target.value)}
-              maxLength={13}
-              error={!!errors.phoneNumber}
-            />
-          </FormField>
+          <PhoneVerificationField
+            ref={phoneFieldRef}
+            value={formData.phoneNumber}
+            onChange={(value) => {
+              setFormData((prev) => ({ ...prev, phoneNumber: value }));
+              if (errors.phoneNumber) {
+                setErrors((prev) => {
+                  const next = { ...prev };
+                  delete next.phoneNumber;
+                  return next;
+                });
+              }
+            }}
+            error={errors.phoneNumber}
+            initialPhoneNumber={initialPhoneNumber}
+            disabled={mutation.isPending}
+          />
 
           <FormField label="보유 자격" required error={errors.qualification}>
             <Select

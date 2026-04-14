@@ -31,6 +31,8 @@ interface TranscriptTabContentProps {
   isEditing: boolean;
   /** 익명화 모드 여부 */
   isAnonymized: boolean;
+  /** 비식별화 표시 여부 */
+  showDeid?: boolean;
   /** 타임스탬프 기능 활성화 여부 */
   enableTimestampFeatures: boolean;
   /** 현재 활성 세그먼트 인덱스 */
@@ -43,6 +45,10 @@ interface TranscriptTabContentProps {
   onSeekTo: (time: number) => void;
   /** 텍스트 편집 핸들러 */
   onTextEdit: (segmentId: number, newText: string) => void;
+  /** nv 편집 핸들러 */
+  onNvEdit?: (segmentId: number, nv: string[]) => void;
+  /** deid 편집 핸들러 */
+  onDeidEdit?: (segmentId: number, deid: Record<string, string>) => void;
   /** 화자 변경 핸들러 */
   onSpeakerChange: (updates: {
     speakerChanges: Record<number, number>;
@@ -65,12 +71,15 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       isReadOnly,
       isEditing,
       isAnonymized,
+      showDeid = false,
       enableTimestampFeatures,
       currentSegmentIndex,
       activeSegmentRef,
       transcriptEndRef,
       onSeekTo,
       onTextEdit,
+      onNvEdit,
+      onDeidEdit,
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
@@ -130,6 +139,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         }
                         isEditable={isEditing && !isReadOnly}
                         isAnonymized={isAnonymized}
+                        showDeid={showDeid}
                         sttModel={transcribe?.stt_model}
                         segmentRef={
                           enableTimestampFeatures &&
@@ -139,6 +149,8 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         }
                         onClick={onSeekTo}
                         onTextEdit={isReadOnly ? undefined : onTextEdit}
+                        onNvEdit={isReadOnly ? undefined : onNvEdit}
+                        onDeidEdit={isReadOnly ? undefined : onDeidEdit}
                         showTimestamp={enableTimestampFeatures}
                         speakerUtteranceIndex={speakerUtteranceIndex}
                         allSegments={segments}

@@ -208,12 +208,13 @@ export const Select: React.FC<SelectProps> = ({
         aria-expanded={isOpen}
         className={cn(
           'flex w-full items-center justify-between gap-2',
-          'border-default rounded-md bg-surface px-3 py-2',
+          'rounded-md bg-grey-10 px-3 py-2',
           'typo-sm transition-default text-fg',
           'lg:hover:border-primary-subtle',
           'focus-default',
           'disabled:disabled-default',
-          isOpen && 'border-primary'
+          isOpen && 'border-green-80',
+          'border-default'
         )}
       >
         <span
