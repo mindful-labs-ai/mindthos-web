@@ -132,7 +132,10 @@ export function applyDeidStyling(
       const deidKey = match[1];
       const label = deid[deidKey] || deidKey;
       parts.push(
-        <span key={`deid-${keyIdx++}`} className="font-headline text-orange-100">
+        <span
+          key={`deid-${keyIdx++}`}
+          className="font-headline text-orange-100"
+        >
           {label}
         </span>
       );

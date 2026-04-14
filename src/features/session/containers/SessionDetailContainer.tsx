@@ -212,19 +212,15 @@ export const SessionDetailContainer: React.FC = () => {
   );
 
   const userIdForDeid = useAuthStore((s) => s.userId);
-  const {
-    showDeid,
-    isDeidApplied,
-    handleDeidentify,
-    deidModal,
-  } = useDeidentification({
-    sessionId,
-    userId: userIdForDeid ? Number(userIdForDeid) : undefined,
-    segments: rawSegments,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionQueryKey });
-    },
-  });
+  const { showDeid, isDeidApplied, handleDeidentify, deidModal } =
+    useDeidentification({
+      sessionId,
+      userId: userIdForDeid ? Number(userIdForDeid) : undefined,
+      segments: rawSegments,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+      },
+    });
 
   const transcribeContents = transcribe?.contents;
   const transcribedText = React.useMemo(() => {

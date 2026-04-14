@@ -78,10 +78,7 @@ export function useTranscriptCopy({
           }
 
           // 레거시 {%X%내용%} 또는 {%X%} 형태 처리
-          cleanedText = cleanedText.replace(
-            /\{%[SAEO]%([^%]+)%\}/g,
-            '($1)'
-          );
+          cleanedText = cleanedText.replace(/\{%[SAEO]%([^%]+)%\}/g, '($1)');
           cleanedText = cleanedText.replace(/\{%S%\}/g, '(침묵)');
           cleanedText = cleanedText.replace(/\{%O%\}/g, '(겹침)');
           cleanedText = cleanedText.replace(/\{%[AE]%\}/g, '');

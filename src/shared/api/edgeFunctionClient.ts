@@ -49,6 +49,11 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     CHECK_USER_EXISTS: 'auth/check-user-exists',
     ACCOUNT_DELETE: 'auth/account-delete',
     RESEND_VERIFICATION: 'auth/resend-verification',
+    PHONE_VERIFICATION: {
+      STATUS: 'auth/phone-verification/status',
+      REQUEST: 'auth/phone-verification/request',
+      VERIFY: 'auth/phone-verification/verify',
+    },
   },
   // 약관 관련
   TERMS: {

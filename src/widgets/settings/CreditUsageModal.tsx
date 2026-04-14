@@ -67,7 +67,10 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     }
 
     if (memo.includes('session_creation')) {
-      if (metadata.stt_model === 'gemini-3' || metadata.stt_model === 'advanced') {
+      if (
+        metadata.stt_model === 'gemini-3' ||
+        metadata.stt_model === 'advanced'
+      ) {
         return '고급축어록';
       }
       if (metadata.stt_model === 'whisper' || metadata.stt_model === 'basic') {

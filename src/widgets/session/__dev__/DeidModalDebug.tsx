@@ -42,9 +42,7 @@ export const DeidModalDebug: React.FC = () => {
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
       }}
     >
-      <span style={{ fontWeight: 700, marginBottom: 4 }}>
-        Deid Modal Debug
-      </span>
+      <span style={{ fontWeight: 700, marginBottom: 4 }}>Deid Modal Debug</span>
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {(['confirm', 'loading', 'complete', 'error'] as DeidModalPhase[]).map(
           (p) => (

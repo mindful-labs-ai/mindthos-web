@@ -61,6 +61,7 @@ export const GlobalModalContainer = () => {
   const isMobileView = isMobile || isTablet;
   const isGenogramRoute = location.pathname.includes(ROUTES.GENOGRAM);
   const isTermsAgreementRoute = location.pathname === ROUTES.TERMS_AGREEMENT;
+  const isUserVerifyRoute = location.pathname === ROUTES.USER_VERIFY;
   const isPaymentRoute = location.pathname.startsWith('/payment');
 
   // 모달 스토어에서 상태와 액션 가져오기
@@ -171,8 +172,8 @@ export const GlobalModalContainer = () => {
   // Portal을 사용하여 body에 직접 렌더링
   return createPortal(
     <>
-      {/* 온보딩 관련 모달 - 약관 동의/결제 페이지에서는 숨김 */}
-      {!isTermsAgreementRoute && !isPaymentRoute && (
+      {/* 온보딩 관련 모달 - 약관 동의/회원가입/결제 페이지에서는 숨김 */}
+      {!isTermsAgreementRoute && !isUserVerifyRoute && !isPaymentRoute && (
         <>
           <QuestMissionModal />
           <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
@@ -180,10 +181,11 @@ export const GlobalModalContainer = () => {
         </>
       )}
 
-      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram/약관 동의 라우트에서는 숨김 */}
+      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram/약관 동의/회원가입 라우트에서는 숨김 */}
       {!isMobileView &&
         !isGenogramRoute &&
         !isTermsAgreementRoute &&
+        !isUserVerifyRoute &&
         !isPaymentRoute && (
           <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
         )}

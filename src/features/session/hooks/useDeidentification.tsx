@@ -39,9 +39,8 @@ export function useDeidentification({
 
   const isDeidApplied = useMemo(
     () =>
-      segments?.some(
-        (seg) => seg.deid && Object.keys(seg.deid).length > 0
-      ) ?? false,
+      segments?.some((seg) => seg.deid && Object.keys(seg.deid).length > 0) ??
+      false,
     [segments]
   );
 

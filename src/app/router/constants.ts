@@ -6,6 +6,7 @@ export const ROUTES = {
   AUTH: '/auth',
   AUTH_CALLBACK: '/auth/callback',
   EMAIL_VERIFICATION: '/auth/verify-email',
+  USER_VERIFY: '/user-verify',
   TERMS: '/terms',
   TERMS_AGREEMENT: '/terms-agreement',
   CLIENTS: '/clients',
