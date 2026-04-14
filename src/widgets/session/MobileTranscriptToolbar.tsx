@@ -106,7 +106,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                             !hasActivatedDeid
                               ? 'border-green-80 text-green-80 lg:hover:opacity-80'
                               : showDeid
-                                ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
+                                ? 'border-orange-100 bg-white text-orange-100 lg:hover:opacity-80'
                                 : 'border border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
                           }`}
                           onClick={onDeidentify}
@@ -261,6 +261,10 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                     </div>
                   </Modal>
                 </>
+              ) : hasActivatedDeid ? (
+                <span className="rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
+                  비식별화 되어 있는 항목은 주황색으로 표시됩니다.
+                </span>
               ) : null /* 편집 모드: 버튼 숨기되 wrapper 유지 */
             }
           </div>

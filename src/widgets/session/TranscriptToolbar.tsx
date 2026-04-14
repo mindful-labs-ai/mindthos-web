@@ -150,6 +150,11 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
             </Badge>
           ) : isEditing ? (
             <>
+              {hasActivatedDeid && (
+                <span className="mr-2 rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
+                  비식별화 되어 있는 항목은 주황색으로 표시됩니다.{' '}
+                </span>
+              )}
               <button
                 type="button"
                 className="rounded-lg bg-primary px-4 py-2 text-m font-medium text-primary-fg transition-colors lg:hover:opacity-80"
@@ -191,7 +196,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                     !hasActivatedDeid
                       ? 'border-green-80 text-green-80 lg:hover:opacity-80'
                       : showDeid
-                        ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
+                        ? 'border-orange-100 bg-white text-orange-100 lg:hover:opacity-80'
                         : 'border border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
                   }`}
                   onClick={onDeidentify}

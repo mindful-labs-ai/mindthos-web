@@ -74,6 +74,8 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
     REGISTER: 'coupons/register',
   },
+  // 비식별화
+  DEID: 'deid',
   // 공지사항
   NOTICE: {
     LIST: 'notice/list',

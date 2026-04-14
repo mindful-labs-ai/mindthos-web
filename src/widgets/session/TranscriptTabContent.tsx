@@ -45,6 +45,10 @@ interface TranscriptTabContentProps {
   onSeekTo: (time: number) => void;
   /** 텍스트 편집 핸들러 */
   onTextEdit: (segmentId: number, newText: string) => void;
+  /** nv 편집 핸들러 */
+  onNvEdit?: (segmentId: number, nv: string[]) => void;
+  /** deid 편집 핸들러 */
+  onDeidEdit?: (segmentId: number, deid: Record<string, string>) => void;
   /** 화자 변경 핸들러 */
   onSpeakerChange: (updates: {
     speakerChanges: Record<number, number>;
@@ -74,6 +78,8 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       transcriptEndRef,
       onSeekTo,
       onTextEdit,
+      onNvEdit,
+      onDeidEdit,
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
@@ -143,6 +149,8 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         }
                         onClick={onSeekTo}
                         onTextEdit={isReadOnly ? undefined : onTextEdit}
+                        onNvEdit={isReadOnly ? undefined : onNvEdit}
+                        onDeidEdit={isReadOnly ? undefined : onDeidEdit}
                         showTimestamp={enableTimestampFeatures}
                         speakerUtteranceIndex={speakerUtteranceIndex}
                         allSegments={segments}

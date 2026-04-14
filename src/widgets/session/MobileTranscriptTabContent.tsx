@@ -30,6 +30,8 @@ interface MobileTranscriptTabContentProps {
   transcriptEndRef?: (node?: Element | null) => void;
   onSeekTo: (time: number) => void;
   onTextEdit: (segmentId: number, newText: string) => void;
+  onNvEdit?: (segmentId: number, nv: string[]) => void;
+  onDeidEdit?: (segmentId: number, deid: Record<string, string>) => void;
   onSpeakerChange: (updates: {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
@@ -56,6 +58,8 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       transcriptEndRef,
       onSeekTo,
       onTextEdit,
+      onNvEdit,
+      onDeidEdit,
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
@@ -125,6 +129,8 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         }
                         onClick={onSeekTo}
                         onTextEdit={isReadOnly ? undefined : onTextEdit}
+                        onNvEdit={isReadOnly ? undefined : onNvEdit}
+                        onDeidEdit={isReadOnly ? undefined : onDeidEdit}
                         showTimestamp={enableTimestampFeatures}
                         speakerUtteranceIndex={speakerUtteranceIndex}
                         allSegments={segments}

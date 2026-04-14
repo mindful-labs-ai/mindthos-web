@@ -132,7 +132,11 @@ export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
     const key = match[1];
     const entry = nvMap.get(key);
     if (entry) {
-      parts.push({ type: 'nonverbal', content: entry.label, tagType: entry.tagType });
+      parts.push({
+        type: 'nonverbal',
+        content: entry.label,
+        tagType: entry.tagType,
+      });
     }
 
     lastIndex = regex.lastIndex;
@@ -149,9 +153,15 @@ export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
  * 비언어 태그를 제거하고 순수 텍스트만 추출
  */
 export function extractTextOnly(text: string, nv?: string[]): string {
-  const parts = nv && nv.length > 0
-    ? parseNvTagText(text, nv)
-    : parseNonverbalText(text);
+  // 먼저 ⟪nv:KEY⟫, ⟪deid:KEY|원본⟫ 태그를 제거/치환
+  const cleaned = text
+    .replace(/⟪nv:[^⟫]+⟫/g, '')
+    .replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1');
+
+  const parts =
+    nv && nv.length > 0
+      ? parseNvTagText(cleaned, nv)
+      : parseNonverbalText(cleaned);
   return parts
     .filter((part) => part.type === 'text')
     .map((part) => part.content)

@@ -18,7 +18,8 @@ interface UseTranscriptCopyReturn {
   handleCopyTranscript: (
     segments: TranscribeSegment[],
     speakers: Speaker[],
-    isAnonymized: boolean
+    isAnonymized: boolean,
+    showDeid?: boolean
   ) => Promise<void>;
   /**
    * 직접 입력 텍스트를 클립보드에 복사
@@ -34,7 +35,8 @@ export function useTranscriptCopy({
   const handleCopyTranscript = async (
     segments: TranscribeSegment[],
     speakers: Speaker[],
-    isAnonymized: boolean
+    isAnonymized: boolean,
+    showDeid = false
   ) => {
     if (isReadOnly) {
       toast({
@@ -84,8 +86,16 @@ export function useTranscriptCopy({
           cleanedText = cleanedText.replace(/\{%O%\}/g, '(겹침)');
           cleanedText = cleanedText.replace(/\{%[AE]%\}/g, '');
 
-          // 비식별화 태그: 원본 텍스트로 치환
-          cleanedText = cleanedText.replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1');
+          // 비식별화 태그: showDeid ON이면 라벨로, OFF면 원본으로 치환
+          if (showDeid && segment.deid) {
+            const deidMap = segment.deid;
+            cleanedText = cleanedText.replace(
+              /⟪deid:(\w+)\|([^⟫]+)⟫/g,
+              (_, key) => `[${deidMap[key] || key}]`
+            );
+          } else {
+            cleanedText = cleanedText.replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1');
+          }
 
           // 익명화 모드일 경우 화자 정보 제외
           if (isAnonymized) {
