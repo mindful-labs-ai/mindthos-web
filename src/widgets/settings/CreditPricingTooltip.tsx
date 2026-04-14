@@ -99,6 +99,14 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
                 <Text className="typo-xs font-emphasize text-fg">50크레딧</Text>
               </div>
             </div>
+            <div className="flex gap-2">
+              <Text className="typo-xs text-fg">가계도 보고서</Text>
+              <div>
+                <Text className="typo-xs font-emphasize text-fg">
+                  <del>100</del> 10크레딧
+                </Text>
+              </div>
+            </div>
           </div>
         </div>
 

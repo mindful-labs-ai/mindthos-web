@@ -24,7 +24,7 @@ export function SeminarPromptStep() {
         <img
           src="/genogram/genogram-seminar.png"
           alt="가계도 세미나 안내"
-          className="border-default w-full rounded-2xl object-cover transition-opacity hover:opacity-90"
+          className="border-default w-full rounded-2xl object-cover transition-opacity lg:hover:opacity-90"
         />
       </button>
 

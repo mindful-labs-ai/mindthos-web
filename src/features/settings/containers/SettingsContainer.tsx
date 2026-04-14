@@ -14,6 +14,7 @@ import {
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
 import { billingService } from '@/shared/api/supabase/billingQueries';
+import { BADGE_ICON_MAP } from '@/shared/constants/badgeIcons';
 import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import {
   MixpanelError,
@@ -22,6 +23,11 @@ import {
 import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
+  useUserAccesses,
+  type UserAccess,
+} from '@/shared/hooks/useFeatureAccess';
+import {
+  ChevronRightIcon,
   CouponIcon,
   SettingPageEmailIcon,
   SettingPageLocationIcon,
@@ -36,6 +42,7 @@ import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { CardRegistrationModal } from '@/widgets/payment/CardRegistrationModal';
+import { BadgeDetailModal } from '@/widgets/settings/BadgeDetailModal';
 import { CancelSubscriptionModal } from '@/widgets/settings/CancelSubscriptionModal';
 import { CardInfo } from '@/widgets/settings/CardInfo';
 import { CreditDisplay } from '@/widgets/settings/CreditDisplay';
@@ -60,6 +67,10 @@ export const SettingsContainer: React.FC = () => {
 
   const { creditInfo } = useCreditInfo();
   const { cardInfo } = useCardInfo();
+  const { accesses: badges } = useUserAccesses();
+  const [selectedBadge, setSelectedBadge] = React.useState<UserAccess | null>(
+    null
+  );
 
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
@@ -91,6 +102,7 @@ export const SettingsContainer: React.FC = () => {
 
   const handleOpenNoticeList = () => {
     trackEvent(MixpanelEvent.NoticeListView);
+    trackEvent(MixpanelEvent.SettingsSectionChange, { section: 'noticeList' });
     setSelectedNoticeId(null);
     setView('noticeList');
     scrollToTop();
@@ -98,12 +110,16 @@ export const SettingsContainer: React.FC = () => {
 
   const handleSelectNotice = (noticeId: string) => {
     trackEvent(MixpanelEvent.NoticeDetailView, { notice_id: noticeId });
+    trackEvent(MixpanelEvent.SettingsSectionChange, {
+      section: 'noticeDetail',
+    });
     setSelectedNoticeId(noticeId);
     setView('noticeDetail');
     scrollToTop();
   };
 
   const handleBackToList = () => {
+    trackEvent(MixpanelEvent.SettingsSectionChange, { section: 'noticeList' });
     setSelectedNoticeId(null);
     setView('noticeList');
     scrollToTop();
@@ -256,34 +272,56 @@ export const SettingsContainer: React.FC = () => {
     ) : null;
 
   const userInfoContent = (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <SettingPageNameIcon
-          size={isMobile ? 16 : 20}
-          className="text-grey-70"
-        />
-        <Text className="text-m font-emphasize md:text-xl">
-          {userName || '이름 없음'}
-        </Text>
+    <div className="flex items-end justify-between">
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <SettingPageNameIcon
+            size={isMobile ? 16 : 20}
+            className="text-grey-70"
+          />
+          <Text className="text-m font-emphasize md:text-xl">
+            {userName || '이름 없음'}
+          </Text>
+        </div>
+        <div className="flex items-center gap-3">
+          <SettingPageEmailIcon
+            size={isMobile ? 16 : 20}
+            className="text-grey-70"
+          />
+          <Text className="text-m font-emphasize md:text-xl">
+            {user?.email || '이메일 없음'}
+          </Text>
+        </div>
+        <div className="flex items-center gap-3">
+          <SettingPageLocationIcon
+            size={isMobile ? 16 : 20}
+            className="text-grey-70"
+          />
+          <Text className="text-m font-emphasize md:text-xl">
+            {organization || '소속 기관 없음'}
+          </Text>
+        </div>
       </div>
-      <div className="flex items-center gap-3">
-        <SettingPageEmailIcon
-          size={isMobile ? 16 : 20}
-          className="text-grey-70"
-        />
-        <Text className="text-m font-emphasize md:text-xl">
-          {user?.email || '이메일 없음'}
-        </Text>
-      </div>
-      <div className="flex items-center gap-3">
-        <SettingPageLocationIcon
-          size={isMobile ? 16 : 20}
-          className="text-grey-70"
-        />
-        <Text className="text-m font-emphasize md:text-xl">
-          {organization || '소속 기관 없음'}
-        </Text>
-      </div>
+
+      {badges.length > 0 && (
+        <div className="flex gap-2">
+          {badges.map((badge) => {
+            const Icon = BADGE_ICON_MAP[badge.type];
+            if (!Icon) return null;
+            return (
+              <button
+                key={badge.id}
+                type="button"
+                onClick={() => setSelectedBadge(badge)}
+                className="transition-transform lg:hover:scale-105"
+                aria-label={`${badge.name} 뱃지 상세 보기`}
+              >
+                <Icon size={isMobile ? 48 : 60} />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 
@@ -341,7 +379,7 @@ export const SettingsContainer: React.FC = () => {
             tone="neutral"
             size="sm"
             onClick={handleCancelSubscription}
-            className="text-fg-muted hover:text-danger"
+            className="text-fg-muted lg:hover:text-danger"
           >
             구독 해지
           </Button>
@@ -362,7 +400,7 @@ export const SettingsContainer: React.FC = () => {
         className={
           isMobileView
             ? 'flex flex-col gap-4'
-            : 'flex w-full justify-center gap-6 px-8'
+            : 'flex w-full justify-center gap-6 overflow-x-clip px-8'
         }
       >
         <div
@@ -401,7 +439,7 @@ export const SettingsContainer: React.FC = () => {
           <>
             <button
               type="button"
-              className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+              className="rounded-lg p-2 text-grey-60 transition-colors lg:hover:bg-grey-20 lg:hover:text-grey-80"
               onClick={() => setIsUsageMenuOpen(true)}
             >
               <svg
@@ -430,18 +468,20 @@ export const SettingsContainer: React.FC = () => {
                     handleOpenCouponModal();
                     setIsUsageMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                 >
-                  <span className="text-m text-grey-100">보유 중인 쿠폰</span>
+                  <span className="text-l text-grey-100">보유 중인 쿠폰</span>
+                  <ChevronRightIcon size={20} className="text-grey-70" />
                 </button>
                 <button
                   onClick={() => {
                     handleCreditUsageLog();
                     setIsUsageMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                  className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                 >
-                  <span className="text-m text-grey-100">크레딧 사용 내역</span>
+                  <span className="text-l text-grey-100">크레딧 사용 내역</span>
+                  <ChevronRightIcon size={20} className="text-grey-70" />
                 </button>
               </div>
             </Modal>
@@ -451,14 +491,14 @@ export const SettingsContainer: React.FC = () => {
             <button
               type="button"
               onClick={handleOpenCouponModal}
-              className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+              className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
             >
               <CouponIcon /> 보유 중인 쿠폰
             </button>
             <button
               type="button"
               onClick={handleCreditUsageLog}
-              className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+              className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
             >
               크레딧 사용 내역
             </button>
@@ -475,14 +515,14 @@ export const SettingsContainer: React.FC = () => {
           <button
             type="button"
             onClick={handleOpenCouponModal}
-            className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+            className="flex items-center gap-1 rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
           >
             <CouponIcon /> 보유 중인 쿠폰
           </button>
           <button
             type="button"
             onClick={handleCreditUsageLog}
-            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors hover:bg-grey-10"
+            className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
           >
             크레딧 사용 내역
           </button>
@@ -605,7 +645,7 @@ export const SettingsContainer: React.FC = () => {
         <button
           type="button"
           onClick={handleEditInfo}
-          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
         >
           정보 수정
         </button>
@@ -623,7 +663,7 @@ export const SettingsContainer: React.FC = () => {
         <button
           type="button"
           onClick={handleOpenNoticeList}
-          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+          className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
         >
           공지사항
         </button>
@@ -632,7 +672,7 @@ export const SettingsContainer: React.FC = () => {
           to={termsTo}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+          className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
         >
           서비스 약관
         </Link>
@@ -640,7 +680,7 @@ export const SettingsContainer: React.FC = () => {
         <button
           type="button"
           onClick={handleLogoutClick}
-          className="font-medium text-grey-60 transition-colors hover:text-grey-80"
+          className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
         >
           로그아웃
         </button>
@@ -650,7 +690,7 @@ export const SettingsContainer: React.FC = () => {
             <button
               type="button"
               onClick={handleDeleteAccount}
-              className="font-medium text-grey-60 transition-colors hover:text-red-80"
+              className="font-medium text-grey-60 transition-colors lg:hover:text-red-80"
             >
               계정 탈퇴
             </button>
@@ -669,6 +709,15 @@ export const SettingsContainer: React.FC = () => {
       {cardRegistrationModal}
       {creditUsageModal}
       {creditRenewalModal}
+      {selectedBadge && (
+        <BadgeDetailModal
+          open={!!selectedBadge}
+          onOpenChange={(open) => {
+            if (!open) setSelectedBadge(null);
+          }}
+          access={selectedBadge}
+        />
+      )}
     </>
   );
 

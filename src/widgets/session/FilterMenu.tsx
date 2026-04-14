@@ -16,6 +16,8 @@ interface FilterMenuProps {
   onClientChange: (clientIds: string[]) => void;
   onReset: () => void;
   initialView?: 'main' | 'sort' | 'client'; // 초기 뷰 설정
+  showCtaButton?: boolean; // fullScreen용 하단 CTA
+  onCtaClick?: () => void; // CTA 클릭 시 (모달 닫기)
 }
 
 type MenuView = 'main' | 'sort' | 'client';
@@ -29,6 +31,8 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
   onClientChange,
   onReset,
   initialView = 'main',
+  showCtaButton = false,
+  onCtaClick,
 }) => {
   const [currentView, setCurrentView] = React.useState<MenuView>(initialView);
 
@@ -77,6 +81,8 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
         }}
         onBack={() => setCurrentView('main')}
         showBackButton={showBackButton}
+        showCtaButton={showCtaButton}
+        onCtaClick={onCtaClick}
       />
     );
   }
@@ -88,7 +94,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
       <button
         type="button"
         onClick={() => setCurrentView('sort')}
-        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-surface-contrast"
+        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left lg:hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
           <span className="typo-xs text-fg-muted">정렬</span>
@@ -113,7 +119,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
       <button
         type="button"
         onClick={() => setCurrentView('client')}
-        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left hover:bg-surface-contrast"
+        className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left lg:hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
           <span className="typo-xs text-fg-muted">클라이언트</span>
@@ -144,7 +150,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
           trackEvent(MixpanelEvent.SessionFilterReset);
           onReset();
         }}
-        className="typo-sm w-full rounded-lg px-4 py-2 font-medium text-fg hover:bg-surface-contrast"
+        className="typo-sm w-full rounded-lg px-4 py-2 font-medium text-fg lg:hover:bg-surface-contrast"
       >
         초기화
       </button>

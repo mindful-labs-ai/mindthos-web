@@ -79,7 +79,7 @@ export const Disabled: Story = {
 export const OnIcon: Story = {
   render: () => (
     <Tooltip content="Help information">
-      <button className="inline-flex items-center justify-center rounded-full p-1 hover:bg-surface-contrast">
+      <button className="inline-flex items-center justify-center rounded-full p-1 lg:hover:bg-surface-contrast">
         <svg
           className="h-5 w-5 text-fg-muted"
           fill="none"
@@ -104,7 +104,7 @@ export const InContext: Story = {
       <div className="flex items-center justify-between">
         <h3 className="typo-l font-emphasize text-fg">Settings</h3>
         <Tooltip content="Click to learn more about settings">
-          <button className="rounded p-1 hover:bg-surface-contrast">
+          <button className="rounded p-1 lg:hover:bg-surface-contrast">
             <svg
               className="h-5 w-5 text-fg-muted"
               fill="none"

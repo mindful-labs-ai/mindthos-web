@@ -19,6 +19,8 @@ import { useGenogramCapture } from '@/features/report/hooks/useGenogramCapture';
 import { shortReport } from '@/features/report/poc/sampleData';
 import { addPageNumbers } from '@/features/report/utils/addPageNumbers';
 import type { GenogramPageHandle } from '@/genogram';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 import { GenogramReportPDF } from './GenogramReportPDF';
 
@@ -92,6 +94,13 @@ export function ReportPreviewModal({
     };
   }, [open, processReport, genogramRef]);
 
+  // 모달 오픈 트래킹
+  useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.GenogramReportPreviewOpen);
+    }
+  }, [open]);
+
   // ESC 키로 닫기
   useEffect(() => {
     if (!open) return;
@@ -148,14 +157,14 @@ export function ReportPreviewModal({
               type="button"
               onClick={handleDownload}
               disabled={!pdfUrl || loading}
-              className="typo-sm hover:bg-primary-400 disabled:disabled-default flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
+              className="typo-sm lg:hover:bg-primary-400 disabled:disabled-default flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
             >
               <Download className="h-4 w-4" />
               PDF 다운로드
             </button>
             <button
               type="button"
-              className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+              className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
               onClick={() => onOpenChange(false)}
             >
               <X className="h-5 w-5" />

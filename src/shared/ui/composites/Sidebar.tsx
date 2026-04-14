@@ -108,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               'disabled:disabled-default',
               isActive
                 ? 'bg-surface-contrast text-fg'
-                : 'text-fg-muted hover:bg-surface-contrast'
+                : 'text-fg-muted lg:hover:bg-surface-contrast'
             )}
           >
             {item.icon && <span className="flex-shrink-0">{item.icon}</span>}

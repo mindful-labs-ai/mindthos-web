@@ -142,6 +142,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
   const strokeColor = COLORS.stroke;
   const strokeWidth = STROKE_WIDTH_NODE;
   const fsOffset = nodeData.fontSize ?? 0;
+  const fsGrow = Math.max(0, fsOffset);
   const fName = FONT_SIZE_NAME + fsOffset;
   const fDetail = FONT_SIZE_DETAIL + fsOffset;
   const fXXS = FONT_SIZE_XXS + fsOffset;
@@ -713,9 +714,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 상단: 생몰연도 — '-'이 항상 도형 중앙, 좌측에 출생, 우측에 사망 */}
       {(birthYear || deathYear) && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-fg"
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-grey-100"
           style={{
-            bottom: S + 2 + Math.max(0, fsOffset) * 0.8,
+            bottom: S + 2 + fsGrow * 0.8,
             fontSize: fXXS,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
@@ -744,9 +745,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* fallback: birthYear/deathYear 미제공 시 기존 lifeSpanLabel */}
       {!birthYear && !deathYear && lifeSpanLabel && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-fg"
+          className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center text-grey-100"
           style={{
-            bottom: S + 2 + Math.max(0, fsOffset) * 0.8,
+            bottom: S + 2 + fsGrow * 0.8,
             fontSize: fXXS,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
@@ -790,9 +791,9 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 오른쪽: 상세정보 (수직 중앙 고정) */}
       {hasDetail && (
         <div
-          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-normal italic text-fg"
+          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-normal italic text-grey-100"
           style={{
-            left: S + 8 + Math.max(0, fsOffset) * 0.8,
+            left: S + 8 + fsGrow * 0.8,
             color: textColor,
             fontSize: fDetail,
             lineHeight: `${fDetail + 6}px`,
@@ -809,16 +810,16 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 오른쪽 하단: 짧은 메모 (상세정보 아래로 확장) */}
       {shortNote && (
         <div
-          className="absolute whitespace-normal font-normal italic text-fg"
+          className="absolute whitespace-normal font-normal italic text-grey-100"
           style={{
-            left: S + 8 + Math.max(0, fsOffset) * 0.8,
+            left: S + 8 + fsGrow * 0.8,
             top: hasDetail
               ? `calc(50% + ${(detailTexts.length * (fDetail + 6)) / 2 + 4}px)`
               : '50%',
             color: textColor,
             fontSize: fDetail - 2,
-            width: 160 + Math.max(0, fsOffset) * 4,
-            maxWidth: 160 + Math.max(0, fsOffset) * 4,
+            width: 160 + fsGrow * 4,
+            maxWidth: 160 + fsGrow * 4,
             textShadow:
               '-1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 -1px 0 #fff, 0 1px 0 #fff, -1px 0 0 #fff, 1px 0 0 #fff',
           }}
@@ -829,10 +830,10 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
 
       {/* 아래: 이름 */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-semibold text-fg"
+        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-semibold text-grey-100"
         style={{
           fontSize: fName,
-          top: S + 4 + Math.max(0, fsOffset) * 0.5,
+          top: S + 4 + fsGrow * 0.5,
           textShadow:
             '-2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 0 -2px 0 #fff, 0 2px 0 #fff, -2px 0 0 #fff, 2px 0 0 #fff, -1px -2px 0 #fff, 1px -2px 0 #fff, -1px 2px 0 #fff, 1px 2px 0 #fff, -2px -1px 0 #fff, 2px -1px 0 #fff, -2px 1px 0 #fff, 2px 1px 0 #fff',
         }}

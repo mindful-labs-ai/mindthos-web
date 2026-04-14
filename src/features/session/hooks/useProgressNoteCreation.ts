@@ -6,9 +6,12 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { trackError } from '@/lib/mixpanel';
+import { trackError, trackEvent } from '@/lib/mixpanel';
 import { addProgressNote } from '@/shared/api/supabase/progressNoteQueries';
-import { MixpanelError } from '@/shared/constants/mixpanelEvents';
+import {
+  MixpanelError,
+  MixpanelEvent,
+} from '@/shared/constants/mixpanelEvents';
 import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -246,6 +249,11 @@ export function useProgressNoteCreation({
           sessionId,
           userId,
           templateId,
+        });
+
+        trackEvent(MixpanelEvent.ProgressNoteRegenerateSuccess, {
+          session_id: sessionId,
+          template_id: templateId,
         });
 
         toast({

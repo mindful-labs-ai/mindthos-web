@@ -5,6 +5,9 @@
 
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+
 interface UseTabNavigationOptions {
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -75,6 +78,7 @@ export function useTabNavigation({
         return;
       }
 
+      trackEvent(MixpanelEvent.SessionTabChange, { tab: value });
       setActiveTab(value);
       // 스크롤 초기화 (즉시 강제 리셋)
       if (contentScrollRef.current) {

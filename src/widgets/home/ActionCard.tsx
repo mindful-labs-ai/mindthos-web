@@ -25,7 +25,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
   return (
     <button
       className={cn(
-        'w-full cursor-pointer rounded-2xl border border-grey-30 bg-white px-1 py-4 transition-all',
+        'w-full cursor-pointer rounded-2xl border border-grey-40 bg-white px-1 py-4 transition-all',
         className
       )}
       onClick={handleClick}

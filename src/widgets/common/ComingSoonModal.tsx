@@ -26,7 +26,7 @@ export function ComingSoonModal({
     <Modal open={open} onOpenChange={onOpenChange} className="max-w-[480px]">
       <div className="flex flex-col items-center px-4 py-6">
         {/* 제목 */}
-        <h2 className="typo-2xl font-headline text-fg">출시 예정 기능</h2>
+        <h2 className="typo-xl font-headline text-fg">출시 예정 기능</h2>
 
         {/* 확인 문구 */}
         <p className="typo-l mt-8 text-center font-medium text-fg">
@@ -43,7 +43,7 @@ export function ComingSoonModal({
         {/* 완료 버튼 */}
         <button
           onClick={() => onOpenChange(false)}
-          className="typo-l hover:bg-primary-400 mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2 font-medium text-primary-fg transition-colors"
+          className="typo-l lg:hover:bg-primary-400 mt-10 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-2 font-medium text-primary-fg transition-colors"
         >
           확인
         </button>

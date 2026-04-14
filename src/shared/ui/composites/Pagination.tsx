@@ -151,9 +151,9 @@ export const Pagination: React.FC<PaginationProps> = ({
             'flex h-9 w-9 items-center justify-center rounded-md',
             'border-default bg-surface text-fg',
             'transition-default',
-            'hover:bg-surface-contrast',
+            'lg:hover:bg-surface-contrast',
             'focus-default',
-            'disabled:disabled-default disabled:hover:bg-surface'
+            'disabled:disabled-default disabled:lg:hover:bg-surface'
           )}
         >
           <ChevronsLeftIcon />
@@ -169,9 +169,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           'flex h-9 w-9 items-center justify-center rounded-md',
           'border-default bg-surface text-fg',
           'transition-default',
-          'hover:bg-surface-contrast',
+          'lg:hover:bg-surface-contrast',
           'focus-default',
-          'disabled:disabled-default disabled:hover:bg-surface'
+          'disabled:disabled-default disabled:lg:hover:bg-surface'
         )}
       >
         <ChevronLeftIcon />
@@ -208,7 +208,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               'disabled:disabled-default',
               isCurrent
                 ? 'border-primary bg-primary text-primary-fg'
-                : 'border-default bg-surface text-fg hover:bg-surface-contrast disabled:hover:bg-surface'
+                : 'border-default bg-surface text-fg lg:hover:bg-surface-contrast disabled:lg:hover:bg-surface'
             )}
           >
             {pageNumber}
@@ -225,9 +225,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           'flex h-9 w-9 items-center justify-center rounded-md',
           'border-default bg-surface text-fg',
           'transition-default',
-          'hover:bg-surface-contrast',
+          'lg:hover:bg-surface-contrast',
           'focus-default',
-          'disabled:disabled-default disabled:hover:bg-surface'
+          'disabled:disabled-default disabled:lg:hover:bg-surface'
         )}
       >
         <ChevronRightIcon />
@@ -243,9 +243,9 @@ export const Pagination: React.FC<PaginationProps> = ({
             'flex h-9 w-9 items-center justify-center rounded-md',
             'border-default bg-surface text-fg',
             'transition-default',
-            'hover:bg-surface-contrast',
+            'lg:hover:bg-surface-contrast',
             'focus-default',
-            'disabled:disabled-default disabled:hover:bg-surface'
+            'disabled:disabled-default disabled:lg:hover:bg-surface'
           )}
         >
           <ChevronsRightIcon />

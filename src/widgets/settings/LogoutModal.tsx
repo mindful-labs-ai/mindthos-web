@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -26,18 +28,21 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
   onOpenChange,
   onConfirm,
 }) => {
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.LogoutConfirmView);
+    }
+  }, [open]);
+
   return (
-    <Modal
-      open={open}
-      onOpenChange={onOpenChange}
-      title="로그아웃"
-      description="정말 로그아웃 하시겠습니까?"
-      className="max-w-sm text-left"
-    >
-      <div className="space-y-4">
-        <Text className="typo-sm text-fg-muted">
-          로그아웃하면 다시 로그인해야 서비스를 이용할 수 있습니다.
-        </Text>
+    <Modal open={open} onOpenChange={onOpenChange} className="max-w-sm">
+      <div className="flex flex-col gap-6 p-6">
+        <div>
+          <Text className="typo-xl font-emphasize">로그아웃</Text>
+          <Text className="typo-sm mt-2 text-fg-muted">
+            로그아웃하면 다시 로그인해야 서비스를 이용할 수 있습니다.
+          </Text>
+        </div>
 
         <div className="flex gap-3">
           <Button

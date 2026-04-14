@@ -18,18 +18,18 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
     <div className="flex gap-3 sm:flex-row md:flex-col lg:flex-row">
       <button
         type="button"
-        onClick={() => setSttModel('whisper')}
+        onClick={() => setSttModel('basic')}
         className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
-          sttModel === 'whisper'
+          sttModel === 'basic'
             ? 'border-primary'
-            : 'border-border bg-bg hover:border-fg-muted'
+            : 'border-border bg-bg lg:hover:border-fg-muted'
         }`}
       >
         <div className="flex h-full flex-col justify-start">
           <div className="flex flex-1 flex-col justify-stretch text-left">
             <Text
               className={`mb-1 font-emphasize ${
-                sttModel === 'whisper' ? 'text-primary' : 'text-fg'
+                sttModel === 'basic' ? 'text-primary' : 'text-fg'
               }`}
             >
               일반 축어록
@@ -65,12 +65,12 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
               </div>
               <div
                 className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                  sttModel === 'whisper'
+                  sttModel === 'basic'
                     ? 'border-primary bg-primary'
                     : 'border-border bg-bg'
                 }`}
               >
-                {sttModel === 'whisper' && (
+                {sttModel === 'basic' && (
                   <svg
                     width="12"
                     height="12"
@@ -96,11 +96,11 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
       {/* 고급 축어록 (Gemini) */}
       <button
         type="button"
-        onClick={() => setSttModel('gemini-3')}
+        onClick={() => setSttModel('advanced')}
         className={`h-[133px] w-[182px] flex-1 rounded-lg border-2 p-4 transition-all ${
-          sttModel === 'gemini-3'
+          sttModel === 'advanced'
             ? 'border-primary'
-            : 'border-border bg-bg hover:border-fg-muted'
+            : 'border-border bg-bg lg:hover:border-fg-muted'
         }`}
       >
         <div className="flex h-full flex-col justify-start">
@@ -108,7 +108,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
             <div className="mb-1 flex items-start justify-between">
               <Text
                 className={`font-emphasize ${
-                  sttModel === 'gemini-3' ? 'text-primary' : 'text-fg'
+                  sttModel === 'advanced' ? 'text-primary' : 'text-fg'
                 }`}
               >
                 고급 축어록
@@ -157,7 +157,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       }
                     }}
                     aria-label="프리미엄 모델 정보"
-                    className="ml-1 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors hover:bg-surface-strong hover:text-fg"
+                    className="ml-1 flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-strong text-fg-muted transition-colors lg:hover:bg-surface-strong lg:hover:text-fg"
                   >
                     <svg
                       width="12"
@@ -206,12 +206,12 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
               </div>
               <div
                 className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                  sttModel === 'gemini-3'
+                  sttModel === 'advanced'
                     ? 'border-primary bg-primary'
                     : 'border-border bg-bg'
                 }`}
               >
-                {sttModel === 'gemini-3' && (
+                {sttModel === 'advanced' && (
                   <svg
                     width="12"
                     height="12"

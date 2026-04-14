@@ -2,8 +2,8 @@ import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { ROUTES } from '@/app/router/constants';
-import { ChevronLeftIcon, PenIcon } from '@/shared/icons';
+import { PenIcon } from '@/shared/icons';
+import { BackButton } from '@/shared/ui';
 import { formatDuration, formatKoreanDateTime } from '@/shared/utils/date';
 
 export interface EditActions {
@@ -128,104 +128,86 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
     }
   };
 
-  // compact-nav: 모바일 상단 고정 헤더 (뒤로가기 + 제목 텍스트)
+  // compact-nav: 모바일 상단 고정 헤더 (뒤로가기 + 제목 편집 + 액션)
   if (variant === 'compact-nav') {
     const actions = editActions;
     return (
       <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 bg-white px-4 py-2.5 md:gap-7">
-        <button
-          type="button"
-          onClick={() => navigate(ROUTES.SESSIONS)}
-          className="flex size-8 flex-shrink-0 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-70"
-          aria-label="상담 기록 목록으로"
-        >
-          <ChevronLeftIcon size={24} />
-        </button>
-        <h1 className="min-w-0 flex-1 truncate text-l font-medium text-grey-80">
-          {title}
-        </h1>
-        {actions && (
+        <BackButton onClick={() => navigate(-1)} />
+        {isEditing ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editedTitle}
+            onChange={(e) => setEditedTitle(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="min-w-0 flex-1 rounded-lg border border-border bg-bg px-2 py-1 text-m font-medium text-grey-100 focus:border-green-80 focus:outline-none"
+            disabled={isSaving}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onTitleUpdate ? startEditing : undefined}
+            className="flex min-w-0 flex-1 items-center gap-1.5"
+          >
+            <h1 className="min-w-0 truncate text-m font-medium text-grey-100">
+              {title}
+            </h1>
+            {onTitleUpdate && (
+              <PenIcon size={14} className="flex-shrink-0 text-grey-60" />
+            )}
+          </button>
+        )}
+        {isEditing ? (
           <div className="flex flex-shrink-0 items-center gap-2">
             <button
               type="button"
-              onClick={actions.onSave}
-              disabled={actions.isSaving}
-              className="typo-sm hover:bg-primary-600 rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-fg disabled:opacity-50"
+              onClick={handleSave}
+              disabled={isSaving}
+              className="typo-sm rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-fg disabled:opacity-50"
             >
-              {actions.isSaving ? '저장 중...' : actions.label}
+              {isSaving ? '저장 중...' : '완료'}
             </button>
             <button
               type="button"
-              onClick={actions.onCancel}
-              disabled={actions.isSaving}
-              className="hover:bg-surface-hover typo-sm rounded-lg bg-surface px-3 py-1.5 font-medium text-fg disabled:opacity-50"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="typo-sm rounded-lg bg-surface px-3 py-1.5 font-medium text-fg disabled:opacity-50"
             >
               취소
             </button>
           </div>
+        ) : (
+          actions && (
+            <div className="flex flex-shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={actions.onSave}
+                disabled={actions.isSaving}
+                className="typo-sm rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-fg disabled:opacity-50"
+              >
+                {actions.isSaving ? '저장 중...' : actions.label}
+              </button>
+              <button
+                type="button"
+                onClick={actions.onCancel}
+                disabled={actions.isSaving}
+                className="typo-sm rounded-lg bg-surface px-3 py-1.5 font-medium text-fg disabled:opacity-50"
+              >
+                취소
+              </button>
+            </div>
+          )
         )}
       </div>
     );
   }
 
-  // meta-only: 탭 아래 메타 정보 (제목 편집 + 날짜)
-  // 외부 제어 시 완료/취소 버튼은 compact-nav에 표시되므로 여기선 input만
+  // meta-only: 탭 아래 메타 정보 (타임스탬프만, 좌측 정렬)
   if (variant === 'meta-only') {
-    const hasExternalControl = !!externalTitleEdit;
     return (
-      <div className="flex items-center gap-2 bg-grey-20 px-6 py-5 md:px-3 md:py-7">
-        <div className="flex w-1/2 min-w-0 items-center gap-2">
-          {isEditing ? (
-            <div className="flex min-w-0 flex-1 items-center gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={editedTitle}
-                onChange={(e) => setEditedTitle(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="focus:ring-primary/20 typo-m min-w-0 flex-1 rounded-lg border border-border bg-bg px-3 py-1.5 font-headline focus:border-primary focus:outline-none focus:ring-2"
-                disabled={isSaving}
-              />
-              {!hasExternalControl && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="typo-sm hover:bg-primary-600 flex-shrink-0 rounded-lg bg-primary px-3 py-1.5 text-primary-fg disabled:opacity-50"
-                  >
-                    {isSaving ? '저장 중...' : '완료'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                    className="hover:bg-surface-hover typo-sm flex-shrink-0 rounded-lg bg-surface px-3 py-1.5 text-fg disabled:opacity-50"
-                  >
-                    취소
-                  </button>
-                </>
-              )}
-            </div>
-          ) : (
-            <>
-              <h2 className="truncate text-l font-headline text-grey-100 md:text-2xl">
-                {title}
-              </h2>
-              {onTitleUpdate && (
-                <button
-                  type="button"
-                  onClick={startEditing}
-                  className="flex-shrink-0 text-fg-muted hover:text-fg"
-                  aria-label="제목 수정"
-                >
-                  <PenIcon size={16} className="text-grey-60" />
-                </button>
-              )}
-            </>
-          )}
-        </div>
-        <span className="w-1/2 truncate text-right text-sm text-grey-70">
+      <div className="bg-grey-20 px-6 py-4 md:px-3 md:py-5">
+        <span className="text-sm text-grey-70">
           {formatKoreanDateTime(new Date(createdAt))}
           {!isHandwritten && duration > 0 && ` ${formatDuration(duration)}`}
         </span>
@@ -253,7 +235,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="typo-sm hover:bg-primary-600 rounded-lg bg-primary px-3 py-1.5 text-primary-fg disabled:opacity-50"
+                className="typo-sm lg:hover:bg-primary-600 rounded-lg bg-primary px-3 py-1.5 text-primary-fg disabled:opacity-50"
               >
                 {isSaving ? '저장 중...' : '완료'}
               </button>
@@ -261,7 +243,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                 type="button"
                 onClick={handleCancel}
                 disabled={isSaving}
-                className="hover:bg-surface-hover typo-sm rounded-lg bg-surface px-3 py-1.5 text-fg disabled:opacity-50"
+                className="lg:hover:bg-surface-hover typo-sm rounded-lg bg-surface px-3 py-1.5 text-fg disabled:opacity-50"
               >
                 취소
               </button>
@@ -273,7 +255,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                 <button
                   type="button"
                   onClick={startEditing}
-                  className="text-fg-muted hover:text-fg"
+                  className="text-fg-muted lg:hover:text-fg"
                   aria-label="제목 수정"
                 >
                   <PenIcon size={16} className="text-grey-60" />

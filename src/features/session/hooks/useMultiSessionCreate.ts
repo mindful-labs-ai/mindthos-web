@@ -111,8 +111,7 @@ export function useMultiSessionCreate({
           // 2. 세션 생성 API
           updateResult(config.fileId, { status: 'creating' });
 
-          const sttModel =
-            config.sttModel === 'whisper' ? 'whisper' : 'gemini-3';
+          const sttModel = config.sttModel;
 
           const response = await createSessionBackground({
             user_id: userId,

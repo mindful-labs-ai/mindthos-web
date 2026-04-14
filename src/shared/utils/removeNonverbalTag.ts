@@ -1,4 +1,4 @@
-// {%...%} 패턴에서 한글 내용만 추출하는 함수
+// {%...%} 및 ⟪nv:...⟫, ⟪deid:...|...⟫ 패턴에서 내용만 추출하는 함수
 export const removeNonverbalTags = (text: string): string => {
   return (
     text
@@ -10,5 +10,9 @@ export const removeNonverbalTags = (text: string): string => {
       // {%S%} 및 (%S%) → 제거 (내용이 없는 경우)
       .replace(/\{%[A-Z]%\}/g, '')
       .replace(/\(%[A-Z]%\)/g, '')
+      // ⟪nv:KEY⟫ → 제거 (신규 비언어 태그)
+      .replace(/⟪nv:[^⟫]+⟫/g, '')
+      // ⟪deid:KEY|원본⟫ → 원본 텍스트 추출 (신규 비식별화 태그)
+      .replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1')
   );
 };

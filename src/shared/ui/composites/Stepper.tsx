@@ -95,7 +95,7 @@ export const Stepper: React.FC<StepperProps> = ({
                     : isCurrent
                       ? 'border-primary bg-surface text-primary'
                       : 'border-border bg-surface text-fg-muted',
-                  isClickableStep && 'cursor-pointer hover:opacity-80',
+                  isClickableStep && 'cursor-pointer lg:hover:opacity-80',
                   !isClickableStep && 'cursor-default'
                 )}
               >

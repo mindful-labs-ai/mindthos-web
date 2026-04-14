@@ -37,13 +37,13 @@ export function GenogramEmptyState({
   };
 
   const desktopButtonStyle =
-    'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-surface px-6 pb-[36px] shadow-sm transition-all hover:border-primary hover:shadow-md disabled:disabled-default';
+    'flex h-[326px] w-[327px] flex-col items-center justify-end gap-2.5 rounded-2xl border border-border bg-surface px-6 pb-[36px] shadow-sm transition-all lg:hover:border-primalg:hover:hover:shadow-md disabled:disabled-default';
 
   const tabletButtonStyle =
-    'flex flex-1 flex-col items-center justify-end gap-2.5 rounded-2xl border border-grey-30 bg-white px-6 pb-6 pt-4 shadow-sm transition-all hover:border-green-80 hover:shadow-md disabled:opacity-50';
+    'flex flex-1 flex-col items-center justify-end gap-2.5 rounded-2xl border border-grey-30 bg-white px-6 pb-6 pt-4 shadow-sm transition-all lg:hover:border-green-lg:hover:hover:shadow-md disabled:opacity-50';
 
   const mobileButtonStyle =
-    'flex h-[203px] w-full flex-col items-center justify-end gap-2.5 rounded-2xl border border-grey-30 bg-white px-6 pb-6 pt-4 shadow-sm transition-all hover:border-green-80 hover:shadow-md disabled:opacity-50';
+    'flex h-[203px] w-full flex-col items-center justify-end gap-2.5 rounded-2xl border border-grey-30 bg-white px-6 pb-6 pt-4 shadow-sm transition-all lg:hover:border-green-lg:hover:hover:shadow-md disabled:opacity-50';
 
   const buttonStyle = isMobile
     ? mobileButtonStyle

@@ -59,7 +59,6 @@ export const ClientDetailContainer: React.FC = () => {
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(
     null
   );
-  const [hasShownDummyToast, setHasShownDummyToast] = React.useState(false);
   const userId = useAuthStore((state) => state.userId);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -120,17 +119,6 @@ export const ClientDetailContainer: React.FC = () => {
       });
     },
   });
-
-  React.useEffect(() => {
-    if (isReadOnly && clientId && !hasShownDummyToast) {
-      toast({
-        title: '읽기 전용',
-        description: '예시에서는 기능이 비활성화됩니다.',
-        duration: 3000,
-      });
-      setHasShownDummyToast(true);
-    }
-  }, [isReadOnly, clientId, hasShownDummyToast, toast]);
 
   const client = React.useMemo(() => {
     if (!clientId) return null;

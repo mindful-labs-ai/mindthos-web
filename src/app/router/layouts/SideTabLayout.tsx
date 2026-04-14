@@ -117,7 +117,7 @@ const MainFlowLayout = () => {
           >
             <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
               <BackButton onClick={() => closeModal('sessionTypeSelect')} />
-              <p className="text-l font-medium text-grey-80">
+              <p className="text-m font-medium text-grey-100">
                 상담 기록 만들기
               </p>
             </div>

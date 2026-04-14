@@ -254,7 +254,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
             e.stopPropagation();
             onClose();
           }}
-          className="pointer-events-auto absolute right-6 top-6 z-spotlight rounded-full bg-surface p-2 text-fg-muted transition-colors hover:bg-surface-contrast hover:text-fg"
+          className="pointer-events-auto absolute right-6 top-6 z-spotlight rounded-full bg-surface p-2 text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
           aria-label="튜토리얼 닫기"
         >
           <XIcon size={20} />

@@ -59,7 +59,7 @@ export const Chip: React.FC<ChipProps> = ({
           aria-label={`Remove ${label}`}
           className={cn(
             'inline-flex items-center justify-center rounded-full',
-            'hover:bg-neutral-active',
+            'lg:hover:bg-neutral-active',
             'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-current',
             'transition-default',
             size === 'sm' && 'h-3 w-3',

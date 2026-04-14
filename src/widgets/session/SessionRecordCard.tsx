@@ -17,6 +17,7 @@ import {
 } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
+  ChevronRightIcon,
   MoreVerticalIcon,
   TitleEdit,
   Trash2Icon,
@@ -136,7 +137,7 @@ const CardHeader: React.FC<CardHeaderProps> = ({
             <button
               type="button"
               onClick={onStartEdit}
-              className="flex size-[30px] items-center justify-center text-fg-muted hover:text-fg"
+              className="flex size-[30px] items-center justify-center text-fg-muted lg:hover:text-fg"
               aria-label="제목 수정"
             >
               <TitleEdit size={20} />
@@ -175,9 +176,9 @@ const CardMeta: React.FC<CardMetaProps> = ({
         <span className="typo-xs text-grey-70">
           {isHandwritten
             ? '직접 입력'
-            : sttModel === 'whisper'
+            : sttModel === 'whisper' || sttModel === 'basic'
               ? '일반 축어록'
-              : sttModel === 'gemini-3'
+              : sttModel === 'gemini-3' || sttModel === 'advanced'
                 ? '고급 축어록'
                 : ''}
         </span>
@@ -277,7 +278,7 @@ const TitleEditButtons: React.FC<TitleEditButtonsProps> = ({
         type="button"
         onClick={onSave}
         disabled={isSaving}
-        className="whitespace-nowrap rounded-md bg-green-80 px-4 py-1 text-sm font-medium text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="whitespace-nowrap rounded-md bg-green-80 px-4 py-1 text-sm font-medium text-white transition-opacity disabled:opacity-50 lg:hover:opacity-80"
       >
         {isSaving ? '저장...' : '편집 완료'}
       </button>
@@ -285,7 +286,7 @@ const TitleEditButtons: React.FC<TitleEditButtonsProps> = ({
         type="button"
         onClick={onCancel}
         disabled={isSaving}
-        className="whitespace-nowrap rounded-md border border-grey-30 bg-white px-4 py-1 text-sm font-medium text-grey-70 transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="whitespace-nowrap rounded-md border border-grey-30 bg-white px-4 py-1 text-sm font-medium text-grey-70 transition-opacity disabled:opacity-50 lg:hover:opacity-80"
       >
         취소
       </button>
@@ -312,11 +313,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ percentage, stepLabel }) => (
     </div>
     <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
       <div
-        className="bg-primary-500 h-full transition-all duration-slow ease-out"
+        className="h-full bg-green-80 transition-all duration-slow ease-out"
         style={{
           width: `${percentage}%`,
           background:
-            'linear-gradient(90deg, var(--color-primary-500) 30%, var(--color-primary-100) 50%, var(--color-primary-500) 90%)',
+            'linear-gradient(90deg, var(--color-green-80) 30%, var(--color-green-40) 50%, var(--color-green-80) 90%)',
           backgroundSize: '200% 100%',
           animation: 'progress-flow 2.5s linear infinite',
         }}
@@ -344,31 +345,28 @@ const DeleteConfirmModal: React.FC<DeleteModalProps> = ({
   isLoading,
   onConfirm,
 }) => (
-  <Modal
-    open={open}
-    onOpenChange={onOpenChange}
-    title="상담기록 삭제"
-    className="max-w-sm"
-  >
-    <div className="space-y-4">
-      <Text className="typo-m font-headline text-fg">
-        상담기록 {title}을 삭제하시겠습니까?
-      </Text>
-      <Text className="typo-sm text-fg-muted">
-        해당 상담기록 데이터가 영구히 삭제됩니다.
-      </Text>
-      <div className="flex justify-center gap-2 pt-2">
+  <Modal open={open} onOpenChange={onOpenChange} className="max-w-sm">
+    <div className="flex flex-col gap-6 p-6">
+      <div>
+        <Text className="typo-xl font-emphasize">상담기록 삭제</Text>
+        <Text className="typo-sm mt-2 text-fg-muted">
+          상담기록 {title}을 삭제하시겠습니까?
+          <br />
+          해당 상담기록 데이터가 영구히 삭제됩니다.
+        </Text>
+      </div>
+      <div className="flex gap-3">
         <button
           onClick={() => onOpenChange(false)}
           disabled={isLoading}
-          className="hover:bg-surface-hover typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors disabled:opacity-50"
+          className="typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-contrast"
         >
           취소
         </button>
         <button
           onClick={onConfirm}
           disabled={isLoading}
-          className="hover:bg-danger/90 typo-sm w-full rounded-lg bg-danger px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50"
+          className="typo-sm lg:hover:bg-danger/90 w-full rounded-lg bg-danger px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50"
         >
           {isLoading ? '삭제 중...' : '삭제'}
         </button>
@@ -608,7 +606,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const triggerButton = (
     <button
       type="button"
-      className="rounded-lg p-1 text-fg-muted hover:bg-surface-contrast"
+      className="rounded-lg p-1 text-fg-muted lg:hover:bg-surface-contrast"
       aria-label="더보기 메뉴"
     >
       <MoreVerticalIcon size={20} />
@@ -642,19 +640,17 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
               <button
                 type="button"
                 onClick={handleOpenClientSelectorFromMenu}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
               >
-                <span className="text-m text-grey-100 md:text-l">
-                  클라이언트 변경
-                </span>
+                <span className="text-l text-grey-100">클라이언트 변경</span>
+                <ChevronRightIcon size={20} className="text-grey-70" />
               </button>
               <button
                 onClick={handleDelete}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
               >
-                <span className="text-m text-red-80 md:text-l">
-                  상담 기록 삭제
-                </span>
+                <span className="text-l text-red-80">상담 기록 삭제</span>
+                <ChevronRightIcon size={20} className="text-grey-70" />
               </button>
             </div>
           </Modal>
@@ -684,7 +680,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 trigger={
                   <button
                     type="button"
-                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+                    className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface-contrast"
                   >
                     <UserCircle2Icon size={18} className="text-fg-muted" />
                     <Text className="text-fg">클라이언트 변경</Text>
@@ -698,7 +694,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
               />
               <button
                 onClick={handleDelete}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface-contrast"
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface-contrast"
               >
                 <Trash2Icon size={18} className="text-fg-muted" />
                 <Text className="text-fg">상담 기록 삭제</Text>
@@ -718,7 +714,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           tone="error"
           variant="soft"
           size="md"
-          className="cursor-pointer border border-danger transition-all hover:bg-red-300"
+          className="cursor-pointer border border-danger transition-all lg:hover:bg-red-300"
         >
           클라이언트 미정
         </Badge>

@@ -87,7 +87,7 @@ export const Banner: React.FC<BannerProps> = ({
             className={cn(
               'typo-sm mt-2 font-medium',
               styles.text,
-              'transition-opacity duration-normal hover:opacity-80'
+              'transition-opacity duration-normal lg:hover:opacity-80'
             )}
           >
             {action.label}
@@ -100,7 +100,7 @@ export const Banner: React.FC<BannerProps> = ({
           aria-label="Dismiss banner"
           className={cn(
             'flex-shrink-0 rounded-sm p-1',
-            'hover:bg-neutral-active',
+            'lg:hover:bg-neutral-active',
             'transition-default',
             styles.text
           )}

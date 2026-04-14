@@ -770,16 +770,25 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
           defaultEdgeOptions={{ type: 'relationship', interactionWidth: 20 }}
           proOptions={{ hideAttribution: true }}
           style={{ backgroundColor: '#F4F5FA' }}
-          {...(props.readOnly
+          {...(nodes.length === 0
             ? {
+                panOnDrag: false,
+                zoomOnPinch: false,
+                zoomOnScroll: false,
                 nodesDraggable: false,
                 nodesConnectable: false,
                 elementsSelectable: false,
-                panOnDrag: true,
-                zoomOnPinch: true,
-                zoomOnScroll: false,
               }
-            : flowInteraction)}
+            : props.readOnly
+              ? {
+                  nodesDraggable: false,
+                  nodesConnectable: false,
+                  elementsSelectable: false,
+                  panOnDrag: true,
+                  zoomOnPinch: true,
+                  zoomOnScroll: false,
+                }
+              : flowInteraction)}
           {...KEYBOARD_DISABLED_PROPS}
         >
           {visibility.grid && (

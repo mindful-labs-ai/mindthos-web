@@ -216,7 +216,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   !item.disabled && isHighlighted && 'bg-surface-contrast',
                   !item.disabled &&
                     !isHighlighted &&
-                    'hover:bg-surface-contrast/50',
+                    'lg:hover:bg-surface-contrast/50',
                   isSelected && 'font-medium text-primary'
                 )}
               >

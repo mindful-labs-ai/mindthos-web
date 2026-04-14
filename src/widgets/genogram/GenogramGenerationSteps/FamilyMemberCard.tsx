@@ -275,7 +275,7 @@ export function FamilyMemberCard({
               onClick={() =>
                 onRemoveRelation(subject.id, rel.targetId, rel.type)
               }
-              className="ml-0.5 text-fg-muted hover:text-fg"
+              className="ml-0.5 text-fg-muted lg:hover:text-fg"
             >
               <X className="h-3 w-3" />
             </button>
@@ -285,7 +285,7 @@ export function FamilyMemberCard({
         <button
           ref={addButtonRef}
           onClick={handleOpenAddPopover}
-          className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-md border border-border bg-surface-contrast text-fg-muted hover:border-fg-muted hover:text-fg"
+          className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-md border border-border bg-surface-contrast text-fg-muted lg:hover:border-fg-muted lg:hover:text-fg"
         >
           <Plus className="h-3 w-3" />
         </button>
@@ -302,7 +302,7 @@ export function FamilyMemberCard({
           >
             <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
               <BackButton onClick={() => setShowAddPopover(false)} />
-              <p className="text-l font-medium text-grey-80">관계 추가하기</p>
+              <p className="text-m font-medium text-grey-100">관계 추가하기</p>
             </div>
             <div className="flex-1 px-4 py-6 md:px-10">
               <div className="flex items-center justify-between py-4">
@@ -333,7 +333,7 @@ export function FamilyMemberCard({
               <button
                 onClick={handleAddRelation}
                 disabled={newRelationTarget === null}
-                className="hover:bg-green-80/90 h-12 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-colors disabled:bg-grey-20 disabled:text-grey-60"
+                className="lg:hover:bg-green-80/90 h-12 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-colors disabled:bg-grey-20 disabled:text-grey-60"
               >
                 추가하기
               </button>
@@ -403,7 +403,7 @@ export function FamilyMemberCard({
               <button
                 onClick={handleAddRelation}
                 disabled={newRelationTarget === null}
-                className="typo-sm hover:bg-primary-600 disabled:disabled-default h-10 w-full rounded-lg bg-primary font-medium text-primary-fg transition-colors"
+                className="typo-sm lg:hover:bg-primary-600 disabled:disabled-default h-10 w-full rounded-lg bg-primary font-medium text-primary-fg transition-colors"
               >
                 추가하기
               </button>
@@ -605,7 +605,7 @@ export function FamilyMemberCard({
         {!subject.isIP && isEditing && (
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="flex h-[27px] w-[27px] items-center justify-center rounded-md text-danger hover:scale-105"
+            className="flex h-[27px] w-[27px] items-center justify-center rounded-md text-danger lg:hover:scale-105"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -613,18 +613,18 @@ export function FamilyMemberCard({
       </div>
 
       {/* 편집/저장 버튼 (우측 하단 고정) */}
-      <div className="absolute bottom-4 right-4 flex items-center gap-2">
+      <div className="absolute bottom-4 left-4 flex items-center gap-2">
         {isEditing ? (
           <button
             onClick={() => setIsEditing(false)}
-            className="typo-sm hover:bg-primary-600 flex h-[27px] w-[50px] items-center justify-center rounded-md bg-primary text-primary-fg"
+            className="typo-sm lg:hover:bg-primary-600 flex h-[27px] w-[50px] items-center justify-center rounded-md bg-primary text-primary-fg"
           >
             저장
           </button>
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="p-1 text-fg-muted hover:text-fg"
+            className="p-1 text-fg-muted lg:hover:text-fg"
           >
             <Pencil className="h-5 w-5" />
           </button>

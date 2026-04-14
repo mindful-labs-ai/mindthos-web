@@ -38,13 +38,13 @@ export const ProgressBar = React.forwardRef<HTMLDivElement, ProgressBarProps>(
           aria-valuemax={indeterminate ? undefined : 100}
           aria-label={label}
           className={cn(
-            'h-2 w-full overflow-hidden rounded-full bg-surface-contrast',
+            'h-2 w-full overflow-hidden rounded-full bg-grey-20',
             indeterminate && 'relative'
           )}
         >
           <div
             className={cn(
-              'h-full bg-primary transition-all duration-slow',
+              'h-full bg-green-80 transition-all duration-slow',
               indeterminate &&
                 'absolute w-1/3 animate-[shimmer_1.5s_ease-in-out_infinite]'
             )}

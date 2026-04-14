@@ -3,6 +3,8 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { cn } from '@/lib/cn';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -154,8 +156,17 @@ export const TutorialGuideModal: React.FC = () => {
       setCurrentSlide(0);
       setVideoProgress(0);
       setVideoAspectRatio(null);
+      trackEvent(MixpanelEvent.TutorialGuideModalOpen);
     }
   }, [isOpen]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      trackEvent(MixpanelEvent.TutorialGuideStepChange, {
+        step: currentSlide + 1,
+      });
+    }
+  }, [currentSlide, isOpen]);
 
   // 영상 진행도 추적
   React.useEffect(() => {
@@ -183,6 +194,7 @@ export const TutorialGuideModal: React.FC = () => {
   };
 
   const handleComplete = async () => {
+    trackEvent(MixpanelEvent.TutorialGuideComplete);
     const level = tutorialGuideLevel;
     handleClose();
 
@@ -253,7 +265,7 @@ export const TutorialGuideModal: React.FC = () => {
                 <video
                   ref={videoRef}
                   key={slide.media.src}
-                  className="h-full w-full"
+                  className="h-full w-full object-cover"
                   autoPlay
                   loop
                   muted

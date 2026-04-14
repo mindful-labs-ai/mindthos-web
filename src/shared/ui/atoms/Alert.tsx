@@ -155,7 +155,7 @@ export const Alert: React.FC<AlertProps> = ({
           aria-label="Dismiss alert"
           className={cn(
             'flex-shrink-0 rounded-sm p-1',
-            'hover:bg-neutral-active',
+            'lg:hover:bg-neutral-active',
             'transition-default',
             'focus-default',
             styles.text

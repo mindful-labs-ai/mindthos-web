@@ -71,7 +71,7 @@ export const DateInput: React.FC<DateInputProps> = ({
       onKeyDown={handleKeyDown}
       placeholder={placeholder}
       maxLength={10}
-      className="h-8 w-36 rounded-md border-2 border-border bg-surface px-3 text-right text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+      className="h-8 w-36 rounded-md border-2 border-grey-40 bg-white px-3 text-right text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green-80"
     />
   );
 };

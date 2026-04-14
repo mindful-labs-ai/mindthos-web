@@ -33,7 +33,7 @@ export const PaymentFail = () => {
           </div>
 
           <div>
-            <Title className="typo-2xl font-headline">카드 등록 실패</Title>
+            <Title className="typo-xl font-headline">카드 등록 실패</Title>
             <Text className="mt-2 text-gray-600">
               {errorMessage || '카드 등록 중 오류가 발생했습니다.'}
             </Text>

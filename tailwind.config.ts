@@ -117,6 +117,9 @@ export default {
           40: 'var(--color-green-40)',
           80: 'var(--color-green-80)',
         },
+        orange: {
+          100: 'var(--color-orange-100)',
+        },
         red: {
           20: 'var(--color-red-20)',
           50: 'var(--color-red-50)',
@@ -248,6 +251,12 @@ export default {
           '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-4px)' },
           '20%, 40%, 60%, 80%': { transform: 'translateX(4px)' },
         },
+        'logo-draw': {
+          '0%': { 'stroke-dashoffset': '1' },
+          '45%': { 'stroke-dashoffset': '0' },
+          '55%': { 'stroke-dashoffset': '0' },
+          '100%': { 'stroke-dashoffset': '-1' },
+        },
       },
       animation: {
         fadeIn: 'fadeIn 0.2s ease-out',
@@ -257,6 +266,7 @@ export default {
         scaleIn: 'scaleIn 0.2s ease-out',
         shimmer: 'shimmer 1.5s ease-in-out infinite',
         shake: 'shake 0.5s ease-in-out',
+        'logo-draw': 'logo-draw 2.5s ease-in-out infinite',
       },
     },
   },

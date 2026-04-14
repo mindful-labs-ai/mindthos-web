@@ -7,6 +7,7 @@ import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { usePlansByPeriod } from '@/features/settings/hooks/usePlans';
+import { getPlanTier } from '@/features/settings/utils/planUtils';
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
@@ -90,6 +91,21 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   const currentPlanPrice =
     monthlyPlans.find((p) => p.type === currentPlanType)?.price || 0;
   const currentPlanCredit = creditInfo?.plan?.total || 0;
+
+  // 모달 열릴 때 트래킹 + 플러스 미만이면 자동 선택
+  React.useEffect(() => {
+    if (open) {
+      trackEvent(MixpanelEvent.PlanChangeModalOpen);
+      if (getPlanTier(currentPlanType) < getPlanTier('plus')) {
+        const plusPlan = monthlyPlans.find(
+          (p) => p.type.toLowerCase() === 'plus'
+        );
+        if (plusPlan) {
+          setSelectedPlanId(plusPlan.id);
+        }
+      }
+    }
+  }, [open, currentPlanType, monthlyPlans]);
 
   let buyerName = userName;
 
@@ -304,7 +320,21 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     }
   };
 
-  const currentPlans = period === 'monthly' ? monthlyPlans : yearlyPlans;
+  const CORE_PLAN_TYPES = ['starter', 'plus', 'pro'];
+  const allPlans = period === 'monthly' ? monthlyPlans : yearlyPlans;
+  const basePlans = allPlans.filter((p) =>
+    CORE_PLAN_TYPES.includes(p.type.toLowerCase())
+  );
+  // 모바일: 플러스 플랜을 최상단으로
+  const currentPlans = isMobileView
+    ? [...basePlans].sort((a, b) => {
+        const aIsPlus = a.type.toLowerCase() === 'plus';
+        const bIsPlus = b.type.toLowerCase() === 'plus';
+        if (aIsPlus && !bIsPlus) return -1;
+        if (!aIsPlus && bIsPlus) return 1;
+        return 0;
+      })
+    : basePlans;
 
   // 할인율 계산 (연간 플랜의 경우)
   const getDiscountInfo = (yearlyPlan: (typeof yearlyPlans)[0]) => {
@@ -378,7 +408,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       {isMobileView && (
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
           <BackButton onClick={() => onOpenChange(false)} />
-          <p className="text-l font-medium text-grey-80">
+          <p className="text-m font-medium text-grey-100">
             마음토스 플랜 업그레이드
           </p>
         </div>
@@ -472,7 +502,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
                 href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline transition-colors hover:text-primary-hover"
+                className="underline transition-colors lg:hover:text-primary-hover"
               >
                 결제 약관
               </a>
@@ -520,7 +550,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
                 href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline transition-colors hover:text-primary-hover"
+                className="underline transition-colors lg:hover:text-primary-hover"
               >
                 결제 약관
               </a>

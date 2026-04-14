@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
 import { trackError, trackEvent } from '@/lib/mixpanel';
@@ -34,6 +34,12 @@ export const CardRegistrationModal = ({
     error: sdkError,
   } = useTossPayments(customerKey);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      trackEvent(MixpanelEvent.CardRegistrationModalOpen);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async () => {
     let buyerName = userName;

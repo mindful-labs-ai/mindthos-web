@@ -16,8 +16,12 @@ const AuthPage = () => {
   const [error, setError] = React.useState('');
 
   const handleStateChange = () => {
-    if (formState === 'signIn') setFormState('signUp');
-    if (formState === 'signUp') setFormState('signIn');
+    const target = formState === 'signIn' ? 'signUp' : 'signIn';
+    trackEvent(MixpanelEvent.AuthFormSwitch, {
+      from: formState,
+      to: target,
+    });
+    setFormState(target);
   };
 
   const handleGoogleLogin = async () => {
@@ -71,9 +75,17 @@ const AuthPage = () => {
             alt="마음토스 로고"
             className="main-logo-size"
           />
+          <a
+            href="https://open.kakao.com/me/Mindthos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="] rounded-md border border-grey-40 px-6 py-1.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+          >
+            문의하기
+          </a>
         </div>
 
-        <div className="flex flex-1 items-center justify-center md:p-8">
+        <div className="flex flex-1 items-center justify-center py-8 md:p-8">
           <div className="w-full max-w-md">
             {/* Title Section */}
             <div className="mb-9 flex flex-col gap-3 text-left">
@@ -111,7 +123,7 @@ const AuthPage = () => {
               {/* OAuth Login Buttons */}
               <div className="mb-6 flex flex-col gap-3">
                 <button
-                  className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity hover:opacity-60"
+                  className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity lg:hover:opacity-60"
                   onClick={handleGoogleLogin}
                   disabled={isGoogleLoading}
                 >
@@ -121,7 +133,7 @@ const AuthPage = () => {
                     : 'Google로 계속하기'}
                 </button>
                 <button
-                  className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity hover:opacity-60"
+                  className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity lg:hover:opacity-60"
                   onClick={handleKakaoLogin}
                   disabled={isKakaoLoading}
                 >
@@ -136,11 +148,11 @@ const AuthPage = () => {
                 )}
               </div>
 
-              <div className="mt-10 text-center font-medium text-green-80 transition-opacity hover:opacity-80">
+              <div className="mt-10 text-center font-medium text-green-80 transition-opacity lg:hover:opacity-80">
                 <button
                   type="button"
                   onClick={handleStateChange}
-                  className="text-m font-medium text-green-80 hover:opacity-80"
+                  className="text-m font-medium text-green-80 lg:hover:opacity-80"
                 >
                   {formState === 'signIn'
                     ? '아직 계정이 없으신가요? 회원가입하기'
@@ -153,7 +165,7 @@ const AuthPage = () => {
 
         <div className="border-t border-border">
           <p className="pt-6 text-start text-sm text-grey-60">
-            Copyright 2025. Mindful Labs Co. Ltd. All rights reserved.
+            Copyright 2025. Mindful Labs Inc. All rights reserved.
           </p>
         </div>
       </div>

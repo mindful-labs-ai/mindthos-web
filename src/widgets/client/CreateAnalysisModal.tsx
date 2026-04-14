@@ -26,6 +26,8 @@ import {
 
 import type { ClientTemplateGroups } from '@/features/client/types/clientAnalysis.types';
 import type { Session } from '@/features/session/types';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
@@ -79,6 +81,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
   // 모달이 열릴 때 모든 세션을 기본 선택 (최신순)
   React.useEffect(() => {
     if (open) {
+      trackEvent(MixpanelEvent.ClientAnalysisModalOpen);
       setOrderedSessionIds([...availableSessions].reverse().map((s) => s.id));
     }
   }, [open, availableSessions]);
@@ -113,11 +116,15 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
   };
 
   const handleRemoveSession = (sessionId: string) => {
+    trackEvent(MixpanelEvent.ClientAnalysisSessionSelect, {
+      session_id: sessionId,
+    });
     setOrderedSessionIds((prev) => prev.filter((id) => id !== sessionId));
   };
 
   const handleClose = () => {
     if (!isCreating) {
+      trackEvent(MixpanelEvent.ClientAnalysisModalClose);
       onOpenChange(false);
       setTimeout(() => {
         setOrderedSessionIds([]);
@@ -214,7 +221,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     <div className={isMobileView ? 'shrink-0 px-4 pb-4' : 'shrink-0 p-6 pt-0'}>
       <div className="flex items-center justify-center py-3">
         <div className="flex items-center justify-center gap-1 rounded-md bg-green-20 px-1.5 py-1">
-          <span className="text-m font-medium text-green-80">30</span>
+          <span className="text-m font-medium text-green-80">50</span>
           <CreditIcon size={14} />
           <span className="text-m font-medium text-green-80">사용</span>
         </div>
@@ -241,7 +248,12 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
           <Select
             items={aiSupervisionItems}
             value={aiSupervisionTemplateId}
-            onChange={(value) => setAiSupervisionTemplateId(value as string)}
+            onChange={(value) => {
+              trackEvent(MixpanelEvent.ClientAnalysisTemplateSelect, {
+                template_id: value,
+              });
+              setAiSupervisionTemplateId(value as string);
+            }}
             placeholder="선택"
             disabled={aiSupervisionItems.length === 0}
             maxDropdownHeight={120}
@@ -278,7 +290,9 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
       {isMobileView ? (
         <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
           <BackButton onClick={handleClose} />
-          <p className="text-l font-medium text-grey-80">클라이언트 분석하기</p>
+          <p className="text-m font-medium text-grey-100">
+            클라이언트 분석하기
+          </p>
         </div>
       ) : (
         <div className="p-6 pb-0 text-center">

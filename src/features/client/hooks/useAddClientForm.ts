@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { clientService } from '@/shared/api/supabase/clientQueries';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -80,8 +81,8 @@ export const useAddClientForm = (initialData?: Client | null) => {
     },
     onSuccess: (response) => {
       const eventName = isEditMode
-        ? 'client_update_success'
-        : 'client_create_success';
+        ? MixpanelEvent.ClientUpdateSuccess
+        : MixpanelEvent.ClientCreateSuccess;
       const clientId =
         'client' in response
           ? (response as CreateClientResponse).client?.id
@@ -94,8 +95,8 @@ export const useAddClientForm = (initialData?: Client | null) => {
     },
     onError: (error) => {
       const eventName = isEditMode
-        ? 'client_update_failed'
-        : 'client_create_failed';
+        ? MixpanelEvent.ClientUpdateFailed
+        : MixpanelEvent.ClientCreateFailed;
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
@@ -198,6 +199,11 @@ export const useAddClientForm = (initialData?: Client | null) => {
     }
 
     // mutation 실행
+    trackEvent(
+      isEditMode
+        ? MixpanelEvent.ClientUpdateAttempt
+        : MixpanelEvent.ClientCreateAttempt
+    );
     try {
       const response = await mutation.mutateAsync(requestBody);
       // 생성 모드일 때 클라이언트 ID 반환

@@ -78,7 +78,7 @@ function ContentBlockItem({ block }: { block: TermsContentBlock }) {
       return (
         <a
           href={block.href}
-          className="text-primary underline hover:text-primary-hover"
+          className="text-primary underline lg:hover:text-primary-hover"
           target={block.href.startsWith('mailto:') ? undefined : '_blank'}
           rel="noopener noreferrer"
         >

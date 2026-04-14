@@ -36,24 +36,24 @@ export const InlineDropdown: React.FC<InlineDropdownProps> = ({
     <div ref={ref} className={`relative ${className ?? ''}`}>
       <button
         type="button"
-        className="inline-flex h-8 w-full items-center justify-between gap-2 rounded-md bg-surface px-4 text-sm transition-colors hover:bg-surface-contrast"
+        className="inline-flex h-8 w-full items-center justify-between gap-2 rounded-md bg-white px-4 text-sm transition-colors lg:hover:bg-grey-20"
         onClick={() => setOpen((o) => !o)}
       >
         <span className="truncate">{selectedLabel}</span>
         <ChevronDown
           size={16}
-          className={`text-fg-muted transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`text-grey-70 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
-        <ul className="border-1 absolute z-50 mt-1 flex max-h-60 w-full flex-col gap-1 overflow-auto rounded-md border-2 border-border bg-surface px-2 py-1">
+        <ul className="border-1 absolute z-50 mt-1 flex max-h-60 w-full flex-col gap-1 overflow-auto rounded-md border-2 border-grey-40 bg-white px-2 py-1">
           {items.map((item) => (
             <li
               key={item.value}
               role="option"
               aria-selected={item.value === value}
-              className={`flex cursor-pointer justify-center rounded-md px-4 py-2 text-sm transition-colors hover:bg-surface-contrast ${
-                item.value === value ? 'bg-surface-contrast font-medium' : ''
+              className={`flex cursor-pointer justify-center rounded-md px-4 py-2 text-sm transition-colors lg:hover:bg-grey-20 ${
+                item.value === value ? 'bg-grey-20 font-medium' : ''
               }`}
               onMouseDown={() => {
                 onChange(item.value);

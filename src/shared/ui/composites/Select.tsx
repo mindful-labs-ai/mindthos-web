@@ -208,12 +208,13 @@ export const Select: React.FC<SelectProps> = ({
         aria-expanded={isOpen}
         className={cn(
           'flex w-full items-center justify-between gap-2',
-          'border-default rounded-md bg-surface px-3 py-2',
+          'rounded-md bg-grey-10 px-3 py-2',
           'typo-sm transition-default text-fg',
-          'hover:border-primary-subtle',
+          'lg:hover:border-primary-subtle',
           'focus-default',
           'disabled:disabled-default',
-          isOpen && 'border-primary'
+          isOpen && 'border-green-80',
+          'border-default'
         )}
       >
         <span
@@ -293,11 +294,13 @@ export const Select: React.FC<SelectProps> = ({
                   }}
                   tabIndex={0}
                   className={cn(
-                    'typo-sm flex items-center justify-between px-3 py-3',
+                    'flex items-center justify-between px-3 py-3 text-m',
                     'transition-default cursor-pointer',
-                    'hover:bg-surface-contrast',
+                    'lg:hover:bg-surface-contrast',
                     item.disabled && 'cursor-not-allowed opacity-50',
-                    focusedIndex === index && 'bg-surface-contrast',
+                    !isMobile &&
+                      focusedIndex === index &&
+                      'bg-surface-contrast',
                     selected && 'font-medium text-primary'
                   )}
                 >
@@ -367,9 +370,9 @@ export const Select: React.FC<SelectProps> = ({
                     }}
                     tabIndex={0}
                     className={cn(
-                      'typo-sm flex items-center justify-between px-3 py-2',
+                      'flex items-center justify-between px-3 py-2 text-m',
                       'transition-default cursor-pointer',
-                      'hover:bg-surface-contrast',
+                      'lg:hover:bg-surface-contrast',
                       'focus-default',
                       item.disabled && 'disabled-default',
                       focusedIndex === index && 'bg-surface-contrast',

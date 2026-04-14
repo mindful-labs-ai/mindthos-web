@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 
 import { ROUTES } from '@/app/router/constants';
+import { trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { SplashLoading } from '@/shared/ui/composites/SplashLoading';
 import { useAuthStore } from '@/stores/authStore';
 
 /**
@@ -20,15 +23,26 @@ const AuthCallbackPage = () => {
         const session = await authService.getSession();
 
         if (session) {
+          const method = session.user?.app_metadata?.provider ?? 'unknown';
+          trackEvent(MixpanelEvent.LoginOAuthCallback, { method });
           // 세션이 있으면 사용자 정보 초기화
           await initialize();
+          trackEvent(MixpanelEvent.LoginSuccess, { method });
           // 홈으로 리다이렉트 (UTM 파라미터 자동 유지)
           navigateWithUtm(ROUTES.ROOT, { replace: true });
         } else {
+          trackEvent(MixpanelEvent.LoginFailed, {
+            method: 'oauth',
+            error: 'no_session',
+          });
           // 세션이 없으면 로그인 페이지로 (UTM 파라미터 유지)
           navigateWithUtm(ROUTES.AUTH, { replace: true });
         }
       } catch (error) {
+        trackEvent(MixpanelEvent.LoginFailed, {
+          method: 'oauth',
+          error: error instanceof Error ? error.message : 'callback_error',
+        });
         console.error('OAuth callback error:', error);
         // 에러 발생 시 로그인 페이지로 (UTM 파라미터 유지)
         navigateWithUtm(ROUTES.AUTH, { replace: true });
@@ -38,14 +52,7 @@ const AuthCallbackPage = () => {
     handleCallback();
   }, [initialize, navigateWithUtm]);
 
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="text-center">
-        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-green-80 border-t-transparent" />
-        <p className="text-grey-100">로그인 처리 중...</p>
-      </div>
-    </div>
-  );
+  return <SplashLoading visible />;
 };
 
 export default AuthCallbackPage;

@@ -5,6 +5,8 @@
 
 import React from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { CreditIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -28,6 +30,12 @@ interface RegenerateProgressNoteModalProps {
 export const RegenerateProgressNoteModal: React.FC<RegenerateProgressNoteModalProps> =
   React.memo(
     ({ open, onOpenChange, onConfirm, isFirstRegeneration, templateName }) => {
+      React.useEffect(() => {
+        if (open) {
+          trackEvent(MixpanelEvent.ProgressNoteRegenerateModalOpen);
+        }
+      }, [open]);
+
       return (
         <Modal open={open} onOpenChange={onOpenChange} className="max-w-md">
           <div className="flex flex-col items-center py-4">
@@ -62,8 +70,11 @@ export const RegenerateProgressNoteModal: React.FC<RegenerateProgressNoteModalPr
             {/* 버튼들 */}
             <div className="flex w-full max-w-[375px] gap-2 pt-2">
               <button
-                onClick={onConfirm}
-                className="typo-sm hover:bg-primary-600 w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-fg transition-colors"
+                onClick={() => {
+                  trackEvent(MixpanelEvent.ProgressNoteRegenerateAttempt);
+                  onConfirm();
+                }}
+                className="typo-sm lg:hover:bg-primary-600 w-full rounded-lg bg-primary px-4 py-2.5 font-medium text-primary-fg transition-colors"
               >
                 다시 생성하기
               </button>

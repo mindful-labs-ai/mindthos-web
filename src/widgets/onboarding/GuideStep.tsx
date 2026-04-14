@@ -56,7 +56,7 @@ export function CompleteStep({
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
-        <h2 id="onboarding-title" className="typo-2xl font-headline text-fg">
+        <h2 id="onboarding-title" className="typo-xl font-headline text-fg">
           준비 완료!
         </h2>
         <p className="mt-4 text-fg-muted">

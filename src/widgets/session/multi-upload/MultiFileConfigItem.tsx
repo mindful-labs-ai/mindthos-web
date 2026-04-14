@@ -73,19 +73,19 @@ const SttModelToggle: React.FC<{
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => onChange('whisper')}
+        onClick={() => onChange('basic')}
         className={cn(
           'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
-          value === 'whisper'
+          value === 'basic'
             ? 'bg-primary-subtle text-primary'
-            : 'text-fg-muted hover:bg-surface-contrast'
+            : 'text-fg-muted lg:hover:bg-surface-contrast'
         )}
       >
         일반
         <div
           className={cn(
             'flex h-4 w-4 items-center justify-center rounded-full',
-            value === 'whisper' ? 'bg-primary' : 'bg-surface-strong'
+            value === 'basic' ? 'bg-primary' : 'bg-surface-strong'
           )}
         >
           <svg
@@ -107,19 +107,19 @@ const SttModelToggle: React.FC<{
       </button>
       <button
         type="button"
-        onClick={() => onChange('gemini-3')}
+        onClick={() => onChange('advanced')}
         className={cn(
           'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
-          value === 'gemini-3'
+          value === 'advanced'
             ? 'bg-primary-subtle text-primary'
-            : 'text-fg-muted hover:bg-surface-contrast'
+            : 'text-fg-muted lg:hover:bg-surface-contrast'
         )}
       >
         고급
         <div
           className={cn(
             'flex h-4 w-4 items-center justify-center rounded-full',
-            value === 'gemini-3' ? 'bg-primary' : 'bg-surface-strong'
+            value === 'advanced' ? 'bg-primary' : 'bg-surface-strong'
           )}
         >
           <svg
@@ -230,7 +230,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
     <button
       type="button"
       onClick={() => onRemove(file.id)}
-      className="flex-shrink-0 p-1 text-fg-muted transition-colors hover:text-fg"
+      className="flex-shrink-0 p-1 text-fg-muted transition-colors lg:hover:text-fg"
       aria-label="파일 제거"
     >
       <XIcon size={16} />

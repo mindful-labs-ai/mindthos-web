@@ -45,9 +45,8 @@ export const SessionHistoryContainer: React.FC = () => {
     userId: parseInt(userId || '0'),
     enabled: !!userId,
     onSessionComplete: (session) => {
-      const isHandwritten = session.audio_meta_data === null;
       toast({
-        title: isHandwritten ? '상담 기록 생성 완료' : '음성 파일 처리 완료',
+        title: '상담 기록 생성 완료',
         description: session.title
           ? `"${session.title}" 생성 완료 되었습니다.`
           : '생성 완료 되었습니다.',
@@ -209,7 +208,8 @@ export const SessionHistoryContainer: React.FC = () => {
           createdAt: session.created_at,
           isAdvancedTranscript:
             transcribe && 'stt_model' in transcribe
-              ? transcribe.stt_model === 'gemini-3'
+              ? transcribe.stt_model === 'gemini-3' ||
+                transcribe.stt_model === 'advanced'
               : false,
           isHandwritten: session.audio_meta_data === null,
         };

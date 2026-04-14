@@ -44,10 +44,10 @@ const CouponCard: React.FC<CouponCardProps> = ({
       className={cn(
         'relative rounded-xl border border-[#E0E0E0] bg-[#F5F5F5] px-4 py-5',
         size === 'lg' ? 'h-[117px] w-full' : '',
-        selectable && 'cursor-pointer transition-colors hover:bg-[#ECECEC]',
+        selectable && 'cursor-pointer transition-colors lg:hover:bg-[#ECECEC]',
         selectable &&
           selected &&
-          'hover:bg-primary-10 border border-primary bg-primary-subtle'
+          'lg:hover:bg-primary-10 border border-primary bg-primary-subtle'
       )}
       onClick={selectable ? onClick : undefined}
       onKeyDown={
@@ -213,7 +213,7 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
           {/* 헤더 */}
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-l font-medium text-grey-80">나의 쿠폰함</p>
+            <p className="text-m font-medium text-grey-100">나의 쿠폰함</p>
           </div>
 
           {/* 콘텐츠 */}

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { trackEvent } from '@/lib/mixpanel';
 import { SEEK_STEP_SMALL } from '@/shared/constants/audioPlayer';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 interface UseAudioPlayerReturn {
   audioRef: React.RefObject<HTMLAudioElement | null>;
@@ -52,7 +54,10 @@ export const useAudioPlayer = (
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      trackEvent(MixpanelEvent.AudioComplete);
+    };
     const handleError = (e: Event) => {
       console.error('[useAudioPlayer] Audio error:', e);
       setIsLoadingAudio(false);

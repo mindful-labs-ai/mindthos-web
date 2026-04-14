@@ -123,7 +123,7 @@ export const InContext: Story = {
             onChange={setPlan}
             size="md"
           />
-          <button className="typo-sm mt-6 w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface hover:opacity-90">
+          <button className="typo-sm mt-6 w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface lg:hover:opacity-90">
             Continue with {plan.charAt(0).toUpperCase() + plan.slice(1)}
           </button>
         </div>

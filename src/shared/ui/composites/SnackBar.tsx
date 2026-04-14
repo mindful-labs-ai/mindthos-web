@@ -80,7 +80,7 @@ export const SnackBar: React.FC<SnackBarProps> = ({
               onOpenChange(false);
             }}
             className={cn(
-              'typo-sm rounded-sm font-medium text-primary hover:text-primary-hover',
+              'typo-sm rounded-sm font-medium text-primary lg:hover:text-primary-hover',
               'transition-default',
               'focus-default'
             )}
@@ -93,7 +93,7 @@ export const SnackBar: React.FC<SnackBarProps> = ({
           aria-label="Close"
           className={cn(
             'rounded-sm p-1',
-            'text-fg-muted hover:bg-surface-contrast hover:text-fg',
+            'text-fg-muted lg:hover:bg-surface-contrast lg:hover:text-fg',
             'transition-default',
             'focus-default'
           )}

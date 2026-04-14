@@ -161,7 +161,7 @@ export const InContext: Story = {
               />
             </div>
             <button
-              className="typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface hover:opacity-90 disabled:opacity-50"
+              className="typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-surface disabled:opacity-50 lg:hover:opacity-90"
               disabled={!framework || !country}
             >
               Submit

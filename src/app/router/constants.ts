@@ -6,6 +6,7 @@ export const ROUTES = {
   AUTH: '/auth',
   AUTH_CALLBACK: '/auth/callback',
   EMAIL_VERIFICATION: '/auth/verify-email',
+  USER_VERIFY: '/user-verify',
   TERMS: '/terms',
   TERMS_AGREEMENT: '/terms-agreement',
   CLIENTS: '/clients',
@@ -16,12 +17,10 @@ export const ROUTES = {
   SETTINGS: '/settings',
   PAYMENT_SUCCESS: '/payment/success',
   PAYMENT_FAIL: '/payment/fail',
-  ERROR_TEST: '/error-test',
   NOT_FOUND: '*',
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
   ANALYSIS: '/analysis',
-  DEBUG_SHELL: '/debug-shell',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>

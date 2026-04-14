@@ -45,7 +45,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
             <>
               <button
                 type="button"
-                className="typo-sm hover:bg-primary-600 rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50"
+                className="typo-sm lg:hover:bg-primary-600 rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors disabled:opacity-50"
                 onClick={onSaveEdit}
                 disabled={isSaving}
               >
@@ -53,7 +53,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
               </button>
               <button
                 type="button"
-                className="hover:bg-surface-hover typo-sm rounded-lg bg-surface px-4 py-2 font-medium text-fg transition-colors"
+                className="lg:hover:bg-surface-hover typo-sm rounded-lg bg-surface px-4 py-2 font-medium text-fg transition-colors"
                 onClick={onCancelEdit}
                 disabled={isSaving}
               >
@@ -64,7 +64,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
             <>
               <button
                 type="button"
-                className="typo-sm mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 font-medium text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                className="typo-sm mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 font-medium text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
                 onClick={onEditStart}
                 title="편집"
               >
@@ -72,7 +72,7 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
               </button>
               <button
                 type="button"
-                className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
                 onClick={onCopy}
                 title="복사"
                 aria-label="내용 복사"

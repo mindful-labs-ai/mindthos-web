@@ -44,7 +44,7 @@ export function CreationFlowButton({
         type="button"
         onClick={handleClick}
         disabled={isDisabled}
-        className="typo-m hover:bg-primary-400 disabled:disabled-default flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
+        className="typo-m lg:hover:bg-primary-400 disabled:disabled-default flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
       >
         {isInput ? '보고서 생성하기' : '이어서 진행하기'}
       </button>

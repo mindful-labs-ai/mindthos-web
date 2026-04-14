@@ -10,7 +10,7 @@ import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
-import { CheckIcon, CopyIcon } from '@/shared/icons';
+import { CheckIcon, ChevronRightIcon, CopyIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { MarkdownRenderer } from '@/shared/ui/composites/MarkdownRenderer';
@@ -18,6 +18,7 @@ import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { domToMarkdown } from '@/shared/utils/domToMarkdown';
 import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
+import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 import { RegenerateProgressNoteModal } from './RegenerateProgressNoteModal';
 
@@ -99,7 +100,21 @@ const parseSummary = (summary: string): NoteSection[] => {
   });
 
   if (currentSection) sections.push(currentSection);
-  return sections;
+
+  const getHeadingLevel = (rawHeading: string): number => {
+    const match = rawHeading.match(/^(#{1,4})\s/);
+    return match ? match[1].length : 0;
+  };
+
+  return sections.filter((section, i) => {
+    if (section.content.trim()) return true;
+    const currentLevel = getHeadingLevel(section.rawHeading);
+    if (currentLevel > 0 && i + 1 < sections.length) {
+      const nextLevel = getHeadingLevel(sections[i + 1].rawHeading);
+      if (nextLevel > currentLevel) return false;
+    }
+    return true;
+  });
 };
 
 export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
@@ -227,7 +242,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
 
   const handleCopy = async (content: string, index: number) => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(stripMarkdown(content));
       setCopiedIndex(index);
       trackEvent(MixpanelEvent.ProgressNoteCopy, { section_index: index });
       toast({
@@ -249,7 +264,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
   const handleCopyAll = async () => {
     if (!note.summary) return;
     try {
-      await navigator.clipboard.writeText(note.summary);
+      await navigator.clipboard.writeText(stripMarkdown(note.summary));
       setCopiedAll(true);
       trackEvent(MixpanelEvent.ProgressNoteCopyAll);
       toast({
@@ -347,7 +362,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         type="button"
                         onClick={handleEditStart}
                         disabled={isRegenerating}
-                        className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                        className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         편집
                       </button>
@@ -355,7 +370,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                     <button
                       type="button"
                       onClick={handleCopyAll}
-                      className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                      className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                     >
                       <CopyIcon size={20} /> 복사하기
                     </button>
@@ -364,7 +379,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                 {/* 케밥 메뉴 */}
                 <button
                   type="button"
-                  className="rounded-lg p-2 text-grey-60 transition-colors hover:bg-grey-20 hover:text-grey-80"
+                  className="rounded-lg p-2 text-grey-60 transition-colors lg:hover:bg-grey-20 lg:hover:text-grey-80"
                   onClick={() => setIsMenuOpen(true)}
                   aria-label="추가 메뉴"
                 >
@@ -396,11 +411,10 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                           setIsMenuOpen(false);
                         }}
                         disabled={isRegenerating}
-                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100 md:text-l">
-                          편집
-                        </span>
+                        <span className="text-l text-grey-100">편집</span>
+                        <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                     )}
                     {!isTablet && (
@@ -409,11 +423,10 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                           handleCopyAll();
                           setIsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface"
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100 md:text-l">
-                          복사하기
-                        </span>
+                        <span className="text-l text-grey-100">복사하기</span>
+                        <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                     )}
                     {onRegenerate && (
@@ -423,11 +436,12 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                           setIsMenuOpen(false);
                         }}
                         disabled={isReadOnly || isRegenerating}
-                        className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface disabled:opacity-50"
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors disabled:opacity-50 lg:hover:bg-surface"
                       >
-                        <span className="text-m text-grey-100 md:text-l">
+                        <span className="text-l text-grey-100">
                           {isRegenerating ? '재생성 중...' : '노트 재생성'}
                         </span>
+                        <ChevronRightIcon size={20} className="text-grey-70" />
                       </button>
                     )}
                   </div>
@@ -457,7 +471,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
               {sections.map((section, index) => (
                 <div
                   key={index}
-                  className={`group relative rounded-lg py-1 ${!isEditing ? 'hover:bg-grey-10' : ''}`}
+                  className={`group relative rounded-lg py-1 ${!isEditing ? 'lg:hover:bg-grey-10' : ''}`}
                 >
                   <div className="mb-3 flex items-start justify-between">
                     <Title
@@ -484,7 +498,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCopy(section.content, index)}
-                        className="relative flex-shrink-0 rounded-lg p-2 text-fg-muted opacity-0 transition-all hover:bg-surface-contrast hover:text-fg group-hover:opacity-100"
+                        className="group-lg:hover:opacity-100 relative flex-shrink-0 rounded-lg p-2 text-fg-muted opacity-0 transition-all lg:hover:bg-surface-contrast lg:hover:text-fg"
                         aria-label="복사"
                       >
                         {copiedIndex === index ? (
@@ -492,7 +506,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
                         ) : (
                           <CopyIcon />
                         )}
-                        <span className="typo-xs pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-bg opacity-0 transition-opacity hover:opacity-100">
+                        <span className="typo-xs pointer-events-none absolute -top-8 right-0 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-bg opacity-0 transition-opacity lg:hover:opacity-100">
                           {copiedIndex === index ? '복사됨' : '복사'}
                         </span>
                       </button>

@@ -6,10 +6,16 @@ import type { Speaker, TranscribeSegment } from '@/features/session/types';
 import { formatTime } from '@/features/session/utils/formatTime';
 import { getSpeakerInfo } from '@/features/session/utils/getSpeakerInfo';
 import {
+  applyDeidStyling,
+  extractDeidText,
+} from '@/features/session/utils/parseDeidText';
+import {
   parseNonverbalText,
+  parseNvTagText,
   renderTextWithNonverbal,
 } from '@/features/session/utils/parseNonverbalText';
 
+import { SegmentContentEditor } from './SegmentContentEditor';
 import { SpeakerEditPopup } from './SpeakerEditPopup';
 
 interface TranscriptSegmentProps {
@@ -18,10 +24,13 @@ interface TranscriptSegmentProps {
   isActive: boolean;
   isEditable?: boolean;
   isAnonymized?: boolean;
+  showDeid?: boolean;
   sttModel?: string | null;
   segmentRef?: React.RefObject<HTMLDivElement | null>;
   onClick: (startTime: number) => void;
   onTextEdit?: (segmentId: number, newText: string) => void;
+  onNvEdit?: (segmentId: number, nv: string[]) => void;
+  onDeidEdit?: (segmentId: number, deid: Record<string, string>) => void;
   showTimestamp?: boolean;
   /** 화자별 발언 번호 (복사 시 넘버링과 동일) */
   speakerUtteranceIndex?: number;
@@ -43,10 +52,13 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   isActive,
   isEditable = false,
   isAnonymized = false,
+  showDeid = false,
   sttModel,
   segmentRef,
   onClick,
   onTextEdit,
+  onNvEdit,
+  onDeidEdit,
   showTimestamp = true,
   speakerUtteranceIndex,
   allSegments = [],
@@ -55,9 +67,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   onAddSegment,
   onDeleteSegment,
 }) => {
-  const [editedText, setEditedText] = React.useState(segment.text);
   const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const { name, label, bgColor, textColor } = getSpeakerInfo(segment, speakers);
 
@@ -65,8 +75,16 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   const showTimestampDisplay =
     showTimestamp && segment.start !== null && segment.end !== null;
 
-  // 텍스트 비언어적 표현 분리
-  const textParts = parseNonverbalText(segment.text);
+  // deid 처리: OFF면 원본으로 치환, ON이면 태그를 유지하여 렌더링 시 styled span 적용
+  const hasDeid = segment.deid && Object.keys(segment.deid).length > 0;
+  const textForNv =
+    hasDeid && !showDeid
+      ? extractDeidText(segment.text, segment.deid, false)
+      : segment.text;
+  const textParts =
+    segment.nv && segment.nv.length > 0
+      ? parseNvTagText(textForNv, segment.nv)
+      : parseNonverbalText(textForNv);
 
   // 편집 모드이고 타임스탬프가 없는 경우 (gemini-3) 클릭 비활성화
   const isClickable =
@@ -87,41 +105,19 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
     }
   };
 
-  // 텍스트 영역 높이 자동 조절 (초기 마운트 시에만)
-  React.useEffect(() => {
-    if (textareaRef.current && isEditable) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  }, [isEditable]);
-
-  // 편집 모드 진입 시에만 segment.text로 초기화 (편집 중에는 외부 변경 무시)
-  const prevIsEditable = React.useRef(isEditable);
-  React.useEffect(() => {
-    if (isEditable && !prevIsEditable.current) {
-      setEditedText(segment.text);
-    }
-    if (!isEditable && prevIsEditable.current) {
-      setEditedText(segment.text);
-    }
-    prevIsEditable.current = isEditable;
-  }, [isEditable, segment.text]);
-
-  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const textarea = e.target;
-    const newText = textarea.value;
-    setEditedText(newText);
-
-    // 높이 조절을 requestAnimationFrame으로 다음 프레임에 처리
-    requestAnimationFrame(() => {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    });
-
-    if (onTextEdit) {
-      onTextEdit(segment.id, newText);
-    }
-  };
+  // contentEditable 편집 콜백
+  const handleEditorTextChange = React.useCallback(
+    (text: string) => onTextEdit?.(segment.id, text),
+    [segment.id, onTextEdit]
+  );
+  const handleEditorNvChange = React.useCallback(
+    (nv: string[]) => onNvEdit?.(segment.id, nv),
+    [segment.id, onNvEdit]
+  );
+  const handleEditorDeidChange = React.useCallback(
+    (deid: Record<string, string>) => onDeidEdit?.(segment.id, deid),
+    [segment.id, onDeidEdit]
+  );
 
   const handleSpeakerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -149,7 +145,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       })}
       className={`relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-grey-40 transition-all md:h-9 md:w-9 ${bgColor} ${
         interactive ? 'cursor-pointer' : ''
-      } ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}
+      } ${isActive ? 'scale-105' : 'group-lg:hover:scale-105'}`}
     >
       <span className={`text-m font-medium md:text-l ${textColor}`}>
         {label}
@@ -178,8 +174,8 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
         isActive
           ? 'bg-grey-20'
           : isEditable
-            ? 'hover:grey-20'
-            : `${isClickable ? 'hover:border-grey-40 hover:bg-grey-20' : ''}`
+            ? 'lg:hover:grey-20'
+            : `${isClickable ? 'lg:hover:border-grey-40 lg:hover:bg-grey-20' : ''}`
       }`}
       onClick={handleContainerClick}
       onKeyDown={handleKeyDown}
@@ -188,7 +184,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       {isEditable && onDeleteSegment && (
         <button
           onClick={handleDeleteSegment}
-          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-red-500 opacity-0 transition-all hover:text-red-600 group-hover/segment:pointer-events-auto group-hover/segment:opacity-100"
+          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-red-500 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:text-red-600"
           aria-label="세그먼트 삭제"
         >
           <Trash2 className="h-4 w-4" />
@@ -222,7 +218,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               onClick={handleSpeakerClick}
               onKeyDown={handleSpeakerKeyDown}
               aria-label="화자 편집"
-              className="cursor-pointer text-sm font-medium text-grey-100 hover:underline md:text-m"
+              className="cursor-pointer text-sm font-medium text-grey-100 md:text-m lg:hover:underline"
             >
               {name}
             </span>
@@ -230,11 +226,6 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
           {!isAnonymized && !onSpeakerChange && (
             <span className="text-sm font-medium text-grey-100 md:text-m">
               {name}
-            </span>
-          )}
-          {isAnonymized && (
-            <span className="text-sm font-medium text-grey-100 md:text-m">
-              익명화됨
             </span>
           )}
           {showTimestampDisplay &&
@@ -251,22 +242,24 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
           )}
         </div>
         {isEditable ? (
-          <textarea
-            placeholder="대화 내용을 입력해주세요."
-            ref={textareaRef}
-            value={editedText}
-            onChange={handleTextareaChange}
-            onClick={(e) => e.stopPropagation()}
-            rows={1}
-            className={`m-0 block w-full resize-none overflow-hidden border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none placeholder:text-grey-70 md:text-m ${
-              isActive ? 'font-emphasize' : ''
-            }`}
+          <SegmentContentEditor
+            segment={segment}
+            showDeid={showDeid}
+            isActive={isActive}
+            onTextChange={handleEditorTextChange}
+            onNvChange={handleEditorNvChange}
+            onDeidChange={handleEditorDeidChange}
           />
         ) : (
           <p
             className={`m-0 text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
           >
-            {renderTextWithNonverbal(textParts, sttModel)}
+            {hasDeid && showDeid && segment.deid
+              ? applyDeidStyling(
+                  renderTextWithNonverbal(textParts, sttModel),
+                  segment.deid
+                )
+              : renderTextWithNonverbal(textParts, sttModel)}
           </p>
         )}
       </div>
@@ -275,7 +268,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       {isEditable && onAddSegment && (
         <button
           onClick={handleAddSegment}
-          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-subtle p-2 text-primary opacity-0 shadow-sm transition-all hover:scale-105 hover:border-primary group-hover/segment:pointer-events-auto group-hover/segment:opacity-100"
+          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-subtle p-2 text-primary opacity-0 shadow-sm transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:scale-105 lg:hover:border-primary"
           aria-label="세그먼트 추가"
         >
           <Plus className="h-4 w-4" />

@@ -125,7 +125,7 @@ const MobileView = () => {
 
   // 일괄 설정
   const [batchConfig, setBatchConfig] = useState<BatchSessionConfig>({
-    sttModel: 'gemini-3',
+    sttModel: 'advanced',
     clientId: undefined,
   });
 
@@ -150,7 +150,7 @@ const MobileView = () => {
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
         transcribeType:
-          batchConfig.sttModel === 'gemini-3' ? 'advanced' : 'basic',
+          batchConfig.sttModel === 'advanced' ? 'advanced' : 'basic',
         durationSeconds: file.duration,
       });
       return sum + totalCredit;
@@ -164,7 +164,7 @@ const MobileView = () => {
       if (!file || file.duration === undefined) return sum;
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
-        transcribeType: config.sttModel === 'gemini-3' ? 'advanced' : 'basic',
+        transcribeType: config.sttModel === 'advanced' ? 'advanced' : 'basic',
         durationSeconds: file.duration,
       });
       return sum + totalCredit;
@@ -236,7 +236,7 @@ const MobileView = () => {
     if (depth === 'upload') {
       // 업로드 화면에서 홈으로 돌아갈 때 상태 초기화
       clearFiles();
-      setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
+      setBatchConfig({ sttModel: 'advanced', clientId: undefined });
       setFileConfigs([]);
     }
     navigateWithUtm(-1);
@@ -308,7 +308,7 @@ const MobileView = () => {
 
     // 완료 후 홈으로
     clearFiles();
-    setBatchConfig({ sttModel: 'gemini-3', clientId: undefined });
+    setBatchConfig({ sttModel: 'advanced', clientId: undefined });
     setFileConfigs([]);
     setDepth('home');
   };
@@ -493,7 +493,6 @@ const MobileView = () => {
                     key={record.session_id}
                     record={record}
                     isReadOnly={isDummyFlow}
-                    isMobile={true}
                   />
                 ))}
 
@@ -501,7 +500,7 @@ const MobileView = () => {
                 {hasMoreSessions && (
                   <button
                     onClick={handleLoadMore}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-surface-strong bg-surface py-4 text-fg-muted transition-colors hover:bg-surface-contrast"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-surface-strong bg-surface py-4 text-fg-muted transition-colors lg:hover:bg-surface-contrast"
                   >
                     <PlusIcon size={20} />
                     더보기

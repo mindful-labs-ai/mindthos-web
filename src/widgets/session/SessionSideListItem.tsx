@@ -33,8 +33,8 @@ export const SessionSideListItem: React.FC<SessionSideListItemProps> = ({
       onClick={() => onClick(sessionId)}
       className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${
         isActive
-          ? 'bg-surface-contrast hover:bg-surface-strong'
-          : 'hover:bg-surface-contrast'
+          ? 'bg-surface-contrast lg:hover:bg-surface-strong'
+          : 'lg:hover:bg-surface-contrast'
       }`}
     >
       <div className="">

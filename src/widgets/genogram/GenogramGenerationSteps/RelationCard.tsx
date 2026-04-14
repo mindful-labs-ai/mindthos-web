@@ -318,7 +318,7 @@ function PersonCard({
                   'flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors',
                   s.id === personId
                     ? 'font-medium text-green-80'
-                    : 'text-grey-80 hover:bg-grey-10'
+                    : 'text-grey-80 lg:hover:bg-grey-10'
                 )}
               >
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-grey-20 text-xs text-grey-60">
@@ -351,7 +351,7 @@ function PersonCard({
               type="button"
               onClick={() => handleSelectPerson(s.id)}
               className={cn(
-                'typo-sm flex w-full items-center gap-2 px-4 py-2 hover:bg-surface-contrast',
+                'typo-sm flex w-full items-center gap-2 px-4 py-2 lg:hover:bg-surface-contrast',
                 s.id === personId ? 'font-medium text-fg' : 'text-fg-muted'
               )}
             >
@@ -384,8 +384,8 @@ function PersonCard({
           baseCardClass,
           'transition-colors',
           person
-            ? 'border-border hover:border-fg-muted'
-            : 'border-dashed border-fg-muted hover:border-fg'
+            ? 'border-border lg:hover:border-fg-muted'
+            : 'border-dashed border-fg-muted lg:hover:border-fg'
         ),
       }
     : {
@@ -941,7 +941,7 @@ export function RelationCard({
         <button
           onClick={() => setShowDeleteModal(true)}
           aria-label="관계 삭제"
-          className="absolute right-4 top-3 flex h-[27px] w-[27px] items-center justify-center rounded-md text-danger hover:scale-105"
+          className="absolute right-4 top-3 flex h-[27px] w-[27px] items-center justify-center rounded-md text-danger lg:hover:scale-105"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -956,7 +956,7 @@ export function RelationCard({
             className={cn(
               'typo-sm flex h-[27px] w-[50px] items-center justify-center rounded-md text-primary-fg',
               canSave
-                ? 'hover:bg-primary-600 bg-primary'
+                ? 'lg:hover:bg-primary-600 bg-primary'
                 : 'cursor-not-allowed bg-fg-muted'
             )}
           >
@@ -966,7 +966,7 @@ export function RelationCard({
           <button
             onClick={() => setIsEditing(true)}
             aria-label="관계 편집"
-            className="p-1 text-fg-muted hover:text-fg"
+            className="p-1 text-fg-muted lg:hover:text-fg"
           >
             <Pencil className="h-5 w-5" />
           </button>

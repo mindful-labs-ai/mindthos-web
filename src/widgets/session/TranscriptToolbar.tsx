@@ -5,7 +5,7 @@
 
 import React from 'react';
 
-import { CopyIcon } from '@/shared/icons';
+import { CopyIcon, DeidentificationIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useSessionStore } from '@/stores/sessionStore';
@@ -33,6 +33,12 @@ interface TranscriptToolbarProps {
   onCancelEdit: () => void;
   /** 복사 핸들러 */
   onCopy: () => void;
+  /** 비식별화 버튼 클릭 핸들러 */
+  onDeidentify?: () => void;
+  /** 비식별화 활성화 상태 */
+  showDeid?: boolean;
+  /** 비식별화 최초 실행 여부 */
+  hasActivatedDeid?: boolean;
 }
 
 export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
@@ -48,6 +54,9 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     onSaveEdit,
     onCancelEdit,
     onCopy,
+    onDeidentify,
+    showDeid = false,
+    hasActivatedDeid = false,
   }) => {
     const sharedMenuItems = (
       <>
@@ -56,7 +65,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
             onToggleAnonymized();
             setIsMenuOpen(false);
           }}
-          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface"
         >
           <svg
             width="18"
@@ -92,7 +101,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
               store.setAutoScrollEnabled(!store.autoScrollEnabled);
               setIsMenuOpen(false);
             }}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-surface"
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface"
           >
             <svg
               width="18"
@@ -141,16 +150,21 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
             </Badge>
           ) : isEditing ? (
             <>
+              {hasActivatedDeid && (
+                <span className="mr-2 rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
+                  비식별화 되어 있는 항목은 주황색으로 표시됩니다.{' '}
+                </span>
+              )}
               <button
                 type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-m font-medium text-primary-fg transition-colors hover:opacity-80"
+                className="rounded-lg bg-primary px-4 py-2 text-m font-medium text-primary-fg transition-colors lg:hover:opacity-80"
                 onClick={onSaveEdit}
               >
                 편집 완료
               </button>
               <button
                 type="button"
-                className="hover:bg-surface-hover typo-sm rounded-lg bg-surface px-4 py-2 font-medium text-fg transition-colors"
+                className="lg:hover:bg-surface-hover typo-sm rounded-lg bg-surface px-4 py-2 font-medium text-fg transition-colors"
                 onClick={onCancelEdit}
               >
                 취소
@@ -160,7 +174,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
             <>
               <button
                 type="button"
-                className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                 onClick={onEditStart}
                 title="편집"
               >
@@ -168,13 +182,34 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
               </button>
               <button
                 type="button"
-                className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10 hover:text-grey-100"
+                className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                 onClick={onCopy}
                 title="복사"
                 aria-label="축어록 복사"
               >
                 <CopyIcon size={20} /> 복사하기
               </button>
+              {onDeidentify && (
+                <button
+                  type="button"
+                  className={`flex items-center gap-1.5 rounded-md border px-3.5 py-1 text-m font-medium transition-colors ${
+                    !hasActivatedDeid
+                      ? 'border-green-80 text-green-80 lg:hover:opacity-80'
+                      : showDeid
+                        ? 'border-orange-100 bg-white text-orange-100 lg:hover:opacity-80'
+                        : 'border border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                  }`}
+                  onClick={onDeidentify}
+                  aria-label="축어록 비식별화"
+                >
+                  <DeidentificationIcon />
+                  {!hasActivatedDeid
+                    ? '비식별화 하기'
+                    : showDeid
+                      ? '비식별화 ON'
+                      : '비식별화 OFF'}
+                </button>
+              )}
               <div className="inline-block">
                 <PopUp
                   open={isMenuOpen}
@@ -183,7 +218,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                   trigger={
                     <button
                       type="button"
-                      className="rounded-lg p-2 text-fg-muted transition-colors hover:bg-surface hover:text-fg"
+                      className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
                       title="메뉴"
                       aria-label="추가 메뉴"
                     >

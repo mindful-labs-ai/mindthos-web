@@ -85,7 +85,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-grey-30 bg-white p-3">
+    <div className="flex items-center justify-between gap-3 border-grey-30 bg-white p-3 md:rounded-xl md:border">
       <div className="flex flex-1 items-center gap-3">
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-md">
           <svg
@@ -126,14 +126,14 @@ export const CardInfo: React.FC<CardInfoProps> = ({
         <button
           onClick={handleDeleteClick}
           disabled={isDeleting}
-          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-red-80 transition-colors hover:bg-grey-10 hover:text-red-50"
+          className="rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-red-80 transition-colors lg:hover:bg-grey-10 lg:hover:text-red-50"
         >
           {isDeleting ? '삭제 중...' : '삭제'}
         </button>
       ) : (
         <button
           onClick={onAdd}
-          className="whitespace-nowrap rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors hover:bg-grey-10"
+          className="whitespace-nowrap rounded-md border border-grey-30 px-3 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
         >
           카드 등록
         </button>
