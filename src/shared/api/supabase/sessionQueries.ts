@@ -10,6 +10,7 @@ import type {
   Speaker,
   Transcribe,
 } from '@/features/session/types';
+import { formatSegmentText } from '@/features/session/utils/formatSegmentText';
 import { supabase } from '@/lib/supabase';
 import {
   callEdgeFunction,
@@ -314,8 +315,11 @@ function getSpeakerName(speakerId: number, speakers?: Speaker[]): string {
 }
 
 /**
- * 세그먼트 배열을 파싱하여 텍스트로 변환
- * 형식: [MM:SS] [화자명] 텍스트 (타임스탬프가 없으면 [순번] 사용)
+ * 세그먼트 배열을 AI 소비용 평문으로 변환
+ * - 형식: `[MM:SS] [화자명] 텍스트` (타임스탬프 없으면 `[순번]`)
+ * - 비언어 태그 → `(라벨)` 로 감쌈
+ * - 비식별화 태그 → 원본 그대로 복원
+ * 자세한 변환 규칙은 `formatSegmentText` 참고.
  */
 function generateParsedText(segments: any[], speakers?: Speaker[]): string {
   return segments
@@ -325,7 +329,11 @@ function generateParsedText(segments: any[], speakers?: Speaker[]): string {
           ? formatTimestamp(segment.start)
           : `[${index + 1}]`;
       const speakerName = getSpeakerName(segment.speaker, speakers);
-      return `${prefix} [${speakerName}] ${segment.text}`;
+      const text = formatSegmentText({
+        text: segment.text ?? '',
+        nv: segment.nv,
+      });
+      return `${prefix} [${speakerName}] ${text}`;
     })
     .join('\n');
 }
