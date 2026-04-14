@@ -4,7 +4,9 @@ import { formatSegmentText } from '../formatSegmentText';
 
 describe('formatSegmentText', () => {
   it('태그가 없는 평문은 그대로 반환한다', () => {
-    expect(formatSegmentText({ text: '저는 괜찮아요.' })).toBe('저는 괜찮아요.');
+    expect(formatSegmentText({ text: '저는 괜찮아요.' })).toBe(
+      '저는 괜찮아요.'
+    );
   });
 
   it('빈 텍스트를 안전하게 처리한다', () => {
@@ -12,7 +14,9 @@ describe('formatSegmentText', () => {
   });
 
   it('undefined text 도 안전하게 처리한다', () => {
-    expect(formatSegmentText({ text: undefined as unknown as string })).toBe('');
+    expect(formatSegmentText({ text: undefined as unknown as string })).toBe(
+      ''
+    );
   });
 
   describe('비식별화', () => {
