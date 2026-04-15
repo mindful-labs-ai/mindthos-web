@@ -89,20 +89,7 @@ const parseSummary = (summary: string): NoteSection[] => {
 
   if (currentSection) sections.push(currentSection);
 
-  const getHeadingLevel = (rawHeading: string): number => {
-    const match = rawHeading.match(/^(#{1,4})\s/);
-    return match ? match[1].length : 0;
-  };
-
-  return sections.filter((section, i) => {
-    if (section.content.trim()) return true;
-    const currentLevel = getHeadingLevel(section.rawHeading);
-    if (currentLevel > 0 && i + 1 < sections.length) {
-      const nextLevel = getHeadingLevel(sections[i + 1].rawHeading);
-      if (nextLevel > currentLevel) return false;
-    }
-    return true;
-  });
+  return sections;
 };
 
 export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
@@ -480,18 +467,20 @@ export const ProgressNoteView: React.FC<ProgressNoteViewProps> = ({
                     )}
                   </div>
 
-                  <MarkdownRenderer
-                    ref={
-                      isEditing
-                        ? (el) => {
-                            sectionRefs.current.set(index, el);
-                          }
-                        : undefined
-                    }
-                    content={section.content || '내용이 없습니다.'}
-                    disableHeadings
-                    editable={isEditing}
-                  />
+                  {(section.content || isEditing) && (
+                    <MarkdownRenderer
+                      ref={
+                        isEditing
+                          ? (el) => {
+                              sectionRefs.current.set(index, el);
+                            }
+                          : undefined
+                      }
+                      content={section.content}
+                      disableHeadings
+                      editable={isEditing}
+                    />
+                  )}
                 </div>
               ))}
             </div>
