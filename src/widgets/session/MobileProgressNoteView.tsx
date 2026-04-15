@@ -47,7 +47,7 @@ interface NoteSection {
 
 /** rawHeading에서 prefix(## , **1. 등)를 추출하여 편집된 제목과 재조합 */
 const rebuildHeading = (rawHeading: string, editedTitle: string): string => {
-  const hashMatch = rawHeading.match(/^(#{1,4}\s*)/);
+  const hashMatch = rawHeading.match(/^(#{1,3}\s*)/);
   if (hashMatch) return `${hashMatch[1]}${editedTitle}`;
 
   const numMatch = rawHeading.match(/^(\*{0,2}\d+\.\s*)/);
@@ -70,9 +70,9 @@ const parseSummary = (summary: string): NoteSection[] => {
     text.replace(/\*\*/g, '').trim();
 
   lines.forEach((line) => {
-    if (/^#{1,4}\s/.test(line)) {
+    if (/^#{1,3}\s/.test(line)) {
       if (currentSection) sections.push(currentSection);
-      const rawTitle = line.replace(/^#{1,4}\s*/, '').trim();
+      const rawTitle = line.replace(/^#{1,3}\s*/, '').trim();
       currentSection = {
         title: removeBoldMarkers(rawTitle),
         content: '',
