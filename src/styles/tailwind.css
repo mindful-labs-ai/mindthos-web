@@ -247,6 +247,15 @@ body {
   .terms-content-typo {
     @apply text-m font-medium text-grey-80 md:text-l;
   }
+  .note-label {
+    @apply text-sm font-emphasize text-grey-80;
+  }
+  .note-desc {
+    @apply whitespace-pre-wrap text-m font-normal text-grey-100;
+  }
+  .note-copy-btn-wrapper {
+    @apply absolute right-3 top-1.5 hidden transition-opacity lg:block lg:opacity-0 lg:group-hover:opacity-100;
+  }
 
   /* ========================================
    * Interactive State 조합 클래스
