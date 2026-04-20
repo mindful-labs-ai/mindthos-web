@@ -101,6 +101,30 @@ export const MarkdownRenderer = React.memo(
                   {cleanBrokenMarkdown(children)}
                 </Text>
               ),
+              h4: ({ children }: { children?: React.ReactNode }) => (
+                <Text
+                  className={`mb-4 font-semibold leading-relaxed text-fg${editableCellClass}`}
+                  {...editableProps}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Text>
+              ),
+              h5: ({ children }: { children?: React.ReactNode }) => (
+                <Text
+                  className={`mb-4 font-semibold leading-relaxed text-fg${editableCellClass}`}
+                  {...editableProps}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Text>
+              ),
+              h6: ({ children }: { children?: React.ReactNode }) => (
+                <Text
+                  className={`mb-4 font-semibold leading-relaxed text-fg${editableCellClass}`}
+                  {...editableProps}
+                >
+                  {cleanBrokenMarkdown(children)}
+                </Text>
+              ),
             }
           : {
               h1: ({ children }: { children?: React.ReactNode }) => (
