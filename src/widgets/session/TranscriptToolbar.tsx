@@ -192,12 +192,12 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
               {onDeidentify && (
                 <button
                   type="button"
-                  className={`flex items-center gap-1.5 rounded-md border px-3.5 py-1 text-m font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 rounded-md border bg-white px-3.5 py-1 text-m font-medium transition-colors ${
                     !hasActivatedDeid
                       ? 'border-green-80 text-green-80 lg:hover:opacity-80'
                       : showDeid
-                        ? 'border-orange-100 bg-white text-orange-100 lg:hover:opacity-80'
-                        : 'border border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                        ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
+                        : 'border border-grey-30 text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
                   }`}
                   onClick={onDeidentify}
                   aria-label="축어록 비식별화"

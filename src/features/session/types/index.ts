@@ -118,6 +118,15 @@ export type ProgressNoteStatus =
   | 'succeeded'
   | 'failed';
 
+export type ProgressNoteVersion = 'v1' | 'v2_with_dna' | 'v2_no_dna';
+
+export interface Gate1Warning {
+  code: string;
+  field?: string;
+  message: string;
+  severity: 'warning' | 'error';
+}
+
 export interface ProgressNote {
   id: string;
   session_id: string;
@@ -128,6 +137,10 @@ export interface ProgressNote {
   processing_status: ProgressNoteStatus;
   error_message: string | null;
   created_at: string;
+  // v2 JSON 노트 품질 메타 (20260420 migration 이후 rows)
+  note_version?: ProgressNoteVersion;
+  gate1_passed?: boolean | null;
+  gate1_warnings?: Gate1Warning[] | null;
 }
 
 export type NoteType =

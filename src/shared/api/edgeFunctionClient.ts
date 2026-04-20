@@ -15,7 +15,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 상담노트 관련
   PROGRESS_NOTE: {
     CREATE: 'progress-note',
-    ADD: 'add-progress-note',
+    ADD: 'note-layer',
   },
   // 내담자 관련
   CLIENT: {
