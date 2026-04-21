@@ -3,9 +3,11 @@ import React from 'react';
 import { passwordResetSchema } from '@/features/auth/schemas/passwordResetSchema';
 import { trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
+import { AuthError, AuthErrorCode } from '@/shared/api/services/auth/types';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { FormField } from '@/shared/ui/composites/FormField';
+import { useToast } from '@/shared/ui/composites/Toast';
 
 interface Props {
   onSuccess: () => void;
@@ -14,6 +16,7 @@ interface Props {
 const PASSWORD_MATCH_DEBOUNCE_MS = 300;
 
 const PasswordResetForm = ({ onSuccess }: Props) => {
+  const { toast } = useToast();
   const [password, setPassword] = React.useState('');
   const [passwordConfirm, setPasswordConfirm] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -55,11 +58,22 @@ const PasswordResetForm = ({ onSuccess }: Props) => {
         context: 'reset',
         error: err instanceof Error ? err.message : 'Unknown error',
       });
-      setError(
-        err instanceof Error
-          ? err.message
-          : '비밀번호 변경에 실패했습니다. 다시 시도해주세요.'
-      );
+      if (
+        err instanceof AuthError &&
+        err.code === AuthErrorCode.RATE_LIMIT_EXCEEDED
+      ) {
+        toast({
+          title: '요청이 너무 많습니다',
+          description: '잠시 후 다시 시도해주세요.',
+        });
+        setError('');
+      } else {
+        setError(
+          err instanceof Error
+            ? err.message
+            : '비밀번호 변경에 실패했습니다. 다시 시도해주세요.'
+        );
+      }
       setIsSubmitting(false);
     }
   };

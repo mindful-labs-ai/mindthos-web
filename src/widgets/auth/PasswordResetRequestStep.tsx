@@ -4,11 +4,13 @@ import { passwordResetRequestSchema } from '@/features/auth/schemas/passwordRese
 import { cn } from '@/lib/cn';
 import { trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
+import { AuthError, AuthErrorCode } from '@/shared/api/services/auth/types';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { GoogleIcon, KakaoIcon, MailIcon } from '@/shared/icons';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { FormField } from '@/shared/ui/composites/FormField';
+import { useToast } from '@/shared/ui/composites/Toast';
 
 interface Props {
   onBackToLogin: () => void;
@@ -41,7 +43,17 @@ const formatProviderLabel = (providers: string[]): string => {
   return labels.join(' / ');
 };
 
+const RATE_LIMIT_TOAST = {
+  title: '요청이 너무 많습니다',
+  description: '잠시 후 다시 시도해주세요.',
+} as const;
+
+const isRateLimitError = (error: unknown): error is AuthError =>
+  error instanceof AuthError &&
+  error.code === AuthErrorCode.RATE_LIMIT_EXCEEDED;
+
 const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
+  const { toast } = useToast();
   const [email, setEmail] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isResending, setIsResending] = React.useState(false);
@@ -124,6 +136,11 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
       trackEvent(MixpanelEvent.PasswordResetRequestFailed, {
         error: err instanceof Error ? err.message : 'Unknown error',
       });
+      if (isRateLimitError(err)) {
+        toast(RATE_LIMIT_TOAST);
+        setState({ status: 'form', error: '' });
+        return;
+      }
       setState({
         status: 'form',
         error:
@@ -154,6 +171,11 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
         resend: true,
         error: err instanceof Error ? err.message : 'Unknown error',
       });
+      if (isRateLimitError(err)) {
+        toast(RATE_LIMIT_TOAST);
+        setState({ ...state, resendError: '', resendInfo: '' });
+        return;
+      }
       setState({
         ...state,
         resendError:

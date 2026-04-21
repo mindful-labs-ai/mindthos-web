@@ -233,6 +233,44 @@ export const authService = {
     }
   },
 
+  async changePassword(
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+      throw new AuthError(
+        AuthErrorCode.USER_NOT_FOUND,
+        '사용자 정보를 찾을 수 없습니다.'
+      );
+    }
+
+    try {
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (verifyError) {
+        throw new AuthError(
+          AuthErrorCode.INVALID_CREDENTIALS,
+          '현재 비밀번호가 올바르지 않습니다.',
+          verifyError
+        );
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (updateError) throw handleAuthError(updateError);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
   async checkUserExists(email: string): Promise<CheckUserExistsResponse> {
     try {
       return await callEdgeFunction<CheckUserExistsResponse>(

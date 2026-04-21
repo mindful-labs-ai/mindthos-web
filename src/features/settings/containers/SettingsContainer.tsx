@@ -53,6 +53,7 @@ import { DeleteAccountModal } from '@/widgets/settings/DeleteAccountModal';
 import { LogoutModal } from '@/widgets/settings/LogoutModal';
 import { NoticeDetail } from '@/widgets/settings/NoticeDetail';
 import { NoticeList } from '@/widgets/settings/NoticeList';
+import { PasswordChangeModal } from '@/widgets/settings/PasswordChangeModal';
 
 import { SettingsView } from './SettingsView';
 
@@ -75,6 +76,8 @@ export const SettingsContainer: React.FC = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = React.useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isPasswordChangeModalOpen, setIsPasswordChangeModalOpen] =
+    React.useState(false);
   const [isCreditUsageModalOpen, setIsCreditUsageModalOpen] =
     React.useState(false);
   const openModal = useModalStore((state) => state.openModal);
@@ -235,6 +238,10 @@ export const SettingsContainer: React.FC = () => {
   const handleDeleteAccount = () => {
     setIsDeleteModalOpen(true);
     setDeleteError('');
+  };
+
+  const handlePasswordChange = () => {
+    setIsPasswordChangeModalOpen(true);
   };
 
   const handleConfirmDelete = async () => {
@@ -572,6 +579,13 @@ export const SettingsContainer: React.FC = () => {
     />
   );
 
+  const passwordChangeModal = (
+    <PasswordChangeModal
+      open={isPasswordChangeModalOpen}
+      onOpenChange={setIsPasswordChangeModalOpen}
+    />
+  );
+
   const cardRegistrationModal = (
     <CardRegistrationModal
       isOpen={isCardModalOpen}
@@ -689,13 +703,21 @@ export const SettingsContainer: React.FC = () => {
             <span className="text-grey-40">|</span>
             <button
               type="button"
-              onClick={handleDeleteAccount}
-              className="font-medium text-grey-60 transition-colors lg:hover:text-red-80"
+              onClick={handlePasswordChange}
+              className="font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
             >
-              계정 탈퇴
+              비밀번호 변경
             </button>
           </>
         )}
+        <span className="text-grey-40">|</span>
+        <button
+          type="button"
+          onClick={handleDeleteAccount}
+          className="font-medium text-grey-60 transition-colors lg:hover:text-red-80"
+        >
+          계정 탈퇴
+        </button>
       </div>
     </div>
   );
@@ -706,6 +728,7 @@ export const SettingsContainer: React.FC = () => {
       {cancelModal}
       {logoutModal}
       {deleteModal}
+      {passwordChangeModal}
       {cardRegistrationModal}
       {creditUsageModal}
       {creditRenewalModal}
