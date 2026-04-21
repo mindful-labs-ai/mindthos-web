@@ -18,10 +18,10 @@ export function KeyQuotesBlock({ quotes, editable }: KeyQuotesBlockProps) {
       {quotes.map((kq, i) => (
         <div
           key={i}
-          className="group -mx-3 flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-20 p-3 transition-colors ease-in-out lg:hover:border-green-80"
+          className="group -mx-3 flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors ease-in-out lg:hover:border-green-80"
         >
-          <div className="min-w-0 flex-1">
-            <p className="typo-m font-emphasize text-fg">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <p className="note-card-title">
               "
               <span
                 contentEditable={editable}
@@ -35,7 +35,7 @@ export function KeyQuotesBlock({ quotes, editable }: KeyQuotesBlockProps) {
               </span>
               "
             </p>
-            <p className="text-sm text-grey-80">
+            <p className="note-card-sub">
               →{' '}
               <span
                 contentEditable={editable}
