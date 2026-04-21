@@ -97,3 +97,9 @@ export interface AccountDeleteResponse extends AuthApiResponse {
 export interface ResendVerificationResponse extends AuthApiResponse {
   email?: string;
 }
+
+export interface CheckAuthMethodResponse extends AuthApiResponse {
+  exists: boolean;
+  providers: string[];
+  hasPassword: boolean;
+}

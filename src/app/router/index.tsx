@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import AuthCallbackPage from '@/features/auth/page/AuthCallbackPage';
 import AuthPage from '@/features/auth/page/AuthPage';
-import EmailVerificationPage from '@/features/auth/page/EmailVerificationPage';
+import PasswordResetPage from '@/features/auth/page/PasswordResetPage';
 import UserVerifyPage from '@/features/auth/page/UserVerifyPage';
 import ClientDetailPage from '@/features/client/page/ClientDetailPage';
 import ClientListPage from '@/features/client/page/ClientListPage';
@@ -92,8 +92,8 @@ export const router = createBrowserRouter([
         element: <AuthCallbackPage />,
       },
       {
-        path: ROUTES.EMAIL_VERIFICATION,
-        element: <EmailVerificationPage />,
+        path: ROUTES.PASSWORD_RESET,
+        element: <PasswordResetPage />,
       },
       {
         path: ROUTES.TERMS_AGREEMENT,

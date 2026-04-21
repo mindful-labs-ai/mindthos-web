@@ -13,6 +13,7 @@ import {
   AuthErrorCode,
   type AccountDeleteResponse,
   type AuthResponse,
+  type CheckAuthMethodResponse,
   type CheckUserExistsResponse,
   type LoginCredentials,
   type ResendVerificationResponse,
@@ -206,10 +207,47 @@ export const authService = {
     }
   },
 
+  async requestPasswordReset(email: string): Promise<void> {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
+  async updatePassword(newPassword: string): Promise<void> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
   async checkUserExists(email: string): Promise<CheckUserExistsResponse> {
     try {
       return await callEdgeFunction<CheckUserExistsResponse>(
         EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_USER_EXISTS,
+        { email }
+      );
+    } catch (error) {
+      throw handleEdgeFunctionError(error);
+    }
+  },
+
+  async checkAuthMethod(email: string): Promise<CheckAuthMethodResponse> {
+    try {
+      return await callEdgeFunction<CheckAuthMethodResponse>(
+        EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_AUTH_METHOD,
         { email }
       );
     } catch (error) {

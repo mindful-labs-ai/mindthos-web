@@ -37,7 +37,6 @@ import { FormField } from '@/shared/ui/composites/FormField';
 import { Select, type SelectItem } from '@/shared/ui/composites/Select';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
-import { LogoutModal } from '@/widgets/settings/LogoutModal';
 import { REFERRAL_OPTIONS } from '@/widgets/settings/UserEditModal';
 
 const UserVerifyPage: React.FC = () => {
@@ -90,8 +89,6 @@ const UserVerifyPage: React.FC = () => {
   const [errors, setErrors] = React.useState<
     Partial<Record<keyof UserVerifyFormData, string>>
   >({});
-
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
 
   const hasReferralOther = formData.referralSource === 'other';
 
@@ -168,16 +165,11 @@ const UserVerifyPage: React.FC = () => {
     mutation.mutate(formData);
   };
 
-  const openLogoutConfirm = () => {
-    setIsLogoutModalOpen(true);
-  };
-
-  const handleConfirmLogout = async () => {
+  const handleLogout = async () => {
     try {
       trackEvent(MixpanelEvent.Logout);
       await logout();
     } finally {
-      setIsLogoutModalOpen(false);
       navigateWithUtm(ROUTES.AUTH, { replace: true });
     }
   };
@@ -286,10 +278,10 @@ const UserVerifyPage: React.FC = () => {
     <div className="flex justify-center pt-2">
       <button
         type="button"
-        onClick={openLogoutConfirm}
-        className="text-sm font-medium text-red-50 transition-colors lg:hover:text-red-80"
+        onClick={handleLogout}
+        className="text-sm font-medium text-grey-80 underline transition-colors lg:hover:text-red-80"
       >
-        로그아웃
+        로그인 페이지로 돌아가기
       </button>
     </div>
   );
@@ -328,21 +320,13 @@ const UserVerifyPage: React.FC = () => {
     return null;
   }
 
-  const logoutModalNode = (
-    <LogoutModal
-      open={isLogoutModalOpen}
-      onOpenChange={setIsLogoutModalOpen}
-      onConfirm={handleConfirmLogout}
-    />
-  );
-
   /* ---------- Mobile layout ---------- */
   if (isMobile) {
     return (
       <>
         <div className="flex min-h-screen flex-col bg-surface">
           <div className="flex h-[56px] flex-shrink-0 items-center gap-3 border-b border-border px-4">
-            <BackButton onClick={openLogoutConfirm} />
+            <BackButton onClick={handleLogout} />
             <p className="text-m font-medium text-fg">회원가입</p>
           </div>
           <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
@@ -370,7 +354,7 @@ const UserVerifyPage: React.FC = () => {
       <>
         <div className="flex min-h-screen flex-col bg-surface">
           <div className="flex h-[60px] flex-shrink-0 items-center gap-3 border-b border-border px-6">
-            <BackButton onClick={openLogoutConfirm} />
+            <BackButton onClick={handleLogout} />
             <p className="text-m font-medium text-fg">회원가입</p>
           </div>
           <form
@@ -415,7 +399,6 @@ const UserVerifyPage: React.FC = () => {
         </div>
         <div className="w-full max-w-xl pt-6">{logoutButton}</div>
       </div>
-      {logoutModalNode}
     </>
   );
 };
