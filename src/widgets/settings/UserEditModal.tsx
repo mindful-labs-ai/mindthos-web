@@ -18,7 +18,6 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
-import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -67,15 +66,12 @@ interface UserEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  /** 퀘스트 미션에서 열린 경우 true */
-  isQuestMode?: boolean;
 }
 
 export const UserEditModal: React.FC<UserEditModalProps> = ({
   open,
   onOpenChange,
   onSuccess,
-  isQuestMode = false,
 }) => {
   const { userName, organization, userPhoneNumber, updateUser } =
     useAuthStore();
@@ -118,8 +114,6 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
   // 모달 열릴 때의 휴대폰 번호 스냅샷 — 변경 여부 판단용 (PhoneVerificationField 에 전달)
   const [initialPhoneNumber, setInitialPhoneNumber] = React.useState('');
   const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
-
-  const hasReferralOther = formData.referralSource === 'other';
 
   const [errors, setErrors] = React.useState<
     Partial<Record<keyof UserEditFormData, string>>
@@ -248,26 +242,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
           </div>
         ) : (
           <div className="px-6">
-            {isQuestMode && (
-              <>
-                <Text className="typo-sm mb-1 font-headline text-primary">
-                  마지막 미션
-                </Text>
-                <Title as="h2" className="typo-xl font-headline">
-                  선생님의 성함은 무엇인가요?
-                </Title>
-                <Text className="typo-sm mt-3 leading-relaxed text-fg-muted">
-                  마음토스에서 상담 &amp; 임상 보고서를 만드실 때,
-                  <br />
-                  여기서 입력된 선생님의 정보가 기입됩니다.
-                </Text>
-              </>
-            )}
-            {!isQuestMode && (
-              <Title as="h2" className="typo-xl font-headline">
-                정보 입력하기
-              </Title>
-            )}
+            <Title as="h2" className="typo-xl font-headline">
+              정보 입력하기
+            </Title>
           </div>
         )}
 
@@ -342,40 +319,6 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             />
           </FormField>
 
-          {isQuestMode && (
-            <FormField label="가입 경로" error={errors.referralSource}>
-              <Select
-                items={REFERRAL_OPTIONS}
-                value={formData.referralSource}
-                onChange={(value) => {
-                  const newValue = value as string;
-                  handleChange('referralSource', newValue);
-                  if (newValue !== 'other') {
-                    setFormData((prev) => ({
-                      ...prev,
-                      referralSourceCustom: '',
-                    }));
-                  }
-                }}
-                placeholder="가입 경로를 선택해주세요"
-              />
-              {hasReferralOther && (
-                <Input
-                  type="text"
-                  placeholder="가입 경로를 직접 입력해주세요"
-                  value={formData.referralSourceCustom}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      referralSourceCustom: e.target.value,
-                    }))
-                  }
-                  maxLength={50}
-                  className="mt-2"
-                />
-              )}
-            </FormField>
-          )}
         </div>
 
         <div
@@ -402,11 +345,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
           >
             {mutation.isPending
               ? '저장 중...'
-              : isQuestMode
-                ? '저장하고 미션 완료하기'
-                : isMobileView
-                  ? '수정하기'
-                  : '정보 입력하기'}
+              : isMobileView
+                ? '수정하기'
+                : '정보 입력하기'}
           </Button>
         </div>
       </form>

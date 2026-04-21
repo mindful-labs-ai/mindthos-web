@@ -12,9 +12,7 @@ import {
 import { couponService } from '@/features/settings/services/couponService';
 import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
-import { useQuestStore } from '@/stores/questStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ComingSoonModal } from '@/widgets/common/ComingSoonModal';
 import { CompleteMissionModal } from '@/widgets/onboarding/CompleteMissionModal';
@@ -54,8 +52,6 @@ const UserEditModal = lazy(() =>
  * DOM 계층과 독립적으로 관리
  * */
 export const GlobalModalContainer = () => {
-  const { currentLevel, completeNextStep } = useQuestStore();
-  const user = useAuthStore((state) => state.user);
   const location = useLocation();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -65,7 +61,6 @@ export const GlobalModalContainer = () => {
   const isPaymentRoute = location.pathname.startsWith('/payment');
 
   // 모달 스토어에서 상태와 액션 가져오기
-  const openModal = useModalStore((state) => state.openModal);
   const closeModal = useModalStore((state) => state.closeModal);
   const isUserEditOpen = useModalStore((state) =>
     state.openModals.includes('userEdit')
@@ -118,10 +113,6 @@ export const GlobalModalContainer = () => {
     }
   };
 
-  const handleOpenUserEdit = () => {
-    openModal('userEdit');
-  };
-
   const handleCloseUserEdit = (open: boolean) => {
     if (!open) {
       closeModal('userEdit');
@@ -162,13 +153,6 @@ export const GlobalModalContainer = () => {
     closeModal('addClient');
   };
 
-  const handleUserEditSuccess = async () => {
-    // 내 정보 입력 미션(Level 5)인 경우 퀘스트 완료 처리
-    if (currentLevel === 5 && user?.email) {
-      await completeNextStep(user.email);
-    }
-  };
-
   // Portal을 사용하여 body에 직접 렌더링
   return createPortal(
     <>
@@ -176,7 +160,7 @@ export const GlobalModalContainer = () => {
       {!isTermsAgreementRoute && !isUserVerifyRoute && !isPaymentRoute && (
         <>
           <QuestMissionModal />
-          <CompleteMissionModal onOpenUserEdit={handleOpenUserEdit} />
+          <CompleteMissionModal />
           <TutorialGuideModal />
         </>
       )}
@@ -186,16 +170,12 @@ export const GlobalModalContainer = () => {
         !isGenogramRoute &&
         !isTermsAgreementRoute &&
         !isUserVerifyRoute &&
-        !isPaymentRoute && (
-          <MissionFloatingButton onOpenUserEdit={handleOpenUserEdit} />
-        )}
+        !isPaymentRoute && <MissionFloatingButton />}
 
       {/* 사용자 정보 수정 모달 */}
       <UserEditModal
         open={isUserEditOpen}
         onOpenChange={handleCloseUserEdit}
-        onSuccess={handleUserEditSuccess}
-        isQuestMode={currentLevel === 5}
       />
 
       {/* 플랜 변경 모달 */}
