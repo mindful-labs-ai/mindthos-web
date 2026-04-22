@@ -10,8 +10,16 @@ export const MixpanelEvent = {
   SignupAttempt: 'signup_attempt',
   SignupFailed: 'signup_failed',
   SignupSuccess: 'signup_success',
+  PhoneVerificationRequest: 'phone_verification_request',
+  PhoneVerificationVerify: 'phone_verification_verify',
   AccountDelete: 'account_delete',
   AccountDeleteConfirmView: 'account_delete_confirm_view',
+  PasswordResetRequestAttempt: 'password_reset_request_attempt',
+  PasswordResetRequestSuccess: 'password_reset_request_success',
+  PasswordResetRequestFailed: 'password_reset_request_failed',
+  PasswordUpdateAttempt: 'password_update_attempt',
+  PasswordUpdateSuccess: 'password_update_success',
+  PasswordUpdateFailed: 'password_update_failed',
 
   // ─── Home ───────────────────────────────────────────
   ActionCardClick: 'action_card_click',

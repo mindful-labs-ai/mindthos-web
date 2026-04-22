@@ -160,7 +160,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
         </div>
         <Text className="typo-sm text-fg-muted">
           {isFree
-            ? '유료 플랜으로 전환하세요'
+            ? '더 많은 크레딧과 기능을 만나보세요'
             : daysUntilReset !== undefined &&
               `${planLabel} 이용 중, 초기화까지 ${daysUntilReset}일`}
         </Text>
@@ -253,7 +253,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
       <div className="flex flex-col items-center justify-center gap-2">
         <Text className="px-3 text-center text-sm font-medium text-fg-muted">
           {isFree
-            ? '유료 플랜으로 전환하세요'
+            ? '더 많은 크레딧과 기능을 만나보세요'
             : daysUntilReset !== undefined &&
               `${planLabel} 이용 중, 초기화까지 ${daysUntilReset}일`}
         </Text>

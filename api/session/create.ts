@@ -9,7 +9,7 @@ interface CreateSessionRequest {
   duration_seconds: number;
   upload_type: 'pdf' | 'direct' | 'audio';
   client_id?: string | null;
-  stt_model: 'whisper' | 'gemini-3';
+  stt_model: 'whisper' | 'gemini-3' | 'basic' | 'advanced';
   template_id: number;
 }
 
@@ -17,7 +17,7 @@ interface CreateSessionRequest {
 interface CreateSessionResponse {
   session_id: string;
   status: 'accepted' | 'failed';
-  stt_model: 'whisper' | 'gemini-3';
+  stt_model: 'whisper' | 'gemini-3' | 'basic' | 'advanced';
   message: string;
 }
 

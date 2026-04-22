@@ -217,10 +217,6 @@ const HomeContainer = () => {
     }
   };
 
-  const handleOpenUserEdit = () => {
-    openModal('userEdit');
-  };
-
   const hasSession = sessionsFromQuery.length > 0;
   const hasMoreSessions = sessionsWithTranscribes.length > 5;
 
@@ -231,7 +227,6 @@ const HomeContainer = () => {
           completedStepCount={completedCount}
           remainingDays={remainingDays}
           onOpenCreateSession={handleUploadClick}
-          onOpenUserEdit={handleOpenUserEdit}
           hasSession={hasSession}
           onCompleteQuest3={handleCompleteQuest3}
         />

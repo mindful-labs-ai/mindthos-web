@@ -208,7 +208,8 @@ export const SessionHistoryContainer: React.FC = () => {
           createdAt: session.created_at,
           isAdvancedTranscript:
             transcribe && 'stt_model' in transcribe
-              ? transcribe.stt_model === 'gemini-3'
+              ? transcribe.stt_model === 'gemini-3' ||
+                transcribe.stt_model === 'advanced'
               : false,
           isHandwritten: session.audio_meta_data === null,
         };

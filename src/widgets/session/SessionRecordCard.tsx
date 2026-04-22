@@ -176,9 +176,9 @@ const CardMeta: React.FC<CardMetaProps> = ({
         <span className="typo-xs text-grey-70">
           {isHandwritten
             ? '직접 입력'
-            : sttModel === 'whisper'
+            : sttModel === 'whisper' || sttModel === 'basic'
               ? '일반 축어록'
-              : sttModel === 'gemini-3'
+              : sttModel === 'gemini-3' || sttModel === 'advanced'
                 ? '고급 축어록'
                 : ''}
         </span>

@@ -42,7 +42,7 @@ const ToolTipContainer = ({
   <div className="flex w-full max-w-[200px] flex-col justify-center gap-2">
     {level && LEVEL_MAP[level] && (
       <p className="typo-xs font-emphasize text-primary">
-        미션 - {LEVEL_MAP[level].mission}
+        가이드 - {LEVEL_MAP[level].mission}
       </p>
     )}
     <h4 className="typo-m mb-2 font-headline text-fg">{title}</h4>
@@ -194,7 +194,7 @@ export const TotalCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
     title="새로운 상담 노트 만들기 "
     message="필요한 상황에 맞는 상담 노트 양식을 선택해서 선생님만의 노트를 만들어보세요. 노트 양식은 템플릿 페이지에서도 확인 할 수 있어요."
     onConfirm={onConfirm}
-    confirmText="미션 완료하기"
+    confirmText="가이드 완료하기"
     level={1}
   />
 );
@@ -248,7 +248,7 @@ export const MissionCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
     title="AI 수퍼비전"
     message="혹시나 상담이 어렵게 느껴진다면, 24시간 늘 선생님 옆에 있는 마음토스가 제공하는 AI 수퍼비전으로 상담의 방향성을 잡아보세요."
     onConfirm={onConfirm}
-    confirmText="미션 완료하기"
+    confirmText="가이드 완료하기"
     level={2}
   />
 );
@@ -259,7 +259,7 @@ export const MissionCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
 export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <div className="flex w-full max-w-[200px] flex-col justify-center gap-2">
     <p className="typo-xs font-emphasize text-primary">
-      미션 - {LEVEL_MAP[3].mission}
+      가이드 - {LEVEL_MAP[3].mission}
     </p>
     <h4 className="typo-m mb-2 font-headline text-fg">녹음 파일 업로드하기</h4>
     <div className="typo-sm mb-4 break-keep">
@@ -267,7 +267,7 @@ export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
       실제 내담자의 상담 기록을 올려보세요.
     </div>
     <div className="typo-sm mb-4">
-      선생님의 상담 기록을 생성하면 미션을 달성할 수 있어요.
+      선생님의 상담 기록을 생성하면 가이드를 달성할 수 있어요.
     </div>
     <button
       onClick={onConfirm}

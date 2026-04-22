@@ -7,7 +7,11 @@ import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { useAuthStore } from '@/stores/authStore';
 
-const SignInForm = () => {
+interface Props {
+  onForgotPassword: () => void;
+}
+
+const SignInForm = ({ onForgotPassword }: Props) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -24,7 +28,6 @@ const SignInForm = () => {
     try {
       await login(email, password);
       trackEvent(MixpanelEvent.LoginSuccess, { method: 'email' });
-      // 로그인 성공 시 홈으로 리다이렉트 (UTM 파라미터 자동 유지)
       navigateWithUtm(ROUTES.ROOT);
     } catch (err) {
       trackEvent(MixpanelEvent.LoginFailed, {
@@ -72,6 +75,17 @@ const SignInForm = () => {
       <button type="submit" className="auth-button" disabled={isSubmitting}>
         {isSubmitting ? '로그인 중...' : '로그인'}
       </button>
+
+      <div className="text-right">
+        <button
+          type="button"
+          onClick={onForgotPassword}
+          className="text-sm font-medium text-grey-70 underline-offset-2 lg:hover:text-green-80 lg:hover:underline"
+          disabled={isSubmitting}
+        >
+          비밀번호를 잊으셨나요?
+        </button>
+      </div>
     </form>
   );
 };

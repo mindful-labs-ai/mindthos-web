@@ -38,6 +38,8 @@ export interface GeminiSegment {
   end: null;
   text: string;
   speaker: number; // 변환된 숫자 ID
+  nv?: string[]; // 비언어 매핑 (advanced만) - ["a1:한숨", "e1:슬픔"]
+  deid?: Record<string, string>; // 비식별화 매핑 - {"d1": "인물1"}
 }
 
 // Whisper 세그먼트 (타임스탬프 포함)
@@ -47,6 +49,8 @@ export interface WhisperSegment {
   end: number; // 종료 시간(초)
   text: string;
   speaker: number; // 화자 ID
+  nv?: string[]; // 비언어 매핑 (advanced만) - ["a1:한숨", "e1:슬픔"]
+  deid?: Record<string, string>; // 비식별화 매핑 - {"d1": "인물1"}
 }
 
 // 전사 세그먼트 (Union type)
@@ -59,7 +63,7 @@ export interface Speaker {
   customName?: string; // 커스텀 표시 이름
 }
 
-export type SttModel = 'gemini-3' | 'whisper';
+export type SttModel = 'gemini-3' | 'whisper' | 'basic' | 'advanced';
 
 // 전사 결과
 export interface TranscribeResult {
@@ -73,7 +77,7 @@ export interface TranscriptJson {
   segments: TranscribeSegment[];
   text: string;
   raw_output: string;
-  stt_model: 'gemini-3' | 'whisper';
+  stt_model: SttModel;
   speakers?: Speaker[]; // 화자 정보 (customName 포함)
 }
 
@@ -114,6 +118,15 @@ export type ProgressNoteStatus =
   | 'succeeded'
   | 'failed';
 
+export type ProgressNoteVersion = 'v1' | 'v2_with_dna' | 'v2_no_dna';
+
+export interface Gate1Warning {
+  code: string;
+  field?: string;
+  message: string;
+  severity: 'warning' | 'error';
+}
+
 export interface ProgressNote {
   id: string;
   session_id: string;
@@ -124,6 +137,10 @@ export interface ProgressNote {
   processing_status: ProgressNoteStatus;
   error_message: string | null;
   created_at: string;
+  // v2 JSON 노트 품질 메타 (20260420 migration 이후 rows)
+  note_version?: ProgressNoteVersion;
+  gate1_passed?: boolean | null;
+  gate1_warnings?: Gate1Warning[] | null;
 }
 
 export type NoteType =
@@ -196,14 +213,14 @@ export interface CreateSessionBackgroundRequest {
   file_size_mb: number;
   duration_seconds: number;
   client_id?: string | null;
-  stt_model: 'whisper' | 'gemini-3';
+  stt_model: SttModel;
   template_id: number;
 }
 
 export interface CreateSessionBackgroundResponse {
   session_id: string;
   status: 'accepted' | 'failed';
-  stt_model: 'whisper' | 'gemini-3';
+  stt_model: SttModel;
   message: string;
 }
 

@@ -73,10 +73,10 @@ const SttModelToggle: React.FC<{
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => onChange('whisper')}
+        onClick={() => onChange('basic')}
         className={cn(
           'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
-          value === 'whisper'
+          value === 'basic'
             ? 'bg-primary-subtle text-primary'
             : 'text-fg-muted lg:hover:bg-surface-contrast'
         )}
@@ -85,7 +85,7 @@ const SttModelToggle: React.FC<{
         <div
           className={cn(
             'flex h-4 w-4 items-center justify-center rounded-full',
-            value === 'whisper' ? 'bg-primary' : 'bg-surface-strong'
+            value === 'basic' ? 'bg-primary' : 'bg-surface-strong'
           )}
         >
           <svg
@@ -107,10 +107,10 @@ const SttModelToggle: React.FC<{
       </button>
       <button
         type="button"
-        onClick={() => onChange('gemini-3')}
+        onClick={() => onChange('advanced')}
         className={cn(
           'typo-sm flex items-center gap-1 rounded-md px-2 py-1 transition-colors',
-          value === 'gemini-3'
+          value === 'advanced'
             ? 'bg-primary-subtle text-primary'
             : 'text-fg-muted lg:hover:bg-surface-contrast'
         )}
@@ -119,7 +119,7 @@ const SttModelToggle: React.FC<{
         <div
           className={cn(
             'flex h-4 w-4 items-center justify-center rounded-full',
-            value === 'gemini-3' ? 'bg-primary' : 'bg-surface-strong'
+            value === 'advanced' ? 'bg-primary' : 'bg-surface-strong'
           )}
         >
           <svg

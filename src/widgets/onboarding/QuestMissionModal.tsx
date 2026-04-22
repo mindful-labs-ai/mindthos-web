@@ -50,8 +50,8 @@ export const QuestMissionModal = () => {
             상담사의 든든한 임상 파트너, 마음토스
           </p>
           <p className="typo-m font-emphasize leading-relaxed text-fg">
-            100% 활용하기 위한 <span className="text-primary">4가지 미션</span>
-            을 완료하면
+            100% 활용하기 위한 <span className="text-primary">3가지 가이드</span>
+            를 완료하면
           </p>
           <p className="typo-m font-emphasize leading-relaxed text-fg">
             <span className="text-primary">스타터 플랜 1개월*</span>을 선물로
@@ -94,7 +94,7 @@ export const QuestMissionModal = () => {
           size="md"
           className="mt-12 h-12 w-full"
         >
-          <span className="font-extrabold">첫번째 미션 시작하기</span>
+          <span className="font-extrabold">첫번째 가이드 시작하기</span>
         </Button>
       </div>
     </Modal>
