@@ -212,7 +212,7 @@ const UserVerifyPage: React.FC = () => {
             }));
             clearFieldError('qualification');
           }}
-          placeholder="보유 자격을 선택해주세요"
+          placeholder="보유 자격을 선택해주세요(복수 가능)"
           loading={isQualificationsLoading}
           className="bg-grey-10"
         />
