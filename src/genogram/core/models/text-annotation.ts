@@ -10,6 +10,7 @@ export interface AnnotationStyle {
   textColor: string;
   borderStyle: string;
   borderColor: string;
+  fontSize?: number;
 }
 
 // Annotation Layout (style은 layout 하위)

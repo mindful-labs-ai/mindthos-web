@@ -5,7 +5,7 @@ import type {
   Session,
   Transcribe,
   ProgressNote,
-} from '@/feature/session/types';
+} from '@/features/session/types';
 
 interface SessionStoreState {
   sessions: Session[];

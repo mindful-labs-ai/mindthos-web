@@ -15,6 +15,7 @@ export interface AnnotationNodeData {
   borderStyle: string;
   borderColor: string;
   isSelected: boolean;
+  fontSize?: number;
   [key: string]: unknown;
 }
 
@@ -23,8 +24,15 @@ const MIN_HEIGHT = 32;
 
 export const AnnotationNode = memo(
   ({ data, selected }: NodeProps & { data: AnnotationNodeData }) => {
-    const { text, bgColor, textColor, borderStyle, borderColor, isSelected } =
-      data;
+    const {
+      text,
+      bgColor,
+      textColor,
+      borderStyle,
+      borderColor,
+      isSelected,
+      fontSize,
+    } = data;
 
     const active = selected || isSelected;
 
@@ -50,7 +58,7 @@ export const AnnotationNode = memo(
       >
         <div
           style={{
-            fontSize: FONT_SIZE_ANNOTATION,
+            fontSize: fontSize ?? FONT_SIZE_ANNOTATION,
             lineHeight: LINE_HEIGHT_ANNOTATION,
             whiteSpace: 'pre-wrap',
           }}

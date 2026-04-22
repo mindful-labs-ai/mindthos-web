@@ -1,0 +1,143 @@
+import React from 'react';
+
+import { cn } from '@/lib/cn';
+
+export type StepperOrientation = 'horizontal' | 'vertical';
+
+export interface Step {
+  label: string;
+  description?: string;
+}
+
+export interface StepperProps {
+  steps: Step[];
+  currentStep: number;
+  orientation?: StepperOrientation;
+  clickable?: boolean;
+  onStepClick?: (step: number) => void;
+  className?: string;
+}
+
+const CheckIcon = () => (
+  <svg
+    className="h-4 w-4"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={3}
+      d="M5 13l4 4L19 7"
+    />
+  </svg>
+);
+
+/**
+ * Stepper - 다단계 프로세스 표시기
+ * horizontal/vertical 방향, 클릭 가능 옵션
+ *
+ * @example
+ * <Stepper steps={[{ label: 'Step 1' }, { label: 'Step 2' }]} currentStep={0} />
+ */
+export const Stepper: React.FC<StepperProps> = ({
+  steps,
+  currentStep,
+  orientation = 'horizontal',
+  clickable = false,
+  onStepClick,
+  className,
+}) => {
+  const handleStepClick = (index: number) => {
+    if (clickable && index < currentStep) {
+      onStepClick?.(index);
+    }
+  };
+
+  const isHorizontal = orientation === 'horizontal';
+
+  return (
+    <nav
+      aria-label="Progress"
+      className={cn(
+        'flex',
+        isHorizontal ? 'items-start' : 'flex-col items-start',
+        className
+      )}
+    >
+      {steps.map((step, index) => {
+        const isCompleted = index < currentStep;
+        const isCurrent = index === currentStep;
+        const isClickableStep = clickable && isCompleted;
+
+        return (
+          <React.Fragment key={index}>
+            <div
+              className={cn(
+                'flex flex-1 break-keep',
+                isHorizontal
+                  ? 'flex-col items-center'
+                  : 'flex-row items-start gap-3'
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => handleStepClick(index)}
+                disabled={!isClickableStep}
+                aria-current={isCurrent ? 'step' : undefined}
+                className={cn(
+                  'relative flex items-center justify-center rounded-full',
+                  'h-10 w-10 border-2 font-emphasize transition-all duration-normal',
+                  'focus-default',
+                  isCompleted
+                    ? 'border-primary bg-primary text-primary-fg'
+                    : isCurrent
+                      ? 'border-primary bg-surface text-primary'
+                      : 'border-border bg-surface text-fg-muted',
+                  isClickableStep && 'cursor-pointer lg:hover:opacity-80',
+                  !isClickableStep && 'cursor-default'
+                )}
+              >
+                {isCompleted ? <CheckIcon /> : index + 1}
+              </button>
+              <div
+                className={cn(
+                  'flex flex-col',
+                  isHorizontal ? 'mt-2 items-center text-center' : 'flex-1'
+                )}
+              >
+                <span
+                  className={cn(
+                    'typo-sm font-medium',
+                    isCurrent ? 'text-fg' : 'text-fg-muted'
+                  )}
+                >
+                  {step.label}
+                </span>
+                {step.description && (
+                  <span className="typo-xs text-fg-muted">
+                    {step.description}
+                  </span>
+                )}
+              </div>
+            </div>
+            {index < steps.length - 1 && (
+              <div
+                className={cn(
+                  'bg-border',
+                  isHorizontal
+                    ? 'mx-2 mt-5 h-0.5 w-full min-w-2'
+                    : 'ml-5 h-8 w-0.5'
+                )}
+                aria-hidden="true"
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </nav>
+  );
+};
+
+Stepper.displayName = 'Stepper';

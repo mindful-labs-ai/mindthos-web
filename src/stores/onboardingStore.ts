@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import { onboardingService } from '@/services/onboarding/onboardingService';
+import { onboardingService } from '@/shared/api/services/onboarding/onboardingService';
 import {
   OnboardingState,
   OnboardingStep,
   type OnboardingStepType,
   type OnboardingStatus,
-} from '@/services/onboarding/types';
+} from '@/shared/api/services/onboarding/types';
 
 interface OnboardingStoreState {
   isOpen: boolean;

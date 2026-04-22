@@ -1,0 +1,196 @@
+import React from 'react';
+
+import { cn } from '@/lib/cn';
+
+export type CreditSize = 'sm' | 'md' | 'lg';
+export type CreditVariant = 'default' | 'bar' | 'minimal';
+
+export interface CreditProps {
+  used: number;
+  total: number;
+  size?: CreditSize;
+  variant?: CreditVariant;
+  label?: string;
+  showPercentage?: boolean;
+  warningThreshold?: number;
+  dangerThreshold?: number;
+  className?: string;
+}
+
+const sizeStyles: Record<CreditSize, { text: string; bar: string }> = {
+  sm: { text: 'typo-xs', bar: 'h-1' },
+  md: { text: 'typo-sm', bar: 'h-2' },
+  lg: { text: 'typo-m', bar: 'h-3' },
+};
+
+/**
+ * Credit - 사용량 표시 컴포넌트
+ * used/total 기반 진행 상태 표시
+ * default/bar/minimal 변형 지원, threshold 기반 색상 변경
+ *
+ * @example
+ * <Credit used={250} total={300} variant="bar" showPercentage />
+ */
+export const Credit: React.FC<CreditProps> = ({
+  used,
+  total,
+  size = 'md',
+  variant = 'default',
+  label,
+  showPercentage = false,
+  warningThreshold = 0.8,
+  dangerThreshold = 0.95,
+  className,
+}) => {
+  const percentage = total > 0 ? (used / total) * 100 : 0;
+  const ratio = total > 0 ? used / total : 0;
+
+  const getToneColor = () => {
+    if (ratio >= dangerThreshold) return 'danger';
+    if (ratio >= warningThreshold) return 'warn';
+    return 'primary';
+  };
+
+  const tone = getToneColor();
+
+  const toneColorClasses = {
+    primary: 'text-primary',
+    warn: 'text-warn',
+    danger: 'text-danger',
+  };
+
+  const toneBgClasses = {
+    primary: 'bg-primary',
+    warn: 'bg-warn',
+    danger: 'bg-danger',
+  };
+
+  if (variant === 'minimal') {
+    return (
+      <div
+        className={cn('inline-flex items-center gap-1.5', className)}
+        role="status"
+        aria-label={`${label ? `${label}: ` : ''}${used} of ${total} used`}
+      >
+        {label && (
+          <span
+            className={cn('font-medium text-fg-muted', sizeStyles[size].text)}
+          >
+            {label}:
+          </span>
+        )}
+        <span
+          className={cn(
+            'font-emphasize',
+            toneColorClasses[tone],
+            sizeStyles[size].text
+          )}
+        >
+          {used} / {total}
+        </span>
+        {showPercentage && (
+          <span className={cn('text-fg-muted', sizeStyles[size].text)}>
+            ({percentage.toFixed(0)}%)
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  if (variant === 'bar') {
+    return (
+      <div
+        className={cn('flex flex-col gap-1.5', className)}
+        role="progressbar"
+        aria-label={`${label ? `${label}: ` : ''}${used} of ${total} used`}
+        aria-valuenow={used}
+        aria-valuemin={0}
+        aria-valuemax={total}
+      >
+        <div className="flex items-center justify-between gap-2">
+          {label && (
+            <span className={cn('font-medium text-fg', sizeStyles[size].text)}>
+              {label}
+            </span>
+          )}
+          <span
+            className={cn(
+              'font-emphasize',
+              toneColorClasses[tone],
+              sizeStyles[size].text
+            )}
+          >
+            {used} / {total}
+            {showPercentage && (
+              <span className="ml-1 text-fg-muted">
+                ({percentage.toFixed(0)}%)
+              </span>
+            )}
+          </span>
+        </div>
+        <div
+          className={cn(
+            'w-full overflow-hidden rounded-full bg-surface-contrast',
+            sizeStyles[size].bar
+          )}
+        >
+          <div
+            className={cn(
+              'h-full transition-all duration-slow',
+              toneBgClasses[tone]
+            )}
+            style={{ width: `${Math.min(percentage, 100)}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // default variant
+  return (
+    <div
+      className={cn(
+        'border-default inline-flex items-center gap-2 rounded-md bg-surface px-3 py-2',
+        className
+      )}
+      role="status"
+      aria-label={`${label ? `${label}: ` : ''}${used} of ${total} used`}
+    >
+      {label && (
+        <span
+          className={cn('font-medium text-fg-muted', sizeStyles[size].text)}
+        >
+          {label}
+        </span>
+      )}
+      <div className="flex items-center gap-1">
+        <span
+          className={cn(
+            'font-emphasize',
+            toneColorClasses[tone],
+            sizeStyles[size].text
+          )}
+        >
+          {used}
+        </span>
+        <span className={cn('text-fg-muted', sizeStyles[size].text)}>/</span>
+        <span className={cn('font-emphasize text-fg', sizeStyles[size].text)}>
+          {total}
+        </span>
+      </div>
+      {showPercentage && (
+        <span
+          className={cn(
+            'rounded-sm bg-surface-contrast px-1.5 py-0.5 font-medium',
+            toneColorClasses[tone],
+            sizeStyles[size].text
+          )}
+        >
+          {percentage.toFixed(0)}%
+        </span>
+      )}
+    </div>
+  );
+};
+
+Credit.displayName = 'Credit';
