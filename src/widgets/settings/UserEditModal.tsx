@@ -7,18 +7,22 @@ import {
   PhoneVerificationField,
   type PhoneVerificationFieldHandle,
 } from '@/features/auth/components/PhoneVerificationField';
+import { passwordChangeSchema } from '@/features/auth/schemas/passwordChangeSchema';
 import { qualificationService } from '@/features/settings/services/qualificationService';
+import { cn } from '@/lib/cn';
 import { trackEvent } from '@/lib/mixpanel';
+import { authService } from '@/shared/api/services/auth/authService';
+import { AuthError, AuthErrorCode } from '@/shared/api/services/auth/types';
 import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { qualificationQueryKeys } from '@/shared/constants/queryKeys';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
-import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -38,8 +42,10 @@ export const REFERRAL_OPTIONS: SelectItem[] = [
   { value: 'other', label: '기타' },
 ];
 
-// Zod 스키마 정의 (공통: 휴대폰 필수 + 보유 자격 필수)
-const formSchema = z.object({
+const PASSWORD_MATCH_DEBOUNCE_MS = 300;
+
+// 기본 정보 스키마 (휴대폰은 비어있는 상태도 허용 — 번호 없는 사용자가 다른 정보만 수정 가능)
+const baseInfoSchema = z.object({
   name: z
     .string()
     .min(1, '이름을 입력해주세요.')
@@ -50,16 +56,16 @@ const formSchema = z.object({
     .max(50, '소속 기관은 50자 이내로 입력해주세요.'),
   phoneNumber: z
     .string()
-    .min(1, '휴대폰 번호를 입력해주세요.')
-    .regex(
-      /^01[016789]-?\d{3,4}-?\d{4}$/,
+    .optional()
+    .refine(
+      (v) => !v || /^01[016789]-?\d{3,4}-?\d{4}$/.test(v),
       '올바른 휴대전화 번호를 입력해주세요. (예: 010-1234-5678)'
     ),
   qualification: z.array(z.string()).min(1, '보유 자격을 선택해주세요.'),
   referralSource: z.string().optional().or(z.literal('')),
 });
 
-type UserEditFormData = z.infer<typeof formSchema> & {
+type UserEditFormData = z.infer<typeof baseInfoSchema> & {
   referralSourceCustom?: string;
 };
 
@@ -67,19 +73,21 @@ interface UserEditModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  /** 퀘스트 미션에서 열린 경우 true */
-  isQuestMode?: boolean;
 }
+
+type PhoneMode = 'display' | 'editing';
 
 export const UserEditModal: React.FC<UserEditModalProps> = ({
   open,
   onOpenChange,
   onSuccess,
-  isQuestMode = false,
 }) => {
   const { userName, organization, userPhoneNumber, updateUser } =
     useAuthStore();
+  const user = useAuthStore((s) => s.user);
   const { toast } = useToast();
+
+  const isOAuthUser = user?.app_metadata?.provider !== 'email';
 
   // 자격 목록을 서버에서 조회
   const {
@@ -117,13 +125,37 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
   // 모달 열릴 때의 휴대폰 번호 스냅샷 — 변경 여부 판단용 (PhoneVerificationField 에 전달)
   const [initialPhoneNumber, setInitialPhoneNumber] = React.useState('');
+  // 휴대폰 UI 모드: 'display' = readonly 표시, 'editing' = 번호 수정/추가 중
+  const [phoneMode, setPhoneMode] = React.useState<PhoneMode>('display');
   const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
-
-  const hasReferralOther = formData.referralSource === 'other';
 
   const [errors, setErrors] = React.useState<
     Partial<Record<keyof UserEditFormData, string>>
   >({});
+
+  // 비밀번호 변경 섹션 (이메일 사용자만)
+  const [isPasswordSectionOpen, setIsPasswordSectionOpen] =
+    React.useState(false);
+  const [currentPassword, setCurrentPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = React.useState('');
+  const [passwordError, setPasswordError] = React.useState('');
+
+  const debouncedNewPassword = useDebouncedValue(
+    newPassword,
+    PASSWORD_MATCH_DEBOUNCE_MS
+  );
+  const debouncedNewPasswordConfirm = useDebouncedValue(
+    newPasswordConfirm,
+    PASSWORD_MATCH_DEBOUNCE_MS
+  );
+  const passwordMatchState: 'idle' | 'match' | 'mismatch' =
+    React.useMemo(() => {
+      if (!debouncedNewPasswordConfirm) return 'idle';
+      return debouncedNewPassword === debouncedNewPasswordConfirm
+        ? 'match'
+        : 'mismatch';
+    }, [debouncedNewPassword, debouncedNewPasswordConfirm]);
 
   // 모달이 열릴 때 초기 데이터 설정
   React.useEffect(() => {
@@ -139,7 +171,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         referralSourceCustom: '',
       });
       setInitialPhoneNumber(phoneSnapshot);
+      setPhoneMode('display');
       setErrors({});
+      setIsPasswordSectionOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setNewPasswordConfirm('');
+      setPasswordError('');
     }
   }, [open, userName, organization, userPhoneNumber, userQualifications]);
 
@@ -150,6 +188,26 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         const newErrors = { ...prev };
         delete newErrors[field];
         return newErrors;
+      });
+    }
+  };
+
+  const handleStartPhoneEdit = () => {
+    setPhoneMode('editing');
+    // 기존 번호가 있으면 값 유지(변경 유도), 없으면 빈 값으로 새로 입력 시작
+    if (!initialPhoneNumber) {
+      setFormData((prev) => ({ ...prev, phoneNumber: '' }));
+    }
+  };
+
+  const handleCancelPhoneEdit = () => {
+    setPhoneMode('display');
+    setFormData((prev) => ({ ...prev, phoneNumber: initialPhoneNumber }));
+    if (errors.phoneNumber) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.phoneNumber;
+        return next;
       });
     }
   };
@@ -166,7 +224,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         updateUser({
           name: data.name,
           organization: data.organization,
-          phoneNumber: data.phoneNumber,
+          phoneNumber: data.phoneNumber || undefined,
           referralSource,
         }),
       ];
@@ -207,8 +265,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
 
     trackEvent(MixpanelEvent.UserInfoEditAttempt);
 
-    const result = formSchema.safeParse(formData);
-
+    const result = baseInfoSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Partial<Record<keyof UserEditFormData, string>> = {};
       result.error.issues.forEach((issue) => {
@@ -219,12 +276,73 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       return;
     }
 
-    // 번호가 변경된 경우에만 PhoneVerificationField 가 verify 를 요구한다.
-    const verified = await phoneFieldRef.current?.ensureVerified();
-    if (verified === false) return;
+    // 번호 편집 중이면 PhoneVerificationField 가 verify 를 요구.
+    if (phoneMode === 'editing') {
+      const verified = await phoneFieldRef.current?.ensureVerified();
+      if (verified === false) return;
+    }
+
+    // 비밀번호 변경 섹션이 열려있는 경우: 스키마 검증 + 변경 API 호출
+    if (!isOAuthUser && isPasswordSectionOpen) {
+      const pwParsed = passwordChangeSchema.safeParse({
+        currentPassword,
+        newPassword,
+        newPasswordConfirm,
+      });
+      if (!pwParsed.success) {
+        setPasswordError(
+          pwParsed.error.issues[0]?.message ?? '비밀번호를 확인해주세요.'
+        );
+        return;
+      }
+
+      setPasswordError('');
+      trackEvent(MixpanelEvent.PasswordUpdateAttempt, {
+        context: 'user_edit',
+      });
+
+      try {
+        await authService.changePassword(currentPassword, newPassword);
+        trackEvent(MixpanelEvent.PasswordUpdateSuccess, {
+          context: 'user_edit',
+        });
+      } catch (err) {
+        trackEvent(MixpanelEvent.PasswordUpdateFailed, {
+          context: 'user_edit',
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+        const msg =
+          err instanceof AuthError &&
+          err.code === AuthErrorCode.INVALID_CREDENTIALS
+            ? '현재 비밀번호가 올바르지 않습니다.'
+            : err instanceof Error
+              ? err.message
+              : '비밀번호 변경에 실패했습니다.';
+        setPasswordError(msg);
+        return;
+      }
+    }
 
     mutation.mutate(formData);
   };
+
+  const isSubmitting = mutation.isPending;
+  const isPasswordBlockInvalid =
+    !isOAuthUser &&
+    isPasswordSectionOpen &&
+    (!currentPassword ||
+      passwordMatchState !== 'match' ||
+      newPassword.length < 6);
+
+  const submitDisabled =
+    isSubmitting ||
+    !formData.name.trim() ||
+    !formData.organization?.trim() ||
+    !formData.qualification ||
+    formData.qualification.length === 0 ||
+    isPasswordBlockInvalid;
+
+  const hasInitialPhone = !!initialPhoneNumber;
 
   return (
     <Modal
@@ -248,26 +366,9 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
           </div>
         ) : (
           <div className="px-6">
-            {isQuestMode && (
-              <>
-                <Text className="typo-sm mb-1 font-headline text-primary">
-                  마지막 미션
-                </Text>
-                <Title as="h2" className="typo-xl font-headline">
-                  선생님의 성함은 무엇인가요?
-                </Title>
-                <Text className="typo-sm mt-3 leading-relaxed text-fg-muted">
-                  마음토스에서 상담 &amp; 임상 보고서를 만드실 때,
-                  <br />
-                  여기서 입력된 선생님의 정보가 기입됩니다.
-                </Text>
-              </>
-            )}
-            {!isQuestMode && (
-              <Title as="h2" className="typo-xl font-headline">
-                정보 입력하기
-              </Title>
-            )}
+            <Title as="h2" className="typo-xl font-headline">
+              정보 입력하기
+            </Title>
           </div>
         )}
 
@@ -300,23 +401,70 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             />
           </FormField>
 
-          <PhoneVerificationField
-            ref={phoneFieldRef}
-            value={formData.phoneNumber}
-            onChange={(value) => {
-              setFormData((prev) => ({ ...prev, phoneNumber: value }));
-              if (errors.phoneNumber) {
-                setErrors((prev) => {
-                  const next = { ...prev };
-                  delete next.phoneNumber;
-                  return next;
-                });
-              }
-            }}
-            error={errors.phoneNumber}
-            initialPhoneNumber={initialPhoneNumber}
-            disabled={mutation.isPending}
-          />
+          {phoneMode === 'editing' ? (
+            <div className="flex flex-col gap-2">
+              <PhoneVerificationField
+                ref={phoneFieldRef}
+                value={formData.phoneNumber ?? ''}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, phoneNumber: value }));
+                  if (errors.phoneNumber) {
+                    setErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.phoneNumber;
+                      return next;
+                    });
+                  }
+                }}
+                error={errors.phoneNumber}
+                initialPhoneNumber={initialPhoneNumber}
+                disabled={isSubmitting}
+              />
+              {hasInitialPhone && (
+                <button
+                  type="button"
+                  onClick={handleCancelPhoneEdit}
+                  className="typo-sm self-start text-fg-muted underline-offset-2 lg:hover:underline"
+                  disabled={isSubmitting}
+                >
+                  취소
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              <label className="typo-sm font-medium text-fg">
+                휴대폰 번호
+                {hasInitialPhone && (
+                  <span className="ml-1 text-danger" aria-label="required">
+                    *
+                  </span>
+                )}
+              </label>
+              {hasInitialPhone ? (
+                <div className="flex items-center justify-between gap-2 rounded-md border border-input-border bg-grey-10 px-4 py-2">
+                  <span className="typo-sm text-fg">{initialPhoneNumber}</span>
+                  <button
+                    type="button"
+                    onClick={handleStartPhoneEdit}
+                    className="typo-sm font-medium text-primary lg:hover:underline"
+                    disabled={isSubmitting}
+                  >
+                    번호 수정
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleStartPhoneEdit}
+                  className="typo-sm flex h-10 items-center justify-center rounded-md border-2 border-dashed border-input-border bg-input-bg font-medium text-primary lg:hover:bg-surface-contrast"
+                  disabled={isSubmitting}
+                >
+                  + 번호 추가하기
+                </button>
+              )}
+            </div>
+          )}
 
           <FormField label="보유 자격" required error={errors.qualification}>
             <Select
@@ -337,44 +485,97 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                   });
                 }
               }}
-              placeholder="보유 자격을 선택해주세요"
+              placeholder="보유 자격을 선택해주세요(복수 가능)"
               loading={isQualificationsLoading}
             />
           </FormField>
 
-          {isQuestMode && (
-            <FormField label="가입 경로" error={errors.referralSource}>
-              <Select
-                items={REFERRAL_OPTIONS}
-                value={formData.referralSource}
-                onChange={(value) => {
-                  const newValue = value as string;
-                  handleChange('referralSource', newValue);
-                  if (newValue !== 'other') {
-                    setFormData((prev) => ({
-                      ...prev,
-                      referralSourceCustom: '',
-                    }));
-                  }
-                }}
-                placeholder="가입 경로를 선택해주세요"
-              />
-              {hasReferralOther && (
-                <Input
-                  type="text"
-                  placeholder="가입 경로를 직접 입력해주세요"
-                  value={formData.referralSourceCustom}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      referralSourceCustom: e.target.value,
-                    }))
-                  }
-                  maxLength={50}
-                  className="mt-2"
-                />
-              )}
-            </FormField>
+          {!isOAuthUser && (
+            <>
+              <div className="h-0 border-t" />
+              <div className="rounded-md border border-grey-30 bg-surface-contrast p-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPasswordSectionOpen((v) => !v);
+                    if (isPasswordSectionOpen) {
+                      setCurrentPassword('');
+                      setNewPassword('');
+                      setNewPasswordConfirm('');
+                      setPasswordError('');
+                    }
+                  }}
+                  className="flex w-full items-center justify-between"
+                >
+                  <span className="typo-sm font-medium text-fg">
+                    비밀번호 변경
+                  </span>
+                  <span className="typo-sm text-fg-muted">
+                    {isPasswordSectionOpen ? '닫기' : '열기'}
+                  </span>
+                </button>
+
+                {isPasswordSectionOpen && (
+                  <div className="mt-4 flex flex-col gap-3">
+                    {passwordError && (
+                      <p className="typo-sm text-danger" role="alert">
+                        {passwordError}
+                      </p>
+                    )}
+
+                    <input
+                      type="password"
+                      placeholder="현재 비밀번호"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      autoComplete="current-password"
+                      className="auth-input"
+                      disabled={isSubmitting}
+                    />
+                    <input
+                      type="password"
+                      placeholder="새 비밀번호 (6자 이상)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      autoComplete="new-password"
+                      className="auth-input"
+                      disabled={isSubmitting}
+                    />
+                    <div className="flex flex-col gap-1">
+                      <input
+                        type="password"
+                        placeholder="새 비밀번호 확인"
+                        value={newPasswordConfirm}
+                        onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                        autoComplete="new-password"
+                        className="auth-input"
+                        disabled={isSubmitting}
+                      />
+                      {passwordMatchState === 'mismatch' && (
+                        <p className="typo-xs font-medium text-red-80">
+                          비밀번호가 일치하지 않습니다
+                        </p>
+                      )}
+                      {passwordMatchState === 'match' && (
+                        <p className="typo-xs font-medium text-green-80">
+                          비밀번호가 일치합니다
+                        </p>
+                      )}
+                    </div>
+                    <p
+                      className={cn(
+                        'typo-xs text-fg-muted',
+                        newPassword.length > 0 && newPassword.length < 6
+                          ? 'text-danger'
+                          : ''
+                      )}
+                    >
+                      비밀번호는 최소 6자 이상이어야 합니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
 
@@ -391,22 +592,13 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
             tone="primary"
             size="lg"
             className={isMobileView ? 'w-full' : 'w-full max-w-md'}
-            disabled={
-              mutation.isPending ||
-              !formData.name.trim() ||
-              !formData.organization?.trim() ||
-              !formData.phoneNumber?.trim() ||
-              !formData.qualification ||
-              formData.qualification.length === 0
-            }
+            disabled={submitDisabled}
           >
-            {mutation.isPending
+            {isSubmitting
               ? '저장 중...'
-              : isQuestMode
-                ? '저장하고 미션 완료하기'
-                : isMobileView
-                  ? '수정하기'
-                  : '정보 입력하기'}
+              : isMobileView
+                ? '수정하기'
+                : '정보 입력하기'}
           </Button>
         </div>
       </form>

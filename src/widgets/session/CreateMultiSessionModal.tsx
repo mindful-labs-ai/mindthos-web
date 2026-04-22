@@ -107,7 +107,7 @@ export const CreateMultiSessionModal: React.FC<
   const { creditInfo } = useCreditInfo();
 
   // Quest 관련 hooks
-  const { currentLevel, setShowConfetti, completeNextStep } = useQuestStore();
+  const { currentLevel, completeNextStep } = useQuestStore();
 
   // Step 상태
   const [step, setStep] = useState<ModalStep>('upload');
@@ -343,10 +343,9 @@ export const CreateMultiSessionModal: React.FC<
         duration: 5000,
       });
 
-      // 퀘스트(레벨 4) 진행 중이라면 완료 처리 (L4→L5)
+      // 가이드(레벨 4) 진행 중이라면 완료 처리 (L4 → 최종 보상까지 자동 체이닝)
       if (currentLevel === 4) {
         await completeNextStep(useAuthStore.getState().user?.email || '');
-        setShowConfetti(true);
       }
     }
 

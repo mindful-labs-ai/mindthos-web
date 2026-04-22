@@ -95,7 +95,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                       <button
                         type="button"
                         onClick={onCopy}
-                        className="flex items-center rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                        className="flex items-center gap-1.5 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         <CopyIcon size={20} /> 복사하기
                       </button>

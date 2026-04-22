@@ -20,9 +20,9 @@ export function TheorySectionBlock({
   return (
     <>
       <h3 className="mb-2 pl-2 text-l font-emphasize">이론 고유 분석</h3>
-      <div className="group relative rounded-lg border border-green-80 bg-green-20 p-3">
+      <div className="group relative rounded-lg border border-green-80 bg-green-10 p-3">
         <div className="mb-3 flex items-center gap-2">
-          <span className="typo-l font-headline text-primary">
+          <span className="text-l font-emphasize text-primary">
             {section.title}
           </span>
         </div>

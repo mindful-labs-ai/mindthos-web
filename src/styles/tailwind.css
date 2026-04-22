@@ -248,13 +248,19 @@ body {
     @apply text-m font-medium text-grey-80 md:text-l;
   }
   .note-label {
-    @apply text-sm font-emphasize text-grey-80;
+    @apply text-sm font-emphasize text-grey-70;
   }
   .note-desc {
-    @apply whitespace-pre-wrap text-m font-normal text-grey-100;
+    @apply whitespace-pre-wrap text-m font-medium text-grey-100;
   }
   .note-copy-btn-wrapper {
     @apply absolute right-3 top-1.5 hidden transition-opacity lg:block lg:opacity-0 lg:group-hover:opacity-100;
+  }
+  .note-card-title {
+    @apply text-m font-emphasize text-grey-100;
+  }
+  .note-card-sub {
+    @apply text-m font-medium text-grey-80;
   }
 
   /* ========================================

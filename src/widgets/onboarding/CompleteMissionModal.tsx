@@ -27,20 +27,9 @@ const MISSION_CONTENT: Record<number, { title: string; description: string }> =
       description:
         '가끔 상담이 어려울 때는, 다회기 분석으로\n상담의 방향을 차근차근 짚어보세요.\n이제 가지고 계신 파일을 직접 업로드해볼까요?',
     },
-    3: {
-      title: '이제 받아쓰기는 그만하셔도 돼요.',
-      description:
-        '기록은 저에게 맡기고 상담에만 집중하세요.\n마지막 정보만 입력하면 1개월 이용권이 지급됩니다!',
-    },
   };
 
-interface CompleteMissionModalProps {
-  onOpenUserEdit?: () => void;
-}
-
-export const CompleteMissionModal = ({
-  onOpenUserEdit,
-}: CompleteMissionModalProps) => {
+export const CompleteMissionModal = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const {
@@ -64,8 +53,6 @@ export const CompleteMissionModal = ({
   }, [isOpen]);
 
   const isFinalReward = showCompleteModalStep === 5;
-
-  // 컨페티는 questStore에서 미션 완료 시 즉시 발사하므로 여기서는 생략
 
   if (!content && !isFinalReward) return null;
 
@@ -134,7 +121,7 @@ export const CompleteMissionModal = ({
         case 'ONBOARDING_NOT_COMPLETED':
           toast({
             title: '온보딩 미완료',
-            description: '온보딩 퀘스트를 먼저 완료해주세요.',
+            description: '온보딩 가이드를 먼저 완료해주세요.',
           });
           handleClose();
           break;
@@ -152,14 +139,8 @@ export const CompleteMissionModal = ({
   const handleNextMission = () => {
     setShowCompleteModalStep(null);
 
-    // Step 3 완료 후 다음 미션(내 정보 입력하기)일 경우 UserEditModal 바로 열기
-    if (showCompleteModalStep === 3 && onOpenUserEdit) {
-      onOpenUserEdit();
-      return;
-    }
-
-    // 다음 미션에 해당하는 가이드 모달 열기
-    // showCompleteModalStep 1 -> 다음 미션 가이드 2, showCompleteModalStep 2 -> 다음 미션 가이드 3
+    // 다음 가이드 모달 열기
+    // showCompleteModalStep 1 -> 다음 가이드 2, showCompleteModalStep 2 -> 다음 가이드 3
     const nextGuideMap: Record<number, number> = { 1: 2, 2: 3 };
     const nextGuide = showCompleteModalStep
       ? nextGuideMap[showCompleteModalStep]
@@ -207,7 +188,7 @@ export const CompleteMissionModal = ({
               disabled={isLoading}
               className="h-12 w-full font-extrabold"
             >
-              {isLoading ? '처리 중...' : '미션 보상 받기'}
+              {isLoading ? '처리 중...' : '가이드 보상 받기'}
             </Button>
           </>
         ) : (
@@ -224,7 +205,7 @@ export const CompleteMissionModal = ({
               size="lg"
               className="mt-6 w-full max-w-[375px] font-headline"
             >
-              다음 미션 시작하기
+              다음 가이드 시작하기
             </Button>
           </>
         )}

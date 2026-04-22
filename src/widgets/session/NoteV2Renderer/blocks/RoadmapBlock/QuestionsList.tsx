@@ -18,10 +18,10 @@ export function QuestionsList({ questions, editable }: QuestionsListProps) {
         {questions.map((sq, i) => (
           <div
             key={i}
-            className="group relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-20 p-3 transition-colors lg:hover:border-green-80"
+            className="group relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors lg:hover:border-green-80"
           >
             <div className="min-w-0 flex-1">
-              <p className="note-desc font-emphasize">
+              <p className="note-card-title">
                 Q{i + 1}. "
                 <span
                   contentEditable={editable}
@@ -37,7 +37,7 @@ export function QuestionsList({ questions, editable }: QuestionsListProps) {
                 </span>
                 "
               </p>
-              <p className="mt-1 text-sm text-grey-80">
+              <p className="note-card-sub mt-1">
                 →{' '}
                 <span
                   contentEditable={editable}

@@ -203,6 +203,11 @@ export const useQuestStore = create<QuestStore>()(
               false,
               'quest/init_success'
             );
+
+            // Level 5(구 '본인 정보 입력' 구간)는 UI에서 제거됨 — 복원 시 자동으로 Level 6으로 진행
+            if (level === 5) {
+              await get().completeNextStep(email);
+            }
           } catch (error) {
             console.error('Quest initialization failed:', error);
             set(
@@ -259,23 +264,18 @@ export const useQuestStore = create<QuestStore>()(
               'quest/next_success'
             );
 
-            // 미션 완료 처리
+            // 가이드 완료 처리
             // 1: 상담기록 예시 (L1->L2), 2: 다회기 분석 예시 (L2->L3)
-            // 3: 녹음 파일 업로드 (L4->L5), 4: 내 정보 입력 완료 및 보상 유도 (L5->L6)
-            if ([1, 2, 4, 5].includes(prevLevel)) {
-              let modalStep = prevLevel;
-              if (prevLevel === 4) modalStep = 3;
-              if (prevLevel === 5) modalStep = 5;
+            // 3: 녹음 파일 업로드 (L4->L5 완료 후 L5->L6 자동 체이닝하여 최종 보상으로 연결)
+            if (prevLevel === 4) {
+              // Level 5(본인 정보 입력 구간)는 UI에서 제거되었으므로 서버 상태만 맞추고 바로 최종 보상으로
+              await get().completeNextStep(email);
+              return;
+            }
 
-              // 컨페티 즉시 발사
-              import('canvas-confetti').then(({ default: confetti }) => {
-                confetti({
-                  particleCount: 150,
-                  spread: 70,
-                  origin: { y: 0.6 },
-                  zIndex: 1300,
-                });
-              });
+            if ([1, 2, 5].includes(prevLevel)) {
+              let modalStep = prevLevel;
+              if (prevLevel === 5) modalStep = 5;
 
               // 모달은 딜레이 후 표시 (라우팅 후 페이지를 먼저 보게)
               setTimeout(() => {

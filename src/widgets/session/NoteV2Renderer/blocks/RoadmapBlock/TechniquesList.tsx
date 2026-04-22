@@ -20,27 +20,22 @@ export function TechniquesList({ techniques, editable }: TechniquesListProps) {
         {techniques.map((st, i) => (
           <div
             key={i}
-            className="group relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-20 p-3 transition-colors lg:hover:border-green-80"
+            className="group relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors lg:hover:border-green-80"
           >
             <div className="min-w-0 flex-1">
-              <p className="typo-m text-fg">
-                <span
-                  className={cn(
-                    'font-headline text-primary',
-                    editable && EDITABLE_CLASS
-                  )}
-                  contentEditable={editable}
-                  suppressContentEditableWarning={editable}
-                  data-note-path={
-                    editable
-                      ? `phase4.roadmap.suggested_techniques.${i}.name`
-                      : undefined
-                  }
-                >
-                  {st.name}
-                </span>
+              <p
+                className={cn('note-card-title', editable && EDITABLE_CLASS)}
+                contentEditable={editable}
+                suppressContentEditableWarning={editable}
+                data-note-path={
+                  editable
+                    ? `phase4.roadmap.suggested_techniques.${i}.name`
+                    : undefined
+                }
+              >
+                {st.name}
               </p>
-              <p className="mt-1 text-sm text-fg-muted">
+              <p className="note-card-sub">
                 <span
                   contentEditable={editable}
                   suppressContentEditableWarning={editable}

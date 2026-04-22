@@ -5,7 +5,7 @@ export const ROUTES = {
   ROOT: '/',
   AUTH: '/auth',
   AUTH_CALLBACK: '/auth/callback',
-  EMAIL_VERIFICATION: '/auth/verify-email',
+  PASSWORD_RESET: '/auth/reset-password',
   USER_VERIFY: '/user-verify',
   TERMS: '/terms',
   TERMS_AGREEMENT: '/terms-agreement',
@@ -21,6 +21,7 @@ export const ROUTES = {
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
   ANALYSIS: '/analysis',
+  UNSUBSCRIBE: '/unsubscribe',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>

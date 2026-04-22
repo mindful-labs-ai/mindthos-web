@@ -2,6 +2,7 @@ export const EDGE_FUNCTION_BASE_URL = `${import.meta.env.VITE_WEBAPP_SUPABASE_UR
 
 export const EDGE_FUNCTION_ENDPOINTS = {
   CHECK_USER_EXISTS: '/auth/check-user-exists',
+  CHECK_AUTH_METHOD: '/auth/check-auth-method',
   ACCOUNT_DELETE: '/auth/account-delete',
   RESEND_VERIFICATION: '/auth/resend-verification',
 } as const;

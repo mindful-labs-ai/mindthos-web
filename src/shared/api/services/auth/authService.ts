@@ -13,6 +13,7 @@ import {
   AuthErrorCode,
   type AccountDeleteResponse,
   type AuthResponse,
+  type CheckAuthMethodResponse,
   type CheckUserExistsResponse,
   type LoginCredentials,
   type ResendVerificationResponse,
@@ -206,10 +207,85 @@ export const authService = {
     }
   },
 
+  async requestPasswordReset(email: string): Promise<void> {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
+  async updatePassword(newPassword: string): Promise<void> {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw handleAuthError(error);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
+  async changePassword(
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user?.email) {
+      throw new AuthError(
+        AuthErrorCode.USER_NOT_FOUND,
+        '사용자 정보를 찾을 수 없습니다.'
+      );
+    }
+
+    try {
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (verifyError) {
+        throw new AuthError(
+          AuthErrorCode.INVALID_CREDENTIALS,
+          '현재 비밀번호가 올바르지 않습니다.',
+          verifyError
+        );
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (updateError) throw handleAuthError(updateError);
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      throw handleAuthError(error);
+    }
+  },
+
   async checkUserExists(email: string): Promise<CheckUserExistsResponse> {
     try {
       return await callEdgeFunction<CheckUserExistsResponse>(
         EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_USER_EXISTS,
+        { email }
+      );
+    } catch (error) {
+      throw handleEdgeFunctionError(error);
+    }
+  },
+
+  async checkAuthMethod(email: string): Promise<CheckAuthMethodResponse> {
+    try {
+      return await callEdgeFunction<CheckAuthMethodResponse>(
+        EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_AUTH_METHOD,
         { email }
       );
     } catch (error) {

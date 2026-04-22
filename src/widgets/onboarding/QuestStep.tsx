@@ -16,7 +16,6 @@ interface QuestStepProps {
   remainingDays?: number;
   onAction?: (questId: number) => void;
   onOpenCreateSession?: () => void;
-  onOpenUserEdit?: () => void;
   hasSession?: boolean;
   onCompleteQuest3?: () => void;
 }
@@ -25,7 +24,6 @@ const QUESTS = [
   { id: 1, label: '상담기록 예시 보기' },
   { id: 2, label: '다회기 분석 예시 보기' },
   { id: 3, label: '녹음 파일 업로드하기' },
-  { id: 4, label: '내 정보 입력하기' },
 ];
 
 interface QuestStatus {
@@ -52,7 +50,7 @@ const QuestHeader: React.FC<{
     )}
   >
     <h3 className="text-l font-headline text-grey-100">
-      신규 가입자 미션 이벤트
+      신규 가입자 가이드
     </h3>
     <span className="text-sm font-sub text-grey-70">
       {completed}/{total} 완료
@@ -109,15 +107,15 @@ const StepBadges: React.FC<{
   const progressWidth =
     completedCount > 0 ? (completedCount / (quests.length - 1)) * 100 : 0;
 
-  // 4개 스텝 기준: 첫 배지 중심 12.5%, 마지막 배지 중심 87.5%
+  // 3개 스텝 기준: 첫 배지 중심 16.67%, 마지막 배지 중심 83.33%, 배경선 폭 66.67%
   return (
     <div className={cn('relative flex justify-between px-2', className)}>
       {/* 회색 배경 선 */}
-      <div className="absolute left-[12.5%] right-[12.5%] top-1/2 h-[3px] -translate-y-1/2 bg-grey-30" />
+      <div className="absolute left-[16.67%] right-[16.67%] top-1/2 h-[3px] -translate-y-1/2 bg-grey-30" />
       {/* 초록색 진행 선 */}
       <div
-        className="absolute left-[12.5%] top-1/2 h-[3px] -translate-y-1/2 bg-green-80 transition-all duration-500"
-        style={{ width: `${Math.min(progressWidth, 100) * 0.75}%` }}
+        className="absolute left-[16.67%] top-1/2 h-[3px] -translate-y-1/2 bg-green-80 transition-all duration-500"
+        style={{ width: `${(Math.min(progressWidth, 100) * 2) / 3}%` }}
       />
       {/* 배지 */}
       {quests.map((quest) => {
@@ -159,7 +157,7 @@ const RewardBanner: React.FC<{
       )}
     </div>
     <p className="text-m font-headline text-grey-100">
-      모든 미션 달성 시 <span className="text-green-80">스타터 1개월</span> 무료
+      모든 가이드 달성 시 <span className="text-green-80">스타터 1개월</span> 무료
       쿠폰 지급!
     </p>
   </div>
@@ -195,7 +193,7 @@ const RewardCard: React.FC<{
         <span className="text-2xl">🎁</span>
       </div>
       <h3 className="text-start text-l font-headline text-grey-100">
-        모든 미션 달성 시<br />
+        모든 가이드 달성 시<br />
         <span className="text-green-80">스타터 1개월</span> 무료 쿠폰 지급!
       </h3>
     </div>
@@ -212,7 +210,7 @@ const RewardCard: React.FC<{
           if (email) useQuestStore.getState().setShowCompleteModalStep(5);
         }}
       >
-        {currentLevel >= 7 ? '보상 받기 완료!' : '이벤트 보상 받기'}
+        {currentLevel >= 7 ? '보상 받기 완료!' : '가이드 보상 받기'}
       </button>
     </div>
   </div>
@@ -250,7 +248,6 @@ const CurrentQuestAction: React.FC<{
 export const QuestStep = ({
   remainingDays = 7,
   onOpenCreateSession,
-  onOpenUserEdit,
   hasSession = false,
   onCompleteQuest3,
 }: QuestStepProps) => {
@@ -261,12 +258,11 @@ export const QuestStep = ({
 
   const totalSteps = QUESTS.length;
 
-  // 완료 카운트
+  // 완료 카운트 (3개 가이드: 상담기록 예시 / 다회기 분석 / 녹음 파일 업로드)
   let activeCompletedCount = 0;
   if (currentLevel >= 2) activeCompletedCount++;
   if (currentLevel >= 3) activeCompletedCount++;
   if (currentLevel >= 5) activeCompletedCount++;
-  if (currentLevel >= 6) activeCompletedCount++;
 
   const isAllCompleted = activeCompletedCount === totalSteps;
   const progressPercentage =
@@ -274,7 +270,7 @@ export const QuestStep = ({
       ? (activeCompletedCount / (totalSteps - 1)) * 100
       : 0;
 
-  // 퀘스트 상태 계산
+  // 가이드 상태 계산
   const getQuestStatus = (questId: number): QuestStatus => {
     if (questId === 1)
       return {
@@ -302,14 +298,6 @@ export const QuestStep = ({
         canComplete,
       };
     }
-    if (questId === 4)
-      return {
-        isCompleted: currentLevel >= 6,
-        isInProgress: currentLevel === 5,
-        isAlreadyStarted: false,
-        isLocked: currentLevel < 5,
-        canComplete: false,
-      };
     return {
       isCompleted: false,
       isInProgress: false,
@@ -319,12 +307,12 @@ export const QuestStep = ({
     };
   };
 
-  // 현재 진행 중인 퀘스트
+  // 현재 진행 중인 가이드
   const currentQuest =
     QUESTS.find((q) => getQuestStatus(q.id).isInProgress) || QUESTS[0];
   const currentStatus = getQuestStatus(currentQuest.id);
 
-  // 현재 퀘스트 버튼 핸들러
+  // 현재 가이드 버튼 핸들러
   const handleCurrentQuestClick = () => {
     if (currentQuest.id === 3 && currentStatus.canComplete) {
       onCompleteQuest3?.();
@@ -334,20 +322,16 @@ export const QuestStep = ({
       if (currentQuest.id === 3) onOpenCreateSession?.();
       return;
     }
-    if (currentQuest.id === 4) {
-      onOpenUserEdit?.();
-      return;
-    }
     setTutorialGuideLevel(currentQuest.id);
   };
 
   const currentButtonLabel = currentStatus.canComplete
-    ? '미션 완료하기'
+    ? '가이드 완료하기'
     : currentStatus.isAlreadyStarted
       ? currentQuest.id === 3
         ? '바로 업로드하기'
-        : '미션 진행 중'
-      : '미션 진행하기';
+        : '가이드 진행 중'
+      : '가이드 진행하기';
 
   // ── 모바일 ──
   if (isMobile) {
@@ -381,7 +365,7 @@ export const QuestStep = ({
                     useQuestStore.getState().setShowCompleteModalStep(5);
                 }}
               >
-                {currentLevel >= 7 ? '보상 받기 완료!' : '이벤트 보상 받기'}
+                {currentLevel >= 7 ? '보상 받기 완료!' : '가이드 보상 받기'}
               </Button>
             </div>
           ) : (
@@ -450,13 +434,13 @@ export const QuestStep = ({
           <div className="flex-1 px-6">
             {/** 데스크탑 Step 요소 */}
             <div className="relative">
-              {/* 회색 배경 선 */}
-              <div className="absolute left-[12.5%] top-[18px] -z-0 h-[4px] w-[75%] -translate-y-1/2 bg-surface-strong" />
+              {/* 회색 배경 선 (3개 스텝 기준: 16.67%~83.33%, 폭 66.67%) */}
+              <div className="absolute left-[16.67%] top-[18px] -z-0 h-[4px] w-[66.67%] -translate-y-1/2 bg-surface-strong" />
               {/* 초록색 진행 선 */}
               <div
-                className="absolute left-[12.5%] top-[18px] -z-0 h-[4px] -translate-y-1/2 bg-primary transition-all duration-500"
+                className="absolute left-[16.67%] top-[18px] -z-0 h-[4px] -translate-y-1/2 bg-primary transition-all duration-500"
                 style={{
-                  width: `${Math.min(Math.max(progressPercentage, 0), 100) * 0.75}%`,
+                  width: `${(Math.min(Math.max(progressPercentage, 0), 100) * 2) / 3}%`,
                 }}
               />
               {/* 스텝 아이템들 */}
@@ -505,25 +489,20 @@ export const QuestStep = ({
                               }
                               if (isAlreadyStarted) {
                                 if (quest.id === 3) onOpenCreateSession?.();
-                                else if (quest.id === 4) onOpenUserEdit?.();
-                                return;
-                              }
-                              if (quest.id === 4) {
-                                onOpenUserEdit?.();
                                 return;
                               }
                               setTutorialGuideLevel(quest.id);
                             }}
                           >
                             {isCompleted
-                              ? '미션 완료!'
+                              ? '가이드 완료!'
                               : quest.id === 3 && canComplete
-                                ? '미션 완료하기'
+                                ? '가이드 완료하기'
                                 : isAlreadyStarted
-                                  ? `${quest.id === 3 ? '바로 업로드하기' : '미션 진행 중'}`
+                                  ? `${quest.id === 3 ? '바로 업로드하기' : '가이드 진행 중'}`
                                   : isLocked
                                     ? '이전 단계 후 오픈'
-                                    : '미션 진행하기'}
+                                    : '가이드 진행하기'}
                           </Button>
                           {isAlreadyStarted && (
                             <div className="animate-progress pointer-events-none absolute inset-0 rounded-lg" />

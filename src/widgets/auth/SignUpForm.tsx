@@ -1,30 +1,59 @@
 import React from 'react';
 
-import { getTermsRoute, ROUTES, TERMS_TYPES } from '@/app/router/constants';
+import { getTermsRoute, TERMS_TYPES } from '@/app/router/constants';
+import { signupSchema } from '@/features/auth/schemas/signupSchema';
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { HyperLink } from '@/shared/ui';
 import { CheckBox } from '@/shared/ui/atoms/CheckBox';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { useAuthStore } from '@/stores/authStore';
 
-const SignUpForm = () => {
+interface Props {
+  onSignupSuccess: (email: string) => void;
+}
+
+const PASSWORD_MATCH_DEBOUNCE_MS = 300;
+
+const SignUpForm = ({ onSignupSuccess }: Props) => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [passwordConfirm, setPasswordConfirm] = React.useState('');
   const [termsAccepted, setTermsAccepted] = React.useState(false);
   const [privacyAccepted, setPrivacyAccepted] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState('');
 
   const signup = useAuthStore((state) => state.signup);
-  const { navigateWithUtm } = useNavigateWithUtm();
+
+  const debouncedPassword = useDebouncedValue(
+    password,
+    PASSWORD_MATCH_DEBOUNCE_MS
+  );
+  const debouncedPasswordConfirm = useDebouncedValue(
+    passwordConfirm,
+    PASSWORD_MATCH_DEBOUNCE_MS
+  );
+
+  const passwordMatchState: 'idle' | 'match' | 'mismatch' = React.useMemo(() => {
+    if (!debouncedPasswordConfirm) return 'idle';
+    return debouncedPassword === debouncedPasswordConfirm ? 'match' : 'mismatch';
+  }, [debouncedPassword, debouncedPasswordConfirm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!termsAccepted || !privacyAccepted) {
-      setError('약관에 동의해주세요.');
+    const parsed = signupSchema.safeParse({
+      email,
+      password,
+      passwordConfirm,
+      termsAccepted,
+      privacyAccepted,
+    });
+
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.');
       return;
     }
 
@@ -33,16 +62,9 @@ const SignUpForm = () => {
     trackEvent(MixpanelEvent.SignupAttempt, { method: 'email' });
 
     try {
-      await signup(email, password, {
-        termsAccepted,
-        privacyAccepted,
-      });
-
+      await signup(email, password, { termsAccepted, privacyAccepted });
       trackEvent(MixpanelEvent.SignupSuccess, { method: 'email' });
-
-      navigateWithUtm(ROUTES.EMAIL_VERIFICATION, {
-        state: { email },
-      });
+      onSignupSuccess(email);
     } catch (err) {
       trackEvent(MixpanelEvent.SignupFailed, {
         error: err instanceof Error ? err.message : 'Unknown error',
@@ -56,6 +78,12 @@ const SignUpForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  const isSubmitDisabled =
+    !termsAccepted ||
+    !privacyAccepted ||
+    isSubmitting ||
+    passwordMatchState !== 'match';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -77,7 +105,7 @@ const SignUpForm = () => {
         <FormField>
           <input
             type="password"
-            placeholder="비밀번호"
+            placeholder="비밀번호 (6자 이상)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -85,6 +113,28 @@ const SignUpForm = () => {
             className="auth-input"
             disabled={isSubmitting}
           />
+        </FormField>
+        <FormField>
+          <input
+            type="password"
+            placeholder="비밀번호 확인"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
+            required
+            autoComplete="new-password"
+            className="auth-input"
+            disabled={isSubmitting}
+          />
+          {passwordMatchState === 'mismatch' && (
+            <p className="mt-1 text-xs font-medium text-red-80">
+              비밀번호가 일치하지 않습니다
+            </p>
+          )}
+          {passwordMatchState === 'match' && (
+            <p className="mt-1 text-xs font-medium text-green-80">
+              비밀번호가 일치합니다
+            </p>
+          )}
         </FormField>
 
         <div className="space-y-2">
@@ -134,7 +184,7 @@ const SignUpForm = () => {
 
       <button
         type="submit"
-        disabled={!termsAccepted || !privacyAccepted || isSubmitting}
+        disabled={isSubmitDisabled}
         className="auth-button"
       >
         {isSubmitting ? '처리 중...' : '이메일 인증하기'}

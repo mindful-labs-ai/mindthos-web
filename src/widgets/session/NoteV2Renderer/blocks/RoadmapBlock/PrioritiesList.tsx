@@ -32,7 +32,7 @@ export function PrioritiesList({ priorities, editable }: PrioritiesListProps) {
                   className="pointer-events-none absolute -bottom-2 left-3.5 top-[calc(50%+0.875rem)] w-px -translate-x-1/2 bg-grey-40"
                 />
               )}
-              <div className="flex-1 rounded-lg border border-grey-40 bg-grey-20 px-3 py-2 transition-colors lg:hover:border-green-80">
+              <div className="flex-1 rounded-lg border border-grey-40 bg-grey-10 px-3 py-2 transition-colors lg:hover:border-green-80">
                 <span
                   className={cn('note-desc', editable && EDITABLE_CLASS)}
                   contentEditable={editable}

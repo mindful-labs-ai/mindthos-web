@@ -26,7 +26,7 @@ export function SafetyAssessmentBlock({
   return (
     <div>
       <h3 className="mb-1 text-l font-emphasize">안정성 평가</h3>
-      <div className="group relative space-y-3 rounded-lg px-3 py-2 transition-colors lg:hover:bg-grey-20">
+      <div className="group relative space-y-3 rounded-lg py-2 transition-colors lg:hover:bg-grey-20">
         <div className="space-y-1">
           <span className="note-label">자해/자살</span>
           <p

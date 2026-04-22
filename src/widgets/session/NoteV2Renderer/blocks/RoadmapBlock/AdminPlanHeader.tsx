@@ -9,7 +9,7 @@ interface AdminPlanHeaderProps {
 
 export function AdminPlanHeader({ value, editable }: AdminPlanHeaderProps) {
   return (
-    <div className="space-y-1.5 px-3 py-2">
+    <div className="space-y-1.5 py-2">
       <span className="note-label">행정적 계획</span>
       <p
         className={cn('note-desc', editable && EDITABLE_CLASS)}

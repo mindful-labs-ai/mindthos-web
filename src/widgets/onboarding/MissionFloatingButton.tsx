@@ -12,16 +12,9 @@ const QUESTS = [
   { id: 1, label: '상담기록 예시 보기' },
   { id: 2, label: '다회기 분석 예시 보기' },
   { id: 3, label: '녹음 파일 업로드하기' },
-  { id: 4, label: '내 정보 입력하기' },
 ];
 
-interface MissionFloatingButtonProps {
-  onOpenUserEdit?: () => void;
-}
-
-export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
-  onOpenUserEdit,
-}) => {
+export const MissionFloatingButton: React.FC = () => {
   const [isOpen, setIsOpen] = React.useState(false);
   const panelRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -65,7 +58,6 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
   if (currentLevel >= 2) activeCompletedCount++;
   if (currentLevel >= 3) activeCompletedCount++;
   if (currentLevel >= 5) activeCompletedCount++;
-  if (currentLevel >= 6) activeCompletedCount++;
 
   const isAllCompleted = activeCompletedCount === totalSteps;
 
@@ -81,7 +73,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
   };
   const remainingDays = calculateRemainingDays(startedAt);
 
-  // QuestStep과 동일한 퀘스트 상태 계산 로직
+  // QuestStep과 동일한 가이드 상태 계산 로직
   const getQuestStatus = (questId: number) => {
     if (questId === 1) {
       return {
@@ -101,12 +93,6 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
         isInProgress: currentLevel === 3 || currentLevel === 4,
       };
     }
-    if (questId === 4) {
-      return {
-        isCompleted: currentLevel >= 6,
-        isInProgress: currentLevel === 5,
-      };
-    }
     return { isCompleted: false, isInProgress: false };
   };
 
@@ -117,16 +103,8 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
     }
   };
 
-  // 미션 진행하기 클릭 핸들러
+  // 가이드 진행하기 클릭 핸들러
   const handleStartMission = (questId: number) => {
-    // Quest 4 (내 정보 입력하기)는 모달 열기
-    if (questId === 4) {
-      onOpenUserEdit?.();
-      setIsOpen(false);
-      return;
-    }
-
-    // Quest 1, 2, 3: 가이드 모달 열기
     setTutorialGuideLevel(questId);
     setIsOpen(false);
   };
@@ -149,11 +127,11 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
       >
         <Gift className="h-6 w-6 text-primary" />
         <span className="typo-xs mt-1 font-headline text-primary">
-          미션 진행 중
+          가이드 진행 중
         </span>
       </button>
 
-      {/* 미션 리스트 패널 */}
+      {/* 가이드 리스트 패널 */}
       {isOpen && (
         <div
           ref={panelRef}
@@ -168,7 +146,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
         >
           <div className="p-6">
             {/* 헤더 */}
-            <h3 className="typo-xl font-headline text-fg">신규 가입자 미션</h3>
+            <h3 className="typo-xl font-headline text-fg">신규 가입자 가이드</h3>
 
             {/* 진행률 바 */}
             <div className="mt-4 flex items-center gap-3">
@@ -185,7 +163,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
               </span>
             </div>
 
-            {/* 미션 리스트 */}
+            {/* 가이드 리스트 */}
             <div className="mt-6 space-y-4">
               {QUESTS.map((quest) => {
                 const { isCompleted, isInProgress } = getQuestStatus(quest.id);
@@ -257,7 +235,7 @@ export const MissionFloatingButton: React.FC<MissionFloatingButtonProps> = ({
               disabled={!isAllCompleted || isLoading || currentLevel >= 7}
               onClick={handleRewardClick}
             >
-              {currentLevel >= 7 ? '보상 받기 완료!' : '미션 보상 받기'}
+              {currentLevel >= 7 ? '보상 받기 완료!' : '가이드 보상 받기'}
             </Button>
           </div>
         </div>
