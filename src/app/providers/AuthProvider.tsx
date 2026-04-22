@@ -3,11 +3,13 @@ import { useEffect } from 'react';
 import { type AuthChangeEvent } from '@supabase/supabase-js';
 
 import { ROUTES } from '@/app/router/constants';
+import { queryClient } from '@/lib/queryClient';
 import { authService } from '@/shared/api/services/auth/authService';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
+import { useSessionStore } from '@/stores/sessionStore';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { navigateWithUtm } = useNavigateWithUtm();
@@ -35,6 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           case 'SIGNED_OUT':
             clear();
             clearQuest();
+            useSessionStore.getState().reset();
+            queryClient.clear();
             navigateWithUtm(ROUTES.AUTH);
             break;
 

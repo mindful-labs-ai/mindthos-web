@@ -13,7 +13,7 @@ export function OverallBlock({ value, editable }: OverallBlockProps) {
       <div className="absolute left-0 top-0 h-full w-1.5 bg-green-80" />
       <p
         className={cn(
-          'typo-l relative whitespace-pre-wrap font-medium text-grey-100',
+          'relative whitespace-pre-wrap text-m font-medium text-grey-100',
           editable && EDITABLE_CLASS
         )}
         contentEditable={editable}

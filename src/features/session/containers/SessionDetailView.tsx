@@ -36,7 +36,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
         <div className="flex-shrink-0 select-none px-6 pt-2">{tab}</div>
 
         <div
-          className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'border-grey-30 bg-white'}`}
+          className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'border-grey-40 bg-white'}`}
         >
           {toolbar}
           {tabContent}

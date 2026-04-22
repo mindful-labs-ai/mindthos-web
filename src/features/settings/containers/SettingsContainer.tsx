@@ -96,7 +96,6 @@ export const SettingsContainer: React.FC = () => {
     creditInfo && creditInfo.plan.type.toLowerCase() !== 'free';
   const hasCancellationScheduled =
     creditInfo?.subscription?.scheduled_plan_id != null;
-  const isOAuthUser = user?.app_metadata?.provider !== 'email';
 
   const scrollToTop = () => document.querySelector('main')?.scrollTo(0, 0);
 
@@ -684,18 +683,14 @@ export const SettingsContainer: React.FC = () => {
         >
           로그아웃
         </button>
-        {!isOAuthUser && (
-          <>
-            <span className="text-grey-40">|</span>
-            <button
-              type="button"
-              onClick={handleDeleteAccount}
-              className="font-medium text-grey-60 transition-colors lg:hover:text-red-80"
-            >
-              계정 탈퇴
-            </button>
-          </>
-        )}
+        <span className="text-grey-40">|</span>
+        <button
+          type="button"
+          onClick={handleDeleteAccount}
+          className="font-medium text-grey-60 transition-colors lg:hover:text-red-80"
+        >
+          계정 탈퇴
+        </button>
       </div>
     </div>
   );

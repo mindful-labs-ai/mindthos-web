@@ -47,6 +47,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 인증 관련 (백엔드 전용 API)
   AUTH: {
     CHECK_USER_EXISTS: 'auth/check-user-exists',
+    CHECK_AUTH_METHOD: 'auth/check-auth-method',
     ACCOUNT_DELETE: 'auth/account-delete',
     RESEND_VERIFICATION: 'auth/resend-verification',
     PHONE_VERIFICATION: {

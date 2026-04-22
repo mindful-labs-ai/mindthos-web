@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import AuthCallbackPage from '@/features/auth/page/AuthCallbackPage';
 import AuthPage from '@/features/auth/page/AuthPage';
-import EmailVerificationPage from '@/features/auth/page/EmailVerificationPage';
+import PasswordResetPage from '@/features/auth/page/PasswordResetPage';
 import UserVerifyPage from '@/features/auth/page/UserVerifyPage';
 import ClientDetailPage from '@/features/client/page/ClientDetailPage';
 import ClientListPage from '@/features/client/page/ClientListPage';
@@ -16,6 +16,7 @@ import SettingsPage from '@/features/settings/page/SettingsPage';
 import TemplateListPage from '@/features/template/page/TemplateListPage';
 import TermsPage from '@/features/terms/page/TermsPage';
 import TermsAgreementPage from '@/features/terms-agreement/page/TermsAgreementPage';
+import UnsubscribePage from '@/features/unsubscribe/page/UnsubscribePage';
 import PaymentFail from '@/widgets/payment/PaymentFail';
 import PaymentSuccess from '@/widgets/payment/PaymentSuccess';
 
@@ -92,8 +93,8 @@ export const router = createBrowserRouter([
         element: <AuthCallbackPage />,
       },
       {
-        path: ROUTES.EMAIL_VERIFICATION,
-        element: <EmailVerificationPage />,
+        path: ROUTES.PASSWORD_RESET,
+        element: <PasswordResetPage />,
       },
       {
         path: ROUTES.TERMS_AGREEMENT,
@@ -114,6 +115,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.TERMS,
         element: <TermsPage />,
+      },
+      {
+        path: ROUTES.UNSUBSCRIBE,
+        element: <UnsubscribePage />,
       },
       {
         path: ROUTES.PAYMENT_SUCCESS,
