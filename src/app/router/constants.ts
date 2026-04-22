@@ -21,6 +21,7 @@ export const ROUTES = {
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
   ANALYSIS: '/analysis',
+  UNSUBSCRIBE: '/unsubscribe',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>

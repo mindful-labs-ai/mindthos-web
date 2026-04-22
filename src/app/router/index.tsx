@@ -16,6 +16,7 @@ import SettingsPage from '@/features/settings/page/SettingsPage';
 import TemplateListPage from '@/features/template/page/TemplateListPage';
 import TermsPage from '@/features/terms/page/TermsPage';
 import TermsAgreementPage from '@/features/terms-agreement/page/TermsAgreementPage';
+import UnsubscribePage from '@/features/unsubscribe/page/UnsubscribePage';
 import PaymentFail from '@/widgets/payment/PaymentFail';
 import PaymentSuccess from '@/widgets/payment/PaymentSuccess';
 
@@ -114,6 +115,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.TERMS,
         element: <TermsPage />,
+      },
+      {
+        path: ROUTES.UNSUBSCRIBE,
+        element: <UnsubscribePage />,
       },
       {
         path: ROUTES.PAYMENT_SUCCESS,
