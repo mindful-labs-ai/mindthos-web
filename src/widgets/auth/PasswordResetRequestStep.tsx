@@ -193,18 +193,18 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
     return (
       <div className="rounded-xl bg-white p-8 text-center">
         <div className="mb-6 flex justify-center">
-          <div className="rounded-full bg-green-80 p-4">
-            <MailIcon className="h-12 w-12 text-grey-100" />
+          <div className="rounded-full bg-green-20 p-6">
+            <MailIcon className="h-10 w-10 text-green-80" />
           </div>
         </div>
 
-        <h2 className="mb-2">비밀번호 재설정 메일을 발송했습니다</h2>
+        <h2 className="mb-2 text-2xl font-headline">메일을 발송했습니다</h2>
 
         <p className="mb-6 text-grey-100">
           <span className="font-medium text-grey-100">{state.email}</span>로
           재설정 링크를 발송했습니다.
           <br />
-          이메일의 링크를 클릭해 비밀번호를 재설정해주세요.
+          이메일을 확인하고 비밀번호를 재설정해주세요.
         </p>
 
         {(state.resendInfo || state.resendError) && (
