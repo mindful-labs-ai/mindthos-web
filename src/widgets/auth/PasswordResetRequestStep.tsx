@@ -259,21 +259,33 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
     const hasKnownProvider = hasGoogle || hasKakao;
     const isOAuthBusy = oauthPending !== null;
 
+    const providerColor = () => {
+      if (hasGoogle && hasKakao)
+        return 'text-green-80 drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
+      if (hasGoogle)
+        return 'text-[#4285f4] drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
+      if (hasKakao)
+        return 'text-[#FEE500] drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
+    };
+
     return (
       <div className="rounded-xl bg-white p-8 text-center">
         <h2 className="mb-3 text-xl font-emphasize text-grey-100">
-          {state.providerLabel} 계정으로 가입된 이메일입니다
+          <span className={providerColor()}>{state.providerLabel}</span>{' '}
+          계정으로 가입된 이메일입니다
         </h2>
-        <p className="mb-6 text-sm text-grey-70">
-          <span className="font-medium text-grey-100">{state.email}</span>은(는){' '}
-          {state.providerLabel}(으)로 가입된 계정입니다.
+        <p className="mb-6 text-sm text-grey-80">
+          <span className="whitespace-pre-wrap font-medium text-grey-100">
+            {state.email}
+          </span>
+          은(는) {state.providerLabel}(으)로 가입된 계정입니다.
           <br />
           비밀번호 대신 {state.providerLabel} 로 접속해주세요.
         </p>
         <div className="space-y-3">
           {hasGoogle && (
             <button
-              className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity lg:hover:opacity-60 disabled:opacity-60"
+              className="flex h-12 w-full items-center justify-center rounded-md border border-grey-100 bg-white text-m font-headline transition-opacity disabled:opacity-60 lg:hover:opacity-60"
               onClick={() => handleOAuthLogin('google')}
               disabled={isOAuthBusy}
             >
@@ -285,7 +297,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
           )}
           {hasKakao && (
             <button
-              className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity lg:hover:opacity-60 disabled:opacity-60"
+              className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity disabled:opacity-60 lg:hover:opacity-60"
               onClick={() => handleOAuthLogin('kakao')}
               disabled={isOAuthBusy}
             >
@@ -325,7 +337,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
         <h2 className="mb-3 text-xl font-emphasize text-grey-100">
           가입되지 않은 이메일입니다
         </h2>
-        <p className="mb-6 text-sm text-grey-70">
+        <p className="mb-6 text-sm text-grey-80">
           <span className="font-medium text-grey-100">{state.email}</span>{' '}
           계정을 찾을 수 없습니다.
           <br />
@@ -359,7 +371,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
         <h2 className="text-xl font-emphasize text-grey-100">
           비밀번호 재설정
         </h2>
-        <p className="mt-2 text-sm font-sub text-grey-70">
+        <p className="mt-2 text-sm font-sub text-grey-80">
           가입 시 사용한 이메일을 입력하시면 재설정 링크를 보내드립니다.
         </p>
       </div>
