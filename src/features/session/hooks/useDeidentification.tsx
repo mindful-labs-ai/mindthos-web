@@ -70,12 +70,19 @@ export function useDeidentification({
       setShowDeid(true);
       onSuccess?.();
     } catch (err: unknown) {
-      const error = err as { status?: number; error?: string };
+      const error = err as {
+        status?: number;
+        error?: string;
+        message?: string;
+      };
       const status = error?.status;
       const errorCode = error?.error;
+      const rawMessage = error?.message ?? '';
 
       let message = '비식별화 중 오류가 발생했습니다.';
-      if (status === 402 || errorCode === 'INSUFFICIENT_CREDIT') {
+      if (rawMessage.startsWith('NO_DEID_TARGETS')) {
+        message = 'NO_DEID_TARGETS';
+      } else if (status === 402 || errorCode === 'INSUFFICIENT_CREDIT') {
         message = '비식별화에 필요한 크레딧이 부족합니다.';
       } else if (status === 422 || errorCode === 'VALIDATION_FAILED') {
         message = '비식별화 검증에 실패했습니다. 다시 시도해주세요.';

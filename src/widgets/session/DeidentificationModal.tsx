@@ -217,31 +217,9 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
                 <path d="M20 6L9 17l-5-5" />
               </svg>
             </div>
-            <h3 className="mb-4 text-center text-l font-emphasize text-fg">
+            <h3 className="mb-6 text-center text-l font-emphasize text-fg">
               비식별화가 완료되었습니다
             </h3>
-            <div className="mb-6 w-full max-w-[320px] rounded-lg bg-grey-10 px-5 py-4">
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-m text-grey-70">전체 발화</span>
-                  <span className="text-m font-emphasize text-fg">
-                    {stats.total_segments}개
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-m text-grey-70">비식별화 발화</span>
-                  <span className="text-m font-emphasize text-orange-100">
-                    {stats.deid_segments}개
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-m text-grey-70">변경된 항목</span>
-                  <span className="text-m font-emphasize text-orange-100">
-                    {stats.deid_tags}개
-                  </span>
-                </div>
-              </div>
-            </div>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
@@ -271,10 +249,14 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
               </svg>
             </div>
             <h3 className="mb-3 text-center text-l font-emphasize text-fg">
-              비식별화 실패
+              {errorMessage?.startsWith('NO_DEID_TARGETS')
+                ? '비식별화할 개인정보가 없습니다'
+                : '비식별화 실패'}
             </h3>
             <span className="mb-6 text-center text-m text-grey-70">
-              {errorMessage}
+              {errorMessage?.startsWith('NO_DEID_TARGETS')
+                ? '축어록에서 비식별화할 개인정보를 찾지 못했습니다.'
+                : errorMessage}
             </span>
             <button
               type="button"
