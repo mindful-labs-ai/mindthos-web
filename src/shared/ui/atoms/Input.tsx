@@ -25,7 +25,7 @@ const sizeStyles: Record<InputSize, string> = {
 
 const variantStyles: Record<InputVariant, string> = {
   solid: 'bg-surface-contrast border-transparent',
-  outline: 'bg-input-bg border-input-border',
+  outline: 'bg-grey-10 border-grey-40',
   ghost: 'bg-transparent border-transparent',
   soft: 'bg-surface-contrast/50 border-transparent',
 };
@@ -64,7 +64,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           'placeholder:text-input-placeholder',
           'disabled:cursor-not-allowed',
           !hasAffixes && [
-            'border-2',
+            'border',
             'transition-default',
             'focus-default',
             sizeStyles[size],

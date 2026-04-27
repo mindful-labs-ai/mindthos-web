@@ -3,7 +3,6 @@ import React from 'react';
 import type { Client } from '@/features/client/types';
 import { FilterIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
-import { Title } from '@/shared/ui/atoms/Title';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { formatDate } from '@/shared/utils/date';
 
@@ -76,12 +75,10 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
   }, [sessions, sortOrder]);
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-border bg-bg">
+    <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-bg">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-4 py-3">
-        <Title as="h2" className="typo-sm font-medium text-fg">
-          상담 기록
-        </Title>
+        <h2 className="text-m font-emphasize text-grey-80">상담 기록</h2>
         <div className="inline-block">
           <PopUp
             trigger={

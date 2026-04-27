@@ -23,12 +23,15 @@ interface MobileTranscriptTabContentProps {
   isReadOnly: boolean;
   isEditing: boolean;
   isAnonymized: boolean;
+  showDeid?: boolean;
   enableTimestampFeatures: boolean;
   currentSegmentIndex: number;
   activeSegmentRef: React.RefObject<HTMLDivElement | null>;
   transcriptEndRef?: (node?: Element | null) => void;
   onSeekTo: (time: number) => void;
   onTextEdit: (segmentId: number, newText: string) => void;
+  onNvEdit?: (segmentId: number, nv: string[]) => void;
+  onDeidEdit?: (segmentId: number, deid: Record<string, string>) => void;
   onSpeakerChange: (updates: {
     speakerChanges: Record<number, number>;
     speakerDefinitions: Speaker[];
@@ -48,12 +51,15 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       isReadOnly,
       isEditing,
       isAnonymized,
+      showDeid = false,
       enableTimestampFeatures,
       currentSegmentIndex,
       activeSegmentRef,
       transcriptEndRef,
       onSeekTo,
       onTextEdit,
+      onNvEdit,
+      onDeidEdit,
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
@@ -113,6 +119,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         }
                         isEditable={isEditing && !isReadOnly}
                         isAnonymized={isAnonymized}
+                        showDeid={showDeid}
                         sttModel={transcribe?.stt_model}
                         segmentRef={
                           enableTimestampFeatures &&
@@ -122,6 +129,8 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         }
                         onClick={onSeekTo}
                         onTextEdit={isReadOnly ? undefined : onTextEdit}
+                        onNvEdit={isReadOnly ? undefined : onNvEdit}
+                        onDeidEdit={isReadOnly ? undefined : onDeidEdit}
                         showTimestamp={enableTimestampFeatures}
                         speakerUtteranceIndex={speakerUtteranceIndex}
                         allSegments={segments}

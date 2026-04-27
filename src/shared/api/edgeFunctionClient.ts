@@ -15,7 +15,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 상담노트 관련
   PROGRESS_NOTE: {
     CREATE: 'progress-note',
-    ADD: 'add-progress-note',
+    ADD: 'note-layer',
   },
   // 내담자 관련
   CLIENT: {
@@ -47,8 +47,14 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   // 인증 관련 (백엔드 전용 API)
   AUTH: {
     CHECK_USER_EXISTS: 'auth/check-user-exists',
+    CHECK_AUTH_METHOD: 'auth/check-auth-method',
     ACCOUNT_DELETE: 'auth/account-delete',
     RESEND_VERIFICATION: 'auth/resend-verification',
+    PHONE_VERIFICATION: {
+      STATUS: 'auth/phone-verification/status',
+      REQUEST: 'auth/phone-verification/request',
+      VERIFY: 'auth/phone-verification/verify',
+    },
   },
   // 약관 관련
   TERMS: {
@@ -74,6 +80,8 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
     REGISTER: 'coupons/register',
   },
+  // 비식별화
+  DEID: 'deid',
   // 공지사항
   NOTICE: {
     LIST: 'notice/list',

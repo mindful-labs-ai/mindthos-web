@@ -247,6 +247,21 @@ body {
   .terms-content-typo {
     @apply text-m font-medium text-grey-80 md:text-l;
   }
+  .note-label {
+    @apply text-sm font-emphasize text-grey-70;
+  }
+  .note-desc {
+    @apply whitespace-pre-wrap text-m font-medium text-grey-100;
+  }
+  .note-copy-btn-wrapper {
+    @apply absolute right-3 top-1.5 hidden transition-opacity lg:block lg:opacity-0 lg:group-hover:opacity-100;
+  }
+  .note-card-title {
+    @apply text-m font-emphasize text-grey-100;
+  }
+  .note-card-sub {
+    @apply text-m font-medium text-grey-80;
+  }
 
   /* ========================================
    * Interactive State 조합 클래스
@@ -309,7 +324,7 @@ body {
   /* --- Border --- */
   /* border-2 border-border (74회) → 한 클래스 */
   .border-default {
-    @apply border-2 border-border;
+    @apply border border-border;
   }
 
   /* --- Focus ring --- */

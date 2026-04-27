@@ -37,6 +37,7 @@ import { TranscriptTabContent } from '@/widgets/session/TranscriptTabContent';
 import { TranscriptToolbar } from '@/widgets/session/TranscriptToolbar';
 
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useDeidentification } from '../hooks/useDeidentification';
 import { useHandwrittenEdit } from '../hooks/useHandwrittenEdit';
 import { useProgressNoteCreation } from '../hooks/useProgressNoteCreation';
 import { useProgressNoteTabs } from '../hooks/useProgressNoteTabs';
@@ -89,6 +90,8 @@ export const SessionDetailContainer: React.FC = () => {
 
   const session = sessionDetail?.session;
   const transcribe = sessionDetail?.transcribe;
+  const sttModel = (transcribe as Transcribe | null)?.stt_model;
+  const supportsDeid = sttModel === 'basic' || sttModel === 'advanced';
   const sessionProgressNotes = React.useMemo(
     () => sessionDetail?.progressNotes || [],
     [sessionDetail?.progressNotes]
@@ -118,7 +121,8 @@ export const SessionDetailContainer: React.FC = () => {
 
   const transcriptLabel = isHandwrittenSession ? (
     '입력된 텍스트'
-  ) : (transcribe as Transcribe | null)?.stt_model === 'gemini-3' ? (
+  ) : (transcribe as Transcribe | null)?.stt_model === 'gemini-3' ||
+    (transcribe as Transcribe | null)?.stt_model === 'advanced' ? (
     <span className="flex items-center justify-center gap-1.5">
       고급 축어록
       <svg
@@ -181,6 +185,8 @@ export const SessionDetailContainer: React.FC = () => {
     isEditing,
     editingContents,
     handleTextEdit,
+    handleNvEdit,
+    handleDeidEdit,
     handleEditStart,
     handleCancelEdit,
     handleSaveAllEdits,
@@ -205,6 +211,17 @@ export const SessionDetailContainer: React.FC = () => {
     [editingContents, rawSpeakers]
   );
 
+  const userIdForDeid = useAuthStore((s) => s.userId);
+  const { showDeid, isDeidApplied, handleDeidentify, deidModal } =
+    useDeidentification({
+      sessionId,
+      userId: userIdForDeid ? Number(userIdForDeid) : undefined,
+      segments: rawSegments,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+      },
+    });
+
   const transcribeContents = transcribe?.contents;
   const transcribedText = React.useMemo(() => {
     if (!transcribeContents) return null;
@@ -225,8 +242,8 @@ export const SessionDetailContainer: React.FC = () => {
   } = useTranscriptCopy({ isReadOnly });
 
   const handleCopyTranscript = React.useCallback(() => {
-    copyTranscriptFromHook(segments, speakers, isAnonymized);
-  }, [copyTranscriptFromHook, segments, speakers, isAnonymized]);
+    copyTranscriptFromHook(segments, speakers, isAnonymized, showDeid);
+  }, [copyTranscriptFromHook, segments, speakers, isAnonymized, showDeid]);
 
   const handleCopyHandwritten = React.useCallback(() => {
     const content = (transcribe as HandwrittenTranscribe)?.contents || '';
@@ -624,6 +641,11 @@ export const SessionDetailContainer: React.FC = () => {
           onToggleAnonymized={() => setIsAnonymized(!isAnonymized)}
           onEditStart={handleEditStart}
           onCopy={handleCopyTranscript}
+          onDeidentify={
+            !isReadOnly && supportsDeid ? handleDeidentify : undefined
+          }
+          showDeid={showDeid}
+          hasActivatedDeid={isDeidApplied}
         />
       ) : (
         <TranscriptToolbar
@@ -638,6 +660,11 @@ export const SessionDetailContainer: React.FC = () => {
           onSaveEdit={handleSaveAllEdits}
           onCancelEdit={handleCancelEdit}
           onCopy={handleCopyTranscript}
+          onDeidentify={
+            !isReadOnly && supportsDeid ? handleDeidentify : undefined
+          }
+          showDeid={showDeid}
+          hasActivatedDeid={isDeidApplied}
         />
       )
     ) : null;
@@ -674,11 +701,14 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           isAnonymized={isAnonymized}
+          showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
           currentSegmentIndex={currentSegmentIndex}
           activeSegmentRef={activeSegmentRef}
           onSeekTo={handleSeekToWithInteraction}
           onTextEdit={handleTextEdit}
+          onNvEdit={handleNvEdit}
+          onDeidEdit={handleDeidEdit}
           onSpeakerChange={handleSpeakerChange}
           onAddSegment={handleAddSegment}
           onDeleteSegment={handleDeleteSegment}
@@ -693,11 +723,14 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           isAnonymized={isAnonymized}
+          showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
           currentSegmentIndex={currentSegmentIndex}
           activeSegmentRef={activeSegmentRef}
           onSeekTo={handleSeekToWithInteraction}
           onTextEdit={handleTextEdit}
+          onNvEdit={handleNvEdit}
+          onDeidEdit={handleDeidEdit}
           onSpeakerChange={handleSpeakerChange}
           onAddSegment={handleAddSegment}
           onDeleteSegment={handleDeleteSegment}
@@ -794,7 +827,12 @@ export const SessionDetailContainer: React.FC = () => {
         toolbar={toolbar}
         tabContent={tabContent}
         audioPlayer={audioPlayer}
-        tabChangeModal={tabChangeModal}
+        tabChangeModal={
+          <>
+            {tabChangeModal}
+            {deidModal}
+          </>
+        }
       />
     );
   }
@@ -808,7 +846,12 @@ export const SessionDetailContainer: React.FC = () => {
       toolbar={toolbar}
       tabContent={tabContent}
       audioPlayer={audioPlayer}
-      tabChangeModal={tabChangeModal}
+      tabChangeModal={
+        <>
+          {tabChangeModal}
+          {deidModal}
+        </>
+      }
     />
   );
 };

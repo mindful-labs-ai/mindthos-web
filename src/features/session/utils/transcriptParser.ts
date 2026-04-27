@@ -61,7 +61,7 @@ export function getTranscriptData(transcribe: Transcribe | null): {
       const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
 
       if (sttModel === 'gemini-3') {
-        // Gemini: start/end는 null
+        // Gemini (레거시): start/end는 null
         return {
           id: seg.id,
           start: null,
@@ -70,13 +70,15 @@ export function getTranscriptData(transcribe: Transcribe | null): {
           text: seg.text || '',
         };
       } else {
-        // Whisper: start/end는 number
+        // Whisper, basic, advanced: start/end는 number
         return {
           id: seg.id,
           start: seg.start ?? 0,
           end: seg.end ?? 0,
           speaker: speakerId,
           text: seg.text || '',
+          ...(seg.nv && seg.nv.length > 0 ? { nv: seg.nv } : {}),
+          ...(seg.deid ? { deid: seg.deid } : {}),
         };
       }
     });

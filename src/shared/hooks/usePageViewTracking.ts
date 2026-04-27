@@ -15,7 +15,7 @@ const getPageDomain = (pathname: string): string => {
   if (pathname === ROUTES.GENOGRAM) return 'genogram';
   if (pathname === ROUTES.SETTINGS) return 'settings';
   if (pathname === ROUTES.AUTH_CALLBACK) return 'auth_callback';
-  if (pathname === ROUTES.EMAIL_VERIFICATION) return 'email_verification';
+  if (pathname === ROUTES.PASSWORD_RESET) return 'password_reset';
   if (pathname === ROUTES.AUTH) return 'auth';
   if (pathname === ROUTES.TERMS) return 'terms';
   if (pathname === ROUTES.PAYMENT_SUCCESS) return 'payment_success';

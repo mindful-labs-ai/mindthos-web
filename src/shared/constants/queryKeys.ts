@@ -79,6 +79,12 @@ export const userQueryKeys = {
   data: (email: string) => ['user', 'data', email] as const,
 };
 
+// --- Phone Verification ---
+export const phoneVerificationQueryKeys = {
+  all: ['phone-verification'] as const,
+  status: () => [...phoneVerificationQueryKeys.all, 'status'] as const,
+};
+
 // --- Qualifications ---
 export const qualificationQueryKeys = {
   all: ['qualifications'] as const,

@@ -33,6 +33,8 @@ import type {
 } from '../types';
 import {
   addSegmentAfter,
+  applyBulkDeidEdits,
+  applyBulkNvEdits,
   applyBulkSpeakerChanges,
   applyBulkTextEdits,
   type Contents,
@@ -65,6 +67,8 @@ interface UseTranscriptEditSessionReturn {
   handleCancelEdit: () => void;
   handleSaveAllEdits: () => Promise<void>;
   handleTextEdit: (segmentId: number, newText: string) => void;
+  handleNvEdit: (segmentId: number, nv: string[]) => void;
+  handleDeidEdit: (segmentId: number, deid: Record<string, string>) => void;
   handleSpeakerChange: (updates: SpeakerChangeUpdate) => Promise<void>;
   handleAddSegment: (afterSegmentId: number, speaker: number) => void;
   handleDeleteSegment: (segmentId: number) => void;
@@ -102,6 +106,8 @@ export function useTranscriptEditSession({
   );
   // 텍스트 편집은 ref로 관리 (리렌더링 없이 타이핑 성능 유지)
   const textEditsRef = React.useRef<Record<number, string>>({});
+  const nvEditsRef = React.useRef<Record<number, string[]>>({});
+  const deidEditsRef = React.useRef<Record<number, Record<string, string>>>({});
 
   const sessionQueryKey = React.useMemo(
     () => sessionQueryKeys.detail(sessionId, isDummySession),
@@ -136,6 +142,8 @@ export function useTranscriptEditSession({
     // 스냅샷 생성
     setEditingContents(deepCloneContents(contents));
     textEditsRef.current = {};
+    nvEditsRef.current = {};
+    deidEditsRef.current = {};
     setHasEdits(false);
     setIsEditing(true);
 
@@ -177,6 +185,28 @@ export function useTranscriptEditSession({
       if (!hasEdits) {
         setHasEdits(true);
       }
+    },
+    [isReadOnly, isEditing, hasEdits]
+  );
+
+  // ── nv 편집 (편집 모드 전용, ref 기반) ──
+
+  const handleNvEdit = React.useCallback(
+    (segmentId: number, nv: string[]) => {
+      if (isReadOnly || !isEditing) return;
+      nvEditsRef.current[segmentId] = nv;
+      if (!hasEdits) setHasEdits(true);
+    },
+    [isReadOnly, isEditing, hasEdits]
+  );
+
+  // ── deid 편집 (편집 모드 전용, ref 기반) ──
+
+  const handleDeidEdit = React.useCallback(
+    (segmentId: number, deid: Record<string, string>) => {
+      if (isReadOnly || !isEditing) return;
+      deidEditsRef.current[segmentId] = deid;
+      if (!hasEdits) setHasEdits(true);
     },
     [isReadOnly, isEditing, hasEdits]
   );
@@ -363,7 +393,9 @@ export function useTranscriptEditSession({
     try {
       // 텍스트 편집을 스냅샷에 병합
       const textEdits = textEditsRef.current;
-      const finalContents = applyBulkTextEdits(editingContents, textEdits);
+      let finalContents = applyBulkTextEdits(editingContents, textEdits);
+      finalContents = applyBulkNvEdits(finalContents, nvEditsRef.current);
+      finalContents = applyBulkDeidEdits(finalContents, deidEditsRef.current);
 
       // 캐시에 최종 contents 반영 (UI 즉시 반영)
       queryClient.setQueryData(
@@ -380,6 +412,8 @@ export function useTranscriptEditSession({
       // 편집 상태 초기화
       setEditingContents(null);
       textEditsRef.current = {};
+      nvEditsRef.current = {};
+      deidEditsRef.current = {};
       setHasEdits(false);
       setIsEditing(false);
 
@@ -432,6 +466,8 @@ export function useTranscriptEditSession({
     handleCancelEdit,
     handleSaveAllEdits,
     handleTextEdit,
+    handleNvEdit,
+    handleDeidEdit,
     handleSpeakerChange,
     handleAddSegment,
     handleDeleteSegment,

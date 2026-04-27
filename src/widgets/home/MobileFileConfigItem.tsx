@@ -66,10 +66,10 @@ const MobileSttModelToggle: React.FC<{
   value: SttModel;
   onChange: (value: SttModel) => void;
 }> = ({ value, onChange }) => {
-  const isAdvanced = value === 'gemini-3';
+  const isAdvanced = value === 'advanced';
 
   const handleToggle = () => {
-    onChange(isAdvanced ? 'whisper' : 'gemini-3');
+    onChange(isAdvanced ? 'basic' : 'advanced');
   };
 
   return (
