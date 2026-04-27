@@ -41,7 +41,7 @@ export const RegenerateProgressNoteModal: React.FC<RegenerateProgressNoteModalPr
           <div className="flex flex-col items-center py-4">
             {/* 제목 */}
             <Title as="h2" className="mb-8 text-center font-headline text-fg">
-              상담 노트 재생성
+              상담노트 재생성
             </Title>
 
             {/* 내용 */}
@@ -51,8 +51,8 @@ export const RegenerateProgressNoteModal: React.FC<RegenerateProgressNoteModalPr
                 생성하시겠습니까?
               </Title>
               <Text className="typo-m text-center text-fg-muted">
-                현재의 축어록을 기반으로 다시 노트를 생성합니다. <br />
-                이전 상담노트는 삭제됩니다.
+                현재의 축어록을 기반으로 다시 노트를 만들어요. <br />
+                이전 상담노트는 삭제돼요.
               </Text>
             </div>
 

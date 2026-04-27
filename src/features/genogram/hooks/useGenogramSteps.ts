@@ -83,7 +83,7 @@ export function useGenogramSteps(): UseGenogramStepsReturn {
   useEffect(() => {
     if (blocker.state === 'blocked') {
       const confirmed = window.confirm(
-        '가계도 생성 중입니다. 페이지를 떠나시겠습니까?'
+        '가계도 생성 중이에요. 페이지를 떠나시겠어요?'
       );
       if (confirmed) {
         blocker.proceed();

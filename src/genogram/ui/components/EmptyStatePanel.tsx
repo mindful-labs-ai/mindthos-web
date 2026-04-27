@@ -25,7 +25,7 @@ export const EmptyStatePanel: React.FC<EmptyStatePanelProps> = ({
         <p className="text-sm text-grey-70">
           하단 도구에서 구성원 추가를 선택한 후
           <br />
-          캔버스를 클릭하여 추가합니다
+          캔버스를 클릭해서 추가하세요
         </p>
         {actions && (
           <div className="mt-4 flex justify-center border-t border-grey-40 pt-4">

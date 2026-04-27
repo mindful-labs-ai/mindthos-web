@@ -185,7 +185,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
         <button
           onClick={handleDeleteSegment}
           className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-red-500 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:text-red-600"
-          aria-label="세그먼트 삭제"
+          aria-label="발화 삭제"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -269,7 +269,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
         <button
           onClick={handleAddSegment}
           className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-subtle p-2 text-primary opacity-0 shadow-sm transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:scale-105 lg:hover:border-primary"
-          aria-label="세그먼트 추가"
+          aria-label="발화 추가"
         >
           <Plus className="h-4 w-4" />
         </button>

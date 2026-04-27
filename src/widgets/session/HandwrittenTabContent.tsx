@@ -71,7 +71,7 @@ export const HandwrittenTabContent: React.FC<HandwrittenTabContentProps> =
             </div>
           ) : (
             <div className="flex min-h-[400px] items-center justify-center">
-              <p className="text-fg-muted">입력된 텍스트가 없습니다.</p>
+              <p className="text-fg-muted">입력된 텍스트가 없어요.</p>
             </div>
           )}
         </div>

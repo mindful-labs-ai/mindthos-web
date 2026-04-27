@@ -48,16 +48,15 @@ export const SessionHistoryContainer: React.FC = () => {
       toast({
         title: '상담 기록 생성 완료',
         description: session.title
-          ? `"${session.title}" 생성 완료 되었습니다.`
-          : '생성 완료 되었습니다.',
+          ? `"${session.title}" 만들었어요.`
+          : '생성을 완료했어요.',
         duration: 5000,
       });
     },
     onSessionError: (session) => {
       toast({
         title: '세션 처리 실패',
-        description:
-          session.error_message || '세션 처리 중 문제가 발생했습니다.',
+        description: session.error_message || '세션 처리 중 문제가 생겼어요.',
         duration: 5000,
       });
     },
@@ -116,13 +115,13 @@ export const SessionHistoryContainer: React.FC = () => {
         const client = effectiveClients.find((c) => c.id === session.client_id);
         const isHandwritten = session.audio_meta_data === null;
 
-        let content = '전사 내용이 없습니다.';
+        let content = '축어록이 없어요.';
 
         if (isHandwritten) {
           if (transcribe && typeof transcribe.contents === 'string') {
             content = transcribe.contents;
           } else {
-            content = '입력된 텍스트가 없습니다.';
+            content = '입력된 텍스트가 없어요.';
           }
         } else {
           const transcriptData = getTranscriptData(
@@ -140,7 +139,7 @@ export const SessionHistoryContainer: React.FC = () => {
                   );
                   return `${speakerName}: ${seg.text}`;
                 })
-                .join(' ') || '전사 내용이 없습니다.';
+                .join(' ') || '축어록이 없어요.';
           }
         }
 
@@ -161,7 +160,7 @@ export const SessionHistoryContainer: React.FC = () => {
           session_id: session.id,
           transcribe_id: transcribe?.id || null,
           client_id: session.client_id || '',
-          client_name: client?.name || '클라이언트 없음',
+          client_name: client?.name || '내담자 없음',
           session_number,
           title: session.title || undefined,
           content,
@@ -201,7 +200,7 @@ export const SessionHistoryContainer: React.FC = () => {
         return {
           sessionId: session.id,
           title: session.title || '제목 없음',
-          clientName: client?.name || '클라이언트 없음',
+          clientName: client?.name || '내담자 없음',
           sessionNumber,
           duration: audioDuration,
           hasAudio: !!session.audio_url,
@@ -303,7 +302,7 @@ export const SessionHistoryContainer: React.FC = () => {
   ) : (
     <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
       <div className="text-center">
-        <p className="typo-sm text-fg-muted">아직 상담 기록이 없습니다.</p>
+        <p className="typo-sm text-fg-muted">아직 상담 기록이 없어요.</p>
       </div>
     </div>
   );

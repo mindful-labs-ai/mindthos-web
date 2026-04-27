@@ -161,7 +161,7 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
           value={code}
           onChange={(e) => setCode(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="번호를 입력해주세요."
+          placeholder="번호를 입력해 주세요."
           size="md"
           variant="outline"
           className="flex-1"
@@ -192,7 +192,7 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
         </div>
       ) : coupons.length === 0 ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-grey-60">보유 중인 쿠폰이 없습니다.</p>
+          <p className="text-grey-60">아직 받은 쿠폰이 없어요.</p>
         </div>
       ) : (
         coupons.map((coupon) => <CouponCard key={coupon.id} coupon={coupon} />)
@@ -310,7 +310,7 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
             return (
               <div className="flex items-center justify-center py-8">
                 <Text className="text-fg-muted">
-                  사용 가능한 쿠폰이 없습니다.
+                  사용할 수 있는 쿠폰이 없어요.
                 </Text>
               </div>
             );

@@ -70,7 +70,7 @@ export async function fetchSessionProgressNotes(
 }
 
 /**
- * 상담 노트 생성 API 호출 (세션 플로우용)
+ * 상담노트 생성 API 호출 (세션 플로우용)
  */
 export async function createProgressNote(
   params: CreateProgressNoteParams
@@ -87,20 +87,20 @@ export async function createProgressNote(
     );
 
     if (!data.success) {
-      throw new Error(data.message || '상담 노트 작성 중 오류가 발생했습니다.');
+      throw new Error(data.message || '상담노트 작성 중 오류가 생겼어요.');
     }
 
     return data;
   } catch (error: unknown) {
     const err = error as { message?: string; statusText?: string };
     throw new Error(
-      err.message || `상담 노트 작성 실패: ${err.statusText || ''}`
+      err.message || `상담노트 작성 실패: ${err.statusText || ''}`
     );
   }
 }
 
 /**
- * 상담 노트 summary 수정
+ * 상담노트 summary 수정
  */
 export async function updateProgressNoteSummary(
   progressNoteId: string,
@@ -117,7 +117,7 @@ export async function updateProgressNoteSummary(
 }
 
 /**
- * 상담 노트 추가 API 호출 (세션 상세 페이지용, 백그라운드 처리)
+ * 상담노트 추가 API 호출 (세션 상세 페이지용, 백그라운드 처리)
  */
 export async function addProgressNote(
   params: AddProgressNoteParams
@@ -133,14 +133,14 @@ export async function addProgressNote(
     );
 
     if (!data.success) {
-      throw new Error(data.message || '상담 노트 추가 중 오류가 발생했습니다.');
+      throw new Error(data.message || '상담노트 추가 중 오류가 생겼어요.');
     }
 
     return data;
   } catch (error: unknown) {
     const err = error as { message?: string; statusText?: string };
     throw new Error(
-      err.message || `상담 노트 추가 실패: ${err.statusText || ''}`
+      err.message || `상담노트 추가 실패: ${err.statusText || ''}`
     );
   }
 }

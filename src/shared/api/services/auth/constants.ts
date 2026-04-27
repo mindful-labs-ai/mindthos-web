@@ -8,15 +8,17 @@ export const EDGE_FUNCTION_ENDPOINTS = {
 } as const;
 
 export const ERROR_MESSAGES = {
-  INVALID_CREDENTIALS: '이메일 또는 비밀번호가 올바르지 않습니다.',
+  INVALID_CREDENTIALS:
+    '로그인할 수 없어요. 이메일과 비밀번호를 한 번 더 확인해 주세요.',
   EMAIL_NOT_CONFIRMED:
-    '이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.',
-  WEAK_PASSWORD: '비밀번호는 최소 8자 이상이어야 합니다.',
-  RATE_LIMIT_EXCEEDED: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-  NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
-  GENERIC_AUTH_ERROR: '인증 중 오류가 발생했습니다.',
-  GENERIC_ERROR: '오류가 발생했습니다.',
-  UNKNOWN_ERROR: '알 수 없는 오류가 발생했습니다.',
-  LOGIN_FAILED: '로그인에 실패했습니다.',
-  SIGNUP_FAILED: '회원가입에 실패했습니다.',
+    '이메일 인증이 아직 끝나지 않았어요. 받은 메일을 확인해 주세요.',
+  WEAK_PASSWORD: '비밀번호는 8자 이상으로 만들어 주세요.',
+  RATE_LIMIT_EXCEEDED:
+    '요청이 너무 자주 들어왔어요. 잠시 후 다시 시도해 주세요.',
+  NETWORK_ERROR: '인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
+  GENERIC_AUTH_ERROR: '인증을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.',
+  GENERIC_ERROR: '문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
+  UNKNOWN_ERROR: '예상하지 못한 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
+  LOGIN_FAILED: '로그인할 수 없어요.',
+  SIGNUP_FAILED: '회원가입을 완료하지 못했어요.',
 } as const;

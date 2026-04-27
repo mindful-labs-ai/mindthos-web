@@ -92,7 +92,7 @@ export function useProgressNoteCreation({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 상담 노트를 작성할 수 없습니다.',
+        description: '실제 상담 기록에서 상담노트를 만들 수 있어요.',
         duration: 3000,
       });
       return;
@@ -102,7 +102,7 @@ export function useProgressNoteCreation({
     if (remainingCredit < PROGRESS_NOTE_CREDIT) {
       toast({
         title: '크레딧 부족',
-        description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요합니다. (보유: ${remainingCredit})`,
+        description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요해요. (보유: ${remainingCredit})`,
         duration: 5000,
       });
       return;
@@ -155,7 +155,7 @@ export function useProgressNoteCreation({
 
       toast({
         title: '상담노트 작성 시작',
-        description: '상담노트를 작성하고 있습니다.',
+        description: '상담노트를 작성하고 있어요.',
         duration: 3000,
       });
     } catch (error) {
@@ -180,7 +180,7 @@ export function useProgressNoteCreation({
 
       toast({
         title: '상담노트 작성 실패',
-        description: '상담 노트 작성에 실패했습니다. 다시 시도해주세요.',
+        description: '상담노트를 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 5000,
       });
     }
@@ -203,7 +203,7 @@ export function useProgressNoteCreation({
       if (isReadOnly) {
         toast({
           title: '읽기 전용',
-          description: '예시에서는 상담 노트를 작성할 수 없습니다.',
+          description: '실제 상담 기록에서 상담노트를 만들 수 있어요.',
           duration: 3000,
         });
         return;
@@ -213,7 +213,7 @@ export function useProgressNoteCreation({
       if (remainingCredit < PROGRESS_NOTE_CREDIT) {
         toast({
           title: '크레딧 부족',
-          description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요합니다. (보유: ${remainingCredit})`,
+          description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요해요. (보유: ${remainingCredit})`,
           duration: 5000,
         });
         return;
@@ -258,7 +258,7 @@ export function useProgressNoteCreation({
 
         toast({
           title: '상담노트 재생성 시작',
-          description: '상담노트를 다시 작성하고 있습니다.',
+          description: '상담노트를 다시 작성하고 있어요.',
           duration: 3000,
         });
 
@@ -303,7 +303,8 @@ export function useProgressNoteCreation({
 
         toast({
           title: '상담노트 재생성 실패',
-          description: '상담 노트 재생성에 실패했습니다. 다시 시도해주세요.',
+          description:
+            '상담노트를 다시 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
           duration: 5000,
         });
       } finally {

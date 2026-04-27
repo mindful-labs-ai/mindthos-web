@@ -2,7 +2,7 @@
  * useDebugPanel — 범용 디버그 패널 훅
  *
  * 개발 모드에서만 동작하며, 프로덕션 빌드 시 null을 반환합니다.
- * 상태 객체를 넘기면 자동으로 디버그 UI를 생성합니다.
+ * 상태 객체를 넘기면 자동으로 디버그 UI를 만들어요.
  *
  * ─── 기본 사용법 ───
  *
@@ -27,7 +27,7 @@
  * ─── 커스텀 섹션 ───
  *
  * 배열 아이템 등 복잡한 컨트롤은 세 번째 인자로 ReactNode를 전달합니다.
- * DebugSection, DebugChip 컴포넌트를 import하여 조합할 수 있습니다.
+ * DebugSection, DebugChip 컴포넌트를 import하여 조합할 수 있어요.
  *
  * import { useDebugPanel, DebugSection, DebugChip } from '@/shared/hooks/useDebugPanel';
  *

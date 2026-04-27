@@ -49,9 +49,7 @@ const QuestHeader: React.FC<{
       className
     )}
   >
-    <h3 className="text-l font-headline text-grey-100">
-      신규 가입자 가이드
-    </h3>
+    <h3 className="text-l font-headline text-grey-100">신규 가입자 가이드</h3>
     <span className="text-sm font-sub text-grey-70">
       {completed}/{total} 완료
     </span>
@@ -157,8 +155,8 @@ const RewardBanner: React.FC<{
       )}
     </div>
     <p className="text-m font-headline text-grey-100">
-      모든 가이드 달성 시 <span className="text-green-80">스타터 1개월</span> 무료
-      쿠폰 지급!
+      모든 가이드 달성 시 <span className="text-green-80">스타터 1개월</span>{' '}
+      무료 쿠폰 지급!
     </p>
   </div>
 );

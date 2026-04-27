@@ -158,9 +158,9 @@ export function AnalyzeLoadingAnimation() {
 
       <span className="typo-m text-center text-fg-muted">
         상담기록을 기반으로 내담자의 <br />
-        가족 구성원을 분석합니다. <br />
+        가족 구성원을 분석하고 있어요. <br />
         <span className="typo-xs pt-2 text-primary">
-          정밀 분석 중... 완성까지 최대 2분 정도 소요될 수 있습니다.
+          정밀 분석 중... 완성까지 최대 2분 정도 소요될 수 있어요.
         </span>
       </span>
 
@@ -423,7 +423,7 @@ export function GenogramLoadingAnimation() {
       </svg>
 
       <span className="typo-m text-center text-fg-muted">
-        가계도를 그리는 중입니다.
+        가계도를 그리는 중이에요.
       </span>
 
       {/* CSS 애니메이션 정의 */}
@@ -603,7 +603,7 @@ export function GenogramLoadingAnimationLoop() {
       </svg>
 
       <span className="typo-m text-center text-fg-muted">
-        가계도를 그리는 중입니다.
+        가계도를 그리는 중이에요.
       </span>
 
       {/* CSS 애니메이션 정의 - 무한 반복 (4초 사이클) */}

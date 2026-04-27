@@ -58,7 +58,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
   const showReadOnlyToast = () => {
     toast({
       title: '읽기 전용',
-      description: '예시에서는 이 기능을 사용할 수 없습니다.',
+      description: '실제 상담 기록에서 이 기능을 쓸 수 있어요.',
       duration: 2500,
     });
   };
@@ -89,7 +89,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 
       trackEvent(MixpanelEvent.ClientSessionClose, { client_id: client.id });
 
-      // 클라이언트 목록 갱신
+      // 내담자 목록 갱신
       if (userId) {
         await queryClient.invalidateQueries({
           queryKey: clientQueryKeys.list(userId),
@@ -101,7 +101,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       console.error('상담 종결 실패:', error);
       toast({
         title: '실패',
-        description: '상담 종결에 실패했습니다.',
+        description: '상담을 종결하지 못했어요.',
         duration: 2500,
       });
     } finally {
@@ -135,7 +135,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 
       trackEvent(MixpanelEvent.ClientSessionRestart, { client_id: client.id });
 
-      // 클라이언트 목록 갱신
+      // 내담자 목록 갱신
       if (userId) {
         await queryClient.invalidateQueries({
           queryKey: clientQueryKeys.list(userId),
@@ -147,7 +147,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       console.error('상담 재시작 실패:', error);
       toast({
         title: '실패',
-        description: '상담 재시작에 실패했습니다.',
+        description: '상담을 다시 시작하지 못했어요.',
         duration: 2500,
       });
     } finally {
@@ -189,7 +189,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 
       trackEvent(MixpanelEvent.ClientDelete, { client_id: client.id });
 
-      // 클라이언트 목록 갱신
+      // 내담자 목록 갱신
       if (userId) {
         await queryClient.invalidateQueries({
           queryKey: clientQueryKeys.list(userId),
@@ -198,10 +198,10 @@ export const ClientCard: React.FC<ClientCardProps> = ({
 
       setIsDeleteModalOpen(false);
     } catch (error) {
-      console.error('클라이언트 삭제 실패:', error);
+      console.error('내담자 삭제 실패:', error);
       toast({
         title: '실패',
-        description: '클라이언트 삭제에 실패했습니다.',
+        description: '내담자를 삭제하지 못했어요.',
         duration: 2500,
       });
     } finally {
@@ -274,7 +274,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                 onAnalyzeClick?.(client);
               }}
             >
-              클라이언트 분석 가능
+              내담자 분석 가능
             </Badge>
           )}
         </div>
@@ -288,7 +288,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       >
         <div className="space-y-4">
           <Text className="typo-m font-headline text-fg">
-            {client.name} 내담자의 상담을 종결하시겠습니까?
+            {client.name} 내담자의 상담을 종결하시겠어요?
           </Text>
           <Text className="typo-sm text-fg-muted">
             상담을 종결하면 더이상 내담자에게 상담 기록을 추가할 수 없어요.
@@ -339,16 +339,15 @@ export const ClientCard: React.FC<ClientCardProps> = ({
       <Modal
         open={isDeleteModalOpen}
         onOpenChange={setIsDeleteModalOpen}
-        title="클라이언트 삭제"
+        title="내담자 삭제"
         className="max-w-sm"
       >
         <div className="space-y-4">
           <Text className="typo-m font-headline text-fg">
-            {client.name} 클라이언트를 삭제하시겠습니까?
+            {client.name} 내담자를 삭제하시겠습니까?
           </Text>
           <Text className="typo-sm text-fg-muted">
-            삭제하면 클라이언트 정보와 관련된 모든 데이터가 영구적으로
-            삭제됩니다.
+            삭제하면 내담자 정보와 관련된 모든 데이터가 영구적으로 삭제돼요.
           </Text>
           <div className="flex justify-center gap-2 pt-2">
             <Button

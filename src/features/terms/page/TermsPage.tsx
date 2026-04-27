@@ -52,7 +52,7 @@ const TermsPageContent = ({ type }: { type: TermsType }) => {
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
           <p className="text-m font-emphasize text-grey-100">
-            약관 내용을 불러오는 중 오류가 발생했습니다.
+            약관 내용을 불러오는 중 오류가 생겼어요.
           </p>
           <button
             type="button"

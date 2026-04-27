@@ -271,7 +271,7 @@ export const SessionDetailContainer: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 제목을 수정할 수 없습니다.',
+        description: '실제 상담 기록에서 제목을 수정할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -372,7 +372,7 @@ export const SessionDetailContainer: React.FC = () => {
           const url = await getAudioPresignedUrl(sessionId);
           setPresignedAudioUrl(url);
         } catch (error) {
-          console.error('녹음 파일을 불러오는 데 실패했습니다:', error);
+          console.error('녹음 파일을 불러오지 못했어요:', error);
           trackError(MixpanelError.AudioPresignedUrlError, error, {
             session_id: sessionId,
           });
@@ -385,8 +385,8 @@ export const SessionDetailContainer: React.FC = () => {
   React.useEffect(() => {
     if (!isLoading && !session && sessionId) {
       toast({
-        title: '오류',
-        description: '상담 데이터를 찾을 수 없습니다.',
+        title: '문제가 생겼어요',
+        description: '상담 데이터를 찾을 수 없어요.',
         duration: 3000,
       });
       navigateWithUtm(ROUTES.SESSIONS);
@@ -561,7 +561,7 @@ export const SessionDetailContainer: React.FC = () => {
   if (!session) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-fg-muted">상담기록을 찾을 수 없습니다.</p>
+        <p className="text-fg-muted">상담기록을 찾을 수 없어요.</p>
       </div>
     );
   }

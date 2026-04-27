@@ -80,7 +80,7 @@ export async function createSignedPdfUrl(storageKey: string): Promise<string> {
     .createSignedUrl(storageKey, 60 * 10);
 
   if (error || !data?.signedUrl) {
-    throw new Error('PDF signed URL 발급에 실패했습니다.');
+    throw new Error('PDF 미리보기를 받지 못했어요.');
   }
 
   return data.signedUrl;
@@ -139,7 +139,7 @@ export async function exportReport(params: {
 // API 함수
 // ============================================
 
-/** 클라이언트별 보고서 목록 조회 */
+/** 내담자별 보고서 목록 조회 */
 export async function listReports(clientId: string): Promise<ReportListItem[]> {
   try {
     const data = await callEdgeFunction<ListReportsResponse>(
@@ -148,13 +148,13 @@ export async function listReports(clientId: string): Promise<ReportListItem[]> {
     );
 
     if (!data.success) {
-      throw new Error('보고서 목록을 불러오지 못했습니다.');
+      throw new Error('보고서 목록을 불러오지 못했어요.');
     }
 
     return data.data.reports;
   } catch (error: unknown) {
     const err = error as { message?: string };
-    throw new Error(err.message || '보고서 목록 조회 중 오류가 발생했습니다.');
+    throw new Error(err.message || '보고서 목록 조회 중 오류가 생겼어요.');
   }
 }
 
@@ -169,7 +169,7 @@ export async function generateReport(
     );
 
     if (!data.success) {
-      throw new Error('보고서 생성에 실패했습니다.');
+      throw new Error('보고서를 만들지 못했어요.');
     }
 
     return data.data;
@@ -177,10 +177,10 @@ export async function generateReport(
     const err = error as { message?: string; error?: string };
 
     if (err.error === 'ACCESS_DENIED') {
-      throw new Error('이 보고서를 생성하려면 세미나 수료가 필요합니다.');
+      throw new Error('이 보고서를 생성하려면 세미나 수료가 필요해요.');
     }
 
-    throw new Error(err.message || '보고서 생성 중 오류가 발생했습니다.');
+    throw new Error(err.message || '보고서 생성 중 오류가 생겼어요.');
   }
 }
 
@@ -195,7 +195,7 @@ export async function fetchReportDetail(
     .single();
 
   if (error || !data?.formatted_json) {
-    throw new Error('보고서 데이터를 불러오지 못했습니다.');
+    throw new Error('보고서 데이터를 불러오지 못했어요.');
   }
 
   return data.formatted_json as GenogramReport;
@@ -211,7 +211,7 @@ export async function uploadReportPdf(
     .upload(storageKey, pdfBlob, { contentType: 'application/pdf' });
 
   if (error) {
-    throw new Error(`PDF 업로드에 실패했습니다: ${error.message}`);
+    throw new Error(`PDF를 업로드하지 못했어요: ${error.message}`);
   }
 }
 
@@ -227,15 +227,13 @@ export async function savePdfStorageKey(
     );
 
     if (!data.success) {
-      throw new Error('PDF storage key 저장에 실패했습니다.');
+      throw new Error('PDF 저장 정보를 처리하지 못했어요.');
     }
 
     return data.data.storage_key;
   } catch (error: unknown) {
     const err = error as { message?: string };
-    throw new Error(
-      err.message || 'PDF storage key 저장 중 오류가 발생했습니다.'
-    );
+    throw new Error(err.message || 'PDF storage key 저장 중 오류가 생겼어요.');
   }
 }
 
@@ -283,7 +281,7 @@ export async function retryReport(
     );
 
     if (!data.success) {
-      throw new Error('보고서 재생성에 실패했습니다.');
+      throw new Error('보고서를 다시 만들지 못했어요.');
     }
 
     return data.data;
@@ -294,9 +292,9 @@ export async function retryReport(
       throw new Error(err.message || '재시도까지 잠시 기다려주세요.');
     }
     if (err.error === 'MAX_RETRY_EXCEEDED') {
-      throw new Error(err.message || '최대 재시도 횟수를 초과했습니다.');
+      throw new Error(err.message || '최대 재시도 횟수를 넘었어요.');
     }
 
-    throw new Error(err.message || '보고서 재시도 중 오류가 발생했습니다.');
+    throw new Error(err.message || '보고서 재시도 중 오류가 생겼어요.');
   }
 }

@@ -1,5 +1,5 @@
 /**
- * 클라이언트 분석 생성 모달
+ * 내담자 분석 생성 모달
  */
 
 import React from 'react';
@@ -152,7 +152,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     }
   };
 
-  // AI 수퍼비전 템플릿 아이템
+  // AI 슈퍼비전 템플릿 아이템
   const aiSupervisionItems: SelectItem[] =
     templates?.ai_supervision.map((t) => ({
       value: String(t.id),
@@ -173,9 +173,9 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     availableSessions.length === 0 ? (
       <div className="flex min-h-[200px] items-center justify-center rounded-lg border-2 border-dashed border-grey-30">
         <Text className="text-center text-grey-60">
-          분석 가능한 상담기록이 없습니다.
+          분석 가능한 상담기록이 없어요.
           <br />
-          완료된 상담기록이 필요합니다.
+          완료된 상담기록이 필요해요.
         </Text>
       </div>
     ) : (
@@ -290,14 +290,12 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
       {isMobileView ? (
         <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
           <BackButton onClick={handleClose} />
-          <p className="text-m font-medium text-grey-100">
-            클라이언트 분석하기
-          </p>
+          <p className="text-m font-medium text-grey-100">내담자 분석하기</p>
         </div>
       ) : (
         <div className="p-6 pb-0 text-center">
           <Title as="h3" className="text-xl font-headline text-grey-100">
-            클라이언트 분석하기
+            내담자 분석하기
           </Title>
         </div>
       )}

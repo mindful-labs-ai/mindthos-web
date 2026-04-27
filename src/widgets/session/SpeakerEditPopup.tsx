@@ -98,7 +98,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     if (selectionType === 'custom' && !customName.trim()) {
       toast({
         title: '입력 오류',
-        description: '이름을 입력해주세요.',
+        description: '이름을 입력해 주세요.',
         duration: 3000,
       });
       return;

@@ -10,7 +10,7 @@ export const DEFAULT_GUIDE_STEPS: GuideStep[] = [
     imageAlt: '가계도 위치 조정 예시',
     mainText:
       '첫 번째, 혹시 겹치거나 어색한 부분이 있나요?\n겹쳐있는 도형은 드래그해서 **위치를 알맞게 옮겨**주세요.',
-    subText: '가계도의 최종적인 완성도는 선생님의 검수를 통해 확정됩니다.',
+    subText: '가계도의 최종적인 완성도는 상담사님의 검수를 통해 확정돼요.',
   },
   {
     id: 'step-2-toolbar',

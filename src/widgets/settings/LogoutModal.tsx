@@ -40,7 +40,7 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({
         <div>
           <Text className="typo-xl font-emphasize">로그아웃</Text>
           <Text className="typo-sm mt-2 text-fg-muted">
-            로그아웃하면 다시 로그인해야 서비스를 이용할 수 있습니다.
+            로그아웃하면 다시 로그인해야 서비스를 이용할 수 있어요.
           </Text>
         </div>
 

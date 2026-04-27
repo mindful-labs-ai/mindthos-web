@@ -822,7 +822,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
             </Panel>
           )}
 
-          {/* 빈 상태 안내 — hideToolbar 모드(클라이언트 미선택)에서는 숨김 */}
+          {/* 빈 상태 안내 — hideToolbar 모드(내담자 미선택)에서는 숨김 */}
           {nodes.length === 0 && !props.hideToolbar && (
             <EmptyStatePanel actions={props.emptyStateActions} />
           )}

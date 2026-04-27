@@ -623,7 +623,7 @@ export class GenogramEditor {
   /**
    * Connection의 타입(Relation_Line↔Influence_Line)을 변환합니다.
    * 선택한 status가 RelationStatus이면 Relation_Line으로,
-   * InfluenceStatus이면 Influence_Line으로 자동 변환됩니다.
+   * InfluenceStatus이면 Influence_Line으로 자동 변환돼요.
    */
   convertConnectionType(connectionId: UUID, targetStatus: string): void {
     const connection = this.state.genogram.connections.get(connectionId);
@@ -690,7 +690,7 @@ export class GenogramEditor {
   }
 
   /**
-   * 지정된 Subject가 태아 타입(유산/낙태/임신 중)인지 확인합니다.
+   * 지정된 Subject가 태아 타입(유산/낙태/임신 중)인지 확인해요.
    */
   isFetusSubject(subjectId: UUID): boolean {
     const subject = this.state.genogram.subjects.get(subjectId);
@@ -701,7 +701,7 @@ export class GenogramEditor {
   /**
    * parentRef(파트너선 ID 또는 Subject ID) 아래에 자녀 Subject를 생성하고
    * 부모-자녀선을 연결합니다.
-   * 쌍둥이(Twins, Identical_Twins)일 때는 자녀 2명을 생성합니다.
+   * 쌍둥이(Twins, Identical_Twins)일 때는 자녀 2명을 만들어요.
    */
   addChildToParentRef(
     parentRef: UUID,

@@ -96,7 +96,7 @@ export const SessionClickTooltip = () => (
 export const TranscriptTabTooltip = () => (
   <ToolTipContainer
     title="축어록 보기"
-    message="상담 기록을 업로드하면 축어록이 자동으로 생성됩니다. 축어록을 눌러서 확인해보세요."
+    message="상담 기록을 업로드하면 축어록이 자동으로 생성돼요. 축어록을 눌러서 확인해보세요."
     level={1}
     step={3}
   />
@@ -127,8 +127,8 @@ export const TranscriptCompleteTooltip = ({
     title="축어록 보기"
     message={
       <span>
-        축어록을 모두 확인했습니다. <br />
-        이제 상담 노트를 확인해볼까요?
+        축어록을 모두 확인했어요. <br />
+        이제 상담노트를 확인해볼까요?
       </span>
     }
     onConfirm={onConfirm}
@@ -136,21 +136,21 @@ export const TranscriptCompleteTooltip = ({
   />
 );
 
-// Step 6: 상담 노트 클릭 안내 (SessionDetailPage)
+// Step 6: 상담노트 클릭 안내 (SessionDetailPage)
 export const NoteClickTooltip = () => (
   <ToolTipContainer
-    title="상담 노트 보기"
-    message="작성된 축어록을 바탕으로 마음토스가 자동으로 상담 노트를 만들어줘요."
-    submessage="상담 노트를 클릭해보세요."
+    title="상담노트 보기"
+    message="작성된 축어록을 바탕으로 마음토스가 자동으로 상담노트를 만들어줘요."
+    submessage="상담노트를 클릭해보세요."
     level={1}
     step={6}
   />
 );
 
-// Step 7: 상담 노트 스크롤 안내 (SessionDetailPage)
+// Step 7: 상담노트 스크롤 안내 (SessionDetailPage)
 export const NoteScrollTooltip = () => (
   <ToolTipContainer
-    title="상담 노트 보기"
+    title="상담노트 보기"
     message={
       <p>
         마음토스 상담노트는 자동으로{' '}
@@ -164,13 +164,13 @@ export const NoteScrollTooltip = () => (
   />
 );
 
-// Step 8: 상담 노트 확인 완료 안내 (SessionDetailPage)
+// Step 8: 상담노트 확인 완료 안내 (SessionDetailPage)
 export const NoteCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <ToolTipContainer
-    title="상담 노트 보기"
+    title="상담노트 보기"
     message={
       <p>
-        상담 노트를 모두 확인했습니다. <br /> 마지막 단계로 넘어가볼까요?
+        상담노트를 모두 확인했어요. <br /> 마지막 단계로 넘어가볼까요?
       </p>
     }
     onConfirm={onConfirm}
@@ -178,11 +178,11 @@ export const NoteCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   />
 );
 
-// Step 9: 상담 노트 추가 버튼 안내 (SessionDetailPage)
+// Step 9: 상담노트 추가 버튼 안내 (SessionDetailPage)
 export const AddNoteButtonTooltip = () => (
   <ToolTipContainer
-    title="새로운 상담 노트 만들기"
-    message="마음토스에서는 다양한 상담 노트 양식을 제공하고 있어요. 버튼을 눌러서 빈노트를 만들어보세요."
+    title="새로운 상담노트 만들기"
+    message="마음토스에서는 다양한 상담노트 양식을 제공하고 있어요. 버튼을 눌러서 빈노트를 만들어보세요."
     level={1}
     step={9}
   />
@@ -191,8 +191,8 @@ export const AddNoteButtonTooltip = () => (
 // Step 10: 전체 튜토리얼 완료 안내 (SessionDetailPage)
 export const TotalCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <ToolTipContainer
-    title="새로운 상담 노트 만들기 "
-    message="필요한 상황에 맞는 상담 노트 양식을 선택해서 선생님만의 노트를 만들어보세요. 노트 양식은 템플릿 페이지에서도 확인 할 수 있어요."
+    title="새로운 상담노트 만들기 "
+    message="필요한 상황에 맞는 상담노트 양식을 선택해서 상담사님만의 노트를 만들어보세요. 노트 양식은 템플릿 페이지에서도 확인 할 수 있어요."
     onConfirm={onConfirm}
     confirmText="가이드 완료하기"
     level={1}
@@ -201,21 +201,21 @@ export const TotalCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
 
 // --- Level 2: 다회기 분석 예시 보기 ---
 
-// Step 1: 클라이언트 탭 안내 (SideTab)
+// Step 1: 내담자 탭 안내 (SideTab)
 export const ClientTabTooltip = () => (
   <ToolTipContainer
-    title="클라이언트 페이지로 이동"
-    message="클라이언트 페이지로 이동하면 다회기 분석을 통한 AI 수퍼비전을 받아볼 수 있어요."
+    title="내담자 페이지로 이동"
+    message="내담자 페이지로 이동하면 다회기 분석을 통한 AI 슈퍼비전을 받아볼 수 있어요."
     level={2}
     step={1}
   />
 );
 
-// Step 2: 특정 클라이언트 클릭 안내 (ClientListPage)
+// Step 2: 특정 내담자 클릭 안내 (ClientListPage)
 export const ClientClickTooltip = () => (
   <ToolTipContainer
-    title="클라이언트 상세 보기"
-    message="홍길동 클라이언트를 눌러서 상세 내용을 확인해보세요!"
+    title="내담자 상세 보기"
+    message="홍길동 내담자를 눌러서 상세 내용을 확인해보세요!"
     level={2}
     step={2}
   />
@@ -225,7 +225,7 @@ export const ClientClickTooltip = () => (
 export const AnalysisTabTooltip = () => (
   <ToolTipContainer
     title="다회기 분석 보기"
-    message="해당 클라이언트에 저장된 상담 기록을 바탕으로 AI 수퍼비전을 받을 수 있어요. 다회기 분석을 클릭해보세요."
+    message="해당 내담자에 저장된 상담 기록을 바탕으로 AI 슈퍼비전을 받을 수 있어요. 다회기 분석을 클릭해보세요."
     level={2}
     step={3}
   />
@@ -234,8 +234,8 @@ export const AnalysisTabTooltip = () => (
 // Step 4: 다회기 분석 스크롤 안내 (ClientAnalysisTab)
 export const AnalysisScrollTooltip = () => (
   <ToolTipContainer
-    title="AI 수퍼비전"
-    message="회기를 진행하며 내담자와 나눈 대화를 바탕으로 사례 개념화 총평부터 회기별 상세 평가, 축어록 정밀 분석, 향후 로드맵 등의 수퍼비전을 제공해요."
+    title="AI 슈퍼비전"
+    message="회기를 진행하며 내담자와 나눈 대화를 바탕으로 사례 개념화 총평부터 회기별 상세 평가, 축어록 정밀 분석, 향후 로드맵 등의 슈퍼비전을 제공해요."
     submessage="스크롤해서 아래로 내려볼까요?"
     level={2}
     step={4}
@@ -245,8 +245,8 @@ export const AnalysisScrollTooltip = () => (
 // Step 5: 다회기 분석 완료 안내 (ClientAnalysisTab)
 export const MissionCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <ToolTipContainer
-    title="AI 수퍼비전"
-    message="혹시나 상담이 어렵게 느껴진다면, 24시간 늘 선생님 옆에 있는 마음토스가 제공하는 AI 수퍼비전으로 상담의 방향성을 잡아보세요."
+    title="AI 슈퍼비전"
+    message="혹시나 상담이 어렵게 느껴진다면, 24시간 늘 상담사님 옆에 있는 마음토스가 제공하는 AI 슈퍼비전으로 상담의 방향성을 잡아보세요."
     onConfirm={onConfirm}
     confirmText="가이드 완료하기"
     level={2}
@@ -267,7 +267,7 @@ export const NewRecordButtonTooltip = ({ onConfirm }: TutorialTooltipProps) => (
       실제 내담자의 상담 기록을 올려보세요.
     </div>
     <div className="typo-sm mb-4">
-      선생님의 상담 기록을 생성하면 가이드를 달성할 수 있어요.
+      상담사님의 상담 기록을 생성하면 가이드를 달성할 수 있어요.
     </div>
     <button
       onClick={onConfirm}

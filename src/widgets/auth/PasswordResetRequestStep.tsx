@@ -44,8 +44,8 @@ const formatProviderLabel = (providers: string[]): string => {
 };
 
 const RATE_LIMIT_TOAST = {
-  title: '요청이 너무 많습니다',
-  description: '잠시 후 다시 시도해주세요.',
+  title: '요청이 너무 자주 들어왔어요',
+  description: '잠시 후 다시 시도해 주세요.',
 } as const;
 
 const isRateLimitError = (error: unknown): error is AuthError =>
@@ -91,7 +91,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
     if (!parsed.success) {
       setState({
         status: 'form',
-        error: parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.',
+        error: parsed.error.issues[0]?.message ?? '입력값을 확인해 주세요.',
       });
       return;
     }
@@ -146,7 +146,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
         error:
           err instanceof Error
             ? err.message
-            : '재설정 이메일 발송에 실패했습니다. 다시 시도해주세요.',
+            : '재설정 이메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
       });
     } finally {
       setIsSubmitting(false);
@@ -163,7 +163,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
       trackEvent(MixpanelEvent.PasswordResetRequestSuccess, { resend: true });
       setState({
         ...state,
-        resendInfo: '재설정 이메일을 다시 발송했습니다.',
+        resendInfo: '재설정 이메일을 다시 보냈어요.',
         resendError: '',
       });
     } catch (err) {
@@ -181,7 +181,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
         resendError:
           err instanceof Error
             ? err.message
-            : '이메일 발송에 실패했습니다. 다시 시도해주세요.',
+            : '이메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
         resendInfo: '',
       });
     } finally {
@@ -198,11 +198,11 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
           </div>
         </div>
 
-        <h2 className="mb-2 text-2xl font-headline">메일을 발송했습니다</h2>
+        <h2 className="mb-2 text-2xl font-headline">메일을 보냈어요</h2>
 
         <p className="mb-6 text-grey-100">
           <span className="font-medium text-grey-100">{state.email}</span>로
-          재설정 링크를 발송했습니다.
+          재설정 링크를 보냈어요.
           <br />
           이메일을 확인하고 비밀번호를 재설정해주세요.
         </p>
@@ -339,7 +339,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
         </h2>
         <p className="mb-6 text-sm text-grey-80">
           <span className="font-medium text-grey-100">{state.email}</span>{' '}
-          계정을 찾을 수 없습니다.
+          계정을 찾을 수 없어요.
           <br />
           이메일 주소를 확인하거나 회원가입을 진행해주세요.
         </p>

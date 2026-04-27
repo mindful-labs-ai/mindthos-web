@@ -154,7 +154,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
               </>
             ) : (
               <div className="flex min-h-[400px] items-center justify-center">
-                <p className="text-fg-muted">전사 내용이 없습니다.</p>
+                <p className="text-fg-muted">축어록이 없어요.</p>
               </div>
             )}
           </div>

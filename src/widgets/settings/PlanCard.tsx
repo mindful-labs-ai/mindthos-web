@@ -27,7 +27,7 @@ export const planFeature = {
     0: { text: '일반 및 고급 축어록', style: null, sub: null },
     1: { text: '상담노트 일부 양식 사용 가능', style: null, sub: null },
     2: {
-      text: 'AI 수퍼비전 일부 양식 사용 가능',
+      text: 'AI 슈퍼비전 일부 양식 사용 가능',
       style: null,
       sub: null,
     },

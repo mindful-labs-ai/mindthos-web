@@ -31,7 +31,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     return getRouteLabel(basePath);
   }, [location.pathname]);
 
-  // 가계도 라우트: 클라이언트 드롭다운
+  // 가계도 라우트: 내담자 드롭다운
   const genogramRightSlot = isGenogram ? <GenogramClientButton /> : null;
 
   const rightSlot = (() => {
@@ -45,7 +45,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           onClick={() => useModalStore.getState().openModal('addClient')}
           className="truncate"
         >
-          클라이언트 추가하기
+          내담자 추가하기
         </Button>
       );
     }
@@ -82,7 +82,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   );
 };
 
-/** 가계도 MobileHeader 우측 클라이언트 선택 버튼 */
+/** 가계도 MobileHeader 우측 내담자 선택 버튼 */
 function GenogramClientButton() {
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
@@ -117,12 +117,12 @@ function GenogramClientButton() {
       >
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
           <BackButton onClick={() => setIsOpen(false)} />
-          <p className="text-m font-medium text-grey-100">클라이언트 선택</p>
+          <p className="text-m font-medium text-grey-100">내담자 선택</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4">
           {activeClients.length === 0 ? (
             <p className="py-8 text-center text-sm text-grey-60">
-              클라이언트가 없습니다
+              등록된 내담자가 없어요
             </p>
           ) : (
             <div className="space-y-2">
