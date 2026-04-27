@@ -60,7 +60,7 @@ export const creditService = {
     }
 
     if (!subscribeData) {
-      throw new Error('구독 정보가 없습니다.');
+      throw new Error('구독 정보가 없어요.');
     }
 
     const { data: planData, error: planError } = await supabase
@@ -74,7 +74,7 @@ export const creditService = {
     }
 
     if (!planData) {
-      throw new Error('플랜 정보가 없습니다.');
+      throw new Error('플랜 정보가 없어요.');
     }
 
     const { data: usageData, error: usageError } = await supabase
@@ -116,7 +116,7 @@ export const creditService = {
     }
 
     if (!data) {
-      throw new Error('사용량 정보가 없습니다.');
+      throw new Error('사용량 정보가 없어요.');
     }
 
     return {

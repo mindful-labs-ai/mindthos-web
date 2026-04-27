@@ -106,7 +106,7 @@ export const ClientDetailContainer: React.FC = () => {
     onComplete: () => {
       toast({
         title: '다회기 분석 완료',
-        description: '다회기 분석이 완료되었습니다.',
+        description: '다회기 분석을 마쳤어요.',
         duration: 3000,
       });
       setPollingVersion(null);
@@ -145,7 +145,7 @@ export const ClientDetailContainer: React.FC = () => {
     return clientSessions.map(({ session, transcribe, progressNotes }) => {
       const isHandwritten = session.audio_meta_data === null;
 
-      let content = '전사 내용이 없습니다.';
+      let content = '축어록이 없어요.';
 
       if (isHandwritten) {
         if (transcribe && typeof transcribe.contents === 'string') {
@@ -169,7 +169,7 @@ export const ClientDetailContainer: React.FC = () => {
                 );
                 return `${speakerName}: ${seg.text}`;
               })
-              .join(' ') || '전사 내용이 없습니다.';
+              .join(' ') || '축어록이 없어요.';
         }
       }
 
@@ -218,7 +218,7 @@ export const ClientDetailContainer: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 분석을 작성할 수 없습니다.',
+        description: '실제 내담자에서 분석을 만들 수 있어요.',
         duration: 3000,
       });
       return;
@@ -229,7 +229,7 @@ export const ClientDetailContainer: React.FC = () => {
     if (remainingCredit < CLIENT_ANALYSIS_CREDIT) {
       toast({
         title: '크레딧 부족',
-        description: `다회기 분석에 ${CLIENT_ANALYSIS_CREDIT} 크레딧이 필요합니다. (보유: ${remainingCredit})`,
+        description: `다회기 분석에 ${CLIENT_ANALYSIS_CREDIT} 크레딧이 필요해요. (보유: ${remainingCredit})`,
         duration: 5000,
       });
       return;
@@ -248,7 +248,7 @@ export const ClientDetailContainer: React.FC = () => {
       });
       toast({
         title: '분석 시작',
-        description: '다회기 분석을 진행하고 있습니다.',
+        description: '다회기 분석을 진행하고 있어요.',
         duration: 3000,
       });
 
@@ -261,7 +261,7 @@ export const ClientDetailContainer: React.FC = () => {
 
       toast({
         title: '분석 실패',
-        description: '분석 작성에 실패했습니다. 다시 시도해주세요.',
+        description: '분석을 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 3000,
       });
       throw error;
@@ -276,7 +276,7 @@ export const ClientDetailContainer: React.FC = () => {
     if (isReadOnly && open) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 클라이언트를 수정할 수 없습니다.',
+        description: '실제 내담자에서 정보를 수정할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -288,7 +288,7 @@ export const ClientDetailContainer: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 분석을 작성할 수 없습니다.',
+        description: '실제 내담자에서 분석을 만들 수 있어요.',
         duration: 3000,
       });
       return;
@@ -300,7 +300,7 @@ export const ClientDetailContainer: React.FC = () => {
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 클라이언트를 수정할 수 없습니다.',
+        description: '실제 내담자에서 정보를 수정할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -319,7 +319,7 @@ export const ClientDetailContainer: React.FC = () => {
   if (!client) {
     return (
       <div className="flex h-full items-center justify-center bg-surface-contrast">
-        <p className="text-fg-muted">클라이언트를 찾을 수 없습니다.</p>
+        <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
       </div>
     );
   }
@@ -338,7 +338,7 @@ export const ClientDetailContainer: React.FC = () => {
       </div>
     ) : (
       <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-grey-30 bg-white">
-        <p className="text-grey-60">상담 기록이 없습니다.</p>
+        <p className="text-grey-60">상담 기록이 없어요.</p>
       </div>
     );
 

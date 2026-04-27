@@ -132,7 +132,7 @@ export const SettingsContainer: React.FC = () => {
     if (!user?.id) {
       toast({
         title: '사용자 정보 오류',
-        description: '다시 로그인 후 시도해주세요.',
+        description: '다시 로그인 후 시도해 주세요.',
       });
       return;
     }
@@ -179,7 +179,7 @@ export const SettingsContainer: React.FC = () => {
 
     toast({
       title: '구독 해지 예약',
-      description: '구독 종료 후 무료 플랜으로 전환됩니다.',
+      description: '구독 종료 후 무료 플랜으로 전환돼요.',
     });
   };
 
@@ -198,13 +198,13 @@ export const SettingsContainer: React.FC = () => {
 
       toast({
         title: '해지 예약 취소',
-        description: '구독이 계속 유지됩니다.',
+        description: '구독이 계속 유지돼요.',
       });
     } catch (error) {
       trackError(MixpanelError.CancelSubscriptionRevertError, error);
       toast({
         title: '해지 예약 취소 실패',
-        description: '다시 시도해주세요.',
+        description: '잠시 후 다시 시도해 주세요.',
       });
     }
   };
@@ -238,7 +238,7 @@ export const SettingsContainer: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (!user?.email) {
-      setDeleteError('사용자 정보를 찾을 수 없습니다.');
+      setDeleteError('사용자 정보를 찾을 수 없어요.');
       return;
     }
 
@@ -251,7 +251,7 @@ export const SettingsContainer: React.FC = () => {
       await logout();
     } catch (error) {
       trackError(MixpanelError.AccountDeleteError, error);
-      setDeleteError('계정 탈퇴에 실패했습니다. 다시 시도해주세요.');
+      setDeleteError('계정을 탈퇴하지 못했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
       setIsDeleting(false);
     }
@@ -370,7 +370,7 @@ export const SettingsContainer: React.FC = () => {
           className="w-32"
           onClick={handleUpgradePlan}
         >
-          {isPaidPlan ? '플랜 변경하기' : '플랜 업그레이드'}
+          {isPaidPlan ? '플랜 관리' : '플랜 변경'}
         </Button>
         {isPaidPlan && !hasCancellationScheduled && (
           <Button

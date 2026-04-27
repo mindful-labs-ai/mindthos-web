@@ -65,11 +65,11 @@ export const MobileSessionHistoryView: React.FC<
               <span className="inline-flex items-center gap-2">
                 <UserIcon size={16} />
                 {selectedClientIds.length === 0
-                  ? '모든 클라이언트'
+                  ? '모든 내담자'
                   : selectedClientIds.length === 1
                     ? effectiveClients.find(
                         (c) => c.id === selectedClientIds[0]
-                      )?.name || '모든 클라이언트'
+                      )?.name || '모든 내담자'
                     : `${selectedClientIds.length}명 선택`}
               </span>
             </Button>
@@ -83,7 +83,7 @@ export const MobileSessionHistoryView: React.FC<
               <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
                 <BackButton onClick={() => setIsClientFilterOpen(false)} />
                 <p className="text-m font-medium text-grey-100">
-                  클라이언트 선택하기
+                  내담자 선택하기
                 </p>
               </div>
               <div className="flex-1 overflow-y-auto px-4 py-4">

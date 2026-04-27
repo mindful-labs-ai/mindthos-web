@@ -135,7 +135,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
           </div>
         ) : (
           <div className="flex min-h-[200px] items-center justify-center">
-            <Text className="typo-sm text-fg-muted">상담 기록이 없습니다.</Text>
+            <Text className="typo-sm text-fg-muted">상담 기록이 없어요.</Text>
           </div>
         )}
       </div>

@@ -86,7 +86,7 @@ export function useMultiSessionCreate({
             fileId: config.fileId,
             fileName: '',
             status: 'failed',
-            errorMessage: '파일을 찾을 수 없습니다.',
+            errorMessage: '파일을 찾을 수 없어요.',
           });
           continue;
         }

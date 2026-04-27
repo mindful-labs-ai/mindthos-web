@@ -62,7 +62,7 @@ export function useHandwrittenEdit({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 편집 기능이 비활성화됩니다.',
+        description: '실제 상담 기록에서 편집할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -88,7 +88,7 @@ export function useHandwrittenEdit({
     if (trimmedContent.length < MIN_CONTENT_LENGTH) {
       toast({
         title: '입력 오류',
-        description: `상담 내용은 최소 ${MIN_CONTENT_LENGTH}자 이상 입력해주세요.`,
+        description: `상담 내용은 최소 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`,
         duration: 3000,
       });
       return;
@@ -97,7 +97,7 @@ export function useHandwrittenEdit({
     if (trimmedContent.length > MAX_CONTENT_LENGTH) {
       toast({
         title: '입력 오류',
-        description: `상담 내용은 최대 ${MAX_CONTENT_LENGTH.toLocaleString()}자까지 입력 가능합니다.`,
+        description: `상담 내용은 최대 ${MAX_CONTENT_LENGTH.toLocaleString()}자까지 입력 가능해요.`,
         duration: 3000,
       });
       return;
@@ -119,7 +119,7 @@ export function useHandwrittenEdit({
 
       toast({
         title: '저장 완료',
-        description: '입력된 텍스트가 저장되었습니다.',
+        description: '입력한 텍스트를 저장했어요.',
         duration: 3000,
       });
 
@@ -129,7 +129,7 @@ export function useHandwrittenEdit({
       console.error('직접 입력 텍스트 저장 실패:', err);
       toast({
         title: '저장 실패',
-        description: '텍스트 저장 중 오류가 발생했습니다.',
+        description: '텍스트 저장 중 오류가 생겼어요.',
         duration: 3000,
       });
     } finally {

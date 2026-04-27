@@ -11,7 +11,7 @@ export const useTermsContent = (type: string) => {
     queryFn: async () => {
       const response = await termsContentService.getContent(type);
       if (!response.success) {
-        throw new Error('약관 내용을 불러올 수 없습니다.');
+        throw new Error('약관 내용을 불러올 수 없어요.');
       }
       const { content } = response;
 

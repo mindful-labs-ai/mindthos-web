@@ -201,15 +201,15 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
       trackEvent(MixpanelEvent.ProgressNoteCopyAll);
       toast({
         title: '복사 완료',
-        description: '전체 내용이 클립보드에 복사되었습니다.',
+        description: '전체 내용을 복사했어요.',
         duration: 2000,
       });
       setTimeout(() => setCopiedAll(false), 2000);
     } catch (error) {
       console.error('복사 실패:', error);
       toast({
-        title: '복사 실패',
-        description: '내용을 복사하는 데 실패했습니다.',
+        title: '복사 실패 — 다시 시도해 주세요.',
+        description: '내용을 복사하지 못했어요.',
         duration: 3000,
       });
     }
@@ -224,7 +224,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
         <div className="px-4 py-4 md:px-10">
           <div className="flex items-center justify-between">
             <h2 className="text-l font-headline text-grey-100 md:text-xl">
-              {note.title || '상담 노트'}
+              {note.title || '상담노트'}
             </h2>
             <ProgressNoteToolbar
               variant={toolbarVariant}
@@ -286,7 +286,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
       <div className="px-4 py-4 md:px-10">
         <div className="flex items-center justify-between">
           <h2 className="text-l font-headline text-grey-100 md:text-xl">
-            {note.title || '상담 노트'}
+            {note.title || '상담노트'}
           </h2>
           <ProgressNoteToolbar
             variant={toolbarVariant}
@@ -369,7 +369,7 @@ export const MobileProgressNoteView: React.FC<MobileProgressNoteViewProps> = ({
         </div>
       ) : (
         <div className="flex min-h-[200px] items-center justify-center">
-          <Text className="text-center text-fg-muted">내용이 없습니다.</Text>
+          <Text className="text-center text-fg-muted">내용이 없어요.</Text>
         </div>
       )}
 

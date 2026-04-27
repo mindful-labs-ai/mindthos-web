@@ -157,7 +157,7 @@ export const usePhoneVerification = (): UsePhoneVerificationReturn => {
         const parsed = parseError(
           'request',
           err,
-          '인증번호 발송에 실패했습니다.'
+          '인증번호를 보내지 못했어요.'
         );
         // RESEND_COOLDOWN: 서버가 알려준 retry_after_seconds 만큼 쿨다운 연장
         if (
@@ -192,7 +192,7 @@ export const usePhoneVerification = (): UsePhoneVerificationReturn => {
         if (!res.success) {
           const parsed: PhoneVerificationLastError = {
             source: 'verify',
-            message: res.message ?? '인증번호가 일치하지 않습니다.',
+            message: res.message ?? '인증번호가 같지 않아요.',
           };
           setLastError(parsed);
           return { ok: false, message: parsed.message };
@@ -200,11 +200,7 @@ export const usePhoneVerification = (): UsePhoneVerificationReturn => {
         setVerified(true);
         return { ok: true };
       } catch (err) {
-        const parsed = parseError(
-          'verify',
-          err,
-          '인증번호가 일치하지 않습니다.'
-        );
+        const parsed = parseError('verify', err, '인증번호가 같지 않아요.');
         setLastError(parsed);
         return {
           ok: false,

@@ -35,7 +35,7 @@ export const TermsAgreementCard = ({
           이용약관 및 정책
         </h2>
         <p className="text-m font-emphasize text-grey-100 md:text-xl">
-          마음토스 서비스 약관을 확인해주세요
+          마음토스 서비스 약관을 확인해 주세요
         </p>
       </div>
 
@@ -48,7 +48,7 @@ export const TermsAgreementCard = ({
             tone="primary"
             size="lg"
             className="items-center"
-            label={<span className="terms-content-typo">모두 동의합니다</span>}
+            label={<span className="terms-content-typo">모두 동의해요</span>}
           />
         </div>
 

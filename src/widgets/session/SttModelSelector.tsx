@@ -131,18 +131,18 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       <Text className="typo-xs leading-relaxed text-fg-muted">
                         <p className="font-emphasize">숨소리까지 기록:</p> 침묵,
                         한숨, 웃음, 울음 등 상담의 맥락을 결정짓는 비언어적
-                        표현을 놓치지 않습니다.
+                        표현을 놓치지 않아요.
                         <br />
                         <p className="font-emphasize">완벽한 화자 분리:</p>{' '}
                         목소리가 겹치기 쉬운 3인 이상 부부·가족 상담에서도 누가
-                        말했는지 정확하게 구분합니다.
+                        말했는지 정확하게 구분해요.
                         <br />
                         <p className="font-emphasize">제출용 품질:</p> 오탈자가
                         거의 없어 슈퍼비전이나 사례 연구 보고서 작성 시 수정
                         시간을 획기적으로 줄여줍니다.
                       </Text>
                       <Text className="typo-xs leading-relaxed text-fg-muted">
-                        수퍼비전 등 양질의 축어록 작성이 필요할 때 적합합니다.
+                        슈퍼비전 등 양질의 축어록 작성이 필요할 때 적합해요.
                       </Text>
                     </div>
                   }

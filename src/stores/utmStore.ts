@@ -4,7 +4,7 @@ import { devtools, persist } from 'zustand/middleware';
 /**
  * UTM 파라미터 전역 저장소
  * 첫 진입 시 UTM 파라미터를 저장하고, 이후 모든 라우팅에서 자동으로 유지합니다.
- * sessionStorage를 사용하여 탭/세션 단위로 유지됩니다.
+ * sessionStorage를 사용하여 탭/세션 단위로 유지돼요.
  */
 
 interface UtmState {

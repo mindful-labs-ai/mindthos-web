@@ -14,7 +14,7 @@ const ONBOARDING_STEPS = [
   { label: '기본정보' },
   { label: '축어록' },
   { label: '상담노트' },
-  { label: '수퍼비전' },
+  { label: '슈퍼비전' },
   { label: '완료' },
 ];
 
@@ -66,7 +66,7 @@ export function OnboardingModal() {
                 />
               </div>
               <p className="typo-sm mt-1 text-wrap text-left text-fg-muted">
-                상담 노트가 필요한 경우에는 일반축어록을, 수퍼바이저에게 제출할
+                상담노트가 필요한 경우에는 일반축어록을, 슈퍼바이저에게 제출할
                 고퀄리티 축어록이 필요한 경우에는 고급 축어록을 사용해보세요.
               </p>
             </div>
@@ -98,7 +98,7 @@ export function OnboardingModal() {
                 />
               </div>
               <p className="typo-sm mt-1 text-wrap text-left text-fg-muted">
-                양식에 맞는 노트 작성은 모두 마음토스에게 맡겨주세요. 선생님이
+                양식에 맞는 노트 작성은 모두 마음토스에게 맡겨주세요. 상담사님이
                 더욱 내담자에게 집중할 수 있도록, 시간이 걸리는 일은 저희가
                 해결해드려요.
               </p>
@@ -113,7 +113,7 @@ export function OnboardingModal() {
               <>
                 다음 회기 준비가 어렵다면,
                 <br />
-                클라이언트 다회기 AI 수퍼비전을 받아보세요
+                내담자 다회기 AI 슈퍼비전을 받아보세요
               </>
             }
             onNext={form.handleNext}
@@ -123,7 +123,7 @@ export function OnboardingModal() {
             <div className="mt-4 space-y-3">
               <div className="mt-4 flex h-[214px] items-center justify-center overflow-hidden rounded-md bg-surface-contrast">
                 <video
-                  src="/3-ai수퍼비전.mp4"
+                  src="/3-ai슈퍼비전.mp4"
                   autoPlay
                   loop
                   muted
@@ -132,8 +132,8 @@ export function OnboardingModal() {
                 />
               </div>
               <p className="typo-sm mt-1 text-wrap text-left text-fg-muted">
-                지금까지 진행된 회기의 축어록 내용을 AI가 분석하고 선생님에게 꼭
-                필요한 수퍼비전을 작성해드려요. 이제 마음토스와 함께 더 나은
+                지금까지 진행된 회기의 축어록 내용을 AI가 분석하고 상담사님에게
+                꼭 필요한 슈퍼비전을 작성해드려요. 이제 마음토스와 함께 더 나은
                 상담을 함께 준비해보세요.
               </p>
             </div>

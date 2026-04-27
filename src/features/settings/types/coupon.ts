@@ -54,7 +54,7 @@ export interface RegisterCouponErrorResponse {
   message: string;
 }
 
-/** 클라이언트에서 사용하는 쿠폰 모델 */
+/** 내담자에서 사용하는 쿠폰 모델 */
 export interface Coupon {
   /** user_coupon_id - 유저별 고유 식별자 (같은 쿠폰 2개 보유 가능) */
   id: string;

@@ -51,7 +51,7 @@ export const TemplateListPage: React.FC = () => {
       {!isMobileView && (
         <div className="text-left">
           <Title as="h1" className="text-2xl font-headline text-grey-100">
-            상담 노트 템플릿
+            상담노트 템플릿
           </Title>
         </div>
       )}

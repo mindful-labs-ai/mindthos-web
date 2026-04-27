@@ -36,7 +36,7 @@ export const ClientListView: React.FC<ClientListViewProps> = ({
             className="w-full border-grey-30 bg-grey-10"
           />
 
-          {/* 클라이언트 리스트 */}
+          {/* 내담자 리스트 */}
           <div className="mt-6">{clientList}</div>
         </div>
 
@@ -50,7 +50,7 @@ export const ClientListView: React.FC<ClientListViewProps> = ({
       <div className="mx-auto w-full max-w-[1332px] px-16 py-[42px]">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Title as="h1" className="text-2xl font-headline text-grey-100">
-            모든 클라이언트
+            모든 내담자
           </Title>
 
           <div className="flex items-center gap-4">
@@ -69,7 +69,7 @@ export const ClientListView: React.FC<ClientListViewProps> = ({
               size="md"
               onClick={onAddClient}
             >
-              클라이언트 추가하기
+              내담자 추가하기
             </Button>
           </div>
         </div>

@@ -136,14 +136,14 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
   // 템플릿 이름 조회 헬퍼
   const getTemplateName = (templateId: number | undefined): string => {
-    if (!templateId || !templates) return 'AI 수퍼비전';
+    if (!templateId || !templates) return 'AI 슈퍼비전';
     const allTemplates = [
       ...(templates.ai_supervision || []),
       ...(templates.profiling || []),
       ...(templates.psychotherapy_plan || []),
     ];
     const template = allTemplates.find((t) => t.id === templateId);
-    return template?.name || 'AI 수퍼비전';
+    return template?.name || 'AI 슈퍼비전';
   };
 
   // 날짜 포맷 헬퍼
@@ -186,7 +186,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
       toast({
         title: '복사 완료',
-        description: '클립보드에 내용이 복사되었습니다.',
+        description: '내용을 복사했어요.',
         duration: 2000,
       });
 
@@ -196,8 +196,8 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     } catch (error) {
       console.error('복사 실패:', error);
       toast({
-        title: '복사 실패',
-        description: '내용을 복사하는 데 실패했습니다.',
+        title: '복사 실패 — 다시 시도해 주세요.',
+        description: '내용을 복사하지 못했어요.',
         duration: 3000,
       });
     }
@@ -220,7 +220,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       return (
         <div className="flex flex-col items-center justify-center py-24">
           <Text className="text-danger">
-            {analysis.error_message || '분석에 실패했습니다.'}
+            {analysis.error_message || '분석을 만들지 못했어요.'}
           </Text>
         </div>
       );
@@ -449,7 +449,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     // 데이터 없음
     return (
       <div className="flex flex-col items-center justify-center py-24">
-        <Text className="text-fg-muted">분석 결과가 없습니다.</Text>
+        <Text className="text-fg-muted">분석 결과가 없어요.</Text>
       </div>
     );
   };
@@ -468,7 +468,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   const tabItems: TabItem[] = [
     {
       value: 'ai_supervision',
-      label: <span className="flex items-center">AI 수퍼비전</span>,
+      label: <span className="flex items-center">AI 슈퍼비전</span>,
     },
     {
       value: 'profiling',
@@ -532,14 +532,14 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
             isMobileView && !isTablet ? '' : 'rounded-lg border border-grey-30'
           }`}
         >
-          <p className="mb-4 text-m text-grey-60">아직 분석 기록이 없습니다.</p>
+          <p className="mb-4 text-m text-grey-60">아직 분석 기록이 없어요.</p>
           {onCreateAnalysis && (
             <button
               type="button"
               onClick={onCreateAnalysis}
               className="rounded-lg bg-green-80 px-8 py-3 text-m font-medium text-white transition-colors lg:hover:opacity-90"
             >
-              AI 수퍼비전 받기
+              AI 슈퍼비전 받기
             </button>
           )}
         </div>

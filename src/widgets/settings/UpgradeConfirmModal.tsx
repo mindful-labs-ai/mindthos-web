@@ -9,6 +9,7 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
+import { getPlanDisplayName } from '@/shared/constants/planNames';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -64,7 +65,7 @@ const MobileCouponSelectModal: React.FC<{
             </div>
           ) : coupons.length === 0 ? (
             <div className="flex items-center justify-center py-12">
-              <p className="text-grey-60">사용 가능한 쿠폰이 없습니다.</p>
+              <p className="text-grey-60">사용할 수 있는 쿠폰이 없어요.</p>
             </div>
           ) : (
             coupons.map((coupon) => {
@@ -164,20 +165,6 @@ export interface UpgradeConfirmModalProps {
   title?: string;
 }
 
-// 플랜 타입 → 한글 이름 변환
-const getPlanDisplayName = (type: string): string => {
-  const map: Record<string, string> = {
-    Free: '무료',
-    Starter: '스타터',
-    Plus: '플러스',
-    Pro: '프로',
-    스타터: '스타터',
-    플러스: '플러스',
-    프로: '프로',
-  };
-  return map[type] || type;
-};
-
 // 날짜 포맷팅
 const formatDateFromDate = (date: Date) => {
   return date.toLocaleDateString('ko-KR', {
@@ -258,8 +245,9 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         new_plan: previewData?.newPlan?.type,
       });
       toast({
-        title: '플랜 업그레이드 실패',
-        description: '플랜 업그레이드에 실패했습니다. 다시 시도해주세요.',
+        title: '플랜 변경 실패',
+        description:
+          '플랜을 변경하지 못했어요. 카드 정보 혹은 계좌 잔액을 확인한 뒤 다시 시도해 주세요.',
         duration: 5000,
       });
     } finally {
@@ -330,9 +318,9 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         )}
       </div>
 
-      {/* 요금제 */}
+      {/* 플랜 */}
       <div className="space-y-6">
-        <Text className="typo-sm text-fg-muted">요금제</Text>
+        <Text className="typo-sm text-fg-muted">플랜</Text>
 
         {/* 변경 플랜 */}
         <div className="flex items-start justify-between">
@@ -378,7 +366,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         {currentPlan.type === 'Free' || (
           <div className="pt-4">
             <Text className="typo-xs text-center text-fg-muted">
-              *변경할 요금제와 현재 요금제의 차액이 결제됩니다.
+              *변경하는 플랜과 현재 플랜의 차액이 결제돼요.
             </Text>
           </div>
         )}
@@ -455,7 +443,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         >
           결제 약관
         </a>
-        에 동의합니다.
+        에 동의해요.
       </Text>
       <Button
         variant="solid"
@@ -488,7 +476,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
             <p className="text-m font-medium text-grey-100">
-              {title || '마음토스 플랜 업그레이드'}
+              {title || '마음토스 플랜 변경'}
             </p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
@@ -503,7 +491,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
         <div className="flex w-full max-w-[784px] flex-col items-center justify-center gap-8">
           <div className="text-center">
             <Title as="h2" className="text-xl font-headline text-grey-100">
-              {title || '마음토스 플랜 업그레이드'}
+              {title || '마음토스 플랜 변경'}
             </Title>
           </div>
           <div className="w-full rounded-xl border border-grey-30 p-6">

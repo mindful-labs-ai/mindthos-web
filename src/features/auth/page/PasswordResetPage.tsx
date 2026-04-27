@@ -81,7 +81,7 @@ const PasswordResetPage = () => {
                     새 비밀번호를 설정해주세요
                   </h1>
                   <p className="text-m font-sub text-grey-70">
-                    6자 이상의 새로운 비밀번호를 입력해주세요.
+                    6자 이상의 새로운 비밀번호를 입력해 주세요.
                   </p>
                 </div>
                 <PasswordResetForm onSuccess={handleSuccess} />
@@ -91,10 +91,10 @@ const PasswordResetPage = () => {
             {status === 'invalid' && (
               <div className="rounded-xl bg-white p-8 text-center">
                 <h2 className="mb-3 text-xl font-emphasize text-grey-100">
-                  만료되었거나 유효하지 않은 링크입니다
+                  링크가 만료됐거나 유효하지 않아요
                 </h2>
                 <p className="mb-6 text-sm text-grey-70">
-                  링크가 만료되었거나 이미 사용된 것 같습니다.
+                  링크가 만료되었거나 이미 사용된 것 같아요.
                   <br />
                   비밀번호 재설정을 다시 요청해주세요.
                 </p>
@@ -112,10 +112,10 @@ const PasswordResetPage = () => {
             {status === 'succeeded' && (
               <div className="rounded-xl bg-white p-8 text-center">
                 <h2 className="mb-3 text-xl font-emphasize text-grey-100">
-                  비밀번호가 변경되었습니다
+                  비밀번호를 변경했어요
                 </h2>
                 <p className="mb-6 text-sm text-grey-70">
-                  새 비밀번호로 다시 로그인해주세요.
+                  새 비밀번호로 다시 로그인해 주세요.
                 </p>
                 <Button
                   onClick={handleGoToLogin}

@@ -14,7 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { callEdgeFunction } from '@/shared/api/edgeFunctionClient';
 
 /**
- * 클라이언트의 family_summary 조회
+ * 내담자의 family_summary 조회
  */
 export async function fetchFamilySummary(
   clientId: string
@@ -34,7 +34,7 @@ export async function fetchFamilySummary(
 }
 
 /**
- * 클라이언트의 상담 기록 유무 확인
+ * 내담자의 상담 기록 유무 확인
  */
 export async function checkClientHasRecords(
   clientId: string
@@ -57,7 +57,7 @@ export async function checkClientHasRecords(
 export const clientService = {
   async getClients(request: GetClientsRequest): Promise<GetClientsResponse> {
     try {
-      // 클라이언트 정보 조회
+      // 내담자 정보 조회
       const { data: clients, error: clientsError } = await supabase
         .from('clients')
         .select('*')
@@ -70,7 +70,7 @@ export const clientService = {
           success: false,
           error: 'DATABASE_ERROR',
           message:
-            clientsError.message || '내담자 목록 조회 중 오류가 발생했습니다.',
+            clientsError.message || '내담자 목록 조회 중 오류가 생겼어요.',
         } as ClientApiError;
       }
 
@@ -81,7 +81,7 @@ export const clientService = {
         };
       }
 
-      // 각 클라이언트의 세션 개수 조회
+      // 각 내담자의 세션 개수 조회
       const clientIds = clients.map((client) => client.id);
       const { data: sessionCounts, error: sessionCountError } = await supabase
         .from('sessions')
@@ -92,7 +92,7 @@ export const clientService = {
         console.error('세션 개수 조회 실패:', sessionCountError);
       }
 
-      // 클라이언트별 세션 개수 맵 생성
+      // 내담자별 세션 개수 맵 생성
       const sessionCountMap = new Map<string, number>();
       if (sessionCounts) {
         sessionCounts.forEach((session) => {
@@ -101,7 +101,7 @@ export const clientService = {
         });
       }
 
-      // 클라이언트 데이터에 세션 개수 추가
+      // 내담자 데이터에 세션 개수 추가
       const clientsWithSessionCount = clients.map((client) => ({
         ...client,
         session_count: sessionCountMap.get(client.id) || 0,
@@ -117,7 +117,7 @@ export const clientService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '내담자 목록 조회 중 오류가 발생했습니다.',
+        message: apiError.message || '내담자 목록 조회 중 오류가 생겼어요.',
       } as ClientApiError;
     }
   },
@@ -138,7 +138,7 @@ export const clientService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '내담자 등록 중 오류가 발생했습니다.',
+        message: apiError.message || '내담자 등록 중 오류가 생겼어요.',
       } as ClientApiError;
     }
   },
@@ -159,13 +159,13 @@ export const clientService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '내담자 정보 수정 중 오류가 발생했습니다.',
+          message: error.message || '내담자 정보 수정 중 오류가 생겼어요.',
         } as ClientApiError;
       }
 
       return {
         success: true,
-        message: '내담자 정보가 수정되었습니다.',
+        message: '내담자 정보를 수정했어요.',
       };
     } catch (error) {
       const apiError = error as ClientApiError;
@@ -173,7 +173,7 @@ export const clientService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '내담자 정보 수정 중 오류가 발생했습니다.',
+        message: apiError.message || '내담자 정보 수정 중 오류가 생겼어요.',
       } as ClientApiError;
     }
   },
@@ -192,13 +192,13 @@ export const clientService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '내담자 삭제 중 오류가 발생했습니다.',
+          message: error.message || '내담자 삭제 중 오류가 생겼어요.',
         } as ClientApiError;
       }
 
       return {
         success: true,
-        message: '내담자가 삭제되었습니다.',
+        message: '내담자를 삭제했어요.',
       };
     } catch (error) {
       const apiError = error as ClientApiError;
@@ -206,7 +206,7 @@ export const clientService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '내담자 삭제 중 오류가 발생했습니다.',
+        message: apiError.message || '내담자 삭제 중 오류가 생겼어요.',
       } as ClientApiError;
     }
   },

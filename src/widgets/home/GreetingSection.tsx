@@ -13,7 +13,7 @@ export const GreetingSection: React.FC<GreetingSectionProps> = ({
     <div className="mb-6 pl-1 pt-12">
       <p className="greeting-section-typo mb-2 text-grey-60">{date}</p>
       <h2 className="greeting-section-typo text-grey-100">
-        반갑습니다, {userName} 선생님
+        반가워요, {userName} 상담사님
       </h2>
     </div>
   );

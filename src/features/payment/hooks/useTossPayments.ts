@@ -15,7 +15,7 @@ export const useTossPayments = (customerKey: string) => {
         setIsLoading(true);
 
         if (!TOSS_PAYMENTS_CONFIG.clientKey) {
-          throw new Error('토스페이먼츠 클라이언트 키가 설정되지 않았습니다.');
+          throw new Error('토스페이먼츠 내담자 키가 설정되어 있지 않아요.');
         }
 
         const tossPayments = await loadTossPayments(

@@ -6,7 +6,7 @@ import type {
 import dummyAnalysisContent from './dummyClientAnalysis.md?raw';
 
 /**
- * 더미 클라이언트 분석 데이터
+ * 더미 내담자 분석 데이터
  * 세션이 없을 때 예시로 보여주는 다회기 분석 데이터
  */
 export const dummyClientAnalysis: ClientAnalysis = {
@@ -25,7 +25,7 @@ export const dummyClientAnalysis: ClientAnalysis = {
 };
 
 /**
- * 더미 클라이언트 분석 버전 목록
+ * 더미 내담자 분석 버전 목록
  */
 export const dummyClientAnalysisVersions: ClientAnalysisVersion[] = [
   {
@@ -37,7 +37,7 @@ export const dummyClientAnalysisVersions: ClientAnalysisVersion[] = [
 ];
 
 /**
- * 더미 클라이언트 ID 체크
+ * 더미 내담자 ID 체크
  */
 export const isDummyClientId = (clientId: string): boolean => {
   return clientId === 'dummy_client_1';

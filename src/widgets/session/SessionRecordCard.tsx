@@ -188,7 +188,7 @@ const CardMeta: React.FC<CardMetaProps> = ({
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Presenter: ClientInfoRow (클라이언트 + 노트 뱃지)
+// Presenter: ClientInfoRow (내담자 + 노트 뱃지)
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface ClientInfoRowProps {
@@ -352,7 +352,7 @@ const DeleteConfirmModal: React.FC<DeleteModalProps> = ({
         <Text className="typo-sm mt-2 text-fg-muted">
           상담기록 {title}을 삭제하시겠습니까?
           <br />
-          해당 상담기록 데이터가 영구히 삭제됩니다.
+          해당 상담기록 데이터가 영구히 삭제돼요.
         </Text>
       </div>
       <div className="flex gap-3">
@@ -409,7 +409,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
 
   // ── Derived ──
   const hasClient = !!(
-    record.client_id && record.client_name !== '클라이언트 없음'
+    record.client_id && record.client_name !== '내담자 없음'
   );
   const displayTitle =
     record.title ||
@@ -445,7 +445,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
   const showReadOnlyToast = () => {
     toast({
       title: '읽기 전용',
-      description: '예시에서는 이 기능을 사용할 수 없습니다.',
+      description: '실제 상담 기록에서 이 기능을 쓸 수 있어요.',
       duration: 2500,
     });
   };
@@ -480,13 +480,13 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
       ]);
       toast({
         title: '제목 수정 완료',
-        description: '상담기록 제목이 변경되었습니다.',
+        description: '상담기록 제목을 변경했어요.',
         duration: 2000,
       });
     } catch {
       toast({
         title: '제목 수정 실패',
-        description: '다시 시도해주세요.',
+        description: '잠시 후 다시 시도해 주세요.',
         duration: 2500,
       });
     } finally {
@@ -543,7 +543,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     } catch {
       toast({
         title: '상담기록 삭제 실패',
-        description: '다시 시도해주세요.',
+        description: '잠시 후 다시 시도해 주세요.',
         duration: 2500,
       });
     } finally {
@@ -569,8 +569,8 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
         onChangeClient?.(record);
       } catch {
         toast({
-          title: '클라이언트 할당 실패',
-          description: '다시 시도해주세요.',
+          title: '내담자 할당 실패',
+          description: '잠시 후 다시 시도해 주세요.',
           duration: 2500,
         });
       } finally {
@@ -642,7 +642,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                 onClick={handleOpenClientSelectorFromMenu}
                 className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
               >
-                <span className="text-l text-grey-100">클라이언트 변경</span>
+                <span className="text-l text-grey-100">내담자 변경</span>
                 <ChevronRightIcon size={20} className="text-grey-70" />
               </button>
               <button
@@ -683,7 +683,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
                     className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface-contrast"
                   >
                     <UserCircle2Icon size={18} className="text-fg-muted" />
-                    <Text className="text-fg">클라이언트 변경</Text>
+                    <Text className="text-fg">내담자 변경</Text>
                   </button>
                 }
                 open={isClientSelectorFromMenuOpen}
@@ -716,7 +716,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           size="md"
           className="cursor-pointer border border-danger transition-all lg:hover:bg-red-300"
         >
-          클라이언트 미정
+          내담자 미정
         </Badge>
       }
       open={isClientSelectorPopupOpen}
@@ -875,7 +875,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           }
         />
         <Text className="typo-sm line-clamp-2 overflow-hidden text-left">
-          상담 기록 작성에 실패했습니다.
+          상담 기록을 만들지 못했어요.
         </Text>
         <CardMeta
           createdAt={record.created_at}

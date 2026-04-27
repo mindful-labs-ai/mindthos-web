@@ -93,10 +93,10 @@ export function RenderStep({
             <Check className="h-8 w-8 text-green-600" />
           </div>
           <h3 className="typo-l mt-4 font-emphasize text-fg">
-            가계도가 생성되었습니다!
+            가계도를 만들었어요!
           </h3>
           <p className="typo-sm mt-2 text-fg-muted">
-            캔버스에서 가계도를 확인하고 편집할 수 있습니다.
+            캔버스에서 가계도를 확인하고 편집할 수 있어요.
           </p>
         </div>
       )}
@@ -104,7 +104,7 @@ export function RenderStep({
       {status === 'error' && (
         <div className="flex flex-col items-center gap-4">
           <Alert tone="danger">
-            {error || '렌더링 중 오류가 발생했습니다.'}
+            {error || '화면을 표시할 수 없어요. 잠시 후 다시 시도해 주세요.'}
           </Alert>
           {onCancel && (
             <Button variant="outline" onClick={onCancel}>

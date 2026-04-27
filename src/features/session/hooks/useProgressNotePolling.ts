@@ -91,7 +91,7 @@ export function useProgressNotePolling({
         onComplete?.(data);
       } else if (currentStatus === 'failed') {
         onError?.(
-          new Error(data.error_message || '상담노트 생성에 실패했습니다.')
+          new Error(data.error_message || '상담노트를 만들지 못했어요.')
         );
       }
     }

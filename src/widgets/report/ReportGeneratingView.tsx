@@ -322,10 +322,10 @@ function ProcessingAnimation() {
       </svg>
 
       <span className="typo-m text-center text-fg-muted">
-        보고서를 생성하고 있습니다...
+        보고서를 생성하고 있어요...
       </span>
       <span className="typo-xs text-center text-primary">
-        최대 1분 정도 소요될 수 있습니다.
+        최대 1분 정도 소요될 수 있어요.
       </span>
     </div>
   );
@@ -341,9 +341,7 @@ function SuccessState({ onProceed }: { onProceed?: () => void }) {
       <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
         <Check className="h-8 w-8 text-green-600" />
       </div>
-      <h3 className="typo-l font-emphasize text-fg">
-        보고서가 생성되었습니다!
-      </h3>
+      <h3 className="typo-l font-emphasize text-fg">보고서를 만들었어요!</h3>
       <p className="typo-sm text-fg-muted">
         미리보기로 이동하여 보고서를 확인해보세요.
       </p>
@@ -375,7 +373,7 @@ function ErrorState() {
       <p className="typo-sm text-center leading-relaxed text-fg-muted">
         축어록 내용이 충분하지 않거나, 보고서 생성에
         <br />
-        적합하지 않은 경우 보고서를 생성할 수 없습니다.
+        적합하지 않은 경우 보고서를 생성할 수 없어요.
         <br />
         혹은 알 수 없는 문제가 발생했을 수도 있어요.
       </p>

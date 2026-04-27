@@ -129,7 +129,7 @@ function extractAudioDuration(file: File): Promise<number> {
 
     audio.addEventListener('error', () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('오디오 메타데이터를 읽을 수 없습니다.'));
+      reject(new Error('오디오 메타데이터를 읽을 수 없어요.'));
     });
 
     audio.src = objectUrl;
@@ -150,7 +150,7 @@ export async function uploadAudioToS3(
       const error: S3UploadError = {
         code: 'INVALID_FILE_TYPE',
         message:
-          '지원하지 않는 파일 형식입니다. MP3, WAV, M4A 파일만 업로드 가능합니다.',
+          '지원하지 않는 파일 형식입니다. MP3, WAV, M4A 파일만 업로드 가능해요.',
       };
       throw error;
     }
@@ -158,7 +158,7 @@ export async function uploadAudioToS3(
     if (!validateFileSize(file)) {
       const error: S3UploadError = {
         code: 'FILE_TOO_LARGE',
-        message: `파일 크기가 너무 큽니다. 최대 ${MAX_FILE_SIZE_MB}MB까지 업로드 가능합니다.`,
+        message: `파일 크기가 너무 큽니다. 최대 ${MAX_FILE_SIZE_MB}MB까지 업로드 가능해요.`,
       };
       throw error;
     }
@@ -214,7 +214,7 @@ export async function uploadAudioToS3(
       });
 
       xhr.addEventListener('error', () => {
-        reject(new Error('네트워크 오류가 발생했습니다.'));
+        reject(new Error('네트워크 오류가 생겼어요.'));
       });
 
       xhr.open('PUT', presigned_url);
@@ -242,7 +242,7 @@ export async function uploadAudioToS3(
       if (error.name === 'NetworkError' || error.message.includes('network')) {
         const networkError: S3UploadError = {
           code: 'NETWORK_ERROR',
-          message: '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.',
+          message: '네트워크 오류가 생겼어요. 인터넷 연결을 확인해 주세요.',
         };
         throw networkError;
       }
@@ -250,7 +250,7 @@ export async function uploadAudioToS3(
 
     const uploadError: S3UploadError = {
       code: 'UPLOAD_FAILED',
-      message: '파일 업로드 중 오류가 발생했습니다.',
+      message: '파일 업로드 중 오류가 생겼어요.',
     };
     throw uploadError;
   }

@@ -38,17 +38,17 @@ export function VerifyStep({
         <p className="typo-m font-headline text-fg">
           모든 검수가 끝난 후에
           <br />
-          보고서 생성이 가능합니다.
+          보고서 생성이 가능해요.
         </p>
         <p className="typo-sm mt-2 text-fg-muted">
-          아래 내용을 확인하며 검수를 완료해주세요.
+          아래 내용을 확인하며 검수를 완료해 주세요.
         </p>
       </div>
 
       {/* 가계도 스냅샷 */}
       <div>
         <p className="typo-m mb-3 font-medium text-fg">
-          최종 가계도는 아래 형태로 보고서에 반영됩니다.
+          최종 가계도는 아래 형태로 보고서에 반영돼요.
         </p>
         {snapshotImage ? (
           <img

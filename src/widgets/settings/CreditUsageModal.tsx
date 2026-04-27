@@ -110,11 +110,11 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     </div>
   ) : isError ? (
     <div className="flex items-center justify-center py-20">
-      <p className="text-red-80">오류가 발생했습니다.</p>
+      <p className="text-red-80">오류가 생겼어요.</p>
     </div>
   ) : logs.length === 0 ? (
     <div className="flex items-center justify-center py-20">
-      <p className="text-grey-60">크레딧 사용 내역이 없습니다.</p>
+      <p className="text-grey-60">크레딧 사용 내역이 없어요.</p>
     </div>
   ) : (
     <div className="space-y-1">
@@ -171,7 +171,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
               </div>
             </div>
             <p className="mt-4 text-center text-xs text-grey-60">
-              *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
+              *크레딧 사용 기록은 최대 3개월까지만 조회가능해요.
             </p>
           </div>
           <div className="flex-shrink-0 px-4 pb-4 md:px-10">
@@ -198,7 +198,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
             </div>
           </div>
           <p className="mt-4 text-center text-sm text-grey-60">
-            *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
+            *크레딧 사용 기록은 최대 3개월까지만 조회가능해요.
           </p>
         </div>
       )}

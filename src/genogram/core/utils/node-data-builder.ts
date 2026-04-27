@@ -3,7 +3,7 @@ import type { PersonAttribute, Subject } from '../models/person';
 import { SubjectType } from '../types/enums';
 
 /**
- * 생몰연도 라벨을 visibility 설정에 따라 생성합니다.
+ * 생몰연도 라벨을 visibility 설정에 따라 만들어요.
  */
 export function buildLifeSpanLabel(
   personAttr: PersonAttribute | null,
@@ -46,7 +46,7 @@ export function buildLifeSpanParts(
 }
 
 /**
- * 상세정보 텍스트 배열을 생성합니다.
+ * 상세정보 텍스트 배열을 만들어요.
  */
 export function buildDetailTexts(personAttr: PersonAttribute | null): string[] {
   const texts: string[] = [];

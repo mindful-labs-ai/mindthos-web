@@ -44,7 +44,7 @@ export const templateService = {
       if (error) {
         throw createDatabaseError(
           error,
-          '템플릿 목록 조회 중 오류가 발생했습니다.'
+          '템플릿 목록 조회 중 오류가 생겼어요.'
         );
       }
 
@@ -53,10 +53,7 @@ export const templateService = {
         templates: data || [],
       };
     } catch (error) {
-      throw normalizeApiError(
-        error,
-        '템플릿 목록 조회 중 오류가 발생했습니다.'
-      );
+      throw normalizeApiError(error, '템플릿 목록 조회 중 오류가 생겼어요.');
     }
   },
 
@@ -72,7 +69,7 @@ export const templateService = {
       if (error) {
         throw createDatabaseError(
           error,
-          '즐겨찾기 목록 조회 중 오류가 발생했습니다.'
+          '즐겨찾기 목록 조회 중 오류가 생겼어요.'
         );
       }
 
@@ -81,10 +78,7 @@ export const templateService = {
         template_ids: data?.map((item) => item.template_id) || [],
       };
     } catch (error) {
-      throw normalizeApiError(
-        error,
-        '즐겨찾기 목록 조회 중 오류가 발생했습니다.'
-      );
+      throw normalizeApiError(error, '즐겨찾기 목록 조회 중 오류가 생겼어요.');
     }
   },
 
@@ -102,7 +96,7 @@ export const templateService = {
       if (checkError && checkError.code !== 'PGRST116') {
         throw createDatabaseError(
           checkError,
-          '즐겨찾기 상태 확인 중 오류가 발생했습니다.'
+          '즐겨찾기 상태 확인 중 오류가 생겼어요.'
         );
       }
 
@@ -116,14 +110,14 @@ export const templateService = {
         if (deleteError) {
           throw createDatabaseError(
             deleteError,
-            '즐겨찾기 해제 중 오류가 발생했습니다.'
+            '즐겨찾기 해제 중 오류가 생겼어요.'
           );
         }
 
         return {
           success: true,
           pinned: false,
-          message: '즐겨찾기가 해제되었습니다.',
+          message: '즐겨찾기를 해제했어요.',
         };
       }
 
@@ -137,17 +131,17 @@ export const templateService = {
       if (insertError) {
         throw createDatabaseError(
           insertError,
-          '즐겨찾기 추가 중 오류가 발생했습니다.'
+          '즐겨찾기 추가 중 오류가 생겼어요.'
         );
       }
 
       return {
         success: true,
         pinned: true,
-        message: '즐겨찾기에 추가되었습니다.',
+        message: '즐겨찾기에 추가했어요.',
       };
     } catch (error) {
-      throw normalizeApiError(error, '즐겨찾기 처리 중 오류가 발생했습니다.');
+      throw normalizeApiError(error, '즐겨찾기 처리 중 오류가 생겼어요.');
     }
   },
 
@@ -163,19 +157,16 @@ export const templateService = {
       if (error) {
         throw createDatabaseError(
           error,
-          '기본 템플릿 설정 중 오류가 발생했습니다.'
+          '기본 템플릿 설정 중 오류가 생겼어요.'
         );
       }
 
       return {
         success: true,
-        message: '기본 템플릿이 설정되었습니다.',
+        message: '기본 템플릿으로 설정했어요.',
       };
     } catch (error) {
-      throw normalizeApiError(
-        error,
-        '기본 템플릿 설정 중 오류가 발생했습니다.'
-      );
+      throw normalizeApiError(error, '기본 템플릿 설정 중 오류가 생겼어요.');
     }
   },
 };

@@ -39,12 +39,12 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
   const sortLabel = sortOrder === 'newest' ? '최신순' : '오래된순';
 
   // 선택된 고객 레이블 생성
-  let clientLabel = '모든 클라이언트';
+  let clientLabel = '모든 내담자';
   if (selectedClientIds.length === 0) {
-    clientLabel = '모든 클라이언트';
+    clientLabel = '모든 내담자';
   } else if (selectedClientIds.length === 1) {
     const client = clients?.find((c) => c.id === selectedClientIds[0]);
-    clientLabel = client ? client.name : '모든 클라이언트';
+    clientLabel = client ? client.name : '모든 내담자';
   } else {
     clientLabel = `${selectedClientIds.length}명 선택`;
   }
@@ -122,7 +122,7 @@ export const FilterMenu: React.FC<FilterMenuProps> = ({
         className="flex w-full items-center justify-between rounded-lg px-4 py-3 text-left lg:hover:bg-surface-contrast"
       >
         <div className="flex flex-col gap-0.5">
-          <span className="typo-xs text-fg-muted">클라이언트</span>
+          <span className="typo-xs text-fg-muted">내담자</span>
           <span className="typo-sm font-medium text-fg">{clientLabel}</span>
         </div>
         <svg

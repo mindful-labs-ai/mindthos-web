@@ -73,7 +73,7 @@ export function NoticeList({ onSelectNotice }: NoticeListProps) {
   if (error) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Text className="text-fg-muted">공지사항을 불러오지 못했습니다.</Text>
+        <Text className="text-fg-muted">공지사항을 불러오지 못했어요.</Text>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export function NoticeList({ onSelectNotice }: NoticeListProps) {
   if (notices.length === 0) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Text className="text-fg-muted">등록된 공지사항이 없습니다.</Text>
+        <Text className="text-fg-muted">등록된 공지사항이 없어요.</Text>
       </div>
     );
   }

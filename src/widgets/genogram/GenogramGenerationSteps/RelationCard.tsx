@@ -876,7 +876,7 @@ export function RelationCard({
       {/* 경고 메시지 */}
       {showWarning && (
         <div className="typo-xs absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-danger px-3 py-1 font-medium text-primary-fg">
-          두 인물을 모두 선택해주세요
+          두 인물을 모두 선택해 주세요
         </div>
       )}
       {/* 왼쪽: 관계 시각화 */}

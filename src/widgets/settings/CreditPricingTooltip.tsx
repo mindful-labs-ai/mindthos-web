@@ -72,14 +72,14 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           </div>
         </div>
 
-        {/* AI 상담 노트 및 분석 */}
+        {/* AI 상담노트 및 분석 */}
         <div className="space-y-2">
           <Text className="typo-xs font-medium text-fg-muted">
-            AI 상담 노트 및 분석
+            AI 상담노트 및 분석
           </Text>
           <div className="space-y-1">
             <div className="flex gap-2">
-              <Text className="typo-xs text-fg">상담 노트 추가 작성</Text>
+              <Text className="typo-xs text-fg">상담노트 추가 작성</Text>
               <Text className="typo-xs font-emphasize text-fg">10 크레딧</Text>
             </div>
             <div className="flex gap-2">
@@ -111,14 +111,13 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
         </div>
 
         <div>
-          <Text>*기본 상담 노트는 녹음 변환과 함께 무료 제공됩니다.</Text>
+          <Text>*기본 상담노트는 녹음 변환과 함께 무료 제공돼요.</Text>
         </div>
       </div>
 
       <Text className="typo-xs text-fg">
-        마음토스 크레딧을 통해 <br /> 축어록 풀이 및 AI 노트를 작성할 수
-        있습니다.
-        <br /> 크레딧은 구독 날짜를 기준으로 매월 초기화됩니다.
+        마음토스 크레딧을 통해 <br /> 축어록 풀이 및 AI 노트를 작성할 수 있어요.
+        <br /> 크레딧은 구독 날짜를 기준으로 매월 초기화돼요.
       </Text>
     </div>
   );

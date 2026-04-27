@@ -60,14 +60,14 @@ export function useReportList({
         await retryReport(reportId);
         toast({
           title: '보고서 재생성 완료',
-          description: '보고서가 성공적으로 생성되었습니다.',
+          description: '보고서를 만들었어요.',
         });
         fetchReports();
       } catch (error) {
         toast({
           title: '재시도 실패',
           description:
-            error instanceof Error ? error.message : '오류가 발생했습니다.',
+            error instanceof Error ? error.message : '오류가 생겼어요.',
         });
       } finally {
         setRetryingId(null);
@@ -96,7 +96,7 @@ export function useReportList({
       } catch {
         toast({
           title: '다운로드 실패',
-          description: 'PDF 다운로드 중 오류가 발생했습니다.',
+          description: 'PDF 다운로드 중 오류가 생겼어요.',
         });
       }
     },

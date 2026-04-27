@@ -151,7 +151,7 @@ export function useProgressNoteTabs({
 
         toast({
           title: '상담노트 작성 완료',
-          description: '상담노트가 성공적으로 작성되었습니다.',
+          description: '상담노트를 작성했어요.',
           duration: 3000,
         });
       },
@@ -181,7 +181,7 @@ export function useProgressNoteTabs({
         toast({
           title: '상담노트 작성 실패',
           description:
-            note.error_message || '상담노트 작성 중 문제가 발생했습니다.',
+            note.error_message || '상담노트 작성 중 문제가 생겼어요.',
           duration: 5000,
         });
       },
@@ -321,7 +321,7 @@ export function useProgressNoteTabs({
       } else {
         items.push({
           value: note.id,
-          label: note.title || '상담 노트',
+          label: note.title || '상담노트',
         });
       }
     });
