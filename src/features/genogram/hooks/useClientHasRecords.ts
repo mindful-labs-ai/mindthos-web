@@ -4,8 +4,8 @@ import { checkClientHasRecords } from '@/shared/api/supabase/clientQueries';
 import { genogramQueryKeys } from '@/shared/constants/queryKeys';
 
 /**
- * 클라이언트의 상담 기록 유무 확인 훅
- * @param clientId 클라이언트 ID
+ * 내담자의 상담 기록 유무 확인 훅
+ * @param clientId 내담자 ID
  * @returns 상담 기록 존재 여부
  */
 export function useClientHasRecords(clientId: string) {

@@ -263,7 +263,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                 </>
               ) : hasActivatedDeid ? (
                 <span className="rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
-                  비식별화 되어 있는 항목은 주황색으로 표시됩니다.
+                  비식별화 되어 있는 항목은 주황색으로 표시돼요.
                 </span>
               ) : null /* 편집 모드: 버튼 숨기되 wrapper 유지 */
             }

@@ -38,7 +38,7 @@ export const TabChangeConfirmModal: React.FC<TabChangeConfirmModalProps> =
       >
         <div className="space-y-4">
           <Text className="typo-m text-fg">
-            편집 중인 내용이 있습니다. 저장하지 않고 나가시겠습니까?
+            편집 중인 내용이 있어요. 저장하지 않고 나가시겠습니까?
           </Text>
           <Text className="typo-sm text-fg-muted">
             지금 나가면 편집 중인 내용이 모두 사라집니다.

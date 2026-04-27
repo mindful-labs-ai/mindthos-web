@@ -9,8 +9,8 @@ export const ONBOARDING_ENDPOINTS = {
 } as const;
 
 export const ONBOARDING_ERROR_MESSAGES = {
-  STATUS_FETCH_FAILED: '온보딩 상태를 불러오는데 실패했습니다.',
-  SAVE_FAILED: '온보딩 저장에 실패했습니다.',
-  COMPLETE_FAILED: '온보딩 완료 처리에 실패했습니다.',
-  NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
+  STATUS_FETCH_FAILED: '온보딩 상태를 불러오지 못했어요.',
+  SAVE_FAILED: '온보딩 정보를 저장하지 못했어요.',
+  COMPLETE_FAILED: '온보딩을 완료하지 못했어요.',
+  NETWORK_ERROR: '네트워크 연결을 확인해 주세요.',
 } as const;

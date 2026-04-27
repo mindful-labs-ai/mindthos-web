@@ -29,9 +29,7 @@ export function ExportPreview({ imageUrl, isLoading }: ExportPreviewProps) {
           ) : (
             <div className="flex items-center justify-center">
               <span className="text-fg-muted">
-                {isLoading
-                  ? '이미지 생성 중...'
-                  : '이미지를 불러올 수 없습니다'}
+                {isLoading ? '이미지 생성 중...' : '이미지를 불러올 수 없어요'}
               </span>
             </div>
           )}

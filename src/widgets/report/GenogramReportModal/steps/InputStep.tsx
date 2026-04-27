@@ -13,10 +13,10 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
       {/* 상단 배너 */}
       <div className="rounded-xl bg-primary-subtle px-6 py-5 text-center">
         <p className="typo-m font-headline text-fg">
-          아래 정보가 보고서 표지에 반영됩니다.
+          아래 정보가 보고서 표지에 반영돼요.
         </p>
         <p className="typo-sm mt-2 text-fg-muted">
-          보고서에 기입될 정보를 확인해주세요.
+          보고서에 기입될 정보를 확인해 주세요.
         </p>
       </div>
       {/* 1. 상담사님의 성함 */}

@@ -7,7 +7,7 @@ const NotFoundPage = () => {
       <div className="text-center">
         <h1 className="mb-4 text-6xl font-headline text-fg">404</h1>
         <Title as="h2" className="typo-2xl mb-4">
-          페이지를 찾을 수 없습니다
+          페이지를 찾을 수 없어요
         </Title>
         <p className="typo-m text-muted mb-8">
           요청하신 페이지가 존재하지 않거나 잘못된 경로입니다.

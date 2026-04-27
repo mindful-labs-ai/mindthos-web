@@ -57,7 +57,7 @@ export async function createSessionBackground(
   const data: CreateSessionBackgroundResponse = await response.json();
 
   if (data.status !== 'accepted') {
-    throw new Error(data.message || '세션 작성 중 오류가 발생했습니다.');
+    throw new Error(data.message || '세션 작성 중 오류가 생겼어요.');
   }
 
   return data;
@@ -188,7 +188,7 @@ export async function getSessionDetail(sessionId: string): Promise<{
 
   if (sessionError || !session) {
     throw new Error(
-      `세션 조회 실패: ${sessionError?.message || '세션을 찾을 수 없습니다.'}`
+      `세션 조회 실패: ${sessionError?.message || '세션을 찾을 수 없어요.'}`
     );
   }
 
@@ -226,7 +226,7 @@ export async function getAudioPresignedUrl(sessionId: string): Promise<string> {
     });
 
     if (!data.success || !data.presigned_url) {
-      throw new Error(data.message || 'Presigned URL을 가져올 수 없습니다.');
+      throw new Error(data.message || 'Presigned URL을 가져올 수 없어요.');
     }
 
     return data.presigned_url;
@@ -262,7 +262,7 @@ export async function updateSessionTitle(
 function findSegmentIndexById(segments: any[], segmentId: number): number {
   const index = segments.findIndex((seg) => seg.id === segmentId);
   if (index === -1) {
-    throw new Error(`선택한 대화를 찾을 수 없습니다.`);
+    throw new Error(`선택한 대화를 찾을 수 없어요.`);
   }
   return index;
 }
@@ -389,7 +389,7 @@ function updateSegmentsInContents(
     };
   }
 
-  throw new Error('전사 결과가 존재하지 않습니다.');
+  throw new Error('전사 결과가 없어요.');
 }
 
 /**
@@ -409,13 +409,13 @@ export async function updateTranscriptSegmentText(
 
   if (fetchError || !transcribe) {
     throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
     );
   }
 
   const contents = transcribe.contents;
   if (!contents) {
-    throw new Error('전사 결과가 존재하지 않습니다.');
+    throw new Error('전사 결과가 없어요.');
   }
 
   // 2. 세그먼트 업데이트 - segment.id로 직접 찾기
@@ -458,13 +458,13 @@ export async function updateMultipleTranscriptSegments(
 
   if (fetchError || !transcribe) {
     throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
     );
   }
 
   const contents = transcribe.contents;
   if (!contents) {
-    throw new Error('전사 결과가 존재하지 않습니다.');
+    throw new Error('전사 결과가 없어요.');
   }
 
   // 2. 세그먼트 일괄 업데이트 - segment.id로 직접 찾기
@@ -537,7 +537,7 @@ export interface TranscriptUpdatePayload {
 
 /**
  * 전사 세그먼트 종합 업데이트 API 호출 (text + speaker)
- * text, speaker, speakerDefinitions를 동시에 업데이트할 수 있습니다.
+ * text, speaker, speakerDefinitions를 동시에 업데이트할 수 있어요.
  */
 export async function updateTranscriptSegments(
   transcribeId: string,
@@ -552,13 +552,13 @@ export async function updateTranscriptSegments(
 
   if (fetchError || !transcribe) {
     throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
     );
   }
 
   const contents = transcribe.contents;
   if (!contents) {
-    throw new Error('전사 결과가 존재하지 않습니다.');
+    throw new Error('전사 결과가 없어요.');
   }
 
   // 2. 세그먼트 업데이트 적용 (text + speaker)
@@ -639,13 +639,13 @@ export async function addTranscriptSegment(
 
   if (fetchError || !transcribe) {
     throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
     );
   }
 
   const contents = transcribe.contents;
   if (!contents) {
-    throw new Error('전사 결과가 존재하지 않습니다.');
+    throw new Error('전사 결과가 없어요.');
   }
 
   const updatedContents = updateSegmentsInContents(contents, (segments) => {
@@ -691,13 +691,13 @@ export async function deleteTranscriptSegment(
 
   if (fetchError || !transcribe) {
     throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없습니다.'}`
+      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
     );
   }
 
   const contents = transcribe.contents;
   if (!contents) {
-    throw new Error('전사 결과가 존재하지 않습니다.');
+    throw new Error('전사 결과가 없어요.');
   }
 
   const updatedContents = updateSegmentsInContents(contents, (segments) => {
@@ -735,7 +735,7 @@ export async function deleteSession(sessionId: string): Promise<void> {
 }
 
 /**
- * 세션에 클라이언트 할당 API 호출
+ * 세션에 내담자 할당 API 호출
  */
 export async function assignClientToSession(
   sessionId: string,
@@ -747,7 +747,7 @@ export async function assignClientToSession(
     .eq('id', sessionId);
 
   if (error) {
-    throw new Error(`클라이언트 할당 실패: ${error.message}`);
+    throw new Error(`내담자 할당 실패: ${error.message}`);
   }
 }
 
@@ -783,7 +783,7 @@ export async function createHandWrittenSession(
     );
 
     if (!data.success) {
-      throw new Error(data.message || '직접 입력 세션 생성에 실패했습니다.');
+      throw new Error(data.message || '직접 입력 상담 기록을 만들지 못했어요.');
     }
 
     return data;
@@ -791,7 +791,7 @@ export async function createHandWrittenSession(
     const err = error as { message?: string; status?: number };
     throw {
       status: err.status || 500,
-      message: err.message || '직접 입력 세션 생성 중 오류가 발생했습니다.',
+      message: err.message || '직접 입력 세션 생성 중 오류가 생겼어요.',
     };
   }
 }

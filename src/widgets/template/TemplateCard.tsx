@@ -93,7 +93,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
             기본 노트를 변경하시겠습니까?
           </p>
           <p className="text-sm text-grey-60">
-            '{template.title}'을(를) 기본 노트로 설정합니다.
+            '{template.title}'을(를) 기본 노트로 설정해요.
           </p>
           <div className="flex w-full gap-3">
             <Button

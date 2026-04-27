@@ -54,7 +54,7 @@ export const CreateHandWrittenSessionModal: React.FC<
   const [showTitleError, setShowTitleError] = useState(false);
   const [shakeTitle, setShakeTitle] = useState(false);
 
-  // 모바일 클라이언트 선택 모달
+  // 모바일 내담자 선택 모달
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
 
   // 크레딧 부족 에러 상태
@@ -100,8 +100,8 @@ export const CreateHandWrittenSessionModal: React.FC<
   const handleSubmit = async () => {
     if (!userId) {
       toast({
-        title: '오류',
-        description: '로그인 정보를 불러오는 중입니다.',
+        title: '문제가 생겼어요',
+        description: '로그인 정보를 불러오는 중이에요.',
         duration: 3000,
       });
       return;
@@ -110,7 +110,7 @@ export const CreateHandWrittenSessionModal: React.FC<
     if (!contents.trim()) {
       toast({
         title: '입력 오류',
-        description: '상담 내용을 입력해주세요.',
+        description: '상담 내용을 입력해 주세요.',
         duration: 3000,
       });
       return;
@@ -119,7 +119,7 @@ export const CreateHandWrittenSessionModal: React.FC<
     if (contents.trim().length < MIN_CONTENT_LENGTH) {
       toast({
         title: '입력 오류',
-        description: `상담 내용은 최소 ${MIN_CONTENT_LENGTH}자 이상 입력해주세요.`,
+        description: `상담 내용은 최소 ${MIN_CONTENT_LENGTH}자 이상 입력해 주세요.`,
         duration: 3000,
       });
       return;
@@ -137,7 +137,7 @@ export const CreateHandWrittenSessionModal: React.FC<
     if (HAND_WRITTEN_CREDIT > remainingCredit) {
       setCreditErrorSnackBar({
         open: true,
-        message: `크레딧이 부족합니다. 필요: ${HAND_WRITTEN_CREDIT}, 보유: ${remainingCredit}`,
+        message: `크레딧이 부족해요. 필요: ${HAND_WRITTEN_CREDIT}, 보유: ${remainingCredit}`,
       });
       return;
     }
@@ -166,7 +166,7 @@ export const CreateHandWrittenSessionModal: React.FC<
 
       toast({
         title: '상담 기록 생성 요청 완료',
-        description: '상담노트가 생성 중입니다. 잠시 후 확인해주세요.',
+        description: '상담노트가 생성 중이에요. 잠시 후 확인해 주세요.',
         duration: 5000,
       });
 
@@ -193,7 +193,7 @@ export const CreateHandWrittenSessionModal: React.FC<
 
       toast({
         title: '상담 기록 생성 실패',
-        description: err.message || '다시 시도해주세요.',
+        description: err.message || '잠시 후 다시 시도해 주세요.',
         duration: 5000,
       });
     } finally {
@@ -222,7 +222,7 @@ export const CreateHandWrittenSessionModal: React.FC<
       <textarea
         value={contents}
         onChange={(e) => setContents(e.target.value)}
-        placeholder="상담 내용을 입력해주세요."
+        placeholder="상담 내용을 입력해 주세요."
         className={`w-full resize-none rounded-lg border bg-grey-10 p-4 text-grey-100 outline-none transition-colors ${textAreaHeight} ${
           isOverLimit
             ? 'border-red-80 focus:border-red-80'
@@ -258,7 +258,7 @@ export const CreateHandWrittenSessionModal: React.FC<
         placeholder={
           selectedClient
             ? `${selectedClient.name} ${(selectedClient.session_count ?? selectedClient.counsel_number) + 1}회기`
-            : '제목을 입력해주세요'
+            : '제목을 입력해 주세요'
         }
         className={`w-full rounded-lg border bg-grey-10 px-3 py-2 text-m text-grey-100 outline-none transition-colors ${
           showTitleError && isTitleEmpty
@@ -269,7 +269,7 @@ export const CreateHandWrittenSessionModal: React.FC<
       />
       {showTitleError && isTitleEmpty && (
         <Text className="typo-xs text-red-500">
-          상담기록 제목을 입력해주세요.
+          상담기록 제목을 입력해 주세요.
         </Text>
       )}
     </div>
@@ -306,7 +306,7 @@ export const CreateHandWrittenSessionModal: React.FC<
         setCreditErrorSnackBar((prev) => ({ ...prev, open }))
       }
       action={{
-        label: '플랜 업그레이드',
+        label: '플랜 변경',
         onClick: () => openModal('planChange'),
       }}
       duration={8000}

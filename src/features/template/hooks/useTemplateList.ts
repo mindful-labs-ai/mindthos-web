@@ -58,7 +58,7 @@ export const useTemplateList = () => {
       templatesQuery.error?.message ||
       pinsQuery.error?.message ||
       (templatesQuery.isError || pinsQuery.isError
-        ? '템플릿 목록을 불러올 수 없습니다.'
+        ? '템플릿 목록을 불러올 수 없어요.'
         : null),
   };
 };

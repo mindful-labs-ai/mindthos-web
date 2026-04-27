@@ -11,9 +11,9 @@ interface ClientDropdownProps {
   clients: Client[];
   selectedClient: Client | null;
   onSelect: (client: Client) => void;
-  /** 클라이언트 추가 버튼 클릭 핸들러 */
+  /** 내담자 추가 버튼 클릭 핸들러 */
   onAddClient?: () => void;
-  /** 클라이언트 없이 캔버스만 사용 중인 모드 */
+  /** 내담자 없이 캔버스만 사용 중인 모드 */
   isTemporaryMode?: boolean;
 }
 
@@ -54,7 +54,7 @@ export function ClientDropdown({
     }
   }, [isOpen]);
 
-  // 활성 클라이언트만 필터링 (counsel_done이 아닌)
+  // 활성 내담자만 필터링 (counsel_done이 아닌)
   const activeClients = useMemo(
     () => clients.filter((client) => !client.counsel_done),
     [clients]
@@ -85,7 +85,7 @@ export function ClientDropdown({
     setSearchQuery('');
   };
 
-  // 클라이언트가 없고 임시 모드일 때: 클라이언트 추가 버튼
+  // 내담자가 없고 임시 모드일 때: 내담자 추가 버튼
   if (isTemporaryMode && activeClients.length === 0) {
     return (
       <Button
@@ -94,7 +94,7 @@ export function ClientDropdown({
         onClick={onAddClient}
       >
         <Plus className="h-[18px] w-[18px]" />
-        <span>클라이언트 추가</span>
+        <span>내담자 추가</span>
       </Button>
     );
   }
@@ -122,7 +122,7 @@ export function ClientDropdown({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="클라이언트 검색"
+              placeholder="내담자 검색"
               className="typo-m w-full border-b border-border bg-transparent py-2.5 pl-10 pr-3 placeholder:text-fg-muted focus:border-primary focus:outline-none"
             />
           </div>
@@ -155,7 +155,7 @@ export function ClientDropdown({
             <div className="max-h-[240px] space-y-1 overflow-y-auto">
               {filteredClients.length === 0 ? (
                 <p className="typo-sm py-4 text-center text-fg-muted">
-                  검색 결과가 없습니다
+                  검색 결과가 없어요
                 </p>
               ) : (
                 filteredClients.map((client) => (

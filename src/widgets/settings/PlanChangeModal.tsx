@@ -112,7 +112,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   if (!user?.email) {
     toast({
       title: '사용자 정보 오류',
-      description: '사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.',
+      description: '사용자 정보를 불러올 수 없어요. 다시 로그인해 주세요.',
     });
     return;
   }
@@ -129,7 +129,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     if (!selectedPlanId) {
       toast({
         title: '플랜 선택 필요',
-        description: '변경할 플랜을 선택해주세요.',
+        description: '변경할 플랜을 선택해 주세요.',
       });
       return;
     }
@@ -141,7 +141,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     if (!selectedPlan) {
       toast({
         title: '플랜 정보 오류',
-        description: '선택한 플랜 정보를 찾을 수 없습니다.',
+        description: '선택한 플랜 정보를 찾을 수 없어요.',
       });
       return;
     }
@@ -176,7 +176,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         description:
           error instanceof Error
             ? error.message
-            : '플랜 변경 중 오류가 발생했습니다.',
+            : '플랜 변경 중 오류가 생겼어요.',
       });
     }
   };
@@ -192,7 +192,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
 
         if (!initResponse.success) {
           throw new Error(
-            initResponse.message || '플랜 업그레이드 초기화에 실패했습니다.'
+            initResponse.message || '플랜 변경 준비 중 문제가 생겼어요.'
           );
         }
 
@@ -204,7 +204,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         });
         return;
       }
-      throw new Error('결제 정보가 없습니다.');
+      throw new Error('결제 정보가 없어요.');
     }
 
     const period = calculatePeriod();
@@ -219,7 +219,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       );
 
       if (response.type !== 'upgrade') {
-        throw new Error('업그레이드에 실패했습니다. 다시 시도해주세요.');
+        throw new Error('플랜 변경에 실패했어요. 다시 시도해 주세요.');
       }
 
       // 크레딧 관련 쿼리 invalidate
@@ -282,7 +282,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         reason:
           error instanceof Error
             ? error.message
-            : '결제에 실패했습니다. 다시 시도해주세요.',
+            : '결제를 완료하지 못했어요. 카드 정보와 잔액을 확인한 뒤 다시 시도해 주세요.',
       });
       setPaymentResultOpen(true);
     }
@@ -291,7 +291,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
   // 다운그레이드 확정
   const handleConfirmDowngrade = async () => {
     if (!selectedPlanId) {
-      throw new Error('플랜 정보가 없습니다.');
+      throw new Error('플랜 정보가 없어요.');
     }
 
     const response = await billingService.changePlan(selectedPlanId);
@@ -302,8 +302,8 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       });
 
       toast({
-        title: '플랜 다운그레이드 예약',
-        description: '구독 종료 후 새 플랜이 적용됩니다.',
+        title: '플랜 변경 예약 완료',
+        description: '구독 종료 후 새 플랜이 적용돼요.',
       });
 
       // 크레딧 관련 쿼리 invalidate
@@ -408,9 +408,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       {isMobileView && (
         <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
           <BackButton onClick={() => onOpenChange(false)} />
-          <p className="text-m font-medium text-grey-100">
-            마음토스 플랜 업그레이드
-          </p>
+          <p className="text-m font-medium text-grey-100">마음토스 플랜 변경</p>
         </div>
       )}
 
@@ -423,7 +421,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       >
         {!isMobileView && (
           <Title className="text-center" as="h2">
-            마음토스 플랜 업그레이드
+            마음토스 플랜 변경
           </Title>
         )}
         {/* Period Toggle */}
@@ -455,7 +453,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
           </div>
         ) : currentPlans.length === 0 ? (
           <div className="flex h-64 w-full items-center justify-center">
-            <Text className="text-fg-muted">사용 가능한 플랜이 없습니다.</Text>
+            <Text className="text-fg-muted">사용 가능한 플랜이 없어요.</Text>
           </div>
         ) : (
           <div
@@ -506,7 +504,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
               >
                 결제 약관
               </a>
-              에 동의합니다.
+              에 동의해요.
             </Text>
             <Button
               variant="solid"
@@ -531,8 +529,8 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
                       ].find((p) => p.id === selectedPlanId);
                       if (!selectedPlan) return '플랜 변경';
                       return selectedPlan.price > currentPlanPrice
-                        ? '플랜 업그레이드'
-                        : '플랜 다운그레이드';
+                        ? '상위 플랜으로 변경'
+                        : '하위 플랜으로 변경';
                     })()
                   : '플랜 변경'}
             </Button>
@@ -554,7 +552,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
               >
                 결제 약관
               </a>
-              에 동의합니다.
+              에 동의해요.
             </Text>
             <Button
               variant="solid"
@@ -579,8 +577,8 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
                       ].find((p) => p.id === selectedPlanId);
                       if (!selectedPlan) return '플랜 변경';
                       return selectedPlan.price > currentPlanPrice
-                        ? '플랜 업그레이드'
-                        : '플랜 다운그레이드';
+                        ? '상위 플랜으로 변경'
+                        : '하위 플랜으로 변경';
                     })()
                   : '플랜 변경'}
             </Button>

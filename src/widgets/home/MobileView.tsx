@@ -214,8 +214,8 @@ const MobileView = () => {
   const handleNextStep = () => {
     if (validFiles.length === 0) {
       toast({
-        title: '유효한 파일이 없습니다',
-        description: '업로드 가능한 파일을 추가해주세요.',
+        title: '업로드할 파일이 없어요',
+        description: '업로드 가능한 파일을 추가해 주세요.',
         duration: 3000,
       });
       return;
@@ -261,8 +261,8 @@ const MobileView = () => {
   const handleCreateSessions = async () => {
     if (!userId) {
       toast({
-        title: '오류',
-        description: '로그인 정보를 불러오는 중입니다.',
+        title: '문제가 생겼어요',
+        description: '로그인 정보를 불러오는 중이에요.',
         duration: 3000,
       });
       return;
@@ -273,7 +273,7 @@ const MobileView = () => {
     if (step2TotalCredit > remainingCredit) {
       setCreditErrorSnackBar({
         open: true,
-        message: `크레딧이 부족합니다. 필요: ${step2TotalCredit}, 보유: ${remainingCredit}`,
+        message: `크레딧이 부족해요. 필요: ${step2TotalCredit}, 보유: ${remainingCredit}`,
       });
       return;
     }
@@ -293,7 +293,7 @@ const MobileView = () => {
         description:
           failedCount > 0
             ? `${successCount}개 성공, ${failedCount}개 실패`
-            : `${successCount}개의 상담 기록이 생성 중입니다.`,
+            : `${successCount}개의 상담 기록이 생성 중이에요.`,
         duration: 5000,
       });
     }
@@ -301,7 +301,7 @@ const MobileView = () => {
     if (failedCount > 0 && successCount === 0) {
       toast({
         title: '상담 기록 생성 실패',
-        description: '모든 파일 업로드에 실패했습니다.',
+        description: '모든 파일을 업로드하지 못했어요.',
         duration: 5000,
       });
     }
@@ -509,9 +509,7 @@ const MobileView = () => {
               </>
             ) : (
               <div className="rounded-lg border border-surface-strong bg-surface p-6 text-center">
-                <Text className="text-fg-muted">
-                  아직 상담 기록이 없습니다.
-                </Text>
+                <Text className="text-fg-muted">아직 상담 기록이 없어요.</Text>
               </div>
             )}
           </div>
@@ -538,7 +536,7 @@ const MobileView = () => {
                 <br />
                 &apos;나의 iPhone&apos; 혹은 &apos;iCloud Drive&apos;안에
                 <br />
-                저장되어 있어야 업로드가 가능합니다.
+                저장되어 있어야 업로드가 가능해요.
               </Text>
               <div className="flex gap-3">
                 <button
@@ -601,7 +599,7 @@ const MobileView = () => {
             >
               <div className="flex flex-col items-center justify-center gap-3 rounded-xl border p-6">
                 <UploadIcon size={32} />
-                <Text>파일을 선택해주세요</Text>
+                <Text>파일을 선택해 주세요</Text>
                 <Text className="typo-sm text-fg-muted">
                   최대 {MULTI_UPLOAD_LIMITS.MAX_FILES}개
                   <br />
@@ -647,7 +645,7 @@ const MobileView = () => {
                 <UserIcon size={14} />
                 <Text className="typo-sm">
                   {clients.find((c) => c.id === batchConfig.clientId)?.name ||
-                    '클라이언트 선택 안됨'}
+                    '내담자 선택 안됨'}
                 </Text>
               </Button>
               <ClientSelector
@@ -680,7 +678,7 @@ const MobileView = () => {
               <Text className="font-emphasize">
                 총{' '}
                 <span className="text-primary">{step1TotalCredit} 크레딧</span>
-                을 사용합니다.
+                을 사용해요.
               </Text>
             </div>
           )}
@@ -792,7 +790,7 @@ const MobileView = () => {
           setCreditErrorSnackBar((prev) => ({ ...prev, open }))
         }
         action={{
-          label: '플랜 업그레이드',
+          label: '플랜 변경',
           onClick: () => openModal('planChange'),
         }}
         duration={8000}

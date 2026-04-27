@@ -68,11 +68,11 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
                     iconRight={<ChevronDownIcon size={16} />}
                   >
                     {selectedClientIds.length === 0
-                      ? '모든 클라이언트'
+                      ? '모든 내담자'
                       : selectedClientIds.length === 1
                         ? effectiveClients.find(
                             (c) => c.id === selectedClientIds[0]
-                          )?.name || '모든 클라이언트'
+                          )?.name || '모든 내담자'
                         : `${selectedClientIds.length}명 선택`}
                   </Button>
                 }

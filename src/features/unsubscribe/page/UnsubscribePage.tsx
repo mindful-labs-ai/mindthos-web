@@ -15,7 +15,7 @@ const UnsubscribePage = () => {
 
   const [view, setView] = useState<ViewState>(token ? 'confirm' : 'error');
   const [errorMsg, setErrorMsg] = useState(
-    token ? '' : '유효하지 않은 수신거부 링크입니다.'
+    token ? '' : '수신거부 링크가 유효하지 않아요.'
   );
 
   const handleUnsubscribe = async () => {
@@ -40,11 +40,11 @@ const UnsubscribePage = () => {
       if (data.success) {
         setView('success');
       } else {
-        setErrorMsg(data.message || '처리 중 오류가 발생했습니다.');
+        setErrorMsg(data.message || '처리 중 오류가 생겼어요.');
         setView('error');
       }
     } catch {
-      setErrorMsg('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      setErrorMsg('인터넷 연결을 확인한 뒤 다시 시도해 주세요.');
       setView('error');
     }
   };
@@ -71,12 +71,12 @@ const UnsubscribePage = () => {
                 마케팅 이메일 수신을 거부하시겠어요?
               </h1>
               <p className="text-grey-100-muted mb-6 text-sm leading-[1.7]">
-                선생님께 도움이 될 상담 기록 팁과 혜택 안내를
+                상담사님께 도움이 될 상담 기록 팁과 혜택 안내를
                 <br />더 이상 보내드리지 않을까요?
                 <br />
                 <br />
                 <span className="font-emphasize text-grey-100">
-                  서비스 관련 중요 안내는 계속 받으실 수 있습니다.
+                  서비스 관련 중요 안내는 계속 받으실 수 있어요.
                 </span>
               </p>
 
@@ -130,10 +130,10 @@ const UnsubscribePage = () => {
                 수신거부가 완료되었어요
               </h1>
               <p className="mb-6 text-sm leading-[1.7] text-grey-80">
-                마음토스 마케팅 이메일 수신이 거부되었습니다.
+                마음토스 마케팅 이메일 수신이 거부됐어요.
                 <br />
                 <span className="font-emphasize text-grey-100">
-                  서비스 관련 중요 안내는 계속 받으실 수 있습니다.
+                  서비스 관련 중요 안내는 계속 받으실 수 있어요.
                 </span>
               </p>
               <a

@@ -70,7 +70,7 @@ export const CompleteMissionModal = () => {
       toast({
         title: '선물 수령 완료! 🎁',
         description:
-          '스타터 플랜 한 달 이용권이 지급되었습니다. 지금 바로 사용해보세요!',
+          '스타터 플랜 한 달 이용권이 지급됐어요. 지금 바로 써 보세요!',
       });
 
       // 한 번 더 화려한 폭죽 효과
@@ -100,28 +100,28 @@ export const CompleteMissionModal = () => {
           toast({
             title: '유료 플랜 이용 중',
             description:
-              '이미 유료 플랜을 사용 중이므로 온보딩 보상이 적용되지 않습니다.',
+              '이미 유료 플랜을 사용 중이므로 온보딩 보상이 적용되지 않아요.',
           });
           handleClose();
           break;
         case 'ONBOARDING_ALREADY_REWARDED':
           toast({
-            title: '이미 보상을 받았습니다',
-            description: '온보딩 보상은 1회만 지급됩니다.',
+            title: '이미 보상을 받았어요',
+            description: '온보딩 보상은 1회만 지급돼요.',
           });
           window.location.reload();
           break;
         case 'ONBOARDING_EXPIRED':
           toast({
             title: '온보딩 기간 만료',
-            description: '온보딩 기간(7일)이 만료되었습니다.',
+            description: '온보딩 기간(7일)이 끝났어요.',
           });
           handleClose();
           break;
         case 'ONBOARDING_NOT_COMPLETED':
           toast({
             title: '온보딩 미완료',
-            description: '온보딩 가이드를 먼저 완료해주세요.',
+            description: '온보딩 가이드를 먼저 완료해 주세요.',
           });
           handleClose();
           break;
@@ -129,7 +129,7 @@ export const CompleteMissionModal = () => {
           toast({
             title: '보상 수령 실패',
             description:
-              (err?.message as string) || '잠시 후 다시 시도해주세요.',
+              (err?.message as string) || '잠시 후 다시 시도해 주세요.',
           });
           break;
       }
@@ -171,12 +171,12 @@ export const CompleteMissionModal = () => {
             <div className="typo-l mb-6 whitespace-pre-wrap font-headline leading-relaxed text-fg">
               상담에만 온전히 집중하실 수 있도록,
               <br />
-              1개월 무료 이용권으로 첫걸음을 응원합니다.
+              1개월 무료 이용권으로 첫걸음을 응원해요.
             </div>
             <p className="typo-sm mb-8 font-medium text-fg-muted">
               *{dateString}부터 한 달 동안
               <br />
-              스타터 플랜(500 크레딧 지급)이 적용됩니다.
+              스타터 플랜(500 크레딧 지급)이 적용돼요.
             </p>
 
             <GiftBoxAnimation className="mb-10" />

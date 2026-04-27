@@ -30,7 +30,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
       await authService.resendEmailVerification(email);
       setResendState({
         status: 'success',
-        message: '인증 이메일을 다시 발송했습니다.',
+        message: '인증 이메일을 다시 보냈어요.',
       });
     } catch (error) {
       setResendState({
@@ -38,7 +38,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
         message:
           error instanceof Error
             ? error.message
-            : '이메일 발송에 실패했습니다. 다시 시도해주세요.',
+            : '이메일을 보내지 못했어요. 잠시 후 다시 시도해 주세요.',
       });
     } finally {
       setIsResending(false);
@@ -53,13 +53,13 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
         </div>
       </div>
 
-      <h2 className="mb-2 text-2xl font-headline">메일을 발송했습니다</h2>
+      <h2 className="mb-2 text-2xl font-headline">메일을 보냈어요</h2>
 
       <p className="mb-6 text-grey-100">
         <span className="font-medium text-grey-100">{email}</span>로 인증 메일을
-        발송했습니다.
+        보냈어요.
         <br />
-        이메일을 확인하고 회원가입을 완료해주세요.
+        이메일을 확인하고 회원가입을 완료해 주세요.
       </p>
 
       {resendState.status !== 'idle' && (

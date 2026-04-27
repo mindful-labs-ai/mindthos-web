@@ -52,7 +52,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
       setIsDeleteModalOpen(false);
       toast({
         title: '카드 삭제 완료',
-        description: '등록된 카드가 삭제되었습니다.',
+        description: '카드를 삭제했어요.',
         duration: 3000,
       });
     },
@@ -65,7 +65,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
         description:
           error instanceof Error
             ? error.message
-            : '카드 삭제에 실패했습니다. 다시 시도해주세요.',
+            : '카드를 삭제하지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 5000,
       });
     },
@@ -113,10 +113,10 @@ export const CardInfo: React.FC<CardInfoProps> = ({
           ) : (
             <>
               <Text className="typo-sm text-left font-medium text-fg">
-                등록된 카드가 없습니다.
+                등록된 카드가 없어요.
               </Text>
               <Text className="typo-xs text-fg-muted">
-                첫 결제 시 카드 등록이 함께 진행됩니다.
+                첫 결제 시 카드 등록이 함께 진행돼요.
               </Text>
             </>
           )}
@@ -148,10 +148,10 @@ export const CardInfo: React.FC<CardInfoProps> = ({
       >
         <div className="space-y-4">
           <Text className="typo-m text-fg">
-            등록된 카드를 삭제하시겠습니까?
+            등록된 카드를 삭제하시겠어요?
           </Text>
           <Text className="typo-sm text-fg-muted">
-            삭제 후에는 결제 시 카드를 다시 등록해야 합니다.
+            삭제 후에는 결제 시 카드를 다시 등록해야 해요.
           </Text>
           <div className="flex justify-center gap-2 pt-2">
             <Button

@@ -142,7 +142,7 @@ export async function callEdgeFunction<T>(
     throw {
       status,
       success: false,
-      message: error.message || 'Edge Function 호출 중 오류가 발생했습니다.',
+      message: error.message || 'Edge Function 호출 중 오류가 생겼어요.',
       ...errorData,
     };
   }

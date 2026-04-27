@@ -47,7 +47,7 @@ export const CardRegistrationModal = ({
     if (!user?.email) {
       toast({
         title: '사용자 정보 오류',
-        description: '사용자 정보를 불러올 수 없습니다. 다시 로그인해주세요.',
+        description: '사용자 정보를 불러올 수 없어요. 다시 로그인해 주세요.',
       });
       return;
     }
@@ -72,7 +72,7 @@ export const CardRegistrationModal = ({
       trackError(MixpanelError.CardRegistrationError, error);
       toast({
         title: '카드 등록 실패',
-        description: '카드 등록 중 오류가 발생했습니다. 다시 시도해주세요.',
+        description: '카드를 등록하지 못했어요. 잠시 후 다시 시도해 주세요.',
       });
     } finally {
       setIsSubmitting(false);
@@ -99,7 +99,7 @@ export const CardRegistrationModal = ({
               결제 시스템 초기화 실패: {sdkError.message}
             </Text>
             <Text className="typo-xs mt-1 text-red-600">
-              환경 변수(VITE_TOSS_PAYMENTS_CLIENT_KEY)를 확인해주세요.
+              환경 변수(VITE_TOSS_PAYMENTS_CLIENT_KEY)를 확인해 주세요.
             </Text>
           </div>
         )}
@@ -107,14 +107,14 @@ export const CardRegistrationModal = ({
         {isSdkLoading && (
           <div className="rounded-md bg-blue-50 p-4">
             <Text className="typo-sm text-blue-800">
-              결제 시스템을 초기화하고 있습니다...
+              결제 시스템을 초기화하고 있어요...
             </Text>
           </div>
         )}
 
         <Text className="typo-sm text-gray-600">
           카드 등록하기 버튼을 클릭하면 토스페이먼츠 페이지로 이동하여 카드
-          정보를 안전하게 등록할 수 있습니다.
+          정보를 안전하게 등록할 수 있어요.
         </Text>
 
         <div className="flex gap-3">

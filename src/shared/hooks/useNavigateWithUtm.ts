@@ -15,7 +15,7 @@ import { mergeUtmParams } from '../utils/utm';
  * UTM 파라미터를 유지하면서 라우팅하는 훅
  *
  * 전역 저장소(utmStore)에 저장된 UTM 파라미터를 사용하여
- * URL을 직접 수정하지 않는 한 항상 UTM이 유지됩니다.
+ * URL을 직접 수정하지 않는 한 항상 UTM이 유지돼요.
  *
  * @example
  * // 기본 사용

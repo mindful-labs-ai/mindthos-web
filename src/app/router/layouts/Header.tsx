@@ -50,7 +50,7 @@ export const Header: React.FC = () => {
           href: currentPath,
         });
       }
-      // /clients/:clientId 경로인 경우 클라이언트 이름 사용
+      // /clients/:clientId 경로인 경우 내담자 이름 사용
       else if (
         pathnames[index - 1] === 'clients' &&
         index === pathnames.length - 1
@@ -62,12 +62,12 @@ export const Header: React.FC = () => {
           href: currentPath,
         });
       }
-      // /genogram 경로에서 쿼리스트링 clientId로 클라이언트 이름 표시
+      // /genogram 경로에서 쿼리스트링 clientId로 내담자 이름 표시
       else if (name === 'genogram') {
         const label = routeNameMap[currentPath] || '가계도';
         items.push({ label, href: currentPath });
 
-        // 쿼리스트링에 clientId가 있으면 클라이언트 이름 추가
+        // 쿼리스트링에 clientId가 있으면 내담자 이름 추가
         const clientId = searchParams.get('clientId');
         if (clientId) {
           const client = clients.find((c) => c.id === clientId);

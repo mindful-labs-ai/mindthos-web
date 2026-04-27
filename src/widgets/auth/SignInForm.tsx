@@ -37,7 +37,7 @@ const SignInForm = ({ onForgotPassword }: Props) => {
       setError(
         err instanceof Error
           ? err.message
-          : '로그인에 실패했습니다. 다시 시도해주세요.'
+          : '로그인할 수 없어요. 이메일과 비밀번호를 한 번 더 확인해 주세요.'
       );
     } finally {
       setIsSubmitting(false);

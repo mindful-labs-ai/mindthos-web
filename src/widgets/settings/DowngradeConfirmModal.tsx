@@ -5,6 +5,7 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
+import { getPlanDisplayName } from '@/shared/constants/planNames';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { ArrowRightIcon, CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
@@ -26,20 +27,6 @@ export interface DowngradeConfirmModalProps {
   effectiveAt: string | null;
   onConfirm: () => Promise<void>;
 }
-
-// 플랜 타입 → 한글 이름 변환
-const getPlanDisplayName = (type: string): string => {
-  const map: Record<string, string> = {
-    Free: '무료',
-    Starter: '스타터',
-    Plus: '플러스',
-    Pro: '프로',
-    스타터: '스타터',
-    플러스: '플러스',
-    프로: '프로',
-  };
-  return map[type] || type;
-};
 
 // 플랜 타입 → planFeature 키 변환
 const getPlanFeatureKey = (type: string): PlanKey | null => {
@@ -90,8 +77,8 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
         new_plan: newPlanType,
       });
       toast({
-        title: '플랜 다운그레이드 실패',
-        description: '플랜 변경에 실패했습니다. 다시 시도해주세요.',
+        title: '플랜 변경 실패',
+        description: '플랜을 변경하지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 5000,
       });
     } finally {
@@ -121,8 +108,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
   const currentPlanCard = (
     <div className="rounded-xl border border-grey-30 px-4 py-6">
       <p className="mb-6 px-4 text-l font-emphasize text-grey-100">
-        {getPlanDisplayName(currentPlanType)} {isMobile ? '요금제' : '플랜'}{' '}
-        이용 중
+        {getPlanDisplayName(currentPlanType)} 플랜 이용 중
       </p>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
@@ -177,7 +163,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
         {!newFeatures && (
           <div className="flex items-center gap-3">
             <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-            <span className="text-sm">제한된 상담 노트 템플릿</span>
+            <span className="text-sm">제한된 상담노트 템플릿</span>
           </div>
         )}
       </div>
@@ -191,7 +177,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
         <span className="font-emphasize text-grey-100">
           {formatDate(effectiveAt)}
         </span>{' '}
-        이후 {getPlanDisplayName(newPlanType)} 플랜이 적용됩니다.
+        이후 {getPlanDisplayName(newPlanType)} 플랜이 적용돼요.
       </p>
     </div>
   );
@@ -238,17 +224,15 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
         <>
           <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-m font-medium text-grey-100">
-              플랜 다운그레이드
-            </p>
+            <p className="text-m font-medium text-grey-100">플랜 변경</p>
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
               <p className="font-emphasize text-grey-100">
-                정말 플랜을 바꾸시겠습니까?
+                정말 플랜을 바꾸시겠어요?
               </p>
               <p className="font-emphasize text-grey-100">
-                플랜 변경 후 아래 기능을 더 이상 이용할 수 없습니다.
+                플랜 변경 후 아래 기능을 더 이상 이용할 수 없어요.
               </p>
             </div>
 
@@ -286,15 +270,15 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
             <div className="mb-4 flex items-center justify-center gap-2 text-danger">
               <HelpCircleIcon size={24} />
               <Title as="h2" className="text-xl font-headline">
-                플랜 다운그레이드하기
+                플랜 변경
               </Title>
             </div>
             <div className="space-y-1">
               <Text className="font-emphasize">
-                정말 플랜을 바꾸시겠습니까?
+                정말 플랜을 바꾸시겠어요?
               </Text>
               <Text className="font-emphasize">
-                플랜 변경 후 아래 기능을 더 이상 이용할 수 없습니다.
+                플랜 변경 후 아래 기능을 더 이상 이용할 수 없어요.
               </Text>
             </div>
           </div>

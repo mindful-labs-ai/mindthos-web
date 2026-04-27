@@ -50,7 +50,7 @@ export function ReportPreviewModal({
     const generate = async () => {
       setLoading(true);
 
-      // 1. graphData가 없는 genogram_image 섹션에만 현재 클라이언트 데이터 주입
+      // 1. graphData가 없는 genogram_image 섹션에만 현재 내담자 데이터 주입
       const liveGraphData = genogramRef.current?.toJSON() ?? undefined;
       const sectionsWithLiveGraph = shortReport.sections.map((section) =>
         section.type === 'genogram_image' && !section.graphData && liveGraphData

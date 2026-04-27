@@ -15,7 +15,7 @@ export function ProgressNoteStatusView({
     <div className="space-y-4 text-left">
       <div className="mb-6 flex items-center justify-between">
         <Title as="h2" className="typo-m font-headline text-fg-muted">
-          {note.title || '상담 노트'}
+          {note.title || '상담노트'}
         </Title>
       </div>
       <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
@@ -28,8 +28,8 @@ export function ProgressNoteStatusView({
               </Text>
               <Text className="typo-sm mt-2 text-fg-muted">
                 {note.processing_status === 'pending'
-                  ? '대기 중입니다. 잠시만 기다려주세요.'
-                  : 'AI가 상담 내용을 분석하고 있습니다.'}
+                  ? '대기 중이에요. 잠시만 기다려주세요.'
+                  : 'AI가 상담 내용을 분석하고 있어요.'}
               </Text>
             </div>
           </>
@@ -53,7 +53,7 @@ export function ProgressNoteStatusView({
                 상담노트 작성 실패
               </Text>
               <Text className="typo-sm mt-2 text-fg-muted">
-                {note.error_message || '상담노트 작성 중 오류가 발생했습니다.'}
+                {note.error_message || '상담노트 작성 중 오류가 생겼어요.'}
               </Text>
             </div>
           </>

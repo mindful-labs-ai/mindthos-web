@@ -1,6 +1,10 @@
 import { useRouteError } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
+import {
+  SUPPORT_KAKAO_URL,
+  SUPPORT_LINK_LABEL,
+} from '@/shared/constants/support';
 import { HyperLink, Title } from '@/shared/ui';
 
 const ErrorPage = () => {
@@ -11,10 +15,18 @@ const ErrorPage = () => {
       <div className="text-center">
         <h1 className="mb-4 text-6xl font-headline text-fg">500</h1>
         <Title as="h2" className="typo-2xl mb-4">
-          예상치 못한 오류가 발생했습니다
+          예상치 못한 오류가 생겼어요
         </Title>
         <p className="typo-m text-muted mb-8">
-          일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
+          일시적인 문제가 생겼어요. 잠시 후 다시 시도해 주세요.{' '}
+          <a
+            href={SUPPORT_KAKAO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline lg:hover:text-primary-hover"
+          >
+            {SUPPORT_LINK_LABEL}
+          </a>
         </p>
         {error && (
           <details className="mb-8 text-left">

@@ -116,7 +116,7 @@ async function fetchAIOutput(
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: '로그인이 필요합니다.',
+          message: '로그인이 필요해요.',
         },
       };
     }
@@ -127,7 +127,7 @@ async function fetchAIOutput(
         code:
           (err.code as GenerateAIOutputError['error']['code']) ||
           'PIPELINE_ERROR',
-        message: err.message || 'AI 분석 중 오류가 발생했습니다.',
+        message: err.message || 'AI 분석 중 오류가 생겼어요.',
       },
     };
   }
@@ -195,7 +195,7 @@ export async function generateFamilySummary(
         success: false,
         error: {
           code: 'CONVERSION_ERROR',
-          message: 'AI 응답 형식이 올바르지 않습니다.',
+          message: 'AI 응답 형식이 맞지 않아요.',
         },
       };
     }
@@ -239,7 +239,7 @@ export async function generateFamilySummary(
       success: false,
       error: {
         code: 'PIPELINE_ERROR',
-        message: err.message || '가계도 생성 중 오류가 발생했습니다.',
+        message: err.message || '가계도 생성 중 오류가 생겼어요.',
       },
     };
   }
@@ -320,7 +320,7 @@ export async function initFamilySummary(
       success: false,
       error: {
         code: err.code || 'EDGE_FUNCTION_ERROR',
-        message: err.message || '초기화 중 오류가 발생했습니다.',
+        message: err.message || '초기화 중 오류가 생겼어요.',
       },
     };
   }
@@ -355,7 +355,7 @@ export async function saveFamilySummary(
     console.error('[saveFamilySummary] error:', error);
     return {
       success: false,
-      error: (error as Error).message || '저장 중 오류가 발생했습니다.',
+      error: (error as Error).message || '저장 중 오류가 생겼어요.',
     };
   }
 }
