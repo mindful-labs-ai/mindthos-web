@@ -23,7 +23,7 @@ interface TranscriptTabContentProps {
   speakers: Speaker[];
   /** 전사 데이터 */
   transcribe: Transcribe | null;
-  /** 세션 클라이언트 ID */
+  /** 세션 내담자 ID */
   clientId: string | null;
   /** 읽기 전용 여부 */
   isReadOnly: boolean;
@@ -174,7 +174,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
               </>
             ) : (
               <div className="flex min-h-[400px] items-center justify-center">
-                <p className="text-fg-muted">전사 내용이 없습니다.</p>
+                <p className="text-fg-muted">축어록이 없어요.</p>
               </div>
             )}
           </div>

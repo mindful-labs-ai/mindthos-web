@@ -52,7 +52,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
         <div className="text-center">
           <Text className="text-destructive">{error}</Text>
           <Text className="typo-sm mt-2 text-fg-muted">
-            페이지를 새로고침하거나 다시 시도해주세요.
+            페이지를 새로고침하거나 다시 시도해 주세요.
           </Text>
         </div>
       </div>
@@ -95,7 +95,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
       {!transcribedText && (
         <div className="border-warning rounded-lg border p-4">
           <Text className="text-warning-foreground typo-sm">
-            전사 내용이 없어 상담 노트를 작성할 수 없습니다.
+            축어록이 없어서 상담노트를 만들 수 없어요.
           </Text>
         </div>
       )}
@@ -160,9 +160,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
         </div>
       ) : (
         <div className="flex h-64 items-center justify-center">
-          <Text className="text-fg-muted">
-            모든 템플릿을 이미 사용했습니다.
-          </Text>
+          <Text className="text-fg-muted">모든 템플릿을 이미 썼어요.</Text>
         </div>
       )}
     </div>

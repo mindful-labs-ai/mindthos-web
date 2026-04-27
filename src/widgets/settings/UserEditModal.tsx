@@ -48,20 +48,20 @@ const PASSWORD_MATCH_DEBOUNCE_MS = 300;
 const baseInfoSchema = z.object({
   name: z
     .string()
-    .min(1, '이름을 입력해주세요.')
-    .max(20, '이름은 20자 이내로 입력해주세요.'),
+    .min(1, '이름을 입력해 주세요.')
+    .max(20, '이름은 20자 이내로 입력해 주세요.'),
   organization: z
     .string()
-    .min(1, '소속 기관을 입력해주세요.')
-    .max(50, '소속 기관은 50자 이내로 입력해주세요.'),
+    .min(1, '소속 기관을 입력해 주세요.')
+    .max(50, '소속 기관은 50자 이내로 입력해 주세요.'),
   phoneNumber: z
     .string()
     .optional()
     .refine(
       (v) => !v || /^01[016789]-?\d{3,4}-?\d{4}$/.test(v),
-      '올바른 휴대전화 번호를 입력해주세요. (예: 010-1234-5678)'
+      '올바른 휴대전화 번호를 입력해 주세요. (예: 010-1234-5678)'
     ),
-  qualification: z.array(z.string()).min(1, '보유 자격을 선택해주세요.'),
+  qualification: z.array(z.string()).min(1, '보유 자격을 선택해 주세요.'),
   referralSource: z.string().optional().or(z.literal('')),
 });
 
@@ -240,7 +240,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       trackEvent(MixpanelEvent.UserInfoEditSuccess);
       toast({
         title: '정보 입력 완료',
-        description: '사용자 정보가 성공적으로 수정되었습니다.',
+        description: '정보를 저장했어요.',
       });
       onSuccess?.();
       onOpenChange(false);
@@ -255,7 +255,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         description:
           error instanceof Error
             ? error.message
-            : '정보 입력에 실패했습니다. 다시 시도해주세요.',
+            : '정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
       });
     },
   });
@@ -291,7 +291,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
       });
       if (!pwParsed.success) {
         setPasswordError(
-          pwParsed.error.issues[0]?.message ?? '비밀번호를 확인해주세요.'
+          pwParsed.error.issues[0]?.message ?? '비밀번호를 확인해 주세요.'
         );
         return;
       }
@@ -314,10 +314,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         const msg =
           err instanceof AuthError &&
           err.code === AuthErrorCode.INVALID_CREDENTIALS
-            ? '현재 비밀번호가 올바르지 않습니다.'
+            ? '현재 비밀번호가 맞지 않아요.'
             : err instanceof Error
               ? err.message
-              : '비밀번호 변경에 실패했습니다.';
+              : '비밀번호를 바꾸지 못했어요.';
         setPasswordError(msg);
         return;
       }
@@ -382,7 +382,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
           <FormField label="이름" required error={errors.name}>
             <Input
               type="text"
-              placeholder="이름을 입력해주세요"
+              placeholder="이름을 입력해 주세요"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               maxLength={20}
@@ -393,7 +393,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
           <FormField label="소속" required error={errors.organization}>
             <Input
               type="text"
-              placeholder="소속 기관을 입력해주세요"
+              placeholder="소속 기관을 입력해 주세요"
               value={formData.organization}
               onChange={(e) => handleChange('organization', e.target.value)}
               maxLength={50}
@@ -485,7 +485,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                   });
                 }
               }}
-              placeholder="보유 자격을 선택해주세요(복수 가능)"
+              placeholder="보유 자격을 선택해 주세요(복수 가능)"
               loading={isQualificationsLoading}
             />
           </FormField>
@@ -553,12 +553,12 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                       />
                       {passwordMatchState === 'mismatch' && (
                         <p className="typo-xs font-medium text-red-80">
-                          비밀번호가 일치하지 않습니다
+                          비밀번호가 같지 않아요
                         </p>
                       )}
                       {passwordMatchState === 'match' && (
                         <p className="typo-xs font-medium text-green-80">
-                          비밀번호가 일치합니다
+                          비밀번호가 일치해요
                         </p>
                       )}
                     </div>
@@ -570,7 +570,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
                           : ''
                       )}
                     >
-                      비밀번호는 최소 6자 이상이어야 합니다.
+                      비밀번호는 최소 6자 이상이어야 해요.
                     </p>
                   </div>
                 )}

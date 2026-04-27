@@ -31,17 +31,20 @@ const PasswordResetForm = ({ onSuccess }: Props) => {
     PASSWORD_MATCH_DEBOUNCE_MS
   );
 
-  const passwordMatchState: 'idle' | 'match' | 'mismatch' = React.useMemo(() => {
-    if (!debouncedPasswordConfirm) return 'idle';
-    return debouncedPassword === debouncedPasswordConfirm ? 'match' : 'mismatch';
-  }, [debouncedPassword, debouncedPasswordConfirm]);
+  const passwordMatchState: 'idle' | 'match' | 'mismatch' =
+    React.useMemo(() => {
+      if (!debouncedPasswordConfirm) return 'idle';
+      return debouncedPassword === debouncedPasswordConfirm
+        ? 'match'
+        : 'mismatch';
+    }, [debouncedPassword, debouncedPasswordConfirm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const parsed = passwordResetSchema.safeParse({ password, passwordConfirm });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.');
+      setError(parsed.error.issues[0]?.message ?? '입력값을 확인해 주세요.');
       return;
     }
 
@@ -63,15 +66,15 @@ const PasswordResetForm = ({ onSuccess }: Props) => {
         err.code === AuthErrorCode.RATE_LIMIT_EXCEEDED
       ) {
         toast({
-          title: '요청이 너무 많습니다',
-          description: '잠시 후 다시 시도해주세요.',
+          title: '요청이 너무 자주 들어왔어요',
+          description: '잠시 후 다시 시도해 주세요.',
         });
         setError('');
       } else {
         setError(
           err instanceof Error
             ? err.message
-            : '비밀번호 변경에 실패했습니다. 다시 시도해주세요.'
+            : '비밀번호를 바꾸지 못했어요. 잠시 후 다시 시도해 주세요.'
         );
       }
       setIsSubmitting(false);
@@ -110,22 +113,18 @@ const PasswordResetForm = ({ onSuccess }: Props) => {
           />
           {passwordMatchState === 'mismatch' && (
             <p className="mt-1 text-xs font-medium text-red-80">
-              비밀번호가 일치하지 않습니다
+              비밀번호가 같지 않아요
             </p>
           )}
           {passwordMatchState === 'match' && (
             <p className="mt-1 text-xs font-medium text-green-80">
-              비밀번호가 일치합니다
+              비밀번호가 일치해요
             </p>
           )}
         </FormField>
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitDisabled}
-        className="auth-button"
-      >
+      <button type="submit" disabled={isSubmitDisabled} className="auth-button">
         {isSubmitting ? '처리 중...' : '비밀번호 변경하기'}
       </button>
     </form>

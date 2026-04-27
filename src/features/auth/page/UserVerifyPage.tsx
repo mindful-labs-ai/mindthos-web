@@ -29,6 +29,10 @@ import {
   phoneVerificationQueryKeys,
   qualificationQueryKeys,
 } from '@/shared/constants/queryKeys';
+import {
+  SUPPORT_KAKAO_URL,
+  SUPPORT_LINK_LABEL,
+} from '@/shared/constants/support';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Spinner } from '@/shared/ui';
@@ -129,7 +133,7 @@ const UserVerifyPage: React.FC = () => {
       queryClient.invalidateQueries({
         queryKey: phoneVerificationQueryKeys.status(),
       });
-      toast({ title: '회원가입이 완료되었습니다.' });
+      toast({ title: '회원가입이 완료됐어요.' });
       navigateWithUtm(ROUTES.ROOT, { replace: true });
     },
     onError: (error) => {
@@ -137,9 +141,11 @@ const UserVerifyPage: React.FC = () => {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       toast({
-        title: '회원가입 처리에 실패했습니다.',
+        title: '회원가입을 처리하지 못했어요.',
         description:
-          error instanceof Error ? error.message : '잠시 후 다시 시도해주세요.',
+          error instanceof Error
+            ? error.message
+            : '잠시 후 다시 시도해 주세요.',
       });
     },
   });
@@ -180,7 +186,7 @@ const UserVerifyPage: React.FC = () => {
         <input
           type="text"
           autoComplete="name"
-          placeholder="이름을 입력해주세요"
+          placeholder="이름을 입력해 주세요"
           value={formData.name}
           onChange={(e) => handleChange('name', e.target.value)}
           maxLength={20}
@@ -192,7 +198,7 @@ const UserVerifyPage: React.FC = () => {
         <input
           type="text"
           autoComplete="organization"
-          placeholder="소속 기관을 입력해주세요"
+          placeholder="소속 기관을 입력해 주세요"
           value={formData.organization}
           onChange={(e) => handleChange('organization', e.target.value)}
           maxLength={50}
@@ -212,7 +218,7 @@ const UserVerifyPage: React.FC = () => {
             }));
             clearFieldError('qualification');
           }}
-          placeholder="보유 자격을 선택해주세요(복수 가능)"
+          placeholder="보유 자격을 선택해 주세요(복수 가능)"
           loading={isQualificationsLoading}
           className="bg-grey-10"
         />
@@ -232,12 +238,12 @@ const UserVerifyPage: React.FC = () => {
             }));
             clearFieldError('referralSource');
           }}
-          placeholder="가입 경로를 선택해주세요"
+          placeholder="가입 경로를 선택해 주세요"
         />
         {hasReferralOther && (
           <input
             type="text"
-            placeholder="가입 경로를 직접 입력해주세요"
+            placeholder="가입 경로를 직접 입력해 주세요"
             value={formData.referralSourceCustom ?? ''}
             onChange={(e) =>
               setFormData((prev) => ({
@@ -300,9 +306,17 @@ const UserVerifyPage: React.FC = () => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-contrast px-6 text-center">
         <p className="typo-m text-fg">
-          인증 정보를 불러오지 못했습니다.
+          인증 정보를 불러오지 못했어요.
           <br />
-          잠시 후 다시 시도해주세요.
+          잠시 후 다시 시도해 주세요.{' '}
+          <a
+            href={SUPPORT_KAKAO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline lg:hover:text-primary-hover"
+          >
+            {SUPPORT_LINK_LABEL}
+          </a>
         </p>
         <button
           type="button"
@@ -334,7 +348,7 @@ const UserVerifyPage: React.FC = () => {
               <div className="mb-8 flex flex-col items-center gap-2">
                 <h1 className="typo-2xl font-headline text-fg">회원가입</h1>
                 <p className="typo-sm text-fg-muted">
-                  상담사님의 정보를 입력해주세요
+                  상담사님의 정보를 입력해 주세요
                 </p>
               </div>
               {fieldsNode}
@@ -364,7 +378,7 @@ const UserVerifyPage: React.FC = () => {
             <div className="mb-10 flex flex-col items-center gap-3">
               <h1 className="text-3xl font-headline text-fg">회원가입</h1>
               <p className="typo-m text-fg-muted">
-                상담사님의 정보를 입력해주세요.
+                상담사님의 정보를 입력해 주세요.
               </p>
             </div>
             <div className="flex-1">{fieldsNode}</div>
@@ -390,7 +404,7 @@ const UserVerifyPage: React.FC = () => {
             <div className="flex flex-col items-center gap-3 text-center">
               <h1 className="text-2xl font-headline text-fg">회원가입</h1>
               <p className="typo-sm text-fg-muted">
-                상담사님의 정보를 입력해주세요.
+                상담사님의 정보를 입력해 주세요.
               </p>
             </div>
             {fieldsNode}

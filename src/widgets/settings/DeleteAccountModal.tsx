@@ -46,9 +46,9 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
         <div>
           <Text className="typo-xl font-emphasize">계정 탈퇴</Text>
           <Text className="typo-sm mt-2 text-fg-muted">
-            계정을 탈퇴하면 모든 데이터가 삭제되며, 복구할 수 없습니다.
+            계정을 탈퇴하면 모든 데이터가 삭제되며, 복구할 수 없어요.
             <br />
-            정말 탈퇴하시겠습니까?
+            정말 탈퇴하시겠어요?
           </Text>
         </div>
 

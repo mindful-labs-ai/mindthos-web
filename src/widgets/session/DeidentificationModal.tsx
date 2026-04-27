@@ -38,11 +38,11 @@ const DeidInfoTooltip: React.FC<{ children: React.ReactElement }> = ({
         <span className="font-emphasize text-orange-100">
           비식별화된 축어록
         </span>
-        으로 변환합니다.
+        으로 바꿔요.
       </p>
       <p className="text-sm text-grey-80">
         비식별화된 축어록은 한 번 실행하면 이후에 자유롭게 활성화 및 비활성화가
-        가능합니다.
+        가능해요.
       </p>
     </div>
   );
@@ -166,7 +166,7 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
             <span className="mb-6 text-center text-m leading-relaxed text-grey-70">
               내담자의 이름 및 정보들이 비식별화되어
               <br />
-              다른 단어로 대체됩니다. 크레딧은 최초 1회만 차감됩니다.
+              다른 단어로 대체돼요. 크레딧은 최초 1회만 차감돼요.
             </span>
             <div className="mb-2 flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
               <span className="font-headline text-primary">
@@ -193,7 +193,7 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
               비식별화 처리 중...
             </h3>
             <span className="text-center text-m text-grey-70">
-              축어록을 분석하고 있습니다.
+              축어록을 분석하고 있어요.
               <br />
               잠시만 기다려주세요.
             </span>
@@ -217,31 +217,9 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
                 <path d="M20 6L9 17l-5-5" />
               </svg>
             </div>
-            <h3 className="mb-4 text-center text-l font-emphasize text-fg">
-              비식별화가 완료되었습니다
+            <h3 className="mb-6 text-center text-l font-emphasize text-fg">
+              비식별화를 마쳤어요
             </h3>
-            <div className="mb-6 w-full max-w-[320px] rounded-lg bg-grey-10 px-5 py-4">
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-m text-grey-70">전체 발화</span>
-                  <span className="text-m font-emphasize text-fg">
-                    {stats.total_segments}개
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-m text-grey-70">비식별화 발화</span>
-                  <span className="text-m font-emphasize text-orange-100">
-                    {stats.deid_segments}개
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-m text-grey-70">변경된 항목</span>
-                  <span className="text-m font-emphasize text-orange-100">
-                    {stats.deid_tags}개
-                  </span>
-                </div>
-              </div>
-            </div>
             <button
               type="button"
               onClick={() => onOpenChange(false)}
@@ -271,10 +249,14 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
               </svg>
             </div>
             <h3 className="mb-3 text-center text-l font-emphasize text-fg">
-              비식별화 실패
+              {errorMessage?.startsWith('NO_DEID_TARGETS')
+                ? '비식별화할 개인정보가 없어요'
+                : '비식별화 실패'}
             </h3>
             <span className="mb-6 text-center text-m text-grey-70">
-              {errorMessage}
+              {errorMessage?.startsWith('NO_DEID_TARGETS')
+                ? '축어록에서 비식별화할 개인정보를 찾지 못했어요.'
+                : errorMessage}
             </span>
             <button
               type="button"

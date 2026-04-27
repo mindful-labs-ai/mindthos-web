@@ -1,5 +1,5 @@
 /**
- * 클라이언트 분석 관련 타입 정의
+ * 내담자 분석 관련 타입 정의
  */
 
 export type ClientAnalysisStatus =

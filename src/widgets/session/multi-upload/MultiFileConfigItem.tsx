@@ -255,7 +255,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
           {fileInfo}
           {removeButton}
         </div>
-        {/* 2줄: 클라이언트 버튼 | STT 토글 */}
+        {/* 2줄: 내담자 버튼 | STT 토글 */}
         <div className="mt-3 flex items-center justify-between">
           <ClientSelector
             clients={clients}
@@ -311,7 +311,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
           >
             <UserIcon size={14} />
             <Text className="typo-sm truncate">
-              {selectedClient?.name || '클라이언트 선택 안됨'}
+              {selectedClient?.name || '내담자 선택 안됨'}
             </Text>
           </Button>
         }

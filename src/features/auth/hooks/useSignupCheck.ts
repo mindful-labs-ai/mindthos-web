@@ -13,7 +13,7 @@ export const useSignupCheck = (enabled = true) => {
     queryFn: async () => {
       const response = await phoneVerificationService.checkStatus();
       if (!response.success) {
-        throw new Error('회원가입 상태를 확인할 수 없습니다.');
+        throw new Error('회원가입 상태를 확인할 수 없어요.');
       }
       return response;
     },

@@ -63,16 +63,15 @@ const HomeContainer = () => {
       toast({
         title: '상담 기록 생성 완료',
         description: session.title
-          ? `"${session.title}" 생성 완료 되었습니다.`
-          : '생성 완료 되었습니다.',
+          ? `"${session.title}" 만들었어요.`
+          : '생성을 완료했어요.',
         duration: 5000,
       });
     },
     onSessionError: (session) => {
       toast({
         title: '세션 처리 실패',
-        description:
-          session.error_message || '세션 처리 중 문제가 발생했습니다.',
+        description: session.error_message || '세션 처리 중 문제가 생겼어요.',
         duration: 5000,
       });
     },
@@ -100,21 +99,19 @@ const HomeContainer = () => {
     isHandwritten: boolean
   ): string => {
     if (!transcribe) {
-      return isHandwritten
-        ? '입력된 텍스트가 없습니다.'
-        : '전사 내용이 없습니다.';
+      return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록이 없어요.';
     }
 
     if (isHandwritten) {
       if (typeof transcribe.contents === 'string') {
         return transcribe.contents;
       }
-      return '입력된 텍스트가 없습니다.';
+      return '입력된 텍스트가 없어요.';
     }
 
     const transcriptData = getTranscriptData(transcribe as Transcribe);
     if (!transcriptData) {
-      return '전사 내용이 없습니다.';
+      return '축어록이 없어요.';
     }
 
     const { segments, speakers } = transcriptData;
@@ -142,7 +139,7 @@ const HomeContainer = () => {
   const recentSessionRecords: SessionRecord[] = recentSessions.map(
     ({ session, transcribe, progressNotes }) => {
       const client = effectiveClients.find((c) => c.id === session.client_id);
-      const clientName = client?.name || '클라이언트 없음';
+      const clientName = client?.name || '내담자 없음';
       const isHandwritten = session.audio_meta_data === null;
 
       return {
@@ -261,7 +258,7 @@ const HomeContainer = () => {
       />
       <ActionCard
         icon={<AddClientActionIcon size={24} className="text-danger" />}
-        title="클라이언트 추가하기"
+        title="내담자 추가하기"
         onClick={handleAddCustomerClick}
         className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
       />
@@ -304,7 +301,7 @@ const HomeContainer = () => {
         ) : (
           <div className="rounded-lg border border-surface-strong bg-surface-contrast p-8 text-center">
             <p className="text-fg-muted">
-              아직 상담 기록이 없습니다.
+              아직 상담 기록이 없어요.
               <br />
               녹음 파일을 업로드하여 첫 상담 기록을 만들어보세요.
             </p>

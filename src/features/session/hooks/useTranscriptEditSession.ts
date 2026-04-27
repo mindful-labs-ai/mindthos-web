@@ -5,7 +5,7 @@
  * 모든 변경(텍스트, 화자, 세그먼트 추가/삭제)을 스냅샷에서 관리합니다.
  * 저장 시 일괄 전송, 취소 시 스냅샷 폐기.
  *
- * 비편집 모드에서의 화자 변경은 기존처럼 즉시 서버에 저장됩니다.
+ * 비편집 모드에서의 화자 변경은 기존처럼 즉시 서버에 저장돼요.
  */
 
 import React from 'react';
@@ -128,7 +128,7 @@ export function useTranscriptEditSession({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 편집할 수 없습니다.',
+        description: '실제 상담 기록에서 편집할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -218,7 +218,7 @@ export function useTranscriptEditSession({
       if (isReadOnly) {
         toast({
           title: '읽기 전용',
-          description: '예시에서는 편집할 수 없습니다.',
+          description: '실제 상담 기록에서 편집할 수 있어요.',
           duration: 3000,
         });
         return;
@@ -226,8 +226,8 @@ export function useTranscriptEditSession({
 
       if (!transcribeId || !sessionId) {
         toast({
-          title: '오류',
-          description: '전사 데이터를 찾을 수 없습니다.',
+          title: '문제가 생겼어요',
+          description: '전사 데이터를 찾을 수 없어요.',
           duration: 3000,
         });
         return;
@@ -281,7 +281,7 @@ export function useTranscriptEditSession({
 
           toast({
             title: '화자 변경 완료',
-            description: '축어록이 수정되었습니다.',
+            description: '축어록을 수정했어요.',
             duration: 3000,
           });
         } catch (error) {
@@ -295,7 +295,8 @@ export function useTranscriptEditSession({
           });
           toast({
             title: '화자 변경 실패',
-            description: '화자 변경에 실패했습니다. 다시 시도해주세요.',
+            description:
+              '화자를 변경하지 못했어요. 잠시 후 다시 시도해 주세요.',
             duration: 3000,
           });
         }
@@ -360,7 +361,7 @@ export function useTranscriptEditSession({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 편집할 수 없습니다.',
+        description: '실제 상담 기록에서 편집할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -368,8 +369,8 @@ export function useTranscriptEditSession({
 
     if (!transcribeId || !sessionId) {
       toast({
-        title: '오류',
-        description: '전사 데이터를 찾을 수 없습니다.',
+        title: '문제가 생겼어요',
+        description: '전사 데이터를 찾을 수 없어요.',
         duration: 3000,
       });
       return;
@@ -377,8 +378,8 @@ export function useTranscriptEditSession({
 
     if (!editingContents) {
       toast({
-        title: '오류',
-        description: '편집 데이터를 찾을 수 없습니다.',
+        title: '문제가 생겼어요',
+        description: '편집 데이터를 찾을 수 없어요.',
         duration: 3000,
       });
       return;
@@ -427,7 +428,7 @@ export function useTranscriptEditSession({
 
       toast({
         title: '저장 완료',
-        description: '축어록이 수정되었습니다.',
+        description: '축어록을 수정했어요.',
         duration: 3000,
       });
     } catch (error) {
@@ -442,7 +443,7 @@ export function useTranscriptEditSession({
       });
       toast({
         title: '저장 실패',
-        description: '축어록 저장에 실패했습니다. 다시 시도해주세요.',
+        description: '축어록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 3000,
       });
     }

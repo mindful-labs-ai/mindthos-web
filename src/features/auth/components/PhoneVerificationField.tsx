@@ -115,7 +115,8 @@ export const PhoneVerificationField = forwardRef<
     if (!phoneResult.success) {
       toast({
         title:
-          phoneResult.error.issues[0]?.message ?? '올바른 번호를 입력해주세요.',
+          phoneResult.error.issues[0]?.message ??
+          '올바른 번호를 입력해 주세요.',
       });
       return;
     }
@@ -123,19 +124,19 @@ export const PhoneVerificationField = forwardRef<
     setCodeError(null);
     const result = await phoneVerification.requestCode(value);
     if (result.ok) {
-      toast({ title: '인증번호가 발송되었습니다.' });
+      toast({ title: '인증번호를 보냈어요.' });
       return;
     }
     if (result.alreadyRegisteredEmail) return;
     toast({
       title: '인증번호 발송 실패',
-      description: result.message ?? '잠시 후 다시 시도해주세요.',
+      description: result.message ?? '잠시 후 다시 시도해 주세요.',
     });
   };
 
   const handleVerifyCode = async (): Promise<boolean> => {
     if (code.length !== 6) {
-      setCodeError('인증번호를 입력해주세요.');
+      setCodeError('인증번호를 입력해 주세요.');
       return false;
     }
     trackEvent(MixpanelEvent.PhoneVerificationVerify);
@@ -145,7 +146,7 @@ export const PhoneVerificationField = forwardRef<
       return true;
     }
     if (!result.alreadyRegisteredEmail) {
-      setCodeError('인증번호를 다시 확인해주세요.');
+      setCodeError('인증번호를 다시 확인해 주세요.');
     }
     return false;
   };
@@ -157,7 +158,7 @@ export const PhoneVerificationField = forwardRef<
         if (!isDirty) return true;
         if (phoneVerification.verified) return true;
         if (!phoneVerification.codeSent) {
-          setCodeError('인증번호 받기를 누른 뒤 6자리 번호를 입력해주세요');
+          setCodeError('인증번호 받기를 누른 뒤 6자리 번호를 입력해 주세요');
           return false;
         }
         return handleVerifyCode();
@@ -176,7 +177,7 @@ export const PhoneVerificationField = forwardRef<
       </span>
       {' 으로 이미 인증된 번호입니다.'}
       <br />
-      해당 아이디로 로그인 해주세요
+      해당 아이디로 로그인해 주세요
     </p>
   ) : null;
 
@@ -289,7 +290,7 @@ export const PhoneVerificationField = forwardRef<
             </button>
           </div>
           {phoneVerification.verified ? (
-            <p className="typo-sm text-primary">인증이 완료되었습니다.</p>
+            <p className="typo-sm text-primary">인증을 마쳤어요.</p>
           ) : (
             (alreadyRegisteredMessage ??
             (codeError ? (

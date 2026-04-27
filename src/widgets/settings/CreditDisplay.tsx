@@ -265,7 +265,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
             className="typo-xs w-full rounded-md px-1 py-0.5"
             onClick={() => openModal('planChange')}
           >
-            업그레이드
+            플랜 변경
           </Button>
         )}
       </div>

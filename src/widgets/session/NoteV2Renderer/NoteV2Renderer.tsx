@@ -121,7 +121,7 @@ export const NoteV2Renderer = React.forwardRef<
 
       <PhaseSection
         phase="Phase 4"
-        title="전략 및 수퍼비전"
+        title="전략 및 슈퍼비전"
         copyText={serializePhase4(phase4, phase1.safety_assessment)}
         editable={editable}
       >
@@ -213,7 +213,7 @@ function serializePhase4(
   safety: NoteV2Output['phase1']['safety_assessment']
 ): string {
   return [
-    `전략 및 수퍼비전`,
+    `전략 및 슈퍼비전`,
     ``,
     serializeRoadmap(p.roadmap, safety),
     ``,

@@ -53,7 +53,7 @@ const extractAudioDuration = (file: File): Promise<number> => {
 
     audio.addEventListener('error', () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('오디오 파일을 읽을 수 없습니다.'));
+      reject(new Error('오디오 파일을 읽을 수 없어요.'));
     });
   });
 };
@@ -122,7 +122,7 @@ export function useMultiFileUpload(): UseMultiFileUploadReturn {
         return {
           ...baseInfo,
           validationStatus: 'invalid_type',
-          errorMessage: '오디오 파일을 읽을 수 없습니다',
+          errorMessage: '오디오 파일을 읽을 수 없어요',
         };
       }
     },

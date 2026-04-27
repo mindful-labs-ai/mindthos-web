@@ -12,7 +12,7 @@ export const useSetDefaultTemplate = () => {
   return useMutation({
     mutationFn: async (templateId: number) => {
       if (!userId) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
+        throw new Error('사용자 정보를 찾을 수 없어요.');
       }
 
       return await templateService.setDefaultTemplate({

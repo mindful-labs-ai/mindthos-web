@@ -18,7 +18,7 @@ import type {
 } from '../types/clientApi.types';
 
 /**
- * 클라이언트 추가/수정 폼 훅
+ * 내담자 추가/수정 폼 훅
  * TanStack Query의 useMutation을 사용하여 서버 상태 관리
  */
 export const useAddClientForm = (initialData?: Client | null) => {
@@ -64,7 +64,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
   // 수정 모드 여부
   const isEditMode = !!initialData;
 
-  // useMutation으로 클라이언트 생성/수정 처리
+  // useMutation으로 내담자 생성/수정 처리
   const mutation = useMutation({
     mutationFn: async (
       requestBody: CreateClientRequest | UpdateClientRequest
@@ -90,7 +90,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
 
       trackEvent(eventName, { client_id: clientId });
 
-      // 클라이언트 목록 쿼리 무효화하여 자동 리페치
+      // 내담자 목록 쿼리 무효화하여 자동 리페치
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
     },
     onError: (error) => {
@@ -149,7 +149,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
     e.preventDefault();
 
     if (!user?.email && !isEditMode) {
-      setErrors({ name: '사용자 정보를 찾을 수 없습니다.' });
+      setErrors({ name: '사용자 정보를 찾을 수 없어요.' });
       return false;
     }
 
@@ -183,7 +183,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
     } else {
       // 생성 모드
       if (!user?.email) {
-        setErrors({ name: '사용자 정보를 찾을 수 없습니다.' });
+        setErrors({ name: '사용자 정보를 찾을 수 없어요.' });
         return false;
       }
 
@@ -206,7 +206,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
     );
     try {
       const response = await mutation.mutateAsync(requestBody);
-      // 생성 모드일 때 클라이언트 ID 반환
+      // 생성 모드일 때 내담자 ID 반환
       if (!isEditMode && 'client' in response) {
         const createResponse = response as CreateClientResponse;
         return createResponse.client?.id || true;
@@ -223,7 +223,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
     if (!mutation.isError || !mutation.error) return '';
 
     const error = mutation.error as unknown as ClientApiError;
-    return error.message || '클라이언트 등록에 실패했습니다.';
+    return error.message || '내담자를 등록하지 못했어요.';
   };
 
   return {

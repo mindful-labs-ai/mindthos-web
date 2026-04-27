@@ -79,7 +79,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                     상담노트 작성 중...
                   </Title>
                   <p className="typo-sm mt-2 text-fg-muted">
-                    상담노트를 작성하고 있습니다.
+                    상담노트를 작성하고 있어요.
                     <br />
                     잠시만 기다려주세요.
                   </p>
@@ -95,7 +95,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
             <div className="flex h-full flex-col px-4 md:px-10">
               <div className="sticky top-0 z-10 flex items-center justify-between bg-white py-3">
                 <p className="text-sm text-grey-60 md:text-m">
-                  상담 노트 템플릿
+                  상담노트 템플릿
                 </p>
                 <button
                   onClick={onCreateProgressNote}
@@ -106,7 +106,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                       : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
-                  상담 노트 만들기
+                  상담노트 만들기
                   <span className="flex items-center gap-0.5">
                     {PROGRESS_NOTE_CREDIT}
                     <CreditIcon size={14} color="currentColor" />
@@ -147,7 +147,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
         return (
           <div className="flex h-full flex-col">
             <div className="flex min-h-[400px] items-center justify-center">
-              <p className="text-fg-muted">상담 노트를 선택해주세요.</p>
+              <p className="text-fg-muted">상담노트를 선택해 주세요.</p>
             </div>
           </div>
         );

@@ -1,5 +1,5 @@
 /**
- * 클라이언트 분석 관련 Hooks
+ * 내담자 분석 관련 Hooks
  */
 
 import { useEffect, useRef } from 'react';
@@ -23,7 +23,7 @@ import type {
 } from '../types/clientAnalysisApi.types';
 
 /**
- * 클라이언트 분석 Query Keys
+ * 내담자 분석 Query Keys
  */
 export const clientAnalysisQueryKeys = {
   all: ['client-analyses'] as const,
@@ -60,7 +60,7 @@ export function useTemplatesByType(type: ClientAnalysisType) {
 }
 
 /**
- * 클라이언트 분석 히스토리 조회
+ * 내담자 분석 히스토리 조회
  */
 export function useClientAnalyses(clientId: string) {
   return useQuery<ClientAnalysisVersion[], ClientAnalysisApiError>({
@@ -72,7 +72,7 @@ export function useClientAnalyses(clientId: string) {
 }
 
 /**
- * 클라이언트 분석 생성 Mutation
+ * 내담자 분석 생성 Mutation
  */
 export function useCreateClientAnalysis() {
   const queryClient = useQueryClient();
@@ -89,7 +89,7 @@ export function useCreateClientAnalysis() {
           status: 401,
           success: false,
           error: 'UNAUTHORIZED',
-          message: '사용자 정보를 찾을 수 없습니다.',
+          message: '사용자 정보를 찾을 수 없어요.',
         } as ClientAnalysisApiError;
       }
 
@@ -108,7 +108,7 @@ export function useCreateClientAnalysis() {
 }
 
 /**
- * 클라이언트 분석 상태 조회 (폴링)
+ * 내담자 분석 상태 조회 (폴링)
  */
 export interface UseClientAnalysisStatusOptions {
   clientId: string;
@@ -143,7 +143,7 @@ export function useClientAnalysisStatus({
       const data = query.state.data;
       if (!data) return refetchInterval;
 
-      // AI 수퍼비전 분석이 succeeded 또는 failed 상태면 폴링 중단
+      // AI 슈퍼비전 분석이 succeeded 또는 failed 상태면 폴링 중단
       const analysis = data.analyses.ai_supervision;
       const isCompleted =
         analysis &&
@@ -174,7 +174,7 @@ export function useClientAnalysisStatus({
     const currentStatus = data.analyses.ai_supervision.status;
     const previousStatus = previousStatusRef.current;
 
-    // AI 수퍼비전 분석이 완료되었고, 이전에는 완료되지 않았을 때 onComplete 호출
+    // AI 슈퍼비전 분석이 완료되었고, 이전에는 완료되지 않았을 때 onComplete 호출
     const isCompleted =
       currentStatus === 'succeeded' || currentStatus === 'failed';
 

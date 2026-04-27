@@ -35,7 +35,7 @@ export const PaymentFail = () => {
           <div>
             <Title className="typo-xl font-headline">카드 등록 실패</Title>
             <Text className="mt-2 text-gray-600">
-              {errorMessage || '카드 등록 중 오류가 발생했습니다.'}
+              {errorMessage || '카드 등록 중 오류가 생겼어요.'}
             </Text>
             {errorCode && (
               <Text className="typo-sm mt-1 text-gray-500">

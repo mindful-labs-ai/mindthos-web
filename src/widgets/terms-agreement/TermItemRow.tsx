@@ -61,9 +61,9 @@ export const TermItemRow = ({
       </div>
       {term.type === 'marketing' && (
         <p className="ml-7 mt-1 text-sm font-medium text-grey-70 md:text-m">
-          마음토스에서 상담사 선생님들을 위해 제공하는 쿠폰과
+          마음토스에서 상담사님들을 위해 제공하는 쿠폰과
           <br />
-          이벤트 혜택에 대한 정보를 받으실 수 있습니다.
+          이벤트 혜택에 대한 정보를 받으실 수 있어요.
         </p>
       )}
     </div>

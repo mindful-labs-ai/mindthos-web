@@ -40,7 +40,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   // },
   {
     path: ROUTES.CLIENTS,
-    label: '클라이언트',
+    label: '내담자',
     value: 'client',
     icon: <SideClientIcon size={24} />,
   },
@@ -113,7 +113,7 @@ export const getRouteLabel = (path: string): string => {
   return item?.label || path;
 };
 
-// 메인 네비게이션 아이템 (홈, 클라이언트, 상담 기록, 템플릿, 가계도)
+// 메인 네비게이션 아이템 (홈, 내담자, 상담 기록, 템플릿, 가계도)
 export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
   ['home', 'client', 'sessions', 'template', 'genogram'].includes(item.value)
 ).map((item) => ({

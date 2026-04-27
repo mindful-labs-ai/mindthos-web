@@ -36,10 +36,13 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
     PASSWORD_MATCH_DEBOUNCE_MS
   );
 
-  const passwordMatchState: 'idle' | 'match' | 'mismatch' = React.useMemo(() => {
-    if (!debouncedPasswordConfirm) return 'idle';
-    return debouncedPassword === debouncedPasswordConfirm ? 'match' : 'mismatch';
-  }, [debouncedPassword, debouncedPasswordConfirm]);
+  const passwordMatchState: 'idle' | 'match' | 'mismatch' =
+    React.useMemo(() => {
+      if (!debouncedPasswordConfirm) return 'idle';
+      return debouncedPassword === debouncedPasswordConfirm
+        ? 'match'
+        : 'mismatch';
+    }, [debouncedPassword, debouncedPasswordConfirm]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +56,7 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
     });
 
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? '입력값을 확인해주세요.');
+      setError(parsed.error.issues[0]?.message ?? '입력값을 확인해 주세요.');
       return;
     }
 
@@ -72,7 +75,7 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
       setError(
         err instanceof Error
           ? err.message
-          : '회원가입에 실패했습니다. 다시 시도해주세요.'
+          : '회원가입을 완료하지 못했어요. 입력 정보를 확인하고 다시 시도해 주세요.'
       );
     } finally {
       setIsSubmitting(false);
@@ -127,12 +130,12 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
           />
           {passwordMatchState === 'mismatch' && (
             <p className="mt-1 text-xs font-medium text-red-80">
-              비밀번호가 일치하지 않습니다
+              비밀번호가 같지 않아요
             </p>
           )}
           {passwordMatchState === 'match' && (
             <p className="mt-1 text-xs font-medium text-green-80">
-              비밀번호가 일치합니다
+              비밀번호가 일치해요
             </p>
           )}
         </FormField>
@@ -147,7 +150,7 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
               disabled={isSubmitting}
             />
             <label htmlFor="terms" className="text-sm font-sub text-grey-80">
-              <span>서비스 이용약관에 동의합니다.</span>
+              <span>서비스 이용약관에 동의해요.</span>
               <HyperLink
                 href={getTermsRoute(TERMS_TYPES.SERVICE)}
                 external
@@ -168,7 +171,7 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
               disabled={isSubmitting}
             />
             <label htmlFor="privacy" className="text-sm font-sub text-grey-80">
-              <span>개인정보 처리방침에 동의합니다.</span>
+              <span>개인정보 처리방침에 동의해요.</span>
               <HyperLink
                 href={getTermsRoute(TERMS_TYPES.PRIVACY)}
                 external
@@ -182,11 +185,7 @@ const SignUpForm = ({ onSignupSuccess }: Props) => {
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitDisabled}
-        className="auth-button"
-      >
+      <button type="submit" disabled={isSubmitDisabled} className="auth-button">
         {isSubmitting ? '처리 중...' : '이메일 인증하기'}
       </button>
     </form>

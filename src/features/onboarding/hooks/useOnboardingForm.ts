@@ -72,22 +72,22 @@ export function useOnboardingForm(userEmail: string) {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
-      setError('이름을 입력해주세요.');
+      setError('이름을 입력해 주세요.');
       return;
     }
 
     if (trimmedName.length < 2) {
-      setError('이름은 2자 이상 입력해주세요.');
+      setError('이름은 2자 이상 입력해 주세요.');
       return;
     }
 
     if (trimmedName.length > 12) {
-      setError('이름은 12자 이하로 입력해주세요.');
+      setError('이름은 12자 이하로 입력해 주세요.');
       return;
     }
 
     if (!validateName(trimmedName)) {
-      setError('이름은 한글, 영문만 입력 가능합니다.');
+      setError('이름은 한글, 영문만 입력 가능해요.');
       return;
     }
 
@@ -100,7 +100,7 @@ export function useOnboardingForm(userEmail: string) {
       }
 
       if (phoneNumbers.length > 11) {
-        setError('전화번호는 11자리 이하로 입력해주세요.');
+        setError('전화번호는 11자리 이하로 입력해 주세요.');
         return;
       }
 
@@ -134,7 +134,7 @@ export function useOnboardingForm(userEmail: string) {
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : '정보 저장에 실패했습니다.'
+        err instanceof Error ? err.message : '정보를 저장하지 못했어요.'
       );
     } finally {
       setWritingEffect(false);

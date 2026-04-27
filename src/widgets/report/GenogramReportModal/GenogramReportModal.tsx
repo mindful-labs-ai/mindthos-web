@@ -203,7 +203,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
           if (!open) modal.setCreditError(null);
         }}
         action={{
-          label: '플랜 업그레이드',
+          label: '플랜 변경',
           onClick: () => openModal('planChange'),
         }}
         duration={8000}

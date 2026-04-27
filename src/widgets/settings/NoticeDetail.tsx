@@ -25,7 +25,7 @@ export function NoticeDetail({ noticeId, onBack }: NoticeDetailProps) {
   if (!notice) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20">
-        <Text className="text-fg-muted">공지사항을 찾을 수 없습니다.</Text>
+        <Text className="text-fg-muted">공지사항을 찾을 수 없어요.</Text>
         <Button variant="outline" tone="primary" onClick={onBack}>
           공지사항으로 돌아가기
         </Button>

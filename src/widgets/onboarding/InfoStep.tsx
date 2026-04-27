@@ -6,7 +6,7 @@ import { FormField } from '@/shared/ui/composites/FormField';
 import { Select, type SelectItem } from '@/shared/ui/composites/Select';
 
 const ORGANIZATION_OPTIONS: SelectItem[] = [
-  { value: '', label: '선택해주세요' },
+  { value: '', label: '선택해 주세요' },
   { value: '민간상담센터', label: '민간상담센터' },
   { value: '공공기관', label: '공공기관' },
   { value: '초,중,고등학교', label: '초,중,고등학교' },
@@ -53,12 +53,12 @@ export function InfoStep({
           id="onboarding-title"
           className="typo-xl font-headline text-fg"
         >
-          마음토스에 오신 것을 환영합니다!
+          마음토스에 오신 것을 환영해요!
         </Title>
         <Text className="typo-sm mt-2 text-fg-muted">
-          사용하기 앞서 선생님의 원활한 마음토스 사용을 도와드릴게요.
+          사용하기 앞서 상담사님의 원활한 마음토스 사용을 도와드릴게요.
           <br />
-          먼저, 기본 정보를 입력해주세요.
+          먼저, 기본 정보를 입력해 주세요.
         </Text>
       </div>
 
@@ -90,7 +90,7 @@ export function InfoStep({
             items={ORGANIZATION_OPTIONS}
             value={selectedOrganization}
             onChange={(value) => onOrganizationSelect(value as string)}
-            placeholder="소속을 선택해주세요"
+            placeholder="소속을 선택해 주세요"
             disabled={isSubmitting}
           />
         </FormField>
@@ -101,7 +101,7 @@ export function InfoStep({
               type="text"
               value={customOrganization}
               onChange={(e) => onCustomOrganizationChange(e.target.value)}
-              placeholder="소속을 입력해주세요"
+              placeholder="소속을 입력해 주세요"
               maxLength={50}
               disabled={isSubmitting}
             />

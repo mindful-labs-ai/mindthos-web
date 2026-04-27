@@ -13,7 +13,7 @@ export const useClientList = () => {
     queryKey: userId ? clientQueryKeys.list(userId) : ['clients'],
     queryFn: async () => {
       if (!userId) {
-        throw new Error('사용자 정보를 찾을 수 없습니다.');
+        throw new Error('사용자 정보를 찾을 수 없어요.');
       }
 
       const response = await clientService.getClients({
@@ -21,7 +21,7 @@ export const useClientList = () => {
       });
 
       if (!response.success || !response.clients) {
-        throw new Error('내담자 목록을 불러올 수 없습니다.');
+        throw new Error('내담자 목록을 불러올 수 없어요.');
       }
 
       const mappedClients: Client[] = response.clients.map((client) => ({

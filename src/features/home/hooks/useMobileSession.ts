@@ -72,7 +72,7 @@ export const useSessionRecords = ({
   // 전사 내용을 SessionRecord용 텍스트로 변환
   const getSessionContent = useCallback(
     (transcribe: Transcribe | { contents: string } | null): string => {
-      if (!transcribe) return '전사 내용이 없습니다.';
+      if (!transcribe) return '축어록이 없어요.';
 
       // 필기 세션 (HandwrittenTranscribe)
       if ('contents' in transcribe && typeof transcribe.contents === 'string') {
@@ -84,7 +84,7 @@ export const useSessionRecords = ({
 
       const transcriptData = getTranscriptData(transcribe as Transcribe);
       if (!transcriptData) {
-        return '전사 내용이 없습니다.';
+        return '축어록이 없어요.';
       }
       const { segments, speakers } = transcriptData;
       const previewSegments = segments.slice(0, 3);
@@ -120,7 +120,7 @@ export const useSessionRecords = ({
     ): SessionRecord => {
       const { session, transcribe, progressNotes } = sessionRelation;
       const client = effectiveClients.find((c) => c.id === session.client_id);
-      const clientName = client?.name || '클라이언트 없음';
+      const clientName = client?.name || '내담자 없음';
 
       return {
         session_id: session.id,

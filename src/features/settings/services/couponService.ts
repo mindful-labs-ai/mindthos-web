@@ -10,7 +10,7 @@ import type {
   ValidateCouponsResponse,
 } from '../types/coupon';
 
-/** API 응답을 클라이언트 모델로 변환 */
+/** API 응답을 내담자 모델로 변환 */
 function toCoupon(response: CouponResponse): Coupon {
   return {
     id: response.user_coupon_id,

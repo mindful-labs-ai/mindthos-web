@@ -5,6 +5,7 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
+import { getPlanDisplayName } from '@/shared/constants/planNames';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { ArrowRightIcon, CheckIcon, HelpCircleIcon } from '@/shared/icons';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
@@ -24,20 +25,6 @@ export interface CancelSubscriptionModalProps {
   effectiveAt: string | null;
   onConfirm: () => Promise<void>;
 }
-
-// 플랜 타입 → 한글 이름 변환
-const getPlanDisplayName = (type: string): string => {
-  const map: Record<string, string> = {
-    Free: '무료',
-    Starter: '스타터',
-    Plus: '플러스',
-    Pro: '프로',
-    스타터: '스타터',
-    플러스: '플러스',
-    프로: '프로',
-  };
-  return map[type] || type;
-};
 
 // 플랜 타입 → planFeature 키 변환
 const getPlanFeatureKey = (type: string): PlanKey | null => {
@@ -81,7 +68,7 @@ export const CancelSubscriptionModal: React.FC<
       });
       toast({
         title: '구독 해지 실패',
-        description: '구독 해지에 실패했습니다. 다시 시도해주세요.',
+        description: '구독을 해지하지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 5000,
       });
     } finally {
@@ -106,7 +93,7 @@ export const CancelSubscriptionModal: React.FC<
   const currentPlanCard = (
     <div className="rounded-xl border border-grey-30 px-4 py-6">
       <p className="mb-6 px-4 text-l font-emphasize text-grey-100">
-        {getPlanDisplayName(currentPlanType)} 요금제 이용 중
+        {getPlanDisplayName(currentPlanType)} 플랜 이용 중
       </p>
       <div className="space-y-3">
         <div className="flex items-center gap-3">
@@ -147,7 +134,7 @@ export const CancelSubscriptionModal: React.FC<
         </div>
         <div className="flex items-center gap-3">
           <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-          <span className="text-sm">제한된 상담 노트 템플릿</span>
+          <span className="text-sm">제한된 상담노트 템플릿</span>
         </div>
       </div>
     </div>
@@ -161,7 +148,7 @@ export const CancelSubscriptionModal: React.FC<
         <span className="font-emphasize text-grey-100">
           {formatDate(effectiveAt)}
         </span>
-        까지 이용할 수 있습니다.
+        까지 이용할 수 있어요.
       </p>
     </div>
   );
@@ -218,7 +205,7 @@ export const CancelSubscriptionModal: React.FC<
                 정말 정기결제를 중단하시겠어요?
               </p>
               <p className="font-emphasize text-grey-100">
-                결제 중단 후 아래 기능을 더 이상 이용할 수 없습니다.
+                결제 중단 후 아래 기능을 더 이상 이용할 수 없어요.
               </p>
             </div>
             <div
@@ -261,7 +248,7 @@ export const CancelSubscriptionModal: React.FC<
                 정말 정기결제를 중단하시겠어요?
               </Text>
               <Text className="font-emphasize">
-                결제 중단 후 아래 기능을 더 이상 이용할 수 없습니다.
+                결제 중단 후 아래 기능을 더 이상 이용할 수 없어요.
               </Text>
             </div>
           </div>
