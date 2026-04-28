@@ -60,7 +60,7 @@ export function SupervisionBlock({
             </header>
 
             {/* Quote (Before) — grey card */}
-            <div className="rounded-lg border border-grey-40 bg-grey-10 p-3">
+            <div className="mx-3 rounded-lg border border-grey-40 bg-grey-10 p-3">
               <div className="note-card-title">상담자 발언</div>
               <p className="note-card-sub">
                 &ldquo;
@@ -86,7 +86,7 @@ export function SupervisionBlock({
             </div>
 
             {/* Alternative (After) — highlighted card */}
-            <div className="rounded-lg border border-grey-40 bg-grey-10 p-3">
+            <div className="mx-3 rounded-lg border border-grey-40 bg-grey-10 p-3">
               <div className="note-card-title">대안 화법</div>
               <p className="note-card-sub">
                 &ldquo;
