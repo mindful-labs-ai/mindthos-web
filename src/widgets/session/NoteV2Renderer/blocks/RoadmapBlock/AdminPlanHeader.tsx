@@ -24,5 +24,5 @@ export function AdminPlanHeader({ value, editable }: AdminPlanHeaderProps) {
 }
 
 export function serializeAdminPlan(value: string): string {
-  return `- 행정적 계획: ${value}`;
+  return `행정적 계획: ${value}`;
 }

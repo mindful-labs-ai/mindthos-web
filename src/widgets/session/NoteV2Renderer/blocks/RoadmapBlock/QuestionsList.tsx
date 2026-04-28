@@ -72,7 +72,7 @@ export function serializeQuestions(
   questions: NoteV2Output['phase4']['roadmap']['suggested_questions']
 ): string {
   return [
-    `- 제안 질문:`,
+    `제안 질문:`,
     ...questions.map(
       (sq, i) => `  Q${i + 1}. "${sq.question}" (${sq.rationale})`
     ),

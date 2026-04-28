@@ -80,9 +80,9 @@ export function serializeSafety(
 ): string {
   return [
     `안전성 평가`,
-    `- 자해/자살: ${safety.suicide_self_harm}`,
-    `- 타해 위험: ${safety.harm_to_others}`,
-    `- 학대/방임: ${safety.abuse_neglect}`,
-    `- 즉각 조치: ${safety.immediate_action}`,
+    `자해/자살: ${safety.suicide_self_harm}`,
+    `타해 위험: ${safety.harm_to_others}`,
+    `학대/방임: ${safety.abuse_neglect}`,
+    `즉각 조치: ${safety.immediate_action}`,
   ].join('\n');
 }

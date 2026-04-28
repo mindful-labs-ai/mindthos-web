@@ -56,7 +56,7 @@ export function TechniquesList({ techniques, editable }: TechniquesListProps) {
                       copy(
                         [
                           `${st.name}:`,
-                          ...descLines.map((l) => `- ${l}`),
+                          ...descLines.map((l) => `  ${l}`),
                         ].join('\n'),
                         `p4-t-${i}`
                       )
@@ -76,10 +76,10 @@ export function serializeTechniques(
   techniques: NoteV2Output['phase4']['roadmap']['suggested_techniques']
 ): string {
   return [
-    `- 제안 기법:`,
+    `제안 기법:`,
     ...techniques.flatMap((st) => {
       const lines = toLines(st.description);
-      return [`  - ${st.name}:`, ...lines.map((l) => `    - ${l}`)];
+      return [`  ${st.name}:`, ...lines.map((l) => `    ${l}`)];
     }),
   ].join('\n');
 }

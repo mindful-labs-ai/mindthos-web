@@ -50,11 +50,11 @@ export function serializeInterventions(
   const evidenceLines = toLines(interventions.evidence);
   return [
     `금회기 개입 분석`,
-    `- 주요 개입:`,
-    ...majorLines.map((l) => `  - ${l}`),
-    `- 이론적 적합성:`,
-    ...fitLines.map((l) => `  - ${l}`),
-    `- 효과 근거:`,
-    ...evidenceLines.map((l) => `  - ${l}`),
+    `주요 개입:`,
+    ...majorLines.map((l) => `  ${l}`),
+    `이론적 적합성:`,
+    ...fitLines.map((l) => `  ${l}`),
+    `효과 근거:`,
+    ...evidenceLines.map((l) => `  ${l}`),
   ].join('\n');
 }

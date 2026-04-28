@@ -20,5 +20,5 @@ export function PrecipitantsBlock({ value, editable }: PrecipitantsBlockProps) {
 
 export function serializePrecipitants(value: string | string[]): string {
   const lines = toLines(value);
-  return [`### 3. 촉발 요인`, ``, ...(lines.length ? lines : ['—'])].join('\n');
+  return [`촉발 요인`, ...(lines.length ? lines : ['—'])].join('\n');
 }

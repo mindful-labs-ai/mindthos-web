@@ -59,10 +59,10 @@ export function serializeTheory(
     : [];
   return [
     `적용된 상담 이론`,
-    `- 주이론: ${theory.primary}`,
-    theory.secondary ? `- 보조이론: ${theory.secondary}` : '',
-    `- 식별 근거:`,
-    ...evidenceLines.map((l) => `  - ${l}`),
+    `주이론: ${theory.primary}`,
+    theory.secondary ? `보조이론: ${theory.secondary}` : '',
+    `식별 근거:`,
+    ...evidenceLines.map((l) => `  ${l}`),
   ]
     .filter(Boolean)
     .join('\n');

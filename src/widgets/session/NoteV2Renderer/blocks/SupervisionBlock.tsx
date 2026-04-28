@@ -127,7 +127,7 @@ export function SupervisionBlock({
                         `상담자 발언: "${sv.quote}"`,
                         `대안 화법: "${sv.alternative}"`,
                         `코멘트:`,
-                        ...commentLines.map((l) => `- ${l}`),
+                        ...commentLines.map((l) => `  ${l}`),
                       ].join('\n'),
                       `p4-sv-${i}`
                     )
@@ -150,10 +150,10 @@ export function serializeSupervision(
       const commentLines = resolveComment(sv);
       return [
         `[슈퍼비전 ${i + 1}]`,
-        `- 상담자 발언: "${sv.quote}"`,
+        `  상담자 발언: "${sv.quote}"`,
         `  대안 화법: "${sv.alternative}"`,
         `  코멘트:`,
-        ...commentLines.map((l) => `    - ${l}`),
+        ...commentLines.map((l) => `    ${l}`),
       ].join('\n');
     })
     .join('\n\n');

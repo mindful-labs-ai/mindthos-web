@@ -54,7 +54,7 @@ export function PrioritiesList({ priorities, editable }: PrioritiesListProps) {
 
 export function serializePriorities(priorities: string[]): string {
   return [
-    `- 전략 우선순위:`,
+    `전략 우선순위:`,
     ...priorities.map((p, i) => `  ${i + 1}. ${p}`),
   ].join('\n');
 }

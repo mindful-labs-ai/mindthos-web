@@ -47,10 +47,10 @@ export function serializeMaintaining(
   const cycleSteps = toCycleSteps(maintaining.cycle);
   return [
     `유지 요인`,
-    `- 내적 요인:`,
-    ...internalLines.map((l) => `  - ${l}`),
-    `- 환경적 요인:`,
-    ...environmentalLines.map((l) => `  - ${l}`),
-    `- 악순환 패턴: ${cycleSteps.join(' → ')}${cycleSteps.length >= 2 ? ' → (다시 처음으로)' : ''}`,
+    `내적 요인:`,
+    ...internalLines.map((l) => `  ${l}`),
+    `환경적 요인:`,
+    ...environmentalLines.map((l) => `  ${l}`),
+    `악순환 패턴: ${cycleSteps.join(' → ')}${cycleSteps.length >= 2 ? ' → (다시 처음으로)' : ''}`,
   ].join('\n');
 }

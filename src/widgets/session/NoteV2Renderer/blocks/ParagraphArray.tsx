@@ -17,10 +17,11 @@ interface ParagraphArrayProps {
 /**
  * 다문장 분석 필드용 단락 배열 렌더러.
  *
- * - 읽기: `<p>` 단락 N개로 표시.
+ * - 읽기: string[] 원소들을 **한 문단**으로 합쳐 단일 `<p>`에 표시.
+ *   원소 사이는 공백으로 join — 별도 단락 띄우기 없음.
  * - 편집: 컨테이너가 contentEditable. 사용자가 Enter로 단락 추가/삭제 가능.
- *   추출 시점에 NoteV2Renderer.extractNoteV2가 path 화이트리스트를 보고
- *   자식 `<p>` 또는 줄바꿈 기준으로 split 하여 string[]로 재구성한다.
+ *   추출 시 NoteV2Renderer.extractNoteV2가 path 화이트리스트를 보고
+ *   자식 `<p>` 또는 줄바꿈 기준으로 split 하여 string[]로 재구성.
  *
  * - 빈 입력: 읽기는 "—", 편집은 빈 단락 1개.
  */
@@ -38,15 +39,11 @@ export function ParagraphArray({
       return <p className={cn('note-desc', className)}>—</p>;
     }
     return (
-      <div className={cn('note-desc space-y-2', className)}>
-        {lines.map((line, i) => (
-          <p key={i}>{line}</p>
-        ))}
-      </div>
+      <p className={cn('note-desc', className)}>{lines.join(' ')}</p>
     );
   }
 
-  // 편집 모드
+  // 편집 모드 — 단락별 contentEditable 유지 (추출 시 string[] 재구성)
   return (
     <div
       className={cn(

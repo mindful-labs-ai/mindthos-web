@@ -20,5 +20,5 @@ export function CoreDynamicsBlock({ value, editable }: CoreDynamicsBlockProps) {
 
 export function serializeCoreDynamics(value: string | string[]): string {
   const lines = toLines(value);
-  return [`### 4. 핵심 역동`, ``, ...(lines.length ? lines : ['—'])].join('\n');
+  return [`핵심 역동`, ...(lines.length ? lines : ['—'])].join('\n');
 }

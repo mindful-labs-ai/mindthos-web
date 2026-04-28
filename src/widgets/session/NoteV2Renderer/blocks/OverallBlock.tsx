@@ -40,5 +40,5 @@ export function serializeOverall(
   value: string | string[] | null | undefined
 ): string {
   const lines = toLines(value);
-  return [`## 총평`, ``, ...(lines.length ? lines : ['—'])].join('\n');
+  return [`총평`, ...(lines.length ? lines : ['—'])].join('\n');
 }

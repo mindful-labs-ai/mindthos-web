@@ -18,7 +18,7 @@ export function KeyQuotesBlock({ quotes, editable }: KeyQuotesBlockProps) {
     <div className="space-y-2">
       {quotes.map((kq, i) => {
         const meaningLines = toLines(kq.meaning);
-        const meaningJoined = meaningLines.join('\n');
+        const meaningJoined = meaningLines.join(' ');
         return (
           <div
             key={i}
@@ -51,9 +51,7 @@ export function KeyQuotesBlock({ quotes, editable }: KeyQuotesBlockProps) {
                 </div>
               ) : (
                 meaningLines.length > 0 && (
-                  <p className="note-card-sub whitespace-pre-line">
-                    → {meaningJoined}
-                  </p>
+                  <p className="note-card-sub">→ {meaningJoined}</p>
                 )
               )}
             </div>
