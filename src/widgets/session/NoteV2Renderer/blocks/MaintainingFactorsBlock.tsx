@@ -1,10 +1,8 @@
-import { cn } from '@/lib/cn';
-
-import { CopyButton } from '../CopyButton';
 import type { NoteV2Output } from '../types';
-import { useCopyToClipboard } from '../useCopyToClipboard';
+import { toCycleSteps, toLines } from '../types';
 
-import { EDITABLE_CLASS } from './editable';
+import { CycleDiagram } from './CycleDiagram';
+import { ParagraphArray } from './ParagraphArray';
 
 interface MaintainingFactorsBlockProps {
   maintaining: NoteV2Output['phase2']['maintaining_factors'];
@@ -15,76 +13,44 @@ export function MaintainingFactorsBlock({
   maintaining,
   editable,
 }: MaintainingFactorsBlockProps) {
-  const { copiedId, copy } = useCopyToClipboard();
-  const copyText = [
-    `내적 요인: ${maintaining.internal}`,
-    `환경적 요인: ${maintaining.environmental}`,
-    `악순환 패턴: ${maintaining.cycle}`,
-  ].join('\n');
-
   return (
-    <>
-      <h3 className="mb-2 pl-2 text-l font-emphasize">유지 요인</h3>
-      <div className="group relative space-y-3 rounded-lg px-3 py-2 transition-colors lg:hover:bg-grey-20">
-        <div className="space-y-1">
-          <span className="note-label">내적 요인</span>
-          <p
-            className={cn('note-desc', editable && EDITABLE_CLASS)}
-            contentEditable={editable}
-            suppressContentEditableWarning={editable}
-            data-note-path={
-              editable ? 'phase2.maintaining_factors.internal' : undefined
-            }
-          >
-            {maintaining.internal || (editable ? '' : '—')}
-          </p>
-        </div>
-        <div className="space-y-1">
-          <span className="note-label">환경적 요인</span>
-          <p
-            className={cn('note-desc', editable && EDITABLE_CLASS)}
-            contentEditable={editable}
-            suppressContentEditableWarning={editable}
-            data-note-path={
-              editable ? 'phase2.maintaining_factors.environmental' : undefined
-            }
-          >
-            {maintaining.environmental || (editable ? '' : '—')}
-          </p>
-        </div>
-        <div className="space-y-1">
-          <span className="note-label">악순환 패턴</span>
-          <p
-            className={cn('note-desc', editable && EDITABLE_CLASS)}
-            contentEditable={editable}
-            suppressContentEditableWarning={editable}
-            data-note-path={
-              editable ? 'phase2.maintaining_factors.cycle' : undefined
-            }
-          >
-            {maintaining.cycle || (editable ? '' : '—')}
-          </p>
-        </div>
-        {!editable && (
-          <div className="note-copy-btn-wrapper">
-            <CopyButton
-              isCopied={copiedId === 'p2-maintaining'}
-              onClick={() => copy(copyText, 'p2-maintaining')}
-            />
-          </div>
-        )}
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <span className="note-label">내적 요인</span>
+        <ParagraphArray
+          value={maintaining.internal}
+          path="phase2.maintaining_factors.internal"
+          editable={editable}
+        />
       </div>
-    </>
+      <div className="space-y-1">
+        <span className="note-label">환경적 요인</span>
+        <ParagraphArray
+          value={maintaining.environmental}
+          path="phase2.maintaining_factors.environmental"
+          editable={editable}
+        />
+      </div>
+      <div className="space-y-2">
+        <span className="note-label">악순환 패턴</span>
+        <CycleDiagram value={maintaining.cycle} editable={editable} />
+      </div>
+    </div>
   );
 }
 
 export function serializeMaintaining(
   maintaining: NoteV2Output['phase2']['maintaining_factors']
 ): string {
+  const internalLines = toLines(maintaining.internal);
+  const environmentalLines = toLines(maintaining.environmental);
+  const cycleSteps = toCycleSteps(maintaining.cycle);
   return [
     `유지 요인`,
-    `- 내적 요인: ${maintaining.internal}`,
-    `- 환경적 요인: ${maintaining.environmental}`,
-    `- 악순환 패턴: ${maintaining.cycle}`,
+    `- 내적 요인:`,
+    ...internalLines.map((l) => `  - ${l}`),
+    `- 환경적 요인:`,
+    ...environmentalLines.map((l) => `  - ${l}`),
+    `- 악순환 패턴: ${cycleSteps.join(' → ')}${cycleSteps.length >= 2 ? ' → (다시 처음으로)' : ''}`,
   ].join('\n');
 }

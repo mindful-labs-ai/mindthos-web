@@ -7,7 +7,8 @@ export {
   SafetyAssessmentBlock,
   serializeSafety,
 } from './SafetyAssessmentBlock';
-export { ConflictBlock, serializeConflict } from './ConflictBlock';
+export { PrecipitantsBlock, serializePrecipitants } from './PrecipitantsBlock';
+export { CoreDynamicsBlock, serializeCoreDynamics } from './CoreDynamicsBlock';
 export {
   MaintainingFactorsBlock,
   serializeMaintaining,

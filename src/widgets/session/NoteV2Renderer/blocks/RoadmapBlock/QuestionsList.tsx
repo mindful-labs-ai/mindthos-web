@@ -18,7 +18,7 @@ export function QuestionsList({ questions, editable }: QuestionsListProps) {
         {questions.map((sq, i) => (
           <div
             key={i}
-            className="group relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors lg:hover:border-green-80"
+            className="group/question relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors lg:hover:border-green-80"
           >
             <div className="min-w-0 flex-1">
               <p className="note-card-title">
@@ -54,7 +54,7 @@ export function QuestionsList({ questions, editable }: QuestionsListProps) {
               </p>
             </div>
             {!editable && (
-              <div className="note-copy-btn-wrapper">
+              <div className="absolute right-3 top-1.5 transition-opacity lg:opacity-0 lg:group-hover/question:opacity-100">
                 <CopyButton
                   isCopied={copiedId === `p4-q-${i}`}
                   onClick={() => copy(sq.question, `p4-q-${i}`)}
