@@ -18,18 +18,22 @@ export function OverallBlock({ value, editable }: OverallBlockProps) {
       <div className="absolute left-0 top-0 h-full w-1.5 bg-green-80" />
       <div
         className={cn(
-          'relative space-y-3 text-m font-medium text-grey-100',
-          editable && EDITABLE_CLASS
+          'relative text-m font-medium text-grey-100',
+          editable && ['space-y-2', EDITABLE_CLASS]
         )}
         contentEditable={editable}
         suppressContentEditableWarning={editable}
         data-note-path={editable ? 'phase4.overall_comment' : undefined}
         data-note-array={editable ? 'true' : undefined}
       >
-        {isEmpty ? (
-          <p>{editable ? '' : '—'}</p>
+        {editable ? (
+          isEmpty ? (
+            <p></p>
+          ) : (
+            lines.map((line, i) => <p key={i}>{line}</p>)
+          )
         ) : (
-          lines.map((line, i) => <p key={i}>{line}</p>)
+          <p>{isEmpty ? '—' : lines.join(' ')}</p>
         )}
       </div>
     </div>
