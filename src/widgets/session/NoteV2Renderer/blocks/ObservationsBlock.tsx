@@ -9,16 +9,22 @@ import { ParagraphArray } from './ParagraphArray';
 interface ObservationsBlockProps {
   observations: NoteV2Output['phase3']['observations'];
   editable?: boolean;
+  /** "4-3" 등. 제공 시 라벨 앞에 "{prefix}-{idx}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
 export function ObservationsBlock({
   observations,
   editable,
+  numberPrefix,
 }: ObservationsBlockProps) {
+  const label = (idx: number, text: string) =>
+    numberPrefix ? `${numberPrefix}-${idx}. ${text}` : text;
+
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <span className="note-label">통찰 수준</span>
+        <span className="note-label">{label(1, '통찰 수준')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}
@@ -31,7 +37,7 @@ export function ObservationsBlock({
         </p>
       </div>
       <div className="space-y-1">
-        <span className="note-label">동기/협력</span>
+        <span className="note-label">{label(2, '동기/협력')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}
@@ -44,7 +50,7 @@ export function ObservationsBlock({
         </p>
       </div>
       <div className="space-y-1">
-        <span className="note-label">정서 상태</span>
+        <span className="note-label">{label(3, '정서 상태')}</span>
         <ParagraphArray
           value={observations.emotional_state}
           path="phase3.observations.emotional_state"

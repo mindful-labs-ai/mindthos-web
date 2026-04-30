@@ -6,9 +6,9 @@ import { CopyButton } from './CopyButton';
 import { useCopyToClipboard } from './useCopyToClipboard';
 
 interface PhaseSectionProps {
-  /** "Phase 1" / "Phase 2" / ... / "Overall" */
-  phase: string;
-  /** Phase 본문 제목 (예: "기초 사정"). "Overall"인 경우 그대로 표기. */
+  /** 대목차 번호 (1, 2, …). 총평처럼 번호 없이 표기할 때는 omit. */
+  mainNumber?: number;
+  /** 대목차 제목 (예: "기초 사정") */
   title: string;
   children: React.ReactNode;
   /** 섹션 전체를 텍스트로 직렬화한 값 (복사용) */
@@ -19,15 +19,13 @@ interface PhaseSectionProps {
 }
 
 /**
- * Phase 단위 컨테이너.
+ * 대목차(노트 최상위 섹션) 컨테이너.
  *
- * - 헤더 표기: phase가 "Phase N" 형태이면 "Phase N: 제목" 한 줄로 합성.
- *   "Overall" 같은 비-번호 phase는 title만 표시.
- * - 아코디언: default open. 컴포넌트 마운트마다 펼침으로 시작 (로컬 state).
- *   재렌더링이 아니라 unmount → mount되면 자동 초기화.
+ * - 헤더 표기: "{mainNumber}. {title}" 형식 (mainNumber omit 시 title만 표시)
+ * - 아코디언: default open. unmount → mount 시 자동 초기화.
  */
 export function PhaseSection({
-  phase,
+  mainNumber,
   title,
   children,
   copyText,
@@ -38,8 +36,9 @@ export function PhaseSection({
   const { copiedId, copy } = useCopyToClipboard();
   const headerId = anchorId ? `${anchorId}-h` : undefined;
 
-  const isPhaseN = /^Phase\s+\d+$/i.test(phase);
-  const headerLabel = isPhaseN ? `${phase}: ${title}` : title;
+  const headerLabel =
+    mainNumber !== undefined ? `${mainNumber}. ${title}` : title;
+  const copyKey = mainNumber !== undefined ? `phase-${mainNumber}` : `phase-${title}`;
 
   return (
     <section
@@ -67,8 +66,8 @@ export function PhaseSection({
         </button>
         {!editable && (
           <CopyButton
-            isCopied={copiedId === `phase-${phase}`}
-            onClick={() => copy(copyText, `phase-${phase}`)}
+            isCopied={copiedId === copyKey}
+            onClick={() => copy(copyText, copyKey)}
             label="복사"
             size="md"
           />

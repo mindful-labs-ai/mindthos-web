@@ -54,7 +54,7 @@ export function SupervisionBlock({
             {/* 항목 separator + 라벨 */}
             <header className="flex items-center gap-3">
               <span className="whitespace-nowrap text-sm font-emphasize tabular-nums text-grey-80">
-                슈퍼비전 {i + 1}
+                {i + 1}
               </span>
               <span className="h-px flex-1 bg-grey-60" />
             </header>

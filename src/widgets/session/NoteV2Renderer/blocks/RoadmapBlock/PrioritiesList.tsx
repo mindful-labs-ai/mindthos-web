@@ -5,12 +5,21 @@ import { EDITABLE_CLASS } from '../editable';
 interface PrioritiesListProps {
   priorities: string[];
   editable?: boolean;
+  /** "5-1-2" 등. 제공 시 라벨 앞에 "{prefix}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
-export function PrioritiesList({ priorities, editable }: PrioritiesListProps) {
+export function PrioritiesList({
+  priorities,
+  editable,
+  numberPrefix,
+}: PrioritiesListProps) {
+  const labelText = numberPrefix
+    ? `${numberPrefix}. 전략 우선순위`
+    : '전략 우선순위';
   return (
     <div className="space-y-2">
-      <span className="note-label">전략 우선순위</span>
+      <span className="note-label">{labelText}</span>
       <ol className="list-none space-y-2 p-0">
         {priorities.map((p, i) => {
           const isFirst = i === 0;

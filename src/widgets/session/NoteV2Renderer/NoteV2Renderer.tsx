@@ -62,9 +62,8 @@ export const NoteV2Renderer = React.forwardRef<
 
   return (
     <div ref={containerRef} className="space-y-10">
-      {/* 총평 (최상단) */}
+      {/* 총평 (번호 제외, 최상단) */}
       <PhaseSection
-        phase="Overall"
         title="총평"
         anchorId="note-overall"
         copyText={serializeOverall(phase4.overall_comment)}
@@ -73,25 +72,29 @@ export const NoteV2Renderer = React.forwardRef<
         <OverallBlock value={phase4.overall_comment} editable={editable} />
       </PhaseSection>
 
-      {/* Phase 1: 기초 사정 */}
+      {/* 1. 기초 사정 */}
       <PhaseSection
-        phase="Phase 1"
+        mainNumber={1}
         title="기초 사정"
         anchorId="note-phase-1"
         copyText={serializePhase1(phase1)}
         editable={editable}
       >
         <NumberedSection
-          number={0}
+          number="1-1"
           title="적용된 상담 이론"
           anchorId="note-sec-0"
           copyText={serializeTheory(phase1.theory)}
           editable={editable}
         >
-          <TheoryBlock theory={phase1.theory} editable={editable} />
+          <TheoryBlock
+            theory={phase1.theory}
+            editable={editable}
+            numberPrefix="1-1"
+          />
         </NumberedSection>
         <NumberedSection
-          number={1}
+          number="1-2"
           title="상담 주제"
           anchorId="note-sec-1"
           copyText={serializePresentingIssue(phase1.presenting_issue)}
@@ -103,7 +106,7 @@ export const NoteV2Renderer = React.forwardRef<
           />
         </NumberedSection>
         <NumberedSection
-          number={2}
+          number="1-3"
           title="안전 사정"
           anchorId="note-sec-2"
           copyText={serializeSafety(phase1.safety_assessment)}
@@ -112,20 +115,21 @@ export const NoteV2Renderer = React.forwardRef<
           <SafetyAssessmentBlock
             safety={phase1.safety_assessment}
             editable={editable}
+            numberPrefix="1-3"
           />
         </NumberedSection>
       </PhaseSection>
 
-      {/* Phase 2: 사례 개념화 */}
+      {/* 2. 사례 개념화 (이론 고유 분석 포함) */}
       <PhaseSection
-        phase="Phase 2"
+        mainNumber={2}
         title="사례 개념화"
         anchorId="note-phase-2"
         copyText={serializePhase2(phase2)}
         editable={editable}
       >
         <NumberedSection
-          number={1}
+          number="2-1"
           title="촉발 요인"
           anchorId="note-sec-3"
           copyText={serializePrecipitants(phase2.precipitants)}
@@ -134,7 +138,7 @@ export const NoteV2Renderer = React.forwardRef<
           <PrecipitantsBlock value={phase2.precipitants} editable={editable} />
         </NumberedSection>
         <NumberedSection
-          number={2}
+          number="2-2"
           title="핵심 역동"
           anchorId="note-sec-4"
           copyText={serializeCoreDynamics(phase2.core_dynamics)}
@@ -143,7 +147,7 @@ export const NoteV2Renderer = React.forwardRef<
           <CoreDynamicsBlock value={phase2.core_dynamics} editable={editable} />
         </NumberedSection>
         <NumberedSection
-          number={3}
+          number="2-3"
           title="유지 요인"
           anchorId="note-sec-5"
           copyText={serializeMaintaining(phase2.maintaining_factors)}
@@ -152,9 +156,11 @@ export const NoteV2Renderer = React.forwardRef<
           <MaintainingFactorsBlock
             maintaining={phase2.maintaining_factors}
             editable={editable}
+            numberPrefix="2-3"
           />
         </NumberedSection>
         <NumberedSection
+          number="2-4"
           title="이론 고유 분석"
           hint={phase1.theory.primary || undefined}
           anchorId="note-sec-theory"
@@ -167,7 +173,7 @@ export const NoteV2Renderer = React.forwardRef<
           />
         </NumberedSection>
         <NumberedSection
-          number={4}
+          number="2-5"
           title="발달적 맥락"
           anchorId="note-sec-6"
           copyText={serializeDevelopmental(phase2.developmental)}
@@ -179,7 +185,7 @@ export const NoteV2Renderer = React.forwardRef<
           />
         </NumberedSection>
         <NumberedSection
-          number={5}
+          number="2-6"
           title="강점 및 자원"
           anchorId="note-sec-7"
           copyText={serializeStrengths(phase2.strengths)}
@@ -189,16 +195,16 @@ export const NoteV2Renderer = React.forwardRef<
         </NumberedSection>
       </PhaseSection>
 
-      {/* Phase 3: 임상 근거 */}
+      {/* 3. 임상 근거 */}
       <PhaseSection
-        phase="Phase 3"
+        mainNumber={3}
         title="임상 근거"
         anchorId="note-phase-3"
         copyText={serializePhase3(phase3)}
         editable={editable}
       >
         <NumberedSection
-          number={1}
+          number="3-1"
           title="내담자 핵심 발언"
           anchorId="note-sec-8"
           editable={editable}
@@ -206,7 +212,7 @@ export const NoteV2Renderer = React.forwardRef<
           <KeyQuotesBlock quotes={phase3.key_quotes} editable={editable} />
         </NumberedSection>
         <NumberedSection
-          number={2}
+          number="3-2"
           title="금회기 개입 분석"
           anchorId="note-sec-9"
           copyText={serializeInterventions(phase3.interventions)}
@@ -215,10 +221,11 @@ export const NoteV2Renderer = React.forwardRef<
           <InterventionsBlock
             interventions={phase3.interventions}
             editable={editable}
+            numberPrefix="3-2"
           />
         </NumberedSection>
         <NumberedSection
-          number={3}
+          number="3-3"
           title="내담자 관찰 소견"
           anchorId="note-sec-10"
           copyText={serializeObservations(phase3.observations)}
@@ -227,29 +234,34 @@ export const NoteV2Renderer = React.forwardRef<
           <ObservationsBlock
             observations={phase3.observations}
             editable={editable}
+            numberPrefix="3-3"
           />
         </NumberedSection>
       </PhaseSection>
 
-      {/* Phase 4: 전략 및 슈퍼비전 */}
+      {/* 4. 전략 및 슈퍼비전 */}
       <PhaseSection
-        phase="Phase 4"
+        mainNumber={4}
         title="전략 및 슈퍼비전"
         anchorId="note-phase-4"
         copyText={serializePhase4(phase4)}
         editable={editable}
       >
         <NumberedSection
-          number={1}
+          number="4-1"
           title="다음 회기 로드맵"
           anchorId="note-sec-11"
           copyText={serializeRoadmap(phase4.roadmap)}
           editable={editable}
         >
-          <RoadmapBlock roadmap={phase4.roadmap} editable={editable} />
+          <RoadmapBlock
+            roadmap={phase4.roadmap}
+            editable={editable}
+            numberPrefix="4-1"
+          />
         </NumberedSection>
         <NumberedSection
-          number={2}
+          number="4-2"
           title="간이 슈퍼비전"
           anchorId="note-sec-12"
           copyText={serializeSupervision(phase4.supervision)}
@@ -372,66 +384,66 @@ function extractNoteV2(
 
 function serializePhase1(p: NoteV2Output['phase1']): string {
   return [
-    `[Phase 1] 기초 사정`,
+    `1. 기초 사정`,
     ``,
-    `1. 적용된 상담 이론`,
+    `1-1. 적용된 상담 이론`,
     serializeTheory(p.theory),
     ``,
-    `2. 상담 주제`,
+    `1-2. 상담 주제`,
     serializePresentingIssue(p.presenting_issue),
     ``,
-    `3. 안전 사정`,
+    `1-3. 안전 사정`,
     serializeSafety(p.safety_assessment),
   ].join('\n');
 }
 
 function serializePhase2(p: NoteV2Output['phase2']): string {
   return [
-    `[Phase 2] 사례 개념화`,
+    `2. 사례 개념화`,
     ``,
-    `1. 촉발 요인`,
+    `2-1. 촉발 요인`,
     serializePrecipitants(p.precipitants),
     ``,
-    `2. 핵심 역동`,
+    `2-2. 핵심 역동`,
     serializeCoreDynamics(p.core_dynamics),
     ``,
-    `3. 유지 요인`,
+    `2-3. 유지 요인`,
     serializeMaintaining(p.maintaining_factors),
     ``,
-    `${p.theory_section.title}`,
+    `2-4. 이론 고유 분석 (${p.theory_section.title})`,
     serializeTheorySection(p.theory_section),
     ``,
-    `4. 발달적 맥락`,
+    `2-5. 발달적 맥락`,
     serializeDevelopmental(p.developmental),
     ``,
-    `5. 강점 및 자원`,
+    `2-6. 강점 및 자원`,
     serializeStrengths(p.strengths),
   ].join('\n');
 }
 
 function serializePhase3(p: NoteV2Output['phase3']): string {
   return [
-    `[Phase 3] 임상 근거`,
+    `3. 임상 근거`,
     ``,
-    `1. 내담자 핵심 발언 (최대 5개)`,
+    `3-1. 내담자 핵심 발언 (최대 5개)`,
     serializeKeyQuotes(p.key_quotes),
     ``,
-    `2. 금회기 개입 분석`,
+    `3-2. 금회기 개입 분석`,
     serializeInterventions(p.interventions),
     ``,
-    `3. 내담자 관찰 소견`,
+    `3-3. 내담자 관찰 소견`,
     serializeObservations(p.observations),
   ].join('\n');
 }
 
 function serializePhase4(p: NoteV2Output['phase4']): string {
   return [
-    `[Phase 4] 전략 및 슈퍼비전`,
+    `4. 전략 및 슈퍼비전`,
     ``,
-    `1. 다음 회기 로드맵`,
+    `4-1. 다음 회기 로드맵`,
     serializeRoadmap(p.roadmap),
     ``,
-    `2. 간이 슈퍼비전`,
+    `4-2. 간이 슈퍼비전`,
     serializeSupervision(p.supervision),
   ].join('\n');
 }
@@ -439,6 +451,7 @@ function serializePhase4(p: NoteV2Output['phase4']): string {
 /** V2 노트 전체를 텍스트로 직렬화 (전체 복사용) */
 export function serializeNoteV2(note: NoteV2Output): string {
   return [
+    `총평`,
     serializeOverall(note.phase4.overall_comment),
     ``,
     serializePhase1(note.phase1),

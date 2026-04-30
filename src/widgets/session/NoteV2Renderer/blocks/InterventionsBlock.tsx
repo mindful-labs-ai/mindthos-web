@@ -6,16 +6,22 @@ import { ParagraphArray } from './ParagraphArray';
 interface InterventionsBlockProps {
   interventions: NoteV2Output['phase3']['interventions'];
   editable?: boolean;
+  /** "4-2" 등. 제공 시 라벨 앞에 "{prefix}-{idx}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
 export function InterventionsBlock({
   interventions,
   editable,
+  numberPrefix,
 }: InterventionsBlockProps) {
+  const label = (idx: number, text: string) =>
+    numberPrefix ? `${numberPrefix}-${idx}. ${text}` : text;
+
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <span className="note-label">주요 개입</span>
+        <span className="note-label">{label(1, '주요 개입')}</span>
         <ParagraphArray
           value={interventions.major}
           path="phase3.interventions.major"
@@ -23,7 +29,7 @@ export function InterventionsBlock({
         />
       </div>
       <div className="space-y-1">
-        <span className="note-label">이론적 적합성</span>
+        <span className="note-label">{label(2, '이론적 적합성')}</span>
         <ParagraphArray
           value={interventions.theoretical_fit}
           path="phase3.interventions.theoretical_fit"
@@ -31,7 +37,7 @@ export function InterventionsBlock({
         />
       </div>
       <div className="space-y-1">
-        <span className="note-label">효과 근거</span>
+        <span className="note-label">{label(3, '효과 근거')}</span>
         <ParagraphArray
           value={interventions.evidence}
           path="phase3.interventions.evidence"

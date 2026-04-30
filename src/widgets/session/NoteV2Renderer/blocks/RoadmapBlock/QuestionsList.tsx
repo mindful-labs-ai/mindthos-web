@@ -6,14 +6,21 @@ import { EDITABLE_CLASS } from '../editable';
 interface QuestionsListProps {
   questions: NoteV2Output['phase4']['roadmap']['suggested_questions'];
   editable?: boolean;
+  /** "5-1-3" 등. 제공 시 라벨 앞에 "{prefix}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
-export function QuestionsList({ questions, editable }: QuestionsListProps) {
+export function QuestionsList({
+  questions,
+  editable,
+  numberPrefix,
+}: QuestionsListProps) {
   const { copiedId, copy } = useCopyToClipboard();
+  const labelText = numberPrefix ? `${numberPrefix}. 제안 질문` : '제안 질문';
 
   return (
     <div className="space-y-2">
-      <span className="note-label">제안 질문</span>
+      <span className="note-label">{labelText}</span>
       <div className="space-y-2">
         {questions.map((sq, i) => (
           <div

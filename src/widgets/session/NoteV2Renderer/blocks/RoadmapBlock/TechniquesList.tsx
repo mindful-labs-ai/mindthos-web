@@ -10,14 +10,21 @@ import { ParagraphArray } from '../ParagraphArray';
 interface TechniquesListProps {
   techniques: NoteV2Output['phase4']['roadmap']['suggested_techniques'];
   editable?: boolean;
+  /** "5-1-4" 등. 제공 시 라벨 앞에 "{prefix}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
-export function TechniquesList({ techniques, editable }: TechniquesListProps) {
+export function TechniquesList({
+  techniques,
+  editable,
+  numberPrefix,
+}: TechniquesListProps) {
   const { copiedId, copy } = useCopyToClipboard();
+  const labelText = numberPrefix ? `${numberPrefix}. 제안 기법` : '제안 기법';
 
   return (
     <div className="space-y-2">
-      <span className="note-label">제안 기법</span>
+      <span className="note-label">{labelText}</span>
       <div className="space-y-2">
         {techniques.map((st, i) => {
           const descLines = toLines(st.description);

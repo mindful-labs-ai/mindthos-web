@@ -7,16 +7,22 @@ import { ParagraphArray } from './ParagraphArray';
 interface MaintainingFactorsBlockProps {
   maintaining: NoteV2Output['phase2']['maintaining_factors'];
   editable?: boolean;
+  /** "3-3" 등. 제공 시 라벨 앞에 "{prefix}-{idx}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
 export function MaintainingFactorsBlock({
   maintaining,
   editable,
+  numberPrefix,
 }: MaintainingFactorsBlockProps) {
+  const label = (idx: number, text: string) =>
+    numberPrefix ? `${numberPrefix}-${idx}. ${text}` : text;
+
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <span className="note-label">내적 요인</span>
+        <span className="note-label">{label(1, '내적 요인')}</span>
         <ParagraphArray
           value={maintaining.internal}
           path="phase2.maintaining_factors.internal"
@@ -24,7 +30,7 @@ export function MaintainingFactorsBlock({
         />
       </div>
       <div className="space-y-1">
-        <span className="note-label">환경적 요인</span>
+        <span className="note-label">{label(2, '환경적 요인')}</span>
         <ParagraphArray
           value={maintaining.environmental}
           path="phase2.maintaining_factors.environmental"
@@ -32,7 +38,7 @@ export function MaintainingFactorsBlock({
         />
       </div>
       <div className="space-y-2">
-        <span className="note-label">악순환 패턴</span>
+        <span className="note-label">{label(3, '악순환 패턴')}</span>
         <CycleDiagram value={maintaining.cycle} editable={editable} />
       </div>
     </div>

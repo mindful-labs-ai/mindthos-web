@@ -4,8 +4,8 @@ import { CopyButton } from './CopyButton';
 import { useCopyToClipboard } from './useCopyToClipboard';
 
 interface NumberedSectionProps {
-  /** 0~12. 번호 없는 항목(이론 섹션 등)은 omit */
-  number?: number;
+  /** 소주제 번호. "2-1" / "3-3" 등 string 또는 단일 number. omit 시 번호 미노출. */
+  number?: number | string;
   /** 스펙의 마크다운 제목 (예: "적용된 상담 이론") */
   title: string;
   /** 제목 옆 작은 보조 (예: "최대 5개") */
@@ -50,9 +50,9 @@ export function NumberedSection({
         className
       )}
     >
-      <header className="mb-3 flex items-baseline gap-2">
+      <header className="mb-3 flex items-baseline gap-1">
         {number !== undefined && (
-          <span className="text-grey-50 font-emphasize tabular-nums">
+          <span className="text-l font-emphasize tabular-nums text-grey-100">
             {number}.
           </span>
         )}

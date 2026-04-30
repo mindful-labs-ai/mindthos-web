@@ -7,16 +7,22 @@ import { EDITABLE_CLASS } from './editable';
 interface SafetyAssessmentBlockProps {
   safety: NoteV2Output['phase1']['safety_assessment'];
   editable?: boolean;
+  /** "2-3" 등. 제공 시 라벨 앞에 "{prefix}-{idx}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
 export function SafetyAssessmentBlock({
   safety,
   editable,
+  numberPrefix,
 }: SafetyAssessmentBlockProps) {
+  const label = (idx: number, text: string) =>
+    numberPrefix ? `${numberPrefix}-${idx}. ${text}` : text;
+
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <span className="note-label">자해/자살</span>
+        <span className="note-label">{label(1, '자해/자살')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}
@@ -31,7 +37,7 @@ export function SafetyAssessmentBlock({
         </p>
       </div>
       <div className="space-y-1">
-        <span className="note-label">타해 위험</span>
+        <span className="note-label">{label(2, '타해 위험')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}
@@ -44,7 +50,7 @@ export function SafetyAssessmentBlock({
         </p>
       </div>
       <div className="space-y-1">
-        <span className="note-label">학대/방임</span>
+        <span className="note-label">{label(3, '학대/방임')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}
@@ -57,7 +63,7 @@ export function SafetyAssessmentBlock({
         </p>
       </div>
       <div className="space-y-1">
-        <span className="note-label">즉각 조치</span>
+        <span className="note-label">{label(4, '즉각 조치')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}

@@ -8,13 +8,22 @@ import { ParagraphArray } from './ParagraphArray';
 interface TheoryBlockProps {
   theory: NoteV2Output['phase1']['theory'];
   editable?: boolean;
+  /** "2-1" 등. 제공 시 라벨 앞에 "{prefix}-{idx}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
-export function TheoryBlock({ theory, editable }: TheoryBlockProps) {
+export function TheoryBlock({
+  theory,
+  editable,
+  numberPrefix,
+}: TheoryBlockProps) {
+  const label = (idx: number, text: string) =>
+    numberPrefix ? `${numberPrefix}-${idx}. ${text}` : text;
+
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <span className="note-label">주 이론</span>
+        <span className="note-label">{label(1, '주 이론')}</span>
         <p
           className={cn('note-desc', editable && EDITABLE_CLASS)}
           contentEditable={editable}
@@ -26,7 +35,7 @@ export function TheoryBlock({ theory, editable }: TheoryBlockProps) {
       </div>
       {(theory.secondary || editable) && (
         <div className="space-y-1">
-          <span className="note-label">보조 이론</span>
+          <span className="note-label">{label(2, '보조 이론')}</span>
           <p
             className={cn('note-desc', editable && EDITABLE_CLASS)}
             contentEditable={editable}
@@ -38,7 +47,7 @@ export function TheoryBlock({ theory, editable }: TheoryBlockProps) {
         </div>
       )}
       <div className="space-y-1">
-        <span className="note-label">식별 근거</span>
+        <span className="note-label">{label(3, '식별 근거')}</span>
         <ParagraphArray
           value={theory.evidence}
           path="phase1.theory.evidence"
