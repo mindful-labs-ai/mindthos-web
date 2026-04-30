@@ -30,5 +30,5 @@ export function ReferralQuote({ value, editable }: ReferralQuoteProps) {
 }
 
 export function serializeReferral(value: string): string {
-  return `- 전문가 자문: ${value}`;
+  return `전문가 자문: ${value}`;
 }
