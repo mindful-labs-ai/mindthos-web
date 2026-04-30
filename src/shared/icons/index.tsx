@@ -434,7 +434,7 @@ export const SideCalendarIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
-/** 클라이언트 아이콘 */
+/** 내담자 아이콘 */
 export const SideClientIcon: React.FC<CustomIconProps> = ({
   size = 24,
   className,

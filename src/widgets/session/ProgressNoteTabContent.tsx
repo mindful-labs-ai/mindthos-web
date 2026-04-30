@@ -83,7 +83,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                     상담노트 작성 중...
                   </Title>
                   <p className="typo-sm mt-2 text-fg-muted">
-                    상담노트를 작성하고 있습니다.
+                    상담노트를 작성하고 있어요.
                     <br />
                     잠시만 기다려주세요.
                   </p>
@@ -100,7 +100,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
             <div className="relative flex h-full flex-col">
               {/* 상단 헤더 */}
               <div className="flex items-center justify-between px-8 py-4">
-                <p className="text-m text-grey-60">상담 노트 템플릿</p>
+                <p className="text-m text-grey-60">상담노트 템플릿</p>
                 <button
                   onClick={onCreateProgressNote}
                   disabled={isReadOnly || !isTemplateSelected}
@@ -110,7 +110,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                       : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
-                  상담 노트 만들기
+                  상담노트 만들기
                 </button>
               </div>
               {/* CreateProgressNoteView */}
@@ -145,14 +145,14 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                       <XIcon size={24} />
                     </button>
                     <p className="text-sm font-medium text-grey-70">
-                      상담 노트 생성에 10 크레딧을 사용합니다.
+                      상담노트 생성에 10 크레딧을 사용해요.
                     </p>
                     <button
                       onClick={onCreateProgressNote}
                       disabled={isReadOnly}
                       className="rounded-lg border border-grey-40 bg-white px-4 py-2 text-sm font-headline text-grey-100 transition-colors lg:hover:bg-grey-10"
                     >
-                      상담 노트 만들기
+                      상담노트 만들기
                     </button>
                   </div>
                 </div>
@@ -178,7 +178,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
         return (
           <div className="flex h-full flex-col">
             <div className="flex min-h-[400px] items-center justify-center">
-              <p className="text-fg-muted">상담 노트를 선택해주세요.</p>
+              <p className="text-fg-muted">상담노트를 선택해 주세요.</p>
             </div>
           </div>
         );

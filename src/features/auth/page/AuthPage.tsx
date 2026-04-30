@@ -3,6 +3,7 @@ import React from 'react';
 import { trackEvent } from '@/lib/mixpanel';
 import { authService } from '@/shared/api/services/auth/authService';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { SUPPORT_KAKAO_URL } from '@/shared/constants/support';
 import { GoogleIcon, KakaoIcon } from '@/shared/icons';
 import EmailVerificationStep from '@/widgets/auth/EmailVerificationStep';
 import PasswordResetRequestStep from '@/widgets/auth/PasswordResetRequestStep';
@@ -64,7 +65,7 @@ const AuthPage = () => {
       setError(
         err instanceof Error
           ? err.message
-          : 'Google 로그인에 실패했습니다. 다시 시도해주세요.'
+          : 'Google 로그인에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.'
       );
       setIsGoogleLoading(false);
     }
@@ -85,7 +86,7 @@ const AuthPage = () => {
       setError(
         err instanceof Error
           ? err.message
-          : '카카오 로그인에 실패했습니다. 다시 시도해주세요.'
+          : '카카오 로그인에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.'
       );
       setIsKakaoLoading(false);
     }
@@ -101,7 +102,7 @@ const AuthPage = () => {
             className="main-logo-size"
           />
           <a
-            href="https://open.kakao.com/me/Mindthos"
+            href={SUPPORT_KAKAO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="] rounded-md border border-grey-40 px-6 py-1.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
@@ -120,7 +121,7 @@ const AuthPage = () => {
                 <span className="font-headline text-green-80">마음토스</span>
               </h1>
               <p className="text-m font-sub text-grey-70">
-                상담사의 시간을 되찾고 성장을 돕습니다.
+                상담사의 시간을 되찾고 성장을 도와요.
               </p>
             </div>
 
@@ -134,9 +135,7 @@ const AuthPage = () => {
                   onBackToLogin={handleBackToLogin}
                 />
               ) : formState === 'passwordResetRequest' ? (
-                <PasswordResetRequestStep
-                  onBackToLogin={handleBackToLogin}
-                />
+                <PasswordResetRequestStep onBackToLogin={handleBackToLogin} />
               ) : (
                 <>
                   {formState === 'signIn' ? (
@@ -179,7 +178,7 @@ const AuthPage = () => {
                     {formState === 'signUp' && (
                       <p className="mt-2 text-center text-xs text-grey-80">
                         소셜 로그인으로 회원가입 시 위의 약관에 대한 동의로
-                        취급 됩니다.
+                        간주돼요.
                       </p>
                     )}
                   </div>

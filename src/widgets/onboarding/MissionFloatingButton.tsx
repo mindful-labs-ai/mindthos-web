@@ -146,7 +146,9 @@ export const MissionFloatingButton: React.FC = () => {
         >
           <div className="p-6">
             {/* 헤더 */}
-            <h3 className="typo-xl font-headline text-fg">신규 가입자 가이드</h3>
+            <h3 className="typo-xl font-headline text-fg">
+              신규 가입자 가이드
+            </h3>
 
             {/* 진행률 바 */}
             <div className="mt-4 flex items-center gap-3">

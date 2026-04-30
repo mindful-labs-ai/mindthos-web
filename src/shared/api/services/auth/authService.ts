@@ -244,7 +244,7 @@ export const authService = {
     if (!user?.email) {
       throw new AuthError(
         AuthErrorCode.USER_NOT_FOUND,
-        '사용자 정보를 찾을 수 없습니다.'
+        '사용자 정보를 찾을 수 없어요.'
       );
     }
 
@@ -256,7 +256,7 @@ export const authService = {
       if (verifyError) {
         throw new AuthError(
           AuthErrorCode.INVALID_CREDENTIALS,
-          '현재 비밀번호가 올바르지 않습니다.',
+          '현재 비밀번호가 맞지 않아요.',
           verifyError
         );
       }

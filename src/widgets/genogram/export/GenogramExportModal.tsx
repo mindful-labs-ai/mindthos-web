@@ -167,7 +167,7 @@ export function GenogramExportModal({
                 <X className="h-4 w-4" />
               </button>
               <p className="typo-sm flex gap-[7px] pr-4 text-fg">
-                플랜 업그레이드 후 이용 가능합니다.
+                상위 플랜에서 이용할 수 있어요.
                 <button
                   type="button"
                   onClick={() => openModal('planChange')}
@@ -196,10 +196,10 @@ export function GenogramExportModal({
                 </h2>
                 <div className="flex flex-col gap-2">
                   <p className="text-m font-emphasize text-grey-100">
-                    플랜 업그레이드 후 이용 가능합니다.
+                    상위 플랜에서 이용할 수 있어요.
                   </p>
                   <p className="text-sm text-grey-60">
-                    플랜 업그레이드를 통해
+                    상위 플랜으로 변경하고
                     <br />
                     마음토스의 더 많은 기능을 만나보세요.
                   </p>

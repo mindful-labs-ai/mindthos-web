@@ -89,7 +89,7 @@ export function useMarkdownEditSession({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '편집할 수 없습니다.',
+        description: '편집할 수 없어요.',
         duration: 3000,
       });
       return;
@@ -162,14 +162,14 @@ export function useMarkdownEditSession({
 
       toast({
         title: '저장 완료',
-        description: '내용이 수정되었습니다.',
+        description: '내용을 수정했어요.',
         duration: 3000,
       });
     } catch (error) {
       trackError(MixpanelError.MarkdownEditSaveError, error, trackingMeta);
       toast({
         title: '저장 실패',
-        description: '내용 저장에 실패했습니다. 다시 시도해주세요.',
+        description: '내용을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 3000,
       });
     } finally {

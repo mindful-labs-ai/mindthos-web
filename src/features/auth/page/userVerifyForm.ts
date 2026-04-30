@@ -3,20 +3,20 @@ import { z } from 'zod';
 export const userVerifyFormSchema = z.object({
   name: z
     .string()
-    .min(1, '이름을 입력해주세요.')
-    .max(20, '이름은 20자 이내로 입력해주세요.'),
+    .min(1, '이름을 입력해 주세요.')
+    .max(20, '이름은 20자 이내로 입력해 주세요.'),
   organization: z
     .string()
-    .min(1, '소속 기관을 입력해주세요.')
-    .max(50, '소속 기관은 50자 이내로 입력해주세요.'),
-  qualification: z.array(z.string()).min(1, '보유 자격을 선택해주세요.'),
-  referralSource: z.string().min(1, '가입 경로를 선택해주세요.'),
+    .min(1, '소속 기관을 입력해 주세요.')
+    .max(50, '소속 기관은 50자 이내로 입력해 주세요.'),
+  qualification: z.array(z.string()).min(1, '보유 자격을 선택해 주세요.'),
+  referralSource: z.string().min(1, '가입 경로를 선택해 주세요.'),
   phoneNumber: z
     .string()
-    .min(1, '휴대폰 번호를 입력해주세요.')
+    .min(1, '휴대폰 번호를 입력해 주세요.')
     .regex(
       /^01[016789]-?\d{3,4}-?\d{4}$/,
-      '올바른 휴대전화 번호를 입력해주세요. (예: 010-1234-5678)'
+      '올바른 휴대전화 번호를 입력해 주세요. (예: 010-1234-5678)'
     ),
 });
 

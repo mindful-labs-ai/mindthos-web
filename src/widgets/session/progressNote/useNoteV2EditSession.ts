@@ -62,7 +62,7 @@ export function useNoteV2EditSession({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '편집할 수 없습니다.',
+        description: '편집할 수 없어요.',
         duration: 3000,
       });
       return;
@@ -98,20 +98,13 @@ export function useNoteV2EditSession({
       console.error('저장 실패:', error);
       toast({
         title: '저장 실패',
-        description: '내용을 저장하는 데 실패했습니다.',
+        description: '내용을 저장하지 못했어요.',
         duration: 3000,
       });
     } finally {
       setIsSaving(false);
     }
-  }, [
-    isReadOnly,
-    onSave,
-    onSaveSuccess,
-    trackingEvents,
-    trackingMeta,
-    toast,
-  ]);
+  }, [isReadOnly, onSave, onSaveSuccess, trackingEvents, trackingMeta, toast]);
 
   return {
     isEditing,

@@ -39,11 +39,11 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
       ],
       perCounts: [
         {
-          label: '상담 노트 작성',
+          label: '상담노트 작성',
           amount: `${sessionNotes.toLocaleString()}회`,
         },
         {
-          label: '클라이언트 사례 분석',
+          label: '내담자 사례 분석',
           amount: `${clientAnalysis.toLocaleString()}회`,
         },
       ],
@@ -76,7 +76,7 @@ export const CreditUsageInfo: React.FC<CreditUsageInfoProps> = ({
         </div>
         <div className="flex flex-1 flex-col gap-1 md:gap-3">
           <Text className="truncate text-sm font-sub text-grey-80">
-            AI 상담 노트 및 분석
+            AI 상담노트 및 분석
           </Text>
           {usageItems.perCounts.map((item, index) => (
             <div key={index} className="flex gap-6">

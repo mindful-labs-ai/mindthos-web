@@ -16,7 +16,7 @@ interface AddClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Client | null;
-  /** 클라이언트 생성 완료 시 콜백 (생성된 클라이언트 ID 전달) */
+  /** 내담자 생성 완료 시 콜백 (생성된 내담자 ID 전달) */
   onClientCreated?: (clientId: string) => void;
 }
 
@@ -47,7 +47,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     const result = await form.handleSubmit(e);
     if (result) {
-      // 생성 모드이고 클라이언트 ID가 있으면 콜백 호출
+      // 생성 모드이고 내담자 ID가 있으면 콜백 호출
       if (!isEditMode && typeof result === 'string' && onClientCreated) {
         onClientCreated(result);
       }
@@ -72,15 +72,13 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
           <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
             <BackButton onClick={handleClose} />
             <p className="text-m font-medium text-grey-100">
-              {isEditMode ? '클라이언트 정보 수정' : '클라이언트 추가하기'}
+              {isEditMode ? '내담자 정보 수정' : '내담자 추가하기'}
             </p>
           </div>
         ) : (
           <div className="flex items-start justify-between">
             <Title as="h2" className="typo-xl px-6 font-headline">
-              {isEditMode
-                ? '클라이언트 정보 수정'
-                : '새로운 클라이언트 등록하기'}
+              {isEditMode ? '내담자 정보 수정' : '새로운 내담자 등록하기'}
             </Title>
           </div>
         )}
@@ -192,7 +190,7 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
                 : '등록 중...'
               : isEditMode
                 ? '정보 수정'
-                : '클라이언트 추가하기'}
+                : '내담자 추가하기'}
           </Button>
         </div>
       </form>

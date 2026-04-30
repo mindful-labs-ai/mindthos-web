@@ -43,8 +43,8 @@ export const PaymentSuccess = () => {
 
       if (!customerKey || !authKey) {
         toast({
-          title: '잘못된 요청',
-          description: '필수 파라미터가 누락되었습니다.',
+          title: '결제를 진행할 수 없어요',
+          description: '필요한 정보가 누락됐어요. 잠시 후 다시 시도해 주세요.',
         });
         navigateWithUtm(ROUTES.SETTINGS);
         return;
@@ -56,7 +56,7 @@ export const PaymentSuccess = () => {
       if (!user?.email) {
         toast({
           title: '사용자 정보 오류',
-          description: '사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.',
+          description: '사용자 정보를 찾을 수 없어요. 다시 로그인해 주세요.',
         });
         navigateWithUtm(ROUTES.SETTINGS);
         return;
@@ -102,14 +102,12 @@ export const PaymentSuccess = () => {
             }
 
             toast({
-              title: '플랜 업그레이드 완료',
-              description: '플랜이 성공적으로 업그레이드되었습니다.',
+              title: '플랜 변경 완료',
+              description: '플랜을 변경했어요.',
             });
             navigateWithUtm(ROUTES.SETTINGS);
           } else {
-            throw new Error(
-              response.message || '플랜 업그레이드에 실패했습니다.'
-            );
+            throw new Error(response.message || '플랜을 변경하지 못했어요.');
           }
         } else {
           // planId가 없으면 단순 카드 등록 (빌링키 발급 및 저장)
@@ -127,7 +125,7 @@ export const PaymentSuccess = () => {
 
           toast({
             title: '카드 등록 완료',
-            description: '카드가 성공적으로 등록되었습니다.',
+            description: '카드를 등록했어요.',
           });
         }
 
@@ -143,11 +141,11 @@ export const PaymentSuccess = () => {
         }
 
         toast({
-          title: planId ? '플랜 업그레이드 실패' : '카드 등록 실패',
+          title: planId ? '플랜 변경 실패' : '카드 등록 실패',
           description:
             error instanceof Error
               ? error.message
-              : `${planId ? '플랜 업그레이드' : '카드 등록'} 중 오류가 발생했습니다.`,
+              : `${planId ? '플랜 변경' : '카드 등록'} 중에 문제가 생겼어요.`,
         });
         navigateWithUtm(ROUTES.SETTINGS);
       } finally {
@@ -179,14 +177,14 @@ export const PaymentSuccess = () => {
 
           <div>
             <Title className="typo-xl font-headline">
-              {planId ? '플랜 업그레이드 처리 중' : '카드 등록 처리 중'}
+              {planId ? '플랜 변경 처리 중' : '카드 등록 처리 중'}
             </Title>
             <Text className="mt-2 text-gray-600">
               {isLoading
                 ? planId
-                  ? '빌링키 발급 및 결제를 처리하고 있습니다...'
-                  : '빌링키를 안전하게 발급받고 있습니다...'
-                : '잠시만 기다려주세요.'}
+                  ? '결제를 준비하고 있어요. 잠시만 기다려 주세요.'
+                  : '카드 정보를 안전하게 등록하고 있어요.'
+                : '잠시만 기다려 주세요.'}
             </Text>
           </div>
 

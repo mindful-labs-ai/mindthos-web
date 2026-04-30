@@ -59,35 +59,43 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
 
   // 사용처 라벨 매핑
   const getUsageLabel = (log: CreditLog) => {
-    const memo = log.log_memo || '';
     const metadata = (log.feature_metadata as Record<string, unknown>) || {};
 
-    if (memo.includes('client_analysis_generation')) {
-      return '다회기 분석';
-    }
-
-    if (memo.includes('session_creation')) {
-      if (
-        metadata.stt_model === 'gemini-3' ||
-        metadata.stt_model === 'advanced'
-      ) {
-        return '고급축어록';
-      }
-      if (metadata.stt_model === 'whisper' || metadata.stt_model === 'basic') {
-        return '일반축어록';
-      }
-    }
-
-    if (memo.includes('progress_note_generation')) {
-      return '상담노트 생성';
-    }
-
-    if (memo.includes('handwritten_session')) {
-      return '직접 입력';
-    }
-
-    if (memo.includes('family_summary_generation')) {
-      return '가계도 생성';
+    switch (log.use_type) {
+      case 'session_creation':
+        if (
+          metadata.stt_model === 'gemini-3' ||
+          metadata.stt_model === 'advanced'
+        ) {
+          return '고급축어록';
+        }
+        if (
+          metadata.stt_model === 'whisper' ||
+          metadata.stt_model === 'basic'
+        ) {
+          return '일반축어록';
+        }
+        return '축어록 생성';
+      case 'progress_note_generation':
+        return '상담노트 생성';
+      case 'handwritten_session':
+        return '직접 입력';
+      case 'client_analysis_generation':
+        return '다회기 분석';
+      case 'family_summary_generation':
+        return '가계도 생성';
+      case 'report_generation':
+        return '리포트 생성';
+      case 'deid_processing':
+        return '비식별화 처리';
+      case 'admin_charge':
+        return '크레딧 지급';
+      case 'admin_adjustment':
+        return '크레딧 조정';
+      case 'bug_reward':
+        return '오류 보상';
+      case 'credit_reward':
+        return '크레딧 보상';
     }
 
     return log.log_memo || log.use_type;
@@ -102,11 +110,11 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     </div>
   ) : isError ? (
     <div className="flex items-center justify-center py-20">
-      <p className="text-red-80">오류가 발생했습니다.</p>
+      <p className="text-red-80">오류가 생겼어요.</p>
     </div>
   ) : logs.length === 0 ? (
     <div className="flex items-center justify-center py-20">
-      <p className="text-grey-60">크레딧 사용 내역이 없습니다.</p>
+      <p className="text-grey-60">크레딧 사용 내역이 없어요.</p>
     </div>
   ) : (
     <div className="space-y-1">
@@ -163,7 +171,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
               </div>
             </div>
             <p className="mt-4 text-center text-xs text-grey-60">
-              *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
+              *크레딧 사용 기록은 최대 3개월까지만 조회가능해요.
             </p>
           </div>
           <div className="flex-shrink-0 px-4 pb-4 md:px-10">
@@ -190,7 +198,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
             </div>
           </div>
           <p className="mt-4 text-center text-sm text-grey-60">
-            *크레딧 사용 기록은 최대 3개월까지만 조회가능합니다.
+            *크레딧 사용 기록은 최대 3개월까지만 조회가능해요.
           </p>
         </div>
       )}

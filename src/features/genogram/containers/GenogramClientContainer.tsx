@@ -174,9 +174,7 @@ export function GenogramClientContainer() {
       steps.setAiOutput(result.data.ai_output);
       steps.setEditedJson(JSON.stringify(result.data.ai_output, null, 2));
     } catch (error) {
-      steps.setError(
-        (error as Error).message || '알 수 없는 오류가 발생했습니다.'
-      );
+      steps.setError((error as Error).message || '알 수 없는 오류가 생겼어요.');
     } finally {
       steps.setLoading(false);
       setShouldForceRefresh(false);
@@ -185,7 +183,7 @@ export function GenogramClientContainer() {
 
   const handleNextToRender = useCallback(() => {
     if (!steps.aiOutput) {
-      steps.setError('데이터가 없습니다.');
+      steps.setError('데이터가 없어요.');
       return;
     }
     try {
@@ -204,14 +202,14 @@ export function GenogramClientContainer() {
       });
       steps.setStep('render');
     } catch {
-      steps.setError('JSON 변환 중 오류가 발생했습니다.');
+      steps.setError('가계도 데이터를 처리하지 못했어요.');
     }
   }, [steps]);
 
   const handleEditApply = useCallback(async () => {
     if (!clientId || !userId) return;
     if (!steps.aiOutput) {
-      steps.setError('데이터가 없습니다.');
+      steps.setError('데이터가 없어요.');
       return;
     }
     try {
@@ -232,7 +230,7 @@ export function GenogramClientContainer() {
       originalCanvasRef.current = null;
       steps.reset();
     } catch {
-      steps.setError('JSON 변환 중 오류가 발생했습니다.');
+      steps.setError('가계도 데이터를 처리하지 못했어요.');
     }
   }, [clientId, userId, steps, queryClient]);
 
@@ -248,7 +246,7 @@ export function GenogramClientContainer() {
       const aiOutput = convertCanvasToAIJson(canvasData);
       steps.updateAiOutput(aiOutput);
     } catch {
-      steps.setError('가계도 데이터 변환 중 오류가 발생했습니다.');
+      steps.setError('가계도 데이터 변환 중 오류가 생겼어요.');
     } finally {
       steps.setLoading(false);
     }
@@ -378,7 +376,7 @@ export function GenogramClientContainer() {
       });
     } catch (e) {
       console.error('Failed to reset genogram:', e);
-      toast({ title: '초기화 중 오류가 발생했습니다.' });
+      toast({ title: '초기화 중 오류가 생겼어요.' });
     } finally {
       setIsResetting(false);
       setIsResetModalOpen(false);
@@ -492,7 +490,7 @@ export function GenogramClientContainer() {
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
             <div className="flex h-[200px] w-full max-w-[512px] flex-col justify-center rounded-lg border border-dashed border-grey-30 bg-white p-8 text-center backdrop-blur-sm">
               <p className="text-l font-medium text-grey-60">
-                클라이언트를 선택해주세요
+                내담자를 선택해 주세요
               </p>
             </div>
           </div>
@@ -637,12 +635,12 @@ export function GenogramClientContainer() {
           </h2>
           <div className="flex flex-col gap-2">
             <p className="text-m font-emphasize text-grey-100">
-              가계도 편집 기능은 PC에서 이용 가능합니다.
+              가계도 편집 기능은 PC에서 이용 가능해요.
             </p>
             <p className="text-sm text-grey-60">
               세부적인 편집이 필요한 경우에는
               <br />
-              PC 사용을 권장드립니다.
+              PC 사용을 권장드려요.
             </p>
           </div>
           <Button

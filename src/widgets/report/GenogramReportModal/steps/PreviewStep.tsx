@@ -44,10 +44,10 @@ export function PreviewStep({
               <Loader2 className="h-5 w-5 animate-spin" />
               <span>
                 {isCapturing
-                  ? '가계도 캡처 중...'
+                  ? '가계도 이미지 만드는 중...'
                   : isRendering
-                    ? '미리보기 렌더링 중...'
-                    : 'PDF 생성 중...'}
+                    ? '미리보기 만드는 중...'
+                    : 'PDF 만드는 중...'}
               </span>
             </div>
           </div>

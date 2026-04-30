@@ -112,7 +112,7 @@ export function useGenogramData(
     return () => window.removeEventListener('beforeunload', handler);
   }, [isSaving]);
 
-  // clientId 변경 시 pending 저장 취소 (다른 클라이언트에 저장되는 것 방지)
+  // clientId 변경 시 pending 저장 취소 (다른 내담자에 저장되는 것 방지)
   useEffect(() => {
     return () => {
       if (timerRef.current) {

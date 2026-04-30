@@ -73,7 +73,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
     if (!currentPlanId) {
       toast({
         title: '플랜 정보 오류',
-        description: '현재 플랜 정보를 찾을 수 없습니다.',
+        description: '현재 플랜 정보를 찾을 수 없어요.',
       });
       return;
     }
@@ -86,8 +86,8 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
     } catch (error) {
       trackError(MixpanelError.CreditRenewalPreviewError, error);
       toast({
-        title: '오류',
-        description: '충전 정보를 불러오는데 실패했습니다.',
+        title: '문제가 생겼어요',
+        description: '충전 정보를 불러오지 못했어요.',
       });
     } finally {
       setIsLoadingPreview(false);
@@ -136,7 +136,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
 
     toast({
       title: '크레딧 충전 완료',
-      description: '크레딧이 충전되었습니다.',
+      description: '크레딧을 충전했어요.',
     });
   };
 
@@ -250,7 +250,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
       <span className="font-headline text-green-80">
         {addedCredits.toLocaleString()} 크레딧
       </span>
-      을 충전합니다.
+      을 충전해요.
     </p>
   );
 
@@ -276,12 +276,12 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
               <p className="text-l font-emphasize text-grey-100">
-                크레딧을 충전하시겠습니까?
+                크레딧을 충전하시겠어요?
               </p>
               <p className="mt-2 text-sm text-grey-60">
-                충전에 필요한 크레딧의 양에 따라 가격이 결정됩니다.
+                충전에 필요한 크레딧의 양에 따라 가격이 결정돼요.
                 {isMobile ? ' ' : <br />}
-                충전을 완료하면 플랜 이용기간은 오늘부터 1개월로 변경됩니다.
+                충전을 완료하면 플랜 이용기간은 오늘부터 1개월로 변경돼요.
               </p>
             </div>
 
@@ -334,9 +334,9 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
               크레딧을 충전하시겠습니까?
             </p>
             <p className="mt-4 text-grey-60">
-              충전에 필요한 크레딧의 양에 따라 가격이 결정됩니다.
+              충전에 필요한 크레딧의 양에 따라 가격이 결정돼요.
               <br />
-              충전을 완료하면 플랜 이용기간은 오늘부터 1개월로 변경됩니다.
+              충전을 완료하면 플랜 이용기간은 오늘부터 1개월로 변경돼요.
             </p>
           </div>
 

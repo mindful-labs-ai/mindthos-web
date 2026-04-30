@@ -105,7 +105,7 @@ export const GlobalModalContainer = () => {
       return true;
     } catch (error: unknown) {
       setRegisterError(
-        (error as { message?: string })?.message ?? '쿠폰 등록에 실패했습니다.'
+        (error as { message?: string })?.message ?? '쿠폰을 등록하지 못했어요.'
       );
       return false;
     } finally {
@@ -173,10 +173,7 @@ export const GlobalModalContainer = () => {
         !isPaymentRoute && <MissionFloatingButton />}
 
       {/* 사용자 정보 수정 모달 */}
-      <UserEditModal
-        open={isUserEditOpen}
-        onOpenChange={handleCloseUserEdit}
-      />
+      <UserEditModal open={isUserEditOpen} onOpenChange={handleCloseUserEdit} />
 
       {/* 플랜 변경 모달 */}
       <PlanChangeModal
@@ -197,7 +194,7 @@ export const GlobalModalContainer = () => {
         source={comingSoonData?.source}
       />
 
-      {/* 클라이언트 추가 모달 */}
+      {/* 내담자 추가 모달 */}
       <AddClientModal
         open={isAddClientOpen}
         onOpenChange={handleCloseAddClient}

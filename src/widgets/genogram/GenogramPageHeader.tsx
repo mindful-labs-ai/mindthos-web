@@ -31,9 +31,9 @@ interface GenogramPageHeaderProps {
   isPanelOpen?: boolean;
   isSaving?: boolean;
   lastSavedAt?: Date | null;
-  /** 클라이언트 추가 핸들러 */
+  /** 내담자 추가 핸들러 */
   onAddClient?: () => void;
-  /** 클라이언트 없이 임시 캔버스 모드 */
+  /** 내담자 없이 임시 캔버스 모드 */
   isTemporaryMode?: boolean;
   /** 가계도 초기화 핸들러 */
   onReset?: () => void;
@@ -94,7 +94,7 @@ export function GenogramPageHeader({
 
   return (
     <>
-      {/* 좌측 상단: 클라이언트 드롭다운 + 기본 정보 버튼 */}
+      {/* 좌측 상단: 내담자 드롭다운 + 기본 정보 버튼 */}
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
         <ClientDropdown
           clients={clients}

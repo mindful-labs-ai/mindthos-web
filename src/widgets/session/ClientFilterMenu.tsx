@@ -79,7 +79,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
               />
             </svg>
           </button>
-          <h3 className="typo-sm font-emphasize text-fg">클라이언트 선택</h3>
+          <h3 className="typo-sm font-emphasize text-fg">내담자 선택</h3>
         </div>
       )}
 
@@ -144,7 +144,7 @@ export const ClientFilterMenu: React.FC<ClientFilterMenuProps> = ({
           })
         ) : (
           <p className="typo-sm py-4 text-center text-fg-muted">
-            검색 결과가 없습니다
+            검색 결과가 없어요
           </p>
         )}
       </div>

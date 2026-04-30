@@ -20,10 +20,11 @@ export function SupervisionBlock({
 
   return (
     <div>
-      <h3 className="mb-1 text-l font-emphasize">간이 수퍼비전</h3>
+      <h3 className="mb-1 text-l font-emphasize">간이 슈퍼비전</h3>
       <div className="space-y-3 p-3">
         {supervision.map((sv, i) => (
           <div key={i} className="group relative rounded-lg transition-colors">
+            {i > 0 && <hr className="mb-6 border-t border-grey-40" />}
             {/* Quote (Before) — grey card */}
             <div className="rounded-lg border border-grey-40 bg-grey-10 p-3">
               <div className="note-card-title">상담자 발언</div>
@@ -128,5 +129,5 @@ export function serializeSupervision(
         `- 상담자 발언 ${i + 1}: "${sv.quote}"\n  평가: ${sv.evaluation}\n  대안 화법: "${sv.alternative}"\n  근거: ${sv.rationale}`
     )
     .join('\n');
-  return [`간이 수퍼비전`, items].join('\n');
+  return [`간이 슈퍼비전`, items].join('\n');
 }

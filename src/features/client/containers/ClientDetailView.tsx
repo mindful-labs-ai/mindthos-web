@@ -42,7 +42,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   const navigate = useNavigate();
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
 
-  // 클라이언트 정보 내용 (공유)
+  // 내담자 정보 내용 (공유)
   const clientInfoFields = (
     <>
       <div>
@@ -85,7 +85,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
             : 'text-grey-60 lg:hover:text-grey-80'
         }`}
       >
-        클라이언트 분석
+        내담자 분석
         <div
           className={`absolute bottom-2 right-0 h-0.5 bg-grey-100 transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
         />
@@ -136,7 +136,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
 
           {activeTab === 'history' ? (
             <div className="px-4 py-4 md:px-10 md:py-6">
-              {/* 아코디언 클라이언트 정보 */}
+              {/* 아코디언 내담자 정보 */}
               <div className="mb-6 rounded-xl border border-grey-30 bg-white">
                 <button
                   type="button"
@@ -144,9 +144,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                   className="flex w-full items-center justify-between px-4 py-3"
                 >
                   <div className="flex items-center gap-1">
-                    <span className="text-sm text-grey-60">
-                      클라이언트 정보
-                    </span>
+                    <span className="text-sm text-grey-60">내담자 정보</span>
                     <ChevronDownIcon
                       size={16}
                       className={`text-grey-60 transition-transform ${isInfoOpen ? 'rotate-180' : ''}`}
@@ -249,11 +247,11 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               {/* 왼쪽: 세션 목록 */}
               <div className="min-w-0">{sessionList}</div>
 
-              {/* 우측: 클라이언트 정보 */}
+              {/* 우측: 내담자 정보 */}
               <div className="sticky top-0 h-fit">
                 <div className="rounded-lg border border-grey-30 bg-white p-6 text-left">
                   <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm text-grey-60">클라이언트 정보</h2>
+                    <h2 className="text-sm text-grey-60">내담자 정보</h2>
                     <button
                       onClick={onEditClientClick}
                       className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"

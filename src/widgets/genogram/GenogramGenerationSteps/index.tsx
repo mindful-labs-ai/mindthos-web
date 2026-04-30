@@ -63,7 +63,7 @@ export function GenogramGenerationSteps({
           <div className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-red-500" />
             <p className="typo-l mt-4 text-center font-medium text-fg">
-              오류가 발생했습니다
+              오류가 생겼어요
             </p>
             <p className="typo-sm mt-2 text-center text-fg-muted">{error}</p>
             {onEditCancel && (
@@ -143,7 +143,7 @@ export function GenogramGenerationSteps({
         <div className="flex flex-col items-center justify-center py-12">
           <AlertCircle className="h-12 w-12 text-red-500" />
           <p className="typo-l mt-4 text-center font-medium text-fg">
-            오류가 발생했습니다
+            오류가 생겼어요
           </p>
           <p className="typo-sm mt-2 text-center text-fg-muted">{error}</p>
           {onCancel && (

@@ -1,5 +1,5 @@
 /**
- * 클라이언트 분석 서비스
+ * 내담자 분석 서비스
  */
 
 import type {
@@ -40,7 +40,7 @@ export const clientAnalysisService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '템플릿 조회 중 오류가 발생했습니다.',
+          message: error.message || '템플릿 조회 중 오류가 생겼어요.',
         } as ClientAnalysisApiError;
       }
 
@@ -51,7 +51,7 @@ export const clientAnalysisService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '템플릿 조회 중 오류가 발생했습니다.',
+        message: apiError.message || '템플릿 조회 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },
@@ -72,7 +72,7 @@ export const clientAnalysisService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '템플릿 조회 중 오류가 발생했습니다.',
+          message: error.message || '템플릿 조회 중 오류가 생겼어요.',
         } as ClientAnalysisApiError;
       }
 
@@ -88,7 +88,7 @@ export const clientAnalysisService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '템플릿 조회 중 오류가 발생했습니다.',
+        message: apiError.message || '템플릿 조회 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },
@@ -128,7 +128,7 @@ export const clientAnalysisService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '상태 조회 중 오류가 발생했습니다.',
+        message: apiError.message || '상태 조회 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },
@@ -150,13 +150,13 @@ export const clientAnalysisService = {
         status: 500,
         success: false,
         error: 'UPDATE_ERROR',
-        message: error.message || '분석 내용 수정 중 오류가 발생했습니다.',
+        message: error.message || '분석 내용 수정 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },
 
   /**
-   * 클라이언트의 전체 분석 히스토리 조회 (버전별 그룹화)
+   * 내담자의 전체 분석 히스토리 조회 (버전별 그룹화)
    */
   async getClientAnalyses(clientId: string): Promise<ClientAnalysisVersion[]> {
     try {
@@ -172,8 +172,7 @@ export const clientAnalysisService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message:
-            error.message || '분석 히스토리 조회 중 오류가 발생했습니다.',
+          message: error.message || '분석 히스토리 조회 중 오류가 생겼어요.',
         } as ClientAnalysisApiError;
       }
 
@@ -201,8 +200,7 @@ export const clientAnalysisService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message:
-          apiError.message || '분석 히스토리 조회 중 오류가 발생했습니다.',
+        message: apiError.message || '분석 히스토리 조회 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },

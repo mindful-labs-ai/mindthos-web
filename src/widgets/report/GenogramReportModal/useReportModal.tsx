@@ -185,7 +185,7 @@ export function useReportModal({
         fetchReports();
         toast({
           title: '보고서 생성 완료',
-          description: '가계도 분석 보고서가 성공적으로 생성되었습니다.',
+          description: '가계도 분석 보고서를 만들었어요.',
         });
         return;
       }
@@ -223,7 +223,7 @@ export function useReportModal({
     } catch (error) {
       if (cancelledRef.current) return;
       const errorMsg =
-        error instanceof Error ? error.message : '오류가 발생했습니다.';
+        error instanceof Error ? error.message : '오류가 생겼어요.';
       trackEvent(MixpanelError.GenogramReportGenerateFail, {
         client_id: clientId,
         error: errorMsg,
@@ -294,7 +294,7 @@ export function useReportModal({
         toast({
           title: '미리보기 실패',
           description:
-            error instanceof Error ? error.message : '오류가 발생했습니다.',
+            error instanceof Error ? error.message : '오류가 생겼어요.',
         });
         setStep('list');
       } finally {
@@ -343,7 +343,7 @@ export function useReportModal({
         required: REPORT_CREDIT_COST,
       });
       setCreditError(
-        `크레딧이 부족합니다. 필요: ${REPORT_CREDIT_COST}, 보유: ${remaining}`
+        `크레딧이 부족해요. 필요: ${REPORT_CREDIT_COST}, 보유: ${remaining}`
       );
       return;
     }

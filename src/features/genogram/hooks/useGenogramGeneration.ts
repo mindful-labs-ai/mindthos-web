@@ -12,7 +12,7 @@ interface UseGenogramGenerationOptions {
 
 /**
  * 가계도 AI 생성 훅
- * 클라이언트의 상담 기록을 기반으로 가계도 생성
+ * 내담자의 상담 기록을 기반으로 가계도 생성
  *
  * 파이프라인:
  * 1. API 호출 → AI 분석 결과 (원본 JSON)

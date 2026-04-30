@@ -929,7 +929,7 @@ export const createMockSessionData = ({
     created_at: now,
   };
 
-  // 3. ProgressNote 생성 (상담 노트 - SOAP, 마음토스)
+  // 3. ProgressNote 생성 (상담노트 - SOAP, 마음토스)
   const progressNotes: ProgressNote[] = [
     {
       id: generateId(),
@@ -952,7 +952,7 @@ P (Plan): 현재의 건강한 생활 습관 유지를 격려. 다음 세션에�
       id: generateId(),
       session_id: sessionId,
       user_id: userId,
-      title: '마음토스 상담 노트',
+      title: '마음토스 상담노트',
       template_id: 2, // 마음토스 템플릿 ID
       summary: `
 ## 주요 주제

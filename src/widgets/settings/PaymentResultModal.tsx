@@ -38,7 +38,7 @@ const getCardDisplay = (cardInfo?: {
   number?: string;
   company?: string | null;
 }) => {
-  if (!cardInfo) return '등록된 카드가 없습니다';
+  if (!cardInfo) return '등록된 카드가 없어요';
   const brandName = getCardBrandName(cardInfo.company);
   const prefix = brandName || cardInfo.type || '등록 카드';
   return `${prefix} ${formatCardNumber(cardInfo.number)}`;
@@ -63,8 +63,8 @@ export const PaymentResultModal: React.FC<PaymentResultModalProps> = ({
   const isSuccess = status === 'success';
   const title = isSuccess ? '결제 성공' : '결제 실패';
   const description = isSuccess
-    ? `${planName || '선택한'} 플랜으로 성공적으로 변경되었습니다.`
-    : '등록한 카드 정보를 다시 확인해주세요.';
+    ? `${planName || '선택한'} 플랜으로 변경했어요.`
+    : '등록한 카드 정보 혹은 계좌 잔액을 다시 확인해 주세요.';
 
   const infoItems = isSuccess
     ? [
@@ -94,7 +94,9 @@ export const PaymentResultModal: React.FC<PaymentResultModalProps> = ({
         },
         {
           label: '실패 사유',
-          value: reason || '결제에 실패했습니다. 다시 시도해주세요.',
+          value:
+            reason ||
+            '결제를 완료하지 못했어요. 카드 정보와 잔액을 확인한 뒤 다시 시도해 주세요.',
         },
       ];
 

@@ -1,6 +1,11 @@
 import React from 'react';
 
 import { cn } from '@/lib/cn';
+import {
+  SUPPORT_KAKAO_URL,
+  SUPPORT_LINK_LABEL,
+  SUPPORT_TRIGGER_PHRASE,
+} from '@/shared/constants/support';
 
 export interface ToastAction {
   label: string;
@@ -130,6 +135,19 @@ const ToastItem: React.FC<ToastItemProps> = ({
           {toast.description && (
             <div className="typo-sm mt-1 text-fg-muted">
               {toast.description}
+              {toast.description.includes(SUPPORT_TRIGGER_PHRASE) && (
+                <>
+                  {' '}
+                  <a
+                    href={SUPPORT_KAKAO_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline lg:hover:text-primary-hover"
+                  >
+                    {SUPPORT_LINK_LABEL}
+                  </a>
+                </>
+              )}
             </div>
           )}
           {toast.action && (

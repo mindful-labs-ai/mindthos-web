@@ -36,7 +36,7 @@ const TermsAgreementPage = () => {
       navigateWithUtm(ROUTES.ROOT, { replace: true });
     } catch {
       toast({
-        title: '약관 동의 처리 중 오류가 발생했습니다.',
+        title: '약관 동의 처리 중 오류가 생겼어요.',
       });
     }
   };
@@ -60,7 +60,7 @@ const TermsAgreementPage = () => {
       {isError ? (
         <div className="text-center">
           <p className="text-m font-sub text-grey-100">
-            약관 정보를 불러오는 중 오류가 발생했습니다.
+            약관 정보를 불러오는 중 오류가 생겼어요.
           </p>
           <button
             type="button"

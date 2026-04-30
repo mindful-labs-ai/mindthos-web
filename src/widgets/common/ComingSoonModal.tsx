@@ -30,7 +30,7 @@ export function ComingSoonModal({
 
         {/* 확인 문구 */}
         <p className="typo-l mt-8 text-center font-medium text-fg">
-          해당 기능은 현재 개발 중입니다.
+          해당 기능은 현재 개발 중이에요.
         </p>
 
         {/* 설명 */}

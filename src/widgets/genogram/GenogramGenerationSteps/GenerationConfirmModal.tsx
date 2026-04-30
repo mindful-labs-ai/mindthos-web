@@ -43,10 +43,10 @@ export function GenerationConfirmModal({
         {hasUnsavedChanges ? (
           <>
             <p className="typo-m mb-2 font-medium text-fg">
-              저장하지 않은 구성원/관계가 있습니다.
+              저장하지 않은 구성원/관계가 있어요.
             </p>
             <p className="typo-sm mb-8 text-fg-muted">
-              편집 중인 카드를 저장한 후 다시 시도해주세요.
+              편집 중인 카드를 저장한 후 다시 시도해 주세요.
             </p>
             <button
               onClick={onClose}

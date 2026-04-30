@@ -41,7 +41,7 @@ export function useTranscriptCopy({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 복사 기능이 비활성화됩니다.',
+        description: '실제 상담 기록에서 복사할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -110,13 +110,13 @@ export function useTranscriptCopy({
       await navigator.clipboard.writeText(formattedText);
       toast({
         title: '복사 완료',
-        description: '축어록이 클립보드에 복사되었습니다.',
+        description: '축어록을 복사했어요.',
         duration: 3000,
       });
     } catch {
       toast({
-        title: '복사 실패',
-        description: '클립보드에 복사할 수 없습니다.',
+        title: '복사 실패 — 다시 시도해 주세요.',
+        description: '클립보드에 복사할 수 없어요.',
         duration: 3000,
       });
     }
@@ -126,7 +126,7 @@ export function useTranscriptCopy({
     if (isReadOnly) {
       toast({
         title: '읽기 전용',
-        description: '예시에서는 복사 기능이 비활성화됩니다.',
+        description: '실제 상담 기록에서 복사할 수 있어요.',
         duration: 3000,
       });
       return;
@@ -136,13 +136,13 @@ export function useTranscriptCopy({
       await navigator.clipboard.writeText(content);
       toast({
         title: '복사 완료',
-        description: '입력된 텍스트가 클립보드에 복사되었습니다.',
+        description: '입력한 텍스트를 복사했어요.',
         duration: 3000,
       });
     } catch {
       toast({
-        title: '복사 실패',
-        description: '클립보드에 복사할 수 없습니다.',
+        title: '복사 실패 — 다시 시도해 주세요.',
+        description: '클립보드에 복사할 수 없어요.',
         duration: 3000,
       });
     }
