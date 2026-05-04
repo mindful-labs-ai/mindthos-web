@@ -22,9 +22,9 @@ export function KeyQuotesBlock({ quotes, editable }: KeyQuotesBlockProps) {
         return (
           <div
             key={i}
-            className="group/quote flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors ease-in-out lg:hover:border-green-80"
+            className="group/quote relative rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors ease-in-out lg:hover:border-green-80"
           >
-            <div className="min-w-0 flex-1 space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <p className="note-card-title">
                 "
                 <span
@@ -56,7 +56,7 @@ export function KeyQuotesBlock({ quotes, editable }: KeyQuotesBlockProps) {
               )}
             </div>
             {!editable && (
-              <div className="flex-shrink-0 transition-opacity lg:opacity-0 lg:group-hover/quote:opacity-100">
+              <div className="absolute right-3 top-1.5 transition-opacity lg:opacity-0 lg:group-hover/quote:opacity-100">
                 <CopyButton
                   isCopied={copiedId === `p3-quote-${i}`}
                   onClick={() =>

@@ -46,7 +46,7 @@ export function NumberedSection({
       id={anchorId}
       aria-labelledby={headerId}
       className={cn(
-        'group relative scroll-mt-24 rounded-lg p-4 transition-colors sm:p-5 lg:hover:bg-grey-10',
+        'group relative scroll-mt-24 rounded-lg py-4 transition-colors sm:p-5 lg:hover:bg-grey-10',
         className
       )}
     >
