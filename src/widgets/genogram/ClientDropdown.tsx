@@ -130,7 +130,7 @@ export function ClientDropdown({
           {/* 최근 추가한 고객 */}
           {!searchQuery && recentClients.length > 0 && (
             <div className="mb-4">
-              <p className="typo-sm mb-2 text-fg-muted">최근 추가한 고객</p>
+              <p className="typo-sm mb-2 text-fg-muted">최근 추가한 내담자</p>
               <div className="flex flex-wrap gap-2">
                 {recentClients.map((client) => (
                   <button
@@ -151,7 +151,7 @@ export function ClientDropdown({
 
           {/* 모든 고객 */}
           <div>
-            <p className="typo-sm mb-2 text-fg-muted">모든 고객</p>
+            <p className="typo-sm mb-2 text-fg-muted">모든 내담자</p>
             <div className="max-h-[240px] space-y-1 overflow-y-auto">
               {filteredClients.length === 0 ? (
                 <p className="typo-sm py-4 text-center text-fg-muted">
