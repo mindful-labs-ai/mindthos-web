@@ -40,7 +40,7 @@ export const clientAnalysisService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '템플릿 조회 중 오류가 생겼어요.',
+          message: error.message || '노트 양식 조회 중 오류가 생겼어요.',
         } as ClientAnalysisApiError;
       }
 
@@ -51,7 +51,7 @@ export const clientAnalysisService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '템플릿 조회 중 오류가 생겼어요.',
+        message: apiError.message || '노트 양식 조회 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },
@@ -72,7 +72,7 @@ export const clientAnalysisService = {
           status: 500,
           success: false,
           error: 'DATABASE_ERROR',
-          message: error.message || '템플릿 조회 중 오류가 생겼어요.',
+          message: error.message || '노트 양식 조회 중 오류가 생겼어요.',
         } as ClientAnalysisApiError;
       }
 
@@ -88,7 +88,7 @@ export const clientAnalysisService = {
         status: apiError.status || 500,
         success: false,
         error: apiError.error || 'UNKNOWN_ERROR',
-        message: apiError.message || '템플릿 조회 중 오류가 생겼어요.',
+        message: apiError.message || '노트 양식 조회 중 오류가 생겼어요.',
       } as ClientAnalysisApiError;
     }
   },
