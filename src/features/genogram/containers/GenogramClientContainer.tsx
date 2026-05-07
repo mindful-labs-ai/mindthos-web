@@ -18,6 +18,7 @@ import { genogramService } from '@/shared/api/supabase/genogramQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import {
   clientQueryKeys,
+  creditQueryKeys,
   genogramQueryKeys,
 } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
@@ -178,8 +179,16 @@ export function GenogramClientContainer() {
     } finally {
       steps.setLoading(false);
       setShouldForceRefresh(false);
+      // generate-family-summary edge function이 reserve→commit/release를 내부에서 끝낸 상태이므로
+      // 응답이 돌아온 시점에 잔액 동기화 (성공/실패 모두 적용 — failure는 release로 환불됨)
+      const userIdNum = Number(userId);
+      if (!Number.isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
     }
-  }, [clientId, steps, shouldForceRefresh]);
+  }, [clientId, steps, shouldForceRefresh, userId, queryClient]);
 
   const handleNextToRender = useCallback(() => {
     if (!steps.aiOutput) {

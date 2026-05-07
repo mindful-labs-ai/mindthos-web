@@ -60,6 +60,8 @@ export const creditQueryKeys = {
   subscription: (userId: number) => ['credit', 'subscription', userId] as const,
   usage: (userId: number) => ['credit', 'usage', userId] as const,
   logs: (userId: number) => ['credit', 'logs', userId] as const,
+  // 신규 통합 RPC (get_credit_summary). 폴링 제거 + useCreditGuard와 같은 키 공유.
+  summary: (userId: number) => ['credit', 'summary', userId] as const,
 };
 
 // --- Card ---

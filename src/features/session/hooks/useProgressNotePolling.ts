@@ -7,7 +7,11 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchProgressNoteById } from '@/shared/api/supabase/progressNoteQueries';
-import { sessionQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 import type { ProgressNote, ProgressNoteStatus } from '../types';
 
@@ -34,6 +38,7 @@ export function useProgressNotePolling({
   onError,
 }: UseProgressNotePollingOptions) {
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
   const previousStatusRef = useRef<ProgressNoteStatus | null>(null);
   const sessionQueryKey = sessionQueryKeys.detail(sessionId, isDummySession);
 
@@ -87,6 +92,14 @@ export function useProgressNotePolling({
         queryKey: sessionQueryKey,
       });
 
+      // 크레딧 잔액 갱신 — 노트 처리 끝나면 차감/환불이 끝났을 시점
+      const userIdNum = Number(userId);
+      if (!Number.isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
+
       if (currentStatus === 'succeeded') {
         onComplete?.(data);
       } else if (currentStatus === 'failed') {
@@ -98,7 +111,7 @@ export function useProgressNotePolling({
 
     // 현재 상태 저장
     previousStatusRef.current = currentStatus;
-  }, [query.data, onComplete, onError, queryClient, sessionQueryKey]);
+  }, [query.data, onComplete, onError, queryClient, sessionQueryKey, userId]);
 
   // 에러 처리
   useEffect(() => {

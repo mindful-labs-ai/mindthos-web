@@ -45,7 +45,42 @@ export interface CreditInfo {
   };
 }
 
+// 신규 통합 응답 — get_credit_summary RPC.
+// useCreditInfo / useCreditGuard 양쪽이 같은 query key로 공유.
+export interface CreditSummary {
+  plan_id: string;
+  plan_type: string;
+  total_credit: number;
+  used_credit: number;
+  remaining_credit: number;
+  reset_at: string | null;
+  start_at: string | null;
+  end_at: string | null;
+  scheduled_plan_id: string | null;
+  held_count: number;
+}
+
 export const creditService = {
+  /**
+   * 현재 인증된 사용자의 크레딧 요약 조회.
+   * RPC는 JWT 컨텍스트(get_current_user_id)에서 사용자를 식별하므로 인자 없음.
+   */
+  async getCreditSummary(): Promise<CreditSummary> {
+    const { data, error } = await supabase.rpc('get_credit_summary');
+
+    if (error) {
+      throw new Error(`크레딧 정보 조회 실패: ${error.message}`);
+    }
+
+    if (!data || (Array.isArray(data) && data.length === 0)) {
+      throw new Error('크레딧 정보가 없어요.');
+    }
+
+    // RPC가 SETOF row를 반환하므로 첫 row 사용
+    const row = (Array.isArray(data) ? data[0] : data) as CreditSummary;
+    return row;
+  },
+
   async getSubscriptionInfo(userId: number): Promise<SubscriptionInfo> {
     const { data: subscribeData, error: subscribeError } = await supabase
       .from('subscribe')

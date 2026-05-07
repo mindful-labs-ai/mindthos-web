@@ -172,7 +172,7 @@ export const SettingsContainer: React.FC = () => {
       const userIdNumber = parseInt(userId);
       if (!isNaN(userIdNumber)) {
         await queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.subscription(userIdNumber),
+          queryKey: creditQueryKeys.summary(userIdNumber),
         });
       }
     }
@@ -191,7 +191,7 @@ export const SettingsContainer: React.FC = () => {
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.subscription(userIdNumber),
+            queryKey: creditQueryKeys.summary(userIdNumber),
           });
         }
       }

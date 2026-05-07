@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 import { getSessionDetailRoute } from '@/app/router/constants';
@@ -13,6 +14,7 @@ import type { SessionRecord } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -33,6 +35,7 @@ export const SessionHistoryContainer: React.FC = () => {
   const userId = useAuthStore((state) => state.userId);
   const { clients, isLoading: isLoadingClients } = useClientList();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>(
     'newest'
@@ -40,6 +43,14 @@ export const SessionHistoryContainer: React.FC = () => {
   const [selectedClientIds, setSelectedClientIds] = React.useState<string[]>(
     []
   );
+
+  const invalidateCreditOnTransition = React.useCallback(() => {
+    const userIdNum = Number(userId);
+    if (Number.isNaN(userIdNum)) return;
+    queryClient.invalidateQueries({
+      queryKey: creditQueryKeys.summary(userIdNum),
+    });
+  }, [queryClient, userId]);
 
   const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
     userId: parseInt(userId || '0'),
@@ -52,6 +63,7 @@ export const SessionHistoryContainer: React.FC = () => {
           : '생성을 완료했어요.',
         duration: 5000,
       });
+      invalidateCreditOnTransition();
     },
     onSessionError: (session) => {
       toast({
@@ -59,6 +71,7 @@ export const SessionHistoryContainer: React.FC = () => {
         description: session.error_message || '세션 처리 중 문제가 생겼어요.',
         duration: 5000,
       });
+      invalidateCreditOnTransition();
     },
   });
 

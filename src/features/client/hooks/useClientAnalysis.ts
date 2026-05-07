@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
 import type {
@@ -103,6 +104,22 @@ export function useCreateClientAnalysis() {
       queryClient.invalidateQueries({
         queryKey: clientAnalysisQueryKeys.analysesByClient(variables.client_id),
       });
+      // 크레딧 잔액 즉시 갱신 — edge function 응답 시점엔 reserve가 끝난 상태
+      const userIdNum = Number(userId);
+      if (!Number.isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
+    },
+    onError: () => {
+      // 잔액 부족(402) 등으로 reserve 실패 시에도 잔액 동기화
+      const userIdNum = Number(userId);
+      if (!Number.isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
     },
   });
 }
@@ -130,6 +147,7 @@ export function useClientAnalysisStatus({
   onComplete,
 }: UseClientAnalysisStatusOptions) {
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
   const previousStatusRef = useRef<string | null>(null);
 
   const query = useQuery<
@@ -187,12 +205,20 @@ export function useClientAnalysisStatus({
         queryKey: clientAnalysisQueryKeys.analysesByClient(clientId),
       });
 
+      // 크레딧 잔액 갱신 — 분석 완료/실패 시점에 차감/환불 반영
+      const userIdNum = Number(userId);
+      if (!Number.isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
+
       onComplete?.(data);
     }
 
     // 현재 상태 저장
     previousStatusRef.current = currentStatus;
-  }, [query.data, onSuccess, onComplete, queryClient, clientId]);
+  }, [query.data, onSuccess, onComplete, queryClient, clientId, userId]);
 
   // 에러 처리
   useEffect(() => {

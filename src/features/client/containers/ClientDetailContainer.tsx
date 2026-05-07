@@ -12,7 +12,6 @@ import { useSessionList } from '@/features/session/hooks/useSessionList';
 import type { SessionRecord, Transcribe } from '@/features/session/types';
 import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
 import { getTranscriptData } from '@/features/session/utils/transcriptParser';
-import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
 import { dummyClientAnalysisVersions } from '@/shared/constants/dummyClientAnalysis';
@@ -21,6 +20,7 @@ import {
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -63,7 +63,7 @@ export const ClientDetailContainer: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { creditInfo } = useCreditInfo();
+  const checkCredit = useCreditGuard();
   const CLIENT_ANALYSIS_CREDIT = 50;
 
   const { clients, isLoading: isLoadingClients } = useClientList();
@@ -225,11 +225,12 @@ export const ClientDetailContainer: React.FC = () => {
     }
     if (!clientId) return;
 
-    const remainingCredit = creditInfo?.plan.remaining ?? 0;
-    if (remainingCredit < CLIENT_ANALYSIS_CREDIT) {
+    // 액션 직전에 fresh 잔액으로 가드 (이전 폴링 제거 — useCreditGuard가 invalidate+fetch)
+    const guard = await checkCredit(CLIENT_ANALYSIS_CREDIT);
+    if (!guard.ok && !guard.unavailable) {
       toast({
         title: '크레딧 부족',
-        description: `다회기 분석에 ${CLIENT_ANALYSIS_CREDIT} 크레딧이 필요해요. (보유: ${remainingCredit})`,
+        description: `다회기 분석에 ${CLIENT_ANALYSIS_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
         duration: 5000,
       });
       return;
