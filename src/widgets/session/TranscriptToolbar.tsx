@@ -98,6 +98,36 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
           <button
             onClick={() => {
               const store = useSessionStore.getState();
+              store.setShowUtteranceIndex(!store.showUtteranceIndex);
+              setIsMenuOpen(false);
+            }}
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors lg:hover:bg-surface"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-fg-muted"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span className="typo-sm text-fg">
+              {useSessionStore.getState().showUtteranceIndex
+                ? '타임스탬프 가리기 해제'
+                : '타임스탬프 가리기'}
+            </span>
+          </button>
+        )}
+        {enableTimestampFeatures && (
+          <button
+            onClick={() => {
+              const store = useSessionStore.getState();
               store.setAutoScrollEnabled(!store.autoScrollEnabled);
               setIsMenuOpen(false);
             }}

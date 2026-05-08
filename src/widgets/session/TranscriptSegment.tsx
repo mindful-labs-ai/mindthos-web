@@ -237,7 +237,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             )}
           {!showTimestamp && speakerUtteranceIndex !== undefined && (
             <span className="text-sm text-grey-70 md:text-m">
-              {speakerUtteranceIndex}
+              #{speakerUtteranceIndex}
             </span>
           )}
         </div>
