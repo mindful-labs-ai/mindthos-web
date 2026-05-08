@@ -219,6 +219,8 @@ export const SessionDetailContainer: React.FC = () => {
       segments: rawSegments,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+        // 비식별화 완료 후 transcribe.contents가 바뀌어 preview도 영향 — 리스트도 무효화
+        queryClient.invalidateQueries({ queryKey: ['sessions'] });
       },
     });
 

@@ -4,11 +4,15 @@ import type {
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,
   HandwrittenTranscribe,
+  HandwrittenTranscribeListItem,
   ProgressNote,
+  ProgressNoteListItem,
   Session,
+  SessionListItem,
   SessionProcessingStatus,
   Speaker,
   Transcribe,
+  TranscribeListItem,
 } from '@/features/session/types';
 import { formatSegmentText } from '@/features/session/utils/formatSegmentText';
 import { supabase } from '@/lib/supabase';
@@ -87,9 +91,256 @@ export async function getSessionStatus(
   }
 }
 
+// ============================================================================
+// C2 페이로드 최적화 — 무거운 컬럼 제외 + cursor 무한 스크롤
+// ============================================================================
+
+const SESSION_LIST_COLUMNS =
+  'id, user_id, title, client_id, audio_meta_data, processing_status, progress_percentage, current_step, error_message, created_at';
+const TRANSCRIBE_LIST_COLUMNS =
+  'id, session_id, preview, stt_model, created_at';
+const HANDWRITTEN_LIST_COLUMNS =
+  'id, session_id, preview, created_at';
+const PROGRESS_NOTE_LIST_COLUMNS =
+  'id, session_id, user_id, title, template_id, processing_status, error_message, created_at, note_version';
+
+export interface SessionsPageParams {
+  userId: number;
+  /** 단일 클라이언트 필터 (클라이언트 상세 탭) */
+  clientId?: string;
+  /**
+   * 다중 클라이언트 필터 (세션 이력 사이드바 필터). 비어있으면 미적용.
+   * `clientId`와 동시 사용 안 함 (clientId가 우선).
+   */
+  clientIds?: string[];
+  /** 정렬 — 최신순 desc / 오래된순 asc */
+  sortOrder?: 'desc' | 'asc';
+  /** cursor: 마지막 row의 created_at (ISO). 첫 페이지는 null */
+  cursor?: string | null;
+  /** 페이지 크기 */
+  limit?: number;
+}
+
+export interface SessionsPageResult {
+  items: SessionListItem[];
+  /** 다음 페이지 cursor (마지막 row의 created_at). null이면 끝 */
+  nextCursor: string | null;
+}
+
+/**
+ * sessions 리스트 cursor-based 조회.
+ * 무거운 컬럼(transcribes.contents, .parsed_text, progress_notes.summary)은 제외.
+ * 미리보기는 transcribes.preview / handwritten_transcribes.preview 사용.
+ */
+export async function getSessionsPage({
+  userId,
+  clientId,
+  clientIds,
+  sortOrder = 'desc',
+  cursor = null,
+  limit = 20,
+}: SessionsPageParams): Promise<SessionsPageResult> {
+  const ascending = sortOrder === 'asc';
+
+  // 1. sessions 페이지 (cursor 기반)
+  let sessionsQuery = supabase
+    .from('sessions')
+    .select(SESSION_LIST_COLUMNS)
+    .eq('user_id', userId);
+
+  if (clientId) {
+    sessionsQuery = sessionsQuery.eq('client_id', clientId);
+  } else if (clientIds && clientIds.length > 0) {
+    sessionsQuery = sessionsQuery.in('client_id', clientIds);
+  }
+
+  if (cursor) {
+    sessionsQuery = ascending
+      ? sessionsQuery.gt('created_at', cursor)
+      : sessionsQuery.lt('created_at', cursor);
+  }
+
+  const { data: sessions, error: sessionsError } = await sessionsQuery
+    .order('created_at', { ascending })
+    .limit(limit);
+
+  if (sessionsError) {
+    throw new Error(`세션 목록 조회 실패: ${sessionsError.message}`);
+  }
+
+  if (!sessions || sessions.length === 0) {
+    return { items: [], nextCursor: null };
+  }
+
+  const sessionIds = sessions.map((s) => s.id);
+  const audioSessionIds = sessions
+    .filter((s) => s.audio_meta_data !== null)
+    .map((s) => s.id);
+  const handwrittenSessionIds = sessions
+    .filter((s) => s.audio_meta_data === null)
+    .map((s) => s.id);
+
+  // 2. 관련 transcribes / handwritten_transcribes / progress_notes를 일괄 조회 (각각 컬럼 화이트리스트)
+  const [
+    { data: transcribes, error: transcribesError },
+    { data: handwrittenTranscribes, error: handwrittenError },
+    { data: progressNotes, error: progressNotesError },
+  ] = await Promise.all([
+    audioSessionIds.length > 0
+      ? supabase
+          .from('transcribes')
+          .select(TRANSCRIBE_LIST_COLUMNS)
+          .in('session_id', audioSessionIds)
+      : Promise.resolve({ data: [] as TranscribeListItem[], error: null }),
+    handwrittenSessionIds.length > 0
+      ? supabase
+          .from('handwritten_transcribes')
+          .select(HANDWRITTEN_LIST_COLUMNS)
+          .in('session_id', handwrittenSessionIds)
+      : Promise.resolve({
+          data: [] as HandwrittenTranscribeListItem[],
+          error: null,
+        }),
+    supabase
+      .from('progress_notes')
+      .select(PROGRESS_NOTE_LIST_COLUMNS)
+      .in('session_id', sessionIds),
+  ]);
+
+  if (transcribesError) {
+    throw new Error(`축어록 조회 실패: ${transcribesError.message}`);
+  }
+  if (handwrittenError) {
+    throw new Error(`직접 입력 조회 실패: ${handwrittenError.message}`);
+  }
+  if (progressNotesError) {
+    throw new Error(`상담노트 조회 실패: ${progressNotesError.message}`);
+  }
+
+  const transcribeMap = new Map<string, TranscribeListItem>();
+  (transcribes ?? []).forEach((t) => transcribeMap.set(t.session_id, t));
+
+  const handwrittenMap = new Map<string, HandwrittenTranscribeListItem>();
+  (handwrittenTranscribes ?? []).forEach((t) =>
+    handwrittenMap.set(t.session_id, t)
+  );
+
+  const progressNotesMap = new Map<string, ProgressNoteListItem[]>();
+  (progressNotes ?? []).forEach((n) => {
+    const list = progressNotesMap.get(n.session_id) ?? [];
+    list.push(n);
+    progressNotesMap.set(n.session_id, list);
+  });
+
+  // 3. 결합
+  const items: SessionListItem[] = sessions.map((session) => {
+    const isHandwritten = session.audio_meta_data === null;
+    const transcribe = isHandwritten
+      ? handwrittenMap.get(session.id) ?? null
+      : transcribeMap.get(session.id) ?? null;
+    return {
+      session: session as Session,
+      transcribe,
+      progressNotes: progressNotesMap.get(session.id) ?? [],
+    };
+  });
+
+  // 4. 다음 cursor — 마지막 row의 created_at. 페이지 풀로 안 차면 끝
+  const nextCursor =
+    sessions.length === limit ? sessions[sessions.length - 1].created_at : null;
+
+  return { items, nextCursor };
+}
+
+/**
+ * 클라이언트의 모든 세션 조회 (limit 없음 — 다회기 분석용).
+ * 같은 컬럼 정책 적용.
+ */
+export async function getAllSessionsByClient(
+  clientId: string,
+  sortOrder: 'desc' | 'asc' = 'desc'
+): Promise<SessionListItem[]> {
+  const ascending = sortOrder === 'asc';
+
+  const { data: sessions, error: sessionsError } = await supabase
+    .from('sessions')
+    .select(SESSION_LIST_COLUMNS)
+    .eq('client_id', clientId)
+    .order('created_at', { ascending });
+
+  if (sessionsError) {
+    throw new Error(`세션 전체 조회 실패: ${sessionsError.message}`);
+  }
+  if (!sessions || sessions.length === 0) {
+    return [];
+  }
+
+  const sessionIds = sessions.map((s) => s.id);
+  const audioSessionIds = sessions
+    .filter((s) => s.audio_meta_data !== null)
+    .map((s) => s.id);
+  const handwrittenSessionIds = sessions
+    .filter((s) => s.audio_meta_data === null)
+    .map((s) => s.id);
+
+  const [
+    { data: transcribes },
+    { data: handwrittenTranscribes },
+    { data: progressNotes },
+  ] = await Promise.all([
+    audioSessionIds.length > 0
+      ? supabase
+          .from('transcribes')
+          .select(TRANSCRIBE_LIST_COLUMNS)
+          .in('session_id', audioSessionIds)
+      : Promise.resolve({ data: [] as TranscribeListItem[] }),
+    handwrittenSessionIds.length > 0
+      ? supabase
+          .from('handwritten_transcribes')
+          .select(HANDWRITTEN_LIST_COLUMNS)
+          .in('session_id', handwrittenSessionIds)
+      : Promise.resolve({ data: [] as HandwrittenTranscribeListItem[] }),
+    supabase
+      .from('progress_notes')
+      .select(PROGRESS_NOTE_LIST_COLUMNS)
+      .in('session_id', sessionIds),
+  ]);
+
+  const transcribeMap = new Map<string, TranscribeListItem>();
+  (transcribes ?? []).forEach((t) => transcribeMap.set(t.session_id, t));
+  const handwrittenMap = new Map<string, HandwrittenTranscribeListItem>();
+  (handwrittenTranscribes ?? []).forEach((t) =>
+    handwrittenMap.set(t.session_id, t)
+  );
+  const progressNotesMap = new Map<string, ProgressNoteListItem[]>();
+  (progressNotes ?? []).forEach((n) => {
+    const list = progressNotesMap.get(n.session_id) ?? [];
+    list.push(n);
+    progressNotesMap.set(n.session_id, list);
+  });
+
+  return sessions.map((session) => {
+    const isHandwritten = session.audio_meta_data === null;
+    const transcribe = isHandwritten
+      ? handwrittenMap.get(session.id) ?? null
+      : transcribeMap.get(session.id) ?? null;
+    return {
+      session: session as Session,
+      transcribe,
+      progressNotes: progressNotesMap.get(session.id) ?? [],
+    };
+  });
+}
+
+// ============================================================================
+// 기존 함수들 (deprecated — 컨테이너 마이그레이션 후 제거 예정)
+// ============================================================================
+
 /**
  * 세션 목록 조회 API 호출
  * audio_meta_data가 있으면 transcribes, 없으면 handwritten_transcribes에서 조회
+ *
+ * @deprecated `getSessionsPage` 또는 `getAllSessionsByClient` 사용 권장 (C2 페이로드 최적화)
  */
 export async function getSessionList(userId: number): Promise<{
   sessions: Array<{
@@ -236,6 +487,33 @@ export async function getAudioPresignedUrl(sessionId: string): Promise<string> {
       err.message || `Presigned URL 생성 실패: ${err.statusText || ''}`
     );
   }
+}
+
+/**
+ * transcribe 리스트 미리보기 평문 생성 (segments[0:3], 300자 cap).
+ * contents 변경(편집/추가/삭제) 시점에 preview 컬럼도 함께 갱신.
+ */
+function buildTranscribePreview(contents: unknown): string | null {
+  if (!contents || typeof contents !== 'object') return null;
+  const c = contents as Record<string, unknown>;
+  let segments: Array<{ text?: string }> | null = null;
+  if (Array.isArray(c.segments)) {
+    segments = c.segments as Array<{ text?: string }>;
+  } else if (c.result && typeof c.result === 'object') {
+    const result = c.result as Record<string, unknown>;
+    if (Array.isArray(result.segments)) {
+      segments = result.segments as Array<{ text?: string }>;
+    }
+  }
+  if (!segments || segments.length === 0) return null;
+  const preview = segments
+    .slice(0, 3)
+    .map((s) => (typeof s.text === 'string' ? s.text : ''))
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+  if (!preview) return null;
+  return preview.length > 300 ? preview.slice(0, 300) : preview;
 }
 
 /**
@@ -430,10 +708,13 @@ export async function updateTranscriptSegmentText(
     return segments;
   });
 
-  // 3. DB에 저장
+  // 3. DB에 저장 — preview도 함께 갱신
   const { error: updateError } = await supabase
     .from('transcribes')
-    .update({ contents: updatedContents })
+    .update({
+      contents: updatedContents,
+      preview: buildTranscribePreview(updatedContents),
+    })
     .eq('id', transcribeId);
 
   if (updateError) {
@@ -492,12 +773,13 @@ export async function updateMultipleTranscriptSegments(
     extractSegmentsAndSpeakers(updatedContents);
   const parsedText = generateParsedText(updatedSegments, speakers);
 
-  // 4. DB에 저장 (contents + parsed_text)
+  // 4. DB에 저장 (contents + parsed_text + preview)
   const { error: updateError } = await supabase
     .from('transcribes')
     .update({
       contents: updatedContents,
       parsed_text: parsedText,
+      preview: buildTranscribePreview(updatedContents),
     })
     .eq('id', transcribeId);
 
@@ -518,7 +800,11 @@ export async function saveTranscriptContents(
 
   const { error } = await supabase
     .from('transcribes')
-    .update({ contents, parsed_text: parsedText })
+    .update({
+      contents,
+      parsed_text: parsedText,
+      preview: buildTranscribePreview(contents),
+    })
     .eq('id', transcribeId);
 
   if (error) {
@@ -608,12 +894,13 @@ export async function updateTranscriptSegments(
     extractSegmentsAndSpeakers(finalContents);
   const parsedText = generateParsedText(updatedSegments, updatedSpeakers);
 
-  // 5. DB에 저장 (contents + parsed_text)
+  // 5. DB에 저장 (contents + parsed_text + preview)
   const { error: updateError } = await supabase
     .from('transcribes')
     .update({
       contents: finalContents,
       parsed_text: parsedText,
+      preview: buildTranscribePreview(finalContents),
     })
     .eq('id', transcribeId);
 
@@ -667,7 +954,11 @@ export async function addTranscriptSegment(
 
   const { error: updateError } = await supabase
     .from('transcribes')
-    .update({ contents: updatedContents, parsed_text: parsedText })
+    .update({
+      contents: updatedContents,
+      parsed_text: parsedText,
+      preview: buildTranscribePreview(updatedContents),
+    })
     .eq('id', transcribeId);
 
   if (updateError) {
@@ -712,7 +1003,11 @@ export async function deleteTranscriptSegment(
 
   const { error: updateError } = await supabase
     .from('transcribes')
-    .update({ contents: updatedContents, parsed_text: parsedText })
+    .update({
+      contents: updatedContents,
+      parsed_text: parsedText,
+      preview: buildTranscribePreview(updatedContents),
+    })
     .eq('id', transcribeId);
 
   if (updateError) {
