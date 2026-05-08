@@ -1,75 +1,49 @@
-import { cn } from '@/lib/cn';
-
-import { CopyButton } from '../CopyButton';
 import type { NoteV2Output } from '../types';
-import { useCopyToClipboard } from '../useCopyToClipboard';
+import { toLines } from '../types';
 
-import { EDITABLE_CLASS } from './editable';
+import { ParagraphArray } from './ParagraphArray';
 
 interface InterventionsBlockProps {
   interventions: NoteV2Output['phase3']['interventions'];
   editable?: boolean;
+  /** "4-2" 등. 제공 시 라벨 앞에 "{prefix}-{idx}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
 export function InterventionsBlock({
   interventions,
   editable,
+  numberPrefix,
 }: InterventionsBlockProps) {
-  const { copiedId, copy } = useCopyToClipboard();
-  const copyText = [
-    `주요 개입: ${interventions.major}`,
-    `이론적 적합성: ${interventions.theoretical_fit}`,
-    `효과 근거: ${interventions.evidence}`,
-  ].join('\n');
+  const label = (idx: number, text: string) =>
+    numberPrefix ? `${numberPrefix}-${idx}. ${text}` : text;
 
   return (
-    <div className="group relative space-y-3 rounded-lg px-3 py-2 transition-colors lg:hover:bg-grey-20">
+    <div className="space-y-3">
       <div className="space-y-1">
-        <span className="note-label">주요 개입</span>
-        <p
-          className={cn('note-desc', editable && EDITABLE_CLASS)}
-          contentEditable={editable}
-          suppressContentEditableWarning={editable}
-          data-note-path={editable ? 'phase3.interventions.major' : undefined}
-        >
-          {interventions.major || (editable ? '' : '—')}
-        </p>
+        <span className="note-label">{label(1, '주요 개입')}</span>
+        <ParagraphArray
+          value={interventions.major}
+          path="phase3.interventions.major"
+          editable={editable}
+        />
       </div>
       <div className="space-y-1">
-        <span className="note-label">이론적 적합성</span>
-        <p
-          className={cn('note-desc', editable && EDITABLE_CLASS)}
-          contentEditable={editable}
-          suppressContentEditableWarning={editable}
-          data-note-path={
-            editable ? 'phase3.interventions.theoretical_fit' : undefined
-          }
-        >
-          {interventions.theoretical_fit || (editable ? '' : '—')}
-        </p>
+        <span className="note-label">{label(2, '이론적 적합성')}</span>
+        <ParagraphArray
+          value={interventions.theoretical_fit}
+          path="phase3.interventions.theoretical_fit"
+          editable={editable}
+        />
       </div>
       <div className="space-y-1">
-        <span className="note-label">효과 근거</span>
-        <p
-          className={cn('note-desc', editable && EDITABLE_CLASS)}
-          contentEditable={editable}
-          suppressContentEditableWarning={editable}
-          data-note-path={
-            editable ? 'phase3.interventions.evidence' : undefined
-          }
-        >
-          {interventions.evidence || (editable ? '' : '—')}
-        </p>
+        <span className="note-label">{label(3, '효과 근거')}</span>
+        <ParagraphArray
+          value={interventions.evidence}
+          path="phase3.interventions.evidence"
+          editable={editable}
+        />
       </div>
-
-      {!editable && (
-        <div className="note-copy-btn-wrapper">
-          <CopyButton
-            isCopied={copiedId === 'p3-interventions'}
-            onClick={() => copy(copyText, 'p3-interventions')}
-          />
-        </div>
-      )}
     </div>
   );
 }
@@ -77,10 +51,16 @@ export function InterventionsBlock({
 export function serializeInterventions(
   interventions: NoteV2Output['phase3']['interventions']
 ): string {
+  const majorLines = toLines(interventions.major);
+  const fitLines = toLines(interventions.theoretical_fit);
+  const evidenceLines = toLines(interventions.evidence);
   return [
     `금회기 개입 분석`,
-    `- 주요 개입: ${interventions.major}`,
-    `- 이론적 적합성: ${interventions.theoretical_fit}`,
-    `- 효과 근거: ${interventions.evidence}`,
+    `주요 개입:`,
+    ...majorLines.map((l) => `  ${l}`),
+    `이론적 적합성:`,
+    ...fitLines.map((l) => `  ${l}`),
+    `효과 근거:`,
+    ...evidenceLines.map((l) => `  ${l}`),
   ].join('\n');
 }

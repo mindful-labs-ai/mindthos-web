@@ -6,19 +6,26 @@ import { EDITABLE_CLASS } from '../editable';
 interface QuestionsListProps {
   questions: NoteV2Output['phase4']['roadmap']['suggested_questions'];
   editable?: boolean;
+  /** "5-1-3" 등. 제공 시 라벨 앞에 "{prefix}. " 자동 부여. */
+  numberPrefix?: string;
 }
 
-export function QuestionsList({ questions, editable }: QuestionsListProps) {
+export function QuestionsList({
+  questions,
+  editable,
+  numberPrefix,
+}: QuestionsListProps) {
   const { copiedId, copy } = useCopyToClipboard();
+  const labelText = numberPrefix ? `${numberPrefix}. 제안 질문` : '제안 질문';
 
   return (
     <div className="space-y-2">
-      <span className="note-label">제안 질문</span>
+      <span className="note-label">{labelText}</span>
       <div className="space-y-2">
         {questions.map((sq, i) => (
           <div
             key={i}
-            className="group relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors lg:hover:border-green-80"
+            className="group/question relative flex items-start gap-2 rounded-lg border border-grey-40 bg-grey-10 p-3 transition-colors lg:hover:border-green-80"
           >
             <div className="min-w-0 flex-1">
               <p className="note-card-title">
@@ -54,7 +61,7 @@ export function QuestionsList({ questions, editable }: QuestionsListProps) {
               </p>
             </div>
             {!editable && (
-              <div className="note-copy-btn-wrapper">
+              <div className="absolute right-3 top-1.5 transition-opacity lg:opacity-0 lg:group-hover/question:opacity-100">
                 <CopyButton
                   isCopied={copiedId === `p4-q-${i}`}
                   onClick={() => copy(sq.question, `p4-q-${i}`)}
@@ -72,7 +79,7 @@ export function serializeQuestions(
   questions: NoteV2Output['phase4']['roadmap']['suggested_questions']
 ): string {
   return [
-    `- 제안 질문:`,
+    `제안 질문:`,
     ...questions.map(
       (sq, i) => `  Q${i + 1}. "${sq.question}" (${sq.rationale})`
     ),
