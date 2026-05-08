@@ -54,7 +54,77 @@ export async function checkClientHasRecords(
   return (count ?? 0) > 0;
 }
 
+// ============================================================================
+// C2 페이로드 최적화 — clients 무한 스크롤 + 세션 수 집계 RPC
+// ============================================================================
+
+export interface ClientsPageParams {
+  /** 페이지 크기 — 기본 20 */
+  limit?: number;
+  /** cursor: 마지막 row의 created_at (ISO). 첫 페이지는 null */
+  cursor?: string | null;
+  /** 검색어 — 이름 부분 일치 (ILIKE) */
+  search?: string | null;
+  /** 정렬 — 최신순 desc / 오래된순 asc */
+  sortOrder?: 'desc' | 'asc';
+}
+
+export interface ClientsPageItem {
+  id: string;
+  name: string;
+  phone_number: string | null;
+  counsel_number: number | null;
+  memo: string | null;
+  pin: boolean | null;
+  email: string | null;
+  counsel_theme: string | null;
+  counsel_done: boolean | null;
+  created_at: string;
+  session_count: number;
+}
+
+export interface ClientsPageResult {
+  items: ClientsPageItem[];
+  nextCursor: string | null;
+}
+
+/**
+ * 클라이언트 리스트 cursor-based 조회 + 세션 수 집계.
+ * `get_clients_with_session_count` RPC 호출. JWT 컨텍스트 사용자 데이터만 반환.
+ * family_summary는 제외 (상세 진입 시 별도 fetch).
+ */
+export async function getClientsPage({
+  limit = 20,
+  cursor = null,
+  search = null,
+  sortOrder = 'desc',
+}: ClientsPageParams): Promise<ClientsPageResult> {
+  const { data, error } = await supabase.rpc('get_clients_with_session_count', {
+    p_limit: limit,
+    p_cursor: cursor,
+    p_search: search,
+    p_sort_order: sortOrder,
+  });
+
+  if (error) {
+    throw new Error(`내담자 목록 조회 실패: ${error.message}`);
+  }
+
+  const items = (data ?? []) as ClientsPageItem[];
+  const nextCursor =
+    items.length === limit ? items[items.length - 1].created_at : null;
+
+  return { items, nextCursor };
+}
+
+// ============================================================================
+// 기존 함수들 (deprecated — 컨테이너 마이그레이션 후 제거 예정)
+// ============================================================================
+
 export const clientService = {
+  /**
+   * @deprecated `getClientsPage` 사용 권장 (C2 페이로드 최적화)
+   */
   async getClients(request: GetClientsRequest): Promise<GetClientsResponse> {
     try {
       // 내담자 정보 조회

@@ -3,17 +3,22 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 
 import { getSessionDetailRoute } from '@/app/router/constants';
-import { useClientList } from '@/features/client/hooks/useClientList';
+import { useClientsList } from '@/features/client/hooks/useClientsList';
+import type { Client } from '@/features/client/types';
 import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { useSessionList } from '@/features/session/hooks/useSessionList';
-import type { SessionRecord } from '@/features/session/types';
-import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
-import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { useSessionsList } from '@/features/session/hooks/useSessionsList';
+import type {
+  HandwrittenTranscribeListItem,
+  SessionRecord,
+  TranscribeListItem,
+} from '@/features/session/types';
+import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -31,7 +36,38 @@ export const SessionHistoryContainer: React.FC = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const { sessionId } = useParams<{ sessionId: string }>();
   const userId = useAuthStore((state) => state.userId);
-  const { clients, isLoading: isLoadingClients } = useClientList();
+  // 클라이언트 카드와 동일한 RPC 사용 → session_count가 클라이언트 카드 표시값과 일치
+  // 필터에 모든 클라이언트가 보여야 하므로 limit 충분히 크게 (p99=34, 안전망 500)
+  const userIdNum = parseInt(userId || '0');
+  const {
+    items: clientPageItems,
+    isLoading: isLoadingClients,
+  } = useClientsList({
+    counselorId: userIdNum,
+    sortOrder: 'desc',
+    limit: 500,
+    enabled: !!userId,
+  });
+  // ClientsPageItem → Client 변환 (downstream 컴포넌트가 Client 타입 기대)
+  const clients = React.useMemo<Client[]>(
+    () =>
+      clientPageItems.map((item) => ({
+        id: item.id,
+        counselor_id: userId || '',
+        name: item.name,
+        phone_number: item.phone_number || '',
+        email: item.email,
+        counsel_theme: item.counsel_theme,
+        counsel_number: item.counsel_number ?? 0,
+        counsel_done: item.counsel_done ?? false,
+        memo: item.memo,
+        pin: item.pin ?? false,
+        created_at: item.created_at,
+        updated_at: item.created_at, // RPC가 안 주므로 created_at으로 대체
+        session_count: item.session_count, // ★ 클라이언트 카드와 동일한 정확한 전체 카운트
+      })),
+    [clientPageItems, userId]
+  );
   const { toast } = useToast();
 
   const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>(
@@ -41,9 +77,18 @@ export const SessionHistoryContainer: React.FC = () => {
     []
   );
 
-  const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
+  const {
+    items: sessionItems,
+    isLoading: isLoadingSessions,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useSessionsList({
     userId: parseInt(userId || '0'),
     enabled: !!userId,
+    sortOrder: sortOrder === 'newest' ? 'desc' : 'asc',
+    // 클라이언트 필터 활성 시 서버 측 IN 필터 + queryKey 분리 캐싱
+    clientIds: selectedClientIds.length > 0 ? selectedClientIds : undefined,
     onSessionComplete: (session) => {
       toast({
         title: '상담 기록 생성 완료',
@@ -62,123 +107,93 @@ export const SessionHistoryContainer: React.FC = () => {
     },
   });
 
-  const sessionsFromQuery = React.useMemo(
-    () => sessionData?.sessions || [],
-    [sessionData?.sessions]
-  );
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
 
-  const hasAnyRealData = sessionsFromQuery.length > 0 || clients.length > 0;
+  const hasAnyRealData = sessionItems.length > 0 || clients.length > 0;
   const isDummyFlow =
     !isLoadingSessions && !isLoadingClients && !hasAnyRealData;
 
   const sessionsWithData = React.useMemo(
-    () => (isDummyFlow ? dummySessionRelations : sessionsFromQuery),
-    [isDummyFlow, sessionsFromQuery]
+    () => (isDummyFlow ? dummySessionRelations : sessionItems),
+    [isDummyFlow, sessionItems]
   );
   const effectiveClients = React.useMemo(
     () => (isDummyFlow ? [dummyClient] : clients),
     [isDummyFlow, clients]
   );
 
-  const filteredAndSortedSessions = React.useMemo(() => {
-    let filtered = [...sessionsWithData];
-
-    if (selectedClientIds.length > 0) {
-      filtered = filtered.filter(
-        (s) =>
-          s.session.client_id && selectedClientIds.includes(s.session.client_id)
-      );
+  const getCardPreview = (
+    transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null,
+    isHandwritten: boolean
+  ): string => {
+    if (!transcribe) {
+      return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록이 없어요.';
     }
+    const cleaned = formatPreviewText(transcribe.preview);
+    if (cleaned) return cleaned;
+    return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록 보기';
+  };
 
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.session.created_at).getTime();
-      const dateB = new Date(b.session.created_at).getTime();
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
+  // 정렬·클라이언트 필터 모두 서버 측 — 클라이언트 측 필터링 불필요
+  const filteredSessions = sessionsWithData;
 
-    return filtered;
-  }, [sessionsWithData, selectedClientIds, sortOrder]);
-
+  // 필터 메뉴에 표시할 클라이언트별 세션 수 — RPC가 직접 반환한 정확한 전체 카운트
+  // (페이지네이션된 sessionsWithData에서 카운트 X — 첫 페이지에 없는 client는 0으로 잘못 표시됨)
   const sessionCounts = React.useMemo(() => {
     const counts: Record<string, number> = {};
-    sessionsWithData.forEach(({ session }) => {
-      if (session.client_id) {
-        counts[session.client_id] = (counts[session.client_id] || 0) + 1;
-      }
+    effectiveClients.forEach((c) => {
+      counts[c.id] = c.session_count ?? 0;
     });
     return counts;
-  }, [sessionsWithData]);
+  }, [effectiveClients]);
 
   const records: SessionRecord[] = React.useMemo(() => {
-    return filteredAndSortedSessions.map(
-      ({ session, transcribe, progressNotes }) => {
-        const client = effectiveClients.find((c) => c.id === session.client_id);
-        const isHandwritten = session.audio_meta_data === null;
+    return filteredSessions.map(({ session, transcribe, progressNotes }) => {
+      const client = effectiveClients.find((c) => c.id === session.client_id);
+      const isHandwritten = session.audio_meta_data === null;
+      const transcribeForPreview =
+        transcribe && 'preview' in transcribe
+          ? (transcribe as TranscribeListItem | HandwrittenTranscribeListItem)
+          : null;
 
-        let content = '축어록이 없어요.';
+      const note_types = getNoteTypesFromProgressNotes(progressNotes);
 
-        if (isHandwritten) {
-          if (transcribe && typeof transcribe.contents === 'string') {
-            content = transcribe.contents;
-          } else {
-            content = '입력된 텍스트가 없어요.';
-          }
-        } else {
-          const transcriptData = getTranscriptData(
-            transcribe as Parameters<typeof getTranscriptData>[0]
-          );
-          if (transcriptData) {
-            const { segments, speakers } = transcriptData;
-            content =
-              segments
-                ?.slice(0, 3)
-                .map((seg) => {
-                  const speakerName = getSpeakerDisplayName(
-                    seg.speaker,
-                    speakers
-                  );
-                  return `${speakerName}: ${seg.text}`;
-                })
-                .join(' ') || '축어록이 없어요.';
-          }
-        }
+      const allClientSessions = sessionsWithData
+        .filter((s) => s.session.client_id === session.client_id)
+        .map((s) => s.session)
+        .sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      const session_number =
+        allClientSessions.findIndex((s) => s.id === session.id) + 1;
 
-        const note_types = getNoteTypesFromProgressNotes(progressNotes);
-
-        const allClientSessions = sessionsWithData
-          .filter((s) => s.session.client_id === session.client_id)
-          .map((s) => s.session)
-          .sort(
-            (a, b) =>
-              new Date(a.created_at).getTime() -
-              new Date(b.created_at).getTime()
-          );
-        const session_number =
-          allClientSessions.findIndex((s) => s.id === session.id) + 1;
-
-        return {
-          session_id: session.id,
-          transcribe_id: transcribe?.id || null,
-          client_id: session.client_id || '',
-          client_name: client?.name || '내담자 없음',
-          session_number,
-          title: session.title || undefined,
-          content,
-          note_types,
-          created_at: session.created_at,
-          processing_status: session.processing_status,
-          is_handwritten: session.audio_meta_data === null,
-          stt_model:
-            transcribe && 'stt_model' in transcribe
-              ? transcribe.stt_model
-              : null,
-        };
-      }
-    );
-  }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
+      return {
+        session_id: session.id,
+        transcribe_id: transcribe?.id || null,
+        client_id: session.client_id || '',
+        client_name: client?.name || '내담자 없음',
+        session_number,
+        title: session.title || undefined,
+        content: getCardPreview(transcribeForPreview, isHandwritten),
+        note_types,
+        created_at: session.created_at,
+        processing_status: session.processing_status,
+        is_handwritten: isHandwritten,
+        stt_model:
+          transcribe && 'stt_model' in transcribe
+            ? transcribe.stt_model
+            : null,
+      };
+    });
+  }, [filteredSessions, effectiveClients, sessionsWithData]);
 
   const sessionListData = React.useMemo(() => {
-    return filteredAndSortedSessions
+    return filteredSessions
       .filter(({ session }) => {
         return session.processing_status === 'succeeded';
       })
@@ -213,7 +228,7 @@ export const SessionHistoryContainer: React.FC = () => {
           isHandwritten: session.audio_meta_data === null,
         };
       });
-  }, [filteredAndSortedSessions, effectiveClients, sessionsWithData]);
+  }, [filteredSessions, effectiveClients, sessionsWithData]);
 
   const isEditing = useSessionStore((state) => state.isEditing);
   const cancelEditHandler = useSessionStore((state) => state.cancelEditHandler);
@@ -281,6 +296,9 @@ export const SessionHistoryContainer: React.FC = () => {
       onSortChange={handleSortChange}
       onClientChange={handleClientChange}
       onFilterReset={handleFilterReset}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      fetchNextPage={fetchNextPage}
     />
   ) : null;
 
@@ -291,14 +309,17 @@ export const SessionHistoryContainer: React.FC = () => {
       </div>
     </div>
   ) : records.length > 0 ? (
-    records.map((record) => (
-      <SessionRecordCard
-        key={record.session_id}
-        record={record}
-        isReadOnly={isDummyFlow}
-        onClick={() => handleCardClick(record)}
-      />
-    ))
+    <>
+      {records.map((record) => (
+        <SessionRecordCard
+          key={record.session_id}
+          record={record}
+          isReadOnly={isDummyFlow}
+          onClick={() => handleCardClick(record)}
+        />
+      ))}
+      <div ref={sentinelRef} />
+    </>
   ) : (
     <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-border bg-surface p-6">
       <div className="text-center">
