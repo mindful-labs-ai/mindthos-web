@@ -1,6 +1,7 @@
 import React from 'react';
 
 import type { Client } from '@/features/client/types';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { FilterIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
 import { PopUp } from '@/shared/ui/composites/PopUp';
@@ -35,6 +36,10 @@ interface SessionSideListProps {
   onSortChange: (order: 'newest' | 'oldest') => void;
   onClientChange: (clientIds: string[]) => void;
   onFilterReset: () => void;
+  // 무한 스크롤 (선택적)
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  fetchNextPage?: () => unknown;
 }
 
 export const SessionSideList: React.FC<SessionSideListProps> = ({
@@ -48,7 +53,26 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
   onSortChange,
   onClientChange,
   onFilterReset,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  fetchNextPage,
 }) => {
+  // 사이드 패널 자체 스크롤 컨테이너에 IntersectionObserver root 바인딩
+  const scrollContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const [scrollRoot, setScrollRoot] = React.useState<Element | null>(null);
+
+  // 컨테이너 mount 후 root 등록 (state 업데이트로 useInfiniteScroll re-bind)
+  React.useEffect(() => {
+    setScrollRoot(scrollContainerRef.current);
+  }, []);
+
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage: fetchNextPage ?? (() => undefined),
+    disabled: !fetchNextPage,
+    root: scrollRoot,
+  });
   // 날짜별로 그룹화
   const groupedSessions = React.useMemo(() => {
     const groups: Record<string, SessionItem[]> = {};
@@ -103,8 +127,8 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
         </div>
       </div>
 
-      {/* 세션 리스트 */}
-      <div className="flex-1 overflow-y-auto px-4 py-2">
+      {/* 세션 리스트 — 사이드 패널 자체 스크롤 컨테이너. 하단에 sentinel 배치 */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-2">
         {groupedSessions.length > 0 ? (
           <div className="space-y-6">
             {groupedSessions.map((group) => (
@@ -132,6 +156,8 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
                 </div>
               </div>
             ))}
+            {/* 무한 스크롤 sentinel — 컨테이너 root 기준으로 보이면 fetchNextPage 발동 */}
+            <div ref={sentinelRef} className="h-px" />
           </div>
         ) : (
           <div className="flex min-h-[200px] items-center justify-center">

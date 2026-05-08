@@ -14,6 +14,9 @@ interface SessionStoreState {
   // 타임라인-세그먼트 자동 스크롤 활성화 여부
   autoScrollEnabled: boolean;
   setAutoScrollEnabled: (enabled: boolean) => void;
+  // 세그먼트 메타 표시 모드: false=타임스탬프, true=화자별 발화번호
+  showUtteranceIndex: boolean;
+  setShowUtteranceIndex: (enabled: boolean) => void;
   // 편집 상태 관리 (세션 이동 시 확인 모달용)
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
@@ -55,11 +58,16 @@ export const useSessionStore = create<SessionStoreState>()(
       transcribes: {},
       progressNotes: {},
       autoScrollEnabled: true, // 기본값: 활성화
+      showUtteranceIndex: false, // 기본값: 타임스탬프 표시
       isEditing: false,
       cancelEditHandler: null,
 
       setAutoScrollEnabled: (enabled) => {
         set({ autoScrollEnabled: enabled });
+      },
+
+      setShowUtteranceIndex: (enabled) => {
+        set({ showUtteranceIndex: enabled });
       },
 
       setIsEditing: (editing) => {
