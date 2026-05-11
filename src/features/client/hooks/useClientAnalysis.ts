@@ -1,5 +1,5 @@
 /**
- * 내담자 분석 관련 Hooks
+ * 다회기 분석 관련 Hooks
  */
 
 import { useEffect, useRef } from 'react';
@@ -24,7 +24,7 @@ import type {
 } from '../types/clientAnalysisApi.types';
 
 /**
- * 내담자 분석 Query Keys
+ * 다회기 분석 Query Keys
  */
 export const clientAnalysisQueryKeys = {
   all: ['client-analyses'] as const,
@@ -61,7 +61,7 @@ export function useTemplatesByType(type: ClientAnalysisType) {
 }
 
 /**
- * 내담자 분석 히스토리 조회
+ * 다회기 분석 히스토리 조회
  */
 export function useClientAnalyses(clientId: string) {
   return useQuery<ClientAnalysisVersion[], ClientAnalysisApiError>({
@@ -73,7 +73,7 @@ export function useClientAnalyses(clientId: string) {
 }
 
 /**
- * 내담자 분석 생성 Mutation
+ * 다회기 분석 생성 Mutation
  */
 export function useCreateClientAnalysis() {
   const queryClient = useQueryClient();
@@ -125,7 +125,7 @@ export function useCreateClientAnalysis() {
 }
 
 /**
- * 내담자 분석 상태 조회 (폴링)
+ * 다회기 분석 상태 조회 (폴링)
  */
 export interface UseClientAnalysisStatusOptions {
   clientId: string;

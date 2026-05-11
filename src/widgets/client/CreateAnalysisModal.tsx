@@ -1,5 +1,5 @@
 /**
- * 내담자 분석 생성 모달
+ * 다회기 분석 생성 모달
  */
 
 import React from 'react';
