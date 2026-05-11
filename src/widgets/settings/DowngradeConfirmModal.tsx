@@ -163,7 +163,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
         {!newFeatures && (
           <div className="flex items-center gap-3">
             <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-            <span className="text-sm">제한된 상담노트 템플릿</span>
+            <span className="text-sm">제한된 상담노트 양식</span>
           </div>
         )}
       </div>
@@ -274,9 +274,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
               </Title>
             </div>
             <div className="space-y-1">
-              <Text className="font-emphasize">
-                정말 플랜을 바꾸시겠어요?
-              </Text>
+              <Text className="font-emphasize">정말 플랜을 바꾸시겠어요?</Text>
               <Text className="font-emphasize">
                 플랜 변경 후 아래 기능을 더 이상 이용할 수 없어요.
               </Text>

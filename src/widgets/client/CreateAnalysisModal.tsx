@@ -1,5 +1,5 @@
 /**
- * 내담자 분석 생성 모달
+ * 다회기 분석 생성 모달
  */
 
 import React from 'react';
@@ -290,12 +290,12 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
       {isMobileView ? (
         <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
           <BackButton onClick={handleClose} />
-          <p className="text-m font-medium text-grey-100">내담자 분석하기</p>
+          <p className="text-m font-medium text-grey-100">다회기 분석하기</p>
         </div>
       ) : (
         <div className="p-6 pb-0 text-center">
           <Title as="h3" className="text-xl font-headline text-grey-100">
-            내담자 분석하기
+            다회기 분석하기
           </Title>
         </div>
       )}

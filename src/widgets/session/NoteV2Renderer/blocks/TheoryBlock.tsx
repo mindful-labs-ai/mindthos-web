@@ -64,10 +64,9 @@ export function serializeTheory(
   const evidenceLines = Array.isArray(theory.evidence)
     ? theory.evidence
     : theory.evidence
-    ? [theory.evidence]
-    : [];
+      ? [theory.evidence]
+      : [];
   return [
-    `적용된 상담 이론`,
     `주이론: ${theory.primary}`,
     theory.secondary ? `보조이론: ${theory.secondary}` : '',
     `식별 근거:`,

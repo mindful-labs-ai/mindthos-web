@@ -12,7 +12,11 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
-import { sessionQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -25,8 +29,6 @@ interface UseProgressNoteCreationOptions {
   transcribeContents: unknown;
   isReadOnly: boolean;
   isDummySession: boolean;
-  /** 잔여 크레딧 */
-  remainingCredit: number;
   /** 템플릿 선택 중인 탭들 */
   creatingTabs: Record<string, number | null>;
   setCreatingTabs: React.Dispatch<
@@ -63,7 +65,6 @@ export function useProgressNoteCreation({
   transcribeContents,
   isReadOnly,
   isDummySession,
-  remainingCredit,
   creatingTabs,
   setCreatingTabs,
   requestingTabs,
@@ -74,6 +75,7 @@ export function useProgressNoteCreation({
 }: UseProgressNoteCreationOptions): UseProgressNoteCreationReturn {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const checkCredit = useCreditGuard();
   const [isRegenerating, setIsRegenerating] = React.useState(false);
 
   const handleTemplateSelect = React.useCallback(
@@ -98,11 +100,12 @@ export function useProgressNoteCreation({
       return;
     }
 
-    // 크레딧 체크
-    if (remainingCredit < PROGRESS_NOTE_CREDIT) {
+    // 크레딧 가드
+    const guard = await checkCredit(PROGRESS_NOTE_CREDIT);
+    if (!guard.ok && !guard.unavailable) {
       toast({
         title: '크레딧 부족',
-        description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요해요. (보유: ${remainingCredit})`,
+        description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
         duration: 5000,
       });
       return;
@@ -158,6 +161,11 @@ export function useProgressNoteCreation({
         description: '상담노트를 작성하고 있어요.',
         duration: 3000,
       });
+
+      // 크레딧 잔액 갱신
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userId),
+      });
     } catch (error) {
       // 실패 시 requestingTabs에서 제거하고 다시 creatingTabs로 복원
       setRequestingTabs((prev) => {
@@ -183,10 +191,15 @@ export function useProgressNoteCreation({
         description: '상담노트를 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
         duration: 5000,
       });
+
+      // 에러 시에도 크레딧 잔액 갱신
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userId),
+      });
     }
   }, [
     isReadOnly,
-    remainingCredit,
+    checkCredit,
     activeTab,
     creatingTabs,
     requestingTabs,
@@ -195,6 +208,7 @@ export function useProgressNoteCreation({
     setCreatingTabs,
     setRequestingTabs,
     setActiveTab,
+    queryClient,
     toast,
   ]);
 
@@ -209,11 +223,12 @@ export function useProgressNoteCreation({
         return;
       }
 
-      // 크레딧 체크
-      if (remainingCredit < PROGRESS_NOTE_CREDIT) {
+      // 크레딧 가드
+      const guard = await checkCredit(PROGRESS_NOTE_CREDIT);
+      if (!guard.ok && !guard.unavailable) {
         toast({
           title: '크레딧 부족',
-          description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요해요. (보유: ${remainingCredit})`,
+          description: `상담노트 작성에 ${PROGRESS_NOTE_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
           duration: 5000,
         });
         return;
@@ -275,6 +290,11 @@ export function useProgressNoteCreation({
         await queryClient.invalidateQueries({
           queryKey: sessionQueryKeys.detail(sessionId, isDummySession),
         });
+
+        // 크레딧 잔액 갱신
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userId),
+        });
       } catch (error) {
         // 실패 시 requestingTabs에서 제거
         setRequestingTabs((prev) => {
@@ -307,13 +327,18 @@ export function useProgressNoteCreation({
             '상담노트를 다시 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
           duration: 5000,
         });
+
+        // 에러 시에도 크레딧 잔액 갱신
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userId),
+        });
       } finally {
         setIsRegenerating(false);
       }
     },
     [
       isReadOnly,
-      remainingCredit,
+      checkCredit,
       sessionId,
       transcribeContents,
       isDummySession,

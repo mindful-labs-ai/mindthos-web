@@ -222,15 +222,12 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         throw new Error('플랜 변경에 실패했어요. 다시 시도해 주세요.');
       }
 
-      // 크레딧 관련 쿼리 invalidate
+      // 크레딧/구독/사용량을 단일 RPC로 통합 — summary key만 invalidate
       if (userId) {
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.subscription(userIdNumber),
-          });
-          await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.usage(userIdNumber),
+            queryKey: creditQueryKeys.summary(userIdNumber),
           });
         }
       }
@@ -306,12 +303,12 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         description: '구독 종료 후 새 플랜이 적용돼요.',
       });
 
-      // 크레딧 관련 쿼리 invalidate
+      // 크레딧/구독을 단일 RPC로 통합 — summary key만 invalidate
       if (userId) {
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.subscription(userIdNumber),
+            queryKey: creditQueryKeys.summary(userIdNumber),
           });
         }
       }

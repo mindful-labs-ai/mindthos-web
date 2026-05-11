@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { generateFamilySummary } from '@/shared/api/supabase/genogramAIQueries';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 interface UseGenogramGenerationOptions {
   onSuccess?: (data: SerializedGenogram) => void;
@@ -20,6 +22,18 @@ interface UseGenogramGenerationOptions {
  * 3. DB 저장 (옵션)
  */
 export function useGenogramGeneration(options?: UseGenogramGenerationOptions) {
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
+
+  const invalidateCredit = () => {
+    if (!userId) return;
+    const userIdNum = Number(userId);
+    if (Number.isNaN(userIdNum)) return;
+    queryClient.invalidateQueries({
+      queryKey: creditQueryKeys.summary(userIdNum),
+    });
+  };
+
   const mutation = useMutation({
     mutationFn: async ({
       clientId,
@@ -39,9 +53,11 @@ export function useGenogramGeneration(options?: UseGenogramGenerationOptions) {
       return response.data.genogram;
     },
     onSuccess: (data) => {
+      invalidateCredit();
       options?.onSuccess?.(data);
     },
     onError: (error: Error) => {
+      invalidateCredit();
       options?.onError?.(error);
     },
   });

@@ -474,6 +474,20 @@ body {
   [data-parent-mode='true'] [data-edge-type='Partner_Line']:hover {
     cursor: pointer;
   }
+
+  /* Select 도구 / Pan 도구: 노드 위 cursor를 grab/grabbing으로 일관되게 유지 */
+  [data-tool-mode='Select_Tool'] .react-flow__node,
+  [data-tool-mode='Select_Tool'] .react-flow__node *,
+  [data-tool-mode='Pan_Tool'] .react-flow__node,
+  [data-tool-mode='Pan_Tool'] .react-flow__node * {
+    cursor: grab !important;
+  }
+  [data-tool-mode='Select_Tool'] .react-flow__node:active,
+  [data-tool-mode='Select_Tool'] .react-flow__node:active *,
+  [data-tool-mode='Pan_Tool'] .react-flow__node:active,
+  [data-tool-mode='Pan_Tool'] .react-flow__node:active * {
+    cursor: grabbing !important;
+  }
   /* 미션 진행 중 버튼 - 쉬머 프로그레스 애니메이션 */
   @keyframes shimmer-progress {
     0% {

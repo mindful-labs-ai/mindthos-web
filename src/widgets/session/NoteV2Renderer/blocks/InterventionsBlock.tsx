@@ -55,7 +55,6 @@ export function serializeInterventions(
   const fitLines = toLines(interventions.theoretical_fit);
   const evidenceLines = toLines(interventions.evidence);
   return [
-    `금회기 개입 분석`,
     `주요 개입:`,
     ...majorLines.map((l) => `  ${l}`),
     `이론적 적합성:`,

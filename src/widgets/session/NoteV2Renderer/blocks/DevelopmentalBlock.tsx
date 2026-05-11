@@ -22,5 +22,5 @@ export function DevelopmentalBlock({
 
 export function serializeDevelopmental(value: string | string[]): string {
   const lines = toLines(value);
-  return [`발달적 맥락`, ...(lines.length ? lines : ['—'])].join('\n');
+  return (lines.length ? lines : ['—']).join('\n');
 }

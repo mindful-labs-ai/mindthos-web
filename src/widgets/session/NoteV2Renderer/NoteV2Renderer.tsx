@@ -452,6 +452,7 @@ function serializePhase4(p: NoteV2Output['phase4']): string {
 export function serializeNoteV2(note: NoteV2Output): string {
   return [
     `총평`,
+    ``,
     serializeOverall(note.phase4.overall_comment),
     ``,
     serializePhase1(note.phase1),

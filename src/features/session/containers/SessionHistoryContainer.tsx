@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 import { getSessionDetailRoute } from '@/app/router/constants';
@@ -17,6 +18,7 @@ import type {
 } from '@/features/session/types';
 import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
@@ -39,15 +41,13 @@ export const SessionHistoryContainer: React.FC = () => {
   // 클라이언트 카드와 동일한 RPC 사용 → session_count가 클라이언트 카드 표시값과 일치
   // 필터에 모든 클라이언트가 보여야 하므로 limit 충분히 크게 (p99=34, 안전망 500)
   const userIdNum = parseInt(userId || '0');
-  const {
-    items: clientPageItems,
-    isLoading: isLoadingClients,
-  } = useClientsList({
-    counselorId: userIdNum,
-    sortOrder: 'desc',
-    limit: 500,
-    enabled: !!userId,
-  });
+  const { items: clientPageItems, isLoading: isLoadingClients } =
+    useClientsList({
+      counselorId: userIdNum,
+      sortOrder: 'desc',
+      limit: 500,
+      enabled: !!userId,
+    });
   // ClientsPageItem → Client 변환 (downstream 컴포넌트가 Client 타입 기대)
   const clients = React.useMemo<Client[]>(
     () =>
@@ -69,6 +69,7 @@ export const SessionHistoryContainer: React.FC = () => {
     [clientPageItems, userId]
   );
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [sortOrder, setSortOrder] = React.useState<'newest' | 'oldest'>(
     'newest'
@@ -76,6 +77,14 @@ export const SessionHistoryContainer: React.FC = () => {
   const [selectedClientIds, setSelectedClientIds] = React.useState<string[]>(
     []
   );
+
+  const invalidateCreditOnTransition = React.useCallback(() => {
+    const userIdNum = Number(userId);
+    if (Number.isNaN(userIdNum)) return;
+    queryClient.invalidateQueries({
+      queryKey: creditQueryKeys.summary(userIdNum),
+    });
+  }, [queryClient, userId]);
 
   const {
     items: sessionItems,
@@ -97,6 +106,7 @@ export const SessionHistoryContainer: React.FC = () => {
           : '생성을 완료했어요.',
         duration: 5000,
       });
+      invalidateCreditOnTransition();
     },
     onSessionError: (session) => {
       toast({
@@ -104,6 +114,7 @@ export const SessionHistoryContainer: React.FC = () => {
         description: session.error_message || '세션 처리 중 문제가 생겼어요.',
         duration: 5000,
       });
+      invalidateCreditOnTransition();
     },
   });
 
@@ -185,9 +196,7 @@ export const SessionHistoryContainer: React.FC = () => {
         processing_status: session.processing_status,
         is_handwritten: isHandwritten,
         stt_model:
-          transcribe && 'stt_model' in transcribe
-            ? transcribe.stt_model
-            : null,
+          transcribe && 'stt_model' in transcribe ? transcribe.stt_model : null,
       };
     });
   }, [filteredSessions, effectiveClients, sessionsWithData]);

@@ -28,9 +28,7 @@ export function SafetyAssessmentBlock({
           contentEditable={editable}
           suppressContentEditableWarning={editable}
           data-note-path={
-            editable
-              ? 'phase1.safety_assessment.suicide_self_harm'
-              : undefined
+            editable ? 'phase1.safety_assessment.suicide_self_harm' : undefined
           }
         >
           {safety.suicide_self_harm || (editable ? '' : '—')}
@@ -69,9 +67,7 @@ export function SafetyAssessmentBlock({
           contentEditable={editable}
           suppressContentEditableWarning={editable}
           data-note-path={
-            editable
-              ? 'phase1.safety_assessment.immediate_action'
-              : undefined
+            editable ? 'phase1.safety_assessment.immediate_action' : undefined
           }
         >
           {safety.immediate_action || (editable ? '' : '—')}
@@ -85,7 +81,6 @@ export function serializeSafety(
   safety: NoteV2Output['phase1']['safety_assessment']
 ): string {
   return [
-    `안전성 평가`,
     `자해/자살: ${safety.suicide_self_harm}`,
     `타해 위험: ${safety.harm_to_others}`,
     `학대/방임: ${safety.abuse_neglect}`,

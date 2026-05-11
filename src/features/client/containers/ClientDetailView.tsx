@@ -85,7 +85,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
             : 'text-grey-60 lg:hover:text-grey-80'
         }`}
       >
-        내담자 분석
+        다회기 분석
         <div
           className={`absolute bottom-2 right-0 h-0.5 bg-grey-100 transition-all ${activeTab === 'analyze' ? 'w-full' : 'w-0'}`}
         />

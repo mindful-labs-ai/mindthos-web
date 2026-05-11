@@ -94,9 +94,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
           return (
             <div className="flex h-full flex-col px-4 md:px-10">
               <div className="sticky top-0 z-10 flex items-center justify-between bg-white py-3">
-                <p className="text-sm text-grey-60 md:text-m">
-                  상담노트 템플릿
-                </p>
+                <p className="text-sm text-grey-60 md:text-m">상담노트 양식</p>
                 <button
                   onClick={onCreateProgressNote}
                   disabled={isReadOnly || !isTemplateSelected}
