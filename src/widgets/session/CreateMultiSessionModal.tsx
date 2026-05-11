@@ -10,7 +10,7 @@ import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionC
 import type {
   BatchSessionConfig,
   FileSessionConfig,
-  SttModel,
+  SessionRequestSttModel,
 } from '@/features/session/types';
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
 import { cn } from '@/lib/cn';
@@ -152,6 +152,12 @@ export const CreateMultiSessionModal: React.FC<
   const { createSessions, results, isCreating } = useMultiSessionCreate({
     userId: userId ? parseInt(userId) : 0,
     templateId: defaultTemplateId || 1,
+    onInsufficientCredit: (message) => {
+      setCreditErrorSnackBar({
+        open: true,
+        message,
+      });
+    },
   });
 
   // Drag and Drop
@@ -236,7 +242,7 @@ export const CreateMultiSessionModal: React.FC<
 
   // 일괄 설정 변경
   const handleBatchSttModelChange: React.Dispatch<
-    React.SetStateAction<SttModel>
+    React.SetStateAction<SessionRequestSttModel>
   > = (value) => {
     const sttModel =
       typeof value === 'function' ? value(batchConfig.sttModel) : value;
