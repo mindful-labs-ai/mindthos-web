@@ -20,6 +20,12 @@ import {
 } from '@/features/auth/page/userVerifyStyles';
 import { qualificationService } from '@/features/settings/services/qualificationService';
 import { cn } from '@/lib/cn';
+import {
+  generateMetaEventId,
+  identifyFBUser,
+  toE164KR,
+  trackFBEvent,
+} from '@/lib/fbq';
 import { trackGAEvent } from '@/lib/gtag';
 import { trackEvent } from '@/lib/mixpanel';
 import {
@@ -129,13 +135,32 @@ const UserVerifyPage: React.FC = () => {
         referralSource,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       const authProvider =
         (user?.app_metadata?.provider as string | undefined) ?? 'email';
       trackEvent(MixpanelEvent.SignupSuccess, { method: 'phone' });
       // GA4 sign_up — fired at final signup completion (post phone verification)
       // so it can be imported into Google Ads as a conversion via cross-domain linker.
       trackGAEvent('sign_up', { method: authProvider });
+
+      // Meta Pixel — Advanced Matching + CompleteRegistration.
+      // eventId is preserved for future server-side Conversions API dedup.
+      const phoneE164 = toE164KR(variables.phoneNumber);
+      identifyFBUser({
+        email: user?.email ?? undefined,
+        phone: phoneE164,
+        externalId: user?.id,
+      });
+      trackFBEvent(
+        'CompleteRegistration',
+        {
+          content_name: 'mindthos_signup',
+          status: 'phone_verified',
+          method: authProvider,
+        },
+        { eventId: generateMetaEventId() }
+      );
+
       queryClient.invalidateQueries({
         queryKey: phoneVerificationQueryKeys.status(),
       });
