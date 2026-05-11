@@ -20,6 +20,7 @@ import {
 } from '@/features/auth/page/userVerifyStyles';
 import { qualificationService } from '@/features/settings/services/qualificationService';
 import { cn } from '@/lib/cn';
+import { trackGAEvent } from '@/lib/gtag';
 import { trackEvent } from '@/lib/mixpanel';
 import {
   MixpanelError,
@@ -45,7 +46,7 @@ import { REFERRAL_OPTIONS } from '@/widgets/settings/UserEditModal';
 
 const UserVerifyPage: React.FC = () => {
   const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
-  const { userName, organization, userPhoneNumber, updateUser, logout } =
+  const { user, userName, organization, userPhoneNumber, updateUser, logout } =
     useAuthStore();
   const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
@@ -129,7 +130,12 @@ const UserVerifyPage: React.FC = () => {
       });
     },
     onSuccess: () => {
+      const authProvider =
+        (user?.app_metadata?.provider as string | undefined) ?? 'email';
       trackEvent(MixpanelEvent.SignupSuccess, { method: 'phone' });
+      // GA4 sign_up — fired at final signup completion (post phone verification)
+      // so it can be imported into Google Ads as a conversion via cross-domain linker.
+      trackGAEvent('sign_up', { method: authProvider });
       queryClient.invalidateQueries({
         queryKey: phoneVerificationQueryKeys.status(),
       });

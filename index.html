@@ -122,6 +122,23 @@
       href="/logo_mindthos_kr.webp"
       type="image/webp"
     />
+
+    <!-- Google Analytics 4 (cross-domain with mindthos.com) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-Z3DT8LX40Y"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-Z3DT8LX40Y', {
+        linker: { domains: ['mindthos.com', 'app.mindthos.com'] },
+        send_page_view: true,
+      });
+    </script>
   </head>
 
   <body>
