@@ -8,10 +8,16 @@ import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { useSessionList } from '@/features/session/hooks/useSessionList';
-import type { SessionRecord, Transcribe } from '@/features/session/types';
-import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
-import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import {
+  useAllClientSessions,
+  useClientSessions,
+} from '@/features/session/hooks/useSessionsList';
+import type {
+  HandwrittenTranscribeListItem,
+  SessionRecord,
+  TranscribeListItem,
+} from '@/features/session/types';
+import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
 import { dummyClientAnalysisVersions } from '@/shared/constants/dummyClientAnalysis';
@@ -22,6 +28,7 @@ import {
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -68,18 +75,41 @@ export const ClientDetailContainer: React.FC = () => {
 
   const { clients, isLoading: isLoadingClients } = useClientList();
 
-  const { data: sessionsData, isLoading: isLoadingSessions } = useSessionList({
+  const isDummyClientId = clientId === 'dummy_client_1';
+
+  const {
+    items: clientSessionItems,
+    isLoading: isLoadingSessions,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useClientSessions({
     userId: userId ? Number(userId) : 0,
-    enabled: !!userId,
+    clientId: clientId || '',
+    enabled: !!userId && !!clientId && !isDummyClientId,
+    sortOrder: sortOrder === 'newest' ? 'desc' : 'asc',
   });
 
-  const isDummyClientId = clientId === 'dummy_client_1';
+  // 다회기 분석용 — 모달 열릴 때만 활성화
+  const { data: allClientSessionItems } = useAllClientSessions({
+    userId: userId ? Number(userId) : 0,
+    clientId: clientId || '',
+    enabled: isAnalysisModalOpen && !isDummyClientId && !!clientId && !!userId,
+    sortOrder: 'desc',
+  });
+
+  const sentinelRef = useInfiniteScroll({
+    hasNextPage: hasNextPage ?? false,
+    isFetchingNextPage,
+    fetchNextPage,
+  });
+
   const isDummyFlow =
     isDummyClientId ||
     (!isLoadingClients &&
       !isLoadingSessions &&
       !clients.length &&
-      sessionsData?.sessions.length === 0);
+      clientSessionItems.length === 0);
   const isReadOnly = isDummyFlow;
 
   const { data: templates } = useClientTemplates();
@@ -133,45 +163,30 @@ export const ClientDetailContainer: React.FC = () => {
         (s) => s.session.client_id === clientId
       );
     }
-    if (!sessionsData?.sessions) return [];
-    return sessionsData.sessions.filter(
-      (s) => s.session.client_id === clientId
-    );
-  }, [clientId, isDummyFlow, sessionsData]);
+    return clientSessionItems;
+  }, [clientId, isDummyFlow, clientSessionItems]);
+
+  const getCardPreview = (
+    transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null,
+    isHandwritten: boolean
+  ): string => {
+    if (!transcribe) {
+      return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록이 없어요.';
+    }
+    const cleaned = formatPreviewText(transcribe.preview);
+    if (cleaned) return cleaned;
+    return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록 보기';
+  };
 
   const sessionRecords: SessionRecord[] = React.useMemo(() => {
     if (!client) return [];
 
     return clientSessions.map(({ session, transcribe, progressNotes }) => {
       const isHandwritten = session.audio_meta_data === null;
-
-      let content = '축어록이 없어요.';
-
-      if (isHandwritten) {
-        if (transcribe && typeof transcribe.contents === 'string') {
-          content =
-            transcribe.contents.slice(0, 150) +
-            (transcribe.contents.length > 150 ? '...' : '');
-        }
-      } else {
-        const transcriptData = getTranscriptData(
-          transcribe as Transcribe | null
-        );
-        if (transcriptData) {
-          const { segments, speakers } = transcriptData;
-          content =
-            segments
-              ?.slice(0, 3)
-              .map((seg) => {
-                const speakerName = getSpeakerDisplayName(
-                  seg.speaker,
-                  speakers
-                );
-                return `${speakerName}: ${seg.text}`;
-              })
-              .join(' ') || '축어록이 없어요.';
-        }
-      }
+      const transcribeForPreview =
+        transcribe && 'preview' in transcribe
+          ? (transcribe as TranscribeListItem | HandwrittenTranscribeListItem)
+          : null;
 
       const note_types = getNoteTypesFromProgressNotes(progressNotes);
 
@@ -190,26 +205,21 @@ export const ClientDetailContainer: React.FC = () => {
         client_id: session.client_id || '',
         client_name: client.name,
         session_number,
-        content,
+        content: getCardPreview(transcribeForPreview, isHandwritten),
         note_types,
         created_at: session.created_at,
         processing_status: session.processing_status,
         is_handwritten: isHandwritten,
         stt_model:
           !isHandwritten && transcribe && 'stt_model' in transcribe
-            ? (transcribe as Transcribe).stt_model
+            ? transcribe.stt_model
             : null,
       };
     });
   }, [clientSessions, client]);
 
-  const sortedSessionRecords = React.useMemo(() => {
-    return [...sessionRecords].sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
-  }, [sessionRecords, sortOrder]);
+  // 정렬은 서버 측 (sortOrder → useClientSessions), 클라이언트 측 재정렬 불필요
+  const sortedSessionRecords = sessionRecords;
 
   const handleCreateAnalysis = async (data: {
     sessionIds: string[];
@@ -336,6 +346,7 @@ export const ClientDetailContainer: React.FC = () => {
             onClick={handleSessionClick}
           />
         ))}
+        <div ref={sentinelRef} />
       </div>
     ) : (
       <div className="flex min-h-[300px] items-center justify-center rounded-lg border border-grey-30 bg-white">
@@ -363,12 +374,17 @@ export const ClientDetailContainer: React.FC = () => {
     />
   );
 
+  // 다회기 분석 모달용 세션 목록 — useAllClientSessions (limit 없음)
+  const analysisSessionList = isDummyFlow
+    ? dummySessionRelations.map((s) => s.session)
+    : (allClientSessionItems ?? clientSessions).map((s) => s.session);
+
   const analysisModalWidget = (
     <CreateAnalysisModal
       open={isAnalysisModalOpen}
       onOpenChange={setIsAnalysisModalOpen}
       templates={templates}
-      sessions={clientSessions.map((s) => s.session)}
+      sessions={analysisSessionList}
       onCreateAnalysis={handleCreateAnalysis}
     />
   );

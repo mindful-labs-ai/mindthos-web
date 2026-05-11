@@ -171,8 +171,9 @@ export function useTranscriptEditSession({
     setHasEdits(false);
     setIsEditing(false);
 
-    // 서버 원본으로 복원
+    // 서버 원본으로 복원 — 상세 + 리스트(paginated/allByClient 등) 모두 무효화
     queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+    queryClient.invalidateQueries({ queryKey: ['sessions'] });
   }, [sessionId, queryClient, sessionQueryKey]);
 
   // ── 텍스트 편집 (편집 모드 전용, ref 기반) ──
@@ -274,10 +275,11 @@ export function useTranscriptEditSession({
             speakerDefinitions: updates.speakerDefinitions,
           });
 
-          // 서버 최신 데이터로 갱신
+          // 서버 최신 데이터로 갱신 — 상세 + 리스트 모두 (preview 갱신 반영)
           await queryClient.invalidateQueries({
             queryKey: sessionQueryKey,
           });
+          await queryClient.invalidateQueries({ queryKey: ['sessions'] });
 
           toast({
             title: '화자 변경 완료',
@@ -288,6 +290,7 @@ export function useTranscriptEditSession({
           await queryClient.invalidateQueries({
             queryKey: sessionQueryKey,
           });
+          await queryClient.invalidateQueries({ queryKey: ['sessions'] });
 
           trackError(MixpanelError.SpeakerChangeError, error, {
             session_id: sessionId,
@@ -421,6 +424,9 @@ export function useTranscriptEditSession({
       // 서버에 전체 contents 저장
       await saveTranscriptContents(transcribeId, finalContents);
 
+      // 서버에서 갱신된 preview 등 반영 — 리스트(paginated)도 invalidate
+      await queryClient.invalidateQueries({ queryKey: ['sessions'] });
+
       trackEvent(MixpanelEvent.TranscriptEditComplete, {
         session_id: sessionId,
         edited_segments_count: Object.keys(textEdits).length,
@@ -436,6 +442,7 @@ export function useTranscriptEditSession({
       await queryClient.invalidateQueries({
         queryKey: sessionQueryKey,
       });
+      await queryClient.invalidateQueries({ queryKey: ['sessions'] });
 
       trackError(MixpanelError.TranscriptSaveError, error, {
         session_id: sessionId,
