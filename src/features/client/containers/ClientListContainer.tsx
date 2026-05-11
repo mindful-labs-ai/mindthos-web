@@ -10,6 +10,7 @@ import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Title } from '@/shared/ui/atoms/Title';
 import { useAuthStore } from '@/stores/authStore';
+import { useClientListScrollStore } from '@/stores/clientListScrollStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ClientCard } from '@/widgets/client/ClientCard';
 
@@ -51,6 +52,16 @@ export const ClientListContainer: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
     null
+  );
+
+  // 스크롤 대상 ID는 데스크탑/모바일 양쪽에서 동일한 전역 스토어로 일원화.
+  // - 데스크탑: 페이지 내부 AddClientModal 의 onClientCreated → requestScrollToClient
+  // - 모바일/태블릿: MobileHeader "+" → 글로벌 AddClientModal → requestScrollToClient
+  const pendingScrollClientId = useClientListScrollStore(
+    (state) => state.pendingClientId
+  );
+  const clearPendingScroll = useClientListScrollStore(
+    (state) => state.clearPendingScroll
   );
 
   const isDummyFlow = !isLoading && !isError && clientPageItems.length === 0;
@@ -107,6 +118,32 @@ export const ClientListContainer: React.FC = () => {
       setSelectedClient(null);
     }
   };
+
+  const handleClientCreated = (clientId: string) => {
+    useClientListScrollStore.getState().requestScrollToClient(clientId);
+  };
+
+  // 생성된 내담자 카드가 DOM에 들어오면 해당 위치로 스크롤.
+  // 스토어의 pendingScrollClientId 가 set 되면, clientPageItems(쿼리 결과) 갱신마다 재시도.
+  React.useEffect(() => {
+    if (!pendingScrollClientId) return;
+    const el = document.querySelector<HTMLElement>(
+      `[data-client-id="${pendingScrollClientId}"]`
+    );
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      clearPendingScroll();
+    }
+  }, [pendingScrollClientId, clientPageItems, clearPendingScroll]);
+
+  // 안전망: 일정 시간 내 카드가 끝내 나타나지 않으면 스토어 해제
+  React.useEffect(() => {
+    if (!pendingScrollClientId) return;
+    const timeout = window.setTimeout(() => {
+      clearPendingScroll();
+    }, 5000);
+    return () => window.clearTimeout(timeout);
+  }, [pendingScrollClientId, clearPendingScroll]);
 
   const renderClientGroup = (
     group: { key: string; clients: Client[] },
@@ -205,6 +242,7 @@ export const ClientListContainer: React.FC = () => {
       open={isAddModalOpen}
       onOpenChange={handleModalClose}
       initialData={selectedClient}
+      onClientCreated={handleClientCreated}
     />
   );
 

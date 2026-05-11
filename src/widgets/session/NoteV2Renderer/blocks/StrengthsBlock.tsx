@@ -9,15 +9,11 @@ interface StrengthsBlockProps {
 
 export function StrengthsBlock({ value, editable }: StrengthsBlockProps) {
   return (
-    <ParagraphArray
-      value={value}
-      path="phase2.strengths"
-      editable={editable}
-    />
+    <ParagraphArray value={value} path="phase2.strengths" editable={editable} />
   );
 }
 
 export function serializeStrengths(value: string | string[]): string {
   const lines = toLines(value);
-  return [`강점 및 자원`, ...(lines.length ? lines : ['—'])].join('\n');
+  return (lines.length ? lines : ['—']).join('\n');
 }

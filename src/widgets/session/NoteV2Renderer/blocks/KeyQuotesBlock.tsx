@@ -81,5 +81,5 @@ export function serializeKeyQuotes(
       return `${i + 1}. "${kq.quote}" → ${meaningLines.join(' ')}`;
     })
     .join('\n');
-  return [`내담자 핵심 발언`, lines].join('\n');
+  return lines || '—';
 }

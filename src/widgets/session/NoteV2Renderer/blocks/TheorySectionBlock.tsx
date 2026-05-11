@@ -40,11 +40,12 @@ export function TheorySectionBlock({
 export function serializeTheorySection(
   section: NoteV2Output['phase2']['theory_section']
 ): string {
-  const subs = section.subsections
-    ?.map((sub) => {
-      const lines = toLines(sub.content);
-      return [sub.subtitle, ...lines.map((l) => `  ${l}`)].join('\n');
-    })
-    .join('\n\n');
-  return [`${section.title}`, '', subs].join('\n');
+  return (
+    section.subsections
+      ?.map((sub) => {
+        const lines = toLines(sub.content);
+        return [sub.subtitle, ...lines.map((l) => `  ${l}`)].join('\n');
+      })
+      .join('\n\n') ?? ''
+  );
 }

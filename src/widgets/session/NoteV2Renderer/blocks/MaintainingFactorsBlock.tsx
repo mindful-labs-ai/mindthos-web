@@ -52,7 +52,6 @@ export function serializeMaintaining(
   const environmentalLines = toLines(maintaining.environmental);
   const cycleSteps = toCycleSteps(maintaining.cycle);
   return [
-    `유지 요인`,
     `내적 요인:`,
     ...internalLines.map((l) => `  ${l}`),
     `환경적 요인:`,
