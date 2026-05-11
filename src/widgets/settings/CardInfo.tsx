@@ -147,9 +147,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
         className="max-w-sm"
       >
         <div className="space-y-4">
-          <Text className="typo-m text-fg">
-            등록된 카드를 삭제하시겠어요?
-          </Text>
+          <Text className="typo-m text-fg">등록된 카드를 삭제하시겠어요?</Text>
           <Text className="typo-sm text-fg-muted">
             삭제 후에는 결제 시 카드를 다시 등록해야 해요.
           </Text>

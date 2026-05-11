@@ -246,6 +246,13 @@ export type FileInfo = AudioFileInfo | PdfFileInfo;
 // 세션 생성 API 타입 (Backend Integration)
 // ============================================
 
+/**
+ * 세션 생성 요청에서 허용되는 STT 모델.
+ * mavo-api 의 Zod 스키마(`'basic' | 'advanced'`)와 동일해야 함.
+ * 광역 SttModel (`'whisper' | 'gemini-3'` 포함)은 응답/저장 데이터 표시용으로만 사용.
+ */
+export type SessionRequestSttModel = 'basic' | 'advanced';
+
 export interface CreateSessionBackgroundRequest {
   user_id: number;
   title: string;
@@ -253,14 +260,14 @@ export interface CreateSessionBackgroundRequest {
   file_size_mb: number;
   duration_seconds: number;
   client_id?: string | null;
-  stt_model: SttModel;
+  stt_model: SessionRequestSttModel;
   template_id: number;
 }
 
 export interface CreateSessionBackgroundResponse {
   session_id: string;
   status: 'accepted' | 'failed';
-  stt_model: SttModel;
+  stt_model: SessionRequestSttModel;
   message: string;
 }
 
@@ -288,13 +295,13 @@ export interface MultiFileInfo {
 export interface FileSessionConfig {
   fileId: string;
   order: number; // 업로드 순서
-  sttModel: SttModel; // 일반/고급
+  sttModel: SessionRequestSttModel; // 일반/고급 — 요청 가능한 2종으로 한정
   clientId?: string; // 내담자
 }
 
 // Step 1 일괄 설정
 export interface BatchSessionConfig {
-  sttModel: SttModel;
+  sttModel: SessionRequestSttModel;
   clientId?: string;
 }
 

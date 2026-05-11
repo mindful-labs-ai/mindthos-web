@@ -51,7 +51,6 @@ export function serializeRoadmap(
   roadmap: NoteV2Output['phase4']['roadmap']
 ): string {
   return [
-    `다음 회기 로드맵`,
     serializeAdminPlan(roadmap.admin_plan),
     serializePriorities(roadmap.priorities),
     serializeQuestions(roadmap.suggested_questions),
@@ -59,5 +58,5 @@ export function serializeRoadmap(
     roadmap.referral ? serializeReferral(roadmap.referral) : '',
   ]
     .filter(Boolean)
-    .join('\n');
+    .join('\n\n');
 }

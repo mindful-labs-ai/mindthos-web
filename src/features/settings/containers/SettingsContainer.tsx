@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { Link, createSearchParams } from 'react-router-dom';
+import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
 
 import { ROUTES, TERMS_TYPES } from '@/app/router/constants';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
@@ -27,12 +27,14 @@ import {
   type UserAccess,
 } from '@/shared/hooks/useFeatureAccess';
 import {
+  ChevronLeftIcon,
   ChevronRightIcon,
   CouponIcon,
   SettingPageEmailIcon,
   SettingPageLocationIcon,
   SettingPageNameIcon,
 } from '@/shared/icons';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -82,12 +84,16 @@ export const SettingsContainer: React.FC = () => {
   const [deleteError, setDeleteError] = React.useState('');
   const [isCardModalOpen, setIsCardModalOpen] = React.useState(false);
   const [isRenewalModalOpen, setIsRenewalModalOpen] = React.useState(false);
-  const [view, setView] = React.useState<
-    'settings' | 'noticeList' | 'noticeDetail'
-  >('settings');
-  const [selectedNoticeId, setSelectedNoticeId] = React.useState<string | null>(
-    null
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get('view');
+  const idParam = searchParams.get('id');
+  const view: 'settings' | 'noticeList' | 'noticeDetail' =
+    viewParam === 'notices'
+      ? idParam
+        ? 'noticeDetail'
+        : 'noticeList'
+      : 'settings';
+  const selectedNoticeId = view === 'noticeDetail' ? idParam : null;
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -102,8 +108,7 @@ export const SettingsContainer: React.FC = () => {
   const handleOpenNoticeList = () => {
     trackEvent(MixpanelEvent.NoticeListView);
     trackEvent(MixpanelEvent.SettingsSectionChange, { section: 'noticeList' });
-    setSelectedNoticeId(null);
-    setView('noticeList');
+    setSearchParams({ view: 'notices' });
     scrollToTop();
   };
 
@@ -112,15 +117,18 @@ export const SettingsContainer: React.FC = () => {
     trackEvent(MixpanelEvent.SettingsSectionChange, {
       section: 'noticeDetail',
     });
-    setSelectedNoticeId(noticeId);
-    setView('noticeDetail');
+    setSearchParams({ view: 'notices', id: noticeId });
     scrollToTop();
   };
 
   const handleBackToList = () => {
     trackEvent(MixpanelEvent.SettingsSectionChange, { section: 'noticeList' });
-    setSelectedNoticeId(null);
-    setView('noticeList');
+    setSearchParams({ view: 'notices' });
+    scrollToTop();
+  };
+
+  const handleBackToSettings = () => {
+    setSearchParams({});
     scrollToTop();
   };
 
@@ -172,7 +180,7 @@ export const SettingsContainer: React.FC = () => {
       const userIdNumber = parseInt(userId);
       if (!isNaN(userIdNumber)) {
         await queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.subscription(userIdNumber),
+          queryKey: creditQueryKeys.summary(userIdNumber),
         });
       }
     }
@@ -191,7 +199,7 @@ export const SettingsContainer: React.FC = () => {
         const userIdNumber = parseInt(userId);
         if (!isNaN(userIdNumber)) {
           await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.subscription(userIdNumber),
+            queryKey: creditQueryKeys.summary(userIdNumber),
           });
         }
       }
@@ -265,9 +273,36 @@ export const SettingsContainer: React.FC = () => {
 
   const noticeContent =
     view === 'noticeList' ? (
-      <NoticeList onSelectNotice={handleSelectNotice} />
+      <div className="flex flex-col">
+        <div className="mb-6 flex items-center gap-3">
+          <BackButton
+            onClick={handleBackToSettings}
+            aria-label="설정으로 돌아가기"
+          />
+          <Title
+            as="h1"
+            className="text-left text-2xl font-headline text-grey-100"
+          >
+            마음토스 공지사항
+          </Title>
+        </div>
+        <NoticeList onSelectNotice={handleSelectNotice} />
+      </div>
     ) : view === 'noticeDetail' && selectedNoticeId ? (
-      <NoticeDetail noticeId={selectedNoticeId} onBack={handleBackToList} />
+      <div className="flex flex-col">
+        <div className="inline-flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleBackToList}
+            aria-label="공지사항 목록으로 돌아가기"
+            className="inline-flex items-center gap-1 self-start rounded-md border border-border px-1 py-1 text-m text-fg-muted transition-colors lg:hover:bg-surface-contrast lg:hover:text-fg"
+          >
+            <ChevronLeftIcon strokeWidth={1.5} size={20} />
+          </button>
+          <span>목록</span>
+        </div>
+        <NoticeDetail noticeId={selectedNoticeId} onBack={handleBackToList} />
+      </div>
     ) : null;
 
   const userInfoContent = (
@@ -595,17 +630,9 @@ export const SettingsContainer: React.FC = () => {
   );
 
   // --- 조립: 타이틀 ---
+  // noticeList 의 타이틀은 noticeContent 내부에서 BackButton 옆에 함께 렌더 (#9)
   const titleSlot = !isMobileView ? (
-    view === 'noticeList' ? (
-      <div>
-        <Title
-          as="h1"
-          className="text-left text-2xl font-headline text-grey-100"
-        >
-          마음토스 공지사항
-        </Title>
-      </div>
-    ) : view === 'settings' ? (
+    view === 'settings' ? (
       <div>
         <Title
           as="h1"

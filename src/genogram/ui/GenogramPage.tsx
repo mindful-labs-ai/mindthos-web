@@ -742,6 +742,7 @@ const GenogramCanvas = React.forwardRef<GenogramPageHandle, GenogramPageProps>(
       <div
         ref={canvasRef}
         className={`relative h-full ${cursorClass}`}
+        data-tool-mode={toolMode}
         data-parent-mode={
           pendingConnectionKind === 'parent' &&
           toolMode === ToolMode.Create_Connection_Tool

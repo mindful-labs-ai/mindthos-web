@@ -94,9 +94,7 @@ export function SupervisionBlock({
                   contentEditable={editable}
                   suppressContentEditableWarning={editable}
                   data-note-path={
-                    editable
-                      ? `phase4.supervision.${i}.alternative`
-                      : undefined
+                    editable ? `phase4.supervision.${i}.alternative` : undefined
                   }
                   className={editable ? EDITABLE_CLASS : undefined}
                 >
@@ -157,5 +155,5 @@ export function serializeSupervision(
       ].join('\n');
     })
     .join('\n\n');
-  return [`간이 슈퍼비전`, items].join('\n\n');
+  return items || '—';
 }

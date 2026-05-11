@@ -5,16 +5,7 @@ import { toCycleSteps } from '../types';
 
 import { EDITABLE_CLASS } from './editable';
 
-const STEP_LABELS = [
-  'A',
-  'B',
-  'C',
-  'D',
-  'E',
-  'F',
-  'G',
-  'H',
-] as const;
+const STEP_LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 
 interface CycleDiagramProps {
   value: string | string[] | null | undefined;
@@ -105,7 +96,7 @@ function CycleNodeWithArrow({
           orientation === 'horizontal' && 'min-w-[10rem] basis-0'
         )}
       >
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-80 text-s font-emphasize text-white">
+        <div className="text-s flex h-6 w-6 items-center justify-center rounded-full bg-green-80 font-emphasize text-white">
           {label}
         </div>
         <p
@@ -116,9 +107,7 @@ function CycleNodeWithArrow({
           contentEditable={editable}
           suppressContentEditableWarning={editable}
           data-note-path={
-            editable
-              ? `phase2.maintaining_factors.cycle.${index}`
-              : undefined
+            editable ? `phase2.maintaining_factors.cycle.${index}` : undefined
           }
         >
           {step}

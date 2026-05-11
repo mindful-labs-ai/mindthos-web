@@ -1,9 +1,11 @@
 import React from 'react';
 
+import { useQuery } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
-import { useSessionList } from '@/features/session/hooks/useSessionList';
+import { getSessionById } from '@/shared/api/supabase/sessionQueries';
+import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import {
   BreadCrumb,
   type BreadCrumbItem,
@@ -17,16 +19,29 @@ export const Header: React.FC = () => {
   const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const { clients } = useClientList();
-  const { data: sessionsData } = useSessionList({
-    userId: userId ? Number(userId) : 0,
-    enabled: !!userId,
+  const pathnames = location.pathname.split('/').filter((x) => x);
+  const currentSessionId =
+    pathnames.length >= 2 && pathnames[pathnames.length - 2] === 'sessions'
+      ? pathnames[pathnames.length - 1]
+      : null;
+  const userIdNumber = userId ? Number(userId) : 0;
+
+  const { data: currentSession } = useQuery({
+    queryKey: [
+      ...sessionQueryKeys.detailById(currentSessionId ?? ''),
+      userIdNumber,
+    ],
+    queryFn: () =>
+      getSessionById({
+        sessionId: currentSessionId ?? '',
+        userId: userIdNumber,
+      }),
+    enabled: !!userIdNumber && !!currentSessionId,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
-  const sessions = sessionsData?.sessions.map((s) => s.session) || [];
-
   const getBreadcrumbItems = (): BreadCrumbItem[] => {
-    const pathnames = location.pathname.split('/').filter((x) => x);
-
     if (pathnames.length === 0) {
       return [{ label: '홈', href: '/' }];
     }
@@ -43,8 +58,7 @@ export const Header: React.FC = () => {
         pathnames[index - 1] === 'sessions' &&
         index === pathnames.length - 1
       ) {
-        const session = sessions.find((s) => s.id === name);
-        const label = session?.title || '제목 없음';
+        const label = currentSession?.title || '제목 없음';
         items.push({
           label,
           href: currentPath,

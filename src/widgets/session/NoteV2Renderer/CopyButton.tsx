@@ -17,7 +17,9 @@ export function CopyButton({
     <button
       onClick={onClick}
       className={`items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium transition-colors ${
-        size === 'md' ? 'inline-flex px-2 py-1 text-sm' : 'hidden lg:inline-flex'
+        size === 'md'
+          ? 'inline-flex px-2 py-1 text-sm'
+          : 'hidden lg:inline-flex'
       } ${
         isCopied
           ? 'text-green-80'

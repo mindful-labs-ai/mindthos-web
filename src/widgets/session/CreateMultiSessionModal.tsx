@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { useDragAndDrop } from '@/features/session/hooks/useDragAndDrop';
@@ -8,10 +10,9 @@ import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionC
 import type {
   BatchSessionConfig,
   FileSessionConfig,
-  SttModel,
+  SessionRequestSttModel,
 } from '@/features/session/types';
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
-import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { cn } from '@/lib/cn';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import {
@@ -22,6 +23,8 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CloudUploadIcon, CreditIcon, UserIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
@@ -104,7 +107,8 @@ export const CreateMultiSessionModal: React.FC<
   const userId = useAuthStore((state) => state.userId);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const { clients } = useClientList();
-  const { creditInfo } = useCreditInfo();
+  const queryClient = useQueryClient();
+  const checkCredit = useCreditGuard();
 
   // Quest 관련 hooks
   const { currentLevel, completeNextStep } = useQuestStore();
@@ -148,6 +152,12 @@ export const CreateMultiSessionModal: React.FC<
   const { createSessions, results, isCreating } = useMultiSessionCreate({
     userId: userId ? parseInt(userId) : 0,
     templateId: defaultTemplateId || 1,
+    onInsufficientCredit: (message) => {
+      setCreditErrorSnackBar({
+        open: true,
+        message,
+      });
+    },
   });
 
   // Drag and Drop
@@ -232,7 +242,7 @@ export const CreateMultiSessionModal: React.FC<
 
   // 일괄 설정 변경
   const handleBatchSttModelChange: React.Dispatch<
-    React.SetStateAction<SttModel>
+    React.SetStateAction<SessionRequestSttModel>
   > = (value) => {
     const sttModel =
       typeof value === 'function' ? value(batchConfig.sttModel) : value;
@@ -303,12 +313,12 @@ export const CreateMultiSessionModal: React.FC<
       return;
     }
 
-    // 프론트 크레딧 검증
-    const remainingCredit = creditInfo?.plan.remaining ?? 0;
-    if (step2TotalCredit > remainingCredit) {
+    // 크레딧 가드
+    const guard = await checkCredit(step2TotalCredit);
+    if (!guard.ok && !guard.unavailable) {
       setCreditErrorSnackBar({
         open: true,
-        message: `크레딧이 부족해요. 필요: ${step2TotalCredit}, 보유: ${remainingCredit}`,
+        message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
       });
       return;
     }
@@ -373,6 +383,14 @@ export const CreateMultiSessionModal: React.FC<
           duration: 5000,
         });
       }
+    }
+
+    // 크레딧 잔액 갱신
+    const userIdNum = Number(userId);
+    if (!isNaN(userIdNum)) {
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userIdNum),
+      });
     }
 
     handleClose(false);

@@ -100,7 +100,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
             <div className="relative flex h-full flex-col">
               {/* 상단 헤더 */}
               <div className="flex items-center justify-between px-8 py-4">
-                <p className="text-m text-grey-60">상담노트 템플릿</p>
+                <p className="text-m text-grey-60">상담노트 양식</p>
                 <button
                   onClick={onCreateProgressNote}
                   disabled={isReadOnly || !isTemplateSelected}

@@ -6,7 +6,7 @@ import type {
   FileSessionConfig,
   MultiFileInfo,
   SessionCreateResult,
-  SttModel,
+  SessionRequestSttModel,
 } from '@/features/session/types';
 import { cn } from '@/lib/cn';
 import { CheckIcon, UserIcon, XIcon } from '@/shared/icons';
@@ -63,8 +63,8 @@ interface MobileFileConfigItemProps {
 }
 
 const MobileSttModelToggle: React.FC<{
-  value: SttModel;
-  onChange: (value: SttModel) => void;
+  value: SessionRequestSttModel;
+  onChange: (value: SessionRequestSttModel) => void;
 }> = ({ value, onChange }) => {
   const isAdvanced = value === 'advanced';
 
@@ -122,7 +122,7 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
 
   const selectedClient = clients.find((c) => c.id === config.clientId) || null;
 
-  const handleSttModelChange = (sttModel: SttModel) => {
+  const handleSttModelChange = (sttModel: SessionRequestSttModel) => {
     onConfigChange({ ...config, sttModel });
   };
 

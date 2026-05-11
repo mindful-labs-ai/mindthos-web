@@ -81,8 +81,7 @@ export function useSessionsList({
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchInterval: (query) => {
-      const allItems =
-        query.state.data?.pages.flatMap((p) => p.items) ?? [];
+      const allItems = query.state.data?.pages.flatMap((p) => p.items) ?? [];
       return hasProcessingSession(allItems) ? 8000 : false;
     },
     retry: 2,

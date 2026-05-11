@@ -66,7 +66,6 @@ export function serializeObservations(
 ): string {
   const emotionalLines = toLines(observations.emotional_state);
   return [
-    `관찰 소견`,
     `통찰 수준: ${observations.insight_level}`,
     `동기/협력: ${observations.motivation}`,
     `정서 상태:`,

@@ -32,7 +32,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* 녹음 변환 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">음성 변환</Text>
+          <Text className="typo-xs font-medium text-fg-muted">음성 변환</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
               <Text className="text-sm font-normal text-fg">일반 축어록</Text>

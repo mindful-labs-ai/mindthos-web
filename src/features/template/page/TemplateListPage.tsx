@@ -51,7 +51,7 @@ export const TemplateListPage: React.FC = () => {
       {!isMobileView && (
         <div className="text-left">
           <Title as="h1" className="text-2xl font-headline text-grey-100">
-            상담노트 템플릿
+            상담노트 양식
           </Title>
         </div>
       )}
@@ -87,7 +87,7 @@ export const TemplateListPage: React.FC = () => {
                     혹시 원하는 양식이 없다면?
                   </h3>
                   <p className="text-m text-white/90">
-                    마음토스에 자주 사용하는 템플릿을 신청해보세요.
+                    마음토스에 자주 사용하는 노트 양식을 신청해보세요.
                     <br />
                     검토 후 추가해드려요.
                   </p>
@@ -99,7 +99,7 @@ export const TemplateListPage: React.FC = () => {
                   onClick={handleRequestTemplate}
                   className="w-full bg-white text-green-80 lg:hover:bg-white/90"
                 >
-                  템플릿 신청하기
+                  노트 양식 신청하기
                 </Button>
               </Card.Body>
             </Card>

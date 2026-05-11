@@ -81,15 +81,12 @@ export const PaymentSuccess = () => {
           });
 
           if (response.success) {
-            // 크레딧 관련 쿼리 invalidate
+            // 크레딧/구독/사용량 단일 RPC로 통합 — summary key만 invalidate
             if (userId) {
               const userIdNumber = parseInt(userId);
               if (!isNaN(userIdNumber)) {
                 await queryClient.invalidateQueries({
-                  queryKey: creditQueryKeys.subscription(userIdNumber),
-                });
-                await queryClient.invalidateQueries({
-                  queryKey: creditQueryKeys.usage(userIdNumber),
+                  queryKey: creditQueryKeys.summary(userIdNumber),
                 });
               }
             }

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { ROUTES, getSessionDetailRoute } from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import {
@@ -17,6 +19,7 @@ import { trackEvent } from '@/lib/mixpanel';
 import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
@@ -54,31 +57,44 @@ const HomeContainer = () => {
 
   const openModal = useModalStore((state) => state.openModal);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const {
-    items: sessionItems,
-    isLoading: isLoadingSessions,
-  } = useSessionsList({
-    userId: parseInt(userId || '0'),
-    enabled: !!userId,
-    sortOrder: 'desc',
-    onSessionComplete: (session) => {
-      toast({
-        title: '상담 기록 생성 완료',
-        description: session.title
-          ? `"${session.title}" 만들었어요.`
-          : '생성을 완료했어요.',
-        duration: 5000,
-      });
-    },
-    onSessionError: (session) => {
-      toast({
-        title: '세션 처리 실패',
-        description: session.error_message || '세션 처리 중 문제가 생겼어요.',
-        duration: 5000,
-      });
-    },
-  });
+  // 세션 status 전이 시점에 크레딧 잔액 동기화
+  // (mavo-api 파이프라인이 끝나면 트리거가 commit/release를 비동기로 호출하므로,
+  //  FE는 status 전이를 감지한 시점에 invalidate해서 새 잔액을 가져옴)
+  const invalidateCreditOnTransition = React.useCallback(() => {
+    const userIdNum = Number(userId);
+    if (Number.isNaN(userIdNum)) return;
+    queryClient.invalidateQueries({
+      queryKey: creditQueryKeys.summary(userIdNum),
+    });
+  }, [queryClient, userId]);
+
+  const { items: sessionItems, isLoading: isLoadingSessions } = useSessionsList(
+    {
+      userId: parseInt(userId || '0'),
+      enabled: !!userId,
+      sortOrder: 'desc',
+      onSessionComplete: (session) => {
+        toast({
+          title: '상담 기록 생성 완료',
+          description: session.title
+            ? `"${session.title}" 만들었어요.`
+            : '생성을 완료했어요.',
+          duration: 5000,
+        });
+        invalidateCreditOnTransition();
+      },
+      onSessionError: (session) => {
+        toast({
+          title: '세션 처리 실패',
+          description: session.error_message || '세션 처리 중 문제가 생겼어요.',
+          duration: 5000,
+        });
+        invalidateCreditOnTransition();
+      },
+    }
+  );
 
   const { clients, isLoading: isLoadingClients } = useClientList();
 
