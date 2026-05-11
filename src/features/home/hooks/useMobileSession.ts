@@ -5,10 +5,13 @@ import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { useSessionList } from '@/features/session/hooks/useSessionList';
-import type { SessionRecord, Transcribe } from '@/features/session/types';
-import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
-import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { useSessionsList } from '@/features/session/hooks/useSessionsList';
+import type {
+  HandwrittenTranscribeListItem,
+  SessionRecord,
+  TranscribeListItem,
+} from '@/features/session/types';
+import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 
 const SESSIONS_PER_PAGE = 5;
@@ -27,13 +30,21 @@ export const useSessionRecords = ({
   // 페이지네이션 상태
   const [displayCount, setDisplayCount] = useState(perPage);
 
-  // 세션 목록 조회
-  const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
+  // 세션 목록 조회 — paginated. 모바일 홈은 최근 N개만 표시
+  const {
+    items: sessionItems,
+    isLoading: isLoadingSessions,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useSessionsList({
     userId: parseInt(userId || '0'),
     enabled: !!userId,
+    sortOrder: 'desc',
+    limit: 20,
   });
 
-  const sessionsFromQuery = sessionData?.sessions || [];
+  const sessionsFromQuery = sessionItems;
 
   // 더미 플로우 여부
   const isDummyFlow =
@@ -56,44 +67,46 @@ export const useSessionRecords = ({
     return sessionsWithTranscribes.slice(0, displayCount);
   }, [sessionsWithTranscribes, displayCount]);
 
-  // 더 불러올 세션이 있는지
-  const hasMoreSessions = displayCount < sessionsWithTranscribes.length;
+  // 더 불러올 세션이 있는지 — 클라 측 displayCount 또는 서버 측 다음 페이지 둘 중 하나
+  const hasMoreSessions =
+    displayCount < sessionsWithTranscribes.length || hasNextPage;
 
-  // 더보기 핸들러
+  // 더보기 핸들러 — 우선 로드된 데이터 안에서 displayCount 증가, 끝까지 보였으면 다음 페이지 fetch
   const handleLoadMore = useCallback(() => {
-    setDisplayCount((prev) => prev + perPage);
-  }, [perPage]);
+    if (displayCount < sessionsWithTranscribes.length) {
+      setDisplayCount((prev) => prev + perPage);
+      return;
+    }
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+      setDisplayCount((prev) => prev + perPage);
+    }
+  }, [
+    displayCount,
+    sessionsWithTranscribes.length,
+    perPage,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
 
   // 표시 개수 초기화
   const resetDisplayCount = useCallback(() => {
     setDisplayCount(perPage);
   }, [perPage]);
 
-  // 전사 내용을 SessionRecord용 텍스트로 변환
+  // 전사 미리보기 — paginated 데이터에는 contents 없음. preview 컬럼 + 정제
   const getSessionContent = useCallback(
-    (transcribe: Transcribe | { contents: string } | null): string => {
+    (
+      transcribe:
+        | TranscribeListItem
+        | HandwrittenTranscribeListItem
+        | null
+    ): string => {
       if (!transcribe) return '축어록이 없어요.';
-
-      // 필기 세션 (HandwrittenTranscribe)
-      if ('contents' in transcribe && typeof transcribe.contents === 'string') {
-        return (
-          transcribe.contents.slice(0, 150) +
-          (transcribe.contents.length > 150 ? '...' : '')
-        );
-      }
-
-      const transcriptData = getTranscriptData(transcribe as Transcribe);
-      if (!transcriptData) {
-        return '축어록이 없어요.';
-      }
-      const { segments, speakers } = transcriptData;
-      const previewSegments = segments.slice(0, 3);
-      return previewSegments
-        .map((seg) => {
-          const speakerName = getSpeakerDisplayName(seg.speaker, speakers);
-          return `${speakerName} : ${seg.text}`;
-        })
-        .join(' ');
+      const cleaned = formatPreviewText(transcribe.preview);
+      if (cleaned) return cleaned;
+      return '축어록 보기';
     },
     []
   );
