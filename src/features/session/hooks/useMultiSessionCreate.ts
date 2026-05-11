@@ -9,7 +9,10 @@ import { useCallback, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { createSessionBackground } from '@/shared/api/supabase/sessionQueries';
+import {
+  createSessionBackground,
+  InsufficientCreditError,
+} from '@/shared/api/supabase/sessionQueries';
 import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
 import { s3UploadService } from '../services/s3UploadService';
@@ -22,6 +25,8 @@ import type {
 interface UseMultiSessionCreateParams {
   userId: number;
   templateId: number;
+  /** 서버 402 (잔액 부족) 응답이 떨어진 시점에 호출. 토스트/플랜 안내용. */
+  onInsufficientCredit?: (message: string) => void;
 }
 
 interface UseMultiSessionCreateReturn {
@@ -38,6 +43,7 @@ interface UseMultiSessionCreateReturn {
 export function useMultiSessionCreate({
   userId,
   templateId,
+  onInsufficientCredit,
 }: UseMultiSessionCreateParams): UseMultiSessionCreateReturn {
   const queryClient = useQueryClient();
   const [results, setResults] = useState<SessionCreateResult[]>([]);
@@ -79,7 +85,8 @@ export function useMultiSessionCreate({
       const finalResults: SessionCreateResult[] = [];
 
       // 순차적으로 처리
-      for (const config of sortedConfigs) {
+      for (let i = 0; i < sortedConfigs.length; i += 1) {
+        const config = sortedConfigs[i];
         const file = files.find((f) => f.id === config.fileId);
         if (!file) {
           finalResults.push({
@@ -147,7 +154,27 @@ export function useMultiSessionCreate({
 
           updateResult(config.fileId, failedResult);
           finalResults.push(failedResult);
-          // 실패해도 다음 파일 계속 진행
+
+          // 잔액 부족이면 이후 파일은 모두 같은 사유로 실패시키고 루프 중단.
+          // 사용자 알림은 onInsufficientCredit 콜백에 위임.
+          if (error instanceof InsufficientCreditError) {
+            const remaining = sortedConfigs.slice(i + 1);
+            for (const skipped of remaining) {
+              const skippedFile = files.find((f) => f.id === skipped.fileId);
+              if (!skippedFile) continue;
+              const skippedResult: SessionCreateResult = {
+                fileId: skipped.fileId,
+                fileName: skippedFile.name,
+                status: 'failed',
+                errorMessage,
+              };
+              updateResult(skipped.fileId, skippedResult);
+              finalResults.push(skippedResult);
+            }
+            onInsufficientCredit?.(errorMessage);
+            break;
+          }
+          // 그 외 실패는 다음 파일 계속 진행
         }
       }
 
@@ -159,7 +186,7 @@ export function useMultiSessionCreate({
 
       return finalResults;
     },
-    [userId, templateId, queryClient, updateResult]
+    [userId, templateId, queryClient, updateResult, onInsufficientCredit]
   );
 
   const reset = useCallback(() => {

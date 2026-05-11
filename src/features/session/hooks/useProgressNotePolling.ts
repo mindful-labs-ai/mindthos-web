@@ -15,6 +15,11 @@ import { useAuthStore } from '@/stores/authStore';
 
 import type { ProgressNote, ProgressNoteStatus } from '../types';
 
+// failed 트리거 → pg_net → credit-manager/release 의 비동기 처리 마진.
+// release p95 ~1-2초이지만 p99 를 잡아 3초로 보수적 설정.
+// 코드 리뷰 응답 (2026-05-11) — failed 직후 잔액 race UX 방지.
+const CREDIT_INVALIDATE_DELAY_MS = 3000;
+
 export interface UseProgressNotePollingOptions {
   sessionId: string;
   progressNoteId: string | null;
@@ -40,7 +45,17 @@ export function useProgressNotePolling({
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
   const previousStatusRef = useRef<ProgressNoteStatus | null>(null);
+  const delayedInvalidateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionQueryKey = sessionQueryKeys.detail(sessionId, isDummySession);
+
+  // unmount 시 delayed invalidate timer 정리
+  useEffect(() => {
+    return () => {
+      if (delayedInvalidateTimerRef.current) {
+        clearTimeout(delayedInvalidateTimerRef.current);
+      }
+    };
+  }, []);
 
   const query = useQuery<ProgressNote | null, Error>({
     queryKey: sessionQueryKeys.progressNoteStatus(progressNoteId!),
@@ -95,9 +110,25 @@ export function useProgressNotePolling({
       // 크레딧 잔액 갱신 — 노트 처리 끝나면 차감/환불이 끝났을 시점
       const userIdNum = Number(userId);
       if (!Number.isNaN(userIdNum)) {
+        // 1차 즉시 invalidate
         queryClient.invalidateQueries({
           queryKey: creditQueryKeys.summary(userIdNum),
         });
+
+        // failed 케이스: release 트리거 → pg_net → EF → RPC 가 비동기라
+        // 즉시 invalidate 시점에 잔액이 아직 차감된 상태일 수 있음.
+        // 3초 후 2차 invalidate 로 보정. (succeeded 는 commit 이 즉시 진행되어 추가 invalidate 불필요)
+        if (currentStatus === 'failed') {
+          if (delayedInvalidateTimerRef.current) {
+            clearTimeout(delayedInvalidateTimerRef.current);
+          }
+          delayedInvalidateTimerRef.current = setTimeout(() => {
+            queryClient.invalidateQueries({
+              queryKey: creditQueryKeys.summary(userIdNum),
+            });
+            delayedInvalidateTimerRef.current = null;
+          }, CREDIT_INVALIDATE_DELAY_MS);
+        }
       }
 
       if (currentStatus === 'succeeded') {

@@ -7,9 +7,8 @@ interface CreateSessionRequest {
   s3_key: string;
   file_size_mb: number;
   duration_seconds: number;
-  upload_type: 'pdf' | 'direct' | 'audio';
   client_id?: string | null;
-  stt_model: 'whisper' | 'gemini-3' | 'basic' | 'advanced';
+  stt_model: 'basic' | 'advanced';
   template_id: number;
 }
 
@@ -17,7 +16,7 @@ interface CreateSessionRequest {
 interface CreateSessionResponse {
   session_id: string;
   status: 'accepted' | 'failed';
-  stt_model: 'whisper' | 'gemini-3' | 'basic' | 'advanced';
+  stt_model: 'basic' | 'advanced';
   message: string;
 }
 
@@ -68,19 +67,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ) {
       return res.status(400).json({
         status: 'failed',
-        message: '필수 필드가 누락되었습니다.',
+        message: '필수 데이터가 누락되었습니다.',
       });
     }
 
-    // 환경 변수 확인
-    const supabaseUrl = process.env.VITE_WEBAPP_SUPABASE_URL;
-    const supabaseAnonKey = process.env.VITE_WEBAPP_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Supabase 환경 변수가 설정되지 않았습니다.');
-      return res.status(500).json({
+    // 사용자 JWT 포워딩 — mavo-api requireAuthAndUserMatch 가 JWT → users.id 매칭
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({
         status: 'failed',
-        message: '서버 설정 오류',
+        message: '인증 정보가 없어요. 새로고침 해주세요.',
       });
     }
 
@@ -88,18 +84,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${supabaseAnonKey}`,
+        Authorization: authHeader,
       },
       body: JSON.stringify(requestData),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Supabase Edge Function 오류:', errorData);
+      console.error('상담기록 생성 오류:', {
+        status: response.status,
+        errorData,
+      });
+
+      const message =
+        errorData.message ??
+        errorData.error ??
+        (Array.isArray(errorData.details)
+          ? errorData.details.join(', ')
+          : undefined) ??
+        `상담기록 생성 실패: ${response.statusText}`;
 
       return res.status(response.status).json({
         status: 'failed',
-        message: errorData.message || `세션 생성 실패: ${response.statusText}`,
+        message,
+        // 잔액 부족 등 분기에 필요한 원본 필드 보존
+        ...(errorData.error ? { error: errorData.error } : {}),
+        ...(errorData.details ? { details: errorData.details } : {}),
       });
     }
 
@@ -119,7 +129,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message:
         error instanceof Error
           ? error.message
-          : '알 수 없는 오류가 발생했습니다.',
+          : '알 수 없는 오류가 발생했습니다. 마음토스에 문의해주세요!',
     });
   }
 }

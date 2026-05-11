@@ -33,17 +33,32 @@ export interface SessionStatusResponse {
   estimated_completion_time?: string;
 }
 
+/** 잔액 부족(402) 분기 식별용 에러. UI 레이어에서 instanceof 로 분기. */
+export class InsufficientCreditError extends Error {
+  constructor(message = '크레딧이 부족해요.') {
+    super(message);
+    this.name = 'InsufficientCreditError';
+  }
+}
+
 /**
  * 백그라운드 세션 생성 API 호출
- * Vercel API 라우트를 통해 CORS 문제 없이 호출
+ * Vercel API 라우트를 통해 CORS 문제 없이 호출.
+ * 사용자 JWT를 Authorization 헤더로 전달 → api/session/create.ts 가 그대로 mavo-api 로 forwarding.
  */
 export async function createSessionBackground(
   request: CreateSessionBackgroundRequest
 ): Promise<CreateSessionBackgroundResponse> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+
   const response = await fetch('/api/session/create', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
     body: JSON.stringify({
       ...request,
@@ -53,9 +68,18 @@ export async function createSessionBackground(
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(
-      errorData.message || `세션 작성 실패: ${response.statusText}`
-    );
+    const detail =
+      errorData.message ??
+      errorData.error ??
+      (Array.isArray(errorData.details)
+        ? errorData.details.join(', ')
+        : undefined) ??
+      `세션 작성 실패: ${response.statusText}`;
+
+    if (response.status === 402) {
+      throw new InsufficientCreditError(detail);
+    }
+    throw new Error(detail);
   }
 
   const data: CreateSessionBackgroundResponse = await response.json();
@@ -125,6 +149,27 @@ export interface SessionsPageResult {
   items: SessionListItem[];
   /** 다음 페이지 cursor (마지막 row의 created_at). null이면 끝 */
   nextCursor: string | null;
+}
+
+export async function getSessionById({
+  sessionId,
+  userId,
+}: {
+  sessionId: string;
+  userId: number;
+}): Promise<Session | null> {
+  const { data: session, error } = await supabase
+    .from('sessions')
+    .select(SESSION_LIST_COLUMNS)
+    .eq('id', sessionId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`세션 조회 실패: ${error.message}`);
+  }
+
+  return (session ?? null) as Session | null;
 }
 
 /**
