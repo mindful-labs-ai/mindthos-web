@@ -38,16 +38,14 @@ export function ParagraphArray({
     if (lines.length === 0) {
       return <p className={cn('note-desc', className)}>—</p>;
     }
-    return (
-      <p className={cn('note-desc', className)}>{lines.join(' ')}</p>
-    );
+    return <p className={cn('note-desc', className)}>{lines.join(' ')}</p>;
   }
 
   // 편집 모드 — 단락별 contentEditable 유지 (추출 시 string[] 재구성)
   return (
     <div
       className={cn(
-        'note-desc space-y-2 min-h-[1.5rem]',
+        'note-desc min-h-[1.5rem] space-y-2',
         EDITABLE_CLASS,
         className
       )}

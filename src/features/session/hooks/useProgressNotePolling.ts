@@ -45,7 +45,9 @@ export function useProgressNotePolling({
   const queryClient = useQueryClient();
   const userId = useAuthStore((state) => state.userId);
   const previousStatusRef = useRef<ProgressNoteStatus | null>(null);
-  const delayedInvalidateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const delayedInvalidateTimerRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null);
   const sessionQueryKey = sessionQueryKeys.detail(sessionId, isDummySession);
 
   // unmount 시 delayed invalidate timer 정리

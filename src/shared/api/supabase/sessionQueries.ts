@@ -123,8 +123,7 @@ const SESSION_LIST_COLUMNS =
   'id, user_id, title, client_id, audio_meta_data, processing_status, progress_percentage, current_step, error_message, created_at';
 const TRANSCRIBE_LIST_COLUMNS =
   'id, session_id, preview, stt_model, created_at';
-const HANDWRITTEN_LIST_COLUMNS =
-  'id, session_id, preview, created_at';
+const HANDWRITTEN_LIST_COLUMNS = 'id, session_id, preview, created_at';
 const PROGRESS_NOTE_LIST_COLUMNS =
   'id, session_id, user_id, title, template_id, processing_status, error_message, created_at, note_version';
 
@@ -281,8 +280,8 @@ export async function getSessionsPage({
   const items: SessionListItem[] = sessions.map((session) => {
     const isHandwritten = session.audio_meta_data === null;
     const transcribe = isHandwritten
-      ? handwrittenMap.get(session.id) ?? null
-      : transcribeMap.get(session.id) ?? null;
+      ? (handwrittenMap.get(session.id) ?? null)
+      : (transcribeMap.get(session.id) ?? null);
     return {
       session: session as Session,
       transcribe,
@@ -367,8 +366,8 @@ export async function getAllSessionsByClient(
   return sessions.map((session) => {
     const isHandwritten = session.audio_meta_data === null;
     const transcribe = isHandwritten
-      ? handwrittenMap.get(session.id) ?? null
-      : transcribeMap.get(session.id) ?? null;
+      ? (handwrittenMap.get(session.id) ?? null)
+      : (transcribeMap.get(session.id) ?? null);
     return {
       session: session as Session,
       transcribe,

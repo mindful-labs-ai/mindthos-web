@@ -85,7 +85,11 @@ export function useDeidentification({
     try {
       const response = await callEdgeFunction<DeidResponse>(
         EDGE_FUNCTION_ENDPOINTS.DEID,
-        { session_id: sessionId, user_id: userId, idempotency_key: idempotencyKey }
+        {
+          session_id: sessionId,
+          user_id: userId,
+          idempotency_key: idempotencyKey,
+        }
       );
 
       setStats(response.stats);

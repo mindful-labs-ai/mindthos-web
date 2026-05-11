@@ -70,32 +70,31 @@ const HomeContainer = () => {
     });
   }, [queryClient, userId]);
 
-  const {
-    items: sessionItems,
-    isLoading: isLoadingSessions,
-  } = useSessionsList({
-    userId: parseInt(userId || '0'),
-    enabled: !!userId,
-    sortOrder: 'desc',
-    onSessionComplete: (session) => {
-      toast({
-        title: '상담 기록 생성 완료',
-        description: session.title
-          ? `"${session.title}" 만들었어요.`
-          : '생성을 완료했어요.',
-        duration: 5000,
-      });
-      invalidateCreditOnTransition();
-    },
-    onSessionError: (session) => {
-      toast({
-        title: '세션 처리 실패',
-        description: session.error_message || '세션 처리 중 문제가 생겼어요.',
-        duration: 5000,
-      });
-      invalidateCreditOnTransition();
-    },
-  });
+  const { items: sessionItems, isLoading: isLoadingSessions } = useSessionsList(
+    {
+      userId: parseInt(userId || '0'),
+      enabled: !!userId,
+      sortOrder: 'desc',
+      onSessionComplete: (session) => {
+        toast({
+          title: '상담 기록 생성 완료',
+          description: session.title
+            ? `"${session.title}" 만들었어요.`
+            : '생성을 완료했어요.',
+          duration: 5000,
+        });
+        invalidateCreditOnTransition();
+      },
+      onSessionError: (session) => {
+        toast({
+          title: '세션 처리 실패',
+          description: session.error_message || '세션 처리 중 문제가 생겼어요.',
+          duration: 5000,
+        });
+        invalidateCreditOnTransition();
+      },
+    }
+  );
 
   const { clients, isLoading: isLoadingClients } = useClientList();
 

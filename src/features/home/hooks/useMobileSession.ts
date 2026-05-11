@@ -98,10 +98,7 @@ export const useSessionRecords = ({
   // 전사 미리보기 — paginated 데이터에는 contents 없음. preview 컬럼 + 정제
   const getSessionContent = useCallback(
     (
-      transcribe:
-        | TranscribeListItem
-        | HandwrittenTranscribeListItem
-        | null
+      transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null
     ): string => {
       if (!transcribe) return '축어록이 없어요.';
       const cleaned = formatPreviewText(transcribe.preview);

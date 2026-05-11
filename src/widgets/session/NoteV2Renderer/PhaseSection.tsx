@@ -38,7 +38,8 @@ export function PhaseSection({
 
   const headerLabel =
     mainNumber !== undefined ? `${mainNumber}. ${title}` : title;
-  const copyKey = mainNumber !== undefined ? `phase-${mainNumber}` : `phase-${title}`;
+  const copyKey =
+    mainNumber !== undefined ? `phase-${mainNumber}` : `phase-${title}`;
 
   return (
     <section
@@ -53,10 +54,7 @@ export function PhaseSection({
           aria-expanded={!collapsed}
           className="flex flex-1 items-center gap-2 text-left"
         >
-          <h2
-            id={headerId}
-            className="pl-2 text-l font-headline text-grey-100"
-          >
+          <h2 id={headerId} className="pl-2 text-l font-headline text-grey-100">
             {headerLabel}
           </h2>
           <ChevronDownIcon

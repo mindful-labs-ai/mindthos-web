@@ -128,7 +128,10 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
       </div>
 
       {/* 세션 리스트 — 사이드 패널 자체 스크롤 컨테이너. 하단에 sentinel 배치 */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 py-2">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-2"
+      >
         {groupedSessions.length > 0 ? (
           <div className="space-y-6">
             {groupedSessions.map((group) => (
