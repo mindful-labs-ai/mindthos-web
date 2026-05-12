@@ -61,10 +61,9 @@ export function TechniquesList({
                     isCopied={copiedId === `p4-t-${i}`}
                     onClick={() =>
                       copy(
-                        [
-                          `${st.name}:`,
-                          ...descLines.map((l) => `  ${l}`),
-                        ].join('\n'),
+                        [`${st.name}:`, ...descLines.map((l) => `  ${l}`)].join(
+                          '\n'
+                        ),
                         `p4-t-${i}`
                       )
                     }
@@ -84,9 +83,13 @@ export function serializeTechniques(
 ): string {
   return [
     `제안 기법:`,
-    ...techniques.flatMap((st) => {
-      const lines = toLines(st.description);
-      return [`  ${st.name}:`, ...lines.map((l) => `    ${l}`)];
-    }),
-  ].join('\n');
+    techniques
+      .map((st) => {
+        const lines = toLines(st.description);
+        return [`  ${st.name}:`, ...lines.map((l) => `    ${l}`)].join('\n');
+      })
+      .join('\n\n'),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }

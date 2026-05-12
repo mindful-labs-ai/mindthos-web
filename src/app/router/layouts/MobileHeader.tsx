@@ -8,6 +8,7 @@ import { GenogramIcon, MenuIcon, PlusIcon } from '@/shared/icons';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
+import { useClientListScrollStore } from '@/stores/clientListScrollStore';
 import { useModalStore } from '@/stores/modalStore';
 
 import { getRouteLabel } from '../navigationConfig';
@@ -42,7 +43,15 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           tone="primary"
           variant="solid"
           size="md"
-          onClick={() => useModalStore.getState().openModal('addClient')}
+          onClick={() =>
+            useModalStore.getState().openModal('addClient', {
+              onClientCreated: (clientId: string) => {
+                useClientListScrollStore
+                  .getState()
+                  .requestScrollToClient(clientId);
+              },
+            })
+          }
           className="truncate"
         >
           내담자 추가하기
@@ -105,7 +114,7 @@ function GenogramClientButton() {
         onClick={() => setIsOpen(true)}
       >
         <GenogramIcon size={18} />
-        <span>{selectedClient?.name || '선택 안됨'}</span>
+        <span>{selectedClient?.name || '내담자 선택'}</span>
       </Button>
 
       <Modal

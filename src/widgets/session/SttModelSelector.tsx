@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { SttModel } from '@/features/session/types';
+import type { SessionRequestSttModel } from '@/features/session/types';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Text } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui/composites/Tooltip';
 
 interface SttModelSelectorProps {
-  sttModel: SttModel;
-  setSttModel: React.Dispatch<React.SetStateAction<SttModel>>;
+  sttModel: SessionRequestSttModel;
+  setSttModel: React.Dispatch<React.SetStateAction<SessionRequestSttModel>>;
 }
 
 const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {

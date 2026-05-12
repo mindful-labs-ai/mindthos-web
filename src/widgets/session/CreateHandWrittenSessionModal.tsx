@@ -4,14 +4,17 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
-import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { createHandWrittenSession } from '@/shared/api/supabase/sessionQueries';
 import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
-import { sessionQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon, UserIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
@@ -44,7 +47,7 @@ export const CreateHandWrittenSessionModal: React.FC<
   const userId = useAuthStore((state) => state.userId);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const { clients } = useClientList();
-  const { creditInfo, refetch: refetchCredit } = useCreditInfo();
+  const checkCredit = useCreditGuard();
 
   // 폼 상태
   const [contents, setContents] = useState('');
@@ -132,12 +135,12 @@ export const CreateHandWrittenSessionModal: React.FC<
       return;
     }
 
-    // 프론트 크레딧 검증
-    const remainingCredit = creditInfo?.plan.remaining ?? 0;
-    if (HAND_WRITTEN_CREDIT > remainingCredit) {
+    // 크레딧 가드
+    const guard = await checkCredit(HAND_WRITTEN_CREDIT);
+    if (!guard.ok && !guard.unavailable) {
       setCreditErrorSnackBar({
         open: true,
-        message: `크레딧이 부족해요. 필요: ${HAND_WRITTEN_CREDIT}, 보유: ${remainingCredit}`,
+        message: `직접 입력 세션 시작에 ${HAND_WRITTEN_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
       });
       return;
     }
@@ -175,8 +178,10 @@ export const CreateHandWrittenSessionModal: React.FC<
         queryKey: sessionQueryKeys.all(parseInt(userId)),
       });
 
-      // 크레딧 정보 갱신
-      refetchCredit();
+      // 크레딧 잔액 갱신
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(parseInt(userId)),
+      });
 
       handleClose(false);
     } catch (error: unknown) {
@@ -195,6 +200,11 @@ export const CreateHandWrittenSessionModal: React.FC<
         title: '상담 기록 생성 실패',
         description: err.message || '잠시 후 다시 시도해 주세요.',
         duration: 5000,
+      });
+
+      // 에러 시에도 크레딧 잔액 갱신
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(parseInt(userId)),
       });
     } finally {
       setIsSubmitting(false);

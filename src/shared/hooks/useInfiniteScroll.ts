@@ -59,7 +59,14 @@ export function useInfiniteScroll({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, rootMargin, disabled, root]);
+  }, [
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rootMargin,
+    disabled,
+    root,
+  ]);
 
   return sentinelRef;
 }

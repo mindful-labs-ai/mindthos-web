@@ -44,7 +44,7 @@ export const templateService = {
       if (error) {
         throw createDatabaseError(
           error,
-          '템플릿 목록 조회 중 오류가 생겼어요.'
+          '노트 양식 목록 조회 중 오류가 생겼어요.'
         );
       }
 
@@ -53,7 +53,7 @@ export const templateService = {
         templates: data || [],
       };
     } catch (error) {
-      throw normalizeApiError(error, '템플릿 목록 조회 중 오류가 생겼어요.');
+      throw normalizeApiError(error, '노트 양식 목록 조회 중 오류가 생겼어요.');
     }
   },
 
@@ -157,16 +157,16 @@ export const templateService = {
       if (error) {
         throw createDatabaseError(
           error,
-          '기본 템플릿 설정 중 오류가 생겼어요.'
+          '기본 노트 양식 설정 중 오류가 생겼어요.'
         );
       }
 
       return {
         success: true,
-        message: '기본 템플릿으로 설정했어요.',
+        message: '기본 노트 양식으로 설정했어요.',
       };
     } catch (error) {
-      throw normalizeApiError(error, '기본 템플릿 설정 중 오류가 생겼어요.');
+      throw normalizeApiError(error, '기본 노트 양식 설정 중 오류가 생겼어요.');
     }
   },
 };

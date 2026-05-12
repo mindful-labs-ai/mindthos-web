@@ -122,10 +122,7 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
       const userIdNumber = parseInt(userId);
       if (!isNaN(userIdNumber)) {
         await queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.subscription(userIdNumber),
-        });
-        await queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.usage(userIdNumber),
+          queryKey: creditQueryKeys.summary(userIdNumber),
         });
       }
     }

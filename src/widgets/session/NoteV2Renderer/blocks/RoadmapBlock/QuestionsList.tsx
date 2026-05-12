@@ -80,8 +80,14 @@ export function serializeQuestions(
 ): string {
   return [
     `제안 질문:`,
-    ...questions.map(
-      (sq, i) => `  Q${i + 1}. "${sq.question}" (${sq.rationale})`
-    ),
-  ].join('\n');
+    questions
+      .map((sq, i) =>
+        [`  Q${i + 1}. "${sq.question}"`, `    근거: ${sq.rationale}`].join(
+          '\n'
+        )
+      )
+      .join('\n\n'),
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }

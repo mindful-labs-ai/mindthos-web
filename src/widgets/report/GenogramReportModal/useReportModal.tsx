@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { useGenogramCapture } from '@/features/report/hooks/useGenogramCapture';
 import {
   buildReportPdf,
   uploadPdfToStorage,
 } from '@/features/report/utils/buildReportPdf';
-import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { trackEvent } from '@/lib/mixpanel';
 import {
   createSignedPdfUrl,
@@ -23,6 +24,8 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useFeatureAccess } from '@/shared/hooks/useFeatureAccess';
 import { useReportTemplates } from '@/shared/hooks/useReportTemplates';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -50,7 +53,8 @@ export function useReportModal({
   const userName = useAuthStore((s) => s.userName);
   const organization = useAuthStore((s) => s.organization);
   const { toast } = useToast();
-  const { creditInfo } = useCreditInfo();
+  const queryClient = useQueryClient();
+  const checkCredit = useCreditGuard();
 
   // ── 기능 접근 권한 (TanStack Query) ──
 
@@ -334,16 +338,16 @@ export function useReportModal({
   const handleInputComplete = useCallback(async () => {
     if (!clientId) return;
 
-    // 크레딧 잔여량 검증
-    const remaining = creditInfo?.plan.remaining ?? 0;
-    if (REPORT_CREDIT_COST > remaining) {
+    // 크레딧 가드
+    const guard = await checkCredit(REPORT_CREDIT_COST);
+    if (!guard.ok && !guard.unavailable) {
       trackEvent(MixpanelEvent.GenogramReportGenerateCreditInsufficient, {
         client_id: clientId,
-        remaining,
+        remaining: guard.remaining,
         required: REPORT_CREDIT_COST,
       });
       setCreditError(
-        `크레딧이 부족해요. 필요: ${REPORT_CREDIT_COST}, 보유: ${remaining}`
+        `가계도 보고서 생성에 ${REPORT_CREDIT_COST} 크레딧이 필요해요. (보유: ${guard.remaining})`
       );
       return;
     }
@@ -353,13 +357,33 @@ export function useReportModal({
     setGeneratingError(null);
     setStep('generating');
     await runGenerateFlow();
-  }, [clientId, creditInfo, runGenerateFlow]);
+
+    // 크레딧 잔액 갱신
+    if (userId) {
+      const userIdNum = Number(userId);
+      if (!isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
+    }
+  }, [clientId, checkCredit, userId, queryClient, runGenerateFlow]);
 
   const handleRetryGenerate = useCallback(async () => {
     setGeneratingStatus('processing');
     setGeneratingError(null);
     await runGenerateFlow();
-  }, [runGenerateFlow]);
+
+    // 재시도도 새 reservation을 만들므로 잔액 동기화
+    if (userId) {
+      const userIdNum = Number(userId);
+      if (!isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
+    }
+  }, [runGenerateFlow, userId, queryClient]);
 
   const handleDownloadPreviewPdf = useCallback(async () => {
     if (!pdfUrl) return;

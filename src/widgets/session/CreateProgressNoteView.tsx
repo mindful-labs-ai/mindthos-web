@@ -40,7 +40,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Text className="text-fg-muted">템플릿 목록을 불러오는 중...</Text>
+        <Text className="text-fg-muted">노트 양식 목록을 불러오는 중...</Text>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
                 }`}
                 onClick={() => handleSelect(template)}
                 onKeyDown={(e) => handleKeyDown(e, template)}
-                aria-label={`${template.title} 템플릿 ${isSelected ? '선택됨' : '선택하기'}`}
+                aria-label={`${template.title} 노트 양식 ${isSelected ? '선택됨' : '선택하기'}`}
                 aria-disabled={!transcribedText}
               >
                 {/* TemplateCard */}
@@ -160,7 +160,9 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
         </div>
       ) : (
         <div className="flex h-64 items-center justify-center">
-          <Text className="text-fg-muted">모든 템플릿을 이미 썼어요.</Text>
+          <Text className="text-fg-muted">
+            모든 노트 양식을 이미 사용했어요.
+          </Text>
         </div>
       )}
     </div>

@@ -9,7 +9,11 @@ import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { fetchSessionProgressNotes } from '@/shared/api/supabase/progressNoteQueries';
-import { sessionQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
+import { useAuthStore } from '@/stores/authStore';
 
 import type { ProgressNote, Session, Transcribe } from '../types';
 
@@ -39,6 +43,7 @@ export function useSessionProgressNotesPolling({
   onNoteError,
 }: UseSessionProgressNotesPollingOptions) {
   const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
   const sessionQueryKey = sessionQueryKeys.detail(sessionId, isDummySession);
 
   // 각 노트의 이전 상태를 추적
@@ -128,8 +133,23 @@ export function useSessionProgressNotesPolling({
       queryClient.invalidateQueries({
         queryKey: sessionQueryKey,
       });
+
+      // 크레딧 잔액 갱신 — 노트 처리 끝났으니 차감/환불 반영
+      const userIdNum = Number(userId);
+      if (!Number.isNaN(userIdNum)) {
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(userIdNum),
+        });
+      }
     }
-  }, [query.data, onNoteComplete, onNoteError, queryClient, sessionQueryKey]);
+  }, [
+    query.data,
+    onNoteComplete,
+    onNoteError,
+    queryClient,
+    sessionQueryKey,
+    userId,
+  ]);
 
   // 폴링 데이터로 세션 상세 캐시 동기화 (단일 리소스 원칙 유지)
   useEffect(() => {

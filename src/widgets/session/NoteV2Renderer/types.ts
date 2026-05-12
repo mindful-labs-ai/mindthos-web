@@ -156,10 +156,7 @@ export function toCycleSteps(
     .split(/\s*(?:→|->|\n+)\s*/)
     .map((s) => s.trim())
     .filter(Boolean);
-  if (
-    steps.length >= 2 &&
-    steps[steps.length - 1] === steps[0]
-  ) {
+  if (steps.length >= 2 && steps[steps.length - 1] === steps[0]) {
     steps.pop();
   }
   return steps;

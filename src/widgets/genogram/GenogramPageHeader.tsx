@@ -136,22 +136,24 @@ export function GenogramPageHeader({
           className="absolute top-4 z-10 flex items-center gap-3 transition-[right] duration-normal"
           style={{ right: isPanelOpen ? PANEL_WIDTH + 16 : 16 }}
         >
-          {/* 저장 상태 표시 */}
-          <div className="typo-sm flex select-none items-center gap-2 text-fg-muted">
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>저장 중...</span>
-              </>
-            ) : showSaved ? (
-              <>
-                <Check className="h-4 w-4 text-primary" />
-                <span className="text-primary">저장 완료</span>
-              </>
-            ) : null}
-          </div>
+          {/* 저장 상태 표시 — 임시 모드(저장 대상 없음)에서는 숨김 */}
+          {!isTemporaryMode && (
+            <div className="typo-sm flex select-none items-center gap-2 text-fg-muted">
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>저장 중...</span>
+                </>
+              ) : showSaved ? (
+                <>
+                  <Check className="h-4 w-4 text-primary" />
+                  <span className="text-primary">저장 완료</span>
+                </>
+              ) : null}
+            </div>
+          )}
 
-          {/* 액션 버튼들 */}
+          {/* 액션 버튼들 — 임시 모드에서는 undo/redo만 노출 */}
           <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
             <button
               onClick={onUndo}
@@ -171,58 +173,62 @@ export function GenogramPageHeader({
             >
               <RedoIcon size={18} />
             </button>
-            <button
-              onClick={handleExport}
-              title="내보내기"
-              aria-label="가계도 내보내기"
-              disabled={isExported}
-              className="rounded-md p-2 text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-strong"
-            >
-              {isExported ? (
-                <Check className="h-[18px] w-[18px] text-primary" />
-              ) : (
-                <Download className="h-[18px] w-[18px]" />
-              )}
-            </button>
-            <button
-              onClick={onSave}
-              title="저장"
-              aria-label="가계도 저장"
-              disabled={isSaving}
-              className="rounded-md p-2 text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-strong"
-            >
-              <Save className="h-[18px] w-[18px]" />
-            </button>
-
-            {/* 더보기 메뉴 */}
-            {onReset && (
+            {!isTemporaryMode && (
               <>
-                <div className="mx-1 h-5 w-px bg-border" />
-                <div ref={menuRef} className="relative">
-                  <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    title="더보기"
-                    aria-label="더 많은 옵션"
-                    className="rounded-md p-2 text-fg transition-colors lg:hover:bg-surface-strong"
-                  >
-                    <MoreVertical className="h-[18px] w-[18px]" />
-                  </button>
-
-                  {isMenuOpen && (
-                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[128px] rounded-lg border border-border bg-surface py-1 shadow-elevated">
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          onReset();
-                        }}
-                        disabled={isResetting}
-                        className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
-                      >
-                        <span>가계도 초기화</span>
-                      </button>
-                    </div>
+                <button
+                  onClick={handleExport}
+                  title="내보내기"
+                  aria-label="가계도 내보내기"
+                  disabled={isExported}
+                  className="rounded-md p-2 text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-strong"
+                >
+                  {isExported ? (
+                    <Check className="h-[18px] w-[18px] text-primary" />
+                  ) : (
+                    <Download className="h-[18px] w-[18px]" />
                   )}
-                </div>
+                </button>
+                <button
+                  onClick={onSave}
+                  title="저장"
+                  aria-label="가계도 저장"
+                  disabled={isSaving}
+                  className="rounded-md p-2 text-fg transition-colors disabled:opacity-50 lg:hover:bg-surface-strong"
+                >
+                  <Save className="h-[18px] w-[18px]" />
+                </button>
+
+                {/* 더보기 메뉴 */}
+                {onReset && (
+                  <>
+                    <div className="mx-1 h-5 w-px bg-border" />
+                    <div ref={menuRef} className="relative">
+                      <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        title="더보기"
+                        aria-label="더 많은 옵션"
+                        className="rounded-md p-2 text-fg transition-colors lg:hover:bg-surface-strong"
+                      >
+                        <MoreVertical className="h-[18px] w-[18px]" />
+                      </button>
+
+                      {isMenuOpen && (
+                        <div className="absolute right-0 top-full z-20 mt-1 min-w-[128px] rounded-lg border border-border bg-surface py-1 shadow-elevated">
+                          <button
+                            onClick={() => {
+                              setIsMenuOpen(false);
+                              onReset();
+                            }}
+                            disabled={isResetting}
+                            className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
+                          >
+                            <span>가계도 초기화</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>

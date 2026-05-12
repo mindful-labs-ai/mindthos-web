@@ -14,7 +14,9 @@ export function AdminPlanHeader({
   editable,
   numberPrefix,
 }: AdminPlanHeaderProps) {
-  const labelText = numberPrefix ? `${numberPrefix}. 행정적 계획` : '행정적 계획';
+  const labelText = numberPrefix
+    ? `${numberPrefix}. 행정적 계획`
+    : '행정적 계획';
   return (
     <div className="space-y-1.5 py-2">
       <span className="note-label">{labelText}</span>

@@ -24,5 +24,5 @@ export function PresentingIssueBlock({
 }
 
 export function serializePresentingIssue(value: string): string {
-  return [`상담 주제`, value].join('\n');
+  return value || '—';
 }

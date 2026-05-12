@@ -16,55 +16,41 @@ export const useCreditInfo = () => {
       : Number(userId)
     : null;
 
-  // 구독 정보 쿼리
-  const subscriptionQuery = useQuery({
-    queryKey: creditQueryKeys.subscription(userIdNumber!),
-    queryFn: () => creditService.getSubscriptionInfo(userIdNumber!),
+  const summaryQuery = useQuery({
+    queryKey: creditQueryKeys.summary(userIdNumber!),
+    queryFn: () => creditService.getCreditSummary(),
     enabled: !!userIdNumber,
-    staleTime: 5000,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000,
-  });
-
-  // 사용량 정보 쿼리
-  const usageQuery = useQuery({
-    queryKey: creditQueryKeys.usage(userIdNumber!),
-    queryFn: () => creditService.getCreditUsage(userIdNumber!),
-    enabled: !!userIdNumber,
-    staleTime: 5000,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    refetchOnReconnect: true,
-    refetchInterval: 5000,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   let creditInfo: CreditInfo | undefined = undefined;
-  if (subscriptionQuery.data && usageQuery.data) {
-    const { plan, subscription } = subscriptionQuery.data;
-    const { total_usage } = usageQuery.data;
-
+  if (summaryQuery.data) {
+    const s = summaryQuery.data;
     creditInfo = {
       plan: {
-        total: plan.total_credit,
-        used: total_usage,
-        remaining: plan.total_credit - total_usage,
-        type: plan.type,
-        description: plan.description,
+        total: s.total_credit,
+        used: s.used_credit,
+        remaining: s.remaining_credit,
+        type: s.plan_type,
+        // 기존 인터페이스 호환 — description은 RPC에서 제공하지 않음
+        description: '',
       },
-      subscription,
+      subscription: {
+        start_at: s.start_at,
+        end_at: s.end_at,
+        reset_at: s.reset_at,
+        scheduled_plan_id: s.scheduled_plan_id,
+      },
     };
   }
 
   return {
     creditInfo,
-    isLoading: subscriptionQuery.isLoading || usageQuery.isLoading,
-    error:
-      subscriptionQuery.error?.message ?? usageQuery.error?.message ?? null,
-    refetch: () => {
-      subscriptionQuery.refetch();
-      usageQuery.refetch();
-    },
+    isLoading: summaryQuery.isLoading,
+    error: summaryQuery.error?.message ?? null,
+    refetch: () => summaryQuery.refetch(),
   };
 };
