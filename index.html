@@ -75,6 +75,10 @@
       name="naver-site-verification"
       content="0052a5554759a4860f31ad1b50a910b37e0a2b9b"
     />
+    <meta
+      name="facebook-domain-verification"
+      content="lcvej6t79ywtujnl3a0wvsthmmdkpd"
+    />
 
     <script type="application/ld+json">
       {
@@ -139,6 +143,44 @@
         send_page_view: true,
       });
     </script>
+
+    <!-- Meta Pixel (cross-domain with mindthos.com, ID must match) -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = '2.0';
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        'script',
+        'https://connect.facebook.net/en_US/fbevents.js'
+      );
+      fbq('init', '2508548632910576');
+      fbq('track', 'PageView');
+    </script>
+    <noscript>
+      <img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=2508548632910576&ev=PageView&noscript=1"
+        alt=""
+      />
+    </noscript>
   </head>
 
   <body>
