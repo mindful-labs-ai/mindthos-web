@@ -150,6 +150,17 @@
       });
     </script>
 
+    <!-- Naver Search Ads WCS (cross-domain with mindthos.com, AccountId/inflow must match) -->
+    <script type="text/javascript" src="//wcs.naver.net/wcslog.js"></script>
+    <script>
+      if (!window.wcs_add) window.wcs_add = {};
+      window.wcs_add['wa'] = 's_bfc366d6236';
+      if (window.wcs) {
+        wcs.inflow('mindthos.com');
+        wcs_do();
+      }
+    </script>
+
     <!-- Meta Pixel (cross-domain with mindthos.com, ID must match) -->
     <script>
       !(function (f, b, e, v, n, t, s) {
