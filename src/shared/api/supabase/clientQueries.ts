@@ -58,15 +58,24 @@ export async function checkClientHasRecords(
 // C2 페이로드 최적화 — clients 무한 스크롤 + 세션 수 집계 RPC
 // ============================================================================
 
+/**
+ * (sort_key, id) 컴포지트 cursor — RPC가 FE useClientGrouping 과 동일한 규칙으로
+ * 계산한 sort_key 를 그대로 받아서 다음 페이지 요청에 전달. FE는 내용을 해석하지 않음.
+ */
+export interface ClientsPageCursor {
+  sortKey: string;
+  id: string;
+}
+
 export interface ClientsPageParams {
   /** 페이지 크기 — 기본 20 */
   limit?: number;
-  /** cursor: 마지막 row의 created_at (ISO). 첫 페이지는 null */
-  cursor?: string | null;
+  /** cursor: 마지막 row의 (sort_key, id). 첫 페이지는 null */
+  cursor?: ClientsPageCursor | null;
   /** 검색어 — 이름 부분 일치 (ILIKE) */
   search?: string | null;
-  /** 정렬 — 최신순 desc / 오래된순 asc */
-  sortOrder?: 'desc' | 'asc';
+  /** 정렬 — 가나다 asc / 역순 desc */
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface ClientsPageItem {
@@ -81,27 +90,30 @@ export interface ClientsPageItem {
   counsel_done: boolean | null;
   created_at: string;
   session_count: number;
+  /** RPC가 계산한 정렬 키 — cursor 구성용. FE 화면 로직에서는 사용하지 않음. */
+  sort_key: string;
 }
 
 export interface ClientsPageResult {
   items: ClientsPageItem[];
-  nextCursor: string | null;
+  nextCursor: ClientsPageCursor | null;
 }
 
 /**
  * 클라이언트 리스트 cursor-based 조회 + 세션 수 집계.
- * `get_clients_with_session_count` RPC 호출. JWT 컨텍스트 사용자 데이터만 반환.
+ * `get_clients_page_by_name` RPC 호출. JWT 컨텍스트 사용자 데이터만 반환.
  * family_summary는 제외 (상세 진입 시 별도 fetch).
  */
 export async function getClientsPage({
   limit = 20,
   cursor = null,
   search = null,
-  sortOrder = 'desc',
+  sortOrder = 'asc',
 }: ClientsPageParams): Promise<ClientsPageResult> {
-  const { data, error } = await supabase.rpc('get_clients_with_session_count', {
+  const { data, error } = await supabase.rpc('get_clients_page_by_name', {
     p_limit: limit,
-    p_cursor: cursor,
+    p_cursor_sort_key: cursor?.sortKey ?? null,
+    p_cursor_id: cursor?.id ?? null,
     p_search: search,
     p_sort_order: sortOrder,
   });
@@ -111,8 +123,11 @@ export async function getClientsPage({
   }
 
   const items = (data ?? []) as ClientsPageItem[];
-  const nextCursor =
-    items.length === limit ? items[items.length - 1].created_at : null;
+  const last = items[items.length - 1];
+  const nextCursor: ClientsPageCursor | null =
+    items.length === limit && last
+      ? { sortKey: last.sort_key, id: last.id }
+      : null;
 
   return { items, nextCursor };
 }
