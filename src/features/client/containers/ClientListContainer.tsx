@@ -39,7 +39,7 @@ export const ClientListContainer: React.FC = () => {
   } = useClientsList({
     counselorId: parseInt(userId || '0'),
     search: debouncedSearch || null,
-    sortOrder: 'desc',
+    sortOrder: 'asc',
     enabled: !!userId,
   });
 
