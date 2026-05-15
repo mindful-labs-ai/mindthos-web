@@ -28,6 +28,7 @@ import {
 } from '@/lib/fbq';
 import { trackGAEvent } from '@/lib/gtag';
 import { trackEvent } from '@/lib/mixpanel';
+import { trackNaverConversion } from '@/lib/naverWcs';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -49,6 +50,8 @@ import { Select, type SelectItem } from '@/shared/ui/composites/Select';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { REFERRAL_OPTIONS } from '@/widgets/settings/UserEditModal';
+
+const NAVER_SIGNUP_FIRED_KEY = 'naver_signup_fired';
 
 const UserVerifyPage: React.FC = () => {
   const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
@@ -160,6 +163,16 @@ const UserVerifyPage: React.FC = () => {
         },
         { eventId: generateMetaEventId() }
       );
+
+      // Naver Search Ads sign_up — same trigger point as GA/Meta.
+      // sessionStorage guard prevents accidental double-fire from page refresh.
+      if (
+        typeof window !== 'undefined' &&
+        !window.sessionStorage.getItem(NAVER_SIGNUP_FIRED_KEY)
+      ) {
+        trackNaverConversion('sign_up');
+        window.sessionStorage.setItem(NAVER_SIGNUP_FIRED_KEY, '1');
+      }
 
       queryClient.invalidateQueries({
         queryKey: phoneVerificationQueryKeys.status(),
