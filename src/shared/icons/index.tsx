@@ -571,6 +571,197 @@ export const SideAnalysisIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
+/** 심리검사 해석 아이콘 */
+export const SidePsychologyAssessmentIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M3 15.0002V16.8C3 17.9201 3 18.4798 3.21799 18.9076C3.40973 19.2839 3.71547 19.5905 4.0918 19.7822C4.5192 20 5.07899 20 6.19691 20H21.0002M3 15.0002V5M3 15.0002L6.8534 11.7891L6.85658 11.7865C7.55366 11.2056 7.90288 10.9146 8.28154 10.7964C8.72887 10.6567 9.21071 10.6788 9.64355 10.8584C10.0105 11.0106 10.3323 11.3324 10.9758 11.9759L10.9822 11.9823C11.6357 12.6358 11.9633 12.9635 12.3362 13.1153C12.7774 13.2951 13.2685 13.3106 13.7207 13.1606C14.1041 13.0334 14.4542 12.7275 15.1543 12.115L21 7"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/** 심리검사 해석 - 클라이언트 사이드바 접기/펼치기 토글 아이콘 */
+export const ClientSidebarToggleIcon: React.FC<CustomIconProps> = ({
+  size = 20,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M15 4L15 20M15 4H7.2002C6.08009 4 5.51962 4 5.0918 4.21799C4.71547 4.40973 4.40973 4.71547 4.21799 5.0918C4 5.51962 4 6.08009 4 7.2002V16.8002C4 17.9203 4 18.4796 4.21799 18.9074C4.40973 19.2837 4.71547 19.5905 5.0918 19.7822C5.51921 20 6.07901 20 7.19694 20L15 20M15 4H16.8002C17.9203 4 18.4796 4 18.9074 4.21799C19.2837 4.40973 19.5905 4.71547 19.7822 5.0918C20 5.5192 20 6.079 20 7.19691L20 16.8031C20 17.921 20 18.48 19.7822 18.9074C19.5905 19.2837 19.2837 19.5905 18.9074 19.7822C18.48 20 17.921 20 16.8031 20H15"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/** 심리검사 해석 - 클라이언트 추가 아이콘 (사람 모양) */
+export const ClientSidebarAddIcon: React.FC<CustomIconProps> = ({
+  size = 20,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M19 16V13M19 13V10M19 13H16M19 13H22M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/** 심리검사 해석 - 분석 상태 chip 좌측 문서 아이콘 */
+export const AnalysisStatusIcon: React.FC<CustomIconProps> = ({
+  size = 16,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M13 3.00087C12.9045 3 12.7973 3 12.6747 3H8.2002C7.08009 3 6.51962 3 6.0918 3.21799C5.71547 3.40973 5.40973 3.71547 5.21799 4.0918C5 4.51962 5 5.08009 5 6.2002V17.8002C5 18.9203 5 19.4801 5.21799 19.9079C5.40973 20.2842 5.71547 20.5905 6.0918 20.7822C6.51921 21 7.079 21 8.19694 21L15.8031 21C16.921 21 17.48 21 17.9074 20.7822C18.2837 20.5905 18.5905 20.2842 18.7822 19.9079C19 19.4805 19 18.9215 19 17.8036V9.32568C19 9.20296 19 9.09561 18.9991 9M13 3.00087C13.2856 3.00347 13.4663 3.01385 13.6388 3.05526C13.8429 3.10425 14.0379 3.18526 14.2168 3.29492C14.4186 3.41857 14.5918 3.59182 14.9375 3.9375L18.063 7.06298C18.4089 7.40889 18.5809 7.58136 18.7046 7.78319C18.8142 7.96214 18.8953 8.15726 18.9443 8.36133C18.9857 8.53376 18.9963 8.71451 18.9991 9M13 3.00087V5.8C13 6.9201 13 7.47977 13.218 7.90759C13.4097 8.28392 13.7155 8.59048 14.0918 8.78223C14.5192 9 15.079 9 16.1969 9H18.9991M18.9991 9H19.0002"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/**
+ * 보안/프라이버시 표시용 방패 아이콘 (공용).
+ * 사용 위치: 심리검사 등록 모달 상단 안내 배너, 분석 채팅 입력 좌측 등.
+ * size / className으로 크기·색상 제어.
+ */
+export const SecurityShieldIcon: React.FC<CustomIconProps> = ({
+  size = 18,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M10.0026 18.3346C10.0026 18.3346 16.6693 15.0013 16.6693 10.0013V4.16797L10.0026 1.66797L3.33594 4.16797V10.0013C3.33594 15.0013 10.0026 18.3346 10.0026 18.3346Z"
+      stroke="currentColor"
+      stroke-width="1.57"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="10" cy="8" r="2" fill="currentColor" />
+    <path d="M10 8V13" stroke="currentColor" stroke-width="1.5" />
+  </svg>
+);
+
+/** 심리검사 해석 - 채팅 입력 우측 전송 아이콘 */
+export const AnalysisChatSendIcon: React.FC<CustomIconProps> = ({
+  size = 20,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M8.59111 11.4121L12.6296 7.37362M16.7607 4.90902L13.3518 15.9878C13.0464 16.9807 12.8935 17.4774 12.63 17.642C12.4015 17.7848 12.1185 17.8087 11.8696 17.7054C11.5826 17.5863 11.3496 17.1212 10.8849 16.1918L8.72579 11.8735C8.65205 11.726 8.61514 11.6526 8.56588 11.5887C8.52217 11.532 8.47172 11.4809 8.41501 11.4372C8.35256 11.3891 8.28035 11.353 8.13944 11.2825L3.81124 9.11841C2.88182 8.6537 2.41706 8.42113 2.29797 8.13412C2.19469 7.8852 2.21825 7.60198 2.36104 7.37343C2.5257 7.10991 3.02233 6.95681 4.0155 6.65122L15.0943 3.24235C15.8751 3.00211 16.2657 2.88208 16.5294 2.9789C16.7591 3.06323 16.9402 3.24416 17.0246 3.47388C17.1213 3.73748 17.0012 4.12784 16.7612 4.90786L16.7607 4.90902Z"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/** 심리검사 해석 - 결과지 초기화 (재시작/refresh) 아이콘 */
+export const ResetCycleIcon: React.FC<CustomIconProps> = ({
+  size = 16,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 20 20"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M8.33447 13.3333H4.16781V17.5M11.6678 6.66667H15.8345V2.5M3.82031 7.50284C4.28755 6.34638 5.06984 5.3442 6.07826 4.61019C7.08669 3.87618 8.28185 3.4396 9.52593 3.35042C10.77 3.26125 12.0134 3.52284 13.1162 4.10551C14.219 4.68819 15.1355 5.56878 15.7629 6.64677M16.1824 12.4976C15.7152 13.654 14.9329 14.6562 13.9245 15.3902C12.9161 16.1242 11.7221 16.5602 10.478 16.6494C9.23395 16.7386 7.98953 16.477 6.88672 15.8944C5.78391 15.3117 4.86682 14.4313 4.23942 13.3533"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/** 심리검사 해석 - 확인 모달 빨간 ! 위험 아이콘 */
+export const DangerExclamationIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <rect width="24" height="24" rx="12" fill="#D54036" />
+    <path
+      d="M11.9961 7.26562V12.599M12.0625 16.599V16.7323L11.9297 16.7318V16.599H12.0625Z"
+      stroke="white"
+      stroke-width="2.66667"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
 /** 설정 아이콘 */
 export const SideSettingsIcon: React.FC<CustomIconProps> = ({
   size = 24,
@@ -1222,6 +1413,7 @@ export const Icons = {
   SideTemplate: SideTemplateIcon,
   SideGenogram: SideGenogramIcon,
   SideAnalysis: SideAnalysisIcon,
+  SidePsychologyAssessment: SidePsychologyAssessmentIcon,
   SideSettings: SideSettingsIcon,
   SideHelp: SideHelpIcon,
   SideLock: SideLockIcon,
