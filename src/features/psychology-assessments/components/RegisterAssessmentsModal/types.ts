@@ -2,7 +2,7 @@
 export type RegisterStep = 1 | 2 | 3;
 
 /** 검사 종류 ID */
-export type AssessmentTypeId = 'mmpi' | 'tci' | 'sct' | 'other';
+export type AssessmentTypeId = 'mmpi' | 'tci' | 'other';
 
 export interface AssessmentTypeOption {
   id: AssessmentTypeId;
@@ -12,7 +12,6 @@ export interface AssessmentTypeOption {
 export const ASSESSMENT_TYPES: AssessmentTypeOption[] = [
   { id: 'mmpi', label: '다면적 인성검사' },
   { id: 'tci', label: '기질 검사' },
-  { id: 'sct', label: '문장 완성 검사' },
 ];
 
 /** 업로드된 파일 단위 */

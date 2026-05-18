@@ -40,7 +40,6 @@ const PAGE_PADDING = {
 const MOCK_FILES: AssessmentFile[] = [
   { id: '1', title: '다면적 인성 검사', fileName: 'MMPI-2_홍길동_결과지.pdf' },
   { id: '2', title: '기질 검사', fileName: 'TCI_홍길동_결과지.pdf' },
-  { id: '3', title: '문장 완성 검사', fileName: 'SCT_홍길동_결과지.pdf' },
 ];
 
 const MOCK_POPOVER_ASSESSMENTS: RegisteredAssessmentEntry[] = [
@@ -52,11 +51,11 @@ const MOCK_POPOVER_ASSESSMENTS: RegisteredAssessmentEntry[] = [
     categoryLabel: '다면적 인성검사',
   },
   {
-    id: '3',
-    fileName: 'SCT_홍길동_결과지.pdf',
+    id: '2',
+    fileName: 'TCI_홍길동_결과지.pdf',
     testDate: '2026.04.14',
-    pageCount: 3,
-    categoryLabel: '투사 검사',
+    pageCount: 8,
+    categoryLabel: '기질 검사',
   },
 ];
 
@@ -67,8 +66,7 @@ const MOCK_POPOVER_TRANSCRIPTS: TranscriptEntry[] = [
 const MOCK_ANALYSIS_STEPS: AnalysisStep[] = [
   { id: '1', label: '다면적 인성 검사 분석 완료', status: 'completed' },
   { id: '2', label: '기질검사 분석 진행 중...', status: 'in_progress' },
-  { id: '3', label: '문장 완성 검사 분석', status: 'pending' },
-  { id: '4', label: '통합 해석', status: 'pending' },
+  { id: '3', label: '통합 해석', status: 'pending' },
 ];
 
 const MOCK_SUGGESTIONS: ChatSuggestion[] = [

@@ -4,6 +4,7 @@ import { cn } from '@/lib/cn';
 
 import {
   RegisterModalDebugPanel,
+  type FillingFormFilter,
   type Step2DebugMode,
 } from './RegisterModalDebugPanel';
 import { RegisterModalFooter } from './shared/RegisterModalFooter';
@@ -70,14 +71,6 @@ const MOCK_VERIFICATION_RESULTS_ALL_OK: VerificationResult[] = [
     categoryLabel: '기질 검사',
     itemsVerified: 46,
     itemsTotal: 46,
-    status: 'complete',
-  },
-  {
-    fileId: 'f3',
-    fileName: 'SCT_홍길동_결과지.pdf',
-    categoryLabel: '문장 완성 검사',
-    itemsVerified: 70,
-    itemsTotal: 70,
     status: 'complete',
   },
   {
@@ -148,6 +141,9 @@ export const RegisterAssessmentsModal = ({
     filled: number;
     total: number;
   }>({ filled: 0, total: 0 });
+
+  /* -------- 디버그: filling 모드에서 특정 검사만 보기 -------- */
+  const [fillingFilter, setFillingFilter] = useState<FillingFormFilter>('all');
   const verificationResults: VerificationResult[] =
     step2Mode === 'list-complete'
       ? MOCK_VERIFICATION_RESULTS_ALL_OK
@@ -316,7 +312,7 @@ export const RegisterAssessmentsModal = ({
   if (!open) return null;
 
   /* -------- 누락 채우기 폼 — 검사별 카드 그룹 (mock descriptor) -------- */
-  const fillingFormDescriptors: FillingFormDescriptor[] = [
+  const allFillingFormDescriptors: FillingFormDescriptor[] = [
     {
       categoryLabel: '다면적 인성 검사',
       missingCount: 12,
@@ -327,12 +323,12 @@ export const RegisterAssessmentsModal = ({
       missingCount: 2,
       formKey: 'tci',
     },
-    {
-      categoryLabel: '문장 완성 검사',
-      missingCount: 2,
-      formKey: 'sct',
-    },
   ];
+  const fillingFormDescriptors =
+    fillingFilter === 'all'
+      ? allFillingFormDescriptors
+      : allFillingFormDescriptors.filter((d) => d.formKey === fillingFilter);
+
   const fillingForm = (
     <Step2FillingFormGroup
       forms={fillingFormDescriptors}
@@ -399,6 +395,8 @@ export const RegisterAssessmentsModal = ({
         onStep2ModeChange={setStep2Mode}
         reviewingPercent={reviewingPercent}
         onReviewingPercentChange={setReviewingPercent}
+        fillingFilter={fillingFilter}
+        onFillingFilterChange={setFillingFilter}
       />
     </div>
   );

@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MissingFieldsForm } from './MissingFieldsForm';
 import {
   MmpiFillingForm,
-  SctFillingForm,
   TciFillingForm,
   type FillingFormCounts,
 } from './forms';
@@ -14,7 +13,7 @@ export interface FillingFormDescriptor {
   /** 누락된 항목 수 — 폼 진입 직전 초기값 (실시간으로는 폼 내부 카운트로 덮어씀) */
   missingCount: number;
   /** 검사 종류 키 — 어떤 폼을 렌더할지 결정 */
-  formKey: 'mmpi' | 'tci' | 'sct';
+  formKey: 'mmpi' | 'tci';
 }
 
 interface Step2FillingFormGroupProps {
@@ -75,8 +74,6 @@ export const Step2FillingFormGroup = ({
         return <MmpiFillingForm onCountsChange={handle} />;
       case 'tci':
         return <TciFillingForm onCountsChange={handle} />;
-      case 'sct':
-        return <SctFillingForm onCountsChange={handle} />;
     }
   };
 

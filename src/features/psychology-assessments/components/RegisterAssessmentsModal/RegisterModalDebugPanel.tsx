@@ -7,6 +7,9 @@ import type { RegisterStep } from './types';
 
 export type Step2DebugMode = 'list-complete' | 'list-missing' | 'filling';
 
+/** filling 모드에서 표시할 검사 종류 (디버그용 필터) */
+export type FillingFormFilter = 'all' | 'mmpi' | 'tci';
+
 interface RegisterModalDebugPanelProps {
   step: RegisterStep;
   onStepChange: (step: RegisterStep) => void;
@@ -16,6 +19,8 @@ interface RegisterModalDebugPanelProps {
   onStep2ModeChange: (mode: Step2DebugMode) => void;
   reviewingPercent: number;
   onReviewingPercentChange: (value: number) => void;
+  fillingFilter: FillingFormFilter;
+  onFillingFilterChange: (filter: FillingFormFilter) => void;
   className?: string;
 }
 
@@ -29,6 +34,12 @@ const STEP2_MODE_OPTIONS: { value: Step2DebugMode; label: string }[] = [
   { value: 'list-complete', label: '검증 완료' },
   { value: 'list-missing', label: '누락 있음' },
   { value: 'filling', label: '항목 채우기' },
+];
+
+const FILLING_FILTER_OPTIONS: { value: FillingFormFilter; label: string }[] = [
+  { value: 'all', label: '전체' },
+  { value: 'mmpi', label: 'MMPI' },
+  { value: 'tci', label: 'TCI' },
 ];
 
 const ChipGroup = <T extends string | number>({
@@ -68,6 +79,8 @@ export const RegisterModalDebugPanel = ({
   onStep2ModeChange,
   reviewingPercent,
   onReviewingPercentChange,
+  fillingFilter,
+  onFillingFilterChange,
   className,
 }: RegisterModalDebugPanelProps) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -135,14 +148,27 @@ export const RegisterModalDebugPanel = ({
           )}
 
           {step === 2 && (
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] text-grey-60">Step 2 mode</span>
-              <ChipGroup
-                options={STEP2_MODE_OPTIONS}
-                value={step2Mode}
-                onChange={onStep2ModeChange}
-              />
-            </div>
+            <>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] text-grey-60">Step 2 mode</span>
+                <ChipGroup
+                  options={STEP2_MODE_OPTIONS}
+                  value={step2Mode}
+                  onChange={onStep2ModeChange}
+                />
+              </div>
+
+              {step2Mode === 'filling' && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] text-grey-60">검사 종류 필터</span>
+                  <ChipGroup
+                    options={FILLING_FILTER_OPTIONS}
+                    value={fillingFilter}
+                    onChange={onFillingFilterChange}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           <p className="text-[10px] text-grey-60">개발용 — 추후 제거</p>
