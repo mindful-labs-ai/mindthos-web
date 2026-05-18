@@ -20,7 +20,7 @@ export const PopoverResetButton = ({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex w-full items-center justify-center gap-2 rounded-lg border border-grey-30 py-2 text-sm font-emphasize text-grey-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-grey-10',
+        'flex w-full items-center justify-center gap-2 rounded-md border border-grey-40 py-2 text-m font-medium text-grey-100 transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-grey-10',
         className
       )}
     >
