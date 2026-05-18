@@ -2,12 +2,13 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 import {
   getClientsPage,
+  type ClientsPageCursor,
   type ClientsPageItem,
   type ClientsPageResult,
 } from '@/shared/api/supabase/clientQueries';
 import { clientQueryKeys } from '@/shared/constants/queryKeys';
 
-export type ClientSortOrder = 'desc' | 'asc';
+export type ClientSortOrder = 'asc' | 'desc';
 
 const DEFAULT_LIMIT = 20;
 
@@ -28,26 +29,32 @@ export interface UseClientsListOptions {
  * 클라이언트 리스트 무한 스크롤 + 세션 수 집계.
  * `get_clients_with_session_count` RPC 호출.
  *
- * - cursor-based pagination (created_at)
+ * - cursor-based pagination: (name, id) 컴포지트 — FE 표시 순서(가나다)와 일치
  * - 검색/정렬 변경 시 별도 캐시 (queryKey에 search/sortOrder 포함)
  */
 export function useClientsList({
   counselorId,
   search = null,
-  sortOrder = 'desc',
+  sortOrder = 'asc',
   enabled = true,
   limit = DEFAULT_LIMIT,
 }: UseClientsListOptions) {
-  const query = useInfiniteQuery<ClientsPageResult, Error>({
+  const query = useInfiniteQuery<
+    ClientsPageResult,
+    Error,
+    { pages: ClientsPageResult[]; pageParams: (ClientsPageCursor | null)[] },
+    ReturnType<typeof clientQueryKeys.paginated>,
+    ClientsPageCursor | null
+  >({
     queryKey: clientQueryKeys.paginated(counselorId, search, sortOrder),
     queryFn: ({ pageParam }) =>
       getClientsPage({
         sortOrder,
         search,
-        cursor: (pageParam as string | null) ?? null,
+        cursor: pageParam ?? null,
         limit,
       }),
-    initialPageParam: null as string | null,
+    initialPageParam: null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: enabled && !!counselorId,
     staleTime: 1000 * 60 * 5,
