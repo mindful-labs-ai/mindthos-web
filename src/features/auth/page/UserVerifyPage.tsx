@@ -55,8 +55,15 @@ const NAVER_SIGNUP_FIRED_KEY = 'naver_signup_fired';
 
 const UserVerifyPage: React.FC = () => {
   const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
-  const { user, userName, organization, userPhoneNumber, updateUser, logout } =
-    useAuthStore();
+  const {
+    user,
+    userId,
+    userName,
+    organization,
+    userPhoneNumber,
+    updateUser,
+    logout,
+  } = useAuthStore();
   const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -144,7 +151,11 @@ const UserVerifyPage: React.FC = () => {
       trackEvent(MixpanelEvent.SignupSuccess, { method: 'phone' });
       // GA4 sign_up — fired at final signup completion (post phone verification)
       // so it can be imported into Google Ads as a conversion via cross-domain linker.
-      trackGAEvent('sign_up', { method: authProvider });
+      const numericUserId = userId ? Number(userId) : undefined;
+      trackGAEvent('sign_up', {
+        method: authProvider,
+        userId: Number.isFinite(numericUserId) ? numericUserId : undefined,
+      });
 
       // Meta Pixel — Advanced Matching + CompleteRegistration.
       // eventId is preserved for future server-side Conversions API dedup.
