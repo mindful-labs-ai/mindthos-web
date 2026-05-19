@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import { clearGAUserId, setGAUserId } from '@/lib/gtag';
 import { identifyUser, resetMixpanel } from '@/lib/mixpanel';
 import { queryClient } from '@/lib/queryClient';
 import { authService } from '@/shared/api/services/auth/authService';
@@ -76,12 +77,28 @@ export const useAuthStore = create<AuthStore>()(
           'setUser'
         );
 
+        const numericUserId = userData?.id ? Number(userData.id) : undefined;
+        const joinUserId =
+          numericUserId !== undefined && Number.isFinite(numericUserId)
+            ? numericUserId
+            : undefined;
+
         if (user?.id) {
-          identifyUser(user.id, {
-            email: user.email,
-            name: userData?.name,
-            organization: userData?.organization,
-          });
+          identifyUser(
+            user.id,
+            {
+              email: user.email,
+              name: userData?.name,
+              organization: userData?.organization,
+            },
+            {
+              joinUserId,
+            }
+          );
+        }
+
+        if (joinUserId !== undefined) {
+          setGAUserId(joinUserId);
         }
       },
       _setLoading: (isLoading) => set({ isLoading }, false, 'setLoading'),
@@ -130,6 +147,7 @@ export const useAuthStore = create<AuthStore>()(
           'clear'
         );
         resetMixpanel();
+        clearGAUserId();
       },
 
       login: async (email, password) => {
