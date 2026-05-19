@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import {
   RegisterModalDebugPanel,
@@ -125,6 +126,9 @@ export const RegisterAssessmentsModal = ({
   analyzeCost = 50,
   onAnalyze,
 }: RegisterAssessmentsModalProps) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   const [step, setStep] = useState<RegisterStep>(1);
 
   /* -------- step 1 state -------- */
@@ -339,23 +343,37 @@ export const RegisterAssessmentsModal = ({
   /* -------- 모달 렌더링 -------- */
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center bg-black/40 p-4"
+      className={cn(
+        'fixed inset-0 z-modal flex bg-black/40',
+        isMobileView ? 'p-0' : 'items-center justify-center p-4'
+      )}
       role="dialog"
       aria-modal="true"
     >
       <div
         className={cn(
-          'flex flex-col overflow-hidden rounded-2xl bg-surface shadow-prominent',
-          'h-[min(820px,92vh)] w-[min(560px,92vw)]'
+          'flex flex-col overflow-hidden bg-surface',
+          isMobileView
+            ? 'h-full w-full rounded-none'
+            : 'h-[min(820px,92vh)] w-[min(560px,92vw)] rounded-2xl shadow-prominent'
         )}
       >
         <RegisterModalHeader onClose={onClose} />
 
-        <div className="px-8 pb-6 pt-6">
+        <div
+          className={cn(
+            isMobileView ? 'px-4 pb-4 pt-2' : 'px-8 pb-6 pt-6'
+          )}
+        >
           <RegisterStepper current={step} />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-[52px] pb-2">
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 flex-col overflow-y-auto pb-2',
+            isMobileView ? 'px-4' : 'px-[52px]'
+          )}
+        >
           {step === 1 && (
             <Step1UploadView
               substate={step1Sub}

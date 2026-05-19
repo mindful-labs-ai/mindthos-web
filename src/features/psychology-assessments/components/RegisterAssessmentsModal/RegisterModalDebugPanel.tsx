@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import type { Step1Substate } from './step1/Step1UploadView';
 import type { RegisterStep } from './types';
@@ -83,7 +84,10 @@ export const RegisterModalDebugPanel = ({
   onFillingFilterChange,
   className,
 }: RegisterModalDebugPanelProps) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  // 모바일은 기본 접힘 (드롭다운 토글)
+  const [collapsed, setCollapsed] = useState(isMobileView);
 
   return (
     <div

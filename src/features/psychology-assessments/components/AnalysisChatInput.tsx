@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 import {
   AnalysisChatSendIcon,
   CreditIcon,
@@ -33,6 +34,9 @@ export const AnalysisChatInput = ({
   showCreditChip = true,
   className,
 }: AnalysisChatInputProps) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   // mirror로 한 줄 텍스트 폭 측정 → textarea의 width/height를 한 effect에서 atomic 갱신.
   // value 없음: textarea가 mirror 폭(칩이 placeholder 옆에 붙음)
   // value 있음: width 비워서 flex-1로 가용공간 차지
@@ -93,9 +97,9 @@ export const AnalysisChatInput = ({
       )}
       style={{
         paddingTop: 14,
-        paddingRight: 14,
+        paddingRight: isMobileView ? 12 : 14,
         paddingBottom: 16,
-        paddingLeft: 24,
+        paddingLeft: isMobileView ? 16 : 24,
       }}
     >
       <div className="relative flex items-center gap-2">
@@ -154,7 +158,7 @@ export const AnalysisChatInput = ({
           }}
         />
 
-        {showCreditChip && !value && (
+        {showCreditChip && !value && !isMobileView && (
           <span
             className="mt-0.5 inline-flex flex-shrink-0 items-center justify-center gap-1 rounded-md bg-grey-40 text-sm text-grey-80"
             style={{ width: 68, height: 25 }}
@@ -173,7 +177,10 @@ export const AnalysisChatInput = ({
           onClick={onSubmit}
           disabled={disabled}
           className="flex flex-shrink-0 items-center justify-center rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20 lg:hover:bg-grey-10"
-          style={{ width: 32, height: 32 }}
+          style={{
+            width: isMobileView ? 36 : 32,
+            height: isMobileView ? 36 : 32,
+          }}
           aria-label="전송"
         >
           <AnalysisChatSendIcon size={20} />
@@ -186,10 +193,13 @@ export const AnalysisChatInput = ({
           onClick={onAttach}
           disabled={disabled}
           className="flex items-center justify-center text-grey-80 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          style={{ width: 20, height: 20 }}
+          style={{
+            width: isMobileView ? 28 : 20,
+            height: isMobileView ? 28 : 20,
+          }}
           aria-label="첨부"
         >
-          <PlusIcon size={20} />
+          <PlusIcon size={isMobileView ? 22 : 20} />
         </button>
       </div>
     </div>

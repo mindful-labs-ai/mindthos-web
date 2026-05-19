@@ -25,7 +25,7 @@ export const RegisteredAssessmentsCard = ({
   return (
     <div
       className={cn(
-        'w-full max-w-[376px] rounded-2xl bg-grey-20 px-5 py-6',
+        'w-full rounded-2xl bg-grey-20 px-5 py-6 md:max-w-[376px]',
         className
       )}
     >

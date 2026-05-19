@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import { PopoverEntryCard } from './PopoverEntryCard';
 import { PopoverResetButton } from './PopoverResetButton';
@@ -38,6 +39,8 @@ export const RegisteredPopover = ({
   className,
 }: RegisteredPopoverProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   useEffect(() => {
     if (!open) return;
@@ -68,15 +71,8 @@ export const RegisteredPopover = ({
 
   if (!open) return null;
 
-  return (
-    <div
-      ref={rootRef}
-      className={cn(
-        'absolute right-0 top-full z-popover mt-2 flex w-[320px] flex-col gap-5 rounded-2xl border border-grey-20 bg-surface p-5 shadow-elevated',
-        className
-      )}
-      role="dialog"
-    >
+  const body = (
+    <>
       {transcripts.length > 0 && (
         <PopoverSection title="축어록 및 분석">
           {transcripts.map((t) => (
@@ -106,6 +102,42 @@ export const RegisteredPopover = ({
       )}
 
       <PopoverResetButton label={resetLabel} onClick={onReset} />
+    </>
+  );
+
+  // 모바일: 하단 시트 형태로 풀너비 노출 (overlay + slide up)
+  if (isMobileView) {
+    return (
+      <div
+        className="fixed inset-0 z-popover flex items-end bg-black/40"
+        onClick={onClose}
+      >
+        <div
+          ref={rootRef}
+          className={cn(
+            'flex max-h-[80vh] w-full flex-col gap-5 overflow-y-auto rounded-t-2xl bg-surface p-5',
+            className
+          )}
+          role="dialog"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {body}
+        </div>
+      </div>
+    );
+  }
+
+  // 데스크탑: chip 우하단 absolute popover
+  return (
+    <div
+      ref={rootRef}
+      className={cn(
+        'absolute right-0 top-full z-popover mt-2 flex w-[320px] flex-col gap-5 rounded-2xl border border-grey-20 bg-surface p-5 shadow-elevated',
+        className
+      )}
+      role="dialog"
+    >
+      {body}
     </div>
   );
 };

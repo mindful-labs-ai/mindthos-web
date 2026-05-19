@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import type { JsonSchema } from '../../../schemas/jsonSchema.types';
 import {
-  collectLeaves,
+  collectUnits,
   schemaToFields,
   type FormLeaf,
   type FormNode,
   type LeafInputType,
 } from '../../../utils/schemaToFields';
-import type { FillingFormCounts } from './forms/types';
+
 import {
   FieldChipGroup,
   FieldDescription,
@@ -22,6 +23,7 @@ import {
   FieldTextInput,
   FIELD_MAX_WIDTH,
 } from './fields';
+import type { FillingFormCounts } from './forms/types';
 
 interface SchemaFormProps {
   schema: JsonSchema;
@@ -35,7 +37,8 @@ export const SchemaForm = ({
   className,
 }: SchemaFormProps) => {
   const nodes = useMemo(() => schemaToFields(schema), [schema]);
-  const leaves = useMemo(() => collectLeaves(nodes), [nodes]);
+  // 카운팅은 "스키마 라벨" 단위. 한 라벨 아래 입력 N개여도 1개로 취급.
+  const units = useMemo(() => collectUnits(nodes), [nodes]);
 
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -44,17 +47,20 @@ export const SchemaForm = ({
   };
 
   const filled = useMemo(() => {
-    return leaves.reduce((acc, leaf) => {
-      const v = values[leaf.path];
-      return acc + (v && v.trim() !== '' ? 1 : 0);
+    return units.reduce((acc, unit) => {
+      const allFilled = unit.leafPaths.every((p) => {
+        const v = values[p];
+        return !!v && v.trim() !== '';
+      });
+      return acc + (allFilled ? 1 : 0);
     }, 0);
-  }, [leaves, values]);
+  }, [units, values]);
 
   const onCountsChangeRef = useRef(onCountsChange);
   onCountsChangeRef.current = onCountsChange;
   useEffect(() => {
-    onCountsChangeRef.current?.({ filled, total: leaves.length });
-  }, [filled, leaves.length]);
+    onCountsChangeRef.current?.({ filled, total: units.length });
+  }, [filled, units.length]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)}>
@@ -110,7 +116,9 @@ const RenderSection = ({
   if (depth === 0) {
     return (
       <FieldSection label={node.label}>
-        {node.description && <FieldDescription>{node.description}</FieldDescription>}
+        {node.description && (
+          <FieldDescription>{node.description}</FieldDescription>
+        )}
         {node.children.map((child, idx) => (
           <div key={child.path}>
             {idx > 0 && child.kind === 'section' && (
@@ -131,8 +139,10 @@ const RenderSection = ({
   return (
     <div className="flex flex-col gap-3">
       <FieldLabel>{node.label}</FieldLabel>
-      {node.description && <FieldDescription>{node.description}</FieldDescription>}
-      <div className="flex flex-col gap-3 border-l border-grey-30 pl-3">
+      {node.description && (
+        <FieldDescription>{node.description}</FieldDescription>
+      )}
+      <div className="flex flex-col gap-3">
         {node.children.map((child) => (
           <RenderNode
             key={child.path}
@@ -176,7 +186,9 @@ const RenderLeaf = ({
     return (
       <div className="flex flex-col gap-1.5">
         <FieldLabel>{leaf.label}</FieldLabel>
-        {leaf.description && <FieldDescription>{leaf.description}</FieldDescription>}
+        {leaf.description && (
+          <FieldDescription>{leaf.description}</FieldDescription>
+        )}
         <div className="flex items-center gap-2">
           <FieldChipGroup
             options={leaf.options.map((opt) => ({
@@ -197,7 +209,9 @@ const RenderLeaf = ({
     return (
       <div className="flex flex-col gap-1.5">
         <FieldLabel>{leaf.label}</FieldLabel>
-        {leaf.description && <FieldDescription>{leaf.description}</FieldDescription>}
+        {leaf.description && (
+          <FieldDescription>{leaf.description}</FieldDescription>
+        )}
         <div className="flex items-start gap-2">
           <FieldTextArea
             value={value}
@@ -215,7 +229,9 @@ const RenderLeaf = ({
   return (
     <div className="flex flex-col gap-1.5">
       <FieldLabel>{leaf.label}</FieldLabel>
-      {leaf.description && <FieldDescription>{leaf.description}</FieldDescription>}
+      {leaf.description && (
+        <FieldDescription>{leaf.description}</FieldDescription>
+      )}
       <div className="flex items-center gap-2">
         <SingleLineFieldInput
           leaf={leaf}
@@ -237,7 +253,12 @@ const SingleLineFieldInput = ({
   value: string;
   onChange: (v: string) => void;
 }) => {
-  const maxWidth = FIELD_MAX_WIDTH[leaf.inputType];
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  // 모바일은 부모 폭 100% (text 240px 같은 데스크탑 width 제한 해제)
+  const desktopMaxWidth = FIELD_MAX_WIDTH[leaf.inputType];
+  const maxWidth = isMobileView ? undefined : desktopMaxWidth;
+
   const placeholder = placeholderFor(leaf);
   const inputMode = ['number', 'percent', 'date'].includes(leaf.inputType)
     ? 'numeric'
@@ -257,9 +278,9 @@ const SingleLineFieldInput = ({
 const placeholderFor = (leaf: FormLeaf): string => {
   switch (leaf.inputType) {
     case 'date':
-      return 'YYYYMMDD';
+      return 'YYYY-MM-DD';
     case 'percent':
-      return '예: 50%';
+      return '0%';
     case 'number':
       return '0';
     case 'array-of-numbers':

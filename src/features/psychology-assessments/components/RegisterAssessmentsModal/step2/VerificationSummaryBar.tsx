@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 interface VerificationSummaryBarProps {
   verifiedCount: number;
@@ -13,6 +14,9 @@ export const VerificationSummaryBar = ({
   totalCount,
   className,
 }: VerificationSummaryBarProps) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   const percent = totalCount === 0 ? 0 : (verifiedCount / totalCount) * 100;
 
   return (
@@ -27,19 +31,22 @@ export const VerificationSummaryBar = ({
           완성 {verifiedCount}
         </span>
         {missingCount > 0 && (
-          <span className="bg-yellow-20 text-yellow-80 rounded-md px-3 py-2 text-sm font-medium">
+          <span className="rounded-md bg-yellow-20 px-3 py-2 text-sm font-medium text-yellow-80">
             누락 {missingCount}
           </span>
         )}
       </div>
 
+      {/* progress bar(막대)는 모바일에서 숨김, N/M 카운트는 항상 노출 */}
       <div className="flex flex-1 items-center justify-end gap-3">
-        <div className="relative h-1.5 w-32 overflow-hidden bg-grey-30">
-          <div
-            className="h-full bg-green-80 transition-[width] duration-fast"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
+        {!isMobileView && (
+          <div className="relative h-1.5 w-32 overflow-hidden bg-grey-30">
+            <div
+              className="h-full bg-green-80 transition-[width] duration-fast"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+        )}
         <span className="text-sm font-sub text-grey-70">
           {verifiedCount}/{totalCount}
         </span>

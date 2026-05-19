@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import { ChatSuggestionChip } from './ChatSuggestionChip';
 
@@ -21,11 +22,32 @@ export const ChatWelcomeView = ({
   onSuggestionClick,
   className,
 }: ChatWelcomeViewProps) => {
-  return (
-    <div className={cn('flex h-full w-full flex-col gap-6', className)}>
-      <p className="text-m font-medium text-grey-100">{greeting}</p>
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
-      <div className="flex flex-col items-start gap-2">
+  return (
+    <div
+      className={cn(
+        'flex h-full w-full flex-col',
+        isMobileView ? 'gap-4' : 'gap-6',
+        className
+      )}
+    >
+      <p
+        className={cn(
+          'font-medium text-grey-100',
+          isMobileView ? 'text-sm leading-relaxed' : 'text-m'
+        )}
+      >
+        {greeting}
+      </p>
+
+      <div
+        className={cn(
+          'flex flex-col gap-2',
+          isMobileView ? 'items-stretch' : 'items-start'
+        )}
+      >
         {suggestions.map((sg) => (
           <ChatSuggestionChip
             key={sg.id}
@@ -40,7 +62,7 @@ export const ChatWelcomeView = ({
         <img
           src="/tutorial/mindthos_agent_icon.png"
           alt="마음토스"
-          className="h-12 w-auto"
+          className={cn(isMobileView ? 'h-9 w-auto' : 'h-12 w-auto')}
           draggable={false}
         />
       </div>

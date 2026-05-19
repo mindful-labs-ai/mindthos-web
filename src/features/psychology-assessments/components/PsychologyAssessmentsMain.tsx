@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 
 import type { Client } from '@/features/client/types';
+import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisDisclaimer } from './AnalysisDisclaimer';
@@ -96,6 +98,9 @@ const modeToChipStatus: Record<AssessmentsMode, AnalysisStatus> = {
 export const PsychologyAssessmentsMain = ({
   client,
 }: PsychologyAssessmentsMainProps) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   const [chatValue, setChatValue] = useState('');
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [analyzingPercent, setAnalyzingPercent] = useState(48);
@@ -173,12 +178,28 @@ export const PsychologyAssessmentsMain = ({
     setMode('empty');
   };
 
+  // 디버그 패널 — 모바일에서는 드롭다운(접힘) 상태로 시작
   const debugPanel = <DebugStatePanel mode={mode} onModeChange={setMode} />;
+
+  // 모바일/데스크탑 wrapper 분기
+  const outerCls = isMobileView
+    ? 'flex h-full w-full'
+    : 'flex h-full w-full justify-center';
+  const outerStyle = isMobileView ? undefined : PAGE_PADDING;
+  const cardCls = isMobileView
+    ? 'flex h-full w-full flex-col overflow-hidden bg-card-bg'
+    : 'flex h-full w-full max-w-[1099px] flex-col overflow-hidden rounded-2xl border border-card-border bg-card-bg';
 
   if (!client) {
     return (
-      <div className="flex h-full w-full justify-center" style={PAGE_PADDING}>
-        <div className="flex h-full w-full max-w-[1099px] overflow-hidden rounded-2xl border border-card-border bg-card-bg">
+      <div className={outerCls} style={outerStyle}>
+        <div
+          className={cn(
+            isMobileView
+              ? 'flex h-full w-full overflow-hidden bg-card-bg'
+              : 'flex h-full w-full max-w-[1099px] overflow-hidden rounded-2xl border border-card-border bg-card-bg'
+          )}
+        >
           <NoClientSelectedView />
         </div>
         {debugPanel}
@@ -226,10 +247,14 @@ export const PsychologyAssessmentsMain = ({
   }
 
   return (
-    <div className="flex h-full w-full justify-center" style={PAGE_PADDING}>
-      <div className="flex h-full w-full max-w-[1099px] flex-col overflow-hidden rounded-2xl border border-card-border bg-card-bg">
-        {/* 1) 프로필 헤더 - 카드 풀너비 사용 */}
-        <div className="pb-8 pl-8 pr-7 pt-7">
+    <div className={outerCls} style={outerStyle}>
+      <div className={cardCls}>
+        {/* 1) 프로필 헤더 — 모바일: 이름+chip 단일 행 / 데스크탑: 아바타+메타+chip */}
+        <div
+          className={cn(
+            isMobileView ? 'px-4 py-3' : 'pb-8 pl-8 pr-7 pt-7'
+          )}
+        >
           <ClientProfileHeader
             client={client}
             analysisStatus={chipStatus}
@@ -254,22 +279,51 @@ export const PsychologyAssessmentsMain = ({
           />
         </div>
 
-        {/* 2) 주호소 바 - 회색 배경은 풀너비, 내부 콘텐츠는 680px */}
-        <ChiefComplaintBar
-          className="border-y border-grey-40 py-3"
-          complaint={client.counsel_theme}
-        />
+        {/* 2) 주호소 바 — 모바일에서는 숨김 */}
+        {!isMobileView && (
+          <ChiefComplaintBar
+            className="border-y border-grey-40 py-3"
+            complaint={client.counsel_theme}
+          />
+        )}
 
-        {/* 3) 본문 - 680px 중앙 정렬 */}
-        <div className="flex flex-1 flex-col overflow-y-auto py-10">
-          <div className="mx-auto flex w-full max-w-[679px] flex-1 flex-col px-6">
+        {/* 3) 본문 — 모바일: 풀너비 + px-4, 데스크탑: max-w-[679px] */}
+        <div
+          className={cn(
+            'flex flex-1 flex-col overflow-y-auto',
+            isMobileView ? 'py-6' : 'py-10'
+          )}
+        >
+          <div
+            className={cn(
+              'flex w-full flex-1 flex-col',
+              isMobileView
+                ? 'px-4'
+                : 'mx-auto max-w-[679px] px-6'
+            )}
+          >
             {bodyContent}
           </div>
         </div>
 
-        {/* 4) 하단 채팅 입력 + 안내 - 680px 중앙 정렬 */}
-        <div className="border-t border-border py-5">
-          <div className="mx-auto flex w-full max-w-[679px] flex-col gap-3 px-6">
+        {/* 4) 하단 채팅 입력 + 안내 (모바일 iOS safe-area 적용) */}
+        <div
+          className={cn(
+            'border-t border-border',
+            isMobileView ? 'pt-3' : 'py-5'
+          )}
+          style={
+            isMobileView
+              ? { paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }
+              : undefined
+          }
+        >
+          <div
+            className={cn(
+              'flex w-full flex-col gap-3',
+              isMobileView ? 'px-4' : 'mx-auto max-w-[679px] px-6'
+            )}
+          >
             <AnalysisChatInput
               value={chatValue}
               onChange={setChatValue}

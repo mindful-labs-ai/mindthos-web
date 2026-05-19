@@ -1,5 +1,6 @@
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 import { AnalysisStatusChip, type AnalysisStatus } from './AnalysisStatusChip';
 import { ClientAvatar } from './ClientAvatar';
@@ -33,6 +34,9 @@ export const ClientProfileHeader = ({
   chipPopoverSlot,
   className,
 }: ClientProfileHeaderProps) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
   const sessionCount = client.session_count ?? 0;
 
   const metaItems = [
@@ -42,15 +46,38 @@ export const ClientProfileHeader = ({
     lastAssessmentLabel,
   ];
 
+  // 모바일: 이름 + 분석 chip만 (아바타/메타 모두 생략)
+  if (isMobileView) {
+    return (
+      <div
+        className={cn('flex items-center justify-between gap-3', className)}
+      >
+        <span className="truncate text-l font-emphasize text-grey-100">
+          {client.name}
+        </span>
+        <div className="relative flex-shrink-0">
+          <AnalysisStatusChip
+            ref={chipRef}
+            status={analysisStatus}
+            fileCount={fileCount}
+            onClick={onChipClick}
+            active={chipActive}
+          />
+          {chipPopoverSlot}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn('flex items-center justify-between gap-4', className)}>
-      <div className="flex items-center gap-3">
+    <div className={cn('flex items-start justify-between gap-3', className)}>
+      <div className="flex min-w-0 items-center gap-3">
         <ClientAvatar paletteKey={client.id} name={client.name} size={40} />
-        <div className="flex flex-col">
-          <span className="text-l font-emphasize text-grey-100">
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-l font-emphasize text-grey-100">
             {client.name}
           </span>
-          <div className="flex items-center gap-2 text-sm font-medium text-grey-70">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium text-grey-70">
             {metaItems.map((item, i) => (
               <span key={i} className="flex items-center gap-2">
                 <span>{item}</span>
@@ -64,7 +91,7 @@ export const ClientProfileHeader = ({
       </div>
 
       {/* chip + popover slot — popover는 chip 트리거 기준 absolute */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <AnalysisStatusChip
           ref={chipRef}
           status={analysisStatus}

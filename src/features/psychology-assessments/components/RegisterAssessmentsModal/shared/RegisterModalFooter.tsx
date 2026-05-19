@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
 
 export type FooterButtonTone = 'primary' | 'outline' | 'disabled';
@@ -58,10 +59,14 @@ export const RegisterModalFooter = ({
   rightButton,
   className,
 }: RegisterModalFooterProps) => {
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  const padX = isMobileView ? 16 : 89;
+
   return (
     <div
       className={cn('flex items-center gap-3 pb-6 pt-2', className)}
-      style={{ paddingLeft: 89, paddingRight: 89 }}
+      style={{ paddingLeft: padX, paddingRight: padX }}
     >
       {leftButton && (
         <FooterButton config={leftButton} className="flex-1" />

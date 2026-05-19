@@ -179,3 +179,68 @@ export const collectLeaves = (nodes: FormNode[]): FormLeaf[] => {
   nodes.forEach(walk);
   return out;
 };
+
+/**
+ * "스키마 라벨" 단위 = 카운팅 단위.
+ *
+ * - 최상위 섹션의 직속 leaf (e.g. 수검자정보.이름) → 1 unit
+ * - 중첩 섹션 (e.g. 타당도척도_및_임상척도.VRIN) → 1 unit
+ *   (자식 leaves 전부 채워져야 unit 채움)
+ * - depth 0 섹션 자체는 unit 아님 (카드 헤더 역할)
+ *
+ * 즉, FieldLabel이 화면에 그려지는 단위와 1:1 대응.
+ */
+export interface FormUnit {
+  /** unit 경로 (leaf path 또는 중첩 section path) */
+  path: string;
+  /** 표시용 라벨 */
+  label: string;
+  /** 이 unit에 속한 입력 가능 leaf path들 (채워짐 검증용). 단독 leaf면 1개, section unit이면 다수 */
+  leafPaths: string[];
+}
+
+const collectLeafPathsIn = (node: FormNode): string[] => {
+  const out: string[] = [];
+  const walk = (n: FormNode) => {
+    if (n.kind === 'leaf') {
+      if (n.constValue === undefined) out.push(n.path);
+      return;
+    }
+    n.children.forEach(walk);
+  };
+  walk(node);
+  return out;
+};
+
+export const collectUnits = (nodes: FormNode[]): FormUnit[] => {
+  const units: FormUnit[] = [];
+
+  const walk = (n: FormNode, depth: number) => {
+    if (n.kind === 'leaf') {
+      if (n.constValue === undefined) {
+        units.push({
+          path: n.path,
+          label: n.label,
+          leafPaths: [n.path],
+        });
+      }
+      return;
+    }
+
+    // section
+    if (depth === 0) {
+      // 최상위 섹션은 그룹 헤더 — 자식들이 unit
+      n.children.forEach((c) => walk(c, depth + 1));
+      return;
+    }
+
+    // 중첩 섹션 자체가 1 unit (스키마 라벨 1개로 묶임)
+    const leafPaths = collectLeafPathsIn(n);
+    if (leafPaths.length > 0) {
+      units.push({ path: n.path, label: n.label, leafPaths });
+    }
+  };
+
+  nodes.forEach((n) => walk(n, 0));
+  return units;
+};

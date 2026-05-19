@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
 
 export type AssessmentsMode =
   | 'empty'
@@ -26,7 +27,10 @@ export const DebugStatePanel = ({
   onModeChange,
   className,
 }: DebugStatePanelProps) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  // 모바일은 기본 접힘 (드롭다운 토글)
+  const [collapsed, setCollapsed] = useState(isMobileView);
 
   return (
     <div
