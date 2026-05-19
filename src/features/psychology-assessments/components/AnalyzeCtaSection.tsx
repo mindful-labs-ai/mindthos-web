@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { CreditIcon } from '@/shared/icons';
 
 interface AnalyzeCtaSectionProps {
   helperText?: string;
@@ -30,7 +31,7 @@ export const AnalyzeCtaSection = ({
         <span className="inline-flex items-center gap-0.5">
           <span>{creditCost}</span>
           {/* TODO: 크레딧 아이콘 자리 — 추후 교체 */}
-          <span aria-hidden>C</span>
+          <CreditIcon size={14} color="currentColor" />
         </span>
       </button>
     </div>

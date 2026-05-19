@@ -68,9 +68,7 @@ export const RegisterModalFooter = ({
       className={cn('flex items-center gap-3 pb-6 pt-2', className)}
       style={{ paddingLeft: padX, paddingRight: padX }}
     >
-      {leftButton && (
-        <FooterButton config={leftButton} className="flex-1" />
-      )}
+      {leftButton && <FooterButton config={leftButton} className="flex-1" />}
       <FooterButton
         config={rightButton}
         className={leftButton ? 'flex-[2]' : 'flex-1'}
