@@ -1,7 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/cn';
+import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
+
+import type {
+  AssessmentKind,
+  AssessmentUploadGateway,
+  AssessmentUploadInput,
+} from '../../upload/assessmentUploadGateway';
+import { serverAssessmentUploadAdapter } from '../../upload/serverAssessmentUploadAdapter';
 
 import {
   RegisterModalDebugPanel,
@@ -32,7 +40,26 @@ interface RegisterAssessmentsModalProps {
   analyzeCost?: number;
   /** 등록 완료 후 분석 시작 콜백 */
   onAnalyze?: () => void;
+  /** 실제 업로드 대상 내담자 ID. 있으면 step1에서 실제 업로드 수행. */
+  clientId?: string;
+  /** 업로드 gateway (주입). 미지정 시 서버 adapter 사용. 테스트는 mock 주입. */
+  uploadGateway?: AssessmentUploadGateway;
 }
+
+/** 프론트 검사 종류 id → 도메인 AssessmentKind. 'other'는 업로드 미지원. */
+const TYPE_ID_TO_KIND: Record<string, AssessmentKind | undefined> = {
+  mmpi: 'mmpi',
+  tci: 'tci',
+  other: undefined,
+};
+
+/** 파일명으로 검사 종류 추론 (업로드 편의용 기본값). */
+const inferTypeIdFromName = (name: string): AssessmentTypeId | null => {
+  const lower = name.toLowerCase();
+  if (lower.includes('mmpi')) return 'mmpi';
+  if (lower.includes('tci')) return 'tci';
+  return null;
+};
 
 /* -----------------------------------------------------
  * 데모 mock data — 실 데이터 연동 시 props/쿼리로 교체
@@ -125,6 +152,8 @@ export const RegisterAssessmentsModal = ({
   onClose,
   analyzeCost = 50,
   onAnalyze,
+  clientId,
+  uploadGateway = serverAssessmentUploadAdapter,
 }: RegisterAssessmentsModalProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -135,6 +164,14 @@ export const RegisterAssessmentsModal = ({
   const [step1Sub, setStep1Sub] = useState<Step1Substate>('empty');
   const [files, setFiles] = useState<UploadedFile[]>(MOCK_INITIAL_FILES);
   const [reviewingPercent, setReviewingPercent] = useState(48);
+
+  /* -------- 실제 업로드 (clientId 있을 때) -------- */
+  // 실제 업로드 모드: clientId가 주어지면 mock 대신 서버 업로드를 수행한다.
+  const realUploadMode = !!clientId;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileBlobsRef = useRef<Map<string, File>>(new Map());
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   /* -------- step 2 state (debug-controlled mode 기반) -------- */
   const [step2Mode, setStep2Mode] = useState<Step2DebugMode>('list-missing');
@@ -169,12 +206,44 @@ export const RegisterAssessmentsModal = ({
 
   /* -------- step 1 handlers -------- */
   const handleSelectFiles = () => {
+    if (realUploadMode) {
+      // 실제 모드: OS 파일 선택창 열기
+      fileInputRef.current?.click();
+      return;
+    }
     // 데모: empty → list 로 전환
     setStep1Sub('list');
     setFiles(MOCK_INITIAL_FILES);
   };
 
+  // 실제 파일 선택 → UploadedFile 엔트리 + File 핸들 보관
+  const handleFilesPicked = (picked: FileList | null) => {
+    if (!picked || picked.length === 0) return;
+    setUploadError(null);
+    const added: UploadedFile[] = [];
+    for (const file of Array.from(picked)) {
+      const id = `f-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      fileBlobsRef.current.set(id, file);
+      const typeId = inferTypeIdFromName(file.name);
+      added.push({
+        id,
+        fileName: file.name,
+        sizeMB: Math.round((file.size / (1024 * 1024)) * 10) / 10,
+        pageCount: 0,
+        assessmentType: typeId,
+        status: typeId ? 'ready' : 'missing-type',
+      });
+    }
+    setFiles((prev) => [...prev, ...added]);
+    setStep1Sub('list');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleAddMore = () => {
+    if (realUploadMode) {
+      fileInputRef.current?.click();
+      return;
+    }
     const next: UploadedFile = {
       id: `f-${Date.now()}`,
       fileName: '홍길동_결과지.pdf',
@@ -197,7 +266,48 @@ export const RegisterAssessmentsModal = ({
   };
 
   const handleRemoveFile = (fileId: string) => {
+    fileBlobsRef.current.delete(fileId);
     setFiles((prev) => prev.filter((f) => f.id !== fileId));
+  };
+
+  // 실제 업로드 수행: gateway가 presigned 발급 → S3 PUT → complete를 캡슐화.
+  const runRealUpload = async (): Promise<boolean> => {
+    if (!clientId) return false;
+    const inputs: AssessmentUploadInput[] = [];
+    for (const f of files) {
+      const file = fileBlobsRef.current.get(f.id);
+      const kind = f.assessmentType
+        ? TYPE_ID_TO_KIND[f.assessmentType]
+        : undefined;
+      if (!file || !kind) continue; // 'other'/타입 미지정/핸들 없음 제외
+      inputs.push({ kind, title: f.fileName, file });
+    }
+    if (inputs.length === 0) {
+      setUploadError('업로드할 결과지(MMPI/TCI)가 없습니다.');
+      return false;
+    }
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const { results } = await uploadGateway.uploadAssessments(
+        clientId,
+        inputs,
+      );
+      // eslint-disable-next-line no-console
+      console.info('[assessment-upload] 완료:', results);
+      return true;
+    } catch (err) {
+      const msg =
+        err instanceof ServerApiError
+          ? `${err.message} (${err.statusCode})`
+          : err instanceof Error
+            ? err.message
+            : '업로드 실패';
+      setUploadError(msg);
+      return false;
+    } finally {
+      setUploading(false);
+    }
   };
 
   /* -------- step 진행 -------- */
@@ -213,6 +323,13 @@ export const RegisterAssessmentsModal = ({
 
   const handleNext = () => {
     if (step === 1) {
+      if (realUploadMode) {
+        // 실제 업로드 후에만 다음 단계로
+        void runRealUpload().then((ok) => {
+          if (ok) setStep(2);
+        });
+        return;
+      }
       setStep(2);
       return;
     }
@@ -273,8 +390,11 @@ export const RegisterAssessmentsModal = ({
     if (step === 1) {
       return {
         rightButton: {
-          label: '다음',
-          tone: canProceedStep1 ? ('primary' as const) : ('disabled' as const),
+          label: uploading ? '업로드 중…' : '다음',
+          tone:
+            canProceedStep1 && !uploading
+              ? ('primary' as const)
+              : ('disabled' as const),
           onClick: handleNext,
         },
       };
@@ -375,15 +495,30 @@ export const RegisterAssessmentsModal = ({
           )}
         >
           {step === 1 && (
-            <Step1UploadView
-              substate={step1Sub}
-              files={formatBy(step1Sub, files)}
-              reviewingPercent={reviewingPercent}
-              onSelectFiles={handleSelectFiles}
-              onAddMore={handleAddMore}
-              onChangeType={handleChangeType}
-              onRemove={handleRemoveFile}
-            />
+            <>
+              {realUploadMode && (
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFilesPicked(e.target.files)}
+                />
+              )}
+              <Step1UploadView
+                substate={step1Sub}
+                files={formatBy(step1Sub, files)}
+                reviewingPercent={reviewingPercent}
+                onSelectFiles={handleSelectFiles}
+                onAddMore={handleAddMore}
+                onChangeType={handleChangeType}
+                onRemove={handleRemoveFile}
+              />
+              {uploadError && (
+                <p className="mt-3 text-sm text-red-80">{uploadError}</p>
+              )}
+            </>
           )}
           {step === 2 && (
             <Step2VerifyView

@@ -65,7 +65,7 @@ export const RegisteredPopover = ({
 
   // 라벨: 선택이 있으면 "선택 초기화", 없으면 "결과지 초기화"
   const resetLabel = useMemo(
-    () => (selectedIds.size > 0 ? '문서 초기화' : '결과지 초기화'),
+    () => (selectedIds.size > 0 ? '선택 초기화' : '결과지 초기화'),
     [selectedIds.size]
   );
 

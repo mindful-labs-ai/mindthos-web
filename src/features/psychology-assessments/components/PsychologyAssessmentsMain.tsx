@@ -4,6 +4,8 @@ import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
 
+import { TEMP_EVAL_CASES } from '../__temp_eval__/tempEvalData';
+
 import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisDisclaimer } from './AnalysisDisclaimer';
 import type { AnalysisStatus } from './AnalysisStatusChip';
@@ -13,6 +15,7 @@ import {
   type AnalysisStep,
 } from './AnalyzingProgressCard';
 import type { AssessmentFile } from './AssessmentFileItem';
+import { ChatConversationView, type ChatTurn } from './ChatConversationView';
 import { ChatWelcomeView, type ChatSuggestion } from './ChatWelcomeView';
 import { ChiefComplaintBar } from './ChiefComplaintBar';
 import { ClientProfileHeader } from './ClientProfileHeader';
@@ -71,19 +74,16 @@ const MOCK_ANALYSIS_STEPS: AnalysisStep[] = [
   { id: '3', label: '통합 해석', status: 'pending' },
 ];
 
-const MOCK_SUGGESTIONS: ChatSuggestion[] = [
-  {
-    id: '1',
-    label: '내담자의 통합 심리 검사 해석을 받아보고 싶어',
-    recommended: true,
-  },
-  { id: '2', label: '어떤 분석들이 가능한지 궁금해' },
-  { id: '3', label: '현재 내담자의 정보를 요약해서 알려줘' },
-];
+// 임시 평가용: 실제 AI-chatbot-layer 결과 7건을 추천 칩으로 노출.
+const MOCK_SUGGESTIONS: ChatSuggestion[] = TEMP_EVAL_CASES.map((c, i) => ({
+  id: c.id,
+  label: c.question,
+  recommended: i === 0,
+}));
 
 const CHAT_PLACEHOLDER: Record<AssessmentsMode, string> = {
-  empty: '심리검사 결과지를 추가한 후 분석을 진행해주세요.',
-  registered: '내담자 문서를 추가한 후 분석을 진행해주세요.',
+  empty: '심리검사 결과지를 등록한 후 분석을 진행해주세요.',
+  registered: '심리검사 결과지를 분석한 후 이용할 수 있어요.',
   analyzing: '분석 진행 중에는 입력할 수 없어요.',
   analyzed: '마음토스 에이전트에게 질문해보세요',
 };
@@ -102,6 +102,8 @@ export const PsychologyAssessmentsMain = ({
   const isMobileView = isMobile || isTablet;
 
   const [chatValue, setChatValue] = useState('');
+  // 임시 평가용 대화 상태
+  const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [analyzingPercent, setAnalyzingPercent] = useState(48);
 
@@ -114,9 +116,9 @@ export const PsychologyAssessmentsMain = ({
   const chipRef = useRef<HTMLButtonElement>(null);
 
   // TODO: 실제 데이터 연동 시 useQuery / state machine로 교체.
-  const [mode, setModeState] = useState<AssessmentsMode>('registered');
-  const [localFiles, setLocalFiles] =
-    useState<AssessmentFile[]>(MOCK_FILES);
+  // 임시 평가용: 챗봇 응답을 바로 보기 위해 'analyzed'로 시작 (원복: 'registered')
+  const [mode, setModeState] = useState<AssessmentsMode>('empty');
+  const [localFiles, setLocalFiles] = useState<AssessmentFile[]>(MOCK_FILES);
 
   // mode 변경 — 비어있던 상태에서 결과지 상태로 복귀 시 mock 복원
   const setMode = (next: AssessmentsMode) => {
@@ -146,9 +148,36 @@ export const PsychologyAssessmentsMain = ({
     setMode('analyzing');
   };
 
+  // 임시 평가용: 추천 칩 클릭 → 해당 케이스의 질문+답변을 대화에 추가
   const handleSuggestionClick = (id: string) => {
-    const suggestion = MOCK_SUGGESTIONS.find((s) => s.id === id);
-    if (suggestion) setChatValue(suggestion.label);
+    const found = TEMP_EVAL_CASES.find((c) => c.id === id);
+    if (!found) return;
+    setTurns((prev) => [
+      ...prev,
+      { id: `u-${id}-${prev.length}`, role: 'user', content: found.question },
+      {
+        id: `a-${id}-${prev.length}`,
+        role: 'assistant',
+        content: found.answer,
+        guardrail: found.guardrail,
+      },
+    ]);
+  };
+
+  // 임시 평가용: 입력 전송 → 질문과 매칭되는 케이스가 있으면 그 답변, 없으면 안내
+  const handleSendChat = () => {
+    const text = chatValue.trim();
+    if (!text) return;
+    const matched = TEMP_EVAL_CASES.find((c) => c.question === text);
+    const answer =
+      matched?.answer ??
+      '임시 평가 모드입니다. 추천 칩의 질문을 사용하면 실제 AI-chatbot-layer 응답을 확인할 수 있습니다.';
+    setTurns((prev) => [
+      ...prev,
+      { id: `u-${prev.length}`, role: 'user', content: text },
+      { id: `a-${prev.length}`, role: 'assistant', content: answer },
+    ]);
+    setChatValue('');
   };
 
   // chip 클릭 → popover toggle (결과지 1개 이상일 때만)
@@ -179,7 +208,19 @@ export const PsychologyAssessmentsMain = ({
   };
 
   // 디버그 패널 — 모바일에서는 드롭다운(접힘) 상태로 시작
-  const debugPanel = <DebugStatePanel mode={mode} onModeChange={setMode} />;
+  // analyzed 모드에서는 임시 평가 케이스 선택 노출
+  const debugPanel = (
+    <DebugStatePanel
+      mode={mode}
+      onModeChange={setMode}
+      evalCases={TEMP_EVAL_CASES.map((c) => ({
+        id: c.id,
+        label: `${c.id} — ${c.intent}`,
+      }))}
+      onSelectEvalCase={handleSuggestionClick}
+      onClearChat={() => setTurns([])}
+    />
+  );
 
   // 모바일/데스크탑 wrapper 분기
   const outerCls = isMobileView
@@ -238,23 +279,22 @@ export const PsychologyAssessmentsMain = ({
       </div>
     );
   } else if (mode === 'analyzed') {
-    bodyContent = (
-      <ChatWelcomeView
-        suggestions={MOCK_SUGGESTIONS}
-        onSuggestionClick={handleSuggestionClick}
-      />
-    );
+    bodyContent =
+      turns.length > 0 ? (
+        <ChatConversationView turns={turns} />
+      ) : (
+        <ChatWelcomeView
+          suggestions={MOCK_SUGGESTIONS}
+          onSuggestionClick={handleSuggestionClick}
+        />
+      );
   }
 
   return (
     <div className={outerCls} style={outerStyle}>
       <div className={cardCls}>
         {/* 1) 프로필 헤더 — 모바일: 이름+chip 단일 행 / 데스크탑: 아바타+메타+chip */}
-        <div
-          className={cn(
-            isMobileView ? 'px-4 py-3' : 'pb-8 pl-8 pr-7 pt-7'
-          )}
-        >
+        <div className={cn(isMobileView ? 'px-4 py-3' : 'pb-8 pl-8 pr-7 pt-7')}>
           <ClientProfileHeader
             client={client}
             analysisStatus={chipStatus}
@@ -297,9 +337,7 @@ export const PsychologyAssessmentsMain = ({
           <div
             className={cn(
               'flex w-full flex-1 flex-col',
-              isMobileView
-                ? 'px-4'
-                : 'mx-auto max-w-[679px] px-6'
+              isMobileView ? 'px-4' : 'mx-auto max-w-[679px] px-6'
             )}
           >
             {bodyContent}
@@ -327,6 +365,7 @@ export const PsychologyAssessmentsMain = ({
             <AnalysisChatInput
               value={chatValue}
               onChange={setChatValue}
+              onSubmit={handleSendChat}
               placeholder={chatPlaceholder}
               disabled={isChatDisabled}
             />
@@ -340,6 +379,7 @@ export const PsychologyAssessmentsMain = ({
         onClose={() => setIsRegisterModalOpen(false)}
         analyzeCost={analyzeCost}
         onAnalyze={handleStartAnalysis}
+        clientId={client.id}
       />
 
       <ResetConfirmModal

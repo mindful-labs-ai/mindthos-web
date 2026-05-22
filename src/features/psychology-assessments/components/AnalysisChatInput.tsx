@@ -29,7 +29,7 @@ export const AnalysisChatInput = ({
   onSubmit,
   onAttach,
   disabled,
-  placeholder = '내담자 문서를 추가한 후 분석을 진행해주세요.',
+  placeholder = '심리검사 결과지를 등록한 후 분석을 진행해주세요.',
   creditCost = 5,
   showCreditChip = true,
   className,

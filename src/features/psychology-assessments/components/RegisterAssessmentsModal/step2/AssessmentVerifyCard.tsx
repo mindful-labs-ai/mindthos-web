@@ -15,7 +15,7 @@ const statusBorderClass: Record<VerificationResult['status'], string> = {
 };
 
 const statusLabelText: Record<VerificationResult['status'], string> = {
-  complete: '검증 완료',
+  complete: '확인 완료',
   missing: '항목 누락됨',
   invalid: '등록 불가',
 };
@@ -34,7 +34,7 @@ export const AssessmentVerifyCard = ({
 
   const itemSummary =
     itemsTotal === null || itemsVerified === null
-      ? '문서 확인됨'
+      ? '결과지 확인됨'
       : `${itemsVerified}/${itemsTotal} 항목 확인됨`;
 
   const isInvalid = status === 'invalid';
