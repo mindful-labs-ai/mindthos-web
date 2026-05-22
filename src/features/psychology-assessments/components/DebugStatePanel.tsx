@@ -9,9 +9,20 @@ export type AssessmentsMode =
   | 'analyzing'
   | 'analyzed';
 
+export interface DebugEvalCaseOption {
+  id: string;
+  label: string;
+}
+
 interface DebugStatePanelProps {
   mode: AssessmentsMode;
   onModeChange: (mode: AssessmentsMode) => void;
+  /** 임시 평가용 케이스 목록 (analyzed 모드에서만 노출) */
+  evalCases?: DebugEvalCaseOption[];
+  /** 평가 케이스 선택 → 대화에 추가 */
+  onSelectEvalCase?: (id: string) => void;
+  /** 대화 초기화 */
+  onClearChat?: () => void;
   className?: string;
 }
 
@@ -25,12 +36,18 @@ const MODE_OPTIONS: { value: AssessmentsMode; label: string }[] = [
 export const DebugStatePanel = ({
   mode,
   onModeChange,
+  evalCases,
+  onSelectEvalCase,
+  onClearChat,
   className,
 }: DebugStatePanelProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   // 모바일은 기본 접힘 (드롭다운 토글)
   const [collapsed, setCollapsed] = useState(isMobileView);
+
+  const showEvalCases =
+    mode === 'analyzed' && !!evalCases && evalCases.length > 0;
 
   return (
     <div
@@ -49,7 +66,8 @@ export const DebugStatePanel = ({
       </button>
 
       {!collapsed && (
-        <div className="flex w-[210px] flex-col gap-1">
+        <div className="flex max-h-[70vh] w-[230px] flex-col gap-1 overflow-y-auto">
+          {/* 화면 mode 선택 */}
           {MODE_OPTIONS.map((opt) => {
             const isActive = mode === opt.value;
             return (
@@ -68,6 +86,37 @@ export const DebugStatePanel = ({
               </button>
             );
           })}
+
+          {/* 임시 평가용 케이스 선택 (analyzed 모드) */}
+          {showEvalCases && (
+            <>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-[11px] font-emphasize text-grey-100">
+                  평가 케이스
+                </span>
+                {onClearChat && (
+                  <button
+                    type="button"
+                    onClick={onClearChat}
+                    className="rounded border border-grey-30 px-1.5 py-0.5 text-[10px] text-grey-70 lg:hover:bg-grey-10"
+                  >
+                    대화 초기화
+                  </button>
+                )}
+              </div>
+              {evalCases!.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => onSelectEvalCase?.(c.id)}
+                  className="rounded-md border border-grey-30 bg-surface px-2 py-1.5 text-left text-[11px] text-grey-100 transition-colors lg:hover:bg-grey-10"
+                >
+                  {c.label}
+                </button>
+              ))}
+            </>
+          )}
+
           <p className="mt-1 text-[10px] text-grey-60">개발용 — 추후 제거</p>
         </div>
       )}

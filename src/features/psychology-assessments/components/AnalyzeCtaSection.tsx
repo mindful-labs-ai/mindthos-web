@@ -30,7 +30,6 @@ export const AnalyzeCtaSection = ({
         <span>결과지 분석하기</span>
         <span className="inline-flex items-center gap-0.5">
           <span>{creditCost}</span>
-          {/* TODO: 크레딧 아이콘 자리 — 추후 교체 */}
           <CreditIcon size={14} color="currentColor" />
         </span>
       </button>
