@@ -24,6 +24,11 @@ export function useAssessmentBatch(
     queryKey: assessmentBatchKeys.batch(clientId ?? ''),
     queryFn: () => gateway.listAssessments(clientId as string),
     enabled: enabled && !!clientId,
+    // 전역 기본값(staleTime Infinity / refetchOnMount false / refetchInterval false)은
+    // 수동 invalidate 모델이라 폴링을 막는다. 폴링 쿼리는 항상 fresh로 받아야
+    // 업로드 직후 stale 빈 캐시 대신 실제 PENDING 상태를 보고 폴링을 시작한다.
+    staleTime: 0,
+    refetchOnMount: 'always',
     refetchInterval: (query) => {
       const items = query.state.data;
       if (!items || items.length === 0) return false;

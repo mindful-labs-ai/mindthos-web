@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { cn } from '@/lib/cn';
 import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 
 import {
+  assessmentBatchKeys,
   useAssessmentBatch,
   useConfirmAssessment,
 } from '../../hooks/useAssessmentBatch';
@@ -253,6 +256,7 @@ export const RegisterAssessmentsModal = ({
 }: RegisterAssessmentsModalProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+  const qc = useQueryClient();
 
   const [step, setStep] = useState<RegisterStep>(1);
 
@@ -527,8 +531,12 @@ export const RegisterAssessmentsModal = ({
         clientId,
         inputs,
       );
-      // eslint-disable-next-line no-console
       console.info('[assessment-upload] 완료:', results);
+      // 업로드 직후 활성 배치를 무효화 → reviewing 폴링이 stale 캐시 대신
+      // 갓 만들어진 PENDING 검사를 즉시 받아 OCR 진행을 추적한다.
+      await qc.invalidateQueries({
+        queryKey: assessmentBatchKeys.batch(clientId),
+      });
       return true;
     } catch (err) {
       const msg =

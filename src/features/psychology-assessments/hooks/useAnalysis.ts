@@ -75,6 +75,10 @@ export function useAnalysisStatus(
     queryKey: analysisKeys.status(clientId ?? ''),
     queryFn: () => getAnalysisStatus(clientId as string),
     enabled: enabled && !!clientId,
+    // 전역 기본값(staleTime Infinity / refetchOnMount false)을 덮어 진입·폴링 시 항상
+    // 최신 phase를 받는다. (analysis 단계 완료 감지가 stale 캐시에 막히지 않도록)
+    staleTime: 0,
+    refetchOnMount: 'always',
     refetchInterval: (query) => {
       const data = query.state.data;
       if (!data) return pollMs;
