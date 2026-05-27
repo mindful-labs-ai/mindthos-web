@@ -130,8 +130,15 @@ export const AnalysisChatInput = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
-            // Enter = 전송, Shift+Enter = 줄바꿈
-            if (e.key === 'Enter' && !e.shiftKey) {
+            // Enter = 전송, Shift+Enter = 줄바꿈.
+            // 단, 한글 등 IME 조합 중의 Enter는 "조합 확정"이므로 전송하지 않는다
+            // (가드 없으면 중복 제출 + 마지막 조합 글자만 전송되는 버그).
+            if (
+              e.key === 'Enter' &&
+              !e.shiftKey &&
+              !e.nativeEvent.isComposing &&
+              e.keyCode !== 229
+            ) {
               e.preventDefault();
               onSubmit?.();
             }
