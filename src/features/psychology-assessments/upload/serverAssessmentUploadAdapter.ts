@@ -1,15 +1,23 @@
 import {
+  confirmAssessment as serverConfirmAssessment,
+  deleteAssessment as serverDeleteAssessment,
+  getAssessment as serverGetAssessment,
+  getAssessmentBatch as serverGetAssessmentBatch,
   uploadAssessments as serverUploadAssessments,
+  type AssessmentRow,
   type AssessmentType,
   type ProcessingStatus,
   type UploadItem,
+  type ValidationStatus,
 } from '@/shared/api/server/assessmentUploadApi';
 
 import type {
+  AssessmentItem,
   AssessmentKind,
   AssessmentProgress,
   AssessmentUploadGateway,
   AssessmentUploadInput,
+  AssessmentValidation,
   UploadAssessmentsResult,
 } from './assessmentUploadGateway';
 
@@ -39,6 +47,30 @@ const STATUS_TO_PROGRESS: Record<ProcessingStatus, AssessmentProgress> = {
   FAILED: 'failed',
 };
 
+const VALIDATION_TO_DOMAIN: Record<ValidationStatus, AssessmentValidation> = {
+  VALID: 'valid',
+  MISSING_FIELD: 'missing_field',
+  INVALID: 'invalid',
+  UNMATCHED: 'unmatched',
+  INCOMPLETE: 'incomplete',
+};
+
+/** 서버 검사 행 → 프론트 도메인 AssessmentItem. */
+function toItem(row: AssessmentRow): AssessmentItem {
+  return {
+    assessmentId: row.id,
+    kind: SERVER_TO_KIND[row.type] ?? 'mmpi',
+    title: row.title,
+    assessmentVersion: row.assessmentVersion,
+    progress: STATUS_TO_PROGRESS[row.processingStatus],
+    validation: row.validationStatus
+      ? VALIDATION_TO_DOMAIN[row.validationStatus]
+      : null,
+    score: row.ocrScore,
+    tempScore: row.tempOcrScore,
+  };
+}
+
 export class ServerAssessmentUploadAdapter implements AssessmentUploadGateway {
   async uploadAssessments(
     clientId: string,
@@ -66,6 +98,26 @@ export class ServerAssessmentUploadAdapter implements AssessmentUploadGateway {
         progress: STATUS_TO_PROGRESS[o.processingStatus],
       })),
     };
+  }
+
+  async listAssessments(clientId: string): Promise<AssessmentItem[]> {
+    const { assessmentList } = await serverGetAssessmentBatch(clientId);
+    return assessmentList.map(toItem);
+  }
+
+  async getAssessment(assessmentId: string): Promise<AssessmentItem> {
+    return toItem(await serverGetAssessment(assessmentId));
+  }
+
+  async confirmAssessment(
+    assessmentId: string,
+    score: Record<string, unknown>,
+  ): Promise<AssessmentItem> {
+    return toItem(await serverConfirmAssessment(assessmentId, score));
+  }
+
+  async deleteAssessment(assessmentId: string): Promise<void> {
+    await serverDeleteAssessment(assessmentId);
   }
 }
 
