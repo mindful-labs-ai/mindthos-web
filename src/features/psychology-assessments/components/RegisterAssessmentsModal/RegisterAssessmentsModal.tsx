@@ -327,7 +327,9 @@ export const RegisterAssessmentsModal = ({
                 : '인식할 수 없는 검사지',
           };
         }
-        const score = it.score ?? {};
+        // MISSING_FIELD는 서버가 ocr_score를 null로 두고 교집합(누락=null)을 temp_ocr_score에
+        // 보관한다. 따라서 검증/보완은 score(=null) 대신 tempScore를 기준으로 계산한다.
+        const score = it.score ?? it.tempScore ?? {};
         const total = countTotalLeaves(score);
         const missing = countNullLeaves(score);
         return {
@@ -366,7 +368,8 @@ export const RegisterAssessmentsModal = ({
 
   // 실데이터 채우기 폼: 각 MISSING_FIELD 검사의 null leaf만 노출 + 입력값 수집.
   const realFillingForms: FillingFormDescriptor[] = missingItems.map((it) => {
-    const score = it.score ?? {};
+    // MISSING_FIELD는 ocr_score가 null이고 누락(null) 포함 교집합이 temp_ocr_score에 있다.
+    const score = it.tempScore ?? it.score ?? {};
     return {
       categoryLabel: KIND_TO_CATEGORY[it.kind],
       missingCount: countNullLeaves(score),
@@ -383,8 +386,9 @@ export const RegisterAssessmentsModal = ({
     setConfirmError(null);
     try {
       for (const it of missingItems) {
+        // MISSING_FIELD 기반은 temp_ocr_score(교집합). 채운 값을 덮어 full score로 confirm.
         const merged = applyValues(
-          it.score ?? {},
+          it.tempScore ?? it.score ?? {},
           fillingValues[it.assessmentId] ?? {},
         );
         await confirmMut.mutateAsync({
@@ -561,8 +565,10 @@ export const RegisterAssessmentsModal = ({
   /* -------- 검사 종류 가드 (MMPI/TCI 각 1개) -------- */
   // 기존 활성 배치(existingKinds) + 이번에 선택한 파일의 종류를 합쳐, 같은 종류가 2개
   // 이상이면 진행 차단 + 안내. 서버도 중복을 거절하지만 즉시 UX로 알려준다.
+  // 파일 선택 단계(list)에서만 평가한다. 업로드 후(reviewing/step2)에는 files가
+  // 활성 배치(existingKinds)에도 그대로 잡혀 같은 파일이 이중 집계되므로 가드를 끈다.
   const duplicateKind = useMemo<AssessmentKind | null>(() => {
-    if (!realUploadMode) return null;
+    if (!realUploadMode || step1Sub !== 'list') return null;
     const counts: Record<string, number> = {};
     for (const k of existingKinds) counts[k] = (counts[k] ?? 0) + 1;
     for (const f of files) {
@@ -575,7 +581,7 @@ export const RegisterAssessmentsModal = ({
       (k) => counts[k] > 1,
     );
     return dup ?? null;
-  }, [realUploadMode, existingKinds, files]);
+  }, [realUploadMode, step1Sub, existingKinds, files]);
 
   const duplicateKindMessage = duplicateKind
     ? `${KIND_TO_CATEGORY[duplicateKind]}는 하나만 등록할 수 있어요. (MMPI·TCI 각 1개)`
