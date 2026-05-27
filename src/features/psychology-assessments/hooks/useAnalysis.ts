@@ -61,9 +61,10 @@ export function useStartAnalysis(clientId: string | undefined) {
 }
 
 /**
- * 분석 진행 상태 폴링.
- * - enabled: clientId 있고 analyzing 단계일 때만 활성.
- * - refetchInterval: 완료 전에는 pollMs마다 재조회, 완료되면 중지(false).
+ * 분석 진행 상태 조회/폴링. 내담자 phase(chatActiveStatus)의 단일 권위 소스.
+ * - enabled: clientId 있으면 항상(진입 시 phase 파악 → 모드 결정).
+ * - refetchInterval: ANALYSIS_PHASE에서 완료 전까지만 폴링. OCR_PHASE(분석 전)·
+ *   CHAT_ACTIVE(완료)는 정적이므로 폴링하지 않는다.
  */
 export function useAnalysisStatus(
   clientId: string | undefined,
@@ -77,6 +78,7 @@ export function useAnalysisStatus(
     refetchInterval: (query) => {
       const data = query.state.data;
       if (!data) return pollMs;
+      if (data.chatActiveStatus !== 'ANALYSIS_PHASE') return false;
       return isAnalysisComplete(data) ? false : pollMs;
     },
   });

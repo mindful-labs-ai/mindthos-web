@@ -1,13 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
-import type { AssessmentReportStatus } from '@/shared/api/server/assessmentUploadApi';
+import type {
+  AnalysisStatusResponse,
+  AssessmentReportStatus,
+  ChatActiveStatus,
+} from '@/shared/api/server/assessmentUploadApi';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { Spinner } from '@/shared/ui';
 
 import { TEMP_EVAL_CASES } from '../__temp_eval__/tempEvalData';
 import { getChatHistory, sendChatMessage } from '../api/chatApi';
 import {
+  analysisKeys,
   calcAnalysisPercent,
   isAnalysisComplete,
   useAnalysisStatus,
@@ -162,59 +170,72 @@ export const PsychologyAssessmentsMain = ({
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const chipRef = useRef<HTMLButtonElement>(null);
 
-  // TODO: 실제 데이터 연동 시 useQuery / state machine로 교체.
-  // 임시 평가용: 챗봇 응답을 바로 보기 위해 'analyzed'로 시작 (원복: 'registered')
-  const [mode, setModeState] = useState<AssessmentsMode>('empty');
+  // 데모(clientId 없음) 전용 모드 상태 — 디버그 패널이 제어. 실클라이언트는 서버
+  // phase에서 모드를 렌더 중 파생하므로 이 state를 쓰지 않는다.
+  const [demoMode, setDemoMode] = useState<AssessmentsMode>('empty');
   const [localFiles, setLocalFiles] = useState<AssessmentFile[]>(MOCK_FILES);
 
-  // mode 변경 — 비어있던 상태에서 결과지 상태로 복귀 시 mock 복원
+  // 데모 mode 변경 — 비어있던 상태에서 결과지 상태로 복귀 시 mock 복원
   const setMode = (next: AssessmentsMode) => {
     if (next !== 'empty' && localFiles.length === 0) {
       setLocalFiles(MOCK_FILES);
     }
-    setModeState(next);
+    setDemoMode(next);
   };
 
-  // 등록 결과지 실데이터 (서버 활성 배치). popover/결과지 카드가 모두 이 한 배치를 공유.
-  // 폴링은 popover가 열렸거나 결과지 카드가 보이는 registered 모드에서만.
   const clientId = client?.id;
-  const { data: realAssessments = [] } = useAssessmentBatch(clientId, {
-    // empty에서도 폴링해 "등록됨+분석 이전" 감지(아래 effect가 registered로 승격).
-    enabled: isPopoverOpen || mode === 'registered' || mode === 'empty',
+  const qc = useQueryClient();
+
+  // 내담자 phase의 단일 권위 소스. clientId 있으면 진입 즉시 조회해 모드를 결정한다.
+  const { data: analysisStatusData } = useAnalysisStatus(clientId, {
+    enabled: !!clientId,
   });
+  const phase: ChatActiveStatus | undefined =
+    analysisStatusData?.chatActiveStatus;
+
+  // 등록 결과지 실데이터 (서버 활성 배치). popover/결과지 카드가 모두 이 한 배치를 공유.
+  // OCR_PHASE에서 empty/registered를 가르기 위해, 그리고 popover 표시를 위해 조회.
+  const { data: realAssessments = [], isLoading: isBatchLoading } =
+    useAssessmentBatch(clientId, {
+      enabled: isPopoverOpen || phase === 'OCR_PHASE' || phase === undefined,
+    });
   const deleteAssessmentMut = useDeleteAssessment(clientId);
   const resetToOcrPhaseMut = useResetToOcrPhase(clientId);
 
   // 분석 시작 mutation
   const startAnalysisMut = useStartAnalysis(clientId);
 
-  // 분석 진행 폴링 — analyzing 모드일 때만 활성
-  const { data: analysisStatusData } = useAnalysisStatus(clientId, {
-    enabled: mode === 'analyzing',
-  });
+  // 낙관적 phase 갱신 — mutation 직후 서버 refetch 전까지 모드를 즉시 전이시킨다.
+  // (refetch가 같은 값으로 확정하므로 깜빡임 없이 매끄럽게 이어진다.)
+  const setPhaseOptimistic = (next: ChatActiveStatus) => {
+    if (!clientId) return;
+    qc.setQueryData<AnalysisStatusResponse>(
+      analysisKeys.status(clientId),
+      (old) => (old ? { ...old, chatActiveStatus: next } : old),
+    );
+  };
 
-  // 분석 완료 시 자동으로 analyzed 모드로 전환
-  useEffect(() => {
-    if (mode === 'analyzing' && analysisStatusData && isAnalysisComplete(analysisStatusData)) {
-      setModeState('analyzed');
-    }
-  }, [mode, analysisStatusData]);
+  // 내담자 phase(권위) + 활성 배치로 모드를 렌더 중 파생(effect+setState 불필요).
+  // - OCR_PHASE: 드래프트 있으면 registered, 없으면 empty
+  // - ANALYSIS_PHASE: analyzing
+  // - CHAT_ACTIVE(또는 통합 완료): analyzed
+  // 데모(clientId 없음)는 analysisStatusData가 없어 디버그 패널(demoMode)이 모드 제어.
+  const mode: AssessmentsMode =
+    clientId && analysisStatusData
+      ? analysisStatusData.chatActiveStatus === 'OCR_PHASE'
+        ? realAssessments.length > 0
+          ? 'registered'
+          : 'empty'
+        : isAnalysisComplete(analysisStatusData)
+          ? 'analyzed'
+          : 'analyzing'
+      : demoMode;
 
-  // 내담자별 활성 배치로 디테일 모드를 자동 파생(내담자 전환 시 remount → 새로 평가).
-  // - 항목 없음: empty 유지
-  // - 전부 v=0 드래프트(분석 이전, OCR_PHASE): registered
-  // - v>=1(분석 단계 이상): analyzing → analysis-status 폴링이 완료 감지 시 analyzed로 승격
-  // 이미 분석 흐름(analyzing/analyzed)에 들어갔으면 건드리지 않는다.
-  useEffect(() => {
-    if (!clientId || mode === 'analyzing' || mode === 'analyzed') return;
-    if (realAssessments.length === 0) return;
-    const allDrafts = realAssessments.every((a) => a.assessmentVersion === 0);
-    if (allDrafts) {
-      if (mode !== 'registered') setModeState('registered');
-    } else {
-      setModeState('analyzing');
-    }
-  }, [clientId, realAssessments, mode]);
+  // 진입 초기 로딩 — phase 확정 전, OCR_PHASE면 배치 확정 전까지 스피너로 깜빡임 방지.
+  const isInitialLoading =
+    !!clientId &&
+    (!analysisStatusData ||
+      (analysisStatusData.chatActiveStatus === 'OCR_PHASE' && isBatchLoading));
 
   // analyzed 진입 시 서버에서 채팅 이력 로드(과거 대화 복원). 최신순 → 과거순으로 뒤집어
   // 각 메시지를 user(input)+assistant(output) 턴으로 변환. (전송은 별도; 여기선 초기 로드만)
@@ -287,7 +308,7 @@ export const PsychologyAssessmentsMain = ({
     setLocalFiles((prev) => {
       const next = prev.filter((f) => f.id !== id);
       // 모두 지우면 empty 상태로 자동 전환
-      if (next.length === 0) setModeState('empty');
+      if (next.length === 0) setDemoMode('empty');
       return next;
     });
   };
@@ -299,8 +320,10 @@ export const PsychologyAssessmentsMain = ({
 
   const handleStartAnalysis = () => {
     if (clientId) {
+      // 서버 전이(OCR_PHASE→ANALYSIS_PHASE) 성공 시 phase를 낙관적으로 갱신 →
+      // 파생 effect가 즉시 analyzing으로. 이어지는 refetch가 같은 값으로 확정.
       startAnalysisMut.mutate(undefined, {
-        onSuccess: () => setMode('analyzing'),
+        onSuccess: () => setPhaseOptimistic('ANALYSIS_PHASE'),
       });
     } else {
       setMode('analyzing');
@@ -400,16 +423,15 @@ export const PsychologyAssessmentsMain = ({
     }
 
     // 서버에 OCR 단계 복귀 요청(CHAT_ACTIVE→OCR_PHASE) → 재업로드 가능 상태로.
+    // phase를 낙관적으로 OCR_PHASE로 돌리고 대화 이력도 비운다(파생 effect가 모드 확정).
+    setIsPopoverOpen(false);
+    setTurns([]);
     resetToOcrPhaseMut.mutate(undefined, {
-      onSuccess: () => {
-        setIsPopoverOpen(false);
-        setMode('empty');
-      },
+      onSuccess: () => setPhaseOptimistic('OCR_PHASE'),
       onError: (err) => {
         // CHAT_ACTIVE가 아니면 409. 이미 OCR_PHASE면 재업로드는 어차피 가능.
         console.warn('[ocr-phase-reset] 실패:', err);
-        setIsPopoverOpen(false);
-        setMode('empty');
+        setPhaseOptimistic('OCR_PHASE');
       },
     });
   };
@@ -458,7 +480,14 @@ export const PsychologyAssessmentsMain = ({
   /* -------- 본문 분기 -------- */
   let bodyContent: React.ReactNode = null;
 
-  if (mode === 'empty') {
+  if (isInitialLoading) {
+    // 내담자 상태(phase) 확정 전 — empty/analyzing 깜빡임 없이 스피너만 노출.
+    bodyContent = (
+      <div className="flex flex-1 items-center justify-center">
+        <Spinner size="lg" ariaLabel="내담자 검사 상태를 불러오는 중" />
+      </div>
+    );
+  } else if (mode === 'empty') {
     bodyContent = (
       <EmptyAssessmentsView onRegister={() => setIsRegisterModalOpen(true)} />
     );
