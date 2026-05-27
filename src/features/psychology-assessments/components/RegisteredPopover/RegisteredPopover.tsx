@@ -24,6 +24,11 @@ interface RegisteredPopoverProps {
   /** 초기화 버튼 클릭 (확인 모달 트리거) */
   onReset: () => void;
 
+  /** 결과지 항목별 삭제 (서버 DELETE). 있으면 각 항목에 삭제 버튼 노출. */
+  onDeleteAssessment?: (id: string) => void;
+  /** 삭제 진행 중인 항목 id */
+  deletingAssessmentId?: string | null;
+
   className?: string;
 }
 
@@ -36,6 +41,8 @@ export const RegisteredPopover = ({
   selectedIds,
   onToggleSelect,
   onReset,
+  onDeleteAssessment,
+  deletingAssessmentId,
   className,
 }: RegisteredPopoverProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -93,9 +100,20 @@ export const RegisteredPopover = ({
             <PopoverEntryCard
               key={a.id}
               title={a.fileName}
-              metaLabel={`${a.testDate}  |  ${a.pageCount}p  |  ${a.categoryLabel}`}
+              metaLabel={
+                a.metaLabel ??
+                `${a.testDate}  |  ${a.pageCount}p  |  ${a.categoryLabel}`
+              }
               selected={selectedIds.has(a.id)}
-              onToggle={() => onToggleSelect(a.id)}
+              onToggle={
+                onDeleteAssessment ? undefined : () => onToggleSelect(a.id)
+              }
+              onDelete={
+                onDeleteAssessment
+                  ? () => onDeleteAssessment(a.id)
+                  : undefined
+              }
+              deleting={deletingAssessmentId === a.id}
             />
           ))}
         </PopoverSection>
