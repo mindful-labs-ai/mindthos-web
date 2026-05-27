@@ -537,30 +537,23 @@ export const PsychologyAssessmentsMain = ({
         onRemoveFile={
           clientId ? (id) => deleteAssessmentMut.mutate(id) : handleRemoveFile
         }
+        maxFiles={2}
       />
     );
     if (stage === 'reviewing') {
       bodyContent = (
-        <div className="flex flex-1 flex-col items-center justify-center gap-6">
+        <div className="flex flex-1 flex-col items-center justify-center gap-3">
           <Spinner size="lg" ariaLabel="검사지 인식 중" />
-          <div className="flex w-full max-w-[320px] items-center gap-3">
-            <div className="relative h-1.5 flex-1 overflow-hidden bg-grey-30">
-              <div
-                className="h-full bg-green-80 transition-[width] duration-fast"
-                style={{ width: `${ocrPercent}%` }}
-              />
-            </div>
-            <span className="text-sm font-medium text-grey-70">
-              {ocrPercent}%
-            </span>
-          </div>
+          <span className="text-l font-emphasize text-grey-100">
+            {ocrPercent}%
+          </span>
           <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
             {'심리검사 결과지를 인식(OCR)하고 있어요.\n최대 1~2분 정도 소요됩니다.'}
           </p>
           <button
             type="button"
             onClick={openResumeModal}
-            className="rounded-md border border-grey-80 px-[21px] py-1.5 text-m font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
+            className="mt-2 rounded-md border border-grey-80 px-[21px] py-1.5 text-m font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
           >
             진행 상황 보기
           </button>
@@ -707,6 +700,7 @@ export const PsychologyAssessmentsMain = ({
               onSubmit={handleSendChat}
               placeholder={chatPlaceholder}
               disabled={isChatDisabled}
+              showCreditChip={!isChatDisabled}
             />
             <AnalysisDisclaimer />
           </div>
@@ -720,6 +714,7 @@ export const PsychologyAssessmentsMain = ({
         onAnalyze={handleStartAnalysis}
         clientId={client.id}
         resume={modalResume}
+        existingKinds={realAssessments.map((a) => a.kind)}
       />
 
       <ResetConfirmModal

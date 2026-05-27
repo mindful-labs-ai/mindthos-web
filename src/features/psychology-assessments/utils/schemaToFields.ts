@@ -3,6 +3,13 @@ import type { JsonSchema } from '../schemas/jsonSchema.types';
 import { resolveSchema } from './schemaResolver';
 
 /**
+ * 경로 구분자. '.'을 쓰면 MMPI 'Hs(+.5K)'처럼 키 자체에 점이 든 경우 split이 깨져
+ * 잘못된 leaf를 누락으로 오판한다. JSON 키에 등장하지 않는 제어문자(U+001F)를 쓴다.
+ * 경로 문자열은 폼 내부에서만 쓰이는 불투명 식별자라 표시에는 영향 없다.
+ */
+export const PATH_SEP = '\u001f';
+
+/**
  * 동적 폼에서 사용할 노드 트리.
  */
 export type FormNode = FormSection | FormLeaf;
@@ -112,7 +119,7 @@ const buildNode = (
 ): FormNode => {
   const { root, parentPath, isRequired } = opts;
   const resolved = resolveSchema(rawSchema, root);
-  const path = parentPath ? `${parentPath}.${key}` : key;
+  const path = parentPath ? `${parentPath}${PATH_SEP}${key}` : key;
   const label = prettifyLabel(key);
 
   const t = primaryType(resolved.type);

@@ -18,6 +18,7 @@ import type {
 } from '../../upload/assessmentUploadGateway';
 import { ocrReviewPercent } from '../../upload/ocrProgress';
 import { serverAssessmentUploadAdapter } from '../../upload/serverAssessmentUploadAdapter';
+import { PATH_SEP } from '../../utils/schemaToFields';
 
 import {
   RegisterModalDebugPanel,
@@ -58,6 +59,8 @@ interface RegisterAssessmentsModalProps {
    * 자동으로 step2(검증/보완)로 올린다. false면 기존대로 빈 업로드 화면에서 시작.
    */
   resume?: boolean;
+  /** 이미 등록된(활성 배치) 검사 종류. 같은 종류 중복 업로드를 막는 가드에 쓴다. */
+  existingKinds?: AssessmentKind[];
 }
 
 /** 프론트 검사 종류 id → 도메인 AssessmentKind. 'other'는 업로드 미지원. */
@@ -112,10 +115,10 @@ function countNullLeaves(value: unknown): number {
   return 0;
 }
 
-/** score를 dotted path로 따라가 해당 leaf가 누락(null/부재/하강불가)인지. schema leaf 노출 필터용. */
+/** score를 path(PATH_SEP 구분)로 따라가 해당 leaf가 누락(null/부재/하강불가)인지. schema leaf 노출 필터용. */
 function isPathMissing(score: unknown, path: string): boolean {
   let cur: unknown = score;
-  for (const seg of path.split('.')) {
+  for (const seg of path.split(PATH_SEP)) {
     if (cur === null || typeof cur !== 'object' || Array.isArray(cur)) {
       return true;
     }
@@ -138,7 +141,7 @@ function applyValues(
     const coerced: unknown = NUMERIC_RE.test(trimmed)
       ? Number(trimmed)
       : trimmed;
-    const segs = path.split('.');
+    const segs = path.split(PATH_SEP);
     let cur: Record<string, unknown> = clone;
     for (let i = 0; i < segs.length - 1; i++) {
       const key = segs[i];
@@ -247,6 +250,7 @@ export const RegisterAssessmentsModal = ({
   clientId,
   uploadGateway = serverAssessmentUploadAdapter,
   resume = false,
+  existingKinds = [],
 }: RegisterAssessmentsModalProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -548,11 +552,35 @@ export const RegisterAssessmentsModal = ({
     }
   };
 
+  /* -------- 검사 종류 가드 (MMPI/TCI 각 1개) -------- */
+  // 기존 활성 배치(existingKinds) + 이번에 선택한 파일의 종류를 합쳐, 같은 종류가 2개
+  // 이상이면 진행 차단 + 안내. 서버도 중복을 거절하지만 즉시 UX로 알려준다.
+  const duplicateKind = useMemo<AssessmentKind | null>(() => {
+    if (!realUploadMode) return null;
+    const counts: Record<string, number> = {};
+    for (const k of existingKinds) counts[k] = (counts[k] ?? 0) + 1;
+    for (const f of files) {
+      const k = f.assessmentType
+        ? TYPE_ID_TO_KIND[f.assessmentType]
+        : undefined;
+      if (k) counts[k] = (counts[k] ?? 0) + 1;
+    }
+    const dup = (Object.keys(counts) as AssessmentKind[]).find(
+      (k) => counts[k] > 1,
+    );
+    return dup ?? null;
+  }, [realUploadMode, existingKinds, files]);
+
+  const duplicateKindMessage = duplicateKind
+    ? `${KIND_TO_CATEGORY[duplicateKind]}는 하나만 등록할 수 있어요. (MMPI·TCI 각 1개)`
+    : null;
+
   /* -------- step 진행 -------- */
   const canProceedStep1 =
     step1Sub === 'list' &&
     files.length > 0 &&
-    files.every((f) => f.status !== 'missing-type');
+    files.every((f) => f.status !== 'missing-type') &&
+    !duplicateKind;
 
   const hasMissingVerification = useMemo(
     () => verificationResults.some((r) => r.status !== 'complete'),
@@ -662,12 +690,20 @@ export const RegisterAssessmentsModal = ({
         isFilling &&
         (fillingCounts.total === 0 || fillingCounts.filled < fillingCounts.total);
       const nextDisabled = confirming || fillingIncomplete;
+      // 이어보기(resume)로 step2에 바로 진입한 경우, list 단계의 '이전'은 돌아갈 step1
+      // 업로드 화면이 없어 reviewing으로 튕기며 먹통이 된다 → 숨긴다.
+      // filling 단계의 '이전'은 같은 step2 내 list로 가는 것이라 항상 노출.
+      const showBack = isFilling || !resume;
       return {
-        leftButton: {
-          label: '이전',
-          tone: 'outline' as const,
-          onClick: handleBack,
-        },
+        ...(showBack
+          ? {
+              leftButton: {
+                label: '이전',
+                tone: 'outline' as const,
+                onClick: handleBack,
+              },
+            }
+          : {}),
         rightButton: {
           label: nextLabel,
           tone: nextDisabled ? ('disabled' as const) : ('primary' as const),
@@ -772,8 +808,10 @@ export const RegisterAssessmentsModal = ({
                 onChangeType={handleChangeType}
                 onRemove={handleRemoveFile}
               />
-              {uploadError && (
-                <p className="mt-3 text-sm text-red-80">{uploadError}</p>
+              {(uploadError || duplicateKindMessage) && (
+                <p className="mt-3 text-sm text-red-80">
+                  {uploadError ?? duplicateKindMessage}
+                </p>
               )}
             </>
           )}
