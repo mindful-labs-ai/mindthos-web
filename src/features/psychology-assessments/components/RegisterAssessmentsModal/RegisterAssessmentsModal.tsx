@@ -139,9 +139,18 @@ function applyValues(
   for (const [path, raw] of Object.entries(values)) {
     const trimmed = raw.trim();
     if (trimmed === '') continue;
-    const coerced: unknown = NUMERIC_RE.test(trimmed)
-      ? Number(trimmed)
-      : trimmed;
+    // 배열 입력(결정적문항)은 JSON 배열 문자열로 들어온다 → 배열로 복원.
+    // TRIN("65T") 등 접미사 문자열은 그대로, 순수 숫자만 Number로.
+    let coerced: unknown;
+    if (trimmed.startsWith('[')) {
+      try {
+        coerced = JSON.parse(trimmed);
+      } catch {
+        coerced = trimmed;
+      }
+    } else {
+      coerced = NUMERIC_RE.test(trimmed) ? Number(trimmed) : trimmed;
+    }
     const segs = path.split(PATH_SEP);
     let cur: Record<string, unknown> = clone;
     for (let i = 0; i < segs.length - 1; i++) {

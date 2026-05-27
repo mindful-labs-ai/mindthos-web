@@ -17,6 +17,8 @@ import {
   FieldDescription,
   FieldFilledCheck,
   FieldLabel,
+  FieldNumberTags,
+  FieldScoreWithDirection,
   FieldSection,
   FieldSeparator,
   FieldTextArea,
@@ -240,6 +242,44 @@ const RenderLeaf = ({
     );
   }
 
+  // array-of-numbers (결정적문항 등 문항번호 목록) → 번호 칩 입력
+  if (leaf.inputType === 'array-of-numbers') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <FieldLabel>{leaf.label}</FieldLabel>
+        {leaf.description && (
+          <FieldDescription>{leaf.description}</FieldDescription>
+        )}
+        <div className="flex items-start gap-2">
+          <FieldNumberTags
+            value={value}
+            onChange={(v) => setValue(leaf.path, v)}
+          />
+          <FieldFilledCheck filled={isFilled} className="mt-2" />
+        </div>
+      </div>
+    );
+  }
+
+  // union (TRIN T점수 등) → 점수 칸 + 방향(평형/T/F) 칩
+  if (leaf.inputType === 'union') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <FieldLabel>{leaf.label}</FieldLabel>
+        {leaf.description && (
+          <FieldDescription>{leaf.description}</FieldDescription>
+        )}
+        <div className="flex items-center gap-2">
+          <FieldScoreWithDirection
+            value={value}
+            onChange={(v) => setValue(leaf.path, v)}
+          />
+          <FieldFilledCheck filled={isFilled} />
+        </div>
+      </div>
+    );
+  }
+
   // textarea (자유 응답/해석요약)
   if (leaf.inputType === 'textarea') {
     return (
@@ -261,7 +301,7 @@ const RenderLeaf = ({
     );
   }
 
-  // 일반 input (text/number/date/percent/array/union) — width 매핑 + 우측 체크
+  // 일반 input (text/number/date/percent) — width 매핑 + 우측 체크
   return (
     <div className="flex flex-col gap-1.5">
       <FieldLabel>{leaf.label}</FieldLabel>
@@ -319,10 +359,6 @@ const placeholderFor = (leaf: FormLeaf): string => {
       return '0%';
     case 'number':
       return '0';
-    case 'array-of-numbers':
-      return '예: 1, 4, 7';
-    case 'union':
-      return '예: 65T / 70F';
     default:
       return '내용을 입력해주세요.';
   }
