@@ -1,5 +1,7 @@
 import { cn } from '@/lib/cn';
 
+import { ReviewLoadingAnimation } from './ReviewLoadingAnimation';
+
 interface UploadingProgressProps {
   /** 0~100 */
   percent: number;
@@ -21,8 +23,7 @@ export const UploadingProgress = ({
         className
       )}
     >
-      {/* 일러스트 placeholder — 추후 디자인 교체 */}
-      <div className="h-32 w-36 rounded-3xl bg-[#E8F5EC]" />
+      <ReviewLoadingAnimation />
 
       <p className="text-m font-medium text-grey-70">{label}</p>
 

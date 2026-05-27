@@ -4,8 +4,13 @@ import { cn } from '@/lib/cn';
 import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 
+import {
+  useAssessmentBatch,
+  useConfirmAssessment,
+} from '../../hooks/useAssessmentBatch';
 import type {
   AssessmentKind,
+  AssessmentProgress,
   AssessmentUploadGateway,
   AssessmentUploadInput,
 } from '../../upload/assessmentUploadGateway';
@@ -60,6 +65,97 @@ const inferTypeIdFromName = (name: string): AssessmentTypeId | null => {
   if (lower.includes('tci')) return 'tci';
   return null;
 };
+
+/** 검사 종류 → step2 검증 카드 카테고리 라벨. */
+const KIND_TO_CATEGORY: Record<AssessmentKind, string> = {
+  mmpi: '다면적 인성 검사',
+  tci: '기질 검사',
+};
+
+/**
+ * 검토 진행률용 건당 단계 가중치(0~1). 건들의 평균 × 100 = 전체 %.
+ * 2건 기준: 건당 최대 50% → INITIATED 10 / PENDING 20 / PROCESSING 30 / COMPLETED 50.
+ * (배치에 아직 안 나타난 건은 polledItems에 없어 0% 기여 → 첫 폴링 전 0%.)
+ */
+const STAGE_PROGRESS: Record<AssessmentProgress, number> = {
+  initiated: 0.2,
+  pending: 0.4,
+  processing: 0.6,
+  completed: 1,
+  failed: 1,
+};
+
+/**
+ * ocr_score(서버 교집합 결과)의 leaf 카운트. 서버 intersect-ocr-result와 동일 규칙:
+ * null leaf = 비워진(불일치/누락) 필드. 0이면 VALID, 1+이면 MISSING_FIELD.
+ */
+function countTotalLeaves(value: unknown): number {
+  if (Array.isArray(value)) {
+    return value.reduce<number>((acc, v) => acc + countTotalLeaves(v), 0);
+  }
+  if (value !== null && typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).reduce<number>(
+      (acc, v) => acc + countTotalLeaves(v),
+      0,
+    );
+  }
+  return 1;
+}
+
+function countNullLeaves(value: unknown): number {
+  if (value === null) return 1;
+  if (Array.isArray(value)) {
+    return value.reduce<number>((acc, v) => acc + countNullLeaves(v), 0);
+  }
+  if (typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).reduce<number>(
+      (acc, v) => acc + countNullLeaves(v),
+      0,
+    );
+  }
+  return 0;
+}
+
+/** score를 dotted path로 따라가 해당 leaf가 누락(null/부재/하강불가)인지. schema leaf 노출 필터용. */
+function isPathMissing(score: unknown, path: string): boolean {
+  let cur: unknown = score;
+  for (const seg of path.split('.')) {
+    if (cur === null || typeof cur !== 'object' || Array.isArray(cur)) {
+      return true;
+    }
+    cur = (cur as Record<string, unknown>)[seg];
+  }
+  return cur === null || cur === undefined;
+}
+
+const NUMERIC_RE = /^-?\d+(\.\d+)?$/;
+
+/** 사용자 입력값(path → 문자열)을 기존 score에 덮어써 확정용 전체 점수 객체를 만든다. */
+function applyValues(
+  score: Record<string, unknown>,
+  values: Record<string, string>,
+): Record<string, unknown> {
+  const clone = structuredClone(score);
+  for (const [path, raw] of Object.entries(values)) {
+    const trimmed = raw.trim();
+    if (trimmed === '') continue;
+    const coerced: unknown = NUMERIC_RE.test(trimmed)
+      ? Number(trimmed)
+      : trimmed;
+    const segs = path.split('.');
+    let cur: Record<string, unknown> = clone;
+    for (let i = 0; i < segs.length - 1; i++) {
+      const key = segs[i];
+      const next = cur[key];
+      if (next === null || typeof next !== 'object' || Array.isArray(next)) {
+        cur[key] = {};
+      }
+      cur = cur[key] as Record<string, unknown>;
+    }
+    cur[segs[segs.length - 1]] = coerced;
+  }
+  return clone;
+}
 
 /* -----------------------------------------------------
  * 데모 mock data — 실 데이터 연동 시 props/쿼리로 교체
@@ -173,6 +269,31 @@ export const RegisterAssessmentsModal = ({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  /* -------- reviewing 폴링 (업로드 후 OCR 진행 추적) -------- */
+  // reviewing substate에서만 폴링. 업로드한 검사들이 전부 COMPLETED/FAILED되면 Step2로.
+  const isReviewing = realUploadMode && open && step1Sub === 'reviewing';
+  const { data: polledItems = [] } = useAssessmentBatch(clientId, {
+    enabled: isReviewing,
+  });
+  // 진행률: 건당 단계 가중치(STAGE_PROGRESS)를 평균내 100% 환산. 항목 없으면 0.
+  const realReviewingPercent = useMemo(() => {
+    if (polledItems.length === 0) return 0;
+    const sum = polledItems.reduce(
+      (acc, it) => acc + (STAGE_PROGRESS[it.progress] ?? 0),
+      0,
+    );
+    return Math.round((sum / polledItems.length) * 100);
+  }, [polledItems]);
+
+  // 전부 종료되면 Step2로 진행
+  useEffect(() => {
+    if (!isReviewing || polledItems.length === 0) return;
+    const allDone = polledItems.every(
+      (it) => it.progress === 'completed' || it.progress === 'failed',
+    );
+    if (allDone) setStep(2);
+  }, [isReviewing, polledItems]);
+
   /* -------- step 2 state (debug-controlled mode 기반) -------- */
   const [step2Mode, setStep2Mode] = useState<Step2DebugMode>('list-missing');
   const step2Sub: Step2Substate = step2Mode === 'filling' ? 'filling' : 'list';
@@ -185,10 +306,103 @@ export const RegisterAssessmentsModal = ({
 
   /* -------- 디버그: filling 모드에서 특정 검사만 보기 -------- */
   const [fillingFilter, setFillingFilter] = useState<FillingFormFilter>('all');
+
+  // 실제 OCR 결과 → step2 검증 카드. polledItems(활성 배치)의 validation/score 기반.
+  const realVerificationResults: VerificationResult[] = useMemo(
+    () =>
+      polledItems.map((it) => {
+        if (it.validation === 'invalid' || it.progress === 'failed') {
+          return {
+            fileId: it.assessmentId,
+            fileName: it.title,
+            categoryLabel: KIND_TO_CATEGORY[it.kind],
+            itemsVerified: null,
+            itemsTotal: null,
+            status: 'invalid' as const,
+            invalidReason:
+              it.progress === 'failed'
+                ? 'OCR 처리 실패'
+                : '인식할 수 없는 검사지',
+          };
+        }
+        const score = it.score ?? {};
+        const total = countTotalLeaves(score);
+        const missing = countNullLeaves(score);
+        return {
+          fileId: it.assessmentId,
+          fileName: it.title,
+          categoryLabel: KIND_TO_CATEGORY[it.kind],
+          itemsVerified: total - missing,
+          itemsTotal: total,
+          status: missing > 0 ? ('missing' as const) : ('complete' as const),
+        };
+      }),
+    [polledItems],
+  );
+
+  // 실제 업로드 모드 + 폴링 데이터 있으면 실데이터, 아니면(데모) mock.
   const verificationResults: VerificationResult[] =
-    step2Mode === 'list-complete'
-      ? MOCK_VERIFICATION_RESULTS_ALL_OK
-      : MOCK_VERIFICATION_RESULTS_MISSING;
+    realUploadMode && polledItems.length > 0
+      ? realVerificationResults
+      : step2Mode === 'list-complete'
+        ? MOCK_VERIFICATION_RESULTS_ALL_OK
+        : MOCK_VERIFICATION_RESULTS_MISSING;
+
+  /* -------- 누락 필드 확정 (write) -------- */
+  // MISSING_FIELD 검사만 채우기 대상. 사용자가 채운 값을 assessmentId별로 보관.
+  const missingItems = useMemo(
+    () => polledItems.filter((it) => it.validation === 'missing_field'),
+    [polledItems],
+  );
+  const useRealFilling = realUploadMode && missingItems.length > 0;
+  const [fillingValues, setFillingValues] = useState<
+    Record<string, Record<string, string>>
+  >({});
+  const confirmMut = useConfirmAssessment(clientId);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
+
+  // 실데이터 채우기 폼: 각 MISSING_FIELD 검사의 null leaf만 노출 + 입력값 수집.
+  const realFillingForms: FillingFormDescriptor[] = missingItems.map((it) => {
+    const score = it.score ?? {};
+    return {
+      categoryLabel: KIND_TO_CATEGORY[it.kind],
+      missingCount: countNullLeaves(score),
+      formKey: it.kind,
+      visibleLeaf: (path: string) => isPathMissing(score, path),
+      onValuesChange: (values: Record<string, string>) =>
+        setFillingValues((prev) => ({ ...prev, [it.assessmentId]: values })),
+    };
+  });
+
+  // 채운 값을 기존 score에 덮어써 검사별로 confirm 호출. 전부 성공하면 step3.
+  const submitConfirms = async (): Promise<void> => {
+    setConfirming(true);
+    setConfirmError(null);
+    try {
+      for (const it of missingItems) {
+        const merged = applyValues(
+          it.score ?? {},
+          fillingValues[it.assessmentId] ?? {},
+        );
+        await confirmMut.mutateAsync({
+          assessmentId: it.assessmentId,
+          score: merged,
+        });
+      }
+      setStep(3);
+    } catch (err) {
+      const msg =
+        err instanceof ServerApiError
+          ? `${err.message} (${err.statusCode})`
+          : err instanceof Error
+            ? err.message
+            : '확정 실패';
+      setConfirmError(msg);
+    } finally {
+      setConfirming(false);
+    }
+  };
 
   /* -------- escape / scroll lock -------- */
   useEffect(() => {
@@ -324,9 +538,10 @@ export const RegisterAssessmentsModal = ({
   const handleNext = () => {
     if (step === 1) {
       if (realUploadMode) {
-        // 실제 업로드 후에만 다음 단계로
+        // 업로드 성공 → reviewing 단계로. OCR 진행은 폴링이 추적하고,
+        // 전부 COMPLETED되면 useEffect가 Step2로 진행시킨다.
         void runRealUpload().then((ok) => {
-          if (ok) setStep(2);
+          if (ok) setStep1Sub('reviewing');
         });
         return;
       }
@@ -339,6 +554,17 @@ export const RegisterAssessmentsModal = ({
         return;
       }
       if (step2Sub === 'filling') {
+        if (useRealFilling) {
+          // 모든 누락 필드를 채워야 확정 가능 (서버는 재검증 없이 그대로 저장).
+          const incomplete =
+            confirming ||
+            fillingCounts.total === 0 ||
+            fillingCounts.filled < fillingCounts.total;
+          if (incomplete) return;
+          // 실데이터: 채운 값으로 검사별 confirm → 성공 시 step3.
+          void submitConfirms();
+          return;
+        }
         // 데모: 채우기 완료 → 검증 결과 전체 통과로 갱신 후 step 3
         setStep2Mode('list-complete');
         setStep(3);
@@ -401,7 +627,17 @@ export const RegisterAssessmentsModal = ({
     }
     if (step === 2) {
       const nextLabel =
-        hasMissingVerification && !isFilling ? '항목 채우기' : '다음';
+        hasMissingVerification && !isFilling
+          ? '항목 채우기'
+          : confirming
+            ? '확정 중…'
+            : '다음';
+      // 실데이터 채우기 중에는 모든 누락 필드를 채워야 확정 가능.
+      const fillingIncomplete =
+        useRealFilling &&
+        isFilling &&
+        (fillingCounts.total === 0 || fillingCounts.filled < fillingCounts.total);
+      const nextDisabled = confirming || fillingIncomplete;
       return {
         leftButton: {
           label: '이전',
@@ -410,7 +646,7 @@ export const RegisterAssessmentsModal = ({
         },
         rightButton: {
           label: nextLabel,
-          tone: 'primary' as const,
+          tone: nextDisabled ? ('disabled' as const) : ('primary' as const),
           onClick: handleNext,
         },
       };
@@ -435,19 +671,14 @@ export const RegisterAssessmentsModal = ({
 
   if (!open) return null;
 
-  /* -------- 누락 채우기 폼 — 검사별 카드 그룹 (mock descriptor) -------- */
-  const allFillingFormDescriptors: FillingFormDescriptor[] = [
-    {
-      categoryLabel: '다면적 인성 검사',
-      missingCount: 12,
-      formKey: 'mmpi',
-    },
-    {
-      categoryLabel: '기질 검사',
-      missingCount: 2,
-      formKey: 'tci',
-    },
-  ];
+  /* -------- 누락 채우기 폼 — 검사별 카드 그룹 -------- */
+  // 실데이터(MISSING_FIELD)가 있으면 실폼, 없으면 데모 mock descriptor.
+  const allFillingFormDescriptors: FillingFormDescriptor[] = useRealFilling
+    ? realFillingForms
+    : [
+        { categoryLabel: '다면적 인성 검사', missingCount: 12, formKey: 'mmpi' },
+        { categoryLabel: '기질 검사', missingCount: 2, formKey: 'tci' },
+      ];
   const fillingFormDescriptors =
     fillingFilter === 'all'
       ? allFillingFormDescriptors
@@ -509,7 +740,9 @@ export const RegisterAssessmentsModal = ({
               <Step1UploadView
                 substate={step1Sub}
                 files={formatBy(step1Sub, files)}
-                reviewingPercent={reviewingPercent}
+                reviewingPercent={
+                  realUploadMode ? realReviewingPercent : reviewingPercent
+                }
                 onSelectFiles={handleSelectFiles}
                 onAddMore={handleAddMore}
                 onChangeType={handleChangeType}
@@ -521,14 +754,19 @@ export const RegisterAssessmentsModal = ({
             </>
           )}
           {step === 2 && (
-            <Step2VerifyView
-              substate={step2Sub}
-              verifiedCount={verifiedCount}
-              missingCount={missingCount}
-              totalCount={totalCount}
-              results={verificationResults}
-              fillingForm={fillingForm}
-            />
+            <>
+              <Step2VerifyView
+                substate={step2Sub}
+                verifiedCount={verifiedCount}
+                missingCount={missingCount}
+                totalCount={totalCount}
+                results={verificationResults}
+                fillingForm={fillingForm}
+              />
+              {confirmError && (
+                <p className="mt-3 text-sm text-red-80">{confirmError}</p>
+              )}
+            </>
           )}
           {step === 3 && <Step3CompleteView />}
         </div>

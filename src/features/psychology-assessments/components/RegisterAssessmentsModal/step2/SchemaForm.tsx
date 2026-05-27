@@ -28,15 +28,42 @@ import type { FillingFormCounts } from './forms/types';
 interface SchemaFormProps {
   schema: JsonSchema;
   onCountsChange?: (counts: FillingFormCounts) => void;
+  /** 입력으로 노출할 leaf 필터. 주어지면 해당 leaf(및 조상)만 렌더 — 누락 필드만 채우기용. */
+  visibleLeaf?: (path: string) => boolean;
+  /** 현재 입력값(path → 문자열) 통지 — 확정 제출 시 부모가 점수 재구성에 사용. */
+  onValuesChange?: (values: Record<string, string>) => void;
   className?: string;
 }
+
+/** visibleLeaf 술어로 노드 트리를 가지치기 — 보이는 leaf와 그 조상 섹션만 남긴다. */
+const pruneNodes = (
+  nodes: FormNode[],
+  visible: (path: string) => boolean
+): FormNode[] => {
+  const out: FormNode[] = [];
+  for (const n of nodes) {
+    if (n.kind === 'leaf') {
+      if (n.constValue === undefined && visible(n.path)) out.push(n);
+    } else {
+      const children = pruneNodes(n.children, visible);
+      if (children.length > 0) out.push({ ...n, children });
+    }
+  }
+  return out;
+};
 
 export const SchemaForm = ({
   schema,
   onCountsChange,
+  visibleLeaf,
+  onValuesChange,
   className,
 }: SchemaFormProps) => {
-  const nodes = useMemo(() => schemaToFields(schema), [schema]);
+  const allNodes = useMemo(() => schemaToFields(schema), [schema]);
+  const nodes = useMemo(
+    () => (visibleLeaf ? pruneNodes(allNodes, visibleLeaf) : allNodes),
+    [allNodes, visibleLeaf]
+  );
   // 카운팅은 "스키마 라벨" 단위. 한 라벨 아래 입력 N개여도 1개로 취급.
   const units = useMemo(() => collectUnits(nodes), [nodes]);
 
@@ -61,6 +88,14 @@ export const SchemaForm = ({
   useEffect(() => {
     onCountsChangeRef.current?.({ filled, total: units.length });
   }, [filled, units.length]);
+
+  const onValuesChangeRef = useRef(onValuesChange);
+  useEffect(() => {
+    onValuesChangeRef.current = onValuesChange;
+  });
+  useEffect(() => {
+    onValuesChangeRef.current?.(values);
+  }, [values]);
 
   return (
     <div className={cn('flex flex-col gap-6', className)}>

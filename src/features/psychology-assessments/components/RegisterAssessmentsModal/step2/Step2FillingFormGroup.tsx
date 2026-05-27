@@ -14,6 +14,10 @@ export interface FillingFormDescriptor {
   missingCount: number;
   /** 검사 종류 키 — 어떤 폼을 렌더할지 결정 */
   formKey: 'mmpi' | 'tci';
+  /** (실데이터) 입력 노출할 leaf 필터 — 주어지면 누락 필드만 렌더. */
+  visibleLeaf?: (path: string) => boolean;
+  /** (실데이터) 입력값(path → 문자열) 통지 — 확정 제출용. */
+  onValuesChange?: (values: Record<string, string>) => void;
 }
 
 interface Step2FillingFormGroupProps {
@@ -66,14 +70,19 @@ export const Step2FillingFormGroup = ({
   }, [aggregated]);
 
   const renderFormByKey = (
-    formKey: FillingFormDescriptor['formKey'],
+    form: FillingFormDescriptor,
     handle: (counts: FillingFormCounts) => void
   ) => {
-    switch (formKey) {
+    const shared = {
+      onCountsChange: handle,
+      visibleLeaf: form.visibleLeaf,
+      onValuesChange: form.onValuesChange,
+    };
+    switch (form.formKey) {
       case 'mmpi':
-        return <MmpiFillingForm onCountsChange={handle} />;
+        return <MmpiFillingForm {...shared} />;
       case 'tci':
-        return <TciFillingForm onCountsChange={handle} />;
+        return <TciFillingForm {...shared} />;
     }
   };
 
@@ -97,7 +106,7 @@ export const Step2FillingFormGroup = ({
               missingCount={missingCount}
               validated={validated}
             >
-              {renderFormByKey(form.formKey, handle)}
+              {renderFormByKey(form, handle)}
             </MissingFieldsForm>
           );
         })}
