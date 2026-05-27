@@ -256,14 +256,17 @@ export const RegisterAssessmentsModal = ({
 
   const [step, setStep] = useState<RegisterStep>(1);
 
-  /* -------- step 1 state -------- */
-  const [step1Sub, setStep1Sub] = useState<Step1Substate>('empty');
-  const [files, setFiles] = useState<UploadedFile[]>(MOCK_INITIAL_FILES);
-  const [reviewingPercent, setReviewingPercent] = useState(48);
-
   /* -------- 실제 업로드 (clientId 있을 때) -------- */
   // 실제 업로드 모드: clientId가 주어지면 mock 대신 서버 업로드를 수행한다.
   const realUploadMode = !!clientId;
+
+  /* -------- step 1 state -------- */
+  const [step1Sub, setStep1Sub] = useState<Step1Substate>('empty');
+  // 실모드는 빈 목록에서 시작(사용자가 직접 파일 선택). 데모만 mock 프리필.
+  const [files, setFiles] = useState<UploadedFile[]>(() =>
+    clientId ? [] : MOCK_INITIAL_FILES,
+  );
+  const [reviewingPercent, setReviewingPercent] = useState(48);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const [uploading, setUploading] = useState(false);
@@ -403,6 +406,23 @@ export const RegisterAssessmentsModal = ({
       setConfirming(false);
     }
   };
+
+  /* -------- 실모드: 열 때마다 깨끗하게 초기화 -------- */
+  // 닫힘→열림 전이에서만 리셋(업로드 진행 중 재실행 방지). 이전 세션의 step3/파일/
+  // 입력값/blob이 남지 않도록 step1 empty 상태로 되돌린다.
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (open && !wasOpenRef.current && realUploadMode) {
+      setStep(1);
+      setStep1Sub('empty');
+      setFiles([]);
+      setUploadError(null);
+      setConfirmError(null);
+      setFillingValues({});
+      fileBlobsRef.current.clear();
+    }
+    wasOpenRef.current = open;
+  }, [open, realUploadMode]);
 
   /* -------- escape / scroll lock -------- */
   useEffect(() => {
