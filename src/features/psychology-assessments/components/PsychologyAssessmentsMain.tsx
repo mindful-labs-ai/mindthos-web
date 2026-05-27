@@ -162,15 +162,16 @@ export const PsychologyAssessmentsMain = ({
   // 임시 평가용 대화 상태
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  // 모달 진입 의도: resume=true면 진행 중/검토 대기 배치를 reviewing으로 복원,
-  // false면 신규 업로드(step1)로 시작.
-  const [modalResume, setModalResume] = useState(false);
+  // 모달 진입 의도: 'reviewing'/'verify'면 해당 단계로 이어보기, false면 신규 업로드(step1).
+  const [modalResume, setModalResume] = useState<'reviewing' | 'verify' | false>(
+    false,
+  );
   const openUploadModal = () => {
     setModalResume(false);
     setIsRegisterModalOpen(true);
   };
-  const openResumeModal = () => {
-    setModalResume(true);
+  const openResumeModal = (target: 'reviewing' | 'verify') => {
+    setModalResume(target);
     setIsRegisterModalOpen(true);
   };
 
@@ -270,7 +271,7 @@ export const PsychologyAssessmentsMain = ({
         // 서버 배치 상태(비동기) 감지에 반응해 모달을 여는 부수효과 — 렌더 중 파생 불가
         // (모달 open은 사용자가 닫을 수 있는 UI 상태). 진입당 1회만 실행.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        openResumeModal();
+        openResumeModal(ocrStage === 'reviewing' ? 'reviewing' : 'verify');
       }
     }
   }, [clientId, ocrStage, isRegisterModalOpen]);
@@ -552,7 +553,7 @@ export const PsychologyAssessmentsMain = ({
           </p>
           <button
             type="button"
-            onClick={openResumeModal}
+            onClick={() => openResumeModal('reviewing')}
             className="mt-2 rounded-md border border-grey-80 px-[21px] py-1.5 text-m font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
           >
             진행 상황 보기
@@ -569,7 +570,7 @@ export const PsychologyAssessmentsMain = ({
             </p>
             <button
               type="button"
-              onClick={openResumeModal}
+              onClick={() => openResumeModal('verify')}
               className="inline-flex items-center gap-2 rounded-md border border-green-80 bg-green-20 px-3.5 py-1.5 text-m font-medium text-green-80 transition-opacity lg:hover:opacity-75"
             >
               이어서 검토하기

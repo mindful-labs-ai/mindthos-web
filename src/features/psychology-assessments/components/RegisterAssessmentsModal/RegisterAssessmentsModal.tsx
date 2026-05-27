@@ -54,11 +54,12 @@ interface RegisterAssessmentsModalProps {
   /** 업로드 gateway (주입). 미지정 시 서버 adapter 사용. 테스트는 mock 주입. */
   uploadGateway?: AssessmentUploadGateway;
   /**
-   * 이어보기 모드. 진행 중/검토 대기 배치가 이미 서버에 있을 때 true로 열면 step1(신규
-   * 업로드)이 아니라 reviewing(진행 표시)으로 복원한다. 전부 종료된 배치면 내부 폴링이
-   * 자동으로 step2(검증/보완)로 올린다. false면 기존대로 빈 업로드 화면에서 시작.
+   * 이어보기 모드. 서버에 진행 중/검토 대기 배치가 있을 때 어디로 복원할지 지정한다.
+   * - 'reviewing': OCR 진행 표시 화면(step1 reviewing)
+   * - 'verify'   : 검증·보완 화면(step2)로 바로 진입
+   * - 그 외(미지정): 기존대로 빈 업로드 화면(step1)에서 시작.
    */
-  resume?: boolean;
+  resume?: 'reviewing' | 'verify' | false;
   /** 이미 등록된(활성 배치) 검사 종류. 같은 종류 중복 업로드를 막는 가드에 쓴다. */
   existingKinds?: AssessmentKind[];
 }
@@ -274,11 +275,12 @@ export const RegisterAssessmentsModal = ({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  /* -------- reviewing 폴링 (업로드 후 OCR 진행 추적) -------- */
-  // reviewing substate에서만 폴링. 업로드한 검사들이 전부 COMPLETED/FAILED되면 Step2로.
+  /* -------- 활성 배치 폴링 (OCR 진행 추적 + step2 검증 데이터) -------- */
+  // 실모드로 열려 있는 동안 활성 배치를 구독한다(reviewing 진행 + step2 검증/보완 모두 사용).
+  // 폴링은 훅 내부에서 in-flight 있을 때만 돌고, 전부 종료되면 멈춘다.
   const isReviewing = realUploadMode && open && step1Sub === 'reviewing';
   const { data: polledItems = [] } = useAssessmentBatch(clientId, {
-    enabled: isReviewing,
+    enabled: realUploadMode && open,
   });
   const realReviewingPercent = useMemo(
     () => ocrReviewPercent(polledItems),
@@ -406,15 +408,19 @@ export const RegisterAssessmentsModal = ({
 
   /* -------- 실모드: 열 때 상태 초기화 / 이어보기 복원 -------- */
   // 닫힘→열림 전이에서만 실행(진행 중 재실행 방지).
-  // - resume: 서버에 진행 중/검토 대기 배치가 있는 경우 → reviewing으로 복원.
-  //   폴링이 돌며, 전부 종료된 배치면 아래 effect가 자동으로 step2(검증/보완)로 올린다.
+  // - resume 'verify'   : 검증/보완 화면(step2)로 바로 진입.
+  // - resume 'reviewing': OCR 진행 표시(step1 reviewing). 폴링이 돌며 전부 종료되면
+  //   아래 effect가 step2로 올린다.
   // - 일반: 이전 세션의 step3/파일/입력값/blob을 비우고 step1 empty에서 시작.
   const wasOpenRef = useRef(false);
   useEffect(() => {
     if (open && !wasOpenRef.current && realUploadMode) {
       setUploadError(null);
       setConfirmError(null);
-      if (resume) {
+      if (resume === 'verify') {
+        setStep(2);
+        setStep2Mode('list-missing');
+      } else if (resume === 'reviewing') {
         setStep(1);
         setStep1Sub('reviewing');
       } else {
@@ -653,14 +659,14 @@ export const RegisterAssessmentsModal = ({
     [verificationResults]
   );
 
-  // filling 모드에서는 폼 카운트로 override — 카드에 값이 채워질 때 summary 실시간 갱신
+  // 전체 항목 수(total)는 검증 결과 기준으로 고정. 누락 필드는 이미 total에 포함돼 있으므로
+  // filling 카운트를 total에 더하면 이중 집계된다(누락이 늘어나는 버그). filling 중에는
+  // 채운 개수(filled)만 verified에 더해 누락이 줄어들게 한다.
   const isFilling = step2Sub === 'filling';
+  const totalCount = baseTotalCount;
   const verifiedCount = isFilling
-    ? baseVerifiedCount + fillingCounts.filled
+    ? Math.min(totalCount, baseVerifiedCount + fillingCounts.filled)
     : baseVerifiedCount;
-  const totalCount = isFilling
-    ? baseTotalCount + fillingCounts.total
-    : baseTotalCount;
   const missingCount = Math.max(0, totalCount - verifiedCount);
 
   /* -------- footer config 분기 -------- */
