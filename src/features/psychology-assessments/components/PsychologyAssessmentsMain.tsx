@@ -1,10 +1,24 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
+import type { AssessmentReportStatus } from '@/shared/api/server/assessmentUploadApi';
 import { useDevice } from '@/shared/hooks/useDevice';
 
 import { TEMP_EVAL_CASES } from '../__temp_eval__/tempEvalData';
+import { getChatHistory, sendChatMessage } from '../api/chatApi';
+import {
+  calcAnalysisPercent,
+  isAnalysisComplete,
+  useAnalysisStatus,
+  useStartAnalysis,
+} from '../hooks/useAnalysis';
+import {
+  useAssessmentBatch,
+  useDeleteAssessment,
+  useResetToOcrPhase,
+} from '../hooks/useAssessmentBatch';
+import type { AssessmentKind, AssessmentProgress } from '../upload/assessmentUploadGateway';
 
 import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisDisclaimer } from './AnalysisDisclaimer';
@@ -42,6 +56,20 @@ const PAGE_PADDING = {
   paddingRight: 42,
 };
 
+// 검사 종류 → 결과지 카드/popover에 노출할 표시 라벨
+const KIND_TO_TITLE: Record<AssessmentKind, string> = {
+  mmpi: '다면적 인성 검사',
+  tci: '기질 검사',
+};
+
+const PROGRESS_LABEL: Record<AssessmentProgress, string> = {
+  initiated: '업로드 대기',
+  pending: '분석 대기',
+  processing: '분석 중',
+  completed: '완료',
+  failed: '실패',
+};
+
 const MOCK_FILES: AssessmentFile[] = [
   { id: '1', title: '다면적 인성 검사', fileName: 'MMPI-2_홍길동_결과지.pdf' },
   { id: '2', title: '기질 검사', fileName: 'TCI_홍길동_결과지.pdf' },
@@ -68,11 +96,31 @@ const MOCK_POPOVER_TRANSCRIPTS: TranscriptEntry[] = [
   { id: 't1', title: '홍길동 축어록', metaLabel: '총 8회기 상담 기록' },
 ];
 
-const MOCK_ANALYSIS_STEPS: AnalysisStep[] = [
-  { id: '1', label: '다면적 인성 검사 분석 완료', status: 'completed' },
-  { id: '2', label: '기질검사 분석 진행 중...', status: 'in_progress' },
-  { id: '3', label: '통합 해석', status: 'pending' },
-];
+const REPORT_TYPE_LABEL: Record<string, string> = {
+  MMPI_2: '다면적 인성 검사',
+  TCI: '기질 검사',
+};
+
+function toAnalysisSteps(
+  assessmentReports: AssessmentReportStatus[],
+  integrationReportCompleted: boolean,
+): AnalysisStep[] {
+  const reportSteps: AnalysisStep[] = assessmentReports.map((r) => ({
+    id: r.type,
+    label: `${REPORT_TYPE_LABEL[r.type] ?? r.type} 분석`,
+    status: r.completed ? 'completed' : 'in_progress',
+  }));
+  const integrationStep: AnalysisStep = {
+    id: 'integration',
+    label: '통합 해석',
+    status: integrationReportCompleted
+      ? 'completed'
+      : reportSteps.every((s) => s.status === 'completed')
+        ? 'in_progress'
+        : 'pending',
+  };
+  return [...reportSteps, integrationStep];
+}
 
 // 임시 평가용: 실제 AI-chatbot-layer 결과 7건을 추천 칩으로 노출.
 const MOCK_SUGGESTIONS: ChatSuggestion[] = TEMP_EVAL_CASES.map((c, i) => ({
@@ -105,7 +153,6 @@ export const PsychologyAssessmentsMain = ({
   // 임시 평가용 대화 상태
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const [analyzingPercent, setAnalyzingPercent] = useState(48);
 
   // 등록 결과지 popover
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -128,7 +175,113 @@ export const PsychologyAssessmentsMain = ({
     setModeState(next);
   };
 
-  const files: AssessmentFile[] = mode === 'empty' ? [] : localFiles;
+  // 등록 결과지 실데이터 (서버 활성 배치). popover/결과지 카드가 모두 이 한 배치를 공유.
+  // 폴링은 popover가 열렸거나 결과지 카드가 보이는 registered 모드에서만.
+  const clientId = client?.id;
+  const { data: realAssessments = [] } = useAssessmentBatch(clientId, {
+    // empty에서도 폴링해 "등록됨+분석 이전" 감지(아래 effect가 registered로 승격).
+    enabled: isPopoverOpen || mode === 'registered' || mode === 'empty',
+  });
+  const deleteAssessmentMut = useDeleteAssessment(clientId);
+  const resetToOcrPhaseMut = useResetToOcrPhase(clientId);
+
+  // 분석 시작 mutation
+  const startAnalysisMut = useStartAnalysis(clientId);
+
+  // 분석 진행 폴링 — analyzing 모드일 때만 활성
+  const { data: analysisStatusData } = useAnalysisStatus(clientId, {
+    enabled: mode === 'analyzing',
+  });
+
+  // 분석 완료 시 자동으로 analyzed 모드로 전환
+  useEffect(() => {
+    if (mode === 'analyzing' && analysisStatusData && isAnalysisComplete(analysisStatusData)) {
+      setModeState('analyzed');
+    }
+  }, [mode, analysisStatusData]);
+
+  // 내담자별 활성 배치로 디테일 모드를 자동 파생(내담자 전환 시 remount → 새로 평가).
+  // - 항목 없음: empty 유지
+  // - 전부 v=0 드래프트(분석 이전, OCR_PHASE): registered
+  // - v>=1(분석 단계 이상): analyzing → analysis-status 폴링이 완료 감지 시 analyzed로 승격
+  // 이미 분석 흐름(analyzing/analyzed)에 들어갔으면 건드리지 않는다.
+  useEffect(() => {
+    if (!clientId || mode === 'analyzing' || mode === 'analyzed') return;
+    if (realAssessments.length === 0) return;
+    const allDrafts = realAssessments.every((a) => a.assessmentVersion === 0);
+    if (allDrafts) {
+      if (mode !== 'registered') setModeState('registered');
+    } else {
+      setModeState('analyzing');
+    }
+  }, [clientId, realAssessments, mode]);
+
+  // analyzed 진입 시 서버에서 채팅 이력 로드(과거 대화 복원). 최신순 → 과거순으로 뒤집어
+  // 각 메시지를 user(input)+assistant(output) 턴으로 변환. (전송은 별도; 여기선 초기 로드만)
+  useEffect(() => {
+    if (!clientId || mode !== 'analyzed') return;
+    let cancelled = false;
+    void getChatHistory(clientId)
+      .then((items) => {
+        if (cancelled || items.length === 0) return;
+        const turnsLoaded: ChatTurn[] = [];
+        for (const m of [...items].reverse()) {
+          turnsLoaded.push({
+            id: `u-${m.id}`,
+            role: 'user',
+            content: m.inputMessage,
+          });
+          if (m.outputMessage) {
+            turnsLoaded.push({
+              id: `a-${m.id}`,
+              role: 'assistant',
+              content: m.outputMessage,
+            });
+          }
+        }
+        setTurns(turnsLoaded);
+      })
+      .catch(() => {
+        /* 이력 없음/실패는 무시 — 빈 대화로 시작 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [clientId, mode]);
+
+  const analyzingPercent = analysisStatusData
+    ? calcAnalysisPercent(analysisStatusData)
+    : 0;
+
+  const analysisSteps: AnalysisStep[] = analysisStatusData
+    ? toAnalysisSteps(
+        analysisStatusData.assessmentReports,
+        analysisStatusData.integrationReportCompleted,
+      )
+    : [];
+
+  // 활성 배치 → 결과지 카드용 AssessmentFile
+  const realFiles: AssessmentFile[] = realAssessments.map((it) => ({
+    id: it.assessmentId,
+    title: KIND_TO_TITLE[it.kind],
+    fileName: it.title,
+  }));
+  // 활성 배치 → popover 엔트리
+  const realPopoverAssessments: RegisteredAssessmentEntry[] =
+    realAssessments.map((it) => ({
+      id: it.assessmentId,
+      fileName: it.title,
+      testDate: '',
+      pageCount: 0,
+      categoryLabel: KIND_TO_TITLE[it.kind],
+      metaLabel: `${it.kind === 'mmpi' ? 'MMPI-2' : 'TCI'} · ${PROGRESS_LABEL[it.progress]}`,
+    }));
+
+  // 결과지가 표시되는 모든 곳(카드/popover/칩 카운트)이 같은 배치를 기반으로.
+  // clientId 있으면 실데이터, 없으면(데모) mock.
+  const localDisplayFiles: AssessmentFile[] =
+    mode === 'empty' ? [] : localFiles;
+  const files: AssessmentFile[] = clientId ? realFiles : localDisplayFiles;
 
   const handleRemoveFile = (id: string) => {
     setLocalFiles((prev) => {
@@ -145,7 +298,13 @@ export const PsychologyAssessmentsMain = ({
   const isChatDisabled = mode !== 'analyzed';
 
   const handleStartAnalysis = () => {
-    setMode('analyzing');
+    if (clientId) {
+      startAnalysisMut.mutate(undefined, {
+        onSuccess: () => setMode('analyzing'),
+      });
+    } else {
+      setMode('analyzing');
+    }
   };
 
   // 임시 평가용: 추천 칩 클릭 → 해당 케이스의 질문+답변을 대화에 추가
@@ -168,16 +327,46 @@ export const PsychologyAssessmentsMain = ({
   const handleSendChat = () => {
     const text = chatValue.trim();
     if (!text) return;
-    const matched = TEMP_EVAL_CASES.find((c) => c.question === text);
-    const answer =
-      matched?.answer ??
-      '임시 평가 모드입니다. 추천 칩의 질문을 사용하면 실제 AI-chatbot-layer 응답을 확인할 수 있습니다.';
+    setChatValue('');
+
+    // clientId 없으면(데모) 기존 임시 평가 fallback.
+    if (!clientId) {
+      const matched = TEMP_EVAL_CASES.find((c) => c.question === text);
+      const answer =
+        matched?.answer ??
+        '임시 평가 모드입니다. 추천 칩의 질문을 사용하면 실제 AI-chatbot-layer 응답을 확인할 수 있습니다.';
+      setTurns((prev) => [
+        ...prev,
+        { id: `u-${prev.length}`, role: 'user', content: text },
+        { id: `a-${prev.length}`, role: 'assistant', content: answer },
+      ]);
+      return;
+    }
+
+    // 서버 채팅 API 호출 — 서버가 grounding 구성 + 머신 호출 + turn 저장 후 응답 반환.
+    // (히스토리는 서버가 스레드로 관리하므로 프론트가 전달하지 않는다.)
+    const aid = `a-${Date.now()}`;
     setTurns((prev) => [
       ...prev,
-      { id: `u-${prev.length}`, role: 'user', content: text },
-      { id: `a-${prev.length}`, role: 'assistant', content: answer },
+      { id: `u-${Date.now()}`, role: 'user', content: text },
+      { id: aid, role: 'assistant', content: '…' },
     ]);
-    setChatValue('');
+    void sendChatMessage(clientId, text)
+      .then((reply) => {
+        setTurns((prev) =>
+          prev.map((t) =>
+            t.id === aid ? { ...t, content: reply.message } : t
+          )
+        );
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : '알 수 없는 오류';
+        setTurns((prev) =>
+          prev.map((t) =>
+            t.id === aid ? { ...t, content: `챗봇 호출 실패: ${msg}` } : t
+          )
+        );
+      });
   };
 
   // chip 클릭 → popover toggle (결과지 1개 이상일 때만)
@@ -200,11 +389,29 @@ export const PsychologyAssessmentsMain = ({
   };
 
   const handleResetConfirm = () => {
-    // TODO: 실제 삭제 mutation 연결. 데모: empty로 전환.
     setIsResetConfirmOpen(false);
-    setIsPopoverOpen(false);
     setSelectedEntryIds(new Set());
-    setMode('empty');
+
+    // clientId 없으면(데모) 로컬만 비움.
+    if (!clientId) {
+      setIsPopoverOpen(false);
+      setMode('empty');
+      return;
+    }
+
+    // 서버에 OCR 단계 복귀 요청(CHAT_ACTIVE→OCR_PHASE) → 재업로드 가능 상태로.
+    resetToOcrPhaseMut.mutate(undefined, {
+      onSuccess: () => {
+        setIsPopoverOpen(false);
+        setMode('empty');
+      },
+      onError: (err) => {
+        // CHAT_ACTIVE가 아니면 409. 이미 OCR_PHASE면 재업로드는 어차피 가능.
+        console.warn('[ocr-phase-reset] 실패:', err);
+        setIsPopoverOpen(false);
+        setMode('empty');
+      },
+    });
   };
 
   // 디버그 패널 — 모바일에서는 드롭다운(접힘) 상태로 시작
@@ -261,10 +468,13 @@ export const PsychologyAssessmentsMain = ({
         <RegisteredAssessmentsCard
           files={files}
           onAddFile={() => setIsRegisterModalOpen(true)}
-          onRemoveFile={handleRemoveFile}
+          onRemoveFile={
+            clientId ? (id) => deleteAssessmentMut.mutate(id) : handleRemoveFile
+          }
         />
         <AnalyzeCtaSection
           creditCost={analyzeCost}
+          disabled={startAnalysisMut.isPending}
           onClick={handleStartAnalysis}
         />
       </div>
@@ -273,7 +483,7 @@ export const PsychologyAssessmentsMain = ({
     bodyContent = (
       <div className="flex flex-1 flex-col items-center justify-center">
         <AnalyzingProgressCard
-          steps={MOCK_ANALYSIS_STEPS}
+          steps={analysisSteps}
           percent={analyzingPercent}
         />
       </div>
@@ -309,10 +519,22 @@ export const PsychologyAssessmentsMain = ({
                   onClose={() => setIsPopoverOpen(false)}
                   triggerRef={chipRef as React.RefObject<HTMLElement>}
                   transcripts={MOCK_POPOVER_TRANSCRIPTS}
-                  assessments={MOCK_POPOVER_ASSESSMENTS}
+                  assessments={
+                    clientId ? realPopoverAssessments : MOCK_POPOVER_ASSESSMENTS
+                  }
                   selectedIds={selectedEntryIds}
                   onToggleSelect={handleToggleEntrySelect}
                   onReset={handleResetClick}
+                  onDeleteAssessment={
+                    clientId
+                      ? (id) => deleteAssessmentMut.mutate(id)
+                      : undefined
+                  }
+                  deletingAssessmentId={
+                    deleteAssessmentMut.isPending
+                      ? deleteAssessmentMut.variables
+                      : null
+                  }
                 />
               )
             }
@@ -390,23 +612,6 @@ export const PsychologyAssessmentsMain = ({
 
       {debugPanel}
 
-      {/* 분석 % 디버그용 — analyzing 상태에서만 슬라이더 노출 */}
-      {mode === 'analyzing' && (
-        <div className="fixed bottom-4 right-4 z-tooltip flex flex-col gap-2 rounded-lg border border-border bg-surface p-3 shadow-elevated">
-          <label className="flex items-center justify-between gap-3 text-xs text-grey-100">
-            <span>분석 %</span>
-            <span>{analyzingPercent}%</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={analyzingPercent}
-            onChange={(e) => setAnalyzingPercent(Number(e.target.value))}
-            className="w-[180px]"
-          />
-        </div>
-      )}
     </div>
   );
 };

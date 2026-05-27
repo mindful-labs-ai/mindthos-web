@@ -68,7 +68,12 @@ export function PsychologyAssessmentsContainer() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <PsychologyAssessmentsMain client={selectedClient} />
+        {/* 내담자별로 디테일 상태(mode·대화·선택 등)를 격리 — client.id로 remount해
+            전환 시 이전 내담자 상태가 남지 않고 새 내담자 서버 데이터로 재파생된다. */}
+        <PsychologyAssessmentsMain
+          key={selectedClient?.id ?? 'no-client'}
+          client={selectedClient}
+        />
       </div>
     </div>
   );
