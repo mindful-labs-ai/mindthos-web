@@ -13,10 +13,10 @@ import {
 } from '../../hooks/useAssessmentBatch';
 import type {
   AssessmentKind,
-  AssessmentProgress,
   AssessmentUploadGateway,
   AssessmentUploadInput,
 } from '../../upload/assessmentUploadGateway';
+import { ocrReviewPercent } from '../../upload/ocrProgress';
 import { serverAssessmentUploadAdapter } from '../../upload/serverAssessmentUploadAdapter';
 
 import {
@@ -52,6 +52,12 @@ interface RegisterAssessmentsModalProps {
   clientId?: string;
   /** 업로드 gateway (주입). 미지정 시 서버 adapter 사용. 테스트는 mock 주입. */
   uploadGateway?: AssessmentUploadGateway;
+  /**
+   * 이어보기 모드. 진행 중/검토 대기 배치가 이미 서버에 있을 때 true로 열면 step1(신규
+   * 업로드)이 아니라 reviewing(진행 표시)으로 복원한다. 전부 종료된 배치면 내부 폴링이
+   * 자동으로 step2(검증/보완)로 올린다. false면 기존대로 빈 업로드 화면에서 시작.
+   */
+  resume?: boolean;
 }
 
 /** 프론트 검사 종류 id → 도메인 AssessmentKind. 'other'는 업로드 미지원. */
@@ -73,19 +79,6 @@ const inferTypeIdFromName = (name: string): AssessmentTypeId | null => {
 const KIND_TO_CATEGORY: Record<AssessmentKind, string> = {
   mmpi: '다면적 인성 검사',
   tci: '기질 검사',
-};
-
-/**
- * 검토 진행률용 건당 단계 가중치(0~1). 건들의 평균 × 100 = 전체 %.
- * 2건 기준: 건당 최대 50% → INITIATED 10 / PENDING 20 / PROCESSING 30 / COMPLETED 50.
- * (배치에 아직 안 나타난 건은 polledItems에 없어 0% 기여 → 첫 폴링 전 0%.)
- */
-const STAGE_PROGRESS: Record<AssessmentProgress, number> = {
-  initiated: 0.2,
-  pending: 0.4,
-  processing: 0.6,
-  completed: 1,
-  failed: 1,
 };
 
 /**
@@ -253,6 +246,7 @@ export const RegisterAssessmentsModal = ({
   onAnalyze,
   clientId,
   uploadGateway = serverAssessmentUploadAdapter,
+  resume = false,
 }: RegisterAssessmentsModalProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -282,15 +276,10 @@ export const RegisterAssessmentsModal = ({
   const { data: polledItems = [] } = useAssessmentBatch(clientId, {
     enabled: isReviewing,
   });
-  // 진행률: 건당 단계 가중치(STAGE_PROGRESS)를 평균내 100% 환산. 항목 없으면 0.
-  const realReviewingPercent = useMemo(() => {
-    if (polledItems.length === 0) return 0;
-    const sum = polledItems.reduce(
-      (acc, it) => acc + (STAGE_PROGRESS[it.progress] ?? 0),
-      0,
-    );
-    return Math.round((sum / polledItems.length) * 100);
-  }, [polledItems]);
+  const realReviewingPercent = useMemo(
+    () => ocrReviewPercent(polledItems),
+    [polledItems],
+  );
 
   // 전부 종료되면 Step2로 진행
   useEffect(() => {
@@ -411,22 +400,29 @@ export const RegisterAssessmentsModal = ({
     }
   };
 
-  /* -------- 실모드: 열 때마다 깨끗하게 초기화 -------- */
-  // 닫힘→열림 전이에서만 리셋(업로드 진행 중 재실행 방지). 이전 세션의 step3/파일/
-  // 입력값/blob이 남지 않도록 step1 empty 상태로 되돌린다.
+  /* -------- 실모드: 열 때 상태 초기화 / 이어보기 복원 -------- */
+  // 닫힘→열림 전이에서만 실행(진행 중 재실행 방지).
+  // - resume: 서버에 진행 중/검토 대기 배치가 있는 경우 → reviewing으로 복원.
+  //   폴링이 돌며, 전부 종료된 배치면 아래 effect가 자동으로 step2(검증/보완)로 올린다.
+  // - 일반: 이전 세션의 step3/파일/입력값/blob을 비우고 step1 empty에서 시작.
   const wasOpenRef = useRef(false);
   useEffect(() => {
     if (open && !wasOpenRef.current && realUploadMode) {
-      setStep(1);
-      setStep1Sub('empty');
-      setFiles([]);
       setUploadError(null);
       setConfirmError(null);
-      setFillingValues({});
-      fileBlobsRef.current.clear();
+      if (resume) {
+        setStep(1);
+        setStep1Sub('reviewing');
+      } else {
+        setStep(1);
+        setStep1Sub('empty');
+        setFiles([]);
+        setFillingValues({});
+        fileBlobsRef.current.clear();
+      }
     }
     wasOpenRef.current = open;
-  }, [open, realUploadMode]);
+  }, [open, realUploadMode, resume]);
 
   /* -------- escape / scroll lock -------- */
   useEffect(() => {

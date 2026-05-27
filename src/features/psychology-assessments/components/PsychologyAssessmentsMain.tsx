@@ -27,6 +27,7 @@ import {
   useResetToOcrPhase,
 } from '../hooks/useAssessmentBatch';
 import type { AssessmentKind, AssessmentProgress } from '../upload/assessmentUploadGateway';
+import { deriveOcrStage, ocrReviewPercent } from '../upload/ocrProgress';
 
 import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisDisclaimer } from './AnalysisDisclaimer';
@@ -161,6 +162,17 @@ export const PsychologyAssessmentsMain = ({
   // 임시 평가용 대화 상태
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  // 모달 진입 의도: resume=true면 진행 중/검토 대기 배치를 reviewing으로 복원,
+  // false면 신규 업로드(step1)로 시작.
+  const [modalResume, setModalResume] = useState(false);
+  const openUploadModal = () => {
+    setModalResume(false);
+    setIsRegisterModalOpen(true);
+  };
+  const openResumeModal = () => {
+    setModalResume(true);
+    setIsRegisterModalOpen(true);
+  };
 
   // 등록 결과지 popover
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -236,6 +248,32 @@ export const PsychologyAssessmentsMain = ({
     !!clientId &&
     (!analysisStatusData ||
       (analysisStatusData.chatActiveStatus === 'OCR_PHASE' && isBatchLoading));
+
+  // OCR_PHASE 배치의 진행 단계(서버 배치 상태 기반). 실클라이언트 + 드래프트 있을 때만.
+  // reviewing(진행 중) / needs_review(검토 필요) / ready(분석 가능).
+  const ocrStage =
+    clientId && mode === 'registered' && realAssessments.length > 0
+      ? deriveOcrStage(realAssessments)
+      : null;
+  const ocrPercent =
+    ocrStage === 'reviewing' ? ocrReviewPercent(realAssessments) : 100;
+
+  // 진입·새로고침 시 진행 중/검토 대기 배치가 감지되면 모달을 자동으로 열어(이어보기)
+  // 진행/검토 화면을 바로 보여준다. 내담자별 remount(key=clientId)라 ref도 같이 초기화되어
+  // 새로고침/다른 페이지 진입 시 다시 감지된다. 사용자가 닫으면 같은 세션에선 재오픈 안 함.
+  const autoOpenedRef = useRef(false);
+  useEffect(() => {
+    if (!clientId) return;
+    if (ocrStage === 'reviewing' || ocrStage === 'needs_review') {
+      if (!autoOpenedRef.current && !isRegisterModalOpen) {
+        autoOpenedRef.current = true;
+        // 서버 배치 상태(비동기) 감지에 반응해 모달을 여는 부수효과 — 렌더 중 파생 불가
+        // (모달 open은 사용자가 닫을 수 있는 UI 상태). 진입당 1회만 실행.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        openResumeModal();
+      }
+    }
+  }, [clientId, ocrStage, isRegisterModalOpen]);
 
   // analyzed 진입 시 서버에서 채팅 이력 로드(과거 대화 복원). 최신순 → 과거순으로 뒤집어
   // 각 메시지를 user(input)+assistant(output) 턴으로 변환. (전송은 별도; 여기선 초기 로드만)
@@ -488,26 +526,76 @@ export const PsychologyAssessmentsMain = ({
       </div>
     );
   } else if (mode === 'empty') {
-    bodyContent = (
-      <EmptyAssessmentsView onRegister={() => setIsRegisterModalOpen(true)} />
-    );
+    bodyContent = <EmptyAssessmentsView onRegister={openUploadModal} />;
   } else if (mode === 'registered') {
-    bodyContent = (
-      <div className="flex flex-1 flex-col items-center justify-center gap-8">
-        <RegisteredAssessmentsCard
-          files={files}
-          onAddFile={() => setIsRegisterModalOpen(true)}
-          onRemoveFile={
-            clientId ? (id) => deleteAssessmentMut.mutate(id) : handleRemoveFile
-          }
-        />
-        <AnalyzeCtaSection
-          creditCost={analyzeCost}
-          disabled={startAnalysisMut.isPending}
-          onClick={handleStartAnalysis}
-        />
-      </div>
+    // OCR 단계별 분기(데모는 ocrStage null → ready로 취급).
+    const stage = ocrStage ?? 'ready';
+    const assessmentsCard = (
+      <RegisteredAssessmentsCard
+        files={files}
+        onAddFile={openUploadModal}
+        onRemoveFile={
+          clientId ? (id) => deleteAssessmentMut.mutate(id) : handleRemoveFile
+        }
+      />
     );
+    if (stage === 'reviewing') {
+      bodyContent = (
+        <div className="flex flex-1 flex-col items-center justify-center gap-6">
+          <Spinner size="lg" ariaLabel="검사지 인식 중" />
+          <div className="flex w-full max-w-[320px] items-center gap-3">
+            <div className="relative h-1.5 flex-1 overflow-hidden bg-grey-30">
+              <div
+                className="h-full bg-green-80 transition-[width] duration-fast"
+                style={{ width: `${ocrPercent}%` }}
+              />
+            </div>
+            <span className="text-sm font-medium text-grey-70">
+              {ocrPercent}%
+            </span>
+          </div>
+          <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
+            {'심리검사 결과지를 인식(OCR)하고 있어요.\n최대 1~2분 정도 소요됩니다.'}
+          </p>
+          <button
+            type="button"
+            onClick={openResumeModal}
+            className="rounded-md border border-grey-80 px-[21px] py-1.5 text-m font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
+          >
+            진행 상황 보기
+          </button>
+        </div>
+      );
+    } else if (stage === 'needs_review') {
+      bodyContent = (
+        <div className="flex flex-1 flex-col items-center justify-center gap-8">
+          {assessmentsCard}
+          <div className="flex flex-col items-center gap-5">
+            <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
+              {'확인이 필요한 결과지가 있어요.\n내용을 검토하고 빈 항목을 채워주세요.'}
+            </p>
+            <button
+              type="button"
+              onClick={openResumeModal}
+              className="inline-flex items-center gap-2 rounded-md border border-green-80 bg-green-20 px-3.5 py-1.5 text-m font-medium text-green-80 transition-opacity lg:hover:opacity-75"
+            >
+              이어서 검토하기
+            </button>
+          </div>
+        </div>
+      );
+    } else {
+      bodyContent = (
+        <div className="flex flex-1 flex-col items-center justify-center gap-8">
+          {assessmentsCard}
+          <AnalyzeCtaSection
+            creditCost={analyzeCost}
+            disabled={startAnalysisMut.isPending}
+            onClick={handleStartAnalysis}
+          />
+        </div>
+      );
+    }
   } else if (mode === 'analyzing') {
     bodyContent = (
       <div className="flex flex-1 flex-col items-center justify-center">
@@ -631,6 +719,7 @@ export const PsychologyAssessmentsMain = ({
         analyzeCost={analyzeCost}
         onAnalyze={handleStartAnalysis}
         clientId={client.id}
+        resume={modalResume}
       />
 
       <ResetConfirmModal
