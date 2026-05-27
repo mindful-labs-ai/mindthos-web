@@ -5,7 +5,7 @@ import { useDevice } from '@/shared/hooks/useDevice';
 
 import type { JsonSchema } from '../../../schemas/jsonSchema.types';
 import {
-  collectUnits,
+  collectLeaves,
   schemaToFields,
   type FormLeaf,
   type FormNode,
@@ -64,8 +64,10 @@ export const SchemaForm = ({
     () => (visibleLeaf ? pruneNodes(allNodes, visibleLeaf) : allNodes),
     [allNodes, visibleLeaf]
   );
-  // 카운팅은 "스키마 라벨" 단위. 한 라벨 아래 입력 N개여도 1개로 취급.
-  const units = useMemo(() => collectUnits(nodes), [nodes]);
+  // 카운팅은 leaf(입력칸) 단위 — 검증 요약(누락 leaf 수)과 동일 기준으로 맞춘다.
+  // (라벨 단위로 세면 결정적문항처럼 한 라벨에 그렇다/아니다 2칸인 경우 요약 13 vs 폼 10으로
+  //  어긋나고, 채워도 완료 카운트가 안 맞는 문제가 생긴다.)
+  const leaves = useMemo(() => collectLeaves(nodes), [nodes]);
 
   const [values, setValues] = useState<Record<string, string>>({});
 
@@ -73,21 +75,20 @@ export const SchemaForm = ({
     setValues((prev) => ({ ...prev, [path]: value }));
   };
 
-  const filled = useMemo(() => {
-    return units.reduce((acc, unit) => {
-      const allFilled = unit.leafPaths.every((p) => {
-        const v = values[p];
+  const filled = useMemo(
+    () =>
+      leaves.filter((leaf) => {
+        const v = values[leaf.path];
         return !!v && v.trim() !== '';
-      });
-      return acc + (allFilled ? 1 : 0);
-    }, 0);
-  }, [units, values]);
+      }).length,
+    [leaves, values]
+  );
 
   const onCountsChangeRef = useRef(onCountsChange);
   onCountsChangeRef.current = onCountsChange;
   useEffect(() => {
-    onCountsChangeRef.current?.({ filled, total: units.length });
-  }, [filled, units.length]);
+    onCountsChangeRef.current?.({ filled, total: leaves.length });
+  }, [filled, leaves.length]);
 
   const onValuesChangeRef = useRef(onValuesChange);
   useEffect(() => {
