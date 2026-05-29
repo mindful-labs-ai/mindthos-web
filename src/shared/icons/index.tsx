@@ -33,6 +33,7 @@ import {
   Minus,
   MoreVertical,
   Plus,
+  RotateCw,
   Search,
   Settings,
   SortDesc,
@@ -284,6 +285,9 @@ export const CopyIcon: React.FC<CustomIconProps> = ({
     />
   </svg>
 );
+
+/** Retry 아이콘 - 원형 화살표 (채팅 응답 재시도) */
+export const RetryIcon: IconComponent = (props) => <RotateCw {...props} />;
 
 /** Edit 아이콘 - 세션 카드 제목 편집 펜 */
 export const TitleEdit: React.FC<CustomIconProps> = ({
