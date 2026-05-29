@@ -4,10 +4,16 @@ import { supabase } from '@/lib/supabase';
  * mindthos-server (NestJS) 전용 REST 클라이언트.
  *
  * - 인증: Supabase access token을 Bearer로 첨부 (서버가 GoTrue로 검증).
- * - 경로: `/v1/...` (dev는 vite proxy가 :3000으로 forward).
+ * - 주소: VITE_SERVER_API_URL(예: https://gateway-dev.mindthos.com)이 있으면 그 게이트웨이로
+ *   절대 호출, 없으면 상대경로 `/v1/...` (로컬은 vite proxy가 게이트웨이로 forward).
  * - 응답: 서버는 `{ statusCode, message, data }` 봉투로 응답하므로 data만 반환.
  */
 
+// 배포 게이트웨이 절대 URL(끝 슬래시 제거). 비어 있으면 상대경로 → 로컬은 vite dev proxy가 forward.
+const API_BASE = (import.meta.env.VITE_SERVER_API_URL ?? '').replace(
+  /\/+$/,
+  ''
+);
 const BASE_PATH = '/v1';
 
 interface ServerEnvelope<T> {
@@ -25,7 +31,7 @@ export class ServerApiError extends Error {
     status: number,
     statusCode: string,
     message: string,
-    raw?: unknown,
+    raw?: unknown
   ) {
     super(message);
     this.name = 'ServerApiError';
@@ -51,14 +57,14 @@ export async function serverRequest<T>(
   options: {
     method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
     body?: unknown;
-  } = {},
+  } = {}
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(await authHeader()),
   };
 
-  const res = await fetch(`${BASE_PATH}${path}`, {
+  const res = await fetch(`${API_BASE}${BASE_PATH}${path}`, {
     method: options.method ?? 'GET',
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
@@ -77,7 +83,7 @@ export async function serverRequest<T>(
       res.status,
       env?.statusCode ?? String(res.status),
       env?.message || `요청 실패 (${res.status})`,
-      payload,
+      payload
     );
   }
 
