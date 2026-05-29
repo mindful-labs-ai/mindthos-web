@@ -1,0 +1,383 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/mmpi2-record.json",
+  "title": "MMPI-2 Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "수검자정보",
+    "응답통계",
+    "타당도척도_및_임상척도",
+    "재구성임상척도_RC",
+    "성격병리5요인_PSY5",
+    "내용척도",
+    "내용소척도",
+    "보충척도",
+    "임상소척도_HarrisLingoes",
+    "결정적문항"
+  ],
+  "properties": {
+    "수검자정보":              { "$ref": "#/$defs/Subject" },
+    "응답통계":                { "$ref": "#/$defs/ResponseStats" },
+    "타당도척도_및_임상척도":   { "$ref": "#/$defs/ValidityClinical" },
+    "재구성임상척도_RC":       { "$ref": "#/$defs/RestructuredClinical" },
+    "성격병리5요인_PSY5":      { "$ref": "#/$defs/PSY5" },
+    "내용척도":                { "$ref": "#/$defs/ContentScales" },
+    "내용소척도":              { "$ref": "#/$defs/ContentSubscales" },
+    "보충척도":                { "$ref": "#/$defs/Supplementary" },
+    "임상소척도_HarrisLingoes": { "$ref": "#/$defs/HarrisLingoes" },
+    "결정적문항":              { "$ref": "#/$defs/CriticalItems" }
+  },
+
+  "$defs": {
+    "Subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["이름", "검사일", "나이", "성별"],
+      "properties": {
+        "이름":         { "type": "string" },
+        "검사일":       { "type": "string", "pattern": "^[0-9]{8}$", "description": "YYYYMMDD" },
+        "나이":         { "type": "integer", "minimum": 0 },
+        "성별":         { "type": "string", "enum": ["남자", "여자"] }
+      }
+    },
+
+    "ResponseStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["무응답_원점수", "그렇다_응답비율", "아니다_응답비율"],
+      "properties": {
+        "무응답_원점수":   { "type": "integer", "minimum": 0 },
+        "그렇다_응답비율": { "type": "string", "pattern": "^[0-9]{1,3}%$" },
+        "아니다_응답비율": { "type": "string", "pattern": "^[0-9]{1,3}%$" }
+      }
+    },
+
+    "ScaleScore": {
+      "type": "object",
+      "description": "기본 척도: 원점수 + 전체규준T + 성별규준T",
+      "additionalProperties": false,
+      "required": ["원점수", "전체규준T", "성별규준T"],
+      "properties": {
+        "원점수":     { "type": "integer", "minimum": 0 },
+        "전체규준T":  { "type": "integer" },
+        "성별규준T":  { "type": "integer" }
+      }
+    },
+
+    "KCorrectedScale": {
+      "type": "object",
+      "description": "K교정이 적용되는 임상척도: Hs(+.5K), Pd(+.4K), Pt(+1K), Sc(+1K), Ma(+.2K)",
+      "additionalProperties": false,
+      "required": [
+        "원점수",
+        "K교정점수",
+        "전체규준T",
+        "전체규준T_K교정안함",
+        "성별규준T",
+        "성별규준T_K교정안함"
+      ],
+      "properties": {
+        "원점수":              { "type": "integer", "minimum": 0 },
+        "K교정점수":           { "type": "integer", "minimum": 0 },
+        "전체규준T":           { "type": "integer" },
+        "전체규준T_K교정안함": { "type": "integer" },
+        "성별규준T":           { "type": "integer" },
+        "성별규준T_K교정안함": { "type": "integer" }
+      }
+    },
+
+    "TRINTScore": {
+      "description": "TRIN T점수: 평형 구간(원점수가 표준에 가까울 때)은 정수, 그 외에는 방향성 접미사(T/F)가 붙는 문자열",
+      "oneOf": [
+        { "type": "integer" },
+        { "type": "string", "pattern": "^[0-9]{1,3}[TF]$" }
+      ]
+    },
+
+    "TRINScale": {
+      "type": "object",
+      "description": "TRIN: T점수에 방향성(T/F) 접미사가 붙을 수 있는 특수 척도",
+      "additionalProperties": false,
+      "required": ["원점수", "전체규준T", "성별규준T"],
+      "properties": {
+        "원점수":     { "type": "integer", "minimum": 0 },
+        "전체규준T":  { "$ref": "#/$defs/TRINTScore" },
+        "성별규준T":  { "$ref": "#/$defs/TRINTScore" }
+      }
+    },
+
+    "ValidityClinical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "VRIN", "TRIN", "F", "F(B)", "F(P)", "FBS", "L", "K", "S",
+        "Hs(+.5K)", "D", "Hy", "Pd(+.4K)", "Mf", "Pa",
+        "Pt(+1K)", "Sc(+1K)", "Ma(+.2K)", "Si"
+      ],
+      "properties": {
+        "VRIN":     { "$ref": "#/$defs/ScaleScore" },
+        "TRIN":     { "$ref": "#/$defs/TRINScale" },
+        "F":        { "$ref": "#/$defs/ScaleScore" },
+        "F(B)":     { "$ref": "#/$defs/ScaleScore" },
+        "F(P)":     { "$ref": "#/$defs/ScaleScore" },
+        "FBS":      { "$ref": "#/$defs/ScaleScore" },
+        "L":        { "$ref": "#/$defs/ScaleScore" },
+        "K":        { "$ref": "#/$defs/ScaleScore" },
+        "S":        { "$ref": "#/$defs/ScaleScore" },
+        "Hs(+.5K)": { "$ref": "#/$defs/KCorrectedScale" },
+        "D":        { "$ref": "#/$defs/ScaleScore" },
+        "Hy":       { "$ref": "#/$defs/ScaleScore" },
+        "Pd(+.4K)": { "$ref": "#/$defs/KCorrectedScale" },
+        "Mf":       { "$ref": "#/$defs/ScaleScore" },
+        "Pa":       { "$ref": "#/$defs/ScaleScore" },
+        "Pt(+1K)":  { "$ref": "#/$defs/KCorrectedScale" },
+        "Sc(+1K)":  { "$ref": "#/$defs/KCorrectedScale" },
+        "Ma(+.2K)": { "$ref": "#/$defs/KCorrectedScale" },
+        "Si":       { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "RestructuredClinical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["RCd", "RC1", "RC2", "RC3", "RC4", "RC6", "RC7", "RC8", "RC9"],
+      "properties": {
+        "RCd": { "$ref": "#/$defs/ScaleScore" },
+        "RC1": { "$ref": "#/$defs/ScaleScore" },
+        "RC2": { "$ref": "#/$defs/ScaleScore" },
+        "RC3": { "$ref": "#/$defs/ScaleScore" },
+        "RC4": { "$ref": "#/$defs/ScaleScore" },
+        "RC6": { "$ref": "#/$defs/ScaleScore" },
+        "RC7": { "$ref": "#/$defs/ScaleScore" },
+        "RC8": { "$ref": "#/$defs/ScaleScore" },
+        "RC9": { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "PSY5": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["AGGR", "DISC", "INTR", "NEGE", "PSYC"],
+      "properties": {
+        "AGGR": { "$ref": "#/$defs/ScaleScore" },
+        "DISC": { "$ref": "#/$defs/ScaleScore" },
+        "INTR": { "$ref": "#/$defs/ScaleScore" },
+        "NEGE": { "$ref": "#/$defs/ScaleScore" },
+        "PSYC": { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "ContentScales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ANX", "FRS", "OBS", "DEP", "HEA", "BIZ", "ANG", "CYN",
+        "ASP", "TPA", "LSE", "SOD", "FAM", "WRK", "TRT"
+      ],
+      "properties": {
+        "ANX": { "$ref": "#/$defs/ScaleScore" },
+        "FRS": { "$ref": "#/$defs/ScaleScore" },
+        "OBS": { "$ref": "#/$defs/ScaleScore" },
+        "DEP": { "$ref": "#/$defs/ScaleScore" },
+        "HEA": { "$ref": "#/$defs/ScaleScore" },
+        "BIZ": { "$ref": "#/$defs/ScaleScore" },
+        "ANG": { "$ref": "#/$defs/ScaleScore" },
+        "CYN": { "$ref": "#/$defs/ScaleScore" },
+        "ASP": { "$ref": "#/$defs/ScaleScore" },
+        "TPA": { "$ref": "#/$defs/ScaleScore" },
+        "LSE": { "$ref": "#/$defs/ScaleScore" },
+        "SOD": { "$ref": "#/$defs/ScaleScore" },
+        "FAM": { "$ref": "#/$defs/ScaleScore" },
+        "WRK": { "$ref": "#/$defs/ScaleScore" },
+        "TRT": { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "ContentSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ANG", "ANG1_폭발적행동", "ANG2_성마름",
+        "ASP", "ASP1_반사회적태도", "ASP2_반사회적행동",
+        "BIZ", "BIZ1_정신증적증상", "BIZ2_조현형성격특성",
+        "CYN", "CYN1_염세적신념", "CYN2_대인의심",
+        "DEP", "DEP1_동기결여", "DEP2_기분부전", "DEP3_자기비하", "DEP4_자살사고",
+        "FAM", "FAM1_가정불화", "FAM2_가족내소외",
+        "FRS", "FRS1_일반화된공포", "FRS2_특정공포",
+        "HEA", "HEA1_소화기증상", "HEA2_신경학적증상", "HEA3_일반적인건강염려",
+        "LSE", "LSE1_자기회의", "LSE2_순종성",
+        "SOD", "SOD1_내향성", "SOD2_수줍음",
+        "TPA", "TPA1_조급함", "TPA2_경쟁욕구",
+        "TRT", "TRT1_낮은동기", "TRT2_낮은자기개방"
+      ],
+      "properties": {
+        "ANG":               { "$ref": "#/$defs/ScaleScore" },
+        "ANG1_폭발적행동":   { "$ref": "#/$defs/ScaleScore" },
+        "ANG2_성마름":       { "$ref": "#/$defs/ScaleScore" },
+        "ASP":               { "$ref": "#/$defs/ScaleScore" },
+        "ASP1_반사회적태도": { "$ref": "#/$defs/ScaleScore" },
+        "ASP2_반사회적행동": { "$ref": "#/$defs/ScaleScore" },
+        "BIZ":               { "$ref": "#/$defs/ScaleScore" },
+        "BIZ1_정신증적증상": { "$ref": "#/$defs/ScaleScore" },
+        "BIZ2_조현형성격특성": { "$ref": "#/$defs/ScaleScore" },
+        "CYN":               { "$ref": "#/$defs/ScaleScore" },
+        "CYN1_염세적신념":   { "$ref": "#/$defs/ScaleScore" },
+        "CYN2_대인의심":     { "$ref": "#/$defs/ScaleScore" },
+        "DEP":               { "$ref": "#/$defs/ScaleScore" },
+        "DEP1_동기결여":     { "$ref": "#/$defs/ScaleScore" },
+        "DEP2_기분부전":     { "$ref": "#/$defs/ScaleScore" },
+        "DEP3_자기비하":     { "$ref": "#/$defs/ScaleScore" },
+        "DEP4_자살사고":     { "$ref": "#/$defs/ScaleScore" },
+        "FAM":               { "$ref": "#/$defs/ScaleScore" },
+        "FAM1_가정불화":     { "$ref": "#/$defs/ScaleScore" },
+        "FAM2_가족내소외":   { "$ref": "#/$defs/ScaleScore" },
+        "FRS":               { "$ref": "#/$defs/ScaleScore" },
+        "FRS1_일반화된공포": { "$ref": "#/$defs/ScaleScore" },
+        "FRS2_특정공포":     { "$ref": "#/$defs/ScaleScore" },
+        "HEA":               { "$ref": "#/$defs/ScaleScore" },
+        "HEA1_소화기증상":   { "$ref": "#/$defs/ScaleScore" },
+        "HEA2_신경학적증상": { "$ref": "#/$defs/ScaleScore" },
+        "HEA3_일반적인건강염려": { "$ref": "#/$defs/ScaleScore" },
+        "LSE":               { "$ref": "#/$defs/ScaleScore" },
+        "LSE1_자기회의":     { "$ref": "#/$defs/ScaleScore" },
+        "LSE2_순종성":       { "$ref": "#/$defs/ScaleScore" },
+        "SOD":               { "$ref": "#/$defs/ScaleScore" },
+        "SOD1_내향성":       { "$ref": "#/$defs/ScaleScore" },
+        "SOD2_수줍음":       { "$ref": "#/$defs/ScaleScore" },
+        "TPA":               { "$ref": "#/$defs/ScaleScore" },
+        "TPA1_조급함":       { "$ref": "#/$defs/ScaleScore" },
+        "TPA2_경쟁욕구":     { "$ref": "#/$defs/ScaleScore" },
+        "TRT":               { "$ref": "#/$defs/ScaleScore" },
+        "TRT1_낮은동기":     { "$ref": "#/$defs/ScaleScore" },
+        "TRT2_낮은자기개방": { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "Supplementary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "A", "R", "Es", "Do", "Re", "Mt", "PK",
+        "MDS", "Ho", "O-H", "MAC-R", "AAS", "APS", "GM", "GF"
+      ],
+      "properties": {
+        "A":     { "$ref": "#/$defs/ScaleScore" },
+        "R":     { "$ref": "#/$defs/ScaleScore" },
+        "Es":    { "$ref": "#/$defs/ScaleScore" },
+        "Do":    { "$ref": "#/$defs/ScaleScore" },
+        "Re":    { "$ref": "#/$defs/ScaleScore" },
+        "Mt":    { "$ref": "#/$defs/ScaleScore" },
+        "PK":    { "$ref": "#/$defs/ScaleScore" },
+        "MDS":   { "$ref": "#/$defs/ScaleScore" },
+        "Ho":    { "$ref": "#/$defs/ScaleScore" },
+        "O-H":   { "$ref": "#/$defs/ScaleScore" },
+        "MAC-R": { "$ref": "#/$defs/ScaleScore" },
+        "AAS":   { "$ref": "#/$defs/ScaleScore" },
+        "APS":   { "$ref": "#/$defs/ScaleScore" },
+        "GM":    { "$ref": "#/$defs/ScaleScore" },
+        "GF":    { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "HarrisLingoes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "D", "D1_주관적우울감", "D2_정신운동지체", "D3_신체적기능장애", "D4_둔감성", "D5_깊은근심",
+        "Hy", "Hy1_사회적불안의부인", "Hy2_애정욕구", "Hy3_권태무기력", "Hy4_신체증상호소", "Hy5_공격성의억제",
+        "Pd", "Pd1_가정불화", "Pd2_권위불화", "Pd3_사회적침착성", "Pd4_사회적소외", "Pd5_내적소외",
+        "Pa", "Pa1_피해의식", "Pa2_예민성", "Pa3_순진성",
+        "Sc", "Sc1_사회적소외", "Sc2_정서적소외", "Sc3_자아통합결여_인지적", "Sc4_자아통합결여_동기적", "Sc5_자아통합결여_억제부전", "Sc6_기태적감각경험",
+        "Ma", "Ma1_비도덕성", "Ma2_심신운동항진", "Ma3_냉정함", "Ma4_자아팽창",
+        "Si", "Si1_수줍음_자의식", "Si2_사회적회피", "Si3_내적_외적소외"
+      ],
+      "properties": {
+        "D":                       { "$ref": "#/$defs/ScaleScore" },
+        "D1_주관적우울감":         { "$ref": "#/$defs/ScaleScore" },
+        "D2_정신운동지체":         { "$ref": "#/$defs/ScaleScore" },
+        "D3_신체적기능장애":       { "$ref": "#/$defs/ScaleScore" },
+        "D4_둔감성":               { "$ref": "#/$defs/ScaleScore" },
+        "D5_깊은근심":             { "$ref": "#/$defs/ScaleScore" },
+        "Hy":                      { "$ref": "#/$defs/ScaleScore" },
+        "Hy1_사회적불안의부인":    { "$ref": "#/$defs/ScaleScore" },
+        "Hy2_애정욕구":            { "$ref": "#/$defs/ScaleScore" },
+        "Hy3_권태무기력":          { "$ref": "#/$defs/ScaleScore" },
+        "Hy4_신체증상호소":        { "$ref": "#/$defs/ScaleScore" },
+        "Hy5_공격성의억제":        { "$ref": "#/$defs/ScaleScore" },
+        "Pd":                      { "$ref": "#/$defs/ScaleScore" },
+        "Pd1_가정불화":            { "$ref": "#/$defs/ScaleScore" },
+        "Pd2_권위불화":            { "$ref": "#/$defs/ScaleScore" },
+        "Pd3_사회적침착성":        { "$ref": "#/$defs/ScaleScore" },
+        "Pd4_사회적소외":          { "$ref": "#/$defs/ScaleScore" },
+        "Pd5_내적소외":            { "$ref": "#/$defs/ScaleScore" },
+        "Pa":                      { "$ref": "#/$defs/ScaleScore" },
+        "Pa1_피해의식":            { "$ref": "#/$defs/ScaleScore" },
+        "Pa2_예민성":              { "$ref": "#/$defs/ScaleScore" },
+        "Pa3_순진성":              { "$ref": "#/$defs/ScaleScore" },
+        "Sc":                      { "$ref": "#/$defs/ScaleScore" },
+        "Sc1_사회적소외":          { "$ref": "#/$defs/ScaleScore" },
+        "Sc2_정서적소외":          { "$ref": "#/$defs/ScaleScore" },
+        "Sc3_자아통합결여_인지적": { "$ref": "#/$defs/ScaleScore" },
+        "Sc4_자아통합결여_동기적": { "$ref": "#/$defs/ScaleScore" },
+        "Sc5_자아통합결여_억제부전": { "$ref": "#/$defs/ScaleScore" },
+        "Sc6_기태적감각경험":      { "$ref": "#/$defs/ScaleScore" },
+        "Ma":                      { "$ref": "#/$defs/ScaleScore" },
+        "Ma1_비도덕성":            { "$ref": "#/$defs/ScaleScore" },
+        "Ma2_심신운동항진":        { "$ref": "#/$defs/ScaleScore" },
+        "Ma3_냉정함":              { "$ref": "#/$defs/ScaleScore" },
+        "Ma4_자아팽창":            { "$ref": "#/$defs/ScaleScore" },
+        "Si":                      { "$ref": "#/$defs/ScaleScore" },
+        "Si1_수줍음_자의식":       { "$ref": "#/$defs/ScaleScore" },
+        "Si2_사회적회피":          { "$ref": "#/$defs/ScaleScore" },
+        "Si3_내적_외적소외":       { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "CriticalItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["그렇다", "아니다"],
+      "properties": {
+        "그렇다": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[0-9]{1,3}$" }
+        },
+        "아니다": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[0-9]{1,3}$" }
+        }
+      }
+    },
+
+    "CriticalItems": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "급성불안", "우울_자살사고", "우울_걱정", "위협적행동", "분노",
+        "정신적혼란", "편집적사고", "기이한사고_경험", "기이한신념",
+        "반사회적태도", "가족갈등", "신체증상", "수면장애",
+        "불안_긴장", "성적관심_편향", "알코올문제", "약물남용"
+      ],
+      "properties": {
+        "급성불안":       { "$ref": "#/$defs/CriticalItem" },
+        "우울_자살사고":  { "$ref": "#/$defs/CriticalItem" },
+        "우울_걱정":      { "$ref": "#/$defs/CriticalItem" },
+        "위협적행동":     { "$ref": "#/$defs/CriticalItem" },
+        "분노":           { "$ref": "#/$defs/CriticalItem" },
+        "정신적혼란":     { "$ref": "#/$defs/CriticalItem" },
+        "편집적사고":     { "$ref": "#/$defs/CriticalItem" },
+        "기이한사고_경험":{ "$ref": "#/$defs/CriticalItem" },
+        "기이한신념":     { "$ref": "#/$defs/CriticalItem" },
+        "반사회적태도":   { "$ref": "#/$defs/CriticalItem" },
+        "가족갈등":       { "$ref": "#/$defs/CriticalItem" },
+        "신체증상":       { "$ref": "#/$defs/CriticalItem" },
+        "수면장애":       { "$ref": "#/$defs/CriticalItem" },
+        "불안_긴장":      { "$ref": "#/$defs/CriticalItem" },
+        "성적관심_편향":  { "$ref": "#/$defs/CriticalItem" },
+        "알코올문제":     { "$ref": "#/$defs/CriticalItem" },
+        "약물남용":       { "$ref": "#/$defs/CriticalItem" }
+      }
+    }
+  }
+}

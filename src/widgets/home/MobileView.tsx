@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { createSearchParams, Link, useSearchParams } from 'react-router-dom';
 
 import { ROUTES, TERMS_TYPES } from '@/app/router/constants';
@@ -11,7 +12,7 @@ import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionC
 import type {
   BatchSessionConfig,
   FileSessionConfig,
-  SttModel,
+  SessionRequestSttModel,
 } from '@/features/session/types';
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
@@ -26,6 +27,8 @@ import {
   MULTI_UPLOAD_LIMITS,
 } from '@/shared/constants/fileUpload';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   ChevronLeftIcon,
@@ -91,6 +94,8 @@ const MobileView = () => {
 
   // 크레딧 정보
   const { creditInfo } = useCreditInfo();
+  const queryClient = useQueryClient();
+  const checkCredit = useCreditGuard();
 
   // 크레딧 부족 에러 상태
   const [creditErrorSnackBar, setCreditErrorSnackBar] = useState({
@@ -139,6 +144,12 @@ const MobileView = () => {
   const { createSessions, results, isCreating } = useMultiSessionCreate({
     userId: userId ? parseInt(userId) : 0,
     templateId: defaultTemplateId || 1,
+    onInsufficientCredit: (message) => {
+      setCreditErrorSnackBar({
+        open: true,
+        message,
+      });
+    },
   });
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -186,7 +197,7 @@ const MobileView = () => {
 
   // 일괄 설정 변경
   const handleBatchSttModelChange: React.Dispatch<
-    React.SetStateAction<SttModel>
+    React.SetStateAction<SessionRequestSttModel>
   > = (value) => {
     const sttModel =
       typeof value === 'function' ? value(batchConfig.sttModel) : value;
@@ -268,12 +279,12 @@ const MobileView = () => {
       return;
     }
 
-    // 크레딧 검증
-    const remainingCredit = creditInfo?.plan.remaining ?? 0;
-    if (step2TotalCredit > remainingCredit) {
+    // 크레딧 가드
+    const guard = await checkCredit(step2TotalCredit);
+    if (!guard.ok && !guard.unavailable) {
       setCreditErrorSnackBar({
         open: true,
-        message: `크레딧이 부족해요. 필요: ${step2TotalCredit}, 보유: ${remainingCredit}`,
+        message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
       });
       return;
     }
@@ -303,6 +314,14 @@ const MobileView = () => {
         title: '상담 기록 생성 실패',
         description: '모든 파일을 업로드하지 못했어요.',
         duration: 5000,
+      });
+    }
+
+    // 크레딧 잔액 갱신
+    const userIdNum = Number(userId);
+    if (!isNaN(userIdNum)) {
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userIdNum),
       });
     }
 

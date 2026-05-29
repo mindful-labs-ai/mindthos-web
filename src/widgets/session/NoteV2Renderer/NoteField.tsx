@@ -47,7 +47,7 @@ export function NoteField({
         </p>
       </div>
       {!editable && (
-        <div className="mt-1 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="mt-1 flex-shrink-0 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
           <CopyButton
             isCopied={copiedId === id}
             onClick={() => copy(textToCopy, id)}
@@ -96,7 +96,7 @@ export function NoteSubFields({
         </div>
       ))}
       {!editable && (
-        <div className="pt-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="pt-1 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
           <CopyButton
             isCopied={copiedId === id}
             onClick={() => copy(textToCopy, id)}

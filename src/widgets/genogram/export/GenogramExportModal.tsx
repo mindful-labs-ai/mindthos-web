@@ -37,7 +37,7 @@ export function GenogramExportModal({
 
   const { creditInfo } = useCreditInfo();
   const openModal = useModalStore((state) => state.openModal);
-  const isPro = isPlusOrAbove(creditInfo?.plan.type);
+  const canRemoveWatermark = isPlusOrAbove(creditInfo?.plan.type);
 
   const {
     backgroundId,
@@ -50,6 +50,7 @@ export function GenogramExportModal({
   } = useGenogramExport({
     rawImageData: imageData,
     watermarkSrc,
+    defaultShowWatermark: !canRemoveWatermark,
   });
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function GenogramExportModal({
   }, [open]);
 
   const handleWatermarkClick = () => {
-    if (isPro) {
+    if (canRemoveWatermark) {
       const nextValue = !showWatermark;
       setShowWatermark(nextValue);
       trackEvent(MixpanelEvent.GenogramExportWatermarkToggle, {
@@ -140,11 +141,13 @@ export function GenogramExportModal({
             <button
               type="button"
               onClick={handleWatermarkClick}
+              aria-label="워터마크 제거"
+              aria-pressed={!showWatermark}
               className={`relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 transition-colors ${
                 !showWatermark
                   ? 'border-primary bg-primary'
                   : 'border-border bg-surface-strong'
-              } ${!isPro ? 'opacity-50' : ''}`}
+              } ${!canRemoveWatermark ? 'opacity-50' : ''}`}
             >
               <span
                 className={`typo-sm font-headline text-primary-fg transition-opacity ${
@@ -157,7 +160,7 @@ export function GenogramExportModal({
           </div>
 
           {/* 업그레이드 팝업 */}
-          {showUpgradeTooltip && !isPro && !isMobileView && (
+          {showUpgradeTooltip && !canRemoveWatermark && !isMobileView && (
             <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-surface p-4 shadow-md">
               <button
                 type="button"
@@ -185,7 +188,7 @@ export function GenogramExportModal({
           {/* 모바일/태블릿: 업그레이드 모달 */}
           {isMobileView && (
             <Modal
-              open={showUpgradeTooltip && !isPro}
+              open={showUpgradeTooltip && !canRemoveWatermark}
               onOpenChange={setShowUpgradeTooltip}
               disableHistory
               className="mx-4 max-w-sm px-6 py-8"

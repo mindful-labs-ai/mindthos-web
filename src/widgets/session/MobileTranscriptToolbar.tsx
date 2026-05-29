@@ -48,6 +48,12 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
       hasActivatedDeid = false,
     }) => {
       const { isTablet } = useDevice();
+      const showUtteranceIndex = useSessionStore(
+        (state) => state.showUtteranceIndex
+      );
+      const setShowUtteranceIndex = useSessionStore(
+        (state) => state.setShowUtteranceIndex
+      );
 
       // 케밥 메뉴 아이콘
       const kebabIcon = (
@@ -236,6 +242,33 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                           />
                         </div>
                       </button>
+                      {enableTimestampFeatures && (
+                        <button
+                          onClick={() => {
+                            setShowUtteranceIndex(!showUtteranceIndex);
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
+                        >
+                          <span className="text-l text-grey-100">
+                            타임스탬프 가리기
+                          </span>
+                          <div
+                            className={`relative h-[26px] w-[46px] rounded-full border transition-colors ${
+                              showUtteranceIndex
+                                ? 'border-green-80/30 bg-green-80'
+                                : 'border-grey-40 bg-grey-30'
+                            }`}
+                          >
+                            <div
+                              className={`absolute top-[2px] h-[20px] w-[20px] rounded-full border border-white bg-white shadow transition-transform ${
+                                showUtteranceIndex
+                                  ? 'translate-x-[22px]'
+                                  : '!bg-grey-50 translate-x-[2px]'
+                              }`}
+                            />
+                          </div>
+                        </button>
+                      )}
                       {enableTimestampFeatures && (
                         <button
                           onClick={() => {

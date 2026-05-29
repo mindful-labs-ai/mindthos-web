@@ -10,6 +10,7 @@ import type {
   Transcribe,
   TranscribeSegment,
 } from '@/features/session/types';
+import { useSessionStore } from '@/stores/sessionStore';
 
 import { SegmentDeleteConfirmModal } from './SegmentDeleteConfirmModal';
 import { TranscriptSegment } from './TranscriptSegment';
@@ -66,6 +67,9 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
     }) => {
       const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(
         null
+      );
+      const showUtteranceIndex = useSessionStore(
+        (state) => state.showUtteranceIndex
       );
 
       const handleDeleteRequest = React.useCallback(
@@ -131,7 +135,9 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         onTextEdit={isReadOnly ? undefined : onTextEdit}
                         onNvEdit={isReadOnly ? undefined : onNvEdit}
                         onDeidEdit={isReadOnly ? undefined : onDeidEdit}
-                        showTimestamp={enableTimestampFeatures}
+                        showTimestamp={
+                          enableTimestampFeatures && !showUtteranceIndex
+                        }
                         speakerUtteranceIndex={speakerUtteranceIndex}
                         allSegments={segments}
                         clientId={clientId}

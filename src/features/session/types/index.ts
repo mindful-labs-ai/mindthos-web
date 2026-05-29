@@ -98,6 +98,11 @@ export interface Transcribe {
   contents: TranscriptJson | TranscribeContents | null; // 새 구조 또는 Legacy 구조
   stt_model: SttModel | null; // "whisper" | "gemini-3"
   parsed_text: string | null; // 파싱된 텍스트 (타임스탬프 포함 형식)
+  /**
+   * 리스트 표시용 미리보기 텍스트 (segments[0:3] 평문화).
+   * saveTranscript 시점에 app이 직접 작성. 기존 row는 NULL → FE에서 placeholder 처리.
+   */
+  preview: string | null;
   created_at: string;
 }
 
@@ -108,8 +113,43 @@ export interface HandwrittenTranscribe {
   user_id: number;
   counsel_date: string; // YYYY-MM-DD 형식
   contents: string; // 직접 입력된 텍스트 내용 (타임스탬프 포함)
+  /**
+   * 리스트 표시용 미리보기 (LEFT(contents, 200) generated column).
+   * INSERT/UPDATE 시 자동 동기화. 직접 변경 불가.
+   */
+  preview: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// 리스트 조회용 경량 타입 — 무거운 컬럼 제외 (contents, parsed_text, summary 등)
+export type TranscribeListItem = Pick<
+  Transcribe,
+  'id' | 'session_id' | 'preview' | 'stt_model' | 'created_at'
+>;
+
+export type HandwrittenTranscribeListItem = Pick<
+  HandwrittenTranscribe,
+  'id' | 'session_id' | 'preview' | 'created_at'
+>;
+
+export type ProgressNoteListItem = Pick<
+  ProgressNote,
+  | 'id'
+  | 'session_id'
+  | 'user_id'
+  | 'title'
+  | 'template_id'
+  | 'processing_status'
+  | 'error_message'
+  | 'created_at'
+  | 'note_version'
+>;
+
+export interface SessionListItem {
+  session: Session;
+  transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null;
+  progressNotes: ProgressNoteListItem[];
 }
 
 export type ProgressNoteStatus =
@@ -206,6 +246,13 @@ export type FileInfo = AudioFileInfo | PdfFileInfo;
 // 세션 생성 API 타입 (Backend Integration)
 // ============================================
 
+/**
+ * 세션 생성 요청에서 허용되는 STT 모델.
+ * mavo-api 의 Zod 스키마(`'basic' | 'advanced'`)와 동일해야 함.
+ * 광역 SttModel (`'whisper' | 'gemini-3'` 포함)은 응답/저장 데이터 표시용으로만 사용.
+ */
+export type SessionRequestSttModel = 'basic' | 'advanced';
+
 export interface CreateSessionBackgroundRequest {
   user_id: number;
   title: string;
@@ -213,14 +260,14 @@ export interface CreateSessionBackgroundRequest {
   file_size_mb: number;
   duration_seconds: number;
   client_id?: string | null;
-  stt_model: SttModel;
+  stt_model: SessionRequestSttModel;
   template_id: number;
 }
 
 export interface CreateSessionBackgroundResponse {
   session_id: string;
   status: 'accepted' | 'failed';
-  stt_model: SttModel;
+  stt_model: SessionRequestSttModel;
   message: string;
 }
 
@@ -248,13 +295,13 @@ export interface MultiFileInfo {
 export interface FileSessionConfig {
   fileId: string;
   order: number; // 업로드 순서
-  sttModel: SttModel; // 일반/고급
+  sttModel: SessionRequestSttModel; // 일반/고급 — 요청 가능한 2종으로 한정
   clientId?: string; // 내담자
 }
 
 // Step 1 일괄 설정
 export interface BatchSessionConfig {
-  sttModel: SttModel;
+  sttModel: SessionRequestSttModel;
   clientId?: string;
 }
 

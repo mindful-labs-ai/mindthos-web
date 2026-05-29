@@ -6,6 +6,19 @@ export const clientQueryKeys = {
     [...clientQueryKeys.lists(), counselorId] as const,
   details: () => [...clientQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...clientQueryKeys.details(), id] as const,
+  // C2 — 무한 스크롤 paginated 리스트. 검색/정렬별 분리 캐싱.
+  // list(counselorId) 아래에 nest → list 또는 all invalidate 시 paginated도 자동 propagate
+  paginated: (
+    counselorId: number,
+    search: string | null,
+    sortOrder: 'desc' | 'asc'
+  ) =>
+    [
+      ...clientQueryKeys.list(String(counselorId)),
+      'paginated',
+      search ?? '',
+      sortOrder,
+    ] as const,
 };
 
 // --- Template ---
@@ -45,6 +58,36 @@ export const sessionQueryKeys = {
     ['progress-note-status', progressNoteId] as const,
   progressNotesPolling: (sessionId: string) =>
     ['session-progress-notes-polling', sessionId] as const,
+  // C2 — 무한 스크롤 paginated 리스트. 정렬/필터별 분리 캐싱.
+  // all(userId) 아래에 nest → all invalidate 시 paginated도 자동 propagate
+  paginated: (
+    userId: number,
+    sortOrder: 'desc' | 'asc',
+    clientIds?: readonly string[]
+  ): readonly unknown[] => {
+    const base = [...sessionQueryKeys.all(userId), 'paginated', sortOrder];
+    if (!clientIds || clientIds.length === 0) return base;
+    return [...base, 'filter', [...clientIds].sort().join(',')];
+  },
+  paginatedByClient: (
+    userId: number,
+    clientId: string,
+    sortOrder: 'desc' | 'asc'
+  ) =>
+    [
+      ...sessionQueryKeys.all(userId),
+      'paginated',
+      'client',
+      clientId,
+      sortOrder,
+    ] as const,
+  allByClient: (userId: number, clientId: string, sortOrder: 'desc' | 'asc') =>
+    [
+      ...sessionQueryKeys.all(userId),
+      'all-by-client',
+      clientId,
+      sortOrder,
+    ] as const,
 };
 
 // --- Genogram ---
@@ -60,6 +103,8 @@ export const creditQueryKeys = {
   subscription: (userId: number) => ['credit', 'subscription', userId] as const,
   usage: (userId: number) => ['credit', 'usage', userId] as const,
   logs: (userId: number) => ['credit', 'logs', userId] as const,
+  // 신규 통합 RPC (get_credit_summary). 폴링 제거 + useCreditGuard와 같은 키 공유.
+  summary: (userId: number) => ['credit', 'summary', userId] as const,
 };
 
 // --- Card ---

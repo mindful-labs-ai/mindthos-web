@@ -64,6 +64,8 @@ export const dummySession: Session[] = [
 export const dummyTranscribe: Transcribe[] = [
   {
     id: 'dummy_transcribe_1',
+    preview:
+      '지난주에 말씀하신 프레젠테이션은 잘 마치셨나요? {%A%한숨%} 아니요, 완전히 망쳤어요. 시작하자마자 머리가 하얘져서... {%S%} 팀장님 표정 보니까 더 말이 안 나오더라고요. 너무 긴장하셨나 보네요. 준비는 열심히 하셨잖아요. 구체적으로 어떤 상황이었는지 기억나세요? 팀장님이 뭐라고 하시던가요?',
     session_id: 'dummy_session_1',
     user_id: 0,
     title: '홍길동 1회기',
@@ -1058,6 +1060,8 @@ export const dummyTranscribe: Transcribe[] = [
   },
   {
     id: 'dummy_transcribe_2',
+    preview:
+      '어서 오세요. 한 주 동안 잘 지내셨나요? 표정이 지난주보다는 조금 비장해 보이시네요. 네, 안녕하세요. {%S%} 결국 저질렀어요. 지난주에 상담받고 나서... 더 이상은 미루면 안 되겠다 싶어서 사직서 냈어요. 아, 정말 큰 결심을 실행하셨군요. 쉽지 않으셨을 텐데, 사직서를 낼 때 상황이 어땠나요? 바로 받아들여졌나요?',
     session_id: 'dummy_session_2',
     user_id: 0,
     title: '홍길동 2회기',
@@ -1569,6 +1573,8 @@ export const dummyTranscribe: Transcribe[] = [
   },
   {
     id: 'dummy_transcribe_3',
+    preview:
+      '어서 오세요. 오늘이 정말 마지막 출근일이었죠? 표정이 저번보다 훨씬 가벼워 보이네요. 네, 드디어 끝났어요. 오전에 사원증 반납하고 짐 챙겨서 나오는데... {%S%} 기분이 참 묘하더라고요. 시원할 줄만 알았는데 다리가 후들거려서 로비에 한참 앉아 있었어요. 긴장이 한꺼번에 풀려서 그랬을 거예요. 팀장님이나 동료들과 작별 인사는 잘 하셨나요?',
     session_id: 'dummy_session_3',
     user_id: 0,
     title: '홍길동 2회기',

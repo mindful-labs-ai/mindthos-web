@@ -23,7 +23,7 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     UPDATE: 'client',
     DELETE: 'client',
   },
-  // 내담자 분석 관련
+  // 다회기 분석 관련
   CLIENT_ANALYSIS: {
     CREATE: 'client-analysis',
     STATUS: (clientId: string, version: number) =>

@@ -192,7 +192,7 @@ export const AddNoteButtonTooltip = () => (
 export const TotalCompleteTooltip = ({ onConfirm }: TutorialTooltipProps) => (
   <ToolTipContainer
     title="새로운 상담노트 만들기 "
-    message="필요한 상황에 맞는 상담노트 양식을 선택해서 상담사님만의 노트를 만들어보세요. 노트 양식은 템플릿 페이지에서도 확인 할 수 있어요."
+    message="필요한 상황에 맞는 상담노트 양식을 선택해서 상담사님만의 노트를 만들어보세요. 노트 양식은 노트 양식 페이지에서도 확인 할 수 있어요."
     onConfirm={onConfirm}
     confirmText="가이드 완료하기"
     level={1}

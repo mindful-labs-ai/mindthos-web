@@ -7,8 +7,11 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>마음토스(mindthos) - 늘 곁에 있는 AI 수퍼바이저</title>
-    <meta name="description" content="마음토스 - 늘 곁에 있는 AI 수퍼바이저" />
+    <title>마음토스 — 안심하고 맡길 수 있는 상담사의 AI 파트너</title>
+    <meta
+      name="description"
+      content="상담사를 위한 안전한 AI 파트너. 축어록부터 사례개념화·가계도까지 상담 업무 전반을 한 곳에서."
+    />
     <meta name="application-name" content="마음토스" />
     <meta name="generator" content="Vite" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -30,10 +33,13 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="마음토스" />
-    <meta property="og:title" content="마음토스 - 늘 곁에 있는 AI 수퍼바이저" />
+    <meta
+      property="og:title"
+      content="마음토스 — 안심하고 맡길 수 있는 상담사의 AI 파트너"
+    />
     <meta
       property="og:description"
-      content="막막한 사례개념화부터 번거로운 행정까지, 마음토스는 상담사의 시간을 되찾고 성장을 돕는 임상 전문 AI입니다."
+      content="상담사를 위한 안전한 AI 파트너. 축어록부터 사례개념화·가계도까지 상담 업무 전반을 한 곳에서."
     />
     <meta property="og:url" content="https://app.mindthos.com/" />
     <meta property="og:locale" content="ko_KR" />
@@ -48,11 +54,11 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="마음토스 - 늘 곁에 있는 AI 수퍼바이저"
+      content="마음토스 — 안심하고 맡길 수 있는 상담사의 AI 파트너"
     />
     <meta
       name="twitter:description"
-      content="막막한 사례개념화부터 번거로운 행정까지, 마음토스는 상담사의 시간을 되찾고 성장을 돕는 임상 전문 AI입니다."
+      content="상담사를 위한 안전한 AI 파트너. 축어록부터 사례개념화·가계도까지 상담 업무 전반을 한 곳에서."
     />
     <meta
       name="twitter:image"
@@ -74,6 +80,10 @@
     <meta
       name="naver-site-verification"
       content="0052a5554759a4860f31ad1b50a910b37e0a2b9b"
+    />
+    <meta
+      name="facebook-domain-verification"
+      content="lcvej6t79ywtujnl3a0wvsthmmdkpd"
     />
 
     <script type="application/ld+json">
@@ -122,6 +132,72 @@
       href="/logo_mindthos_kr.webp"
       type="image/webp"
     />
+
+    <!-- Google Analytics 4 (cross-domain with mindthos.com) -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-Z3DT8LX40Y"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-Z3DT8LX40Y', {
+        linker: { domains: ['mindthos.com', 'app.mindthos.com'] },
+        send_page_view: true,
+      });
+    </script>
+
+    <!-- Naver Search Ads WCS (cross-domain with mindthos.com, AccountId/inflow must match) -->
+    <script type="text/javascript" src="//wcs.naver.net/wcslog.js"></script>
+    <script>
+      if (!window.wcs_add) window.wcs_add = {};
+      window.wcs_add['wa'] = 's_bfc366d6236';
+      if (window.wcs) {
+        wcs.inflow('mindthos.com');
+        wcs_do();
+      }
+    </script>
+
+    <!-- Meta Pixel (cross-domain with mindthos.com, ID must match) -->
+    <script>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+        if (!f._fbq) f._fbq = n;
+        n.push = n;
+        n.loaded = !0;
+        n.version = '2.0';
+        n.queue = [];
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        'script',
+        'https://connect.facebook.net/en_US/fbevents.js'
+      );
+      fbq('init', '2508548632910576');
+      fbq('track', 'PageView');
+    </script>
+    <noscript>
+      <img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=2508548632910576&ev=PageView&noscript=1"
+        alt=""
+      />
+    </noscript>
   </head>
 
   <body>

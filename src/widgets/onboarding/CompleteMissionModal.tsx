@@ -81,15 +81,10 @@ export const CompleteMissionModal = () => {
         zIndex: 1300,
       });
 
-      // 크레딧 정보 갱신
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.subscription(Number(user.id)),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.usage(Number(user.id)),
-        }),
-      ]);
+      // 크레딧/구독/사용량 단일 RPC로 통합 — summary key만 invalidate
+      await queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(Number(user.id)),
+      });
       handleClose();
     } catch (error: unknown) {
       const err = error as Record<string, unknown>;

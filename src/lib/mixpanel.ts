@@ -50,13 +50,44 @@ export const trackError = (
   });
 };
 
+type MixpanelJoinUserId = number | string | null | undefined;
+
+type IdentifyUserOptions = {
+  joinUserId?: MixpanelJoinUserId;
+};
+
+const normalizeJoinUserId = (
+  userId: MixpanelJoinUserId
+): number | string | undefined => {
+  if (typeof userId === 'number') {
+    return Number.isFinite(userId) ? userId : undefined;
+  }
+
+  if (typeof userId === 'string') {
+    const trimmedUserId = userId.trim();
+    return trimmedUserId.length > 0 ? trimmedUserId : undefined;
+  }
+
+  return undefined;
+};
+
 export const identifyUser = (
   userId: string,
-  traits?: Record<string, unknown>
+  traits?: Record<string, unknown>,
+  options?: IdentifyUserOptions
 ) => {
   mixpanel.identify(userId);
-  if (traits) {
-    mixpanel.people.set(traits);
+
+  const joinUserId = normalizeJoinUserId(options?.joinUserId);
+  if (joinUserId !== undefined) {
+    mixpanel.register({ user_id: joinUserId });
+  }
+
+  if (traits || joinUserId !== undefined) {
+    mixpanel.people.set({
+      ...traits,
+      ...(joinUserId !== undefined ? { user_id: joinUserId } : {}),
+    });
   }
 };
 

@@ -254,7 +254,7 @@ body {
     @apply whitespace-pre-wrap text-m font-medium text-grey-100;
   }
   .note-copy-btn-wrapper {
-    @apply absolute right-3 top-1.5 hidden transition-opacity lg:block lg:opacity-0 lg:group-hover:opacity-100;
+    @apply absolute right-3 top-1.5 transition-opacity lg:opacity-0 lg:group-hover:opacity-100;
   }
   .note-card-title {
     @apply text-m font-emphasize text-grey-100;
@@ -473,6 +473,20 @@ body {
   /* 부모 생성 모드에서 파트너선 hover 시 커서 포인터 */
   [data-parent-mode='true'] [data-edge-type='Partner_Line']:hover {
     cursor: pointer;
+  }
+
+  /* Select 도구 / Pan 도구: 노드 위 cursor를 grab/grabbing으로 일관되게 유지 */
+  [data-tool-mode='Select_Tool'] .react-flow__node,
+  [data-tool-mode='Select_Tool'] .react-flow__node *,
+  [data-tool-mode='Pan_Tool'] .react-flow__node,
+  [data-tool-mode='Pan_Tool'] .react-flow__node * {
+    cursor: grab !important;
+  }
+  [data-tool-mode='Select_Tool'] .react-flow__node:active,
+  [data-tool-mode='Select_Tool'] .react-flow__node:active *,
+  [data-tool-mode='Pan_Tool'] .react-flow__node:active,
+  [data-tool-mode='Pan_Tool'] .react-flow__node:active * {
+    cursor: grabbing !important;
   }
   /* 미션 진행 중 버튼 - 쉬머 프로그레스 애니메이션 */
   @keyframes shimmer-progress {

@@ -1,23 +1,25 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import { ROUTES, getSessionDetailRoute } from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import {
   dummyClient,
   dummySessionRelations,
 } from '@/features/session/constants/dummySessions';
-import { useSessionList } from '@/features/session/hooks/useSessionList';
+import { useSessionsList } from '@/features/session/hooks/useSessionsList';
 import type {
-  HandwrittenTranscribe,
+  HandwrittenTranscribeListItem,
   SessionRecord,
-  Transcribe,
+  TranscribeListItem,
 } from '@/features/session/types';
-import { getSpeakerDisplayName } from '@/features/session/utils/speakerUtils';
-import { getTranscriptData } from '@/features/session/utils/transcriptParser';
+import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { trackEvent } from '@/lib/mixpanel';
 import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
@@ -55,73 +57,71 @@ const HomeContainer = () => {
 
   const openModal = useModalStore((state) => state.openModal);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: sessionData, isLoading: isLoadingSessions } = useSessionList({
-    userId: parseInt(userId || '0'),
-    enabled: !!userId,
-    onSessionComplete: (session) => {
-      toast({
-        title: '상담 기록 생성 완료',
-        description: session.title
-          ? `"${session.title}" 만들었어요.`
-          : '생성을 완료했어요.',
-        duration: 5000,
-      });
-    },
-    onSessionError: (session) => {
-      toast({
-        title: '세션 처리 실패',
-        description: session.error_message || '세션 처리 중 문제가 생겼어요.',
-        duration: 5000,
-      });
-    },
-  });
+  // 세션 status 전이 시점에 크레딧 잔액 동기화
+  // (mavo-api 파이프라인이 끝나면 트리거가 commit/release를 비동기로 호출하므로,
+  //  FE는 status 전이를 감지한 시점에 invalidate해서 새 잔액을 가져옴)
+  const invalidateCreditOnTransition = React.useCallback(() => {
+    const userIdNum = Number(userId);
+    if (Number.isNaN(userIdNum)) return;
+    queryClient.invalidateQueries({
+      queryKey: creditQueryKeys.summary(userIdNum),
+    });
+  }, [queryClient, userId]);
+
+  const { items: sessionItems, isLoading: isLoadingSessions } = useSessionsList(
+    {
+      userId: parseInt(userId || '0'),
+      enabled: !!userId,
+      sortOrder: 'desc',
+      onSessionComplete: (session) => {
+        toast({
+          title: '상담 기록 생성 완료',
+          description: session.title
+            ? `"${session.title}" 만들었어요.`
+            : '생성을 완료했어요.',
+          duration: 5000,
+        });
+        invalidateCreditOnTransition();
+      },
+      onSessionError: (session) => {
+        toast({
+          title: '세션 처리 실패',
+          description: session.error_message || '세션 처리 중 문제가 생겼어요.',
+          duration: 5000,
+        });
+        invalidateCreditOnTransition();
+      },
+    }
+  );
 
   const { clients, isLoading: isLoadingClients } = useClientList();
 
-  const sessionsFromQuery = sessionData?.sessions || [];
   const isDummyFlow =
     !isLoadingSessions &&
     !isLoadingClients &&
-    sessionsFromQuery.length === 0 &&
+    sessionItems.length === 0 &&
     clients.length === 0;
 
   const sessionsWithTranscribes = isDummyFlow
     ? dummySessionRelations
-    : sessionsFromQuery;
+    : sessionItems;
   const effectiveClients = isDummyFlow ? [dummyClient] : clients;
 
   const recentSessions = sessionsWithTranscribes.slice(0, 5);
 
-  // 전사 내용을 SessionRecord용 텍스트로 변환
-  const getSessionContent = (
-    transcribe: Transcribe | HandwrittenTranscribe | null,
+  const getCardPreview = (
+    transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null,
     isHandwritten: boolean
   ): string => {
     if (!transcribe) {
       return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록이 없어요.';
     }
-
-    if (isHandwritten) {
-      if (typeof transcribe.contents === 'string') {
-        return transcribe.contents;
-      }
-      return '입력된 텍스트가 없어요.';
-    }
-
-    const transcriptData = getTranscriptData(transcribe as Transcribe);
-    if (!transcriptData) {
-      return '축어록이 없어요.';
-    }
-
-    const { segments, speakers } = transcriptData;
-    const previewSegments = segments.slice(0, 3);
-    return previewSegments
-      .map((seg) => {
-        const speakerName = getSpeakerDisplayName(seg.speaker, speakers);
-        return `${speakerName} : ${seg.text}`;
-      })
-      .join(' ');
+    // 비식별화/비언어 태그 정제 후 표시
+    const cleaned = formatPreviewText(transcribe.preview);
+    if (cleaned) return cleaned;
+    return isHandwritten ? '입력된 텍스트가 없어요.' : '축어록 보기';
   };
 
   const getSessionNumber = (sessionId: string, clientId: string): number => {
@@ -141,6 +141,10 @@ const HomeContainer = () => {
       const client = effectiveClients.find((c) => c.id === session.client_id);
       const clientName = client?.name || '내담자 없음';
       const isHandwritten = session.audio_meta_data === null;
+      const transcribeForPreview =
+        transcribe && 'preview' in transcribe
+          ? (transcribe as TranscribeListItem | HandwrittenTranscribeListItem)
+          : null;
 
       return {
         session_id: session.id,
@@ -149,7 +153,7 @@ const HomeContainer = () => {
         client_name: clientName,
         session_number: getSessionNumber(session.id, session.client_id || ''),
         title: session.title || undefined,
-        content: getSessionContent(transcribe, isHandwritten),
+        content: getCardPreview(transcribeForPreview, isHandwritten),
         note_types: getNoteTypesFromProgressNotes(progressNotes),
         created_at: session.created_at,
         processing_status: session.processing_status,
@@ -159,7 +163,7 @@ const HomeContainer = () => {
         is_handwritten: isHandwritten,
         stt_model:
           !isHandwritten && transcribe && 'stt_model' in transcribe
-            ? (transcribe as Transcribe).stt_model
+            ? transcribe.stt_model
             : null,
       };
     }
@@ -214,7 +218,7 @@ const HomeContainer = () => {
     }
   };
 
-  const hasSession = sessionsFromQuery.length > 0;
+  const hasSession = sessionItems.length > 0;
   const hasMoreSessions = sessionsWithTranscribes.length > 5;
 
   const onboardingSection = isChecked ? (

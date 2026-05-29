@@ -7,6 +7,7 @@ import {
   SideGenogramIcon,
   SideHelpIcon,
   SideHomeIcon,
+  SidePsychologyAssessmentIcon,
   SideSessionIcon,
   SideSettingsIcon,
   SideTemplateIcon,
@@ -52,7 +53,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   },
   {
     path: ROUTES.TEMPLATE,
-    label: '템플릿',
+    label: '노트 양식',
     value: 'template',
     icon: <SideTemplateIcon size={24} />,
   },
@@ -61,6 +62,13 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: '가계도',
     value: 'genogram',
     icon: <SideGenogramIcon size={24} />,
+    badge: 'beta',
+  },
+  {
+    path: ROUTES.PSYCHOLOGY_ASSESSMENTS,
+    label: '심리검사 해석',
+    value: 'psychology-assessments',
+    icon: <SidePsychologyAssessmentIcon size={24} />,
     badge: 'beta',
   },
   // {
@@ -113,7 +121,7 @@ export const getRouteLabel = (path: string): string => {
   return item?.label || path;
 };
 
-// 메인 네비게이션 아이템 (홈, 내담자, 상담 기록, 템플릿, 가계도)
+// 메인 네비게이션 아이템 (홈, 내담자, 상담 기록, 노트 양식, 가계도)
 export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
   ['home', 'client', 'sessions', 'template', 'genogram'].includes(item.value)
 ).map((item) => ({
@@ -133,7 +141,7 @@ export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
 }));
 
 export const AI_ANALYSIS_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['genogram', 'analysis'].includes(item.value)
+  ['genogram', 'psychology-assessments', 'analysis'].includes(item.value)
 ).map((item) => ({
   icon: item.icon,
   label: item.label,

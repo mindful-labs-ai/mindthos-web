@@ -134,7 +134,7 @@ export const CancelSubscriptionModal: React.FC<
         </div>
         <div className="flex items-center gap-3">
           <CheckIcon size={18} className="flex-shrink-0 text-green-80" />
-          <span className="text-sm">제한된 상담노트 템플릿</span>
+          <span className="text-sm">제한된 상담노트 양식</span>
         </div>
       </div>
     </div>

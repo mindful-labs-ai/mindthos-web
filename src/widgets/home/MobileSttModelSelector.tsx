@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { SttModel } from '@/features/session/types';
+import type { SessionRequestSttModel } from '@/features/session/types';
 import { cn } from '@/lib/cn';
 
 interface MobileSttModelSelectorProps {
-  sttModel: SttModel;
+  sttModel: SessionRequestSttModel;
   setSttModel:
-    | React.Dispatch<React.SetStateAction<SttModel>>
-    | ((value: SttModel) => void);
+    | React.Dispatch<React.SetStateAction<SessionRequestSttModel>>
+    | ((value: SessionRequestSttModel) => void);
 }
 
 export const MobileSttModelSelector: React.FC<MobileSttModelSelectorProps> = ({

@@ -20,7 +20,15 @@ import {
 } from '@/features/auth/page/userVerifyStyles';
 import { qualificationService } from '@/features/settings/services/qualificationService';
 import { cn } from '@/lib/cn';
+import {
+  generateMetaEventId,
+  identifyFBUser,
+  toE164KR,
+  trackFBEvent,
+} from '@/lib/fbq';
+import { trackGAEvent } from '@/lib/gtag';
 import { trackEvent } from '@/lib/mixpanel';
+import { trackNaverConversion } from '@/lib/naverWcs';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -43,10 +51,19 @@ import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { REFERRAL_OPTIONS } from '@/widgets/settings/UserEditModal';
 
+const NAVER_SIGNUP_FIRED_KEY = 'naver_signup_fired';
+
 const UserVerifyPage: React.FC = () => {
   const phoneFieldRef = useRef<PhoneVerificationFieldHandle>(null);
-  const { userName, organization, userPhoneNumber, updateUser, logout } =
-    useAuthStore();
+  const {
+    user,
+    userId,
+    userName,
+    organization,
+    userPhoneNumber,
+    updateUser,
+    logout,
+  } = useAuthStore();
   const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -128,8 +145,46 @@ const UserVerifyPage: React.FC = () => {
         referralSource,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const authProvider =
+        (user?.app_metadata?.provider as string | undefined) ?? 'email';
       trackEvent(MixpanelEvent.SignupSuccess, { method: 'phone' });
+      // GA4 sign_up — fired at final signup completion (post phone verification)
+      // so it can be imported into Google Ads as a conversion via cross-domain linker.
+      const numericUserId = userId ? Number(userId) : undefined;
+      trackGAEvent('sign_up', {
+        method: authProvider,
+        userId: Number.isFinite(numericUserId) ? numericUserId : undefined,
+      });
+
+      // Meta Pixel — Advanced Matching + CompleteRegistration.
+      // eventId is preserved for future server-side Conversions API dedup.
+      const phoneE164 = toE164KR(variables.phoneNumber);
+      identifyFBUser({
+        email: user?.email ?? undefined,
+        phone: phoneE164,
+        externalId: user?.id,
+      });
+      trackFBEvent(
+        'CompleteRegistration',
+        {
+          content_name: 'mindthos_signup',
+          status: 'phone_verified',
+          method: authProvider,
+        },
+        { eventId: generateMetaEventId() }
+      );
+
+      // Naver Search Ads sign_up — same trigger point as GA/Meta.
+      // sessionStorage guard prevents accidental double-fire from page refresh.
+      if (
+        typeof window !== 'undefined' &&
+        !window.sessionStorage.getItem(NAVER_SIGNUP_FIRED_KEY)
+      ) {
+        trackNaverConversion('sign_up');
+        window.sessionStorage.setItem(NAVER_SIGNUP_FIRED_KEY, '1');
+      }
+
       queryClient.invalidateQueries({
         queryKey: phoneVerificationQueryKeys.status(),
       });

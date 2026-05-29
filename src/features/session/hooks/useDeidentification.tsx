@@ -1,9 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
+
 import {
   callEdgeFunction,
   EDGE_FUNCTION_ENDPOINTS,
 } from '@/shared/api/edgeFunctionClient';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
+import { useToast } from '@/shared/ui/composites/Toast';
 import {
   DeidentificationModal,
   type DeidModalPhase,
@@ -18,6 +23,8 @@ interface DeidResponse {
   stats: DeidStats;
 }
 
+const DEID_CREDIT = 20;
+
 interface UseDeidentificationOptions {
   sessionId?: string;
   userId?: number;
@@ -31,6 +38,9 @@ export function useDeidentification({
   segments,
   onSuccess,
 }: UseDeidentificationOptions = {}) {
+  const queryClient = useQueryClient();
+  const checkCredit = useCreditGuard();
+  const { toast } = useToast();
   const [showDeid, setShowDeid] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [phase, setPhase] = useState<DeidModalPhase>('confirm');
@@ -58,17 +68,39 @@ export function useDeidentification({
   const confirmDeidentify = useCallback(async () => {
     if (!sessionId || !userId) return;
 
+    // 크레딧 가드
+    const guard = await checkCredit(DEID_CREDIT);
+    if (!guard.ok && !guard.unavailable) {
+      toast({
+        title: '크레딧 부족',
+        description: `비식별화에 ${DEID_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+        duration: 5000,
+      });
+      return;
+    }
+
+    const idempotencyKey = crypto.randomUUID();
+
     setPhase('loading');
     try {
       const response = await callEdgeFunction<DeidResponse>(
         EDGE_FUNCTION_ENDPOINTS.DEID,
-        { session_id: sessionId, user_id: userId }
+        {
+          session_id: sessionId,
+          user_id: userId,
+          idempotency_key: idempotencyKey,
+        }
       );
 
       setStats(response.stats);
       setPhase('complete');
       setShowDeid(true);
       onSuccess?.();
+
+      // 크레딧 잔액 갱신
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userId),
+      });
     } catch (err: unknown) {
       const error = err as {
         status?: number;
@@ -90,8 +122,13 @@ export function useDeidentification({
 
       setErrorMessage(message);
       setPhase('error');
+
+      // 에러 시에도 크레딧 잔액 갱신
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userId),
+      });
     }
-  }, [sessionId, userId, onSuccess]);
+  }, [sessionId, userId, checkCredit, toast, queryClient, onSuccess]);
 
   const handleModalClose = useCallback(
     (open: boolean) => {

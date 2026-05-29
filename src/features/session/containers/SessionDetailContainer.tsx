@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
 import { isDummySessionId } from '@/features/session/constants/dummySessions';
-import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
 import { trackError } from '@/lib/mixpanel';
 import { updateProgressNoteSummary } from '@/shared/api/supabase/progressNoteQueries';
@@ -82,7 +81,6 @@ export const SessionDetailContainer: React.FC = () => {
   const isDummySession = isDummySessionId(sessionId || '');
   const isReadOnly = isDummySession;
 
-  const { creditInfo } = useCreditInfo();
   const sessionQueryKey = React.useMemo(
     () => sessionQueryKeys.detail(sessionId || '', isDummySession),
     [sessionId, isDummySession]
@@ -219,6 +217,8 @@ export const SessionDetailContainer: React.FC = () => {
       segments: rawSegments,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: sessionQueryKey });
+        // 비식별화 완료 후 transcribe.contents가 바뀌어 preview도 영향 — 리스트도 무효화
+        queryClient.invalidateQueries({ queryKey: ['sessions'] });
       },
     });
 
@@ -304,7 +304,6 @@ export const SessionDetailContainer: React.FC = () => {
     transcribeContents: transcribe?.contents,
     isReadOnly,
     isDummySession,
-    remainingCredit: creditInfo?.plan.remaining ?? 0,
     creatingTabs,
     setCreatingTabs,
     requestingTabs,
