@@ -7,11 +7,12 @@
 
 import { useCallback, useState } from 'react';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
 import {
   createSessionBackground,
   InsufficientCreditError,
+  type SessionsPageResult,
 } from '@/shared/api/supabase/sessionQueries';
 import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 
@@ -20,7 +21,140 @@ import type {
   FileSessionConfig,
   MultiFileInfo,
   SessionCreateResult,
+  SessionListItem,
 } from '../types';
+
+const SESSION_LIST_INVALIDATE_DELAY_MS = 2000;
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+function queryKeyHasClientFilter(
+  queryKey: readonly unknown[],
+  clientId: string | null
+) {
+  if (queryKey.length === 4) return true;
+  if (!clientId) return false;
+
+  return (
+    queryKey[4] === 'filter' &&
+    typeof queryKey[5] === 'string' &&
+    queryKey[5].split(',').includes(clientId)
+  );
+}
+
+function shouldPrependToPaginatedQuery(
+  queryKey: readonly unknown[],
+  userId: number,
+  clientId: string | null
+) {
+  if (queryKey[0] !== 'sessions' || queryKey[1] !== userId) return false;
+  if (queryKey[2] !== 'paginated') return false;
+
+  if (queryKey[3] === 'desc') {
+    return queryKeyHasClientFilter(queryKey, clientId);
+  }
+
+  return (
+    queryKey[3] === 'client' &&
+    queryKey[5] === 'desc' &&
+    queryKey[4] === clientId
+  );
+}
+
+function shouldPrependToAllByClientQuery(
+  queryKey: readonly unknown[],
+  userId: number,
+  clientId: string | null
+) {
+  return (
+    !!clientId &&
+    queryKey[0] === 'sessions' &&
+    queryKey[1] === userId &&
+    queryKey[2] === 'all-by-client' &&
+    queryKey[3] === clientId &&
+    queryKey[4] === 'desc'
+  );
+}
+
+function prependToPaginatedData(
+  data: InfiniteData<SessionsPageResult> | undefined,
+  item: SessionListItem
+) {
+  if (!data) return data;
+  if (
+    data.pages.some((page) =>
+      page.items.some(({ session }) => session.id === item.session.id)
+    )
+  ) {
+    return data;
+  }
+
+  const [firstPage, ...restPages] = data.pages;
+  if (!firstPage) {
+    return {
+      pages: [{ items: [item], nextCursor: null }],
+      pageParams: [null],
+    };
+  }
+
+  return {
+    ...data,
+    pages: [{ ...firstPage, items: [item, ...firstPage.items] }, ...restPages],
+  };
+}
+
+function prependToSessionItems(
+  items: SessionListItem[] | undefined,
+  item: SessionListItem
+) {
+  if (!items) return items;
+  if (items.some(({ session }) => session.id === item.session.id)) return items;
+
+  return [item, ...items];
+}
+
+function createOptimisticSessionItem({
+  sessionId,
+  userId,
+  title,
+  s3Key,
+  fileSizeMb,
+  durationSeconds,
+  clientId,
+}: {
+  sessionId: string;
+  userId: number;
+  title: string;
+  s3Key: string;
+  fileSizeMb: number;
+  durationSeconds: number;
+  clientId: string | null;
+}): SessionListItem {
+  return {
+    session: {
+      id: sessionId,
+      user_id: userId,
+      client_id: clientId,
+      title: title.slice(0, 50),
+      description: null,
+      audio_meta_data: {
+        s3_key: s3Key,
+        file_size_mb: fileSizeMb,
+        duration_seconds: durationSeconds,
+      },
+      audio_url: null,
+      created_at: new Date().toISOString(),
+      processing_status: 'pending',
+      progress_percentage: 0,
+      current_step: '작업 요청 완료',
+    },
+    transcribe: null,
+    progressNotes: [],
+  };
+}
 
 interface UseMultiSessionCreateParams {
   userId: number;
@@ -57,6 +191,37 @@ export function useMultiSessionCreate({
       );
     },
     []
+  );
+
+  const optimisticallyPrependSession = useCallback(
+    (item: SessionListItem) => {
+      queryClient.setQueriesData<InfiniteData<SessionsPageResult>>(
+        {
+          queryKey: sessionQueryKeys.all(userId),
+          predicate: (query) =>
+            shouldPrependToPaginatedQuery(
+              query.queryKey,
+              userId,
+              item.session.client_id
+            ),
+        },
+        (oldData) => prependToPaginatedData(oldData, item)
+      );
+
+      queryClient.setQueriesData<SessionListItem[]>(
+        {
+          queryKey: sessionQueryKeys.all(userId),
+          predicate: (query) =>
+            shouldPrependToAllByClientQuery(
+              query.queryKey,
+              userId,
+              item.session.client_id
+            ),
+        },
+        (oldItems) => prependToSessionItems(oldItems, item)
+      );
+    },
+    [queryClient, userId]
   );
 
   const createSessions = useCallback(
@@ -119,18 +284,32 @@ export function useMultiSessionCreate({
           updateResult(config.fileId, { status: 'creating' });
 
           const sttModel = config.sttModel;
+          const durationSeconds =
+            uploadResult.duration_seconds || file.duration || 0;
+          const clientId = config.clientId || null;
 
           const response = await createSessionBackground({
             user_id: userId,
             title: file.name,
             s3_key: uploadResult.file_path,
             file_size_mb: uploadResult.file_size_mb,
-            duration_seconds:
-              uploadResult.duration_seconds || file.duration || 0,
-            client_id: config.clientId || null,
+            duration_seconds: durationSeconds,
+            client_id: clientId,
             stt_model: sttModel,
             template_id: templateId,
           });
+
+          optimisticallyPrependSession(
+            createOptimisticSessionItem({
+              sessionId: response.session_id,
+              userId,
+              title: file.name,
+              s3Key: uploadResult.file_path,
+              fileSizeMb: uploadResult.file_size_mb,
+              durationSeconds,
+              clientId,
+            })
+          );
 
           const successResult: SessionCreateResult = {
             fileId: config.fileId,
@@ -179,14 +358,35 @@ export function useMultiSessionCreate({
       }
 
       setCurrentFileId(null);
-      setIsCreating(false);
 
-      // 세션 목록 쿼리 invalidate
-      queryClient.invalidateQueries({ queryKey: sessionQueryKeys.all(userId) });
+      const invalidateSessionLists = () =>
+        queryClient
+          .invalidateQueries({
+            queryKey: sessionQueryKeys.all(userId),
+            refetchType: 'all',
+          })
+          .catch(() => {
+            // Optimistic prepend가 이미 보이는 상태라 재검증 실패가 생성 결과를 막으면 안 된다.
+          });
+
+      if (finalResults.some((result) => result.status === 'success')) {
+        void sleep(SESSION_LIST_INVALIDATE_DELAY_MS).then(invalidateSessionLists);
+      } else {
+        void invalidateSessionLists();
+      }
+
+      setIsCreating(false);
 
       return finalResults;
     },
-    [userId, templateId, queryClient, updateResult, onInsufficientCredit]
+    [
+      userId,
+      templateId,
+      queryClient,
+      updateResult,
+      optimisticallyPrependSession,
+      onInsufficientCredit,
+    ]
   );
 
   const reset = useCallback(() => {
