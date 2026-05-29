@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useClientGrouping } from '@/features/client/hooks/useClientGrouping';
 import { useClientsList } from '@/features/client/hooks/useClientsList';
@@ -67,12 +67,19 @@ export const ClientSidebar = ({
 
   const groups = useClientGrouping(clients);
 
+  // 스크롤 컨테이너 root 바인딩 — ref.current는 첫 렌더에 null이므로 mount 후 state로 등록해
+  // useInfiniteScroll이 IntersectionObserver를 재바인딩하도록 한다.
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [scrollRoot, setScrollRoot] = useState<Element | null>(null);
+  useEffect(() => {
+    setScrollRoot(scrollContainerRef.current);
+  }, []);
+
   const sentinelRef = useInfiniteScroll({
     hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
     fetchNextPage,
-    root: scrollContainerRef.current,
+    root: scrollRoot,
     disabled: collapsed,
   });
 

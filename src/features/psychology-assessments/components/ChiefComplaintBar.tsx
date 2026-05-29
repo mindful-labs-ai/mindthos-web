@@ -17,10 +17,8 @@ export const ChiefComplaintBar = ({
     <div className={cn('w-full bg-grey-20', className)}>
       <div
         className={cn(
-          'flex w-full items-center gap-4 py-4 text-sm',
-          isMobileView
-            ? 'px-4'
-            : 'mx-auto max-w-[679px] px-6'
+          'flex w-full items-center gap-4 py-3 text-sm',
+          isMobileView ? 'px-4' : 'mx-auto max-w-[679px] px-6'
         )}
       >
         <span className="font-headline text-grey-80">주호소</span>

@@ -126,18 +126,21 @@ export const RegisteredPopover = ({
   // 모바일: 하단 시트 형태로 풀너비 노출 (overlay + slide up)
   if (isMobileView) {
     return (
-      <div
-        className="fixed inset-0 z-popover flex items-end bg-black/40"
-        onClick={onClose}
-      >
+      <div className="fixed inset-0 z-popover flex items-end">
+        {/* 백드롭: 시맨틱 버튼으로 두어 키보드(Enter/Space)로 닫기 가능. */}
+        <button
+          type="button"
+          aria-label="팝오버 닫기"
+          className="absolute inset-0 cursor-default bg-black/40"
+          onClick={onClose}
+        />
         <div
           ref={rootRef}
           className={cn(
-            'flex max-h-[80vh] w-full flex-col gap-5 overflow-y-auto rounded-t-2xl bg-surface p-5',
+            'relative flex max-h-[80vh] w-full flex-col gap-5 overflow-y-auto rounded-t-2xl bg-surface p-5',
             className
           )}
           role="dialog"
-          onClick={(e) => e.stopPropagation()}
         >
           {body}
         </div>
