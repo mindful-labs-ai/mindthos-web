@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/tci-record.json",
+  "title": "TCI-RS Adult Record",
+  "description": "TCI-RS 성인용 결과지 단일 수검자 레코드",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "수검자정보",
+    "TCI_RS_프로파일",
+    "TCI_RS_하위척도"
+  ],
+  "properties": {
+    "수검자정보":       { "$ref": "#/$defs/Subject" },
+    "TCI_RS_프로파일":  { "$ref": "#/$defs/Profile" },
+    "TCI_RS_하위척도":  { "$ref": "#/$defs/Subscales" }
+  },
+
+  "$defs": {
+    "Subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["이름", "검사일", "개인고유번호", "성별", "나이", "소속기관1", "소속기관2", "규준집단", "무응답수"],
+      "properties": {
+        "이름":         { "type": "string" },
+        "검사일":       { "type": "string", "pattern": "^[0-9]{8}$", "description": "YYYYMMDD" },
+        "개인고유번호": { "type": ["string", "null"] },
+        "성별":         { "type": "string", "enum": ["남자", "여자"] },
+        "나이":         { "type": "integer", "minimum": 0, "description": "만 나이" },
+        "소속기관1":    { "type": ["string", "null"] },
+        "소속기관2":    { "type": ["string", "null"] },
+        "규준집단":     { "type": "string", "description": "예: 일반성인" },
+        "무응답수":     { "type": "integer", "minimum": 0 }
+      }
+    },
+
+    "ScaleScore": {
+      "type": "object",
+      "description": "주척도 점수: 원점수 + T점수 + 백분위",
+      "additionalProperties": false,
+      "required": ["원점수", "T점수", "백분위"],
+      "properties": {
+        "원점수":  { "type": "integer", "minimum": 0 },
+        "T점수":   { "type": "integer", "minimum": 0 },
+        "백분위":  { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+
+    "SubscaleScoreBase": {
+      "type": "object",
+      "description": "하위척도 공통 구조: 원점수 + 규준집단 평균/표준편차 + 양극 라벨. 라벨 값은 각 하위척도별 def에서 const로 고정.",
+      "additionalProperties": false,
+      "required": ["원점수", "규준_평균", "규준_표준편차", "낮은점수_라벨", "높은점수_라벨"],
+      "properties": {
+        "원점수":         { "type": "integer", "minimum": 0 },
+        "규준_평균":      { "type": "number", "minimum": 0 },
+        "규준_표준편차":  { "type": "number", "minimum": 0 },
+        "낮은점수_라벨":  { "type": "string" },
+        "높은점수_라벨":  { "type": "string" }
+      }
+    },
+
+    "Profile": {
+      "type": "object",
+      "description": "TCI-RS 7개 주척도 + 자율성+연대감(SC) 복합점수",
+      "additionalProperties": false,
+      "required": ["기질", "성격", "자율성_연대감_SC"],
+      "properties": {
+        "기질":              { "$ref": "#/$defs/Temperament" },
+        "성격":              { "$ref": "#/$defs/Character" },
+        "자율성_연대감_SC":  { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "Temperament": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["NS", "HA", "RD", "PS"],
+      "properties": {
+        "NS": { "$ref": "#/$defs/ScaleScore" },
+        "HA": { "$ref": "#/$defs/ScaleScore" },
+        "RD": { "$ref": "#/$defs/ScaleScore" },
+        "PS": { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "Character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["SD", "CO", "ST"],
+      "properties": {
+        "SD": { "$ref": "#/$defs/ScaleScore" },
+        "CO": { "$ref": "#/$defs/ScaleScore" },
+        "ST": { "$ref": "#/$defs/ScaleScore" }
+      }
+    },
+
+    "Subscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["NS", "HA", "RD", "PS", "SD", "CO", "ST"],
+      "properties": {
+        "NS": { "$ref": "#/$defs/NSSubscales" },
+        "HA": { "$ref": "#/$defs/HASubscales" },
+        "RD": { "$ref": "#/$defs/RDSubscales" },
+        "PS": { "$ref": "#/$defs/PSSubscales" },
+        "SD": { "$ref": "#/$defs/SDSubscales" },
+        "CO": { "$ref": "#/$defs/COSubscales" },
+        "ST": { "$ref": "#/$defs/STSubscales" }
+      }
+    },
+
+    "NS1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "관습적안정성" }, "높은점수_라벨": { "const": "탐색적흥분" } } } ] },
+    "NS2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "심사숙고" }, "높은점수_라벨": { "const": "충동성" } } } ] },
+    "NS3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "절제" }, "높은점수_라벨": { "const": "무절제" } } } ] },
+    "NS4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "질서정연" }, "높은점수_라벨": { "const": "자유분방" } } } ] },
+
+    "HA1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "낙천성" }, "높은점수_라벨": { "const": "예기불안" } } } ] },
+    "HA2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)불확실성에대한두려움" }, "높은점수_라벨": { "const": "(높은)불확실성에대한두려움" } } } ] },
+    "HA3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)낯선사람에대한수줍음" }, "높은점수_라벨": { "const": "(높은)낯선사람에대한수줍음" } } } ] },
+    "HA4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "활기넘침" }, "높은점수_라벨": { "const": "쉽게지침" } } } ] },
+
+    "RD1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)정서적감수성" }, "높은점수_라벨": { "const": "(높은)정서적감수성" } } } ] },
+    "RD2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)정서적개방성" }, "높은점수_라벨": { "const": "(높은)정서적개방성" } } } ] },
+    "RD3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "거리두기" }, "높은점수_라벨": { "const": "친밀감" } } } ] },
+    "RD4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "독립" }, "높은점수_라벨": { "const": "의존" } } } ] },
+
+    "PS1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)근면" }, "높은점수_라벨": { "const": "(높은)근면" } } } ] },
+    "PS2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)끈기" }, "높은점수_라벨": { "const": "(높은)끈기" } } } ] },
+    "PS3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)성취에대한야망" }, "높은점수_라벨": { "const": "(높은)성취에대한야망" } } } ] },
+    "PS4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)완벽주의" }, "높은점수_라벨": { "const": "(높은)완벽주의" } } } ] },
+
+    "SD1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)책임감" }, "높은점수_라벨": { "const": "(높은)책임감" } } } ] },
+    "SD2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)목적의식" }, "높은점수_라벨": { "const": "(높은)목적의식" } } } ] },
+    "SD3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)유능감" }, "높은점수_라벨": { "const": "(높은)유능감" } } } ] },
+    "SD4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)자기수용" }, "높은점수_라벨": { "const": "(높은)자기수용" } } } ] },
+    "SD5": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)자기일치" }, "높은점수_라벨": { "const": "(높은)자기일치" } } } ] },
+
+    "CO1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)타인수용" }, "높은점수_라벨": { "const": "(높은)타인수용" } } } ] },
+    "CO2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)공감" }, "높은점수_라벨": { "const": "(높은)공감" } } } ] },
+    "CO3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)이타성" }, "높은점수_라벨": { "const": "(높은)이타성" } } } ] },
+    "CO4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)관대함" }, "높은점수_라벨": { "const": "(높은)관대함" } } } ] },
+    "CO5": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)공평" }, "높은점수_라벨": { "const": "(높은)공평" } } } ] },
+
+    "ST1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "자의식" }, "높은점수_라벨": { "const": "창조적자기망각" } } } ] },
+    "ST2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)우주만물과의일체감" }, "높은점수_라벨": { "const": "(높은)우주만물과의일체감" } } } ] },
+    "ST3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "합리적유물론" }, "높은점수_라벨": { "const": "영성수용" } } } ] },
+
+    "NSSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["NS1", "NS2", "NS3", "NS4"],
+      "properties": {
+        "NS1": { "$ref": "#/$defs/NS1" },
+        "NS2": { "$ref": "#/$defs/NS2" },
+        "NS3": { "$ref": "#/$defs/NS3" },
+        "NS4": { "$ref": "#/$defs/NS4" }
+      }
+    },
+
+    "HASubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["HA1", "HA2", "HA3", "HA4"],
+      "properties": {
+        "HA1": { "$ref": "#/$defs/HA1" },
+        "HA2": { "$ref": "#/$defs/HA2" },
+        "HA3": { "$ref": "#/$defs/HA3" },
+        "HA4": { "$ref": "#/$defs/HA4" }
+      }
+    },
+
+    "RDSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["RD1", "RD2", "RD3", "RD4"],
+      "properties": {
+        "RD1": { "$ref": "#/$defs/RD1" },
+        "RD2": { "$ref": "#/$defs/RD2" },
+        "RD3": { "$ref": "#/$defs/RD3" },
+        "RD4": { "$ref": "#/$defs/RD4" }
+      }
+    },
+
+    "PSSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["PS1", "PS2", "PS3", "PS4"],
+      "properties": {
+        "PS1": { "$ref": "#/$defs/PS1" },
+        "PS2": { "$ref": "#/$defs/PS2" },
+        "PS3": { "$ref": "#/$defs/PS3" },
+        "PS4": { "$ref": "#/$defs/PS4" }
+      }
+    },
+
+    "SDSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["SD1", "SD2", "SD3", "SD4", "SD5"],
+      "properties": {
+        "SD1": { "$ref": "#/$defs/SD1" },
+        "SD2": { "$ref": "#/$defs/SD2" },
+        "SD3": { "$ref": "#/$defs/SD3" },
+        "SD4": { "$ref": "#/$defs/SD4" },
+        "SD5": { "$ref": "#/$defs/SD5" }
+      }
+    },
+
+    "COSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["CO1", "CO2", "CO3", "CO4", "CO5"],
+      "properties": {
+        "CO1": { "$ref": "#/$defs/CO1" },
+        "CO2": { "$ref": "#/$defs/CO2" },
+        "CO3": { "$ref": "#/$defs/CO3" },
+        "CO4": { "$ref": "#/$defs/CO4" },
+        "CO5": { "$ref": "#/$defs/CO5" }
+      }
+    },
+
+    "STSubscales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ST1", "ST2", "ST3"],
+      "properties": {
+        "ST1": { "$ref": "#/$defs/ST1" },
+        "ST2": { "$ref": "#/$defs/ST2" },
+        "ST3": { "$ref": "#/$defs/ST3" }
+      }
+    }
+  }
+}

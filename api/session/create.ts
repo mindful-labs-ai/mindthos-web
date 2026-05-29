@@ -20,7 +20,7 @@ interface CreateSessionResponse {
   message: string;
 }
 
-const SESSION_API = process.env.VITE_SESSION_API_URL;
+const SESSION_API = 'http://localhost:3300/api/session';
 
 /**
  * 세션 생성 API 라우트
