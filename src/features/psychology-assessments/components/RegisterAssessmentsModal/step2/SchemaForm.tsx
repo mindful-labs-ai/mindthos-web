@@ -87,7 +87,9 @@ export const SchemaForm = ({
   );
 
   const onCountsChangeRef = useRef(onCountsChange);
-  onCountsChangeRef.current = onCountsChange;
+  useEffect(() => {
+    onCountsChangeRef.current = onCountsChange;
+  });
   useEffect(() => {
     onCountsChangeRef.current?.({ filled, total: leaves.length });
   }, [filled, leaves.length]);

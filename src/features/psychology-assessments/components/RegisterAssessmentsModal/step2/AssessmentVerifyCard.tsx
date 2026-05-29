@@ -5,6 +5,10 @@ import type { VerificationResult } from '../types';
 
 interface AssessmentVerifyCardProps {
   result: VerificationResult;
+  /** invalid 상태일 때 삭제 버튼 노출. 누르면 서버에서 해당 드래프트를 제거한다. */
+  onDelete?: () => void;
+  /** 삭제 진행 중 표시. */
+  deleting?: boolean;
   className?: string;
 }
 
@@ -28,6 +32,8 @@ const statusLabelColor: Record<VerificationResult['status'], string> = {
 
 export const AssessmentVerifyCard = ({
   result,
+  onDelete,
+  deleting,
   className,
 }: AssessmentVerifyCardProps) => {
   const { status, itemsVerified, itemsTotal } = result;
@@ -81,6 +87,19 @@ export const AssessmentVerifyCard = ({
             ? (result.invalidReason ?? '알 수 없는 검사 종류')
             : itemSummary}
         </span>
+        {isInvalid && onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={deleting}
+            className={cn(
+              'ml-2 rounded-md border border-red-80 px-2 py-1 text-xs font-medium text-red-80 transition-colors lg:hover:bg-red-10',
+              deleting && 'cursor-not-allowed opacity-50'
+            )}
+          >
+            {deleting ? '삭제 중…' : '삭제'}
+          </button>
+        )}
       </div>
     </div>
   );

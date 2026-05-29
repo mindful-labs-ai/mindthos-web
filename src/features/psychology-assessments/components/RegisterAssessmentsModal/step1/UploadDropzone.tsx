@@ -23,7 +23,7 @@ export const UploadDropzone = ({
         <p className="text-m text-grey-80">
           심리검사 결과지*를 여기에 끌어다 놓으세요
         </p>
-        <p className="text-sm text-grey-60">PDF, PNG, JPG 포맷 (최대 200 MB)</p>
+        <p className="text-sm text-grey-60">PDF 포맷 (최대 200 MB)</p>
       </div>
 
       <button
@@ -36,7 +36,7 @@ export const UploadDropzone = ({
       </button>
 
       <p className="mt-3 text-sm font-medium text-grey-60">
-        *다면적 인성 검사, 기질 검사, 문장 완성 검사
+        *다면적 인성 검사, 기질 검사 (각 1개, 최대 2개)
       </p>
     </div>
   );

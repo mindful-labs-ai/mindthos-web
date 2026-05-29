@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { MissingFieldsForm } from './MissingFieldsForm';
 import {
   MmpiFillingForm,
   TciFillingForm,
   type FillingFormCounts,
 } from './forms';
+import { MissingFieldsForm } from './MissingFieldsForm';
 
 export interface FillingFormDescriptor {
   /** 검사 카테고리 라벨 */
@@ -64,7 +64,9 @@ export const Step2FillingFormGroup = ({
   }, [perFormCounts]);
 
   const onCountsChangeRef = useRef(onCountsChange);
-  onCountsChangeRef.current = onCountsChange;
+  useEffect(() => {
+    onCountsChangeRef.current = onCountsChange;
+  });
   useEffect(() => {
     onCountsChangeRef.current?.(aggregated);
   }, [aggregated]);

@@ -1,6 +1,5 @@
-import tciSchema from '../../../../schemas/tci.schema.json';
 import type { JsonSchema } from '../../../../schemas/jsonSchema.types';
-
+import tciSchema from '../../../../schemas/tci.schema.json';
 import { SchemaForm } from '../SchemaForm';
 
 import type { FillingFormCounts } from './types';

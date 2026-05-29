@@ -13,6 +13,10 @@ interface Step2VerifyViewProps {
   missingCount: number;
   totalCount: number;
   results: VerificationResult[];
+  /** invalid 항목의 인라인 삭제 핸들러. 주어지면 invalid 카드에 삭제 버튼 노출. */
+  onDeleteInvalid?: (fileId: string) => void;
+  /** 삭제 진행 중인 fileId */
+  deletingFileId?: string | null;
   /** filling 모드에서 폼 children 직접 주입 (검사별 폼은 외부 구성) */
   fillingForm?: React.ReactNode;
   className?: string;
@@ -24,6 +28,8 @@ export const Step2VerifyView = ({
   missingCount,
   totalCount,
   results,
+  onDeleteInvalid,
+  deletingFileId,
   fillingForm,
   className,
 }: Step2VerifyViewProps) => {
@@ -38,7 +44,16 @@ export const Step2VerifyView = ({
       {substate === 'list' ? (
         <div className="flex flex-col gap-3">
           {results.map((result) => (
-            <AssessmentVerifyCard key={result.fileId} result={result} />
+            <AssessmentVerifyCard
+              key={result.fileId}
+              result={result}
+              onDelete={
+                onDeleteInvalid && result.status === 'invalid'
+                  ? () => onDeleteInvalid(result.fileId)
+                  : undefined
+              }
+              deleting={deletingFileId === result.fileId}
+            />
           ))}
         </div>
       ) : (

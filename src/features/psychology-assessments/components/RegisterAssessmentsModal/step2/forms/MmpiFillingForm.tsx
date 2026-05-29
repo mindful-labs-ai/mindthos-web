@@ -1,6 +1,5 @@
-import mmpiSchema from '../../../../schemas/mmpi.schema.json';
 import type { JsonSchema } from '../../../../schemas/jsonSchema.types';
-
+import mmpiSchema from '../../../../schemas/mmpi.schema.json';
 import { SchemaForm } from '../SchemaForm';
 
 import type { FillingFormCounts } from './types';
