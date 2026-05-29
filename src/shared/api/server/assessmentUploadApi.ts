@@ -28,9 +28,7 @@ export interface RequestedUpload {
 export type ValidationStatus =
   | 'VALID'
   | 'MISSING_FIELD'
-  | 'INVALID'
-  | 'UNMATCHED'
-  | 'INCOMPLETE';
+  | 'INVALID';
 
 /** 검사 1건의 외부 표현 (서버 ClientAssessmentDto). presignedUrl 없음. */
 export interface AssessmentRow {

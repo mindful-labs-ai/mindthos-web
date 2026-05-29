@@ -51,8 +51,6 @@ const VALIDATION_TO_DOMAIN: Record<ValidationStatus, AssessmentValidation> = {
   VALID: 'valid',
   MISSING_FIELD: 'missing_field',
   INVALID: 'invalid',
-  UNMATCHED: 'unmatched',
-  INCOMPLETE: 'incomplete',
 };
 
 /** 서버 검사 행 → 프론트 도메인 AssessmentItem. */

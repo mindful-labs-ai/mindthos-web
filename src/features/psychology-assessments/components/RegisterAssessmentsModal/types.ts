@@ -2,7 +2,7 @@
 export type RegisterStep = 1 | 2 | 3;
 
 /** 검사 종류 ID */
-export type AssessmentTypeId = 'mmpi' | 'tci' | 'other';
+export type AssessmentTypeId = 'mmpi' | 'tci';
 
 export interface AssessmentTypeOption {
   id: AssessmentTypeId;
@@ -33,7 +33,7 @@ export interface VerificationResult {
   fileId: string;
   fileName: string;
   categoryLabel: string;
-  /** 검증된 항목 / 전체 항목 — '기타 문서'처럼 항목 개념 없으면 null */
+  /** 검증된 항목 / 전체 항목 — 판독 불가 등 항목 개념이 없으면 null */
   itemsVerified: number | null;
   itemsTotal: number | null;
   status: VerificationStatus;

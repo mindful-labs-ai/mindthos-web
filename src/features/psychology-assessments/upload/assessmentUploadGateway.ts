@@ -45,9 +45,7 @@ export interface UploadAssessmentsResult {
 export type AssessmentValidation =
   | 'valid'
   | 'missing_field'
-  | 'invalid'
-  | 'unmatched'
-  | 'incomplete';
+  | 'invalid';
 
 /** 검사 1건의 현재 상태 (조회·폴링용). */
 export interface AssessmentItem {

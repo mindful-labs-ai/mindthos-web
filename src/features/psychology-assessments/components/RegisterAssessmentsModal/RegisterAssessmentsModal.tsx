@@ -114,11 +114,10 @@ interface RegisterAssessmentsModalProps {
   existingKinds?: AssessmentKind[];
 }
 
-/** 프론트 검사 종류 id → 도메인 AssessmentKind. 'other'는 업로드 미지원. */
-const TYPE_ID_TO_KIND: Record<string, AssessmentKind | undefined> = {
+/** 프론트 검사 종류 id → 도메인 AssessmentKind. */
+const TYPE_ID_TO_KIND: Record<AssessmentTypeId, AssessmentKind> = {
   mmpi: 'mmpi',
   tci: 'tci',
-  other: undefined,
 };
 
 /** 파일명으로 검사 종류 추론 (업로드 편의용 기본값). */
@@ -256,14 +255,6 @@ const MOCK_VERIFICATION_RESULTS_ALL_OK: VerificationResult[] = [
     itemsTotal: 46,
     status: 'complete',
   },
-  {
-    fileId: 'f4',
-    fileName: '내담자_메모.png',
-    categoryLabel: '기타 문서',
-    itemsVerified: null,
-    itemsTotal: null,
-    status: 'complete',
-  },
 ];
 
 const MOCK_VERIFICATION_RESULTS_MISSING: VerificationResult[] = [
@@ -282,15 +273,6 @@ const MOCK_VERIFICATION_RESULTS_MISSING: VerificationResult[] = [
     itemsVerified: 34,
     itemsTotal: 46,
     status: 'missing',
-  },
-  {
-    fileId: 'f5',
-    fileName: '홍길동_상담_메모.png',
-    categoryLabel: '기타 문서',
-    itemsVerified: null,
-    itemsTotal: null,
-    status: 'invalid',
-    invalidReason: '알 수 없는 검사 종류',
   },
 ];
 
@@ -712,10 +694,8 @@ export const RegisterAssessmentsModal = ({
     const inputs: AssessmentUploadInput[] = [];
     for (const f of files) {
       const file = fileBlobsRef.current.get(f.id);
-      const kind = f.assessmentType
-        ? TYPE_ID_TO_KIND[f.assessmentType]
-        : undefined;
-      if (!file || !kind) continue; // 'other'/타입 미지정/핸들 없음 제외
+      if (!file || !f.assessmentType) continue; // 타입 미지정/핸들 없음 제외
+      const kind = TYPE_ID_TO_KIND[f.assessmentType];
       inputs.push({ kind, title: f.fileName, file });
     }
     if (inputs.length === 0) {
