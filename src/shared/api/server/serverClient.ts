@@ -81,5 +81,10 @@ export async function serverRequest<T>(
     );
   }
 
+  // 204 No Content 또는 본문 없는 성공 응답: envelope이 없으므로 undefined 반환.
+  if (res.status === 204 || payload === null) {
+    return undefined as T;
+  }
+
   return (payload as ServerEnvelope<T>).data;
 }
