@@ -1,11 +1,10 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
   AnalysisChatSendIcon,
   CreditIcon,
-  PlusIcon,
   SecurityShieldIcon,
 } from '@/shared/icons';
 
@@ -13,7 +12,6 @@ interface AnalysisChatInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit?: () => void;
-  onAttach?: () => void;
   disabled?: boolean;
   placeholder?: string;
   /** 우측 크레딧 사용 칩 cost (showCreditChip이 true일 때 표시) */
@@ -27,7 +25,6 @@ export const AnalysisChatInput = ({
   value,
   onChange,
   onSubmit,
-  onAttach,
   disabled,
   placeholder = '심리검사 결과지를 등록한 후 분석을 진행해주세요.',
   creditCost = 5,
@@ -42,6 +39,22 @@ export const AnalysisChatInput = ({
   // value 있음: width 비워서 flex-1로 가용공간 차지
   const mirrorRef = useRef<HTMLSpanElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // 외부에서 value를 빈 값 → 비어있지 않은 값으로 채워주면(예: 환영 화면 추천 칩 클릭)
+  // 자동으로 포커스 + 커서를 끝으로 이동시켜 사용자가 엔터만 눌러 전송 가능.
+  // 사용자가 직접 타이핑하는 경우엔 이미 focus 상태라 .focus()가 no-op.
+  const prevValueRef = useRef(value);
+  useEffect(() => {
+    if (prevValueRef.current === '' && value.length > 0) {
+      const ta = textareaRef.current;
+      if (ta) {
+        ta.focus();
+        const len = ta.value.length;
+        ta.setSelectionRange(len, len);
+      }
+    }
+    prevValueRef.current = value;
+  }, [value]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -191,22 +204,6 @@ export const AnalysisChatInput = ({
           aria-label="전송"
         >
           <AnalysisChatSendIcon size={20} />
-        </button>
-      </div>
-
-      <div className="flex items-center">
-        <button
-          type="button"
-          onClick={onAttach}
-          disabled={disabled}
-          className="flex items-center justify-center text-grey-80 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          style={{
-            width: isMobileView ? 28 : 20,
-            height: isMobileView ? 28 : 20,
-          }}
-          aria-label="첨부"
-        >
-          <PlusIcon size={isMobileView ? 22 : 20} />
         </button>
       </div>
     </div>

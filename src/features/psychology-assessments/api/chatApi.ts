@@ -54,3 +54,23 @@ export async function sendChatMessage(
     processingStatus: dto.processingStatus,
   };
 }
+
+/**
+ * 채팅 메시지 재시도 — 기존 message id로 머신을 다시 호출한다.
+ * 서버: POST /clients/:clientId/chat-messages/:messageId/retry.
+ * 머신 실패 시 기존 outputMessage 유지하고 502.
+ */
+export async function retryChatMessage(
+  clientId: string,
+  messageId: string,
+): Promise<ChatReply> {
+  const dto = await serverRequest<ClientChatMessageDto>(
+    `/clients/${clientId}/chat-messages/${messageId}/retry`,
+    { method: 'POST' },
+  );
+  return {
+    messageId: dto.id,
+    message: dto.outputMessage ?? '',
+    processingStatus: dto.processingStatus,
+  };
+}

@@ -12,8 +12,11 @@ import type {
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Spinner } from '@/shared/ui';
 
-import { TEMP_EVAL_CASES } from '../__temp_eval__/tempEvalData';
-import { getChatHistory, sendChatMessage } from '../api/chatApi';
+import {
+  getChatHistory,
+  retryChatMessage,
+  sendChatMessage,
+} from '../api/chatApi';
 import {
   analysisKeys,
   calcAnalysisPercent,
@@ -26,7 +29,10 @@ import {
   useDeleteAssessment,
   useResetToOcrPhase,
 } from '../hooks/useAssessmentBatch';
-import type { AssessmentKind, AssessmentProgress } from '../upload/assessmentUploadGateway';
+import type {
+  AssessmentKind,
+  AssessmentProgress,
+} from '../upload/assessmentUploadGateway';
 import { deriveOcrStage, ocrReviewPercent } from '../upload/ocrProgress';
 
 import { AnalysisChatInput } from './AnalysisChatInput';
@@ -42,7 +48,6 @@ import { ChatConversationView, type ChatTurn } from './ChatConversationView';
 import { ChatWelcomeView, type ChatSuggestion } from './ChatWelcomeView';
 import { ChiefComplaintBar } from './ChiefComplaintBar';
 import { ClientProfileHeader } from './ClientProfileHeader';
-import { DebugStatePanel, type AssessmentsMode } from './DebugStatePanel';
 import { EmptyAssessmentsView } from './EmptyAssessmentsView';
 import { NoClientSelectedView } from './NoClientSelectedView';
 import { RegisterAssessmentsModal } from './RegisterAssessmentsModal';
@@ -53,6 +58,19 @@ import {
   type RegisteredAssessmentEntry,
   type TranscriptEntry,
 } from './RegisteredPopover';
+
+type AssessmentsMode = 'empty' | 'registered' | 'analyzing' | 'analyzed';
+
+// 환영 화면 예시 질문 — 클릭하면 input에 그대로 채워져 사용자가 엔터만 누르면 전송.
+const CHAT_SUGGESTIONS: ChatSuggestion[] = [
+  {
+    id: 'sg-1',
+    label: '내담자의 통합 심리 검사 해석을 받아보고 싶어',
+    recommended: true,
+  },
+  { id: 'sg-2', label: '어떤 분석들이 가능한지 궁금해' },
+  { id: 'sg-3', label: '현재 내담자의 정보를 요약해서 알려줘' },
+];
 
 interface PsychologyAssessmentsMainProps {
   client: Client | null;
@@ -112,7 +130,7 @@ const REPORT_TYPE_LABEL: Record<string, string> = {
 
 function toAnalysisSteps(
   assessmentReports: AssessmentReportStatus[],
-  integrationReportCompleted: boolean,
+  integrationReportCompleted: boolean
 ): AnalysisStep[] {
   const reportSteps: AnalysisStep[] = assessmentReports.map((r) => ({
     id: r.type,
@@ -130,13 +148,6 @@ function toAnalysisSteps(
   };
   return [...reportSteps, integrationStep];
 }
-
-// 임시 평가용: 실제 AI-chatbot-layer 결과 7건을 추천 칩으로 노출.
-const MOCK_SUGGESTIONS: ChatSuggestion[] = TEMP_EVAL_CASES.map((c, i) => ({
-  id: c.id,
-  label: c.question,
-  recommended: i === 0,
-}));
 
 const CHAT_PLACEHOLDER: Record<AssessmentsMode, string> = {
   empty: '심리검사 결과지를 등록한 후 분석을 진행해주세요.',
@@ -159,13 +170,13 @@ export const PsychologyAssessmentsMain = ({
   const isMobileView = isMobile || isTablet;
 
   const [chatValue, setChatValue] = useState('');
-  // 임시 평가용 대화 상태
   const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [retryingTurnId, setRetryingTurnId] = useState<string | null>(null);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   // 모달 진입 의도: 'reviewing'/'verify'면 해당 단계로 이어보기, false면 신규 업로드(step1).
-  const [modalResume, setModalResume] = useState<'reviewing' | 'verify' | false>(
-    false,
-  );
+  const [modalResume, setModalResume] = useState<
+    'reviewing' | 'verify' | false
+  >(false);
   const openUploadModal = () => {
     setModalResume(false);
     setIsRegisterModalOpen(true);
@@ -224,7 +235,7 @@ export const PsychologyAssessmentsMain = ({
     if (!clientId) return;
     qc.setQueryData<AnalysisStatusResponse>(
       analysisKeys.status(clientId),
-      (old) => (old ? { ...old, chatActiveStatus: next } : old),
+      (old) => (old ? { ...old, chatActiveStatus: next } : old)
     );
   };
 
@@ -291,11 +302,20 @@ export const PsychologyAssessmentsMain = ({
             role: 'user',
             content: m.inputMessage,
           });
-          if (m.outputMessage) {
+          // FAILED row는 outputMessage가 null일 수 있다. 재시도 가능하도록 placeholder
+          // assistant 턴을 항상 추가하고 서버 processingStatus를 그대로 반영한다.
+          const isFailed = m.processingStatus === 'FAILED';
+          if (m.outputMessage || isFailed) {
             turnsLoaded.push({
               id: `a-${m.id}`,
               role: 'assistant',
-              content: m.outputMessage,
+              content: m.outputMessage ?? '챗봇 호출 실패',
+              messageId: m.id,
+              status: isFailed
+                ? 'failed'
+                : m.processingStatus === 'COMPLETED'
+                  ? 'ok'
+                  : 'sending',
             });
           }
         }
@@ -316,7 +336,7 @@ export const PsychologyAssessmentsMain = ({
   const analysisSteps: AnalysisStep[] = analysisStatusData
     ? toAnalysisSteps(
         analysisStatusData.assessmentReports,
-        analysisStatusData.integrationReportCompleted,
+        analysisStatusData.integrationReportCompleted
       )
     : [];
 
@@ -361,49 +381,25 @@ export const PsychologyAssessmentsMain = ({
     if (clientId) {
       // 서버 전이(OCR_PHASE→ANALYSIS_PHASE) 성공 시 phase를 낙관적으로 갱신 →
       // 파생 effect가 즉시 analyzing으로. 이어지는 refetch가 같은 값으로 확정.
+      // 실패(402/409/503)는 mutation.error에 잡혀 모달/메인뷰에 노출된다.
       startAnalysisMut.mutate(undefined, {
-        onSuccess: () => setPhaseOptimistic('ANALYSIS_PHASE'),
+        onSuccess: () => {
+          setPhaseOptimistic('ANALYSIS_PHASE');
+          setIsRegisterModalOpen(false);
+        },
       });
     } else {
       setMode('analyzing');
     }
   };
 
-  // 임시 평가용: 추천 칩 클릭 → 해당 케이스의 질문+답변을 대화에 추가
-  const handleSuggestionClick = (id: string) => {
-    const found = TEMP_EVAL_CASES.find((c) => c.id === id);
-    if (!found) return;
-    setTurns((prev) => [
-      ...prev,
-      { id: `u-${id}-${prev.length}`, role: 'user', content: found.question },
-      {
-        id: `a-${id}-${prev.length}`,
-        role: 'assistant',
-        content: found.answer,
-        guardrail: found.guardrail,
-      },
-    ]);
-  };
+  // 분석 시작 실패 메시지(서버가 envelope.message로 한글 사유를 내려준다).
+  const startAnalysisError = startAnalysisMut.error?.message ?? null;
 
-  // 임시 평가용: 입력 전송 → 질문과 매칭되는 케이스가 있으면 그 답변, 없으면 안내
   const handleSendChat = () => {
     const text = chatValue.trim();
-    if (!text) return;
+    if (!text || !clientId) return;
     setChatValue('');
-
-    // clientId 없으면(데모) 기존 임시 평가 fallback.
-    if (!clientId) {
-      const matched = TEMP_EVAL_CASES.find((c) => c.question === text);
-      const answer =
-        matched?.answer ??
-        '임시 평가 모드입니다. 추천 칩의 질문을 사용하면 실제 AI-chatbot-layer 응답을 확인할 수 있습니다.';
-      setTurns((prev) => [
-        ...prev,
-        { id: `u-${prev.length}`, role: 'user', content: text },
-        { id: `a-${prev.length}`, role: 'assistant', content: answer },
-      ]);
-      return;
-    }
 
     // 서버 채팅 API 호출 — 서버가 grounding 구성 + 머신 호출 + turn 저장 후 응답 반환.
     // (히스토리는 서버가 스레드로 관리하므로 프론트가 전달하지 않는다.)
@@ -411,13 +407,70 @@ export const PsychologyAssessmentsMain = ({
     setTurns((prev) => [
       ...prev,
       { id: `u-${Date.now()}`, role: 'user', content: text },
-      { id: aid, role: 'assistant', content: '…' },
+      { id: aid, role: 'assistant', content: '…', status: 'sending' },
     ]);
     void sendChatMessage(clientId, text)
       .then((reply) => {
         setTurns((prev) =>
           prev.map((t) =>
-            t.id === aid ? { ...t, content: reply.message } : t
+            t.id === aid
+              ? {
+                  ...t,
+                  content: reply.message,
+                  messageId: reply.messageId,
+                  status: 'ok',
+                }
+              : t
+          )
+        );
+      })
+      .catch(async (err: unknown) => {
+        const msg = err instanceof Error ? err.message : '알 수 없는 오류';
+        // 서버가 FAILED row를 만들었으면 history에서 messageId를 가져와 재시도 가능하게 한다.
+        // 네트워크 실패 등 history도 못 가져오면 messageId 없이 에러 텍스트만 노출.
+        let failedMessageId: string | undefined;
+        try {
+          const items = await getChatHistory(clientId, 5);
+          const found = items.find(
+            (m) => m.inputMessage === text && m.processingStatus === 'FAILED'
+          );
+          failedMessageId = found?.id;
+        } catch {
+          /* ignore */
+        }
+        setTurns((prev) =>
+          prev.map((t) =>
+            t.id === aid
+              ? {
+                  ...t,
+                  content: `챗봇 호출 실패: ${msg}`,
+                  status: 'failed',
+                  messageId: failedMessageId,
+                }
+              : t
+          )
+        );
+      });
+  };
+
+  // 실패한 assistant 턴 재시도 — 서버 /retry로 같은 messageId의 출력을 다시 받는다.
+  const handleRetryTurn = (turnId: string) => {
+    if (!clientId) return;
+    const turn = turns.find((t) => t.id === turnId);
+    if (!turn?.messageId) return;
+    setRetryingTurnId(turnId);
+    setTurns((prev) =>
+      prev.map((t) =>
+        t.id === turnId ? { ...t, content: '…', status: 'sending' } : t
+      )
+    );
+    void retryChatMessage(clientId, turn.messageId)
+      .then((reply) => {
+        setTurns((prev) =>
+          prev.map((t) =>
+            t.id === turnId
+              ? { ...t, content: reply.message, status: 'ok' }
+              : t
           )
         );
       })
@@ -425,9 +478,14 @@ export const PsychologyAssessmentsMain = ({
         const msg = err instanceof Error ? err.message : '알 수 없는 오류';
         setTurns((prev) =>
           prev.map((t) =>
-            t.id === aid ? { ...t, content: `챗봇 호출 실패: ${msg}` } : t
+            t.id === turnId
+              ? { ...t, content: `재시도 실패: ${msg}`, status: 'failed' }
+              : t
           )
         );
+      })
+      .finally(() => {
+        setRetryingTurnId(null);
       });
   };
 
@@ -462,33 +520,23 @@ export const PsychologyAssessmentsMain = ({
     }
 
     // 서버에 OCR 단계 복귀 요청(CHAT_ACTIVE→OCR_PHASE) → 재업로드 가능 상태로.
-    // phase를 낙관적으로 OCR_PHASE로 돌리고 대화 이력도 비운다(파생 effect가 모드 확정).
+    // 성공 시에만 phase 낙관 갱신 + 대화 비움. 실패 시 채팅 UI는 그대로 유지한다.
     setIsPopoverOpen(false);
-    setTurns([]);
     resetToOcrPhaseMut.mutate(undefined, {
-      onSuccess: () => setPhaseOptimistic('OCR_PHASE'),
-      onError: (err) => {
-        // CHAT_ACTIVE가 아니면 409. 이미 OCR_PHASE면 재업로드는 어차피 가능.
-        console.warn('[ocr-phase-reset] 실패:', err);
+      onSuccess: () => {
         setPhaseOptimistic('OCR_PHASE');
+        setTurns([]);
+      },
+      onError: (err) => {
+        // 실패 시 UI를 OCR로 낙관 갱신하지 않는다 — 서버 phase와 갈리는 것을 막기 위해
+        // status 쿼리를 재조회해 실제 상태로 수렴시킨다.
+        console.warn('[ocr-phase-reset] 실패:', err);
+        void qc.invalidateQueries({
+          queryKey: analysisKeys.status(clientId),
+        });
       },
     });
   };
-
-  // 디버그 패널 — 모바일에서는 드롭다운(접힘) 상태로 시작
-  // analyzed 모드에서는 임시 평가 케이스 선택 노출
-  const debugPanel = (
-    <DebugStatePanel
-      mode={mode}
-      onModeChange={setMode}
-      evalCases={TEMP_EVAL_CASES.map((c) => ({
-        id: c.id,
-        label: `${c.id} — ${c.intent}`,
-      }))}
-      onSelectEvalCase={handleSuggestionClick}
-      onClearChat={() => setTurns([])}
-    />
-  );
 
   // 모바일/데스크탑 wrapper 분기
   const outerCls = isMobileView
@@ -511,7 +559,6 @@ export const PsychologyAssessmentsMain = ({
         >
           <NoClientSelectedView />
         </div>
-        {debugPanel}
       </div>
     );
   }
@@ -549,7 +596,9 @@ export const PsychologyAssessmentsMain = ({
             {ocrPercent}%
           </span>
           <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
-            {'심리검사 결과지를 인식(OCR)하고 있어요.\n최대 1~2분 정도 소요됩니다.'}
+            {
+              '심리검사 결과지를 인식(OCR)하고 있어요.\n최대 1~2분 정도 소요됩니다.'
+            }
           </p>
           <button
             type="button"
@@ -566,7 +615,9 @@ export const PsychologyAssessmentsMain = ({
           {assessmentsCard}
           <div className="flex flex-col items-center gap-5">
             <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
-              {'확인이 필요한 결과지가 있어요.\n내용을 검토하고 빈 항목을 채워주세요.'}
+              {
+                '확인이 필요한 결과지가 있어요.\n내용을 검토하고 빈 항목을 채워주세요.'
+              }
             </p>
             <button
               type="button"
@@ -582,11 +633,16 @@ export const PsychologyAssessmentsMain = ({
       bodyContent = (
         <div className="flex flex-1 flex-col items-center justify-center gap-8">
           {assessmentsCard}
-          <AnalyzeCtaSection
-            creditCost={analyzeCost}
-            disabled={startAnalysisMut.isPending}
-            onClick={handleStartAnalysis}
-          />
+          <div className="flex flex-col items-center gap-2">
+            <AnalyzeCtaSection
+              creditCost={analyzeCost}
+              disabled={startAnalysisMut.isPending}
+              onClick={handleStartAnalysis}
+            />
+            {startAnalysisError && (
+              <p className="text-sm text-red-80">{startAnalysisError}</p>
+            )}
+          </div>
         </div>
       );
     }
@@ -602,11 +658,18 @@ export const PsychologyAssessmentsMain = ({
   } else if (mode === 'analyzed') {
     bodyContent =
       turns.length > 0 ? (
-        <ChatConversationView turns={turns} />
+        <ChatConversationView
+          turns={turns}
+          onRetry={handleRetryTurn}
+          retryingId={retryingTurnId}
+        />
       ) : (
         <ChatWelcomeView
-          suggestions={MOCK_SUGGESTIONS}
-          onSuggestionClick={handleSuggestionClick}
+          suggestions={CHAT_SUGGESTIONS}
+          onSuggestionClick={(id) => {
+            const found = CHAT_SUGGESTIONS.find((s) => s.id === id);
+            if (found) setChatValue(found.label);
+          }}
         />
       );
   }
@@ -615,7 +678,7 @@ export const PsychologyAssessmentsMain = ({
     <div className={outerCls} style={outerStyle}>
       <div className={cardCls}>
         {/* 1) 프로필 헤더 — 모바일: 이름+chip 단일 행 / 데스크탑: 아바타+메타+chip */}
-        <div className={cn(isMobileView ? 'px-4 py-3' : 'pb-8 pl-8 pr-7 pt-7')}>
+        <div className={cn(isMobileView ? 'px-4 py-3' : 'py-4 pl-8 pr-7')}>
           <ClientProfileHeader
             client={client}
             analysisStatus={chipStatus}
@@ -655,7 +718,7 @@ export const PsychologyAssessmentsMain = ({
         {/* 2) 주호소 바 — 모바일에서는 숨김 */}
         {!isMobileView && (
           <ChiefComplaintBar
-            className="border-y border-grey-40 py-3"
+            className="border-y border-grey-40"
             complaint={client.counsel_theme}
           />
         )}
@@ -713,6 +776,8 @@ export const PsychologyAssessmentsMain = ({
         onClose={() => setIsRegisterModalOpen(false)}
         analyzeCost={analyzeCost}
         onAnalyze={handleStartAnalysis}
+        isStartingAnalysis={startAnalysisMut.isPending}
+        startAnalysisError={startAnalysisError}
         clientId={client.id}
         resume={modalResume}
         existingKinds={realAssessments.map((a) => a.kind)}
@@ -723,9 +788,6 @@ export const PsychologyAssessmentsMain = ({
         onClose={() => setIsResetConfirmOpen(false)}
         onConfirm={handleResetConfirm}
       />
-
-      {debugPanel}
-
     </div>
   );
 };

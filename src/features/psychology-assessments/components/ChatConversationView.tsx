@@ -8,12 +8,18 @@ export interface ChatTurn {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  /** 임시 평가용: 가드레일 발동 여부 표시 */
-  guardrail?: boolean;
+  /** 서버 ClientChatMessage id — assistant 턴에 대해 재시도에 사용. */
+  messageId?: string;
+  /** assistant 턴 상태. 'failed'면 재시도 버튼 노출. */
+  status?: 'sending' | 'ok' | 'failed';
 }
 
 interface ChatConversationViewProps {
   turns: ChatTurn[];
+  /** 실패한 assistant 턴의 재시도 핸들러. (id = turn.id) */
+  onRetry?: (turnId: string) => void;
+  /** 재시도 진행 중인 turn.id */
+  retryingId?: string | null;
   className?: string;
 }
 
@@ -23,6 +29,8 @@ interface ChatConversationViewProps {
  */
 export const ChatConversationView = ({
   turns,
+  onRetry,
+  retryingId,
   className,
 }: ChatConversationViewProps) => {
   const { isMobile, isTablet } = useDevice();
@@ -58,12 +66,21 @@ export const ChatConversationView = ({
           </div>
         ) : (
           <div key={turn.id} className="flex flex-col gap-3">
-            {turn.guardrail && (
-              <span className="bg-warning/10 text-warning inline-flex w-fit items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium">
-                가드레일 발동
-              </span>
-            )}
             <MarkdownRenderer content={turn.content} disableHeadings={false} />
+
+            {turn.status === 'failed' && onRetry && turn.messageId && (
+              <button
+                type="button"
+                onClick={() => onRetry(turn.id)}
+                disabled={retryingId === turn.id}
+                className={cn(
+                  'w-fit rounded-md border border-grey-40 px-2.5 py-1 text-xs font-medium text-grey-100 transition-colors lg:hover:bg-grey-10',
+                  retryingId === turn.id && 'cursor-not-allowed opacity-50'
+                )}
+              >
+                {retryingId === turn.id ? '재시도 중…' : '재시도'}
+              </button>
+            )}
 
             {/* 마음토스 로고 — 마지막 AI 응답에만 표시 */}
             {turn.id === lastAssistantId && (
