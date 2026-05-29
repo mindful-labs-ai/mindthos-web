@@ -116,10 +116,12 @@ export const AnalysisChatInput = ({
       }}
     >
       <div className="relative flex items-center gap-2">
-        <SecurityShieldIcon
-          size={20}
-          className="mt-0.5 flex-shrink-0 text-grey-70"
-        />
+        {!value && (
+          <SecurityShieldIcon
+            size={20}
+            className="mt-0.5 flex-shrink-0 text-grey-70"
+          />
+        )}
 
         {/* invisible mirror — textarea와 동일 폰트/사이즈로 한 줄 너비 측정 */}
         <span
@@ -196,7 +198,7 @@ export const AnalysisChatInput = ({
           type="button"
           onClick={onSubmit}
           disabled={disabled}
-          className="flex flex-shrink-0 items-center justify-center rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20 lg:hover:bg-grey-10"
+          className="flex flex-shrink-0 items-center justify-center self-start rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20 lg:hover:bg-grey-10"
           style={{
             width: isMobileView ? 36 : 32,
             height: isMobileView ? 36 : 32,
