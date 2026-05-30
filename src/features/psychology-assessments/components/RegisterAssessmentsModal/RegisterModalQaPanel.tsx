@@ -81,8 +81,9 @@ export const RegisterModalQaPanel = ({
 }: RegisterModalQaPanelProps) => {
   const [collapsed, setCollapsed] = useState(false);
 
-  // PROD 빌드에는 노출 금지. (Hook 호출 순서를 깨지 않도록 가드는 hooks 호출 이후.)
-  if (import.meta.env.PROD) return null;
+  // TODO(PROD-BLOCKER): 이 QA 패널은 staging 검증 편의를 위해 빌드 환경과 무관하게
+  // 강제로 노출한다. 운영 배포 전에는 이 컴포넌트 렌더링과 관련 fake action 전체를 반드시
+  // 제거해야 한다. 제거하지 않으면 사용자가 step 강제 이동/가짜 검사 주입 디버그 도구를 볼 수 있다.
 
   const {
     step,
