@@ -74,7 +74,7 @@ export const FieldNumberTags = ({ value, onChange }: FieldNumberTagsProps) => {
               <button
                 type="button"
                 onClick={() => remove(t)}
-                className="leading-none text-green-80/70 transition-colors hover:text-green-80"
+                className="text-green-80/70 leading-none transition-colors hover:text-green-80"
                 aria-label={`${t} 삭제`}
               >
                 ×
@@ -88,7 +88,7 @@ export const FieldNumberTags = ({ value, onChange }: FieldNumberTagsProps) => {
         onChange={(e) => setDraft(e.target.value.replace(/[^0-9,]/g, ''))}
         onKeyDown={onKeyDown}
         onBlur={addDraft}
-        placeholder="문항 번호 입력 후 Enter (예: 1, 4, 7)"
+        placeholder="문항 번호를 입력하고 Enter를 눌러 주세요. 예: 1, 4, 7"
         inputMode="numeric"
       />
     </div>

@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-import type { UploadedFile, AssessmentTypeId } from '../types';
+import { MAX_FILES, type AssessmentTypeId, type UploadedFile } from '../types';
 
 import { AddMoreButton } from './AddMoreButton';
 import { UploadFileItem } from './UploadFileItem';
@@ -10,6 +10,7 @@ interface FileListViewProps {
   onChangeType: (fileId: string, typeId: AssessmentTypeId) => void;
   onRemove: (fileId: string) => void;
   onAddMore?: () => void;
+  dragActive?: boolean;
   className?: string;
 }
 
@@ -18,13 +19,17 @@ export const FileListView = ({
   onChangeType,
   onRemove,
   onAddMore,
+  dragActive = false,
   className,
 }: FileListViewProps) => {
   return (
     <div
       className={cn(
         // 회색 박스 자체가 flex container — 내부 스크롤 영역과 추가 버튼을 묶음
-        'flex flex-col rounded-xl bg-grey-20 p-4',
+        'flex flex-col rounded-xl border border-dashed p-4 transition-colors',
+        dragActive
+          ? 'border-green-80 bg-green-10'
+          : 'border-transparent bg-grey-20',
         className
       )}
     >
@@ -37,7 +42,9 @@ export const FileListView = ({
             onRemove={onRemove}
           />
         ))}
-        <AddMoreButton onClick={onAddMore} />
+        {onAddMore && files.length < MAX_FILES && (
+          <AddMoreButton onClick={onAddMore} />
+        )}
       </div>
     </div>
   );

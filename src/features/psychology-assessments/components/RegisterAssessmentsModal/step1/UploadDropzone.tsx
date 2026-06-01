@@ -3,17 +3,22 @@ import { CloudUploadIcon, PlusIcon } from '@/shared/icons';
 
 interface UploadDropzoneProps {
   onSelectFiles?: () => void;
+  dragActive?: boolean;
   className?: string;
 }
 
 export const UploadDropzone = ({
   onSelectFiles,
+  dragActive = false,
   className,
 }: UploadDropzoneProps) => {
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center gap-3 rounded-xl bg-grey-20 px-6 py-14',
+        'flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed px-6 py-14 transition-colors',
+        dragActive
+          ? 'border-green-80 bg-green-10'
+          : 'border-transparent bg-grey-20',
         className
       )}
     >
@@ -21,9 +26,11 @@ export const UploadDropzone = ({
 
       <div className="flex flex-col items-center gap-1 font-medium">
         <p className="text-m text-grey-80">
-          심리검사 결과지*를 여기에 끌어다 놓으세요
+          심리검사 결과지를 여기에 끌어다 놓아 주세요
         </p>
-        <p className="text-sm text-grey-60">PDF 포맷 (최대 200 MB)</p>
+        <p className="text-sm text-grey-60">
+          PDF 파일만 등록할 수 있어요. 최대 200MB
+        </p>
       </div>
 
       <button
@@ -36,7 +43,7 @@ export const UploadDropzone = ({
       </button>
 
       <p className="mt-3 text-sm font-medium text-grey-60">
-        *다면적 인성 검사, 기질 검사 (각 1개, 최대 2개)
+        다면적 인성검사와 기질 검사 결과지를 각 1개씩 등록할 수 있어요.
       </p>
     </div>
   );

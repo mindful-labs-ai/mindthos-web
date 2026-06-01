@@ -8,7 +8,7 @@ import type { RegisterStep } from './types';
 
 /**
  * 결과지 등록 모달 QA 패널 — 모달 우상단에 고정 표시되는 read-only 상태 스냅샷 +
- * 강제 step 이동/배치 invalidate 같은 최소 액션. dev 빌드에서만 노출된다.
+ * 강제 step 이동/배치 invalidate 같은 최소 액션. 빌드 환경과 무관하게 노출된다.
  *
  * 디자인 의도:
  * - 모달 흐름이 step1 → reviewing → step2(list/filling) → step3로 분기되고,
@@ -64,7 +64,7 @@ export interface RegisterModalQaActions {
   onInvalidateBatch: () => void;
   onAddFakeAssessment: (
     kind: FakeAssessmentKind,
-    status: FakeAssessmentStatus,
+    status: FakeAssessmentStatus
   ) => void;
   onClearFakeAssessments: () => void;
   fakeCount: number;
@@ -149,8 +149,14 @@ export const RegisterModalQaPanel = ({
 
           <Section title="Flags">
             <Row k="hasIncompleteUploads" v={String(hasIncompleteUploads)} />
-            <Row k="hasInvalidVerification" v={String(hasInvalidVerification)} />
-            <Row k="hasMissingVerification" v={String(hasMissingVerification)} />
+            <Row
+              k="hasInvalidVerification"
+              v={String(hasInvalidVerification)}
+            />
+            <Row
+              k="hasMissingVerification"
+              v={String(hasMissingVerification)}
+            />
             <Row k="noRealAssessments" v={String(noRealAssessments)} />
             <Row k="duplicateKind" v={duplicateKind ?? '—'} />
           </Section>
@@ -262,7 +268,7 @@ export const RegisterModalQaPanel = ({
                 'rounded border px-2 py-1 text-[10px]',
                 actions.fakeCount === 0
                   ? 'cursor-not-allowed border-grey-30 text-grey-60'
-                  : 'border-red-80 text-red-80 lg:hover:bg-red-10'
+                  : 'lg:hover:bg-red-10 border-red-80 text-red-80'
               )}
             >
               clear fakes

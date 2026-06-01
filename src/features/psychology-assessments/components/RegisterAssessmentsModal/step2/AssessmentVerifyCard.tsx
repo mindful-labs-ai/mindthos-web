@@ -1,5 +1,6 @@
 import { cn } from '@/lib/cn';
 
+import { formatAssessmentDisplayText } from '../../../utils/assessmentDisplay';
 import { StatusCircle } from '../shared/StatusBadge';
 import type { VerificationResult } from '../types';
 
@@ -20,8 +21,8 @@ const statusBorderClass: Record<VerificationResult['status'], string> = {
 
 const statusLabelText: Record<VerificationResult['status'], string> = {
   complete: '확인 완료',
-  missing: '항목 누락됨',
-  invalid: '등록 불가',
+  missing: '확인 필요',
+  invalid: '등록할 수 없음',
 };
 
 const statusLabelColor: Record<VerificationResult['status'], string> = {
@@ -40,8 +41,8 @@ export const AssessmentVerifyCard = ({
 
   const itemSummary =
     itemsTotal === null || itemsVerified === null
-      ? '결과지 확인됨'
-      : `${itemsVerified}/${itemsTotal} 항목 확인됨`;
+      ? '결과지를 확인했어요'
+      : `${itemsVerified}/${itemsTotal}개 항목 확인`;
 
   const isInvalid = status === 'invalid';
 
@@ -57,7 +58,9 @@ export const AssessmentVerifyCard = ({
         <p className="text-m font-emphasize text-grey-100">
           {result.categoryLabel}
         </p>
-        <p className="truncate text-sm text-grey-80">{result.fileName}</p>
+        <p className="truncate text-sm text-grey-80">
+          {formatAssessmentDisplayText(result.fileName)}
+        </p>
         <p
           className={cn(
             'mt-2 text-sm font-emphasize',
@@ -84,7 +87,7 @@ export const AssessmentVerifyCard = ({
           className={cn('text-sm', isInvalid ? 'text-red-80' : 'text-grey-100')}
         >
           {isInvalid
-            ? (result.invalidReason ?? '알 수 없는 검사 종류')
+            ? (result.invalidReason ?? '지원하는 결과지인지 확인해 주세요')
             : itemSummary}
         </span>
         {isInvalid && onDelete && (
@@ -93,7 +96,7 @@ export const AssessmentVerifyCard = ({
             onClick={onDelete}
             disabled={deleting}
             className={cn(
-              'ml-2 rounded-md border border-red-80 px-2 py-1 text-xs font-medium text-red-80 transition-colors lg:hover:bg-red-10',
+              'lg:hover:bg-red-10 ml-2 rounded-md border border-red-80 px-2 py-1 text-xs font-medium text-red-80 transition-colors',
               deleting && 'cursor-not-allowed opacity-50'
             )}
           >

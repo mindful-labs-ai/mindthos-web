@@ -10,7 +10,7 @@ interface MmpiFillingFormProps {
   onValuesChange?: (values: Record<string, string>) => void;
 }
 
-/** 다면적 인성 검사 (MMPI-2) 폼 — schema 기반 동적 렌더링 */
+/** 다면적 인성검사 폼 — schema 기반 동적 렌더링 */
 export const MmpiFillingForm = ({
   onCountsChange,
   visibleLeaf,

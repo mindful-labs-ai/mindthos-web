@@ -11,7 +11,7 @@ interface UploadingProgressProps {
 
 export const UploadingProgress = ({
   percent,
-  label = '추가한 결과지를 검토하고 있습니다',
+  label = '추가한 결과지를 확인하고 있어요',
   className,
 }: UploadingProgressProps) => {
   const clamped = Math.max(0, Math.min(100, percent));

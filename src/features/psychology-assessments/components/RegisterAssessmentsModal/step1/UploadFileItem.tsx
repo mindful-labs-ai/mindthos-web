@@ -1,6 +1,7 @@
 import { cn } from '@/lib/cn';
 import { XIcon } from '@/shared/icons';
 
+import { formatAssessmentDisplayText } from '../../../utils/assessmentDisplay';
 import { StatusCircle } from '../shared/StatusBadge';
 import type { UploadedFile } from '../types';
 
@@ -46,7 +47,7 @@ export const UploadFileItem = ({
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <p className="truncate text-l font-emphasize text-grey-100">
-          {file.fileName}
+          {formatAssessmentDisplayText(file.fileName)}
         </p>
 
         {/* 메타 줄 — 사이즈/페이지수 + 검사 종류 dropdown (상태 무관 항상 노출) */}

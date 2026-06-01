@@ -294,7 +294,7 @@ const RenderLeaf = ({
           <FieldTextArea
             value={value}
             onChange={(e) => setValue(leaf.path, e.target.value)}
-            placeholder="내용을 입력해주세요."
+            placeholder="내용을 입력해 주세요."
             rows={3}
           />
           <FieldFilledCheck filled={isFilled} className="mt-2" />
@@ -362,7 +362,7 @@ const placeholderFor = (leaf: FormLeaf): string => {
     case 'number':
       return '0';
     default:
-      return '내용을 입력해주세요.';
+      return '내용을 입력해 주세요.';
   }
 };
 
