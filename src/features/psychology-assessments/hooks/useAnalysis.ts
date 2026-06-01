@@ -6,6 +6,8 @@ import {
   type AnalysisStatusResponse,
 } from '@/shared/api/server/assessmentUploadApi';
 
+import { toLoadingDisplayPercent } from '../utils/loadingProgress';
+
 import { assessmentBatchKeys } from './useAssessmentBatch';
 
 export const analysisKeys = {
@@ -18,7 +20,8 @@ export const analysisKeys = {
  */
 export function isAnalysisComplete(status: AnalysisStatusResponse): boolean {
   return (
-    status.integrationReportCompleted || status.chatActiveStatus === 'CHAT_ACTIVE'
+    status.integrationReportCompleted ||
+    status.chatActiveStatus === 'CHAT_ACTIVE'
   );
 }
 
@@ -29,11 +32,16 @@ export function isAnalysisComplete(status: AnalysisStatusResponse): boolean {
  */
 export function calcAnalysisPercent(status: AnalysisStatusResponse): number {
   const total = status.assessmentReports.length + 1; // +1 = 통합 보고서
-  if (total === 0) return 0;
   const done =
     status.assessmentReports.filter((r) => r.completed).length +
     (status.integrationReportCompleted ? 1 : 0);
-  return Math.round((done / total) * 100);
+  const rawPercent = (done / total) * 100;
+  const jitterKey = `analysis:${status.chatActiveStatus}:${status.assessmentReports
+    .map((r) => `${r.type}:${r.completed ? '1' : '0'}`)
+    .sort()
+    .join('|')}:integration-${status.integrationReportCompleted ? '1' : '0'}`;
+
+  return toLoadingDisplayPercent(rawPercent, jitterKey);
 }
 
 /**
@@ -68,7 +76,7 @@ export function useStartAnalysis(clientId: string | undefined) {
  */
 export function useAnalysisStatus(
   clientId: string | undefined,
-  options: { enabled?: boolean; pollMs?: number } = {},
+  options: { enabled?: boolean; pollMs?: number } = {}
 ) {
   const { enabled = true, pollMs = 4000 } = options;
   return useQuery<AnalysisStatusResponse>({

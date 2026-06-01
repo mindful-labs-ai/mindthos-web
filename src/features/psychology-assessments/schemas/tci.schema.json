@@ -1,19 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/schemas/tci-record.json",
-  "title": "TCI-RS Adult Record",
-  "description": "TCI-RS 성인용 결과지 단일 수검자 레코드",
+  "title": "기질 검사 결과지",
+  "description": "기질 검사 성인용 결과지 단일 수검자 레코드",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "수검자정보",
-    "TCI_RS_프로파일",
-    "TCI_RS_하위척도"
-  ],
+  "required": ["수검자정보", "TCI_RS_프로파일", "TCI_RS_하위척도"],
   "properties": {
-    "수검자정보":       { "$ref": "#/$defs/Subject" },
-    "TCI_RS_프로파일":  { "$ref": "#/$defs/Profile" },
-    "TCI_RS_하위척도":  { "$ref": "#/$defs/Subscales" }
+    "수검자정보": { "$ref": "#/$defs/Subject" },
+    "TCI_RS_프로파일": { "$ref": "#/$defs/Profile" },
+    "TCI_RS_하위척도": { "$ref": "#/$defs/Subscales" }
   },
 
   "$defs": {
@@ -22,15 +18,15 @@
       "additionalProperties": false,
       "required": ["이름", "검사일", "개인고유번호", "성별", "나이", "소속기관1", "소속기관2", "규준집단", "무응답수"],
       "properties": {
-        "이름":         { "type": "string" },
-        "검사일":       { "type": "string", "pattern": "^[0-9]{8}$", "description": "YYYYMMDD" },
+        "이름": { "type": "string" },
+        "검사일": { "type": "string", "pattern": "^[0-9]{8}$", "description": "YYYYMMDD" },
         "개인고유번호": { "type": ["string", "null"] },
-        "성별":         { "type": "string", "enum": ["남자", "여자"] },
-        "나이":         { "type": "integer", "minimum": 0, "description": "만 나이" },
-        "소속기관1":    { "type": ["string", "null"] },
-        "소속기관2":    { "type": ["string", "null"] },
-        "규준집단":     { "type": "string", "description": "예: 일반성인" },
-        "무응답수":     { "type": "integer", "minimum": 0 }
+        "성별": { "type": "string", "enum": ["남자", "여자"] },
+        "나이": { "type": "integer", "minimum": 0, "description": "만 나이" },
+        "소속기관1": { "type": ["string", "null"] },
+        "소속기관2": { "type": ["string", "null"] },
+        "규준집단": { "type": "string", "description": "예: 일반성인" },
+        "무응답수": { "type": "integer", "minimum": 0 }
       }
     },
 
@@ -40,9 +36,9 @@
       "additionalProperties": false,
       "required": ["원점수", "T점수", "백분위"],
       "properties": {
-        "원점수":  { "type": "integer", "minimum": 0 },
-        "T점수":   { "type": "integer", "minimum": 0 },
-        "백분위":  { "type": "integer", "minimum": 0, "maximum": 100 }
+        "원점수": { "type": "integer", "minimum": 0 },
+        "T점수": { "type": "integer", "minimum": 0 },
+        "백분위": { "type": "integer", "minimum": 0, "maximum": 100 }
       }
     },
 
@@ -52,23 +48,23 @@
       "additionalProperties": false,
       "required": ["원점수", "규준_평균", "규준_표준편차", "낮은점수_라벨", "높은점수_라벨"],
       "properties": {
-        "원점수":         { "type": "integer", "minimum": 0 },
-        "규준_평균":      { "type": "number", "minimum": 0 },
-        "규준_표준편차":  { "type": "number", "minimum": 0 },
-        "낮은점수_라벨":  { "type": "string" },
-        "높은점수_라벨":  { "type": "string" }
+        "원점수": { "type": "integer", "minimum": 0 },
+        "규준_평균": { "type": "number", "minimum": 0 },
+        "규준_표준편차": { "type": "number", "minimum": 0 },
+        "낮은점수_라벨": { "type": "string" },
+        "높은점수_라벨": { "type": "string" }
       }
     },
 
     "Profile": {
       "type": "object",
-      "description": "TCI-RS 7개 주척도 + 자율성+연대감(SC) 복합점수",
+      "description": "기질 검사 7개 주척도 + 자율성+연대감(SC) 복합점수",
       "additionalProperties": false,
       "required": ["기질", "성격", "자율성_연대감_SC"],
       "properties": {
-        "기질":              { "$ref": "#/$defs/Temperament" },
-        "성격":              { "$ref": "#/$defs/Character" },
-        "자율성_연대감_SC":  { "$ref": "#/$defs/ScaleScore" }
+        "기질": { "$ref": "#/$defs/Temperament" },
+        "성격": { "$ref": "#/$defs/Character" },
+        "자율성_연대감_SC": { "$ref": "#/$defs/ScaleScore" }
       }
     },
 
@@ -110,41 +106,241 @@
       }
     },
 
-    "NS1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "관습적안정성" }, "높은점수_라벨": { "const": "탐색적흥분" } } } ] },
-    "NS2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "심사숙고" }, "높은점수_라벨": { "const": "충동성" } } } ] },
-    "NS3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "절제" }, "높은점수_라벨": { "const": "무절제" } } } ] },
-    "NS4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "질서정연" }, "높은점수_라벨": { "const": "자유분방" } } } ] },
+    "NS1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "관습적안정성" }, "높은점수_라벨": { "const": "탐색적흥분" } } }
+      ]
+    },
+    "NS2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "심사숙고" }, "높은점수_라벨": { "const": "충동성" } } }
+      ]
+    },
+    "NS3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "절제" }, "높은점수_라벨": { "const": "무절제" } } }
+      ]
+    },
+    "NS4": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "질서정연" }, "높은점수_라벨": { "const": "자유분방" } } }
+      ]
+    },
 
-    "HA1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "낙천성" }, "높은점수_라벨": { "const": "예기불안" } } } ] },
-    "HA2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)불확실성에대한두려움" }, "높은점수_라벨": { "const": "(높은)불확실성에대한두려움" } } } ] },
-    "HA3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)낯선사람에대한수줍음" }, "높은점수_라벨": { "const": "(높은)낯선사람에대한수줍음" } } } ] },
-    "HA4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "활기넘침" }, "높은점수_라벨": { "const": "쉽게지침" } } } ] },
+    "HA1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "낙천성" }, "높은점수_라벨": { "const": "예기불안" } } }
+      ]
+    },
+    "HA2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)불확실성에대한두려움" },
+            "높은점수_라벨": { "const": "(높은)불확실성에대한두려움" }
+          }
+        }
+      ]
+    },
+    "HA3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)낯선사람에대한수줍음" },
+            "높은점수_라벨": { "const": "(높은)낯선사람에대한수줍음" }
+          }
+        }
+      ]
+    },
+    "HA4": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "활기넘침" }, "높은점수_라벨": { "const": "쉽게지침" } } }
+      ]
+    },
 
-    "RD1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)정서적감수성" }, "높은점수_라벨": { "const": "(높은)정서적감수성" } } } ] },
-    "RD2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)정서적개방성" }, "높은점수_라벨": { "const": "(높은)정서적개방성" } } } ] },
-    "RD3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "거리두기" }, "높은점수_라벨": { "const": "친밀감" } } } ] },
-    "RD4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "독립" }, "높은점수_라벨": { "const": "의존" } } } ] },
+    "RD1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)정서적감수성" },
+            "높은점수_라벨": { "const": "(높은)정서적감수성" }
+          }
+        }
+      ]
+    },
+    "RD2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)정서적개방성" },
+            "높은점수_라벨": { "const": "(높은)정서적개방성" }
+          }
+        }
+      ]
+    },
+    "RD3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "거리두기" }, "높은점수_라벨": { "const": "친밀감" } } }
+      ]
+    },
+    "RD4": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "독립" }, "높은점수_라벨": { "const": "의존" } } }
+      ]
+    },
 
-    "PS1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)근면" }, "높은점수_라벨": { "const": "(높은)근면" } } } ] },
-    "PS2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)끈기" }, "높은점수_라벨": { "const": "(높은)끈기" } } } ] },
-    "PS3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)성취에대한야망" }, "높은점수_라벨": { "const": "(높은)성취에대한야망" } } } ] },
-    "PS4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)완벽주의" }, "높은점수_라벨": { "const": "(높은)완벽주의" } } } ] },
+    "PS1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)근면" }, "높은점수_라벨": { "const": "(높은)근면" } } }
+      ]
+    },
+    "PS2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)끈기" }, "높은점수_라벨": { "const": "(높은)끈기" } } }
+      ]
+    },
+    "PS3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)성취에대한야망" },
+            "높은점수_라벨": { "const": "(높은)성취에대한야망" }
+          }
+        }
+      ]
+    },
+    "PS4": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)완벽주의" },
+            "높은점수_라벨": { "const": "(높은)완벽주의" }
+          }
+        }
+      ]
+    },
 
-    "SD1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)책임감" }, "높은점수_라벨": { "const": "(높은)책임감" } } } ] },
-    "SD2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)목적의식" }, "높은점수_라벨": { "const": "(높은)목적의식" } } } ] },
-    "SD3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)유능감" }, "높은점수_라벨": { "const": "(높은)유능감" } } } ] },
-    "SD4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)자기수용" }, "높은점수_라벨": { "const": "(높은)자기수용" } } } ] },
-    "SD5": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)자기일치" }, "높은점수_라벨": { "const": "(높은)자기일치" } } } ] },
+    "SD1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)책임감" }, "높은점수_라벨": { "const": "(높은)책임감" } } }
+      ]
+    },
+    "SD2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)목적의식" },
+            "높은점수_라벨": { "const": "(높은)목적의식" }
+          }
+        }
+      ]
+    },
+    "SD3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)유능감" }, "높은점수_라벨": { "const": "(높은)유능감" } } }
+      ]
+    },
+    "SD4": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)자기수용" },
+            "높은점수_라벨": { "const": "(높은)자기수용" }
+          }
+        }
+      ]
+    },
+    "SD5": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)자기일치" },
+            "높은점수_라벨": { "const": "(높은)자기일치" }
+          }
+        }
+      ]
+    },
 
-    "CO1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)타인수용" }, "높은점수_라벨": { "const": "(높은)타인수용" } } } ] },
-    "CO2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)공감" }, "높은점수_라벨": { "const": "(높은)공감" } } } ] },
-    "CO3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)이타성" }, "높은점수_라벨": { "const": "(높은)이타성" } } } ] },
-    "CO4": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)관대함" }, "높은점수_라벨": { "const": "(높은)관대함" } } } ] },
-    "CO5": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)공평" }, "높은점수_라벨": { "const": "(높은)공평" } } } ] },
+    "CO1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)타인수용" },
+            "높은점수_라벨": { "const": "(높은)타인수용" }
+          }
+        }
+      ]
+    },
+    "CO2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)공감" }, "높은점수_라벨": { "const": "(높은)공감" } } }
+      ]
+    },
+    "CO3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)이타성" }, "높은점수_라벨": { "const": "(높은)이타성" } } }
+      ]
+    },
+    "CO4": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)관대함" }, "높은점수_라벨": { "const": "(높은)관대함" } } }
+      ]
+    },
+    "CO5": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "(낮은)공평" }, "높은점수_라벨": { "const": "(높은)공평" } } }
+      ]
+    },
 
-    "ST1": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "자의식" }, "높은점수_라벨": { "const": "창조적자기망각" } } } ] },
-    "ST2": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "(낮은)우주만물과의일체감" }, "높은점수_라벨": { "const": "(높은)우주만물과의일체감" } } } ] },
-    "ST3": { "allOf": [ { "$ref": "#/$defs/SubscaleScoreBase" }, { "properties": { "낮은점수_라벨": { "const": "합리적유물론" }, "높은점수_라벨": { "const": "영성수용" } } } ] },
+    "ST1": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "자의식" }, "높은점수_라벨": { "const": "창조적자기망각" } } }
+      ]
+    },
+    "ST2": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        {
+          "properties": {
+            "낮은점수_라벨": { "const": "(낮은)우주만물과의일체감" },
+            "높은점수_라벨": { "const": "(높은)우주만물과의일체감" }
+          }
+        }
+      ]
+    },
+    "ST3": {
+      "allOf": [
+        { "$ref": "#/$defs/SubscaleScoreBase" },
+        { "properties": { "낮은점수_라벨": { "const": "합리적유물론" }, "높은점수_라벨": { "const": "영성수용" } } }
+      ]
+    },
 
     "NSSubscales": {
       "type": "object",

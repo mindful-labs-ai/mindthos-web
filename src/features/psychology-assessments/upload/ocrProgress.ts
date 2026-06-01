@@ -5,6 +5,8 @@
  * 따라서 모달을 닫거나 새로고침해도 진행 상황은 서버 배치 상태로 언제든 복원할 수 있다.
  * 모달(진행 중 표시)과 메인 뷰(상태 노출)가 같은 판정을 쓰도록 여기로 모은다.
  */
+import { toLoadingDisplayPercent } from '../utils/loadingProgress';
+
 import type {
   AssessmentItem,
   AssessmentProgress,
@@ -17,12 +19,12 @@ import type {
  */
 export type OcrStage = 'reviewing' | 'needs_review' | 'ready';
 
-const STAGE_WEIGHT: Record<AssessmentProgress, number> = {
-  initiated: 0.2,
-  pending: 0.4,
-  processing: 0.6,
-  completed: 1,
-  failed: 1,
+const STAGE_RAW_PERCENT: Record<AssessmentProgress, number> = {
+  initiated: 0,
+  pending: 33,
+  processing: 66,
+  completed: 100,
+  failed: 100,
 };
 
 const IN_FLIGHT: ReadonlySet<AssessmentProgress> = new Set([
@@ -36,17 +38,23 @@ export function deriveOcrStage(items: AssessmentItem[]): OcrStage {
   const needsReview = items.some(
     (it) =>
       it.progress === 'failed' ||
-      (it.validation != null && it.validation !== 'valid'),
+      (it.validation != null && it.validation !== 'valid')
   );
   return needsReview ? 'needs_review' : 'ready';
 }
 
-/** 건당 단계 가중치 평균 × 100. 항목 없으면 0. */
+const buildOcrJitterKey = (items: AssessmentItem[]) =>
+  `ocr:${items
+    .map((it) => `${it.assessmentId}:${it.progress}:${it.validation ?? '-'}`)
+    .sort()
+    .join('|')}`;
+
+/** 건당 단계 진행률 평균을 10~100 표시 진행률로 변환한다. 항목 없으면 10. */
 export function ocrReviewPercent(items: AssessmentItem[]): number {
-  if (items.length === 0) return 0;
+  if (items.length === 0) return toLoadingDisplayPercent(0, 'ocr:empty');
   const sum = items.reduce(
-    (acc, it) => acc + (STAGE_WEIGHT[it.progress] ?? 0),
-    0,
+    (acc, it) => acc + (STAGE_RAW_PERCENT[it.progress] ?? 0),
+    0
   );
-  return Math.round((sum / items.length) * 100);
+  return toLoadingDisplayPercent(sum / items.length, buildOcrJitterKey(items));
 }

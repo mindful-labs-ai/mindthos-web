@@ -66,13 +66,15 @@ function toItem(row: AssessmentRow): AssessmentItem {
       : null,
     score: row.ocrScore,
     tempScore: row.tempOcrScore,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
   };
 }
 
 export class ServerAssessmentUploadAdapter implements AssessmentUploadGateway {
   async uploadAssessments(
     clientId: string,
-    inputs: AssessmentUploadInput[],
+    inputs: AssessmentUploadInput[]
   ): Promise<UploadAssessmentsResult> {
     // 프론트 도메인 → 서버 계약
     const items: UploadItem[] = inputs.map((input) => ({
@@ -83,7 +85,7 @@ export class ServerAssessmentUploadAdapter implements AssessmentUploadGateway {
 
     const { assessmentVersion, outcomes } = await serverUploadAssessments(
       clientId,
-      items,
+      items
     );
 
     // 서버 응답 → 프론트 도메인
@@ -109,7 +111,7 @@ export class ServerAssessmentUploadAdapter implements AssessmentUploadGateway {
 
   async confirmAssessment(
     assessmentId: string,
-    score: Record<string, unknown>,
+    score: Record<string, unknown>
   ): Promise<AssessmentItem> {
     return toItem(await serverConfirmAssessment(assessmentId, score));
   }
@@ -120,4 +122,5 @@ export class ServerAssessmentUploadAdapter implements AssessmentUploadGateway {
 }
 
 /** 기본 인스턴스 (모달이 주입 없이 바로 쓸 수 있게). */
-export const serverAssessmentUploadAdapter = new ServerAssessmentUploadAdapter();
+export const serverAssessmentUploadAdapter =
+  new ServerAssessmentUploadAdapter();

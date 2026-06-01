@@ -1,5 +1,6 @@
 import type { JsonSchema } from '../schemas/jsonSchema.types';
 
+import { formatAssessmentDisplayText } from './assessmentDisplay';
 import { resolveSchema } from './schemaResolver';
 
 /**
@@ -58,7 +59,8 @@ export type LeafInputType =
   | 'array-of-numbers'
   | 'union';
 
-const prettifyLabel = (key: string): string => key.replace(/_/g, ' ').trim();
+const prettifyLabel = (key: string): string =>
+  formatAssessmentDisplayText(key).replace(/_/g, ' ').trim();
 
 const primaryType = (type: JsonSchema['type']): string | undefined => {
   if (!type) return undefined;
