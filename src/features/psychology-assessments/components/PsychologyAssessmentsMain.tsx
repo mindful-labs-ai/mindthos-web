@@ -13,6 +13,7 @@ import type {
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Spinner } from '@/shared/ui';
+import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 
 import {
@@ -36,7 +37,11 @@ import type {
   AssessmentItem,
   AssessmentProgress,
 } from '../upload/assessmentUploadGateway';
-import { deriveOcrStage, ocrReviewPercent } from '../upload/ocrProgress';
+import {
+  deriveOcrStage,
+  ocrReviewPercent,
+  type OcrStage,
+} from '../upload/ocrProgress';
 import {
   ASSESSMENT_KIND_LABEL,
   formatAssessmentDisplayText,
@@ -108,6 +113,17 @@ const REPORT_TYPE_LABEL: Record<string, string> = {
   MMPI_2: '다면적 인성검사',
   TCI: '기질 검사',
 };
+
+const CHAT_READY_TOAST_TITLE =
+  '검사 결과지가 등록됐어요. 결과지를 바탕으로 질문해보세요!';
+
+interface TransitionToastSnapshot {
+  clientId?: string;
+  mode: AssessmentsMode;
+  phase?: ChatActiveStatus;
+  ocrStage: OcrStage | null;
+  analysisComplete: boolean;
+}
 
 function toAnalysisSteps(
   assessmentReports: AssessmentReportStatus[],
@@ -281,6 +297,7 @@ export const PsychologyAssessmentsMain = ({
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   const userId = useAuthStore((state) => state.userId);
+  const { toast } = useToast();
 
   const [chatValue, setChatValue] = useState('');
   const [turns, setTurns] = useState<ChatTurn[]>([]);
@@ -304,6 +321,9 @@ export const PsychologyAssessmentsMain = ({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const chipRef = useRef<HTMLButtonElement>(null);
+  const transitionToastSnapshotRef = useRef<TransitionToastSnapshot | null>(
+    null
+  );
 
   const clientId = client?.id;
   const qc = useQueryClient();
@@ -404,6 +424,60 @@ export const PsychologyAssessmentsMain = ({
       : null;
   const ocrPercent =
     ocrStage === 'reviewing' ? ocrReviewPercent(realAssessments) : 100;
+
+  useEffect(() => {
+    if (!clientId || !analysisStatusData) return;
+
+    const current: TransitionToastSnapshot = {
+      clientId,
+      mode,
+      phase,
+      ocrStage,
+      analysisComplete,
+    };
+    const previous = transitionToastSnapshotRef.current;
+
+    if (!previous || previous.clientId !== clientId) {
+      transitionToastSnapshotRef.current = current;
+      return;
+    }
+
+    if (previous.mode !== 'analyzed' && mode === 'analyzed') {
+      toast({ title: CHAT_READY_TOAST_TITLE });
+    } else if (previous.phase === 'OCR_PHASE' && phase === 'ANALYSIS_PHASE') {
+      toast({
+        title: '검사 결과지 분석을 시작했어요.',
+        description: '분석이 끝나면 바로 질문할 수 있어요.',
+      });
+    } else if (
+      previous.ocrStage === 'reviewing' &&
+      ocrStage === 'needs_review'
+    ) {
+      toast({
+        title: '확인이 필요한 항목이 있어요.',
+        description: '빈 항목을 채우면 분석을 시작할 수 있어요.',
+      });
+    } else if (
+      (previous.ocrStage === 'reviewing' ||
+        previous.ocrStage === 'needs_review') &&
+      ocrStage === 'ready'
+    ) {
+      toast({
+        title: '검사 결과지 확인이 끝났어요.',
+        description: '이제 결과지 분석을 시작할 수 있어요.',
+      });
+    }
+
+    transitionToastSnapshotRef.current = current;
+  }, [
+    analysisComplete,
+    analysisStatusData,
+    clientId,
+    mode,
+    ocrStage,
+    phase,
+    toast,
+  ]);
 
   // 진입·새로고침 시 진행 중/검토 대기 배치가 감지되면 모달을 자동으로 열어(이어보기)
   // 진행/검토 화면을 바로 보여준다. 내담자별 remount(key=clientId)라 ref도 같이 초기화되어
