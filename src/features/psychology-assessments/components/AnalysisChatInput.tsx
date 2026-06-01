@@ -21,6 +21,8 @@ interface AnalysisChatInputProps {
   className?: string;
 }
 
+const MAX_CHAT_INPUT_LENGTH = 500;
+
 export const AnalysisChatInput = ({
   value,
   onChange,
@@ -33,6 +35,8 @@ export const AnalysisChatInput = ({
 }: AnalysisChatInputProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+  const normalizedValue = value.slice(0, MAX_CHAT_INPUT_LENGTH);
+  const characterCount = normalizedValue.length;
 
   // mirror로 한 줄 텍스트 폭 측정 → textarea의 width/height를 한 effect에서 atomic 갱신.
   // value 없음: textarea가 mirror 폭(칩이 placeholder 옆에 붙음)
@@ -40,12 +44,18 @@ export const AnalysisChatInput = ({
   const mirrorRef = useRef<HTMLSpanElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    if (value.length > MAX_CHAT_INPUT_LENGTH) {
+      onChange(normalizedValue);
+    }
+  }, [normalizedValue, onChange, value.length]);
+
   // 외부에서 value를 빈 값 → 비어있지 않은 값으로 채워주면(예: 환영 화면 추천 칩 클릭)
   // 자동으로 포커스 + 커서를 끝으로 이동시켜 사용자가 엔터만 눌러 전송 가능.
   // 사용자가 직접 타이핑하는 경우엔 이미 focus 상태라 .focus()가 no-op.
   const prevValueRef = useRef(value);
   useEffect(() => {
-    if (prevValueRef.current === '' && value.length > 0) {
+    if (prevValueRef.current === '' && normalizedValue.length > 0) {
       const ta = textareaRef.current;
       if (ta) {
         ta.focus();
@@ -53,8 +63,8 @@ export const AnalysisChatInput = ({
         ta.setSelectionRange(len, len);
       }
     }
-    prevValueRef.current = value;
-  }, [value]);
+    prevValueRef.current = normalizedValue;
+  }, [normalizedValue]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -63,7 +73,7 @@ export const AnalysisChatInput = ({
 
     const update = () => {
       // 1) width — value 유무에 따라 직접 적용
-      if (value) {
+      if (normalizedValue) {
         textarea.style.width = '';
       } else {
         textarea.style.width = `${mirror.offsetWidth + 2}px`;
@@ -100,18 +110,18 @@ export const AnalysisChatInput = ({
       cancelled = true;
       window.removeEventListener('resize', handleResize);
     };
-  }, [value, placeholder]);
+  }, [normalizedValue, placeholder]);
 
   return (
     <div
       className={cn(
-        'flex w-full flex-col gap-2 rounded-2xl border border-grey-40 bg-grey-20',
+        'relative flex w-full flex-col gap-2 rounded-2xl border border-grey-40 bg-grey-20',
         className
       )}
       style={{
         paddingTop: 14,
         paddingRight: isMobileView ? 12 : 14,
-        paddingBottom: 16,
+        paddingBottom: 30,
         paddingLeft: isMobileView ? 16 : 24,
       }}
     >
@@ -137,13 +147,15 @@ export const AnalysisChatInput = ({
             lineHeight: '24px',
           }}
         >
-          {value || placeholder}
+          {normalizedValue || placeholder}
         </span>
 
         <textarea
           ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={normalizedValue}
+          onChange={(e) =>
+            onChange(e.target.value.slice(0, MAX_CHAT_INPUT_LENGTH))
+          }
           onKeyDown={(e) => {
             // Enter = 전송, Shift+Enter = 줄바꿈.
             // 단, 한글 등 IME 조합 중의 Enter는 "조합 확정"이므로 전송하지 않는다
@@ -160,10 +172,11 @@ export const AnalysisChatInput = ({
           }}
           disabled={disabled}
           placeholder={placeholder}
+          maxLength={MAX_CHAT_INPUT_LENGTH}
           rows={1}
           className={cn(
             'min-w-0 resize-none overflow-y-auto bg-transparent placeholder:text-grey-70 focus:outline-none disabled:cursor-not-allowed',
-            value ? 'flex-1 text-grey-100' : 'text-grey-70'
+            normalizedValue ? 'flex-1 text-grey-100' : 'text-grey-70'
           )}
           style={{
             // width/height는 useLayoutEffect에서 직접 관리 (React style에서 제외)
@@ -180,7 +193,7 @@ export const AnalysisChatInput = ({
           }}
         />
 
-        {showCreditChip && !value && !isMobileView && (
+        {showCreditChip && !normalizedValue && !isMobileView && (
           <span
             className="mt-0.5 inline-flex flex-shrink-0 items-center justify-center gap-1 rounded-md bg-grey-40 text-sm text-grey-80"
             style={{ width: 68, height: 25 }}
@@ -192,7 +205,7 @@ export const AnalysisChatInput = ({
         )}
 
         {/* spacer — value 없을 때만 (value 있으면 textarea가 flex-1로 가용공간 차지) */}
-        {!value && <div className="flex-1" />}
+        {!normalizedValue && <div className="flex-1" />}
 
         <button
           type="button"
@@ -208,6 +221,13 @@ export const AnalysisChatInput = ({
           <AnalysisChatSendIcon size={20} />
         </button>
       </div>
+
+      <span
+        className="pointer-events-none absolute bottom-2 right-3 text-xs font-medium text-grey-60"
+        aria-label={`입력 글자 수 ${characterCount}/${MAX_CHAT_INPUT_LENGTH}`}
+      >
+        {characterCount}/{MAX_CHAT_INPUT_LENGTH}
+      </span>
     </div>
   );
 };
