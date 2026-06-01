@@ -1,12 +1,11 @@
 import path from 'node:path';
 
-import basicSsl from '@vitejs/plugin-basic-ssl';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   plugins: [
-    command === 'serve' && basicSsl(),
+    // 로컬 심리검사 해석 QA 중 localhost CORS 재현을 위해 dev HTTPS를 비활성화한다.
     react({
       babel: {
         plugins: ['babel-plugin-react-compiler'],

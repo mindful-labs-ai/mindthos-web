@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
-import { XIcon } from '@/shared/icons';
 
+import { formatAssessmentDisplayText } from '../../utils/assessmentDisplay';
 import { StatusCircle } from '../RegisterAssessmentsModal/shared/StatusBadge';
 
 interface PopoverEntryCardProps {
@@ -11,10 +11,6 @@ interface PopoverEntryCardProps {
   /** 토글 가능 시 우측 체크 표시 */
   selected?: boolean;
   onToggle?: () => void;
-  /** 우측 삭제(X) 버튼. 있으면 서버 DELETE 트리거. */
-  onDelete?: () => void;
-  /** 삭제 진행 중 (버튼 비활성) */
-  deleting?: boolean;
   className?: string;
 }
 
@@ -23,50 +19,20 @@ export const PopoverEntryCard = ({
   metaLabel,
   selected,
   onToggle,
-  onDelete,
-  deleting,
   className,
 }: PopoverEntryCardProps) => {
-  // onDelete가 있으면 카드를 div로 구성(버튼 중첩 회피) + 삭제 버튼 별도 노출.
-  if (onDelete) {
-    return (
-      <div
-        className={cn(
-          'flex w-full items-center justify-between gap-3 rounded-md bg-grey-20 px-4 py-3',
-          className
-        )}
-      >
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="truncate text-m font-emphasize text-grey-100">
-            {title}
-          </span>
-          {metaLabel && (
-            <span className="truncate text-sm text-grey-70">{metaLabel}</span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={onDelete}
-          disabled={deleting}
-          aria-label="결과지 삭제"
-          className="flex-shrink-0 text-grey-70 transition-colors disabled:opacity-40 lg:hover:text-grey-100"
-        >
-          <XIcon size={20} />
-        </button>
-      </div>
-    );
-  }
-
   const interactive = !!onToggle;
 
   const inner = (
     <>
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="truncate text-m font-emphasize text-grey-100">
-          {title}
+          {formatAssessmentDisplayText(title)}
         </span>
         {metaLabel && (
-          <span className="truncate text-sm text-grey-70">{metaLabel}</span>
+          <span className="truncate text-sm text-grey-70">
+            {formatAssessmentDisplayText(metaLabel)}
+          </span>
         )}
       </div>
       {interactive && selected && (

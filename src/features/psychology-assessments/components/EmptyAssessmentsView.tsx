@@ -17,7 +17,7 @@ export const EmptyAssessmentsView = ({
       )}
     >
       <p className="text-lg font-emphasize text-grey-100">
-        아직 등록된 심리검사 결과지가 없습니다.
+        아직 등록된 심리검사 결과지가 없어요.
       </p>
       <button
         type="button"

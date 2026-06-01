@@ -149,7 +149,7 @@ function createOptimisticSessionItem({
       created_at: new Date().toISOString(),
       processing_status: 'pending',
       progress_percentage: 0,
-      current_step: '작업 요청 완료',
+      current_step: '안전한 AI에게 요청을 전달하고 있어요.',
     },
     transcribe: null,
     progressNotes: [],
@@ -370,7 +370,9 @@ export function useMultiSessionCreate({
           });
 
       if (finalResults.some((result) => result.status === 'success')) {
-        void sleep(SESSION_LIST_INVALIDATE_DELAY_MS).then(invalidateSessionLists);
+        void sleep(SESSION_LIST_INVALIDATE_DELAY_MS).then(
+          invalidateSessionLists
+        );
       } else {
         void invalidateSessionLists();
       }

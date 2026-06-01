@@ -22,7 +22,7 @@ interface AnalyzingProgressCardProps {
 export const AnalyzingProgressCard = ({
   steps,
   percent,
-  helperText = '등록한 심리검사 결과지를 기반으로 결과 해석 및 분석을\n진행하고 있습니다. 분석은 1~3분 정도 소요됩니다.',
+  helperText = '등록한 심리검사 결과지를 바탕으로 결과를 해석하고 있어요.\n보통 1~3분 안에 끝나요.',
   className,
 }: AnalyzingProgressCardProps) => {
   const clamped = Math.max(0, Math.min(100, percent));

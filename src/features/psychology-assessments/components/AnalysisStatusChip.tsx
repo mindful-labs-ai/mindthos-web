@@ -21,8 +21,8 @@ interface AnalysisStatusChipProps {
 }
 
 const STATIC_LABEL: Record<Exclude<AnalysisStatus, 'analyzed'>, string> = {
-  no_assessments: '결과지 없음',
-  no_analysis: '분석 없음',
+  no_assessments: '결과지 미등록',
+  no_analysis: '분석 전',
   analyzing: '분석 중',
 };
 
@@ -31,9 +31,7 @@ export const AnalysisStatusChip = forwardRef<
   AnalysisStatusChipProps
 >(({ status, fileCount = 0, onClick, active, className }, ref) => {
   const label =
-    status === 'analyzed'
-      ? `${fileCount}개 결과지 등록됨`
-      : STATIC_LABEL[status];
+    status === 'analyzed' ? `${fileCount}개 결과지 등록` : STATIC_LABEL[status];
 
   const baseClass =
     'inline-flex items-center gap-2 rounded-md border border-grey-40 bg-grey-20 px-3 py-2 text-m font-medium';

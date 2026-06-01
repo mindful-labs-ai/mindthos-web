@@ -17,8 +17,8 @@ export const AnalysisDisclaimer = ({ className }: AnalysisDisclaimerProps) => {
         className
       )}
     >
-      마음토스가 제공하는 해석은 참고용입니다. 최종 해석은 자격을 갖춘 임상가가
-      수행해야 합니다.
+      마음토스의 해석은 참고 자료로 활용해 주세요. 최종 판단은 자격을 갖춘
+      임상가의 검토가 필요해요.
     </p>
   );
 };

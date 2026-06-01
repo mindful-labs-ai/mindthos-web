@@ -62,7 +62,6 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: '가계도',
     value: 'genogram',
     icon: <SideGenogramIcon size={24} />,
-    badge: 'beta',
   },
   {
     path: ROUTES.PSYCHOLOGY_ASSESSMENTS,
