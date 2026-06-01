@@ -17,7 +17,7 @@ interface ChatWelcomeViewProps {
 }
 
 export const ChatWelcomeView = ({
-  greeting = '안녕하세요, 마음토스 심리검사 해석 에이전트입니다. 무엇을 도와드릴까요?',
+  greeting = '안녕하세요. 마음토스 심리검사 해석 도우미예요. 궁금한 점을 편하게 물어보세요.',
   suggestions,
   onSuggestionClick,
   className,

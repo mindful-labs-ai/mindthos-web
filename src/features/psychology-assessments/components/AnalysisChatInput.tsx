@@ -26,7 +26,7 @@ export const AnalysisChatInput = ({
   onChange,
   onSubmit,
   disabled,
-  placeholder = '심리검사 결과지를 등록한 후 분석을 진행해주세요.',
+  placeholder = '심리검사 결과지를 등록한 뒤 분석을 시작해 주세요.',
   creditCost = 5,
   showCreditChip = true,
   className,
