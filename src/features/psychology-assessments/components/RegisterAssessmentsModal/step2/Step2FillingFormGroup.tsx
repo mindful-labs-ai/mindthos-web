@@ -8,7 +8,7 @@ import {
 import { MissingFieldsForm } from './MissingFieldsForm';
 
 export interface FillingFormDescriptor {
-  /** 검사별 고유 id — 서버 assessmentId 또는 QA mock id */
+  /** 검사별 고유 id — 서버 assessmentId 또는 폼 내부 식별자 */
   id: string;
   /** 검사 카테고리 라벨 */
   categoryLabel: string;

@@ -11,11 +11,7 @@ import {
   useConfirmAssessment,
   useDeleteAssessment,
 } from '../../hooks/useAssessmentBatch';
-import type { JsonSchema } from '../../schemas/jsonSchema.types';
-import mmpiSchemaJson from '../../schemas/mmpi.schema.json';
-import tciSchemaJson from '../../schemas/tci.schema.json';
 import type {
-  AssessmentItem,
   AssessmentKind,
   AssessmentUploadGateway,
   AssessmentUploadInput,
@@ -27,23 +23,13 @@ import {
   formatAssessmentDisplayText,
 } from '../../utils/assessmentDisplay';
 import { toLoadingDisplayPercent } from '../../utils/loadingProgress';
-import {
-  collectLeaves,
-  PATH_SEP,
-  schemaToFields,
-} from '../../utils/schemaToFields';
+import { PATH_SEP } from '../../utils/schemaToFields';
 import {
   getCleanupErrorMessage,
   getConfirmErrorMessage,
   getUploadErrorMessage,
 } from '../../utils/userMessages';
-import type { RegisterModalDebugPreset } from '../debugTypes';
 
-import {
-  RegisterModalQaPanel,
-  type FakeAssessmentKind,
-  type FakeAssessmentStatus,
-} from './RegisterModalQaPanel';
 import { RegisterModalFooter } from './shared/RegisterModalFooter';
 import { RegisterModalHeader } from './shared/RegisterModalHeader';
 import { RegisterStepper } from './shared/RegisterStepper';
@@ -65,41 +51,6 @@ import {
 
 type Step2Mode = 'list-complete' | 'list-missing' | 'filling';
 
-const MMPI_SCHEMA = mmpiSchemaJson as JsonSchema;
-const TCI_SCHEMA = tciSchemaJson as JsonSchema;
-
-/**
- * schema의 모든 leaf path를 null로 채운 nested score 객체.
- * QA fake MISSING_FIELD가 실제 OCR 정답지처럼 schema 전체 leaf를 노출하기 위해 사용.
- * (isPathMissing이 모든 path에서 true → 기존 filling 폼 visibleLeaf 로직 그대로 전체 노출.)
- */
-const buildAllNullScore = (schema: JsonSchema): Record<string, unknown> => {
-  const leaves = collectLeaves(schemaToFields(schema));
-  const out: Record<string, unknown> = {};
-  for (const leaf of leaves) {
-    const segs = leaf.path.split(PATH_SEP);
-    let cur: Record<string, unknown> = out;
-    for (let i = 0; i < segs.length - 1; i++) {
-      const key = segs[i];
-      const next = cur[key];
-      if (next === null || typeof next !== 'object' || Array.isArray(next)) {
-        cur[key] = {};
-      }
-      cur = cur[key] as Record<string, unknown>;
-    }
-    cur[segs[segs.length - 1]] = null;
-  }
-  return out;
-};
-
-const ALL_NULL_SCORE_BY_KIND: Record<
-  AssessmentKind,
-  Record<string, unknown>
-> = {
-  mmpi: buildAllNullScore(MMPI_SCHEMA),
-  tci: buildAllNullScore(TCI_SCHEMA),
-};
-
 interface RegisterAssessmentsModalProps {
   open: boolean;
   onClose: () => void;
@@ -115,8 +66,6 @@ interface RegisterAssessmentsModalProps {
   clientId?: string;
   /** 업로드 gateway (주입). 미지정 시 서버 adapter 사용. 테스트는 mock 주입. */
   uploadGateway?: AssessmentUploadGateway;
-  /** 로컬 QA dock이 모달 내부 상세 상태를 강제로 구성할 때 사용. 운영 배포 전 제거 대상. */
-  debugPreset?: RegisterModalDebugPreset | null;
   /**
    * 이어보기 모드. 서버에 진행 중/검토 대기 배치가 있을 때 어디로 복원할지 지정한다.
    * - 'reviewing': OCR 진행 표시 화면(step1 reviewing)
@@ -261,25 +210,9 @@ const MOCK_INITIAL_FILES: UploadedFile[] = [
   },
 ];
 
-const DEBUG_MISSING_TYPE_FILES: UploadedFile[] = [
-  {
-    id: 'debug-missing-type',
-    fileName: '검사종류_미선택_결과지.pdf',
-    sizeMB: 8.4,
-    pageCount: 10,
-    assessmentType: null,
-    status: 'missing-type',
-  },
-];
-
-const DEBUG_UPLOAD_ERROR =
-  '결과지를 업로드하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.';
-
-const DEBUG_CONFIRM_ERROR =
-  '빈 항목을 저장하지 못했어요. 입력 내용을 확인한 뒤 다시 시도해 주세요.';
-const DEBUG_REVIEWING_PERCENT = toLoadingDisplayPercent(
+const DEMO_REVIEWING_PERCENT = toLoadingDisplayPercent(
   33,
-  'ocr:debug:modal-reviewing'
+  'ocr:modal-demo-reviewing'
 );
 
 const MOCK_VERIFICATION_RESULTS_ALL_OK: VerificationResult[] = [
@@ -320,30 +253,6 @@ const MOCK_VERIFICATION_RESULTS_MISSING: VerificationResult[] = [
   },
 ];
 
-const DEBUG_VERIFICATION_RESULT_INVALID: VerificationResult[] = [
-  {
-    fileId: 'debug-invalid',
-    fileName: '지원하지_않는_결과지.pdf',
-    categoryLabel: '심리검사 결과지',
-    itemsVerified: null,
-    itemsTotal: null,
-    status: 'invalid',
-    invalidReason: '지원하는 결과지인지 확인해 주세요',
-  },
-];
-
-const DEBUG_VERIFICATION_RESULT_FAILED: VerificationResult[] = [
-  {
-    fileId: 'debug-failed',
-    fileName: '읽기_실패_결과지.pdf',
-    categoryLabel: '심리검사 결과지',
-    itemsVerified: null,
-    itemsTotal: null,
-    status: 'invalid',
-    invalidReason: '결과지를 읽지 못했어요',
-  },
-];
-
 const formatBy = (
   step1Sub: Step1Substate,
   files: UploadedFile[]
@@ -361,7 +270,6 @@ export const RegisterAssessmentsModal = ({
   startAnalysisError = null,
   clientId,
   uploadGateway = serverAssessmentUploadAdapter,
-  debugPreset = null,
   resume = false,
   existingKinds = [],
 }: RegisterAssessmentsModalProps) => {
@@ -381,7 +289,7 @@ export const RegisterAssessmentsModal = ({
   const [files, setFiles] = useState<UploadedFile[]>(() =>
     clientId ? [] : MOCK_INITIAL_FILES
   );
-  const reviewingPercent = DEBUG_REVIEWING_PERCENT;
+  const reviewingPercent = DEMO_REVIEWING_PERCENT;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileBlobsRef = useRef<Map<string, File>>(new Map());
   const [uploading, setUploading] = useState(false);
@@ -396,15 +304,7 @@ export const RegisterAssessmentsModal = ({
     enabled: realUploadMode && open,
   });
 
-  // QA 패널이 주입하는 로컬 가짜 항목. 서버 호출 없이 step2 list/filling/invalid 분기
-  // + cleanup/confirm 플로우를 한 화면에서 시연할 수 있게 polledItems에 합쳐 노출한다.
-  // (모달이 닫혔다가 다시 열려도 wasOpenRef 초기화로 사라지지 않음 — 명시 clear 필요.)
-  const [fakeItems, setFakeItems] = useState<AssessmentItem[]>([]);
-  const polledItems = useMemo(
-    () => [...serverItems, ...fakeItems],
-    [serverItems, fakeItems]
-  );
-  const isFakeAssessmentId = (id: string) => id.startsWith('fake-');
+  const polledItems = serverItems;
 
   const realReviewingPercent = useMemo(
     () => ocrReviewPercent(polledItems),
@@ -470,13 +370,9 @@ export const RegisterAssessmentsModal = ({
   // (데모 모드는 폴링 자체가 없으므로 mock 분기 유지.)
   const verificationResults: VerificationResult[] = realUploadMode
     ? realVerificationResults
-    : debugPreset === 'verify_invalid'
-      ? DEBUG_VERIFICATION_RESULT_INVALID
-      : debugPreset === 'verify_failed'
-        ? DEBUG_VERIFICATION_RESULT_FAILED
-        : step2Mode === 'list-complete'
-          ? MOCK_VERIFICATION_RESULTS_ALL_OK
-          : MOCK_VERIFICATION_RESULTS_MISSING;
+    : step2Mode === 'list-complete'
+      ? MOCK_VERIFICATION_RESULTS_ALL_OK
+      : MOCK_VERIFICATION_RESULTS_MISSING;
 
   // 실모드 + 폴링 결과 없음 = 분석 가능한 검사가 없는 상태. step2/step3 진행 차단.
   const noRealAssessments = realUploadMode && polledItems.length === 0;
@@ -486,9 +382,7 @@ export const RegisterAssessmentsModal = ({
   // 시에도 보이도록 step1 sub-state 전반에서 배너를 노출한다.
   const hasIncompleteUploads =
     realUploadMode && polledItems.some((it) => it.progress === 'initiated');
-  const debugCleanupNeeded = debugPreset === 'cleanup_needed';
   const cleanupBannerVisible =
-    debugCleanupNeeded ||
     hasIncompleteUploads ||
     (uploadError !== null &&
       polledItems.length > 0 &&
@@ -511,7 +405,6 @@ export const RegisterAssessmentsModal = ({
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
   // 실데이터 채우기 폼: 각 MISSING_FIELD 검사의 null leaf만 노출 + 입력값 수집.
-  // QA fake도 schema 기반 all-null tempScore라 isPathMissing 분기가 자연스럽게 전체 노출.
   const realFillingForms: FillingFormDescriptor[] = missingItems.map((it) => {
     // MISSING_FIELD는 ocr_score가 null이고 누락(null) 포함 교집합이 temp_ocr_score에 있다.
     const score = it.tempScore ?? it.score ?? {};
@@ -526,74 +419,12 @@ export const RegisterAssessmentsModal = ({
     };
   });
 
-  // QA용 가짜 항목 추가 — 각 status에 맞춰 score/tempScore/validation/progress만 다르게.
-  const addFakeAssessment = (
-    kind: FakeAssessmentKind,
-    status: FakeAssessmentStatus
-  ) => {
-    const id = `fake-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
-    const base: AssessmentItem = {
-      assessmentId: id,
-      kind,
-      title: `[FAKE ${kind.toUpperCase()}] ${status}`,
-      assessmentVersion: 0,
-      progress: 'completed',
-      validation: 'valid',
-      score: null,
-      tempScore: null,
-    };
-    let item: AssessmentItem;
-    if (status === 'valid') {
-      item = { ...base, validation: 'valid', score: { __qa_filled: 1 } };
-    } else if (status === 'missing_field') {
-      // 실제 OCR 정답지 schema의 모든 leaf를 null로 둔 tempScore.
-      // → 카드 "0/N 항목 확인됨" + filling 폼에 schema 전체 leaf 노출(isPathMissing이 전부 true).
-      item = {
-        ...base,
-        validation: 'missing_field',
-        tempScore: ALL_NULL_SCORE_BY_KIND[kind],
-      };
-    } else if (status === 'invalid') {
-      item = { ...base, validation: 'invalid' };
-    } else {
-      item = { ...base, progress: 'failed', validation: null };
-    }
-    setFakeItems((prev) => [...prev, item]);
-  };
-
-  const clearFakeAssessments = () => {
-    setFakeItems([]);
-    setFillingValues((prev) => {
-      const next: typeof prev = {};
-      for (const [k, v] of Object.entries(prev)) {
-        if (!isFakeAssessmentId(k)) next[k] = v;
-      }
-      return next;
-    });
-  };
-
   // 채운 값을 기존 score에 덮어써 검사별로 confirm 호출. 전부 성공하면 step3.
   const submitConfirms = async (): Promise<void> => {
     setConfirming(true);
     setConfirmError(null);
     try {
       for (const it of missingItems) {
-        if (isFakeAssessmentId(it.assessmentId)) {
-          // QA 가짜는 서버 confirm 호출 없이 로컬에서 VALID로 토글.
-          setFakeItems((prev) =>
-            prev.map((f) =>
-              f.assessmentId === it.assessmentId
-                ? {
-                    ...f,
-                    validation: 'valid',
-                    score: { __qa_filled: 1 },
-                    tempScore: null,
-                  }
-                : f
-            )
-          );
-          continue;
-        }
         // MISSING_FIELD 기반은 temp_ocr_score(교집합). 채운 값을 덮어 full score로 confirm.
         const merged = applyValues(
           it.tempScore ?? it.score ?? {},
@@ -639,97 +470,6 @@ export const RegisterAssessmentsModal = ({
     }
     wasOpenRef.current = open;
   }, [open, realUploadMode, resume]);
-
-  useEffect(() => {
-    if (!open || !debugPreset) return;
-
-    setUploadError(null);
-    setConfirmError(null);
-    setUploading(false);
-    setCleaningUp(false);
-    setConfirming(false);
-    setFakeItems([]);
-    setFillingValues({});
-
-    switch (debugPreset) {
-      case 'upload_empty':
-        setStep(1);
-        setStep1Sub('empty');
-        setFiles([]);
-        fileBlobsRef.current.clear();
-        return;
-      case 'upload_files_ready':
-        setStep(1);
-        setStep1Sub('list');
-        setFiles(MOCK_INITIAL_FILES);
-        return;
-      case 'upload_missing_type':
-        setStep(1);
-        setStep1Sub('list');
-        setFiles(DEBUG_MISSING_TYPE_FILES);
-        return;
-      case 'upload_duplicate_kind':
-        setStep(1);
-        setStep1Sub('list');
-        setFiles([
-          MOCK_INITIAL_FILES[0],
-          {
-            ...MOCK_INITIAL_FILES[0],
-            id: 'debug-duplicate-mmpi',
-            fileName: '다면적_인성검사_중복_결과지.pdf',
-          },
-        ]);
-        return;
-      case 'uploading':
-        setStep(1);
-        setStep1Sub('list');
-        setFiles(MOCK_INITIAL_FILES);
-        setUploading(true);
-        return;
-      case 'upload_failed':
-        setStep(1);
-        setStep1Sub('list');
-        setFiles(MOCK_INITIAL_FILES);
-        setUploadError(DEBUG_UPLOAD_ERROR);
-        return;
-      case 'cleanup_needed':
-        setStep(1);
-        setStep1Sub('list');
-        setFiles(MOCK_INITIAL_FILES);
-        return;
-      case 'reviewing':
-        setStep(1);
-        setStep1Sub('reviewing');
-        setFiles(MOCK_INITIAL_FILES);
-        return;
-      case 'verify_complete':
-        setStep(2);
-        setStep2Mode('list-complete');
-        return;
-      case 'verify_missing':
-        setStep(2);
-        setStep2Mode('list-missing');
-        return;
-      case 'verify_filling':
-        setStep(2);
-        setStep2Mode('filling');
-        return;
-      case 'verify_confirm_error':
-        setStep(2);
-        setStep2Mode('filling');
-        setConfirmError(DEBUG_CONFIRM_ERROR);
-        return;
-      case 'verify_invalid':
-      case 'verify_failed':
-        setStep(2);
-        setStep2Mode('list-missing');
-        return;
-      case 'complete':
-      case 'complete_analysis_error':
-        setStep(3);
-        return;
-    }
-  }, [debugPreset, open]);
 
   /* -------- escape / scroll lock -------- */
   useEffect(() => {
@@ -924,24 +664,14 @@ export const RegisterAssessmentsModal = ({
   };
 
   // 부분 업로드 실패 후 서버에 남은 v0 드래프트를 일괄 삭제. 사용자가 step1에서 재시도 가능.
-  // QA 가짜 항목은 서버에 없으므로 로컬 fakeItems에서만 제거.
   const handleCleanupDrafts = async (): Promise<void> => {
-    if (debugPreset && !clientId) {
-      setUploadError(null);
-      setStep1Sub('empty');
-      setFiles([]);
-      fileBlobsRef.current.clear();
-      return;
-    }
     if (!clientId || polledItems.length === 0) return;
     setCleaningUp(true);
     setUploadError(null);
     try {
       for (const it of polledItems) {
-        if (isFakeAssessmentId(it.assessmentId)) continue;
         await deleteMut.mutateAsync(it.assessmentId);
       }
-      setFakeItems([]);
       await qc.invalidateQueries({
         queryKey: assessmentBatchKeys.batch(clientId),
       });
@@ -977,12 +707,9 @@ export const RegisterAssessmentsModal = ({
     return dup ?? null;
   }, [realUploadMode, step1Sub, existingKinds, files]);
 
-  const debugDuplicateKind = debugPreset === 'upload_duplicate_kind';
-  const duplicateKindMessage = debugDuplicateKind
-    ? '다면적 인성검사는 1개만 등록할 수 있어요. 같은 종류의 결과지를 정리한 뒤 다시 선택해 주세요.'
-    : duplicateKind
-      ? `${KIND_TO_CATEGORY[duplicateKind]}는 1개만 등록할 수 있어요. 같은 종류의 결과지를 정리한 뒤 다시 선택해 주세요.`
-      : null;
+  const duplicateKindMessage = duplicateKind
+    ? `${KIND_TO_CATEGORY[duplicateKind]}는 1개만 등록할 수 있어요. 같은 종류의 결과지를 정리한 뒤 다시 선택해 주세요.`
+    : null;
   const usedFileSlots =
     files.length + (realUploadMode ? existingKinds.length : 0);
   const remainingFileSlots = Math.max(0, MAX_FILES - usedFileSlots);
@@ -995,8 +722,7 @@ export const RegisterAssessmentsModal = ({
     files.length <= MAX_FILES &&
     usedFileSlots <= MAX_FILES &&
     files.every((f) => f.status !== 'missing-type') &&
-    !duplicateKind &&
-    !debugDuplicateKind;
+    !duplicateKind;
 
   // 서버 계약: COMPLETED+VALID+ocrScore만 분석 확정 가능. invalid/failed는 삭제 후 재업로드.
   // missing(누락 필드)은 채우기 폼으로, invalid는 step3 진행 차단 + 인라인 삭제로 분기.
@@ -1114,14 +840,9 @@ export const RegisterAssessmentsModal = ({
               ? '저장 중…'
               : '다음';
       // 실데이터 채우기 중에는 모든 누락 필드를 채워야 확정 가능.
-      // QA 가짜만 있는 경우는 schema 전체를 채우게 강요하지 않고 confirm 통과 허용.
-      const onlyFakesMissing =
-        missingItems.length > 0 &&
-        missingItems.every((it) => isFakeAssessmentId(it.assessmentId));
       const fillingIncomplete =
         useRealFilling &&
         isFilling &&
-        !onlyFakesMissing &&
         (fillingCounts.total === 0 ||
           fillingCounts.filled < fillingCounts.total);
       const nextDisabled =
@@ -1258,7 +979,7 @@ export const RegisterAssessmentsModal = ({
               {realUploadMode && cleanupBannerVisible && (
                 <div className="bg-red-10 mt-3 flex items-center justify-between gap-3 rounded-md border border-red-80 p-3">
                   <p className="text-sm text-red-80">
-                    {hasIncompleteUploads || debugCleanupNeeded
+                    {hasIncompleteUploads
                       ? '완료되지 않은 결과지가 남아 있어요. 정리한 뒤 다시 등록해 주세요.'
                       : '이전 등록 과정의 일부가 남아 있어요. 정리한 뒤 다시 시도해 주세요.'}
                   </p>
@@ -1287,16 +1008,7 @@ export const RegisterAssessmentsModal = ({
                 results={verificationResults}
                 onDeleteInvalid={
                   realUploadMode
-                    ? (assessmentId) => {
-                        if (isFakeAssessmentId(assessmentId)) {
-                          // QA 가짜 invalid는 서버 호출 없이 로컬에서 제거.
-                          setFakeItems((prev) =>
-                            prev.filter((f) => f.assessmentId !== assessmentId)
-                          );
-                          return;
-                        }
-                        deleteMut.mutate(assessmentId);
-                      }
+                    ? (assessmentId) => deleteMut.mutate(assessmentId)
                     : undefined
                 }
                 deletingFileId={
@@ -1335,49 +1047,6 @@ export const RegisterAssessmentsModal = ({
           rightButton={footer.rightButton}
         />
       </div>
-
-      <RegisterModalQaPanel
-        snapshot={{
-          step,
-          step1Sub,
-          step2Sub,
-          step2Mode,
-          resume,
-          realUploadMode,
-          polledItems: polledItems.map((it) => ({
-            kind: it.kind,
-            progress: it.progress,
-            validation: it.validation,
-          })),
-          hasIncompleteUploads,
-          hasInvalidVerification,
-          hasMissingVerification,
-          noRealAssessments,
-          duplicateKind,
-          uploading,
-          cleaningUp,
-          confirming,
-          isStartingAnalysis,
-          uploadError,
-          confirmError,
-          startAnalysisError,
-          fillingCounts,
-        }}
-        actions={{
-          onSetStep: setStep,
-          onSetStep1Sub: setStep1Sub,
-          onInvalidateBatch: () => {
-            if (clientId) {
-              void qc.invalidateQueries({
-                queryKey: assessmentBatchKeys.batch(clientId),
-              });
-            }
-          },
-          onAddFakeAssessment: addFakeAssessment,
-          onClearFakeAssessments: clearFakeAssessments,
-          fakeCount: fakeItems.length,
-        }}
-      />
     </div>
   );
 };
