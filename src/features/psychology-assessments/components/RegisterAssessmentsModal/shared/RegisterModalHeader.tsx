@@ -13,7 +13,12 @@ export const RegisterModalHeader = ({
   className,
 }: RegisterModalHeaderProps) => {
   return (
-    <div className={cn('relative flex items-center justify-center px-6 pt-6', className)}>
+    <div
+      className={cn(
+        'relative flex items-center justify-center px-6 pt-6',
+        className
+      )}
+    >
       <h2 className="text-l font-emphasize text-grey-100">{title}</h2>
       <button
         type="button"
