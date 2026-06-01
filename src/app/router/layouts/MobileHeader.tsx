@@ -3,6 +3,7 @@ import React from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
+import type { Client } from '@/features/client/types';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   GenogramIcon,
@@ -109,14 +110,36 @@ function GenogramClientButton() {
   const clientId = searchParams.get('clientId');
   const { clients } = useClientList();
   const { setSearchParamsWithUtm } = useNavigateWithUtm();
+  const openModal = useModalStore((state) => state.openModal);
 
   const activeClients = React.useMemo(
     () => clients.filter((c) => !c.counsel_done),
     [clients]
   );
-  const selectedClient = activeClients.find((c) => c.id === clientId) ?? null;
+  const [createdClient, setCreatedClient] = React.useState<Client | null>(null);
+  const selectedClient =
+    activeClients.find((c) => c.id === clientId) ??
+    (createdClient?.id === clientId ? createdClient : null);
 
   const [isOpen, setIsOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!createdClient) return;
+    if (clients.some((client) => client.id === createdClient.id)) {
+      setCreatedClient(null);
+    }
+  }, [clients, createdClient]);
+
+  const handleOpenAddClient = () => {
+    closeFullscreenDepthThenRun(setIsOpen, () => {
+      openModal('addClient', {
+        onClientCreated: (createdClientId: string, clientName?: string) => {
+          setCreatedClient(buildCreatedClient(createdClientId, clientName));
+          setSearchParamsWithUtm({ clientId: createdClientId });
+        },
+      });
+    });
+  };
 
   return (
     <>
@@ -141,6 +164,10 @@ function GenogramClientButton() {
           <p className="text-m font-medium text-grey-100">내담자 선택</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4">
+          <MobileAddClientButton
+            onClick={handleOpenAddClient}
+            className="mb-4"
+          />
           {activeClients.length === 0 ? (
             <p className="py-8 text-center text-sm text-grey-60">
               등록된 내담자가 없어요
@@ -196,10 +223,32 @@ function PsychologyClientButton() {
   const clientId = searchParams.get('clientId');
   const { clients } = useClientList();
   const { setSearchParamsWithUtm } = useNavigateWithUtm();
+  const openModal = useModalStore((state) => state.openModal);
 
-  const selectedClient = clients.find((c) => c.id === clientId) ?? null;
+  const [createdClient, setCreatedClient] = React.useState<Client | null>(null);
+  const selectedClient =
+    clients.find((c) => c.id === clientId) ??
+    (createdClient?.id === clientId ? createdClient : null);
 
   const [isOpen, setIsOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!createdClient) return;
+    if (clients.some((client) => client.id === createdClient.id)) {
+      setCreatedClient(null);
+    }
+  }, [clients, createdClient]);
+
+  const handleOpenAddClient = () => {
+    closeFullscreenDepthThenRun(setIsOpen, () => {
+      openModal('addClient', {
+        onClientCreated: (createdClientId: string, clientName?: string) => {
+          setCreatedClient(buildCreatedClient(createdClientId, clientName));
+          setSearchParamsWithUtm({ clientId: createdClientId });
+        },
+      });
+    });
+  };
 
   return (
     <>
@@ -224,6 +273,10 @@ function PsychologyClientButton() {
           <p className="text-m font-medium text-grey-100">내담자 선택</p>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4">
+          <MobileAddClientButton
+            onClick={handleOpenAddClient}
+            className="mb-4"
+          />
           {clients.length === 0 ? (
             <p className="py-8 text-center text-sm text-grey-60">
               등록된 내담자가 없어요
@@ -272,4 +325,71 @@ function PsychologyClientButton() {
       </Modal>
     </>
   );
+}
+
+function MobileAddClientButton({
+  onClick,
+  className,
+}: {
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-xl bg-nav-hover-bg px-4 py-3 text-left transition-colors lg:hover:bg-grey-20 ${className ?? ''}`}
+    >
+      <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-md bg-surface text-grey-70">
+        <PlusIcon size={18} />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="text-m font-medium text-grey-100">
+          내담자 추가하기
+        </span>
+        <span className="text-xs text-grey-60">
+          새 내담자를 등록한 뒤 바로 선택할 수 있어요.
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function buildCreatedClient(clientId: string, clientName?: string): Client {
+  const now = new Date().toISOString();
+  return {
+    id: clientId,
+    counselor_id: '',
+    name: clientName || '새 내담자',
+    phone_number: '',
+    email: null,
+    counsel_theme: null,
+    counsel_number: 0,
+    counsel_done: false,
+    memo: null,
+    pin: false,
+    created_at: now,
+    updated_at: now,
+    session_count: 0,
+  };
+}
+
+function closeFullscreenDepthThenRun(
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  next: () => void
+) {
+  let ran = false;
+  const runOnce = () => {
+    if (ran) return;
+    ran = true;
+    window.removeEventListener('popstate', handlePopState);
+    next();
+  };
+  const handlePopState = () => {
+    window.setTimeout(runOnce, 50);
+  };
+
+  window.addEventListener('popstate', handlePopState);
+  setIsOpen(false);
+  window.setTimeout(runOnce, 250);
 }

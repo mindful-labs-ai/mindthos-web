@@ -30,7 +30,9 @@ export interface ModalData {
   sessionTypeSelect: undefined;
   comingSoon: { source: string };
   couponModal: undefined;
-  addClient: { onClientCreated?: (clientId: string) => void } | undefined;
+  addClient:
+    | { onClientCreated?: (clientId: string, clientName?: string) => void }
+    | undefined;
 }
 
 interface ModalState {
