@@ -22,10 +22,7 @@ import {
   useResetToOcrPhase,
 } from '@/features/psychology-assessments/hooks/useAssessmentBatch';
 import type { AssessmentProgress } from '@/features/psychology-assessments/upload/assessmentUploadGateway';
-import {
-  ASSESSMENT_KIND_LABEL,
-  formatAssessmentDisplayText,
-} from '@/features/psychology-assessments/utils/assessmentDisplay';
+import { ASSESSMENT_KIND_LABEL } from '@/features/psychology-assessments/utils/assessmentDisplay';
 import { useAllClientSessions } from '@/features/session/hooks/useSessionsList';
 import type { AnalysisStatusResponse } from '@/shared/api/server/assessmentUploadApi';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
@@ -407,7 +404,7 @@ function PsychologyAssessmentPopoverButton() {
     () =>
       assessments.map((it) => ({
         id: it.assessmentId,
-        fileName: formatAssessmentDisplayText(it.title),
+        fileName: it.title,
         testDate: '',
         pageCount: 0,
         categoryLabel: ASSESSMENT_KIND_LABEL[it.kind],

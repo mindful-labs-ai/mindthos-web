@@ -5,7 +5,7 @@ export const ASSESSMENT_KIND_LABEL: Record<AssessmentKind, string> = {
   tci: '기질 검사',
 };
 
-export const formatAssessmentDisplayText = (value: string): string =>
+export const formatAssessmentSchemaLabel = (value: string): string =>
   value
     .replace(/MMPI(?:[-_\s]?2)?/gi, ASSESSMENT_KIND_LABEL.mmpi)
     .replace(/TCI(?:[-_\s]?RS)?/gi, ASSESSMENT_KIND_LABEL.tci);

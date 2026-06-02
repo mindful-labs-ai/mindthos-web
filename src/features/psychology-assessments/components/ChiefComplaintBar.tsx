@@ -35,11 +35,11 @@ export const ChiefComplaintBar = ({
         )}
       >
         <span className="shrink-0 font-headline text-grey-80">상담 키워드</span>
-        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2">
           {visibleKeywords.map((keyword) => (
             <span
               key={keyword}
-              className="whitespace-nowrap font-headline text-grey-100"
+              className="whitespace-nowrap font-medium text-grey-100"
             >
               {keyword.startsWith('#') ? keyword : `#${keyword}`}
             </span>

@@ -1,8 +1,6 @@
 import { cn } from '@/lib/cn';
 import { XIcon } from '@/shared/icons';
 
-import { formatAssessmentDisplayText } from '../utils/assessmentDisplay';
-
 export interface AssessmentFile {
   id: string;
   /** 검사 종류 라벨 (e.g. '다면적 인성검사') */
@@ -33,9 +31,7 @@ export const AssessmentFileItem = ({
         <span className="truncate text-m font-emphasize text-grey-100">
           {file.title}
         </span>
-        <span className="truncate text-sm text-grey-60">
-          {formatAssessmentDisplayText(file.fileName)}
-        </span>
+        <span className="truncate text-sm text-grey-60">{file.fileName}</span>
       </div>
       {onRemove && (
         <button
