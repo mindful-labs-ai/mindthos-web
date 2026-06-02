@@ -3,11 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { cn } from '@/lib/cn';
-import {
-  DebugChip,
-  DebugSection,
-  useDebugPanel,
-} from '@/shared/hooks/useDebugPanel';
 import { useDevice } from '@/shared/hooks/useDevice';
 
 import {
@@ -16,17 +11,19 @@ import {
   useConfirmAssessment,
   useDeleteAssessment,
 } from '../../hooks/useAssessmentBatch';
+import { useModalStepBack } from '../../hooks/useModalStepBack';
 import type {
+  AssessmentItem,
   AssessmentKind,
   AssessmentUploadGateway,
   AssessmentUploadInput,
 } from '../../upload/assessmentUploadGateway';
-import { ocrReviewPercent } from '../../upload/ocrProgress';
-import { serverAssessmentUploadAdapter } from '../../upload/serverAssessmentUploadAdapter';
 import {
-  ASSESSMENT_KIND_LABEL,
-  formatAssessmentDisplayText,
-} from '../../utils/assessmentDisplay';
+  ocrInitialReviewCapPercent,
+  ocrReviewPercent,
+} from '../../upload/ocrProgress';
+import { serverAssessmentUploadAdapter } from '../../upload/serverAssessmentUploadAdapter';
+import { ASSESSMENT_KIND_LABEL } from '../../utils/assessmentDisplay';
 import { toLoadingDisplayPercent } from '../../utils/loadingProgress';
 import { PATH_SEP } from '../../utils/schemaToFields';
 import {
@@ -142,6 +139,20 @@ function countNullLeaves(value: unknown): number {
   return 0;
 }
 
+const getReviewScore = (item: AssessmentItem): Record<string, unknown> =>
+  item.score ?? item.tempScore ?? {};
+
+const getMissingLeafCount = (item: AssessmentItem): number =>
+  countNullLeaves(getReviewScore(item));
+
+const isFillableReviewItem = (item: AssessmentItem): boolean =>
+  item.progress === 'completed' &&
+  item.validation !== 'invalid' &&
+  getMissingLeafCount(item) > 0;
+
+const isReviewTerminalItem = (item: AssessmentItem): boolean =>
+  item.progress === 'completed' || item.progress === 'failed';
+
 /** score를 path(PATH_SEP 구분)로 따라가 해당 leaf가 누락(null/부재/하강불가)인지. schema leaf 노출 필터용. */
 function isPathMissing(score: unknown, path: string): boolean {
   let cur: unknown = score;
@@ -216,9 +227,10 @@ const MOCK_INITIAL_FILES: UploadedFile[] = [
 ];
 
 const DEMO_REVIEWING_PERCENT = toLoadingDisplayPercent(
-  33,
+  39,
   'ocr:modal-demo-reviewing'
 );
+const INITIAL_REVIEWING_CAP_MS = 1200;
 
 const MOCK_VERIFICATION_RESULTS_ALL_OK: VerificationResult[] = [
   {
@@ -257,11 +269,6 @@ const MOCK_VERIFICATION_RESULTS_MISSING: VerificationResult[] = [
     status: 'missing',
   },
 ];
-
-const createDebugAssessmentFiles = (
-  overrides?: Partial<UploadedFile>
-): UploadedFile[] =>
-  MOCK_INITIAL_FILES.map((file) => ({ ...file, ...overrides }));
 
 const formatBy = (
   step1Sub: Step1Substate,
@@ -305,6 +312,10 @@ export const RegisterAssessmentsModal = ({
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [cleaningUp, setCleaningUp] = useState(false);
+  const [initialReviewingCap, setInitialReviewingCap] = useState(false);
+  const [reviewItemsSnapshot, setReviewItemsSnapshot] = useState<
+    AssessmentItem[]
+  >([]);
 
   /* -------- 활성 배치 폴링 (OCR 진행 추적 + step2 검증 데이터) -------- */
   // 실모드로 열려 있는 동안 활성 배치를 구독한다(reviewing 진행 + step2 검증/보완 모두 사용).
@@ -315,20 +326,48 @@ export const RegisterAssessmentsModal = ({
   });
 
   const polledItems = serverItems;
+  const reviewItems =
+    realUploadMode && step >= 2 && polledItems.length === 0
+      ? reviewItemsSnapshot
+      : polledItems;
 
-  const realReviewingPercent = useMemo(
-    () => ocrReviewPercent(polledItems),
-    [polledItems]
-  );
+  const realReviewingPercent = useMemo(() => {
+    const percent = ocrReviewPercent(polledItems);
+    if (!initialReviewingCap) return percent;
+    return Math.min(percent, ocrInitialReviewCapPercent(polledItems));
+  }, [initialReviewingCap, polledItems]);
+
+  useEffect(() => {
+    if (!isReviewing || !initialReviewingCap) return;
+    const timer = window.setTimeout(
+      () => setInitialReviewingCap(false),
+      INITIAL_REVIEWING_CAP_MS
+    );
+    return () => window.clearTimeout(timer);
+  }, [initialReviewingCap, isReviewing]);
 
   // 전부 종료되면 Step2로 진행
   useEffect(() => {
     if (!isReviewing || polledItems.length === 0) return;
-    const allDone = polledItems.every(
-      (it) => it.progress === 'completed' || it.progress === 'failed'
-    );
-    if (allDone) setStep(2);
+    const allDone = polledItems.every(isReviewTerminalItem);
+    if (allDone) {
+      setReviewItemsSnapshot(polledItems);
+      setStep2Mode('list-missing');
+      setStep(2);
+    }
   }, [isReviewing, polledItems]);
+
+  useEffect(() => {
+    if (
+      !realUploadMode ||
+      step < 2 ||
+      polledItems.length === 0 ||
+      !polledItems.every(isReviewTerminalItem)
+    ) {
+      return;
+    }
+    setReviewItemsSnapshot(polledItems);
+  }, [polledItems, realUploadMode, step]);
 
   /* -------- step 2 state -------- */
   const [step2Mode, setStep2Mode] = useState<Step2Mode>('list-missing');
@@ -340,14 +379,14 @@ export const RegisterAssessmentsModal = ({
     total: number;
   }>({ filled: 0, total: 0 });
 
-  // 실제 OCR 결과 → step2 검증 카드. polledItems(활성 배치)의 validation/score 기반.
+  // 실제 OCR 결과 → step2 검증 카드. reviewItems(활성 배치/완료 스냅샷)의 score 기반.
   const realVerificationResults: VerificationResult[] = useMemo(
     () =>
-      polledItems.map((it) => {
+      reviewItems.map((it) => {
         if (it.validation === 'invalid' || it.progress === 'failed') {
           return {
             fileId: it.assessmentId,
-            fileName: formatAssessmentDisplayText(it.title),
+            fileName: it.title,
             categoryLabel: KIND_TO_CATEGORY[it.kind],
             itemsVerified: null,
             itemsTotal: null,
@@ -360,32 +399,31 @@ export const RegisterAssessmentsModal = ({
         }
         // MISSING_FIELD는 서버가 ocr_score를 null로 두고 교집합(누락=null)을 temp_ocr_score에
         // 보관한다. 따라서 검증/보완은 score(=null) 대신 tempScore를 기준으로 계산한다.
-        const score = it.score ?? it.tempScore ?? {};
+        const score = getReviewScore(it);
         const total = countTotalLeaves(score);
-        const missing = countNullLeaves(score);
+        const missing = getMissingLeafCount(it);
         return {
           fileId: it.assessmentId,
-          fileName: formatAssessmentDisplayText(it.title),
+          fileName: it.title,
           categoryLabel: KIND_TO_CATEGORY[it.kind],
           itemsVerified: total - missing,
           itemsTotal: total,
           status: missing > 0 ? ('missing' as const) : ('complete' as const),
         };
       }),
-    [polledItems]
+    [reviewItems]
   );
 
-  // 실모드는 항상 서버 polledItems만 사용한다. 폴링 데이터가 비면 결과도 빈 배열 —
-  // 가짜 mock을 보여주고 Step3까지 진행시켜 서버 409를 맞는 사고를 막는다.
-  // (데모 모드는 폴링 자체가 없으므로 mock 분기 유지.)
+  // 실모드는 서버 데이터 또는 완료 스냅샷만 사용한다. 가짜 mock을 보여주고 Step3까지
+  // 진행시켜 서버 409를 맞는 사고를 막는다. (데모 모드는 mock 분기 유지.)
   const verificationResults: VerificationResult[] = realUploadMode
     ? realVerificationResults
     : step2Mode === 'list-complete'
       ? MOCK_VERIFICATION_RESULTS_ALL_OK
       : MOCK_VERIFICATION_RESULTS_MISSING;
 
-  // 실모드 + 폴링 결과 없음 = 분석 가능한 검사가 없는 상태. step2/step3 진행 차단.
-  const noRealAssessments = realUploadMode && polledItems.length === 0;
+  // 실모드 + 검수 기준 데이터 없음 = 분석 가능한 검사가 없는 상태. step2/step3 진행 차단.
+  const noRealAssessments = realUploadMode && reviewItems.length === 0;
 
   // INITIATED는 presigned 발급 후 S3 PUT/complete가 실패해 남은 드래프트.
   // OCR이 자연 진행되지 않으므로 cleanup이 유일한 정리 경로다. 새로고침/모달 재오픈
@@ -399,10 +437,10 @@ export const RegisterAssessmentsModal = ({
       step1Sub !== 'reviewing');
 
   /* -------- 누락 필드 확정 (write) -------- */
-  // MISSING_FIELD 검사만 채우기 대상. 사용자가 채운 값을 assessmentId별로 보관.
+  // 검수 카드에서 누락으로 잡힌 검사만 채우기 대상. 사용자가 채운 값을 assessmentId별로 보관.
   const missingItems = useMemo(
-    () => polledItems.filter((it) => it.validation === 'missing_field'),
-    [polledItems]
+    () => reviewItems.filter(isFillableReviewItem),
+    [reviewItems]
   );
   // 실모드는 항상 실데이터 폼만 쓴다. missing이 없으면 폼도 비어있는 상태로 렌더링.
   const useRealFilling = realUploadMode;
@@ -417,11 +455,11 @@ export const RegisterAssessmentsModal = ({
   // 실데이터 채우기 폼: 각 MISSING_FIELD 검사의 null leaf만 노출 + 입력값 수집.
   const realFillingForms: FillingFormDescriptor[] = missingItems.map((it) => {
     // MISSING_FIELD는 ocr_score가 null이고 누락(null) 포함 교집합이 temp_ocr_score에 있다.
-    const score = it.tempScore ?? it.score ?? {};
+    const score = getReviewScore(it);
     return {
       id: it.assessmentId,
       categoryLabel: KIND_TO_CATEGORY[it.kind],
-      missingCount: countNullLeaves(score),
+      missingCount: getMissingLeafCount(it),
       formKey: it.kind,
       visibleLeaf: (path: string) => isPathMissing(score, path),
       onValuesChange: (values: Record<string, string>) =>
@@ -467,12 +505,18 @@ export const RegisterAssessmentsModal = ({
       if (resume === 'verify') {
         setStep(2);
         setStep2Mode('list-missing');
+        setInitialReviewingCap(false);
       } else if (resume === 'reviewing') {
         setStep(1);
         setStep1Sub('reviewing');
+        setStep2Mode('list-missing');
+        setInitialReviewingCap(false);
       } else {
         setStep(1);
         setStep1Sub('empty');
+        setStep2Mode('list-missing');
+        setInitialReviewingCap(false);
+        setReviewItemsSnapshot([]);
         if (realUploadMode) setFiles([]);
         setFillingValues({});
         fileBlobsRef.current.clear();
@@ -687,6 +731,8 @@ export const RegisterAssessmentsModal = ({
       });
       // 정리 후엔 빈 업로드 화면으로 돌아간다 — reviewing UI가 0%로 멈춰있는 잔상 방지.
       setStep1Sub('empty');
+      setInitialReviewingCap(false);
+      setReviewItemsSnapshot([]);
       setFiles([]);
       fileBlobsRef.current.clear();
     } catch (err) {
@@ -752,7 +798,11 @@ export const RegisterAssessmentsModal = ({
         // 업로드 성공 → reviewing 단계로. OCR 진행은 폴링이 추적하고,
         // 전부 COMPLETED되면 useEffect가 Step2로 진행시킨다.
         void runRealUpload().then((ok) => {
-          if (ok) setStep1Sub('reviewing');
+          if (ok) {
+            setInitialReviewingCap(true);
+            setStep2Mode('list-missing');
+            setStep1Sub('reviewing');
+          }
         });
         return;
       }
@@ -765,6 +815,8 @@ export const RegisterAssessmentsModal = ({
       // invalid 있으면 step3 진행 불가. 사용자가 삭제 후 step1로 돌아가야 함.
       if (step2Sub === 'list' && hasInvalidVerification) return;
       if (step2Sub === 'list' && hasMissingVerification) {
+        setReviewItemsSnapshot(reviewItems);
+        setFillingCounts({ filled: 0, total: 0 });
         setStep2Mode('filling');
         return;
       }
@@ -797,6 +849,9 @@ export const RegisterAssessmentsModal = ({
         return;
       }
       setStep(1);
+      setStep1Sub(files.length > 0 ? 'list' : 'empty');
+      setInitialReviewingCap(false);
+      setReviewItemsSnapshot([]);
       return;
     }
   };
@@ -825,6 +880,25 @@ export const RegisterAssessmentsModal = ({
     ? Math.min(totalCount, baseVerifiedCount + fillingCounts.filled)
     : baseVerifiedCount;
   const missingCount = Math.max(0, totalCount - verifiedCount);
+
+  // 단계 뒤로가기 가능 여부 — footer '이전' 노출 조건(isFilling || !resume)과 일치.
+  // step2의 filling↔list, list→step1만 뒤로 가능하고 step1/step3/resume-list에서는 닫힌다.
+  const canStepBack = step === 2 && (isFilling || !resume);
+
+  // 모바일 헤더 뒤로가기 / 하드웨어 뒤로가기 공통 동작: 가능하면 한 단계 뒤로, 아니면 닫기.
+  const handleHeaderBack = () => {
+    if (canStepBack) handleBack();
+    else onClose();
+  };
+
+  // 모바일: 하드웨어/브라우저 뒤로가기(엣지 스와이프 포함)를 단계 뒤로가기(handleBack)에
+  // 연결(depth). 더 뒤로 갈 단계가 없으면(루트) 모달을 닫는다.
+  useModalStepBack({
+    enabled: open && isMobileView,
+    canBack: canStepBack,
+    onBack: handleBack,
+    onClose,
+  });
 
   /* -------- footer config 분기 -------- */
   const footer = (() => {
@@ -924,134 +998,6 @@ export const RegisterAssessmentsModal = ({
     />
   );
 
-  const setDebugAssessmentFiles = (nextFiles: UploadedFile[]) => {
-    fileBlobsRef.current.clear();
-    setFiles(nextFiles);
-    setUploadError(null);
-    setStep(1);
-    setStep1Sub(nextFiles.length > 0 ? 'list' : 'empty');
-  };
-
-  // DEBUG ONLY: prod 배포 전 이 force-visible 결과지 업로드 패널은 제거해야 한다.
-  const debugPanel = useDebugPanel(
-    '결과지 업로드',
-    {
-      step: {
-        value: step,
-        set: setStep,
-        options: [1, 2, 3] as const,
-      },
-      step1Sub: {
-        value: step1Sub,
-        set: setStep1Sub,
-        options: ['empty', 'list', 'reviewing'] as const,
-      },
-      step2Mode: {
-        value: step2Mode,
-        set: setStep2Mode,
-        options: ['list-complete', 'list-missing', 'filling'] as const,
-      },
-      uploading: {
-        value: uploading,
-        set: setUploading,
-      },
-      uploadError: {
-        value: uploadError,
-        set: setUploadError,
-        options: [
-          null,
-          '결과지를 업로드하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
-        ] as const,
-      },
-      cleaningUp: {
-        value: cleaningUp,
-        set: setCleaningUp,
-      },
-      confirming: {
-        value: confirming,
-        set: setConfirming,
-      },
-      confirmError: {
-        value: confirmError,
-        set: setConfirmError,
-        options: [
-          null,
-          '빈 항목을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
-        ] as const,
-      },
-    },
-    <>
-      <DebugSection
-        label={`files: ${files.length} / server: ${polledItems.length}`}
-      >
-        <DebugChip
-          label="empty"
-          active={files.length === 0}
-          onClick={() => setDebugAssessmentFiles([])}
-        />
-        <DebugChip
-          label="ready"
-          active={files.length > 0 && files.every((f) => f.status === 'ready')}
-          onClick={() => setDebugAssessmentFiles(createDebugAssessmentFiles())}
-        />
-        <DebugChip
-          label="missing-type"
-          active={files.some((f) => f.status === 'missing-type')}
-          onClick={() =>
-            setDebugAssessmentFiles(
-              createDebugAssessmentFiles({
-                assessmentType: null,
-                status: 'missing-type',
-              })
-            )
-          }
-        />
-        <DebugChip
-          label="reviewing"
-          active={step1Sub === 'reviewing'}
-          onClick={() => {
-            setFiles(createDebugAssessmentFiles({ status: 'reviewing' }));
-            setStep(1);
-            setStep1Sub('reviewing');
-            setUploadError(null);
-          }}
-        />
-      </DebugSection>
-      <DebugSection
-        label={`verified: ${verifiedCount}/${totalCount}, missing: ${missingCount}`}
-      >
-        <DebugChip
-          label="verify ok"
-          active={step === 2 && step2Mode === 'list-complete'}
-          onClick={() => {
-            setStep(2);
-            setStep2Mode('list-complete');
-          }}
-        />
-        <DebugChip
-          label="verify missing"
-          active={step === 2 && step2Mode === 'list-missing'}
-          onClick={() => {
-            setStep(2);
-            setStep2Mode('list-missing');
-          }}
-        />
-        <DebugChip
-          label="filling"
-          active={step === 2 && step2Mode === 'filling'}
-          onClick={() => {
-            setStep(2);
-            setStep2Mode('filling');
-          }}
-        />
-      </DebugSection>
-      <DebugSection
-        label={`mode: ${realUploadMode ? 'real' : 'demo'}, canNext: ${canProceedStep1}`}
-      />
-    </>,
-    { force: true }
-  );
-
   if (!open) return null;
 
   /* -------- 모달 렌더링 -------- */
@@ -1072,9 +1018,13 @@ export const RegisterAssessmentsModal = ({
             : 'h-[min(820px,92vh)] w-[min(560px,92vw)] rounded-2xl shadow-prominent'
         )}
       >
-        <RegisterModalHeader onClose={onClose} />
+        <RegisterModalHeader
+          onClose={onClose}
+          onBack={handleHeaderBack}
+          isMobileView={isMobileView}
+        />
 
-        <div className={cn(isMobileView ? 'px-4 pb-4 pt-2' : 'px-8 pb-6 pt-6')}>
+        <div className={cn(isMobileView ? 'px-4 pb-4 pt-6' : 'px-8 pb-6 pt-6')}>
           <RegisterStepper current={step} />
         </div>
 
@@ -1146,7 +1096,12 @@ export const RegisterAssessmentsModal = ({
                 results={verificationResults}
                 onDeleteInvalid={
                   realUploadMode
-                    ? (assessmentId) => deleteMut.mutate(assessmentId)
+                    ? (assessmentId) => {
+                        setReviewItemsSnapshot((prev) =>
+                          prev.filter((it) => it.assessmentId !== assessmentId)
+                        );
+                        deleteMut.mutate(assessmentId);
+                      }
                     : undefined
                 }
                 deletingFileId={
@@ -1185,7 +1140,6 @@ export const RegisterAssessmentsModal = ({
           rightButton={footer.rightButton}
         />
       </div>
-      {debugPanel}
     </div>
   );
 };

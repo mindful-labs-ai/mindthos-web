@@ -1,6 +1,5 @@
 import { cn } from '@/lib/cn';
 
-import { formatAssessmentDisplayText } from '../../../utils/assessmentDisplay';
 import { StatusCircle } from '../shared/StatusBadge';
 import type { VerificationResult } from '../types';
 
@@ -39,10 +38,20 @@ export const AssessmentVerifyCard = ({
 }: AssessmentVerifyCardProps) => {
   const { status, itemsVerified, itemsTotal } = result;
 
+  // 누락 항목 수(MISSING_FIELD). itemsTotal - itemsVerified.
+  const missingCount =
+    itemsTotal !== null && itemsVerified !== null
+      ? Math.max(0, itemsTotal - itemsVerified)
+      : 0;
+
+  // 카드 우측 요약 문구.
+  // - missing(MISSING_FIELD): 더 필요한 내용 개수 안내
+  // - complete(valid): 확인 완료 안내
+  // - invalid는 아래 분기에서 invalidReason을 별도로 표시한다.
   const itemSummary =
-    itemsTotal === null || itemsVerified === null
-      ? '결과지를 확인했어요'
-      : `${itemsVerified}/${itemsTotal}개 항목 확인`;
+    status === 'missing'
+      ? `${missingCount}개의 내용이 더 필요해요`
+      : '결과지 내용을 확인했어요';
 
   const isInvalid = status === 'invalid';
 
@@ -58,9 +67,7 @@ export const AssessmentVerifyCard = ({
         <p className="text-m font-emphasize text-grey-100">
           {result.categoryLabel}
         </p>
-        <p className="truncate text-sm text-grey-80">
-          {formatAssessmentDisplayText(result.fileName)}
-        </p>
+        <p className="truncate text-sm text-grey-80">{result.fileName}</p>
         <p
           className={cn(
             'mt-2 text-sm font-emphasize',

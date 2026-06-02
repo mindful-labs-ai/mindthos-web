@@ -71,14 +71,14 @@ export const AssessmentTypeDropdown = ({
         className={cn(
           'inline-flex items-center gap-1 text-sm transition-colors',
           selected
-            ? 'text-grey-80'
+            ? 'text-fg-muted'
             : emphasizeMissing
               ? 'text-[#F59E0B]'
-              : 'text-grey-80'
+              : 'text-fg-muted'
         )}
       >
-        <span className="font-sub">{labelText}</span>
-        <ChevronDownIcon className="text-grey-70" size={18} />
+        <span>{labelText}</span>
+        <ChevronDownIcon className="text-fg-muted" size={16} />
       </button>
 
       {open &&

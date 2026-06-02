@@ -26,10 +26,8 @@ export const FileListView = ({
     <div
       className={cn(
         // 회색 박스 자체가 flex container — 내부 스크롤 영역과 추가 버튼을 묶음
-        'flex flex-col rounded-xl border border-dashed p-4 transition-colors',
-        dragActive
-          ? 'border-green-80 bg-green-10'
-          : 'border-transparent bg-grey-20',
+        'flex flex-col rounded-lg bg-surface-contrast p-4 transition-colors',
+        dragActive ? 'bg-primary-subtle' : 'bg-surface-contrast',
         className
       )}
     >
