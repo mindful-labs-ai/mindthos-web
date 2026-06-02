@@ -3,6 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { cn } from '@/lib/cn';
+import {
+  DebugChip,
+  DebugSection,
+  useDebugPanel,
+} from '@/shared/hooks/useDebugPanel';
 import { useDevice } from '@/shared/hooks/useDevice';
 
 import {
@@ -252,6 +257,11 @@ const MOCK_VERIFICATION_RESULTS_MISSING: VerificationResult[] = [
     status: 'missing',
   },
 ];
+
+const createDebugAssessmentFiles = (
+  overrides?: Partial<UploadedFile>
+): UploadedFile[] =>
+  MOCK_INITIAL_FILES.map((file) => ({ ...file, ...overrides }));
 
 const formatBy = (
   step1Sub: Step1Substate,
@@ -888,8 +898,6 @@ export const RegisterAssessmentsModal = ({
     };
   })();
 
-  if (!open) return null;
-
   /* -------- 누락 채우기 폼 — 검사별 카드 그룹 -------- */
   // 실모드는 항상 실폼만 사용(없으면 빈 배열). 데모만 mock descriptor.
   const fillingFormDescriptors: FillingFormDescriptor[] = useRealFilling
@@ -915,6 +923,136 @@ export const RegisterAssessmentsModal = ({
       onCountsChange={setFillingCounts}
     />
   );
+
+  const setDebugAssessmentFiles = (nextFiles: UploadedFile[]) => {
+    fileBlobsRef.current.clear();
+    setFiles(nextFiles);
+    setUploadError(null);
+    setStep(1);
+    setStep1Sub(nextFiles.length > 0 ? 'list' : 'empty');
+  };
+
+  // DEBUG ONLY: prod 배포 전 이 force-visible 결과지 업로드 패널은 제거해야 한다.
+  const debugPanel = useDebugPanel(
+    '결과지 업로드',
+    {
+      step: {
+        value: step,
+        set: setStep,
+        options: [1, 2, 3] as const,
+      },
+      step1Sub: {
+        value: step1Sub,
+        set: setStep1Sub,
+        options: ['empty', 'list', 'reviewing'] as const,
+      },
+      step2Mode: {
+        value: step2Mode,
+        set: setStep2Mode,
+        options: ['list-complete', 'list-missing', 'filling'] as const,
+      },
+      uploading: {
+        value: uploading,
+        set: setUploading,
+      },
+      uploadError: {
+        value: uploadError,
+        set: setUploadError,
+        options: [
+          null,
+          '결과지를 업로드하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
+        ] as const,
+      },
+      cleaningUp: {
+        value: cleaningUp,
+        set: setCleaningUp,
+      },
+      confirming: {
+        value: confirming,
+        set: setConfirming,
+      },
+      confirmError: {
+        value: confirmError,
+        set: setConfirmError,
+        options: [
+          null,
+          '빈 항목을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
+        ] as const,
+      },
+    },
+    <>
+      <DebugSection
+        label={`files: ${files.length} / server: ${polledItems.length}`}
+      >
+        <DebugChip
+          label="empty"
+          active={files.length === 0}
+          onClick={() => setDebugAssessmentFiles([])}
+        />
+        <DebugChip
+          label="ready"
+          active={files.length > 0 && files.every((f) => f.status === 'ready')}
+          onClick={() => setDebugAssessmentFiles(createDebugAssessmentFiles())}
+        />
+        <DebugChip
+          label="missing-type"
+          active={files.some((f) => f.status === 'missing-type')}
+          onClick={() =>
+            setDebugAssessmentFiles(
+              createDebugAssessmentFiles({
+                assessmentType: null,
+                status: 'missing-type',
+              })
+            )
+          }
+        />
+        <DebugChip
+          label="reviewing"
+          active={step1Sub === 'reviewing'}
+          onClick={() => {
+            setFiles(createDebugAssessmentFiles({ status: 'reviewing' }));
+            setStep(1);
+            setStep1Sub('reviewing');
+            setUploadError(null);
+          }}
+        />
+      </DebugSection>
+      <DebugSection
+        label={`verified: ${verifiedCount}/${totalCount}, missing: ${missingCount}`}
+      >
+        <DebugChip
+          label="verify ok"
+          active={step === 2 && step2Mode === 'list-complete'}
+          onClick={() => {
+            setStep(2);
+            setStep2Mode('list-complete');
+          }}
+        />
+        <DebugChip
+          label="verify missing"
+          active={step === 2 && step2Mode === 'list-missing'}
+          onClick={() => {
+            setStep(2);
+            setStep2Mode('list-missing');
+          }}
+        />
+        <DebugChip
+          label="filling"
+          active={step === 2 && step2Mode === 'filling'}
+          onClick={() => {
+            setStep(2);
+            setStep2Mode('filling');
+          }}
+        />
+      </DebugSection>
+      <DebugSection
+        label={`mode: ${realUploadMode ? 'real' : 'demo'}, canNext: ${canProceedStep1}`}
+      />
+    </>,
+    { force: true }
+  );
+
+  if (!open) return null;
 
   /* -------- 모달 렌더링 -------- */
   return (
@@ -1047,6 +1185,7 @@ export const RegisterAssessmentsModal = ({
           rightButton={footer.rightButton}
         />
       </div>
+      {debugPanel}
     </div>
   );
 };

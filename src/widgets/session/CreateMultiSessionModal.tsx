@@ -9,7 +9,10 @@ import { useMultiFileUpload } from '@/features/session/hooks/useMultiFileUpload'
 import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionCreate';
 import type {
   BatchSessionConfig,
+  FileValidationStatus,
   FileSessionConfig,
+  MultiFileInfo,
+  SessionCreateResult,
   SessionRequestSttModel,
 } from '@/features/session/types';
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
@@ -25,8 +28,18 @@ import {
 } from '@/shared/constants/mixpanelEvents';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
+import {
+  DebugChip,
+  DebugSection,
+  useDebugPanel,
+} from '@/shared/hooks/useDebugPanel';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { CloudUploadIcon, CreditIcon, UserIcon } from '@/shared/icons';
+import {
+  CloudUploadIcon,
+  CreditIcon,
+  SecurityShieldIcon,
+  UserIcon,
+} from '@/shared/icons';
 import { Title } from '@/shared/ui';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -93,12 +106,111 @@ const ScrollFadeWrapper: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+const AiGuardNotice = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      'flex flex-col items-center gap-3 rounded-xl bg-grey-100 py-5 text-center text-white',
+      className
+    )}
+  >
+    <SecurityShieldIcon size={32} className="text-white" />
+    <p className="text-m font-emphasize">
+      마음토스에 올리는 모든 내담자 정보는
+      <br />
+      철저하게 암호화되며 AI 학습에 이용되지 않아요.
+    </p>
+  </div>
+);
+
 interface CreateMultiSessionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 type ModalStep = 'upload' | 'config';
+type DebugFilePreset = 'empty' | 'pending' | 'valid' | 'invalid' | 'oversize';
+type DebugResultStatus = SessionCreateResult['status'];
+
+const createDebugFile = (
+  id: string,
+  name: string,
+  validationStatus: FileValidationStatus,
+  options: {
+    duration?: number;
+    errorMessage?: string;
+    sizeMB?: number;
+  } = {}
+): MultiFileInfo => {
+  const sizeMB = options.sizeMB ?? 12;
+  const file = new File(['debug-audio'], name, { type: 'audio/mpeg' });
+
+  return {
+    id,
+    file,
+    name,
+    size: sizeMB * 1024 * 1024,
+    duration: options.duration,
+    validationStatus,
+    errorMessage: options.errorMessage,
+  };
+};
+
+const createDebugFiles = (preset: DebugFilePreset): MultiFileInfo[] => {
+  switch (preset) {
+    case 'empty':
+      return [];
+    case 'pending':
+      return [
+        createDebugFile('debug-pending-1', '상담녹음_처리중.mp3', 'pending'),
+      ];
+    case 'invalid':
+      return [
+        createDebugFile('debug-invalid-1', '상담메모.txt', 'invalid_type', {
+          errorMessage: '지원하지 않는 파일 형식',
+          sizeMB: 1,
+        }),
+      ];
+    case 'oversize':
+      return [
+        createDebugFile(
+          'debug-oversize-1',
+          '상담녹음_대용량.mp3',
+          'size_exceeded',
+          {
+            errorMessage: '파일 용량 초과',
+            sizeMB: 620,
+          }
+        ),
+      ];
+    case 'valid':
+    default:
+      return [
+        createDebugFile('debug-valid-1', '1회기_상담녹음.mp3', 'valid', {
+          duration: 1800,
+        }),
+        createDebugFile('debug-valid-2', '2회기_상담녹음.mp3', 'valid', {
+          duration: 2400,
+        }),
+      ];
+  }
+};
+
+const createDebugResults = (
+  files: MultiFileInfo[],
+  status: DebugResultStatus
+): SessionCreateResult[] =>
+  files.map((file) => ({
+    fileId: file.id,
+    fileName: file.name,
+    status,
+    uploadProgress:
+      status === 'uploading' ? 64 : status === 'failed' ? 32 : undefined,
+    sessionId: status === 'success' ? `debug-session-${file.id}` : undefined,
+    errorMessage:
+      status === 'failed'
+        ? '파일을 업로드하지 못했어요. 잠시 후 다시 시도해 주세요.'
+        : undefined,
+  }));
 
 export const CreateMultiSessionModal: React.FC<
   CreateMultiSessionModalProps
@@ -129,15 +241,55 @@ export const CreateMultiSessionModal: React.FC<
   const isMobileView = isMobile || isTablet;
 
   // 파일 관리
-  const {
-    files,
-    validFiles,
-    addFiles,
-    removeFile,
-    clearFiles,
-    isProcessing,
-    canAddMore,
-  } = useMultiFileUpload();
+  const { files, addFiles, removeFile, clearFiles, isProcessing, canAddMore } =
+    useMultiFileUpload();
+  const [debugFiles, setDebugFiles] = useState<MultiFileInfo[] | null>(null);
+  const [debugResults, setDebugResults] = useState<
+    SessionCreateResult[] | null
+  >(null);
+  const [debugIsCreating, setDebugIsCreating] = useState(false);
+
+  const effectiveFiles = debugFiles ?? files;
+  const effectiveValidFiles = useMemo(
+    () => effectiveFiles.filter((file) => file.validationStatus === 'valid'),
+    [effectiveFiles]
+  );
+  const effectiveIsProcessing = debugFiles
+    ? effectiveFiles.some((file) => file.validationStatus === 'pending')
+    : isProcessing;
+  const effectiveCanAddMore = debugFiles
+    ? effectiveFiles.length < MULTI_UPLOAD_LIMITS.MAX_FILES
+    : canAddMore;
+
+  const clearDebugUploadState = useCallback(() => {
+    setDebugFiles(null);
+    setDebugResults(null);
+    setDebugIsCreating(false);
+  }, []);
+
+  const addRealFiles = useCallback(
+    (newFiles: File[]) => {
+      clearDebugUploadState();
+      addFiles(newFiles);
+    },
+    [addFiles, clearDebugUploadState]
+  );
+
+  const removeUploadedFile = useCallback(
+    (fileId: string) => {
+      if (debugFiles) {
+        setDebugFiles(
+          (prev) => prev?.filter((file) => file.id !== fileId) ?? null
+        );
+        setDebugResults(
+          (prev) => prev?.filter((result) => result.fileId !== fileId) ?? null
+        );
+        return;
+      }
+      removeFile(fileId);
+    },
+    [debugFiles, removeFile]
+  );
 
   // 일괄 설정 (Step 1)
   const [batchConfig, setBatchConfig] = useState<BatchSessionConfig>({
@@ -159,6 +311,8 @@ export const CreateMultiSessionModal: React.FC<
       });
     },
   });
+  const effectiveResults = debugResults ?? results;
+  const effectiveIsCreating = debugIsCreating || isCreating;
 
   // Drag and Drop
   const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
@@ -172,12 +326,13 @@ export const CreateMultiSessionModal: React.FC<
         trackEvent(MixpanelEvent.MultiSessionCreateModalClose);
         setStep('upload');
         clearFiles();
+        clearDebugUploadState();
         setBatchConfig({ sttModel: 'advanced', clientId: undefined });
         setFileConfigs([]);
       }
       onOpenChange(isOpen);
     },
-    [clearFiles, onOpenChange]
+    [clearDebugUploadState, clearFiles, onOpenChange]
   );
 
   // 모달 오픈 트래킹
@@ -189,7 +344,7 @@ export const CreateMultiSessionModal: React.FC<
 
   // 크레딧 계산 (Step 1)
   const step1TotalCredit = useMemo(() => {
-    return validFiles.reduce((sum, file) => {
+    return effectiveValidFiles.reduce((sum, file) => {
       if (file.duration === undefined) return sum;
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
@@ -199,12 +354,12 @@ export const CreateMultiSessionModal: React.FC<
       });
       return sum + totalCredit;
     }, 0);
-  }, [validFiles, batchConfig.sttModel]);
+  }, [effectiveValidFiles, batchConfig.sttModel]);
 
   // 크레딧 계산 (Step 2)
   const step2TotalCredit = useMemo(() => {
     return fileConfigs.reduce((sum, config) => {
-      const file = validFiles.find((f) => f.id === config.fileId);
+      const file = effectiveValidFiles.find((f) => f.id === config.fileId);
       if (!file || file.duration === undefined) return sum;
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
@@ -213,14 +368,14 @@ export const CreateMultiSessionModal: React.FC<
       });
       return sum + totalCredit;
     }, 0);
-  }, [fileConfigs, validFiles]);
+  }, [fileConfigs, effectiveValidFiles]);
 
   // 파일 드롭 핸들러
   const onFileDrop = useCallback(
     (droppedFiles: File[]) => {
-      addFiles(droppedFiles);
+      addRealFiles(droppedFiles);
     },
-    [addFiles]
+    [addRealFiles]
   );
 
   const onDrop = (e: React.DragEvent) => {
@@ -230,7 +385,7 @@ export const CreateMultiSessionModal: React.FC<
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputFiles = e.target.files;
     if (inputFiles) {
-      addFiles(Array.from(inputFiles));
+      addRealFiles(Array.from(inputFiles));
     }
     // 같은 파일 재선택 가능하도록 초기화
     e.target.value = '';
@@ -262,13 +417,13 @@ export const CreateMultiSessionModal: React.FC<
 
   // Step 2에서 파일 제거
   const handleRemoveFromConfig = (fileId: string) => {
-    removeFile(fileId);
+    removeUploadedFile(fileId);
     setFileConfigs((prev) => prev.filter((c) => c.fileId !== fileId));
   };
 
   // 다음 단계로
   const handleNextStep = () => {
-    if (validFiles.length === 0) {
+    if (effectiveValidFiles.length === 0) {
       toast({
         title: '업로드할 파일이 없어요',
         description: '업로드 가능한 파일을 추가해 주세요.',
@@ -279,11 +434,11 @@ export const CreateMultiSessionModal: React.FC<
     trackEvent(MixpanelEvent.MultiSessionStepChange, {
       from: 'upload',
       to: 'config',
-      file_count: validFiles.length,
+      file_count: effectiveValidFiles.length,
     });
     // Step 2로 이동 시 개별 설정 초기화
     setFileConfigs(
-      validFiles.map((file, index) => ({
+      effectiveValidFiles.map((file, index) => ({
         fileId: file.id,
         order: index + 1,
         sttModel: batchConfig.sttModel,
@@ -328,7 +483,19 @@ export const CreateMultiSessionModal: React.FC<
       total_credit: step2TotalCredit,
     });
 
-    const finalResults = await createSessions(fileConfigs, validFiles);
+    if (debugFiles) {
+      const finalResults = createDebugResults(effectiveValidFiles, 'success');
+      setDebugResults(finalResults);
+      setDebugIsCreating(false);
+      toast({
+        title: '디버그 생성 완료',
+        description: '상담 기록 생성 완료 UI를 확인할 수 있어요.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    const finalResults = await createSessions(fileConfigs, effectiveValidFiles);
 
     const successCount = finalResults.filter(
       (r) => r.status === 'success'
@@ -398,8 +565,141 @@ export const CreateMultiSessionModal: React.FC<
 
   // Step 2에서 사용할 validFiles (config에 있는 것만)
   const configValidFiles = useMemo(() => {
-    return validFiles.filter((f) => fileConfigs.some((c) => c.fileId === f.id));
-  }, [validFiles, fileConfigs]);
+    return effectiveValidFiles.filter((f) =>
+      fileConfigs.some((c) => c.fileId === f.id)
+    );
+  }, [effectiveValidFiles, fileConfigs]);
+
+  const setDebugFilePreset = (preset: DebugFilePreset) => {
+    const nextFiles = createDebugFiles(preset);
+    setDebugFiles(nextFiles);
+    setDebugResults(null);
+    setDebugIsCreating(false);
+    setFileConfigs([]);
+    setStep('upload');
+  };
+
+  const setDebugConfigState = (status: DebugResultStatus | null) => {
+    const sourceFiles =
+      effectiveValidFiles.length > 0
+        ? effectiveValidFiles
+        : createDebugFiles('valid');
+    setDebugFiles(sourceFiles);
+    setFileConfigs(
+      sourceFiles.map((file, index) => ({
+        fileId: file.id,
+        order: index + 1,
+        sttModel: batchConfig.sttModel,
+        clientId: batchConfig.clientId,
+      }))
+    );
+    setStep('config');
+    setDebugIsCreating(status === 'uploading' || status === 'creating');
+    setDebugResults(status ? createDebugResults(sourceFiles, status) : null);
+  };
+
+  // DEBUG ONLY: prod 배포 전 이 force-visible 상담기록 업로드 패널은 제거해야 한다.
+  const debugPanel = useDebugPanel(
+    '상담기록 업로드',
+    {
+      step: {
+        value: step,
+        set: setStep,
+        options: ['upload', 'config'] as const,
+      },
+      sttModel: {
+        value: batchConfig.sttModel,
+        set: handleBatchSttModelChange,
+        options: ['advanced', 'basic'] as const,
+      },
+      isCreating: {
+        value: effectiveIsCreating,
+        set: setDebugIsCreating,
+      },
+      creditSnack: {
+        value: creditErrorSnackBar.open,
+        set: (nextOpen) =>
+          setCreditErrorSnackBar({
+            open: nextOpen,
+            message: nextOpen
+              ? 'STT 세션 시작에 30 크레딧이 필요해요. (보유: 0)'
+              : '',
+          }),
+      },
+      files: {
+        value: `${effectiveFiles.length} / valid ${effectiveValidFiles.length}`,
+        set: () => undefined,
+      },
+    },
+    <>
+      <DebugSection label={`file state: ${debugFiles ? 'debug' : 'real'}`}>
+        <DebugChip
+          label="empty"
+          active={effectiveFiles.length === 0}
+          onClick={() => setDebugFilePreset('empty')}
+        />
+        <DebugChip
+          label="pending"
+          active={effectiveFiles.some(
+            (file) => file.validationStatus === 'pending'
+          )}
+          onClick={() => setDebugFilePreset('pending')}
+        />
+        <DebugChip
+          label="valid"
+          active={
+            effectiveFiles.length > 0 &&
+            effectiveFiles.every((file) => file.validationStatus === 'valid')
+          }
+          onClick={() => setDebugFilePreset('valid')}
+        />
+        <DebugChip
+          label="invalid"
+          active={effectiveFiles.some(
+            (file) => file.validationStatus === 'invalid_type'
+          )}
+          onClick={() => setDebugFilePreset('invalid')}
+        />
+        <DebugChip
+          label="oversize"
+          active={effectiveFiles.some(
+            (file) => file.validationStatus === 'size_exceeded'
+          )}
+          onClick={() => setDebugFilePreset('oversize')}
+        />
+        <DebugChip
+          label="real reset"
+          active={!debugFiles}
+          onClick={clearDebugUploadState}
+        />
+      </DebugSection>
+      <DebugSection label="config result">
+        {(
+          ['pending', 'uploading', 'creating', 'success', 'failed'] as const
+        ).map((status) => (
+          <DebugChip
+            key={status}
+            label={status}
+            active={
+              step === 'config' &&
+              effectiveResults.length > 0 &&
+              effectiveResults.every((result) => result.status === status)
+            }
+            onClick={() => setDebugConfigState(status)}
+          />
+        ))}
+        <DebugChip
+          label="config no result"
+          active={step === 'config' && effectiveResults.length === 0}
+          onClick={() => setDebugConfigState(null)}
+        />
+      </DebugSection>
+      <DebugSection
+        label={`processing: ${effectiveIsProcessing}, canAdd: ${effectiveCanAddMore}`}
+      />
+    </>,
+    { force: true }
+  );
 
   // 공통 파일 입력
   const fileInput = (
@@ -423,13 +723,13 @@ export const CreateMultiSessionModal: React.FC<
         'bg-surface-contrast p-4 transition-colors',
         isMobile && 'h-[36.8vh] min-h-[200px]',
         isTablet && 'h-[32.4vh] min-h-[200px]',
-        !isMobileView && 'h-full min-h-[300px] rounded-lg',
+        !isMobileView && 'min-h-[300px] flex-1 rounded-lg',
         isDragging
           ? 'border-primary bg-primary-subtle'
           : 'border-surface-strong'
       )}
     >
-      {files.length === 0 ? (
+      {effectiveFiles.length === 0 ? (
         <div
           className={cn(
             'flex h-full flex-col items-center justify-center gap-4 break-keep',
@@ -460,10 +760,14 @@ export const CreateMultiSessionModal: React.FC<
             !isMobileView && 'max-h-[431px] max-w-[488px]'
           )}
         >
-          {files.map((file) => (
-            <MultiFileItem key={file.id} file={file} onRemove={removeFile} />
+          {effectiveFiles.map((file) => (
+            <MultiFileItem
+              key={file.id}
+              file={file}
+              onRemove={removeUploadedFile}
+            />
           ))}
-          {canAddMore && (
+          {effectiveCanAddMore && (
             <button
               onClick={handleButtonClick}
               className="h-[82px] w-full rounded-lg border-2 border-surface-strong text-center text-5xl font-thin text-fg-muted"
@@ -477,11 +781,11 @@ export const CreateMultiSessionModal: React.FC<
   );
 
   // 공통 크레딧 정보 (Step 1)
-  const creditInfo1 = validFiles.length > 0 && (
+  const creditInfo1 = effectiveValidFiles.length > 0 && (
     <div className="flex flex-1 flex-col items-center justify-start text-center text-l font-emphasize text-grey-100 lg:justify-center">
       <p>
-        <span className="text-green-80">{validFiles.length}개</span>의 상담기록
-        생성으로
+        <span className="text-green-80">{effectiveValidFiles.length}개</span>의
+        상담기록 생성으로
       </p>
       <p>
         총 <span className="text-green-80">{step1TotalCredit} 크레딧</span>을
@@ -508,7 +812,7 @@ export const CreateMultiSessionModal: React.FC<
             file={file}
             config={config}
             clients={clients}
-            result={results.find((r) => r.fileId === config.fileId)}
+            result={effectiveResults.find((r) => r.fileId === config.fileId)}
             onConfigChange={handleConfigChange}
             onRemove={handleRemoveFromConfig}
             isMobileView={isMobileView}
@@ -522,7 +826,7 @@ export const CreateMultiSessionModal: React.FC<
   const step2Buttons = (
     <div className="flex flex-col gap-2">
       <div className="flex justify-center">
-        {isCreating ? (
+        {effectiveIsCreating ? (
           <div className="flex items-center gap-1 rounded-lg bg-danger-subtle px-3 py-1">
             <Text className="text-sm font-medium text-danger">
               업로드 중이에요. 페이지를 벗어나지 마세요.
@@ -544,7 +848,7 @@ export const CreateMultiSessionModal: React.FC<
           tone="neutral"
           size="lg"
           onClick={handlePrevStep}
-          disabled={isCreating}
+          disabled={effectiveIsCreating}
         >
           이전
         </Button>
@@ -553,10 +857,10 @@ export const CreateMultiSessionModal: React.FC<
           tone="primary"
           size="lg"
           onClick={handleCreateSessions}
-          disabled={fileConfigs.length === 0 || isCreating}
+          disabled={fileConfigs.length === 0 || effectiveIsCreating}
           className={isMobileView ? 'flex-1' : 'w-[335px] flex-1'}
         >
-          {isCreating ? '업로드 중...' : '상담 기록 만들기'}
+          {effectiveIsCreating ? '업로드 중...' : '상담 기록 만들기'}
         </Button>
       </div>
     </div>
@@ -570,7 +874,7 @@ export const CreateMultiSessionModal: React.FC<
       )}
       open={open}
       onOpenChange={handleClose}
-      closeOnOverlay={!isCreating && !isClientModalOpen}
+      closeOnOverlay={!effectiveIsCreating && !isClientModalOpen}
       mobileVariant={isMobileView ? 'fullScreen' : 'center'}
       hideCloseButton={isMobileView}
     >
@@ -596,6 +900,7 @@ export const CreateMultiSessionModal: React.FC<
         step === 'upload' ? (
           <div className="flex flex-1 flex-col overflow-y-auto">
             {fileInput}
+            <AiGuardNotice className="mx-4 mt-4 shrink-0 md:mx-12" />
             {fileDropArea}
 
             {/* 일괄 설정 */}
@@ -660,13 +965,16 @@ export const CreateMultiSessionModal: React.FC<
       step === 'upload' ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-12 md:flex-row">
           {/* 왼쪽: 파일 목록 */}
-          <div className="flex h-full w-full max-w-[488px] flex-1 flex-col">
+          <div className="flex h-full w-full max-w-[488px] flex-1 flex-col gap-4">
             {fileInput}
+            <AiGuardNotice className="shrink-0" />
             {fileDropArea}
             <Text className="typo-sm mt-2 text-center text-fg-muted">
               파일 개수{' '}
-              <span className="font-medium text-primary">{files.length}</span> /{' '}
-              {MULTI_UPLOAD_LIMITS.MAX_FILES}
+              <span className="font-medium text-primary">
+                {effectiveFiles.length}
+              </span>{' '}
+              / {MULTI_UPLOAD_LIMITS.MAX_FILES}
             </Text>
           </div>
 
@@ -711,10 +1019,10 @@ export const CreateMultiSessionModal: React.FC<
             tone="primary"
             size="lg"
             onClick={handleNextStep}
-            disabled={validFiles.length === 0 || isProcessing}
+            disabled={effectiveValidFiles.length === 0 || effectiveIsProcessing}
             className={isMobileView ? 'w-full' : 'w-full max-w-[375px]'}
           >
-            {isProcessing ? '파일 업로드 중...' : '다음'}
+            {effectiveIsProcessing ? '파일 업로드 중...' : '다음'}
           </Button>
         ) : (
           step2Buttons
@@ -734,6 +1042,7 @@ export const CreateMultiSessionModal: React.FC<
         }}
         duration={8000}
       />
+      {open && debugPanel}
     </Modal>
   );
 };

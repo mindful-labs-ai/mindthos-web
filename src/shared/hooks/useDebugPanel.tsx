@@ -58,14 +58,19 @@ interface DebugField<T = any> {
 
 type DebugConfig = Record<string, DebugField>;
 
+interface DebugPanelOptions {
+  force?: boolean;
+}
+
 // ── Hook ──
 
 export function useDebugPanel(
   title: string,
   config: DebugConfig,
-  extra?: ReactNode
+  extra?: ReactNode,
+  options: DebugPanelOptions = {}
 ): ReactNode {
-  if (import.meta.env.PROD) return null;
+  if (import.meta.env.PROD && !options.force) return null;
   return <DebugPanelUI title={title} config={config} extra={extra} />;
 }
 
