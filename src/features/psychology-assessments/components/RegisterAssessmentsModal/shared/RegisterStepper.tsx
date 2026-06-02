@@ -9,7 +9,7 @@ interface RegisterStepperProps {
 
 const STEPS: { step: RegisterStep; label: string }[] = [
   { step: 1, label: '결과지 등록' },
-  { step: 2, label: '내용 확인' },
+  { step: 2, label: '결과지 검수' },
   { step: 3, label: '등록 완료' },
 ];
 

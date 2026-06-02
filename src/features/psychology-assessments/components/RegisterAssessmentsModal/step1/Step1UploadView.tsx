@@ -83,14 +83,10 @@ export const Step1UploadView = ({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      <SecurityNotice className="shrink-0" />
+
       {substate === 'empty' && (
-        <>
-          <SecurityNotice />
-          <UploadDropzone
-            onSelectFiles={onSelectFiles}
-            dragActive={dragActive}
-          />
-        </>
+        <UploadDropzone onSelectFiles={onSelectFiles} dragActive={dragActive} />
       )}
 
       {substate === 'reviewing' && (
