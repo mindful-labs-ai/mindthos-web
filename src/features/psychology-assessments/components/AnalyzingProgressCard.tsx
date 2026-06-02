@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import { WaveRotatingText } from '@/shared/ui';
 
 import {
   AnalysisStepIndicator,
@@ -11,18 +12,27 @@ export interface AnalysisStep {
   status: AnalysisStepStatus;
 }
 
+// 분석 중 위로 돌아가며 물결 그라데이션으로 표시할 안내 문구들.
+const ANALYSIS_MESSAGES = [
+  '결과지 점수를 살펴보고 있어요',
+  '내담자의 마음을 헤아리고 있어요',
+  '검사 항목별 이론을 적용해보고 있어요',
+  '결과지를 안전하게 살펴보고 있어요',
+];
+
 interface AnalyzingProgressCardProps {
   steps: AnalysisStep[];
   /** 0~100 */
   percent: number;
-  helperText?: string;
+  /** 위로 돌아가며 무한 반복 표시할 안내 문구들 */
+  messages?: string[];
   className?: string;
 }
 
 export const AnalyzingProgressCard = ({
   steps,
   percent,
-  helperText = '등록한 심리검사 결과지를 바탕으로 결과를 해석하고 있어요.\n보통 1~3분 안에 끝나요.',
+  messages = ANALYSIS_MESSAGES,
   className,
 }: AnalyzingProgressCardProps) => {
   const clamped = Math.max(0, Math.min(100, percent));
@@ -53,10 +63,17 @@ export const AnalyzingProgressCard = ({
 
       {/* 진행률 bar */}
       <div className="flex w-full max-w-[320px] items-center gap-3">
-        <div className="relative h-1.5 flex-1 overflow-hidden bg-grey-30">
+        <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-grey-30">
+          {/* 천천히 차오르는 전환(transition-[width] 1200ms) + 물결 그라데이션(progress-flow) */}
           <div
-            className="h-full bg-green-80 transition-[width] duration-fast"
-            style={{ width: `${clamped}%` }}
+            className="h-full rounded-full transition-[width] duration-[1200ms] ease-out"
+            style={{
+              width: `${clamped}%`,
+              background:
+                'linear-gradient(90deg, var(--color-green-80) 30%, var(--color-green-40) 50%, var(--color-green-80) 90%)',
+              backgroundSize: '200% 100%',
+              animation: 'progress-flow 2.5s linear infinite',
+            }}
           />
         </div>
         <span className="text-sm font-medium text-grey-70">
@@ -64,10 +81,12 @@ export const AnalyzingProgressCard = ({
         </span>
       </div>
 
-      {/* 안내 텍스트 */}
-      <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
-        {helperText}
-      </p>
+      {/* 안내 텍스트 — 위로 돌아가는 물결 로테이팅 */}
+      <WaveRotatingText
+        texts={messages}
+        interval={5000}
+        className="text-grey-70"
+      />
     </div>
   );
 };

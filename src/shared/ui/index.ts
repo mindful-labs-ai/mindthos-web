@@ -127,3 +127,6 @@ export type { SpotlightProps } from './composites/Spotlight';
 
 export { DatePicker } from './composites/DatePicker';
 export type { DatePickerProps } from './composites/DatePicker';
+
+export { WaveRotatingText } from './composites/WaveRotatingText';
+export type { WaveRotatingTextProps } from './composites/WaveRotatingText';

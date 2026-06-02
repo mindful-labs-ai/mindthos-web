@@ -395,6 +395,22 @@ body {
     animation: slideUpFull 0.3s ease-out;
   }
 
+  /* 세로 캐러셀: 이전 항목이 위로 밀려 나감 (slideUpFull과 짝) */
+  @keyframes slideUpOut {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-slideUpOut {
+    animation: slideUpOut 0.3s ease-out forwards;
+  }
+
   @keyframes slideInFromLeft {
     from {
       transform: translateX(-100%);
