@@ -63,6 +63,8 @@ interface MultiFileConfigItemProps {
   onConfigChange: (config: FileSessionConfig) => void;
   onRemove: (fileId: string) => void;
   isMobileView?: boolean;
+  /** 업로드(상담 기록 만들기) 진행 중이면 카드의 X(제거) 버튼을 숨긴다 */
+  isUploading?: boolean;
 }
 
 const SttModelToggle: React.FC<{
@@ -152,6 +154,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
   onConfigChange,
   onRemove,
   isMobileView = false,
+  isUploading = false,
 }) => {
   const [isClientSelectorOpen, setIsClientSelectorOpen] = React.useState(false);
 
@@ -226,7 +229,8 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
     </div>
   );
 
-  const removeButton = (
+  // 업로드 진행 중에는 파일 제거(X) 버튼을 숨긴다.
+  const removeButton = isUploading ? null : (
     <button
       type="button"
       onClick={() => onRemove(file.id)}
