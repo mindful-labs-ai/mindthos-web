@@ -21,8 +21,8 @@ export type OcrStage = 'reviewing' | 'needs_review' | 'ready';
 
 const STAGE_RAW_PERCENT: Record<AssessmentProgress, number> = {
   initiated: 0,
-  pending: 33,
-  processing: 66,
+  pending: 39,
+  processing: 67,
   completed: 100,
   failed: 100,
 };
@@ -57,4 +57,17 @@ export function ocrReviewPercent(items: AssessmentItem[]): number {
     0
   );
   return toLoadingDisplayPercent(sum / items.length, buildOcrJitterKey(items));
+}
+
+/**
+ * 새 업로드 직후에는 서버 첫 폴링이 곧바로 PROCESSING이어도 70%로 점프하지 않게
+ * 잠깐 PENDING 기준값을 상한으로 쓴다. 이어보기/새로고침에는 사용하지 않는다.
+ */
+export function ocrInitialReviewCapPercent(items: AssessmentItem[]): number {
+  return ocrReviewPercent(
+    items.map((it) => ({
+      ...it,
+      progress: it.progress === 'processing' ? 'pending' : it.progress,
+    }))
+  );
 }

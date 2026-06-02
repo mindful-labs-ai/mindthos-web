@@ -1,6 +1,9 @@
 import { cn } from '@/lib/cn';
 import { WaveRotatingText } from '@/shared/ui';
 
+import { useCreepingPercent } from '../hooks/useCreepingPercent';
+import { useDelayedProgressStart } from '../hooks/useDelayedProgressStart';
+
 import {
   AnalysisStepIndicator,
   type AnalysisStepStatus,
@@ -22,8 +25,10 @@ const ANALYSIS_MESSAGES = [
 
 interface AnalyzingProgressCardProps {
   steps: AnalysisStep[];
-  /** 0~100 */
+  /** 0~100. 서버가 확인한 현재 단계값(creep의 floor) */
   percent: number;
+  /** 0~100. 다음 단계값(creep 상한). 시간 기반으로 percent→ceiling 사이를 채운다. */
+  ceiling?: number;
   /** 위로 돌아가며 무한 반복 표시할 안내 문구들 */
   messages?: string[];
   className?: string;
@@ -32,10 +37,15 @@ interface AnalyzingProgressCardProps {
 export const AnalyzingProgressCard = ({
   steps,
   percent,
+  ceiling,
   messages = ANALYSIS_MESSAGES,
   className,
 }: AnalyzingProgressCardProps) => {
-  const clamped = Math.max(0, Math.min(100, percent));
+  const floor = Math.max(0, Math.min(100, percent));
+  const cap = Math.max(floor, Math.min(100, ceiling ?? floor));
+  // 시간 기반으로 floor→cap 사이를 천천히 채운 표시값(단계가 적어도 멈춰 보이지 않음)
+  const creeping = useCreepingPercent(floor, cap);
+  const clamped = useDelayedProgressStart(creeping);
 
   return (
     <div className={cn('flex flex-col items-center gap-6', className)}>
@@ -64,9 +74,9 @@ export const AnalyzingProgressCard = ({
       {/* 진행률 bar */}
       <div className="flex w-full max-w-[320px] items-center gap-3">
         <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-grey-30">
-          {/* 천천히 차오르는 전환(transition-[width] 1200ms) + 물결 그라데이션(progress-flow) */}
+          {/* 시간 기반 creep 표시값을 부드럽게 추종(짧은 전환) + 물결 그라데이션(progress-flow) */}
           <div
-            className="h-full rounded-full transition-[width] duration-[1200ms] ease-out"
+            className="h-full rounded-full transition-[width] duration-300 ease-linear"
             style={{
               width: `${clamped}%`,
               background:

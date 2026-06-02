@@ -26,22 +26,54 @@ export function isAnalysisComplete(status: AnalysisStatusResponse): boolean {
 }
 
 /**
+ * 분석 진행 단위 집계. total = 개별 보고서 수 + 1(통합 보고서), done = 완료 수.
+ * jitterKey는 단계 상태마다 고정된 jitter를 주기 위한 키.
+ */
+function analysisCounts(status: AnalysisStatusResponse): {
+  total: number;
+  done: number;
+  jitterKey: string;
+} {
+  const total = status.assessmentReports.length + 1; // +1 = 통합 보고서
+  const done =
+    status.assessmentReports.filter((r) => r.completed).length +
+    (status.integrationReportCompleted ? 1 : 0);
+  const jitterKey = `analysis:${status.chatActiveStatus}:${status.assessmentReports
+    .map((r) => `${r.type}:${r.completed ? '1' : '0'}`)
+    .sort()
+    .join('|')}:integration-${status.integrationReportCompleted ? '1' : '0'}`;
+  return { total, done, jitterKey };
+}
+
+/**
  * 분석 진행률 계산 (0~100).
  * 개별 보고서 완료 수 + 통합 보고서(integrationReportCompleted)를 합산.
  * 임상(clinical) 단계는 없음.
  */
 export function calcAnalysisPercent(status: AnalysisStatusResponse): number {
-  const total = status.assessmentReports.length + 1; // +1 = 통합 보고서
-  const done =
-    status.assessmentReports.filter((r) => r.completed).length +
-    (status.integrationReportCompleted ? 1 : 0);
-  const rawPercent = (done / total) * 100;
-  const jitterKey = `analysis:${status.chatActiveStatus}:${status.assessmentReports
-    .map((r) => `${r.type}:${r.completed ? '1' : '0'}`)
-    .sort()
-    .join('|')}:integration-${status.integrationReportCompleted ? '1' : '0'}`;
+  const { total, done, jitterKey } = analysisCounts(status);
+  return toLoadingDisplayPercent((done / total) * 100, jitterKey);
+}
 
-  return toLoadingDisplayPercent(rawPercent, jitterKey);
+/**
+ * 시간 기반 creep용 진행률 범위.
+ * - current: 현재 완료 기준 표시값(floor).
+ * - ceiling: 한 단위 더 완료됐을 때의 표시값(다음 milestone, creep 상한).
+ *   마지막 단계(다음이 곧 완료)면 완료 전 100을 보이지 않도록 99로 둔다.
+ * 단계가 적은 결과지 1개 케이스에서도 current→ceiling 사이를 천천히 채우게 한다.
+ */
+export function calcAnalysisPercentRange(status: AnalysisStatusResponse): {
+  current: number;
+  ceiling: number;
+} {
+  const { total, done, jitterKey } = analysisCounts(status);
+  const current = toLoadingDisplayPercent((done / total) * 100, jitterKey);
+  const nextDone = Math.min(done + 1, total);
+  const ceiling =
+    nextDone >= total
+      ? Math.max(current, 99)
+      : toLoadingDisplayPercent((nextDone / total) * 100, `${jitterKey}:next`);
+  return { current, ceiling };
 }
 
 /**

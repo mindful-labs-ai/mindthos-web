@@ -4,7 +4,7 @@ import type {
   AssessmentItem,
   AssessmentProgress,
 } from '../assessmentUploadGateway';
-import { ocrReviewPercent } from '../ocrProgress';
+import { ocrInitialReviewCapPercent, ocrReviewPercent } from '../ocrProgress';
 
 const assessment = (
   progress: AssessmentProgress,
@@ -29,13 +29,31 @@ describe('ocrReviewPercent', () => {
     expect(ocrReviewPercent([assessment('initiated')])).toBe(10);
   });
 
+  it('maps a single pending OCR item around the 45% milestone', () => {
+    const pending = ocrReviewPercent([assessment('pending')]);
+
+    expect(pending).toBeGreaterThanOrEqual(42);
+    expect(pending).toBeLessThanOrEqual(48);
+  });
+
   it('moves through the ordered OCR stages without reaching 100% early', () => {
     const pending = ocrReviewPercent([assessment('pending')]);
     const processing = ocrReviewPercent([assessment('processing')]);
 
-    expect(pending).toBeGreaterThan(10);
+    expect(processing).toBeGreaterThanOrEqual(67);
+    expect(processing).toBeLessThanOrEqual(73);
     expect(processing).toBeGreaterThan(pending);
     expect(processing).toBeLessThan(100);
+  });
+
+  it('caps an initial processing jump at the pending milestone', () => {
+    const processing = [assessment('processing')];
+
+    expect(ocrInitialReviewCapPercent(processing)).toBeLessThan(
+      ocrReviewPercent(processing)
+    );
+    expect(ocrInitialReviewCapPercent(processing)).toBeGreaterThanOrEqual(42);
+    expect(ocrInitialReviewCapPercent(processing)).toBeLessThanOrEqual(48);
   });
 
   it('shows 100% only when OCR processing has ended', () => {

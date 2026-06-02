@@ -1,6 +1,8 @@
 import { cn } from '@/lib/cn';
 import { WaveRotatingText } from '@/shared/ui';
 
+import { useDelayedProgressStart } from '../../../hooks/useDelayedProgressStart';
+
 import { ReviewLoadingAnimation } from './ReviewLoadingAnimation';
 
 interface UploadingProgressProps {
@@ -25,7 +27,7 @@ export const UploadingProgress = ({
   messages = REVIEW_MESSAGES,
   className,
 }: UploadingProgressProps) => {
-  const clamped = Math.max(0, Math.min(100, percent));
+  const clamped = useDelayedProgressStart(percent);
 
   return (
     <div

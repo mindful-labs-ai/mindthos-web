@@ -12,11 +12,6 @@ import type {
   ChatActiveStatus,
 } from '@/shared/api/server/assessmentUploadApi';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
-import {
-  DebugChip,
-  DebugSection,
-  useDebugPanel,
-} from '@/shared/hooks/useDebugPanel';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Spinner } from '@/shared/ui';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -30,7 +25,7 @@ import {
 import { PSYCHOLOGY_ASSESSMENT_RESET_EVENT } from '../constants/events';
 import {
   analysisKeys,
-  calcAnalysisPercent,
+  calcAnalysisPercentRange,
   isAnalysisComplete,
   useAnalysisStatus,
   useStartAnalysis,
@@ -45,10 +40,7 @@ import type {
   AssessmentProgress,
 } from '../upload/assessmentUploadGateway';
 import { deriveOcrStage, ocrReviewPercent } from '../upload/ocrProgress';
-import {
-  ASSESSMENT_KIND_LABEL,
-  formatAssessmentDisplayText,
-} from '../utils/assessmentDisplay';
+import { ASSESSMENT_KIND_LABEL } from '../utils/assessmentDisplay';
 import {
   CHAT_RESPONSE_ERROR,
   CHAT_RETRY_ERROR,
@@ -82,19 +74,6 @@ import {
 } from './RegisteredPopover';
 
 type AssessmentsMode = 'empty' | 'registered' | 'analyzing' | 'analyzed';
-type DebugViewState =
-  | 'real'
-  | 'loading'
-  | 'empty'
-  | 'ocr-reviewing'
-  | 'ocr-needs-review'
-  | 'ocr-ready'
-  | 'analyzing'
-  | 'chat-welcome'
-  | 'chat-sending'
-  | 'chat-failed'
-  | 'chat-complete'
-  | 'chat-multi';
 
 // 환영 화면 예시 질문 — 클릭하면 input에 그대로 채워져 사용자가 엔터만 누르면 전송.
 const CHAT_SUGGESTIONS: ChatSuggestion[] = [
@@ -106,132 +85,6 @@ const CHAT_SUGGESTIONS: ChatSuggestion[] = [
   { id: 'sg-2', label: '이 검사 결과로 어떤 도움을 받을 수 있는지 알려줘' },
   { id: 'sg-3', label: '현재 내담자 정보를 간단히 정리해줘' },
 ];
-
-const DEBUG_ASSESSMENT_FILES: AssessmentFile[] = [
-  {
-    id: 'debug-mmpi',
-    title: '다면적 인성검사',
-    fileName: '다면적_인성검사_디버그_결과지.pdf',
-  },
-  {
-    id: 'debug-tci',
-    title: '기질 검사',
-    fileName: '기질_검사_디버그_결과지.pdf',
-  },
-];
-
-const DEBUG_POPOVER_ASSESSMENTS: RegisteredAssessmentEntry[] = [
-  {
-    id: 'debug-mmpi',
-    fileName: '다면적_인성검사_디버그_결과지.pdf',
-    testDate: '2026.06.02',
-    pageCount: 12,
-    categoryLabel: '다면적 인성검사',
-    metaLabel: '다면적 인성검사 · 완료',
-  },
-  {
-    id: 'debug-tci',
-    fileName: '기질_검사_디버그_결과지.pdf',
-    testDate: '2026.06.02',
-    pageCount: 8,
-    categoryLabel: '기질 검사',
-    metaLabel: '기질 검사 · 완료',
-  },
-];
-
-const DEBUG_POPOVER_TRANSCRIPTS: TranscriptEntry[] = [
-  {
-    id: 'debug-transcript',
-    title: '디버그 내담자 축어록',
-    metaLabel: '총 3회기 상담 기록',
-  },
-];
-
-const DEBUG_ANALYSIS_STEPS: AnalysisStep[] = [
-  { id: 'MMPI_2', label: '다면적 인성검사 분석', status: 'completed' },
-  { id: 'TCI', label: '기질 검사 분석', status: 'in_progress' },
-  { id: 'integration', label: '통합 해석', status: 'pending' },
-];
-
-const DEBUG_CHAT_TURNS: Record<Exclude<DebugViewState, 'real'>, ChatTurn[]> = {
-  loading: [],
-  empty: [],
-  'ocr-reviewing': [],
-  'ocr-needs-review': [],
-  'ocr-ready': [],
-  analyzing: [],
-  'chat-welcome': [],
-  'chat-sending': [
-    {
-      id: 'debug-user-sending',
-      role: 'user',
-      content: '내담자의 심리검사 결과를 종합해서 해석해줘',
-    },
-    {
-      id: 'debug-assistant-sending',
-      role: 'assistant',
-      content: '깊게 생각하는 중...',
-      status: 'sending',
-    },
-  ],
-  'chat-failed': [
-    {
-      id: 'debug-user-failed',
-      role: 'user',
-      content: '현재 내담자에게 가장 중요한 상담 포인트를 알려줘',
-    },
-    {
-      id: 'debug-assistant-failed',
-      role: 'assistant',
-      content: CHAT_RESPONSE_ERROR,
-      messageId: 'debug-message-failed',
-      status: 'failed',
-    },
-  ],
-  'chat-complete': [
-    {
-      id: 'debug-user-complete',
-      role: 'user',
-      content: '이 검사 결과로 어떤 도움을 받을 수 있는지 알려줘',
-    },
-    {
-      id: 'debug-assistant-complete',
-      role: 'assistant',
-      content:
-        '검사 결과를 종합하면 내담자는 정서적 부담을 세밀하게 다루면서도, 상담 장면에서 안전감을 확인받을 때 자기 이해가 더 잘 확장되는 흐름을 보입니다.',
-      messageId: 'debug-message-complete',
-      status: 'ok',
-    },
-  ],
-  'chat-multi': [
-    {
-      id: 'debug-user-old',
-      role: 'user',
-      content: '내담자의 강점부터 정리해줘',
-    },
-    {
-      id: 'debug-assistant-old',
-      role: 'assistant',
-      content:
-        '내담자는 관계 맥락을 민감하게 읽고, 어려운 감정을 언어화하려는 시도가 꾸준히 나타납니다.',
-      messageId: 'debug-message-old',
-      status: 'ok',
-    },
-    {
-      id: 'debug-user-latest',
-      role: 'user',
-      content: '상담에서 조심해야 할 지점은 뭐야?',
-    },
-    {
-      id: 'debug-assistant-latest',
-      role: 'assistant',
-      content:
-        '초기에는 해석을 빠르게 제시하기보다 정서 반응을 충분히 확인하고, 내담자가 스스로 받아들일 수 있는 언어로 속도를 조절하는 것이 좋습니다.',
-      messageId: 'debug-message-latest',
-      status: 'ok',
-    },
-  ],
-};
 
 interface PsychologyAssessmentsMainProps {
   client: Client | null;
@@ -489,11 +342,13 @@ export const PsychologyAssessmentsMain = ({
 
   const [chatValue, setChatValue] = useState('');
   const [turns, setTurns] = useState<ChatTurn[]>([]);
+  // 채팅 이력 로딩이 끝난 시점의 clientId. 현재 clientId와 다르면 로딩 중으로 본다.
+  // (이펙트 본문에서의 동기 setState 없이 로딩 여부를 파생하기 위함.)
+  const [historyLoadedKey, setHistoryLoadedKey] = useState<string | null>(null);
   const [retryingTurnId, setRetryingTurnId] = useState<string | null>(null);
   const [regenerateTurnId, setRegenerateTurnId] = useState<string | null>(null);
   const [pendingFirstChat, setPendingFirstChat] =
     useState<PendingFirstChat | null>(null);
-  const [debugViewState, setDebugViewState] = useState<DebugViewState>('real');
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   // 모달 진입 의도: 'reviewing'/'verify'면 해당 단계로 이어보기, false면 신규 업로드(step1).
   const [modalResume, setModalResume] = useState<
@@ -576,30 +431,6 @@ export const PsychologyAssessmentsMain = ({
           ? 'analyzed'
           : 'analyzing'
       : 'empty';
-  const debugActive = debugViewState !== 'real';
-  const debugDisplayMode: AssessmentsMode | null = (() => {
-    switch (debugViewState) {
-      case 'empty':
-        return 'empty';
-      case 'ocr-reviewing':
-      case 'ocr-needs-review':
-      case 'ocr-ready':
-        return 'registered';
-      case 'analyzing':
-        return 'analyzing';
-      case 'chat-welcome':
-      case 'chat-sending':
-      case 'chat-failed':
-      case 'chat-complete':
-      case 'chat-multi':
-        return 'analyzed';
-      case 'real':
-      case 'loading':
-      default:
-        return null;
-    }
-  })();
-  const displayMode = debugDisplayMode ?? mode;
 
   const { data: clientSessionItems = [] } = useAllClientSessions({
     userId: userId ? Number(userId) : 0,
@@ -660,8 +491,6 @@ export const PsychologyAssessmentsMain = ({
     !!clientId &&
     (!analysisStatusData ||
       (analysisStatusData.chatActiveStatus === 'OCR_PHASE' && isBatchLoading));
-  const displayInitialLoading =
-    debugViewState === 'loading' || (!debugActive && isInitialLoading);
 
   // OCR_PHASE 배치의 진행 단계(서버 배치 상태 기반). 실클라이언트 + 드래프트 있을 때만.
   // reviewing(진행 중) / needs_review(검토 필요) / ready(분석 가능).
@@ -669,19 +498,8 @@ export const PsychologyAssessmentsMain = ({
     clientId && mode === 'registered' && realAssessments.length > 0
       ? deriveOcrStage(realAssessments)
       : null;
-  const debugOcrStage =
-    debugViewState === 'ocr-reviewing'
-      ? ('reviewing' as const)
-      : debugViewState === 'ocr-needs-review'
-        ? ('needs_review' as const)
-        : debugViewState === 'ocr-ready'
-          ? ('ready' as const)
-          : null;
-  const displayOcrStage = debugOcrStage ?? ocrStage;
   const ocrPercent =
     ocrStage === 'reviewing' ? ocrReviewPercent(realAssessments) : 100;
-  const displayOcrPercent =
-    debugViewState === 'ocr-reviewing' ? 43 : ocrPercent;
 
   useEffect(() => {
     if (!clientId || !analysisStatusData) return;
@@ -765,15 +583,18 @@ export const PsychologyAssessmentsMain = ({
       })
       .catch(() => {
         /* 이력 없음/실패는 무시 — 빈 대화로 시작 */
+      })
+      .finally(() => {
+        if (!cancelled) setHistoryLoadedKey(clientId);
       });
     return () => {
       cancelled = true;
     };
   }, [clientId, mode]);
 
-  const analyzingPercent = analysisStatusData
-    ? calcAnalysisPercent(analysisStatusData)
-    : 0;
+  const analyzingRange = analysisStatusData
+    ? calcAnalysisPercentRange(analysisStatusData)
+    : { current: 0, ceiling: 0 };
 
   const analysisSteps: AnalysisStep[] = analysisStatusData
     ? toAnalysisSteps(
@@ -781,22 +602,18 @@ export const PsychologyAssessmentsMain = ({
         analysisStatusData.integrationReportCompleted
       )
     : [];
-  const displayAnalyzingPercent =
-    debugViewState === 'analyzing' ? 64 : analyzingPercent;
-  const displayAnalysisSteps =
-    debugViewState === 'analyzing' ? DEBUG_ANALYSIS_STEPS : analysisSteps;
 
   // 활성 배치 → 결과지 카드용 AssessmentFile
   const realFiles: AssessmentFile[] = realAssessments.map((it) => ({
     id: it.assessmentId,
     title: ASSESSMENT_KIND_LABEL[it.kind],
-    fileName: formatAssessmentDisplayText(it.title),
+    fileName: it.title,
   }));
   // 활성 배치 → popover 엔트리
   const realPopoverAssessments: RegisteredAssessmentEntry[] =
     realAssessments.map((it) => ({
       id: it.assessmentId,
-      fileName: formatAssessmentDisplayText(it.title),
+      fileName: it.title,
       testDate: '',
       pageCount: 0,
       categoryLabel: ASSESSMENT_KIND_LABEL[it.kind],
@@ -804,44 +621,21 @@ export const PsychologyAssessmentsMain = ({
     }));
 
   // 결과지가 표시되는 모든 곳(카드/popover/칩 카운트)이 같은 배치를 기반으로.
-  const files: AssessmentFile[] = debugActive
-    ? displayMode === 'empty'
-      ? []
-      : realFiles.length > 0
-        ? realFiles
-        : DEBUG_ASSESSMENT_FILES
-    : realFiles;
-  const popoverAssessments =
-    debugActive && files.length > 0
-      ? DEBUG_POPOVER_ASSESSMENTS
-      : realPopoverAssessments;
-  const popoverTranscripts =
-    debugActive && displayMode === 'analyzed'
-      ? DEBUG_POPOVER_TRANSCRIPTS
-      : realPopoverTranscripts;
+  const files: AssessmentFile[] = realFiles;
+  const popoverAssessments = realPopoverAssessments;
+  const popoverTranscripts = realPopoverTranscripts;
   const lastAssessmentLabel =
-    displayMode === 'analyzed'
-      ? debugActive
-        ? '최근 검사일 2026.06.02'
-        : buildRecentAssessmentLabel(realAssessments)
+    mode === 'analyzed'
+      ? buildRecentAssessmentLabel(realAssessments)
       : undefined;
   const assessmentSubjectMeta = clientId
     ? buildAssessmentSubjectMeta(realAssessments)
     : {};
-  const displayAssessmentSubjectMeta = debugActive
-    ? {
-        gender: assessmentSubjectMeta.gender ?? '여자',
-        age: assessmentSubjectMeta.age ?? 29,
-      }
-    : assessmentSubjectMeta;
   const analyzeCost = 50;
 
-  const chipStatus = modeToChipStatus[displayMode];
-  const chatPlaceholder = CHAT_PLACEHOLDER[displayMode];
-  const isChatDisabled = displayMode !== 'analyzed';
-  const displayTurns = debugActive
-    ? DEBUG_CHAT_TURNS[debugViewState as Exclude<DebugViewState, 'real'>]
-    : turns;
+  const chipStatus = modeToChipStatus[mode];
+  const chatPlaceholder = CHAT_PLACEHOLDER[mode];
+  const isChatDisabled = mode !== 'analyzed';
 
   const handleStartAnalysis = () => {
     if (clientId) {
@@ -932,11 +726,6 @@ export const PsychologyAssessmentsMain = ({
   const handleSendChat = () => {
     const text = chatValue.trim();
     if (!text) return;
-    if (debugActive) {
-      setChatValue('');
-      setDebugViewState('chat-sending');
-      return;
-    }
     if (!clientId) return;
 
     if (turns.length === 0) {
@@ -1008,7 +797,7 @@ export const PsychologyAssessmentsMain = ({
   };
 
   // chip 클릭 → popover toggle (채팅 가능 상태의 등록 결과지에만 제공)
-  const canOpenPopover = displayMode === 'analyzed' && files.length > 0;
+  const canOpenPopover = mode === 'analyzed' && files.length > 0;
   const handleChipClick = canOpenPopover
     ? () => setIsPopoverOpen((prev) => !prev)
     : undefined;
@@ -1019,12 +808,6 @@ export const PsychologyAssessmentsMain = ({
 
   const handleResetConfirm = () => {
     setIsResetConfirmOpen(false);
-
-    if (debugActive) {
-      setIsPopoverOpen(false);
-      setDebugViewState('ocr-ready');
-      return;
-    }
 
     if (!clientId) {
       setIsPopoverOpen(false);
@@ -1050,138 +833,6 @@ export const PsychologyAssessmentsMain = ({
     });
   };
 
-  const setFirstChatDebugModalOpen = (nextOpen: boolean) => {
-    if (!nextOpen || !clientId) {
-      setPendingFirstChat(null);
-      return;
-    }
-    setPendingFirstChat({
-      clientId,
-      text: chatValue.trim() || '내담자의 심리검사 결과를 종합해서 해석해줘',
-    });
-  };
-
-  const setRegenerateDebugModalOpen = (nextOpen: boolean) => {
-    setRegenerateTurnId(nextOpen ? 'debug-assistant-complete' : null);
-  };
-
-  // DEBUG ONLY: prod 배포 전 이 force-visible 심리검사 상태 패널은 제거해야 한다.
-  const debugPanel = useDebugPanel(
-    '심리검사 화면',
-    {
-      view: {
-        value: debugViewState,
-        set: setDebugViewState,
-        options: [
-          'real',
-          'loading',
-          'empty',
-          'ocr-reviewing',
-          'ocr-needs-review',
-          'ocr-ready',
-          'analyzing',
-          'chat-welcome',
-          'chat-sending',
-          'chat-failed',
-          'chat-complete',
-          'chat-multi',
-        ] as const,
-      },
-      mode: {
-        value: `${mode} -> ${displayMode}`,
-        set: () => undefined,
-      },
-      chatInput: {
-        value: chatValue,
-        set: setChatValue,
-        options: [
-          '',
-          '내담자의 심리검사 결과를 종합해서 해석해줘',
-          '상담에서 조심해야 할 지점은 뭐야?',
-        ] as const,
-      },
-      popover: {
-        value: isPopoverOpen,
-        set: setIsPopoverOpen,
-      },
-      resetModal: {
-        value: isResetConfirmOpen,
-        set: setIsResetConfirmOpen,
-      },
-      firstChatModal: {
-        value: pendingFirstChat?.clientId === clientId,
-        set: setFirstChatDebugModalOpen,
-      },
-      regenerateModal: {
-        value: regenerateTurnId !== null,
-        set: setRegenerateDebugModalOpen,
-      },
-    },
-    <>
-      <DebugSection label="quick state">
-        <DebugChip
-          label="OCR 진행"
-          active={debugViewState === 'ocr-reviewing'}
-          onClick={() => setDebugViewState('ocr-reviewing')}
-        />
-        <DebugChip
-          label="OCR 보완"
-          active={debugViewState === 'ocr-needs-review'}
-          onClick={() => setDebugViewState('ocr-needs-review')}
-        />
-        <DebugChip
-          label="분석 CTA"
-          active={debugViewState === 'ocr-ready'}
-          onClick={() => setDebugViewState('ocr-ready')}
-        />
-        <DebugChip
-          label="분석 중"
-          active={debugViewState === 'analyzing'}
-          onClick={() => setDebugViewState('analyzing')}
-        />
-        <DebugChip
-          label="채팅 빈"
-          active={debugViewState === 'chat-welcome'}
-          onClick={() => setDebugViewState('chat-welcome')}
-        />
-        <DebugChip
-          label="답변 중"
-          active={debugViewState === 'chat-sending'}
-          onClick={() => setDebugViewState('chat-sending')}
-        />
-        <DebugChip
-          label="답변 실패"
-          active={debugViewState === 'chat-failed'}
-          onClick={() => setDebugViewState('chat-failed')}
-        />
-        <DebugChip
-          label="답변 완료"
-          active={debugViewState === 'chat-complete'}
-          onClick={() => setDebugViewState('chat-complete')}
-        />
-      </DebugSection>
-      <DebugSection
-        label={`chat turns: ${displayTurns.length}, disabled: ${isChatDisabled}`}
-      >
-        <DebugChip
-          label="retrying"
-          active={retryingTurnId !== null}
-          onClick={() =>
-            setRetryingTurnId((prev) =>
-              prev ? null : 'debug-assistant-failed'
-            )
-          }
-        />
-        <DebugChip
-          label="clear real turns"
-          active={turns.length === 0}
-          onClick={() => setTurns([])}
-        />
-      </DebugSection>
-    </>,
-    { force: true }
-  );
-
   // 모바일/데스크탑 wrapper 분기
   const outerCls = isMobileView
     ? 'flex h-full w-full'
@@ -1203,26 +854,29 @@ export const PsychologyAssessmentsMain = ({
         >
           <NoClientSelectedView />
         </div>
-        {debugPanel}
       </div>
     );
   }
 
+  // 대화 기록 로딩 중 여부 — analyzed인데 현재 clientId 기준 로딩이 아직 안 끝났으면 true.
+  const isHistoryLoading =
+    mode === 'analyzed' && !!clientId && historyLoadedKey !== clientId;
+
   /* -------- 본문 분기 -------- */
   let bodyContent: React.ReactNode = null;
 
-  if (displayInitialLoading) {
+  if (isInitialLoading) {
     // 내담자 상태(phase) 확정 전 — empty/analyzing 깜빡임 없이 스피너만 노출.
     bodyContent = (
       <div className="flex flex-1 items-center justify-center">
         <Spinner size="lg" ariaLabel="내담자 검사 상태를 불러오는 중" />
       </div>
     );
-  } else if (displayMode === 'empty') {
+  } else if (mode === 'empty') {
     bodyContent = <EmptyAssessmentsView onRegister={openUploadModal} />;
-  } else if (displayMode === 'registered') {
+  } else if (mode === 'registered') {
     // OCR 단계별 분기(데모는 ocrStage null → ready로 취급).
-    const stage = displayOcrStage ?? 'ready';
+    const stage = ocrStage ?? 'ready';
     const assessmentsCard = (
       <RegisteredAssessmentsCard
         files={files}
@@ -1238,7 +892,7 @@ export const PsychologyAssessmentsMain = ({
         <div className="flex flex-1 flex-col items-center justify-center gap-3">
           <Spinner size="lg" ariaLabel="결과지를 확인하는 중" />
           <span className="text-l font-emphasize text-grey-100">
-            {displayOcrPercent}%
+            {ocrPercent}%
           </span>
           <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
             {'심리검사 결과지를 확인하고 있어요.\n보통 1~2분 안에 끝나요.'}
@@ -1289,30 +943,40 @@ export const PsychologyAssessmentsMain = ({
         </div>
       );
     }
-  } else if (displayMode === 'analyzing') {
+  } else if (mode === 'analyzing') {
     bodyContent = (
       <div className="flex flex-1 flex-col items-center justify-center">
         <AnalyzingProgressCard
-          steps={displayAnalysisSteps}
-          percent={displayAnalyzingPercent}
+          steps={analysisSteps}
+          percent={analyzingRange.current}
+          ceiling={analyzingRange.ceiling}
         />
       </div>
     );
-  } else if (displayMode === 'analyzed') {
-    bodyContent =
-      displayTurns.length > 0 ? (
-        <ChatConversationView
-          turns={displayTurns}
-          onRetry={handleRetryTurn}
-          onRegenerate={handleOpenRegenerateModal}
-          retryingId={retryingTurnId}
-        />
-      ) : (
-        <ChatWelcomeView
-          suggestions={CHAT_SUGGESTIONS}
-          onSuggestionClick={handleChatSuggestionClick}
-        />
+  } else if (mode === 'analyzed') {
+    if (isHistoryLoading) {
+      // 대화 기록 로딩 중 — welcome(초기값) 대신 빈 화면 + 스피너.
+      bodyContent = (
+        <div className="flex flex-1 items-center justify-center">
+          <Spinner size="lg" ariaLabel="대화 기록을 불러오는 중" />
+        </div>
       );
+    } else {
+      bodyContent =
+        turns.length > 0 ? (
+          <ChatConversationView
+            turns={turns}
+            onRetry={handleRetryTurn}
+            onRegenerate={handleOpenRegenerateModal}
+            retryingId={retryingTurnId}
+          />
+        ) : (
+          <ChatWelcomeView
+            suggestions={CHAT_SUGGESTIONS}
+            onSuggestionClick={handleChatSuggestionClick}
+          />
+        );
+    }
   }
 
   return (
@@ -1323,8 +987,8 @@ export const PsychologyAssessmentsMain = ({
           <div className="py-4 pl-8 pr-7">
             <ClientProfileHeader
               client={client}
-              gender={displayAssessmentSubjectMeta.gender}
-              age={displayAssessmentSubjectMeta.age}
+              gender={assessmentSubjectMeta.gender}
+              age={assessmentSubjectMeta.age}
               lastAssessmentLabel={lastAssessmentLabel}
               analysisStatus={chipStatus}
               showAnalysisStatusChip={canOpenPopover}
@@ -1431,8 +1095,6 @@ export const PsychologyAssessmentsMain = ({
         onClose={() => setIsResetConfirmOpen(false)}
         onConfirm={handleResetConfirm}
       />
-
-      {debugPanel}
     </div>
   );
 };
