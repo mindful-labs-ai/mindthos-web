@@ -35,23 +35,23 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           <Text className="typo-xs font-medium text-fg-muted">음성 변환</Text>
           <div className="space-y-1">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">일반 축어록</Text>
+              <Text className="text-xs font-normal text-fg">일반 축어록</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-xs font-semibold text-fg">
                   30분 까지 - 30크레딧 (고정)
                 </Text>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-xs font-semibold text-fg">
                   30분 초과 - 분당 1크레딧
                 </Text>
               </div>
             </div>
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">고급 축어록</Text>
+              <Text className="text-xs font-normal text-fg">고급 축어록</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-xs font-semibold text-fg">
                   30분 까지 - 45크레딧 (고정)
                 </Text>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-xs font-semibold text-fg">
                   30분 초과 - 분당 1.5크레딧
                 </Text>
               </div>
@@ -80,11 +80,11 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           <div className="space-y-1">
             <div className="flex gap-2">
               <Text className="typo-xs text-fg">상담노트 추가 작성</Text>
-              <Text className="typo-xs font-emphasize text-fg">10 크레딧</Text>
+              <Text className="typo-xs font-emphasize text-fg">10크레딧</Text>
             </div>
             <div className="flex gap-2">
               <Text className="typo-xs text-fg">다회기 분석</Text>
-              <Text className="typo-xs font-emphasize text-fg">50 크레딧</Text>
+              <Text className="typo-xs font-emphasize text-fg">50크레딧</Text>
             </div>
           </div>
         </div>
@@ -105,6 +105,27 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
                 <Text className="typo-xs font-emphasize text-fg">
                   <del>100</del> 10크레딧
                 </Text>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 심리검사해석 */}
+        <div className="space-y-2">
+          <Text className="typo-xs font-medium text-fg-muted">
+            심리검사해석
+          </Text>
+          <div className="space-y-1">
+            <div className="flex gap-2">
+              <Text className="typo-xs text-fg">결과지 분석</Text>
+              <div>
+                <Text className="typo-xs font-emphasize text-fg">50크레딧</Text>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Text className="typo-xs text-fg">에이전트 질문</Text>
+              <div>
+                <Text className="typo-xs font-emphasize text-fg">5크레딧</Text>
               </div>
             </div>
           </div>

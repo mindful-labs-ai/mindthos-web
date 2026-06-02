@@ -9,7 +9,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 import type { Session } from '@/features/session/types';
 import { cn } from '@/lib/cn';
-import { MoreVerticalIcon } from '@/shared/icons';
+import { DragHandleIcon } from '@/shared/icons';
 
 interface SortableSessionCardProps {
   session: Session;
@@ -71,7 +71,7 @@ export const SortableSessionCard: React.FC<SortableSessionCardProps> = ({
         {...attributes}
         {...listeners}
       >
-        <MoreVerticalIcon size={20} />
+        <DragHandleIcon size={20} />
       </button>
 
       {/* 세션 정보 */}

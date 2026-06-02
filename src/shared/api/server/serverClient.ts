@@ -4,8 +4,6 @@ import { supabase } from '@/lib/supabase';
  * mindthos-server (NestJS) 전용 REST 클라이언트.
  *
  * - 인증: Supabase access token을 Bearer로 첨부 (서버가 GoTrue로 검증).
- * - 주소: VITE_SERVER_API_URL(예: https://gateway-dev.mindthos.com)이 있으면 그 게이트웨이로
- *   절대 호출, 없으면 상대경로 `/v1/...` (로컬은 vite proxy가 게이트웨이로 forward).
  * - 응답: 서버는 `{ statusCode, message, data }` 봉투로 응답하므로 data만 반환.
  */
 
