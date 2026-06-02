@@ -1,19 +1,45 @@
 import React from 'react';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
+import {
+  RegisteredPopover,
+  ResetConfirmModal,
+  type RegisteredAssessmentEntry,
+  type TranscriptEntry,
+} from '@/features/psychology-assessments/components/RegisteredPopover';
+import { PSYCHOLOGY_ASSESSMENT_RESET_EVENT } from '@/features/psychology-assessments/constants/events';
+import {
+  analysisKeys,
+  isAnalysisComplete,
+  useAnalysisStatus,
+} from '@/features/psychology-assessments/hooks/useAnalysis';
+import {
+  useAssessmentBatch,
+  useResetToOcrPhase,
+} from '@/features/psychology-assessments/hooks/useAssessmentBatch';
+import type { AssessmentProgress } from '@/features/psychology-assessments/upload/assessmentUploadGateway';
+import {
+  ASSESSMENT_KIND_LABEL,
+  formatAssessmentDisplayText,
+} from '@/features/psychology-assessments/utils/assessmentDisplay';
+import { useAllClientSessions } from '@/features/session/hooks/useSessionsList';
+import type { AnalysisStatusResponse } from '@/shared/api/server/assessmentUploadApi';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
+  AnalysisStatusIcon,
+  ClientIcon,
   GenogramIcon,
   MenuIcon,
   PlusIcon,
-  SidePsychologyAssessmentIcon,
 } from '@/shared/icons';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
+import { useAuthStore } from '@/stores/authStore';
 import { useClientListScrollStore } from '@/stores/clientListScrollStore';
 import { useModalStore } from '@/stores/modalStore';
 
@@ -23,6 +49,14 @@ interface MobileHeaderProps {
   onMenuOpen: () => void;
   onNewSession: () => void;
 }
+
+const ASSESSMENT_PROGRESS_LABEL: Record<AssessmentProgress, string> = {
+  initiated: '업로드 대기',
+  pending: '분석 대기',
+  processing: '분석 중',
+  completed: '완료',
+  failed: '확인 필요',
+};
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onMenuOpen,
@@ -44,7 +78,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const genogramRightSlot = isGenogram ? <GenogramClientButton /> : null;
   // 심리검사 해석: 내담자 선택 트리거 (사이드바 대체)
   const psychologyRightSlot = isPsychologyAssessments ? (
-    <PsychologyClientButton />
+    <PsychologyHeaderControls />
   ) : null;
 
   const rightSlot = (() => {
@@ -214,6 +248,15 @@ function GenogramClientButton() {
   );
 }
 
+function PsychologyHeaderControls() {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      <PsychologyAssessmentPopoverButton />
+      <PsychologyClientButton />
+    </div>
+  );
+}
+
 /**
  * 심리검사 해석 MobileHeader 우측 내담자 선택 버튼.
  * 데스크탑의 좌측 ClientSidebar를 모바일에서 대체.
@@ -254,11 +297,13 @@ function PsychologyClientButton() {
     <>
       <Button
         variant="outline"
-        className={`gap-2 bg-surface ${!clientId ? 'animate-pulse-glow-subtle' : ''}`}
+        className={`min-w-0 max-w-[46vw] gap-2 bg-surface ${!clientId ? 'animate-pulse-glow-subtle' : ''}`}
         onClick={() => setIsOpen(true)}
       >
-        <SidePsychologyAssessmentIcon size={18} />
-        <span>{selectedClient?.name || '내담자 선택'}</span>
+        <ClientIcon size={18} />
+        <span className="truncate">
+          {selectedClient?.name || '내담자 선택'}
+        </span>
       </Button>
 
       <Modal
@@ -323,6 +368,138 @@ function PsychologyClientButton() {
           )}
         </div>
       </Modal>
+    </>
+  );
+}
+
+function PsychologyAssessmentPopoverButton() {
+  const [searchParams] = useSearchParams();
+  const clientId = searchParams.get('clientId') ?? undefined;
+  const userId = useAuthStore((state) => state.userId);
+  const { clients } = useClientList();
+  const selectedClient = clients.find((c) => c.id === clientId) ?? null;
+  const queryClient = useQueryClient();
+
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = React.useState(false);
+
+  const { data: analysisStatusData } = useAnalysisStatus(clientId, {
+    enabled: !!clientId,
+  });
+  const analysisComplete = analysisStatusData
+    ? isAnalysisComplete(analysisStatusData)
+    : false;
+
+  const { data: assessments = [] } = useAssessmentBatch(clientId, {
+    enabled: !!clientId && analysisComplete,
+  });
+  const resetToOcrPhaseMut = useResetToOcrPhase(clientId);
+
+  const { data: clientSessionItems = [] } = useAllClientSessions({
+    userId: userId ? Number(userId) : 0,
+    clientId: clientId ?? '',
+    enabled: !!clientId && !!userId && analysisComplete,
+    sortOrder: 'asc',
+  });
+
+  const popoverAssessments: RegisteredAssessmentEntry[] = React.useMemo(
+    () =>
+      assessments.map((it) => ({
+        id: it.assessmentId,
+        fileName: formatAssessmentDisplayText(it.title),
+        testDate: '',
+        pageCount: 0,
+        categoryLabel: ASSESSMENT_KIND_LABEL[it.kind],
+        metaLabel: `${ASSESSMENT_KIND_LABEL[it.kind]} · ${
+          ASSESSMENT_PROGRESS_LABEL[it.progress]
+        }`,
+      })),
+    [assessments]
+  );
+
+  const popoverTranscripts: TranscriptEntry[] = React.useMemo(() => {
+    if (!selectedClient || !clientId) return [];
+
+    const transcriptCount = clientSessionItems.filter(
+      ({ transcribe }) => transcribe !== null
+    ).length;
+    if (transcriptCount === 0) return [];
+
+    return [
+      {
+        id: `transcripts:${clientId}`,
+        title: `${selectedClient.name} 축어록`,
+        metaLabel: `총 ${transcriptCount}회기 상담 기록`,
+      },
+    ];
+  }, [clientId, clientSessionItems, selectedClient]);
+
+  const canOpenPopover = analysisComplete && popoverAssessments.length > 0;
+
+  React.useEffect(() => {
+    if (!canOpenPopover) setIsPopoverOpen(false);
+  }, [canOpenPopover]);
+
+  const handleResetConfirm = () => {
+    setIsResetConfirmOpen(false);
+    setIsPopoverOpen(false);
+    if (!clientId) return;
+
+    resetToOcrPhaseMut.mutate(undefined, {
+      onSuccess: () => {
+        queryClient.setQueryData<AnalysisStatusResponse>(
+          analysisKeys.status(clientId),
+          (old) => (old ? { ...old, chatActiveStatus: 'OCR_PHASE' } : old)
+        );
+        window.dispatchEvent(
+          new CustomEvent(PSYCHOLOGY_ASSESSMENT_RESET_EVENT, {
+            detail: { clientId },
+          })
+        );
+        void queryClient.invalidateQueries({
+          queryKey: analysisKeys.status(clientId),
+        });
+      },
+      onError: () => {
+        void queryClient.invalidateQueries({
+          queryKey: analysisKeys.status(clientId),
+        });
+      },
+    });
+  };
+
+  if (!clientId || !canOpenPopover) return null;
+
+  return (
+    <>
+      <Button
+        ref={triggerRef}
+        variant="outline"
+        size="free"
+        aria-label="등록된 결과지 보기"
+        className={`size-10 shrink-0 rounded-md border border-border bg-surface p-0 text-grey-70 ${
+          isPopoverOpen ? 'bg-grey-10' : ''
+        }`}
+        onClick={() => setIsPopoverOpen((prev) => !prev)}
+      >
+        <AnalysisStatusIcon size={22} />
+      </Button>
+
+      <RegisteredPopover
+        open={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        triggerRef={triggerRef as React.RefObject<HTMLElement>}
+        transcripts={popoverTranscripts}
+        assessments={popoverAssessments}
+        onReset={() => setIsResetConfirmOpen(true)}
+      />
+
+      <ResetConfirmModal
+        open={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={handleResetConfirm}
+      />
     </>
   );
 }

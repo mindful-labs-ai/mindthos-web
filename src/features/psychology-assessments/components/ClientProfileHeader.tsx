@@ -11,7 +11,7 @@ interface ClientProfileHeaderProps {
   age?: number | string | null;
   lastAssessmentLabel?: string;
   analysisStatus: AnalysisStatus;
-  fileCount?: number;
+  showAnalysisStatusChip?: boolean;
   /** chip 클릭 — 제공 시 chip이 button으로 렌더 */
   onChipClick?: () => void;
   /** popover open 상태 표시 (chip hover 강조) */
@@ -27,29 +27,27 @@ const isEmptyMetaValue = (value: string | null | undefined) =>
   !value || value.trim() === '-';
 
 const formatGenderMeta = (gender: string | null | undefined) =>
-  isEmptyMetaValue(gender) ? '성별 없음' : gender.trim();
+  isEmptyMetaValue(gender) ? undefined : gender.trim();
 
 const formatAgeMeta = (age: number | string | null | undefined) => {
-  if (typeof age === 'number') return age > 0 ? `${age}세` : '나이 없음';
-  if (isEmptyMetaValue(age)) return '나이 없음';
+  if (typeof age === 'number') return age > 0 ? `${age}세` : undefined;
+  if (isEmptyMetaValue(age)) return undefined;
   return age.trim();
 };
 
 const formatSessionCountMeta = (sessionCount: number) =>
-  sessionCount > 0 ? `${sessionCount}회기 상담 기록` : '상담 기록 없음';
+  sessionCount > 0 ? `${sessionCount}회기 상담 기록` : undefined;
 
-const formatLastAssessmentMeta = (lastAssessmentLabel: string) =>
-  isEmptyMetaValue(lastAssessmentLabel)
-    ? '최근 검사일 없음'
-    : lastAssessmentLabel;
+const formatLastAssessmentMeta = (lastAssessmentLabel?: string) =>
+  isEmptyMetaValue(lastAssessmentLabel) ? undefined : lastAssessmentLabel;
 
 export const ClientProfileHeader = ({
   client,
   gender,
   age,
-  lastAssessmentLabel = '최근 검사일 없음',
+  lastAssessmentLabel,
   analysisStatus,
-  fileCount,
+  showAnalysisStatusChip = true,
   onChipClick,
   chipActive,
   chipRef,
@@ -66,7 +64,19 @@ export const ClientProfileHeader = ({
     formatAgeMeta(age),
     formatSessionCountMeta(sessionCount),
     formatLastAssessmentMeta(lastAssessmentLabel),
-  ];
+  ].filter((item): item is string => item !== undefined);
+
+  const chipSlot = showAnalysisStatusChip ? (
+    <div className="relative flex-shrink-0">
+      <AnalysisStatusChip
+        ref={chipRef}
+        status={analysisStatus}
+        onClick={onChipClick}
+        active={chipActive}
+      />
+      {chipPopoverSlot}
+    </div>
+  ) : null;
 
   // 모바일: 이름 + 분석 chip만 (아바타/메타 모두 생략)
   if (isMobileView) {
@@ -75,16 +85,7 @@ export const ClientProfileHeader = ({
         <span className="truncate text-l font-emphasize text-grey-100">
           {client.name}
         </span>
-        <div className="relative flex-shrink-0">
-          <AnalysisStatusChip
-            ref={chipRef}
-            status={analysisStatus}
-            fileCount={fileCount}
-            onClick={onChipClick}
-            active={chipActive}
-          />
-          {chipPopoverSlot}
-        </div>
+        {chipSlot}
       </div>
     );
   }
@@ -97,30 +98,23 @@ export const ClientProfileHeader = ({
           <span className="truncate text-l font-emphasize text-grey-100">
             {client.name}
           </span>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium text-grey-70">
-            {metaItems.map((item, i) => (
-              <span key={i} className="flex items-center gap-2">
-                <span>{item}</span>
-                {i < metaItems.length - 1 && (
-                  <span className="text-grey-70">|</span>
-                )}
-              </span>
-            ))}
-          </div>
+          {metaItems.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm font-medium text-grey-70">
+              {metaItems.map((item, i) => (
+                <span key={i} className="flex items-center gap-2">
+                  <span>{item}</span>
+                  {i < metaItems.length - 1 && (
+                    <span className="text-grey-70">|</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* chip + popover slot — popover는 chip 트리거 기준 absolute */}
-      <div className="relative flex-shrink-0">
-        <AnalysisStatusChip
-          ref={chipRef}
-          status={analysisStatus}
-          fileCount={fileCount}
-          onClick={onChipClick}
-          active={chipActive}
-        />
-        {chipPopoverSlot}
-      </div>
+      {chipSlot}
     </div>
   );
 };

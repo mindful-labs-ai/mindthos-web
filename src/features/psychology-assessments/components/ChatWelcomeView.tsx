@@ -35,8 +35,8 @@ export const ChatWelcomeView = ({
     >
       <p
         className={cn(
-          'font-medium text-grey-100',
-          isMobileView ? 'text-sm leading-relaxed' : 'text-m'
+          'text-m font-medium text-grey-100',
+          isMobileView && 'leading-relaxed'
         )}
       >
         {greeting}

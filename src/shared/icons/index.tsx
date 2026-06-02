@@ -343,6 +343,82 @@ export const PenIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
+/** 드래그 핸들 아이콘 - 2x2 점 */
+export const DragHandleIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M14 15C14 15.5523 14.4477 16 15 16C15.5523 16 16 15.5523 16 15C16 14.4477 15.5523 14 15 14C14.4477 14 14 14.4477 14 15Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8 15C8 15.5523 8.44772 16 9 16C9.55228 16 10 15.5523 10 15C10 14.4477 9.55228 14 9 14C8.44772 14 8 14.4477 8 15Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M14 9C14 9.55228 14.4477 10 15 10C15.5523 10 16 9.55228 16 9C16 8.44772 15.5523 8 15 8C14.4477 8 14 8.44772 14 9Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8 9C8 9.55228 8.44772 10 9 10C9.55228 10 10 9.55228 10 9C10 8.44772 9.55228 8 9 8C8.44772 8 8 8.44772 8 9Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+export const ClientIcon: React.FC<CustomIconProps> = ({
+  size = 18,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 18 18"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <g clip-path="url(#clip0_8805_82918)">
+      <path
+        d="M9.11133 1.57715C11.0993 1.57738 12.7109 3.18968 12.7109 5.17773C12.7107 7.16559 11.0992 8.77711 9.11133 8.77734C7.12327 8.77734 5.51098 7.16574 5.51074 5.17773C5.51074 3.18953 7.12313 1.57715 9.11133 1.57715Z"
+        stroke="#BABCC7"
+        stroke-width="1.35"
+      />
+      <path
+        d="M8.99805 11.4756C13.2313 11.4794 16.3982 14.1915 16.4229 17.252C16.4202 17.2545 16.4178 17.259 16.4131 17.2627C16.378 17.2907 16.3042 17.3262 16.1982 17.3262H1.79883C1.69294 17.3262 1.61908 17.2907 1.58398 17.2627C1.57935 17.259 1.57593 17.2555 1.57324 17.2529C1.59723 14.1923 4.76471 11.4798 8.99805 11.4756Z"
+        stroke="#BABCC7"
+        stroke-width="1.35"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_8805_82918">
+        <rect width="18" height="18" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+);
+
 export const TooltipIcon: React.FC<CustomIconProps> = ({
   size = 14,
   className,
@@ -585,15 +661,15 @@ export const SidePsychologyAssessmentIcon: React.FC<CustomIconProps> = ({
     height={size}
     viewBox="0 0 24 24"
     fill="none"
-    xmlns="http://www.w3.org/2000/svg"
     className={className}
+    xmlns="http://www.w3.org/2000/svg"
   >
     <path
-      d="M9 11V20M9 11H4.59961C4.03956 11 3.75981 11 3.5459 11.109C3.35774 11.2049 3.20487 11.3577 3.10899 11.5459C3 11.7598 3 12.04 3 12.6001V20H9M9 11V5.6001C9 5.04004 9 4.75981 9.10899 4.5459C9.20487 4.35774 9.35774 4.20487 9.5459 4.10899C9.75981 4 10.0396 4 10.5996 4H13.3996C13.9597 4 14.2403 4 14.4542 4.10899C14.6423 4.20487 14.7948 4.35774 14.8906 4.5459C14.9996 4.75981 15 5.04005 15 5.6001V8M9 20H15M15 20L21 20.0001V9.6001C21 9.04005 20.9996 8.75981 20.8906 8.5459C20.7948 8.35774 20.6429 8.20487 20.4548 8.10899C20.2409 8 19.9601 8 19.4 8H15M15 20V8"
-      stroke="#BABCC7"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      d="M15 15L21 21M10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 13.866 13.866 17 10 17Z"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
   </svg>
 );

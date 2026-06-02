@@ -21,7 +21,7 @@ export const ResetConfirmModal = ({
   onConfirm,
   title = '심리검사 결과지 초기화',
   question = '등록된 결과지를 모두 초기화하시겠어요?',
-  description = '초기화하면 분석 내용이 삭제되어 처음부터 다시 진행해야 합니다.',
+  description = '초기화하면 분석 내용과 채팅 내용이 함께 삭제되어\n처음부터 다시 진행해야 합니다.',
   confirmLabel = '초기화하기',
   className,
 }: ResetConfirmModalProps) => {

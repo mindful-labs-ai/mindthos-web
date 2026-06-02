@@ -9,9 +9,6 @@ import { useToast } from '@/shared/ui/composites/Toast';
 import { Tooltip } from '@/shared/ui/composites/Tooltip';
 import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
-import { ChatSuggestionChip } from './ChatSuggestionChip';
-import type { ChatSuggestion } from './ChatWelcomeView';
-
 export interface ChatTurn {
   id: string;
   role: 'user' | 'assistant';
@@ -28,9 +25,6 @@ interface ChatConversationViewProps {
   onRetry?: (turnId: string) => void;
   /** 완료된 assistant 턴의 답변 다시 생성 요청 핸들러. (id = turn.id) */
   onRegenerate?: (turnId: string) => void;
-  /** 답변 완료 후 다시 노출할 예시 질문 목록. */
-  suggestions?: ChatSuggestion[];
-  onSuggestionClick?: (id: string) => void;
   /** 재시도 진행 중인 turn.id */
   retryingId?: string | null;
   className?: string;
@@ -44,14 +38,13 @@ export const ChatConversationView = ({
   turns,
   onRetry,
   onRegenerate,
-  suggestions = [],
-  onSuggestionClick,
   retryingId,
   className,
 }: ChatConversationViewProps) => {
   const { isMobile, isTablet } = useDevice();
   const { toast } = useToast();
   const isMobileView = isMobile || isTablet;
+  const chatTextClassName = 'text-m';
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // 복사 완료 피드백 — 복사한 turn.id를 잠시 표시(체크 아이콘)
@@ -103,10 +96,8 @@ export const ChatConversationView = ({
     return null;
   }, [turns]);
   const lastAssistantId = lastAssistantTurn?.id ?? null;
-  const showSuggestionsAfterAnswer =
-    lastAssistantTurn?.status === 'ok' && suggestions.length > 0;
 
-  // 새 턴이 추가되거나 답변이 완료되면 하단 예시 질문까지 자동 스크롤
+  // 새 턴이 추가되거나 답변이 완료되면 하단까지 자동 스크롤
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [lastAssistantId, lastAssistantTurn?.status, turns.length]);
@@ -119,20 +110,21 @@ export const ChatConversationView = ({
             <div
               className={cn(
                 'max-w-[80%] rounded-2xl bg-grey-20 px-4 py-3 text-grey-100',
-                isMobileView ? 'text-sm' : 'text-m'
+                chatTextClassName
               )}
             >
               {turn.content}
             </div>
           </div>
         ) : (
-          <div key={turn.id} className="flex flex-col gap-3">
+          <div key={turn.id} className="group relative flex flex-col gap-3">
             {turn.status === 'sending' ? (
-              <ThinkingMessage isMobileView={isMobileView} />
+              <ThinkingMessage />
             ) : (
               <MarkdownRenderer
                 content={turn.content}
                 disableHeadings={false}
+                className={chatTextClassName}
               />
             )}
 
@@ -187,21 +179,22 @@ export const ChatConversationView = ({
               </div>
             )}
 
-            {turn.id === lastAssistantId && showSuggestionsAfterAnswer && (
-              <div
-                className={cn(
-                  'flex flex-col gap-2',
-                  isMobileView ? 'items-stretch' : 'items-start'
-                )}
-              >
-                {suggestions.map((sg) => (
-                  <ChatSuggestionChip
-                    key={sg.id}
-                    label={sg.label}
-                    recommended={sg.recommended}
-                    onClick={() => onSuggestionClick?.(sg.id)}
-                  />
-                ))}
+            {turn.id !== lastAssistantId && turn.status === 'ok' && (
+              <div className="flex h-7 items-center opacity-100 transition-opacity lg:pointer-events-none lg:absolute lg:-bottom-7 lg:left-0 lg:opacity-0 lg:focus-within:pointer-events-auto lg:focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100">
+                <Tooltip content="복사하기" placement="top" delay={100}>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(turn)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                    aria-label="복사하기"
+                  >
+                    {copiedId === turn.id ? (
+                      <CheckIcon size={16} />
+                    ) : (
+                      <CopyIcon size={16} />
+                    )}
+                  </button>
+                </Tooltip>
               </div>
             )}
 
@@ -228,13 +221,10 @@ export const ChatConversationView = ({
   );
 };
 
-function ThinkingMessage({ isMobileView }: { isMobileView: boolean }) {
+function ThinkingMessage() {
   return (
     <p
-      className={cn(
-        'thinking-text-wave inline-block w-fit font-medium',
-        isMobileView ? 'text-sm' : 'text-m'
-      )}
+      className="thinking-text-wave inline-block w-fit text-m font-medium"
       aria-live="polite"
     >
       깊게 생각하는 중...

@@ -62,7 +62,7 @@ export const RegisteredPopover = ({
   const body = (
     <>
       {transcripts.length > 0 && (
-        <PopoverSection title="축어록 및 분석">
+        <PopoverSection title="축어록">
           {transcripts.map((t) => (
             <PopoverEntryCard
               key={t.id}

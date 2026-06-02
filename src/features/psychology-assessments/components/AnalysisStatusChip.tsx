@@ -11,8 +11,6 @@ export type AnalysisStatus =
 
 interface AnalysisStatusChipProps {
   status: AnalysisStatus;
-  /** analyzed 상태에서 표시할 결과지 개수 */
-  fileCount?: number;
   /** 제공 시 클릭 가능한 button으로 렌더 */
   onClick?: () => void;
   /** popover open 상태 표시 (hover 강조) */
@@ -29,9 +27,8 @@ const STATIC_LABEL: Record<Exclude<AnalysisStatus, 'analyzed'>, string> = {
 export const AnalysisStatusChip = forwardRef<
   HTMLButtonElement | HTMLSpanElement,
   AnalysisStatusChipProps
->(({ status, fileCount = 0, onClick, active, className }, ref) => {
-  const label =
-    status === 'analyzed' ? `${fileCount}개 결과지 등록` : STATIC_LABEL[status];
+>(({ status, onClick, active, className }, ref) => {
+  const label = status === 'analyzed' ? '결과지 등록됨' : STATIC_LABEL[status];
 
   const baseClass =
     'inline-flex items-center gap-2 rounded-md border border-grey-40 bg-grey-20 px-3 py-2 text-m font-medium';

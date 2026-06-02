@@ -22,6 +22,8 @@ interface AnalysisChatInputProps {
 }
 
 const MAX_CHAT_INPUT_LENGTH = 500;
+const CHAT_INPUT_LINE_HEIGHT = 24;
+const CHAT_INPUT_MAX_LINES = 3;
 
 export const AnalysisChatInput = ({
   value,
@@ -37,6 +39,17 @@ export const AnalysisChatInput = ({
   const isMobileView = isMobile || isTablet;
   const normalizedValue = value.slice(0, MAX_CHAT_INPUT_LENGTH);
   const characterCount = normalizedValue.length;
+  const verticalPaddingTop = isMobileView ? 10 : 14;
+  const verticalPaddingBottom = isMobileView ? 22 : 30;
+  const horizontalPaddingRight = isMobileView ? 12 : 14;
+  const horizontalPaddingLeft = isMobileView ? 16 : 24;
+  const sendButtonSize = isMobileView ? 36 : 32;
+  const textareaMaxHeight = CHAT_INPUT_LINE_HEIGHT * CHAT_INPUT_MAX_LINES;
+  const placeholderFontSize = isMobileView ? 14 : 16;
+  const inputMaxHeight =
+    verticalPaddingTop +
+    Math.max(textareaMaxHeight, sendButtonSize) +
+    verticalPaddingBottom;
 
   // mirror로 한 줄 텍스트 폭 측정 → textarea의 width/height를 한 effect에서 atomic 갱신.
   // value 없음: textarea가 mirror 폭(칩이 placeholder 옆에 붙음)
@@ -80,13 +93,18 @@ export const AnalysisChatInput = ({
       }
 
       // 2) height — 1줄 최소, 3줄 최대, 초과 시 스크롤
-      const lineHeight = 24;
       const minLines = 1;
-      const maxLines = 3;
       textarea.style.height = 'auto';
-      const rawLines = Math.round(textarea.scrollHeight / lineHeight);
-      const lines = Math.max(minLines, Math.min(rawLines, maxLines));
-      textarea.style.height = `${lines * lineHeight}px`;
+      const rawLines = Math.ceil(
+        textarea.scrollHeight / CHAT_INPUT_LINE_HEIGHT
+      );
+      const lines = Math.max(
+        minLines,
+        Math.min(rawLines, CHAT_INPUT_MAX_LINES)
+      );
+      textarea.style.height = `${lines * CHAT_INPUT_LINE_HEIGHT}px`;
+      textarea.style.overflowY =
+        rawLines > CHAT_INPUT_MAX_LINES ? 'auto' : 'hidden';
     };
 
     update();
@@ -119,13 +137,14 @@ export const AnalysisChatInput = ({
         className
       )}
       style={{
-        paddingTop: 14,
-        paddingRight: isMobileView ? 12 : 14,
-        paddingBottom: 30,
-        paddingLeft: isMobileView ? 16 : 24,
+        maxHeight: inputMaxHeight,
+        paddingTop: verticalPaddingTop,
+        paddingRight: horizontalPaddingRight,
+        paddingBottom: verticalPaddingBottom,
+        paddingLeft: horizontalPaddingLeft,
       }}
     >
-      <div className="relative flex items-center gap-2">
+      <div className="relative flex items-start gap-2">
         {!value && (
           <SecurityShieldIcon
             size={20}
@@ -143,8 +162,8 @@ export const AnalysisChatInput = ({
             fontWeight: 'inherit',
             fontStyle: 'inherit',
             letterSpacing: 'inherit',
-            fontSize: 16,
-            lineHeight: '24px',
+            fontSize: normalizedValue ? 16 : placeholderFontSize,
+            lineHeight: `${CHAT_INPUT_LINE_HEIGHT}px`,
           }}
         >
           {normalizedValue || placeholder}
@@ -185,8 +204,9 @@ export const AnalysisChatInput = ({
             fontWeight: 'inherit',
             fontStyle: 'inherit',
             letterSpacing: 'inherit',
-            fontSize: 16,
-            lineHeight: '24px',
+            fontSize: normalizedValue ? 16 : placeholderFontSize,
+            lineHeight: `${CHAT_INPUT_LINE_HEIGHT}px`,
+            maxHeight: textareaMaxHeight,
             padding: 0,
             border: 0,
             boxSizing: 'border-box',
@@ -213,8 +233,8 @@ export const AnalysisChatInput = ({
           disabled={disabled}
           className="flex flex-shrink-0 items-center justify-center self-start rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20 lg:hover:bg-grey-10"
           style={{
-            width: isMobileView ? 36 : 32,
-            height: isMobileView ? 36 : 32,
+            width: sendButtonSize,
+            height: sendButtonSize,
           }}
           aria-label="전송"
         >
