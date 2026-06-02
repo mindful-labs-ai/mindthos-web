@@ -63,7 +63,7 @@ export const FirstChatCreditConfirmModal = ({
             id="first-chat-credit-title"
             className="text-m font-emphasize text-grey-100"
           >
-            질문을 보내시겠어요?
+            크레딧 사용 안내
           </h2>
         </div>
 
@@ -72,7 +72,7 @@ export const FirstChatCreditConfirmModal = ({
           className="flex flex-col items-center gap-3 text-center"
         >
           <p className="text-m font-emphasize text-grey-100">
-            질문을 보내면 크레딧이 차감돼요.
+            질문을 보내면 답변 생성에 5크레딧이 사용돼요.
           </p>
 
           <p className="text-sm text-grey-60">

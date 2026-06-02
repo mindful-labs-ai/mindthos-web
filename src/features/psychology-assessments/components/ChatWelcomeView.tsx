@@ -62,7 +62,7 @@ export const ChatWelcomeView = ({
         <img
           src="/tutorial/mindthos_agent_icon.png"
           alt="마음토스"
-          className={cn(isMobileView ? 'h-9 w-auto' : 'h-12 w-auto')}
+          className="h-12 w-auto"
           draggable={false}
         />
       </div>

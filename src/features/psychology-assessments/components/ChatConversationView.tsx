@@ -45,6 +45,11 @@ export const ChatConversationView = ({
   const { toast } = useToast();
   const isMobileView = isMobile || isTablet;
   const chatTextClassName = 'text-m';
+  const actionButtonClassName = cn(
+    'flex items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100',
+    isMobileView ? 'h-12 w-12' : 'h-7 w-7'
+  );
+  const actionIconSize = isMobileView ? 20 : 16;
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // 복사 완료 피드백 — 복사한 turn.id를 잠시 표시(체크 아이콘)
@@ -149,13 +154,13 @@ export const ChatConversationView = ({
                   <button
                     type="button"
                     onClick={() => handleCopy(turn)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                    className={actionButtonClassName}
                     aria-label="복사하기"
                   >
                     {copiedId === turn.id ? (
-                      <CheckIcon size={16} />
+                      <CheckIcon size={actionIconSize} />
                     ) : (
-                      <CopyIcon size={16} />
+                      <CopyIcon size={actionIconSize} />
                     )}
                   </button>
                 </Tooltip>
@@ -166,13 +171,13 @@ export const ChatConversationView = ({
                       onClick={() => (onRegenerate ?? onRetry)(turn.id)}
                       disabled={retryingId === turn.id}
                       className={cn(
-                        'flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100',
+                        actionButtonClassName,
                         retryingId === turn.id &&
                           'cursor-not-allowed opacity-50'
                       )}
                       aria-label="재생성하기"
                     >
-                      <RetryIcon size={16} />
+                      <RetryIcon size={actionIconSize} />
                     </button>
                   </Tooltip>
                 )}
@@ -180,18 +185,23 @@ export const ChatConversationView = ({
             )}
 
             {turn.id !== lastAssistantId && turn.status === 'ok' && (
-              <div className="flex h-7 items-center opacity-100 transition-opacity lg:pointer-events-none lg:absolute lg:-bottom-7 lg:left-0 lg:opacity-0 lg:focus-within:pointer-events-auto lg:focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100">
+              <div
+                className={cn(
+                  'flex items-center opacity-100 transition-opacity lg:pointer-events-none lg:absolute lg:-bottom-7 lg:left-0 lg:opacity-0 lg:focus-within:pointer-events-auto lg:focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100',
+                  isMobileView ? 'h-12' : 'h-7'
+                )}
+              >
                 <Tooltip content="복사하기" placement="top" delay={100}>
                   <button
                     type="button"
                     onClick={() => handleCopy(turn)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                    className={actionButtonClassName}
                     aria-label="복사하기"
                   >
                     {copiedId === turn.id ? (
-                      <CheckIcon size={16} />
+                      <CheckIcon size={actionIconSize} />
                     ) : (
-                      <CopyIcon size={16} />
+                      <CopyIcon size={actionIconSize} />
                     )}
                   </button>
                 </Tooltip>
@@ -203,13 +213,13 @@ export const ChatConversationView = ({
               (turn.status === 'sending' ? (
                 <MindthosLoadingMark
                   ariaLabel="답변 생성 중"
-                  className={cn(isMobileView ? 'h-9 w-9' : 'h-12 w-12')}
+                  className="h-12 w-12"
                 />
               ) : (
                 <img
                   src="/tutorial/mindthos_agent_icon.png"
                   alt="마음토스"
-                  className={cn(isMobileView ? 'h-9 w-9' : 'h-12 w-12')}
+                  className="h-12 w-12"
                   draggable={false}
                 />
               ))}

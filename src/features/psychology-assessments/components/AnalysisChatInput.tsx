@@ -40,7 +40,9 @@ export const AnalysisChatInput = ({
   const normalizedValue = value.slice(0, MAX_CHAT_INPUT_LENGTH);
   const characterCount = normalizedValue.length;
   const verticalPaddingTop = isMobileView ? 10 : 14;
-  const verticalPaddingBottom = isMobileView ? 22 : 30;
+  // 하단 패딩 30(모바일 22 → 30): 최소 높이 +8px 확보 + 우측 하단 글자수 카운터가
+  // 전송 버튼과 겹치지 않도록 충분한 하단 공간 확보(데스크탑과 동일).
+  const verticalPaddingBottom = 30;
   const horizontalPaddingRight = isMobileView ? 12 : 14;
   const horizontalPaddingLeft = isMobileView ? 16 : 24;
   const sendButtonSize = isMobileView ? 36 : 32;
@@ -50,6 +52,7 @@ export const AnalysisChatInput = ({
     verticalPaddingTop +
     Math.max(textareaMaxHeight, sendButtonSize) +
     verticalPaddingBottom;
+  const isSendDisabled = disabled || normalizedValue.trim().length === 0;
 
   // mirror로 한 줄 텍스트 폭 측정 → textarea의 width/height를 한 effect에서 atomic 갱신.
   // value 없음: textarea가 mirror 폭(칩이 placeholder 옆에 붙음)
@@ -230,8 +233,11 @@ export const AnalysisChatInput = ({
         <button
           type="button"
           onClick={onSubmit}
-          disabled={disabled}
-          className="flex flex-shrink-0 items-center justify-center self-start rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20 lg:hover:bg-grey-10"
+          disabled={isSendDisabled}
+          className={cn(
+            'flex flex-shrink-0 items-center justify-center self-start rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20',
+            !isSendDisabled && 'lg:hover:bg-grey-10'
+          )}
           style={{
             width: sendButtonSize,
             height: sendButtonSize,
