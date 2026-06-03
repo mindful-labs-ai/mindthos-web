@@ -10,6 +10,8 @@
  */
 import { useEffect, useRef, useState } from 'react';
 
+import { MindthosLoadingMark } from './MindthosLoadingMark';
+
 const MIN_DISPLAY_MS = 2000;
 const FADEOUT_MS = 700;
 
@@ -52,23 +54,7 @@ const SplashLoading = ({ visible }: SplashLoadingProps) => {
       }`}
       style={{ transitionDuration: `${FADEOUT_MS}ms` }}
     >
-      <svg
-        viewBox="0 0 600 400"
-        fill="none"
-        className="h-20 w-20 md:h-28 md:w-28"
-        aria-label="마음토스"
-      >
-        <path
-          d="M 75 345 L 75 130 C 75 35 205 35 205 130 L 205 270 C 205 365 335 365 335 270 L 335 200 C 335 120 445 120 445 200 L 445 250"
-          stroke="#44ce4b"
-          strokeWidth="62"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          pathLength="1"
-          style={{ strokeDasharray: 1 }}
-          className="animate-logo-draw"
-        />
-      </svg>
+      <MindthosLoadingMark className="h-20 w-20 md:h-28 md:w-28" />
     </div>
   );
 };

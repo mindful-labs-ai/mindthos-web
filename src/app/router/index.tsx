@@ -10,6 +10,7 @@ import ErrorPage from '@/features/error/page/ErrorPage';
 import NotFoundPage from '@/features/error/page/NotFoundPage';
 import GenogramClientPage from '@/features/genogram/pages/GenogramClientPage';
 import HomePage from '@/features/home/page/HomePage';
+import PsychologyAssessmentsPage from '@/features/psychology-assessments/pages/PsychologyAssessmentsPage';
 import SessionDetailPage from '@/features/session/page/SessionDetailPage';
 import SessionHistoryPage from '@/features/session/page/SessionHistoryPage';
 import SettingsPage from '@/features/settings/page/SettingsPage';
@@ -73,6 +74,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.GENOGRAM,
             element: <GenogramClientPage />,
+          },
+          {
+            path: ROUTES.PSYCHOLOGY_ASSESSMENTS,
+            element: <PsychologyAssessmentsPage />,
           },
           {
             path: ROUTES.SETTINGS,

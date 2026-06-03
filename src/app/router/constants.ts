@@ -21,6 +21,7 @@ export const ROUTES = {
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
   ANALYSIS: '/analysis',
+  PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
   UNSUBSCRIBE: '/unsubscribe',
 } as const;
 

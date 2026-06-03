@@ -4,13 +4,14 @@ import { createPortal } from 'react-dom';
 
 import type { Client } from '@/features/client/types';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { SearchIcon, UserIcon, XIcon } from '@/shared/icons';
+import { SearchIcon, UserIcon, UserPlusIcon, XIcon } from '@/shared/icons';
 import { BackButton } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
+import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
 interface ClientSelectorProps {
@@ -36,10 +37,14 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   placement = 'bottom-left',
 }) => {
   const openModal = useModalStore((s) => s.openModal);
+  const userId = useAuthStore((s) => s.userId);
   const [internalOpen, setInternalOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   // modal 모드: 선택 대기 중인 고객
   const [pendingClient, setPendingClient] = React.useState<Client | null>(null);
+  const [createdClientId, setCreatedClientId] = React.useState<string | null>(
+    null
+  );
 
   // default 모드 portal용 refs와 state
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -110,14 +115,83 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
     setSearchQuery('');
   };
 
+  React.useEffect(() => {
+    if (!createdClientId) return;
+    const createdClient = clients.find(
+      (client) => client.id === createdClientId
+    );
+    if (!createdClient) return;
+    onSelect(createdClient);
+    setPendingClient(createdClient);
+    setCreatedClientId(null);
+  }, [clients, createdClientId, onSelect]);
+
   const handleClearSelection = () => {
     onSelect(null);
   };
 
+  const selectCreatedClient = (clientId: string, clientName?: string) => {
+    const createdClient = clients.find((client) => client.id === clientId);
+    if (createdClient) {
+      onSelect(createdClient);
+      setPendingClient(createdClient);
+      return;
+    }
+
+    const now = new Date().toISOString();
+    const optimisticClient: Client = {
+      id: clientId,
+      counselor_id: userId || '',
+      name: clientName || '새 내담자',
+      phone_number: '',
+      email: null,
+      counsel_theme: null,
+      counsel_number: 0,
+      counsel_done: false,
+      memo: null,
+      pin: false,
+      created_at: now,
+      updated_at: now,
+      session_count: 0,
+    };
+    onSelect(optimisticClient);
+    setPendingClient(optimisticClient);
+    setCreatedClientId(clientId);
+  };
+
+  const openAddClientModal = () => {
+    openModal('addClient', {
+      onClientCreated: selectCreatedClient,
+    });
+  };
+
+  const closeMobileDepthThenOpenAddClient = () => {
+    let opened = false;
+    const openOnce = () => {
+      if (opened) return;
+      opened = true;
+      window.removeEventListener('popstate', handlePopState);
+      openAddClientModal();
+    };
+    const handlePopState = () => {
+      window.setTimeout(openOnce, 50);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    setIsOpen(false);
+    window.setTimeout(openOnce, 250);
+  };
+
   const handleOpenAddClient = (e: React.MouseEvent) => {
     e.stopPropagation();
+    const usesFullscreenDepth =
+      isMobileView && isOpen && (variant === 'dropdown' || variant === 'modal');
+    if (usesFullscreenDepth) {
+      closeMobileDepthThenOpenAddClient();
+      return;
+    }
     setIsOpen(false);
-    openModal('addClient', undefined);
+    openAddClientModal();
   };
 
   const addClientBtn = (
@@ -126,6 +200,24 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       className="typo-sm mb-2 w-full rounded-md bg-surface py-2.5 text-fg-muted transition-colors lg:hover:bg-surface-contrast"
     >
       + 새로운 내담자 등록하기
+    </button>
+  );
+
+  const mobileAddClientBtn = (
+    <button
+      type="button"
+      onClick={handleOpenAddClient}
+      className="flex w-full items-center gap-3 rounded-lg bg-surface-contrast px-3 py-3 text-left transition-colors lg:hover:bg-surface"
+    >
+      <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-md bg-surface text-fg-muted">
+        <UserPlusIcon size={18} />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="typo-m font-medium text-fg">내담자 추가하기</span>
+        <span className="typo-xs text-fg-muted">
+          새 내담자를 등록한 뒤 선택할 수 있어요.
+        </span>
+      </span>
     </button>
   );
 
@@ -296,6 +388,11 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
             {/* 목록 */}
             <div className="flex-1 overflow-y-auto">
+              {/* 내담자 추가 */}
+              {searchQuery === '' && (
+                <div className="mb-4">{mobileAddClientBtn}</div>
+              )}
+
               {/* 최근 추가한 고객 */}
               {searchQuery === '' && recentClients.length > 0 && (
                 <div className="mb-4">

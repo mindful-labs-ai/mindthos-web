@@ -8,6 +8,7 @@ import type {
   ProgressNote,
   ProgressNoteListItem,
   Session,
+  SessionDnaListItem,
   SessionListItem,
   SessionProcessingStatus,
   Speaker,
@@ -126,6 +127,8 @@ const TRANSCRIBE_LIST_COLUMNS =
 const HANDWRITTEN_LIST_COLUMNS = 'id, session_id, preview, created_at';
 const PROGRESS_NOTE_LIST_COLUMNS =
   'id, session_id, user_id, title, template_id, processing_status, error_message, created_at, note_version';
+const SESSION_DNA_LIST_COLUMNS =
+  'id, session_id, dna_json, extraction_status, created_at';
 
 export interface SessionsPageParams {
   userId: number;
@@ -331,6 +334,7 @@ export async function getAllSessionsByClient(
     { data: transcribes },
     { data: handwrittenTranscribes },
     { data: progressNotes },
+    { data: sessionDna, error: sessionDnaError },
   ] = await Promise.all([
     audioSessionIds.length > 0
       ? supabase
@@ -348,7 +352,17 @@ export async function getAllSessionsByClient(
       .from('progress_notes')
       .select(PROGRESS_NOTE_LIST_COLUMNS)
       .in('session_id', sessionIds),
+    supabase
+      .from('session_dna')
+      .select(SESSION_DNA_LIST_COLUMNS)
+      .in('session_id', sessionIds)
+      .eq('extraction_status', 'succeeded')
+      .order('created_at', { ascending: false }),
   ]);
+
+  if (sessionDnaError) {
+    throw new Error(`세션 DNA 조회 실패: ${sessionDnaError.message}`);
+  }
 
   const transcribeMap = new Map<string, TranscribeListItem>();
   (transcribes ?? []).forEach((t) => transcribeMap.set(t.session_id, t));
@@ -362,6 +376,12 @@ export async function getAllSessionsByClient(
     list.push(n);
     progressNotesMap.set(n.session_id, list);
   });
+  const sessionDnaMap = new Map<string, SessionDnaListItem>();
+  ((sessionDna ?? []) as SessionDnaListItem[]).forEach((d) => {
+    if (d.dna_json && !sessionDnaMap.has(d.session_id)) {
+      sessionDnaMap.set(d.session_id, d);
+    }
+  });
 
   return sessions.map((session) => {
     const isHandwritten = session.audio_meta_data === null;
@@ -372,6 +392,7 @@ export async function getAllSessionsByClient(
       session: session as Session,
       transcribe,
       progressNotes: progressNotesMap.get(session.id) ?? [],
+      sessionDna: sessionDnaMap.get(session.id) ?? null,
     };
   });
 }

@@ -7,6 +7,7 @@ import {
   SideGenogramIcon,
   SideHelpIcon,
   SideHomeIcon,
+  SidePsychologyAssessmentIcon,
   SideSessionIcon,
   SideSettingsIcon,
   SideTemplateIcon,
@@ -61,6 +62,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: '가계도',
     value: 'genogram',
     icon: <SideGenogramIcon size={24} />,
+  },
+  {
+    path: ROUTES.PSYCHOLOGY_ASSESSMENTS,
+    label: '심리검사 해석',
+    value: 'psychology-assessments',
+    icon: <SidePsychologyAssessmentIcon size={24} />,
     badge: 'beta',
   },
   // {
@@ -133,7 +140,7 @@ export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
 }));
 
 export const AI_ANALYSIS_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['genogram', 'analysis'].includes(item.value)
+  ['genogram', 'psychology-assessments', 'analysis'].includes(item.value)
 ).map((item) => ({
   icon: item.icon,
   label: item.label,

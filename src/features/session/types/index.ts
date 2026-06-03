@@ -146,10 +146,19 @@ export type ProgressNoteListItem = Pick<
   | 'note_version'
 >;
 
+export interface SessionDnaListItem {
+  id: string;
+  session_id: string;
+  dna_json: unknown;
+  extraction_status: string;
+  created_at: string;
+}
+
 export interface SessionListItem {
   session: Session;
   transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null;
   progressNotes: ProgressNoteListItem[];
+  sessionDna?: SessionDnaListItem | null;
 }
 
 export type ProgressNoteStatus =
