@@ -20,8 +20,8 @@ interface CreateSessionResponse {
   message: string;
 }
 
-const SESSION_API = 'http://localhost:3300/api/session';
-
+const SESSION_API =
+  process.env.SESSION_API_URL ?? process.env.VITE_SESSION_API_URL;
 /**
  * 세션 생성 API 라우트
  * Vercel 서버리스 함수로 실행되어 CORS 문제를 우회

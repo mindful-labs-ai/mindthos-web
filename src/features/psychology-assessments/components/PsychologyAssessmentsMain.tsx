@@ -1,25 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
 import type { Client } from '@/features/client/types';
+import { useAllClientSessions } from '@/features/session/hooks/useSessionsList';
+import type { SessionListItem } from '@/features/session/types';
 import { cn } from '@/lib/cn';
 import type {
   AnalysisStatusResponse,
   AssessmentReportStatus,
   ChatActiveStatus,
 } from '@/shared/api/server/assessmentUploadApi';
+import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Spinner } from '@/shared/ui';
+import { useToast } from '@/shared/ui/composites/Toast';
+import { useAuthStore } from '@/stores/authStore';
 
 import {
   getChatHistory,
   retryChatMessage,
   sendChatMessage,
 } from '../api/chatApi';
+import { PSYCHOLOGY_ASSESSMENT_RESET_EVENT } from '../constants/events';
 import {
   analysisKeys,
-  calcAnalysisPercent,
+  calcAnalysisPercentRange,
   isAnalysisComplete,
   useAnalysisStatus,
   useStartAnalysis,
@@ -30,10 +36,16 @@ import {
   useResetToOcrPhase,
 } from '../hooks/useAssessmentBatch';
 import type {
-  AssessmentKind,
+  AssessmentItem,
   AssessmentProgress,
 } from '../upload/assessmentUploadGateway';
 import { deriveOcrStage, ocrReviewPercent } from '../upload/ocrProgress';
+import { ASSESSMENT_KIND_LABEL } from '../utils/assessmentDisplay';
+import {
+  CHAT_RESPONSE_ERROR,
+  CHAT_RETRY_ERROR,
+  getStartAnalysisErrorMessage,
+} from '../utils/userMessages';
 
 import { AnalysisChatInput } from './AnalysisChatInput';
 import { AnalysisDisclaimer } from './AnalysisDisclaimer';
@@ -49,7 +61,9 @@ import { ChatWelcomeView, type ChatSuggestion } from './ChatWelcomeView';
 import { ChiefComplaintBar } from './ChiefComplaintBar';
 import { ClientProfileHeader } from './ClientProfileHeader';
 import { EmptyAssessmentsView } from './EmptyAssessmentsView';
+import { FirstChatCreditConfirmModal } from './FirstChatCreditConfirmModal';
 import { NoClientSelectedView } from './NoClientSelectedView';
+import { RegenerateChatAnswerModal } from './RegenerateChatAnswerModal';
 import { RegisterAssessmentsModal } from './RegisterAssessmentsModal';
 import { RegisteredAssessmentsCard } from './RegisteredAssessmentsCard';
 import {
@@ -65,11 +79,11 @@ type AssessmentsMode = 'empty' | 'registered' | 'analyzing' | 'analyzed';
 const CHAT_SUGGESTIONS: ChatSuggestion[] = [
   {
     id: 'sg-1',
-    label: '내담자의 통합 심리 검사 해석을 받아보고 싶어',
+    label: '내담자의 심리검사 결과를 종합해서 해석해줘',
     recommended: true,
   },
-  { id: 'sg-2', label: '어떤 분석들이 가능한지 궁금해' },
-  { id: 'sg-3', label: '현재 내담자의 정보를 요약해서 알려줘' },
+  { id: 'sg-2', label: '이 검사 결과로 어떤 도움을 받을 수 있는지 알려줘' },
+  { id: 'sg-3', label: '현재 내담자 정보를 간단히 정리해줘' },
 ];
 
 interface PsychologyAssessmentsMainProps {
@@ -83,59 +97,47 @@ const PAGE_PADDING = {
   paddingRight: 42,
 };
 
-// 검사 종류 → 결과지 카드/popover에 노출할 표시 라벨
-const KIND_TO_TITLE: Record<AssessmentKind, string> = {
-  mmpi: '다면적 인성 검사',
-  tci: '기질 검사',
-};
-
 const PROGRESS_LABEL: Record<AssessmentProgress, string> = {
   initiated: '업로드 대기',
   pending: '분석 대기',
   processing: '분석 중',
   completed: '완료',
-  failed: '실패',
+  failed: '확인 필요',
 };
-
-const MOCK_FILES: AssessmentFile[] = [
-  { id: '1', title: '다면적 인성 검사', fileName: 'MMPI-2_홍길동_결과지.pdf' },
-  { id: '2', title: '기질 검사', fileName: 'TCI_홍길동_결과지.pdf' },
-];
-
-const MOCK_POPOVER_ASSESSMENTS: RegisteredAssessmentEntry[] = [
-  {
-    id: '1',
-    fileName: 'MMPI-2_홍길동_결과지.pdf',
-    testDate: '2026.04.14',
-    pageCount: 12,
-    categoryLabel: '다면적 인성검사',
-  },
-  {
-    id: '2',
-    fileName: 'TCI_홍길동_결과지.pdf',
-    testDate: '2026.04.14',
-    pageCount: 8,
-    categoryLabel: '기질 검사',
-  },
-];
-
-const MOCK_POPOVER_TRANSCRIPTS: TranscriptEntry[] = [
-  { id: 't1', title: '홍길동 축어록', metaLabel: '총 8회기 상담 기록' },
-];
 
 const REPORT_TYPE_LABEL: Record<string, string> = {
-  MMPI_2: '다면적 인성 검사',
+  MMPI_2: '다면적 인성검사',
   TCI: '기질 검사',
 };
+
+const CHAT_READY_TOAST_TITLE =
+  '검사 결과지가 등록됐어요. 결과지를 바탕으로 질문해보세요!';
+const MAX_SESSION_KEYWORDS = 4;
+
+interface TransitionToastSnapshot {
+  clientId?: string;
+  mode: AssessmentsMode;
+  phase?: ChatActiveStatus;
+}
+
+interface PendingFirstChat {
+  clientId: string;
+  text: string;
+}
 
 function toAnalysisSteps(
   assessmentReports: AssessmentReportStatus[],
   integrationReportCompleted: boolean
 ): AnalysisStep[] {
-  const reportSteps: AnalysisStep[] = assessmentReports.map((r) => ({
+  const firstIncompleteIndex = assessmentReports.findIndex((r) => !r.completed);
+  const reportSteps: AnalysisStep[] = assessmentReports.map((r, index) => ({
     id: r.type,
     label: `${REPORT_TYPE_LABEL[r.type] ?? r.type} 분석`,
-    status: r.completed ? 'completed' : 'in_progress',
+    status: r.completed
+      ? 'completed'
+      : index === firstIncompleteIndex
+        ? 'in_progress'
+        : 'pending',
   }));
   const integrationStep: AnalysisStep = {
     id: 'integration',
@@ -150,10 +152,10 @@ function toAnalysisSteps(
 }
 
 const CHAT_PLACEHOLDER: Record<AssessmentsMode, string> = {
-  empty: '심리검사 결과지를 등록한 후 분석을 진행해주세요.',
-  registered: '심리검사 결과지를 분석한 후 이용할 수 있어요.',
-  analyzing: '분석 진행 중에는 입력할 수 없어요.',
-  analyzed: '마음토스 에이전트에게 질문해보세요',
+  empty: '심리검사 결과지를 등록한 뒤 분석을 시작해 주세요.',
+  registered: '결과지 분석을 마치면 질문할 수 있어요.',
+  analyzing: '분석이 끝나면 질문할 수 있어요.',
+  analyzed: '심리검사 결과에 대해 궁금한 점을 물어보세요',
 };
 
 const modeToChipStatus: Record<AssessmentsMode, AnalysisStatus> = {
@@ -163,15 +165,190 @@ const modeToChipStatus: Record<AssessmentsMode, AnalysisStatus> = {
   analyzed: 'analyzed',
 };
 
+function getRecordValue(
+  source: Record<string, unknown> | null | undefined,
+  key: string
+): unknown {
+  if (!source) return undefined;
+  return source[key];
+}
+
+function getAssessmentScore(
+  item: AssessmentItem
+): Record<string, unknown> | null {
+  return item.score ?? item.tempScore;
+}
+
+function getAssessmentSubjectValue(item: AssessmentItem, key: string): unknown {
+  const score = getAssessmentScore(item);
+  const subjectInfo = getRecordValue(score, '수검자정보');
+  return subjectInfo && typeof subjectInfo === 'object'
+    ? getRecordValue(subjectInfo as Record<string, unknown>, key)
+    : getRecordValue(score, key);
+}
+
+function parseAssessmentDate(value: unknown): Date | null {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    const ymdMatch = /^(\d{4})(\d{2})(\d{2})$/.exec(trimmed);
+    const dashedMatch = /^(\d{4})[-.](\d{1,2})[-.](\d{1,2})$/.exec(trimmed);
+    const matched = ymdMatch ?? dashedMatch;
+    if (matched) {
+      const year = Number(matched[1]);
+      const month = Number(matched[2]);
+      const day = Number(matched[3]);
+      const date = new Date(year, month - 1, day);
+      if (
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+      ) {
+        return date;
+      }
+      return null;
+    }
+
+    const date = new Date(trimmed);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  return null;
+}
+
+function parseAssessmentGender(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '-') return undefined;
+  if (trimmed === '남') return '남자';
+  if (trimmed === '여') return '여자';
+  return trimmed;
+}
+
+function parseAssessmentAge(value: unknown): number | undefined {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  }
+  if (typeof value !== 'string') return undefined;
+
+  const matched = value.trim().match(/\d+/);
+  if (!matched) return undefined;
+
+  const age = Number(matched[0]);
+  return Number.isFinite(age) && age > 0 ? age : undefined;
+}
+
+function formatAssessmentDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}.${month}.${day}`;
+}
+
+function extractAssessmentDate(item: AssessmentItem): Date | null {
+  const scoreDate = getAssessmentSubjectValue(item, '검사일');
+  return parseAssessmentDate(scoreDate) ?? parseAssessmentDate(item.createdAt);
+}
+
+function buildRecentAssessmentLabel(
+  items: AssessmentItem[]
+): string | undefined {
+  const latestDate = items
+    .map(extractAssessmentDate)
+    .filter((date): date is Date => date !== null)
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
+  return latestDate
+    ? `최근 검사일 ${formatAssessmentDate(latestDate)}`
+    : undefined;
+}
+
+function buildAssessmentSubjectMeta(items: AssessmentItem[]): {
+  gender?: string;
+  age?: number;
+} {
+  const sorted = items
+    .map((item) => ({
+      item,
+      dateTime: extractAssessmentDate(item)?.getTime() ?? 0,
+    }))
+    .sort((a, b) => b.dateTime - a.dateTime)
+    .map(({ item }) => item);
+
+  let gender: string | undefined;
+  let age: number | undefined;
+
+  for (const item of sorted) {
+    gender ??= parseAssessmentGender(getAssessmentSubjectValue(item, '성별'));
+    age ??= parseAssessmentAge(getAssessmentSubjectValue(item, '나이'));
+
+    if (gender && age !== undefined) break;
+  }
+
+  return { gender, age };
+}
+
+function getCreatedAtTime(value: string): number {
+  const time = Date.parse(value);
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function extractSessionDnaTags(dnaJson: unknown): string[] {
+  if (!dnaJson || typeof dnaJson !== 'object') return [];
+
+  const dnaRecord = dnaJson as Record<string, unknown>;
+  const rawTags = Array.isArray(dnaRecord.tag) ? dnaRecord.tag : dnaRecord.tags;
+
+  if (!Array.isArray(rawTags)) return [];
+
+  const seen = new Set<string>();
+  const tags: string[] = [];
+
+  for (const rawTag of rawTags) {
+    if (typeof rawTag !== 'string') continue;
+    const tag = rawTag.trim().replace(/^#+/, '');
+    if (!tag || seen.has(tag)) continue;
+
+    seen.add(tag);
+    tags.push(tag);
+    if (tags.length >= MAX_SESSION_KEYWORDS) break;
+  }
+
+  return tags;
+}
+
+function buildLatestSessionKeywords(items: SessionListItem[]): string[] {
+  const latestSession = [...items].sort(
+    (a, b) =>
+      getCreatedAtTime(b.session.created_at) -
+      getCreatedAtTime(a.session.created_at)
+  )[0];
+
+  return latestSession
+    ? extractSessionDnaTags(latestSession.sessionDna?.dna_json)
+    : [];
+}
+
 export const PsychologyAssessmentsMain = ({
   client,
 }: PsychologyAssessmentsMainProps) => {
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+  const userId = useAuthStore((state) => state.userId);
+  const { toast } = useToast();
 
   const [chatValue, setChatValue] = useState('');
   const [turns, setTurns] = useState<ChatTurn[]>([]);
+  // 채팅 이력 로딩이 끝난 시점의 clientId. 현재 clientId와 다르면 로딩 중으로 본다.
+  // (이펙트 본문에서의 동기 setState 없이 로딩 여부를 파생하기 위함.)
+  const [historyLoadedKey, setHistoryLoadedKey] = useState<string | null>(null);
   const [retryingTurnId, setRetryingTurnId] = useState<string | null>(null);
+  const [regenerateTurnId, setRegenerateTurnId] = useState<string | null>(null);
+  const [pendingFirstChat, setPendingFirstChat] =
+    useState<PendingFirstChat | null>(null);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   // 모달 진입 의도: 'reviewing'/'verify'면 해당 단계로 이어보기, false면 신규 업로드(step1).
   const [modalResume, setModalResume] = useState<
@@ -188,27 +365,21 @@ export const PsychologyAssessmentsMain = ({
 
   // 등록 결과지 popover
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(
-    () => new Set()
-  );
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const chipRef = useRef<HTMLButtonElement>(null);
-
-  // 데모(clientId 없음) 전용 모드 상태 — 디버그 패널이 제어. 실클라이언트는 서버
-  // phase에서 모드를 렌더 중 파생하므로 이 state를 쓰지 않는다.
-  const [demoMode, setDemoMode] = useState<AssessmentsMode>('empty');
-  const [localFiles, setLocalFiles] = useState<AssessmentFile[]>(MOCK_FILES);
-
-  // 데모 mode 변경 — 비어있던 상태에서 결과지 상태로 복귀 시 mock 복원
-  const setMode = (next: AssessmentsMode) => {
-    if (next !== 'empty' && localFiles.length === 0) {
-      setLocalFiles(MOCK_FILES);
-    }
-    setDemoMode(next);
-  };
+  const transitionToastSnapshotRef = useRef<TransitionToastSnapshot | null>(
+    null
+  );
 
   const clientId = client?.id;
   const qc = useQueryClient();
+  const invalidateCreditSummary = () => {
+    const userIdNumber = userId ? Number(userId) : NaN;
+    if (!Number.isFinite(userIdNumber)) return;
+    void qc.invalidateQueries({
+      queryKey: creditQueryKeys.summary(userIdNumber),
+    });
+  };
 
   // 내담자 phase의 단일 권위 소스. clientId 있으면 진입 즉시 조회해 모드를 결정한다.
   const { data: analysisStatusData } = useAnalysisStatus(clientId, {
@@ -216,12 +387,19 @@ export const PsychologyAssessmentsMain = ({
   });
   const phase: ChatActiveStatus | undefined =
     analysisStatusData?.chatActiveStatus;
+  const analysisComplete = analysisStatusData
+    ? isAnalysisComplete(analysisStatusData)
+    : false;
 
   // 등록 결과지 실데이터 (서버 활성 배치). popover/결과지 카드가 모두 이 한 배치를 공유.
   // OCR_PHASE에서 empty/registered를 가르기 위해, 그리고 popover 표시를 위해 조회.
   const { data: realAssessments = [], isLoading: isBatchLoading } =
     useAssessmentBatch(clientId, {
-      enabled: isPopoverOpen || phase === 'OCR_PHASE' || phase === undefined,
+      enabled:
+        isPopoverOpen ||
+        phase === 'OCR_PHASE' ||
+        phase === undefined ||
+        analysisComplete,
     });
   const deleteAssessmentMut = useDeleteAssessment(clientId);
   const resetToOcrPhaseMut = useResetToOcrPhase(clientId);
@@ -243,17 +421,70 @@ export const PsychologyAssessmentsMain = ({
   // - OCR_PHASE: 드래프트 있으면 registered, 없으면 empty
   // - ANALYSIS_PHASE: analyzing
   // - CHAT_ACTIVE(또는 통합 완료): analyzed
-  // 데모(clientId 없음)는 analysisStatusData가 없어 디버그 패널(demoMode)이 모드 제어.
   const mode: AssessmentsMode =
     clientId && analysisStatusData
       ? analysisStatusData.chatActiveStatus === 'OCR_PHASE'
         ? realAssessments.length > 0
           ? 'registered'
           : 'empty'
-        : isAnalysisComplete(analysisStatusData)
+        : analysisComplete
           ? 'analyzed'
           : 'analyzing'
-      : demoMode;
+      : 'empty';
+
+  const { data: clientSessionItems = [] } = useAllClientSessions({
+    userId: userId ? Number(userId) : 0,
+    clientId: clientId ?? '',
+    enabled: !!clientId && !!userId,
+    sortOrder: 'asc',
+  });
+
+  useEffect(() => {
+    if (!clientId) return;
+
+    const handleMobileHeaderReset = (event: Event) => {
+      const detail = (event as CustomEvent<{ clientId?: string }>).detail;
+      if (detail?.clientId !== clientId) return;
+
+      setChatValue('');
+      setTurns([]);
+      setRetryingTurnId(null);
+      setRegenerateTurnId(null);
+      setPendingFirstChat(null);
+    };
+
+    window.addEventListener(
+      PSYCHOLOGY_ASSESSMENT_RESET_EVENT,
+      handleMobileHeaderReset
+    );
+    return () => {
+      window.removeEventListener(
+        PSYCHOLOGY_ASSESSMENT_RESET_EVENT,
+        handleMobileHeaderReset
+      );
+    };
+  }, [clientId]);
+
+  const realPopoverTranscripts: TranscriptEntry[] = useMemo(() => {
+    if (!client || !clientId) return [];
+
+    const transcriptCount = clientSessionItems.filter(
+      ({ transcribe }) => transcribe !== null
+    ).length;
+    if (transcriptCount === 0) return [];
+
+    return [
+      {
+        id: `transcripts:${clientId}`,
+        title: `${client.name} 축어록`,
+        metaLabel: `총 ${transcriptCount}회기 상담 기록`,
+      },
+    ];
+  }, [client, clientId, clientSessionItems]);
+  const latestSessionKeywords = useMemo(
+    () => buildLatestSessionKeywords(clientSessionItems),
+    [clientSessionItems]
+  );
 
   // 진입 초기 로딩 — phase 확정 전, OCR_PHASE면 배치 확정 전까지 스피너로 깜빡임 방지.
   const isInitialLoading =
@@ -269,6 +500,35 @@ export const PsychologyAssessmentsMain = ({
       : null;
   const ocrPercent =
     ocrStage === 'reviewing' ? ocrReviewPercent(realAssessments) : 100;
+
+  useEffect(() => {
+    if (!clientId || !analysisStatusData) return;
+
+    const current: TransitionToastSnapshot = {
+      clientId,
+      mode,
+      phase,
+    };
+    const previous = transitionToastSnapshotRef.current;
+
+    if (!previous || previous.clientId !== clientId) {
+      transitionToastSnapshotRef.current = current;
+      return;
+    }
+
+    // 상태전이 토스트는 자동으로 닫지 않고 사용자가 X 버튼을 눌러야 닫히도록 duration: 0 사용
+    if (previous.mode !== 'analyzed' && mode === 'analyzed') {
+      toast({ title: CHAT_READY_TOAST_TITLE, duration: 0 });
+    } else if (previous.phase === 'OCR_PHASE' && phase === 'ANALYSIS_PHASE') {
+      toast({
+        title: '검사 결과지 분석을 시작했어요.',
+        description: '분석이 끝나면 바로 질문할 수 있어요.',
+        duration: 0,
+      });
+    }
+
+    transitionToastSnapshotRef.current = current;
+  }, [analysisStatusData, clientId, mode, phase, toast]);
 
   // 진입·새로고침 시 진행 중/검토 대기 배치가 감지되면 모달을 자동으로 열어(이어보기)
   // 진행/검토 화면을 바로 보여준다. 내담자별 remount(key=clientId)라 ref도 같이 초기화되어
@@ -309,7 +569,7 @@ export const PsychologyAssessmentsMain = ({
             turnsLoaded.push({
               id: `a-${m.id}`,
               role: 'assistant',
-              content: m.outputMessage ?? '챗봇 호출 실패',
+              content: m.outputMessage ?? CHAT_RESPONSE_ERROR,
               messageId: m.id,
               status: isFailed
                 ? 'failed'
@@ -323,15 +583,18 @@ export const PsychologyAssessmentsMain = ({
       })
       .catch(() => {
         /* 이력 없음/실패는 무시 — 빈 대화로 시작 */
+      })
+      .finally(() => {
+        if (!cancelled) setHistoryLoadedKey(clientId);
       });
     return () => {
       cancelled = true;
     };
   }, [clientId, mode]);
 
-  const analyzingPercent = analysisStatusData
-    ? calcAnalysisPercent(analysisStatusData)
-    : 0;
+  const analyzingRange = analysisStatusData
+    ? calcAnalysisPercentRange(analysisStatusData)
+    : { current: 0, ceiling: 0 };
 
   const analysisSteps: AnalysisStep[] = analysisStatusData
     ? toAnalysisSteps(
@@ -343,7 +606,7 @@ export const PsychologyAssessmentsMain = ({
   // 활성 배치 → 결과지 카드용 AssessmentFile
   const realFiles: AssessmentFile[] = realAssessments.map((it) => ({
     id: it.assessmentId,
-    title: KIND_TO_TITLE[it.kind],
+    title: ASSESSMENT_KIND_LABEL[it.kind],
     fileName: it.title,
   }));
   // 활성 배치 → popover 엔트리
@@ -353,24 +616,21 @@ export const PsychologyAssessmentsMain = ({
       fileName: it.title,
       testDate: '',
       pageCount: 0,
-      categoryLabel: KIND_TO_TITLE[it.kind],
-      metaLabel: `${it.kind === 'mmpi' ? 'MMPI-2' : 'TCI'} · ${PROGRESS_LABEL[it.progress]}`,
+      categoryLabel: ASSESSMENT_KIND_LABEL[it.kind],
+      metaLabel: `${ASSESSMENT_KIND_LABEL[it.kind]} · ${PROGRESS_LABEL[it.progress]}`,
     }));
 
   // 결과지가 표시되는 모든 곳(카드/popover/칩 카운트)이 같은 배치를 기반으로.
-  // clientId 있으면 실데이터, 없으면(데모) mock.
-  const localDisplayFiles: AssessmentFile[] =
-    mode === 'empty' ? [] : localFiles;
-  const files: AssessmentFile[] = clientId ? realFiles : localDisplayFiles;
-
-  const handleRemoveFile = (id: string) => {
-    setLocalFiles((prev) => {
-      const next = prev.filter((f) => f.id !== id);
-      // 모두 지우면 empty 상태로 자동 전환
-      if (next.length === 0) setDemoMode('empty');
-      return next;
-    });
-  };
+  const files: AssessmentFile[] = realFiles;
+  const popoverAssessments = realPopoverAssessments;
+  const popoverTranscripts = realPopoverTranscripts;
+  const lastAssessmentLabel =
+    mode === 'analyzed'
+      ? buildRecentAssessmentLabel(realAssessments)
+      : undefined;
+  const assessmentSubjectMeta = clientId
+    ? buildAssessmentSubjectMeta(realAssessments)
+    : {};
   const analyzeCost = 50;
 
   const chipStatus = modeToChipStatus[mode];
@@ -387,18 +647,21 @@ export const PsychologyAssessmentsMain = ({
           setPhaseOptimistic('ANALYSIS_PHASE');
           setIsRegisterModalOpen(false);
         },
+        onSettled: invalidateCreditSummary,
       });
-    } else {
-      setMode('analyzing');
     }
   };
 
-  // 분석 시작 실패 메시지(서버가 envelope.message로 한글 사유를 내려준다).
-  const startAnalysisError = startAnalysisMut.error?.message ?? null;
+  const startAnalysisError = startAnalysisMut.error
+    ? getStartAnalysisErrorMessage(startAnalysisMut.error)
+    : null;
 
-  const handleSendChat = () => {
-    const text = chatValue.trim();
-    if (!text || !clientId) return;
+  const handleChatSuggestionClick = (id: string) => {
+    const found = CHAT_SUGGESTIONS.find((s) => s.id === id);
+    if (found) setChatValue(found.label);
+  };
+
+  const submitChatMessage = (targetClientId: string, text: string) => {
     setChatValue('');
 
     // 서버 채팅 API 호출 — 서버가 grounding 구성 + 머신 호출 + turn 저장 후 응답 반환.
@@ -407,9 +670,14 @@ export const PsychologyAssessmentsMain = ({
     setTurns((prev) => [
       ...prev,
       { id: `u-${Date.now()}`, role: 'user', content: text },
-      { id: aid, role: 'assistant', content: '…', status: 'sending' },
+      {
+        id: aid,
+        role: 'assistant',
+        content: '깊게 생각하는 중...',
+        status: 'sending',
+      },
     ]);
-    void sendChatMessage(clientId, text)
+    void sendChatMessage(targetClientId, text)
       .then((reply) => {
         setTurns((prev) =>
           prev.map((t) =>
@@ -424,13 +692,12 @@ export const PsychologyAssessmentsMain = ({
           )
         );
       })
-      .catch(async (err: unknown) => {
-        const msg = err instanceof Error ? err.message : '알 수 없는 오류';
+      .catch(async () => {
         // 서버가 FAILED row를 만들었으면 history에서 messageId를 가져와 재시도 가능하게 한다.
         // 네트워크 실패 등 history도 못 가져오면 messageId 없이 에러 텍스트만 노출.
         let failedMessageId: string | undefined;
         try {
-          const items = await getChatHistory(clientId, 5);
+          const items = await getChatHistory(targetClientId, 5);
           const found = items.find(
             (m) => m.inputMessage === text && m.processingStatus === 'FAILED'
           );
@@ -443,14 +710,43 @@ export const PsychologyAssessmentsMain = ({
             t.id === aid
               ? {
                   ...t,
-                  content: `챗봇 호출 실패: ${msg}`,
+                  content: CHAT_RESPONSE_ERROR,
                   status: 'failed',
                   messageId: failedMessageId,
                 }
               : t
           )
         );
+      })
+      .finally(() => {
+        invalidateCreditSummary();
       });
+  };
+
+  const handleSendChat = () => {
+    const text = chatValue.trim();
+    if (!text) return;
+    if (!clientId) return;
+
+    if (turns.length === 0) {
+      setPendingFirstChat((prev) =>
+        prev?.clientId === clientId ? prev : { clientId, text }
+      );
+      return;
+    }
+
+    submitChatMessage(clientId, text);
+  };
+
+  const handleCloseFirstChatConfirm = () => {
+    setPendingFirstChat(null);
+  };
+
+  const handleConfirmFirstChat = () => {
+    if (!pendingFirstChat) return;
+    const { clientId: targetClientId, text } = pendingFirstChat;
+    setPendingFirstChat(null);
+    submitChatMessage(targetClientId, text);
   };
 
   // 실패한 assistant 턴 재시도 — 서버 /retry로 같은 messageId의 출력을 다시 받는다.
@@ -461,48 +757,50 @@ export const PsychologyAssessmentsMain = ({
     setRetryingTurnId(turnId);
     setTurns((prev) =>
       prev.map((t) =>
-        t.id === turnId ? { ...t, content: '…', status: 'sending' } : t
+        t.id === turnId
+          ? { ...t, content: '깊게 생각하는 중...', status: 'sending' }
+          : t
       )
     );
     void retryChatMessage(clientId, turn.messageId)
       .then((reply) => {
         setTurns((prev) =>
           prev.map((t) =>
-            t.id === turnId
-              ? { ...t, content: reply.message, status: 'ok' }
-              : t
+            t.id === turnId ? { ...t, content: reply.message, status: 'ok' } : t
           )
         );
       })
-      .catch((err: unknown) => {
-        const msg = err instanceof Error ? err.message : '알 수 없는 오류';
+      .catch(() => {
         setTurns((prev) =>
           prev.map((t) =>
             t.id === turnId
-              ? { ...t, content: `재시도 실패: ${msg}`, status: 'failed' }
+              ? { ...t, content: CHAT_RETRY_ERROR, status: 'failed' }
               : t
           )
         );
       })
       .finally(() => {
         setRetryingTurnId(null);
+        invalidateCreditSummary();
       });
   };
 
-  // chip 클릭 → popover toggle (결과지 1개 이상일 때만)
-  const canOpenPopover = files.length > 0;
+  const handleOpenRegenerateModal = (turnId: string) => {
+    setRegenerateTurnId(turnId);
+  };
+
+  const handleConfirmRegenerate = () => {
+    if (!regenerateTurnId) return;
+    const turnId = regenerateTurnId;
+    setRegenerateTurnId(null);
+    handleRetryTurn(turnId);
+  };
+
+  // chip 클릭 → popover toggle (채팅 가능 상태의 등록 결과지에만 제공)
+  const canOpenPopover = mode === 'analyzed' && files.length > 0;
   const handleChipClick = canOpenPopover
     ? () => setIsPopoverOpen((prev) => !prev)
     : undefined;
-
-  const handleToggleEntrySelect = (id: string) => {
-    setSelectedEntryIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   const handleResetClick = () => {
     setIsResetConfirmOpen(true);
@@ -510,12 +808,9 @@ export const PsychologyAssessmentsMain = ({
 
   const handleResetConfirm = () => {
     setIsResetConfirmOpen(false);
-    setSelectedEntryIds(new Set());
 
-    // clientId 없으면(데모) 로컬만 비움.
     if (!clientId) {
       setIsPopoverOpen(false);
-      setMode('empty');
       return;
     }
 
@@ -563,6 +858,10 @@ export const PsychologyAssessmentsMain = ({
     );
   }
 
+  // 대화 기록 로딩 중 여부 — analyzed인데 현재 clientId 기준 로딩이 아직 안 끝났으면 true.
+  const isHistoryLoading =
+    mode === 'analyzed' && !!clientId && historyLoadedKey !== clientId;
+
   /* -------- 본문 분기 -------- */
   let bodyContent: React.ReactNode = null;
 
@@ -583,7 +882,7 @@ export const PsychologyAssessmentsMain = ({
         files={files}
         onAddFile={openUploadModal}
         onRemoveFile={
-          clientId ? (id) => deleteAssessmentMut.mutate(id) : handleRemoveFile
+          clientId ? (id) => deleteAssessmentMut.mutate(id) : undefined
         }
         maxFiles={2}
       />
@@ -591,14 +890,12 @@ export const PsychologyAssessmentsMain = ({
     if (stage === 'reviewing') {
       bodyContent = (
         <div className="flex flex-1 flex-col items-center justify-center gap-3">
-          <Spinner size="lg" ariaLabel="검사지 인식 중" />
+          <Spinner size="lg" ariaLabel="결과지를 확인하는 중" />
           <span className="text-l font-emphasize text-grey-100">
             {ocrPercent}%
           </span>
           <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
-            {
-              '심리검사 결과지를 인식(OCR)하고 있어요.\n최대 1~2분 정도 소요됩니다.'
-            }
+            {'심리검사 결과지를 확인하고 있어요.\n보통 1~2분 안에 끝나요.'}
           </p>
           <button
             type="button"
@@ -616,7 +913,7 @@ export const PsychologyAssessmentsMain = ({
           <div className="flex flex-col items-center gap-5">
             <p className="whitespace-pre-line text-center text-m font-medium text-grey-70">
               {
-                '확인이 필요한 결과지가 있어요.\n내용을 검토하고 빈 항목을 채워주세요.'
+                '확인이 필요한 결과지가 있어요.\n빈 항목을 검토하고 채워 주세요.'
               }
             </p>
             <button
@@ -651,76 +948,72 @@ export const PsychologyAssessmentsMain = ({
       <div className="flex flex-1 flex-col items-center justify-center">
         <AnalyzingProgressCard
           steps={analysisSteps}
-          percent={analyzingPercent}
+          percent={analyzingRange.current}
+          ceiling={analyzingRange.ceiling}
         />
       </div>
     );
   } else if (mode === 'analyzed') {
-    bodyContent =
-      turns.length > 0 ? (
-        <ChatConversationView
-          turns={turns}
-          onRetry={handleRetryTurn}
-          retryingId={retryingTurnId}
-        />
-      ) : (
-        <ChatWelcomeView
-          suggestions={CHAT_SUGGESTIONS}
-          onSuggestionClick={(id) => {
-            const found = CHAT_SUGGESTIONS.find((s) => s.id === id);
-            if (found) setChatValue(found.label);
-          }}
-        />
+    if (isHistoryLoading) {
+      // 대화 기록 로딩 중 — welcome(초기값) 대신 빈 화면 + 스피너.
+      bodyContent = (
+        <div className="flex flex-1 items-center justify-center">
+          <Spinner size="lg" ariaLabel="대화 기록을 불러오는 중" />
+        </div>
       );
+    } else {
+      bodyContent =
+        turns.length > 0 ? (
+          <ChatConversationView
+            turns={turns}
+            onRetry={handleRetryTurn}
+            onRegenerate={handleOpenRegenerateModal}
+            retryingId={retryingTurnId}
+          />
+        ) : (
+          <ChatWelcomeView
+            suggestions={CHAT_SUGGESTIONS}
+            onSuggestionClick={handleChatSuggestionClick}
+          />
+        );
+    }
   }
 
   return (
     <div className={outerCls} style={outerStyle}>
       <div className={cardCls}>
-        {/* 1) 프로필 헤더 — 모바일: 이름+chip 단일 행 / 데스크탑: 아바타+메타+chip */}
-        <div className={cn(isMobileView ? 'px-4 py-3' : 'py-4 pl-8 pr-7')}>
-          <ClientProfileHeader
-            client={client}
-            analysisStatus={chipStatus}
-            fileCount={files.length}
-            chipRef={chipRef}
-            onChipClick={handleChipClick}
-            chipActive={isPopoverOpen}
-            chipPopoverSlot={
-              canOpenPopover && (
-                <RegisteredPopover
-                  open={isPopoverOpen}
-                  onClose={() => setIsPopoverOpen(false)}
-                  triggerRef={chipRef as React.RefObject<HTMLElement>}
-                  transcripts={MOCK_POPOVER_TRANSCRIPTS}
-                  assessments={
-                    clientId ? realPopoverAssessments : MOCK_POPOVER_ASSESSMENTS
-                  }
-                  selectedIds={selectedEntryIds}
-                  onToggleSelect={handleToggleEntrySelect}
-                  onReset={handleResetClick}
-                  onDeleteAssessment={
-                    clientId
-                      ? (id) => deleteAssessmentMut.mutate(id)
-                      : undefined
-                  }
-                  deletingAssessmentId={
-                    deleteAssessmentMut.isPending
-                      ? deleteAssessmentMut.variables
-                      : null
-                  }
-                />
-              )
-            }
-          />
-        </div>
-
-        {/* 2) 주호소 바 — 모바일에서는 숨김 */}
+        {/* 1) 프로필 헤더 — 모바일은 앱 MobileHeader의 내담자 선택/결과지 아이콘만 사용 */}
         {!isMobileView && (
-          <ChiefComplaintBar
-            className="border-y border-grey-40"
-            complaint={client.counsel_theme}
-          />
+          <div className="py-4 pl-8 pr-7">
+            <ClientProfileHeader
+              client={client}
+              gender={assessmentSubjectMeta.gender}
+              age={assessmentSubjectMeta.age}
+              lastAssessmentLabel={lastAssessmentLabel}
+              analysisStatus={chipStatus}
+              showAnalysisStatusChip={canOpenPopover}
+              chipRef={chipRef}
+              onChipClick={handleChipClick}
+              chipActive={isPopoverOpen}
+              chipPopoverSlot={
+                canOpenPopover && (
+                  <RegisteredPopover
+                    open={isPopoverOpen}
+                    onClose={() => setIsPopoverOpen(false)}
+                    triggerRef={chipRef as React.RefObject<HTMLElement>}
+                    transcripts={popoverTranscripts}
+                    assessments={popoverAssessments}
+                    onReset={handleResetClick}
+                  />
+                )
+              }
+            />
+          </div>
+        )}
+
+        {/* 2) 상담 키워드 바 — 모바일에서는 숨김 */}
+        {!isMobileView && (
+          <ChiefComplaintBar keywords={latestSessionKeywords} />
         )}
 
         {/* 3) 본문 — 모바일: 풀너비 + px-4, 데스크탑: max-w-[679px] */}
@@ -781,6 +1074,20 @@ export const PsychologyAssessmentsMain = ({
         clientId={client.id}
         resume={modalResume}
         existingKinds={realAssessments.map((a) => a.kind)}
+      />
+
+      <RegenerateChatAnswerModal
+        open={regenerateTurnId !== null}
+        onClose={() => setRegenerateTurnId(null)}
+        onConfirm={handleConfirmRegenerate}
+        creditCost={5}
+      />
+
+      <FirstChatCreditConfirmModal
+        open={pendingFirstChat?.clientId === clientId}
+        onClose={handleCloseFirstChatConfirm}
+        onConfirm={handleConfirmFirstChat}
+        creditCost={5}
       />
 
       <ResetConfirmModal

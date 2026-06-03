@@ -20,8 +20,8 @@ export const ResetConfirmModal = ({
   onClose,
   onConfirm,
   title = '심리검사 결과지 초기화',
-  question = '등록된 모든 결과지를 초기화하시겠습니까?',
-  description = '결과지를 초기화하면 모든 분석 내용이 삭제되고\n다시 처음부터 진행하게 됩니다.',
+  question = '등록된 결과지를 모두 초기화하시겠어요?',
+  description = '초기화하면 분석 내용과 채팅 내용이 함께 삭제되어\n처음부터 다시 진행해야 합니다.',
   confirmLabel = '초기화하기',
   className,
 }: ResetConfirmModalProps) => {
@@ -42,7 +42,7 @@ export const ResetConfirmModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-modal flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[calc(var(--z-popover)+1)] flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
     >

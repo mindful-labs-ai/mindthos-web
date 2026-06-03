@@ -100,16 +100,14 @@ export const ClientSidebar = ({
         )}
       >
         {!collapsed && (
-          <span className="text-m font-emphasize text-grey-100">
-            클라이언트
-          </span>
+          <span className="text-m font-emphasize text-grey-100">내담자</span>
         )}
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={handleAddClient}
             className="flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-nav-hover-bg lg:hover:text-grey-100"
-            aria-label="클라이언트 추가"
+            aria-label="내담자 추가"
           >
             <ClientSidebarAddIcon size={20} />
           </button>
@@ -126,12 +124,15 @@ export const ClientSidebar = ({
 
       <div
         ref={scrollContainerRef}
-        className={cn('flex-1 overflow-y-auto pb-4', collapsed ? 'px-1' : 'px-2')}
+        className={cn(
+          'flex-1 overflow-y-auto pb-4',
+          collapsed ? 'px-1' : 'px-2'
+        )}
       >
         {isError ? (
           !collapsed && (
             <p className="px-2 py-4 text-xs text-danger">
-              내담자 목록을 불러오지 못했어요
+              내담자 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
             </p>
           )
         ) : isLoading ? (
@@ -189,7 +190,7 @@ export const ClientSidebar = ({
                                 {client.name}
                               </span>
                               <span className="truncate text-xs text-grey-60">
-                                총 {client.session_count ?? 0}개 상담기록
+                                총 {client.session_count ?? 0}개 상담 기록
                               </span>
                             </div>
                           )}

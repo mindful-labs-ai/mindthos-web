@@ -30,7 +30,7 @@ export const RegisteredAssessmentsCard = ({
       )}
     >
       <h2 className="mb-5 text-center text-l font-emphasize text-grey-100">
-        등록된 심리검사 결과지
+        등록한 심리검사 결과지
       </h2>
       <div className="flex flex-col gap-2">
         {files.map((file) => (

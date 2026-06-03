@@ -19,10 +19,10 @@ export const Step3CompleteView = ({ className }: Step3CompleteViewProps) => {
 
       <div className="flex flex-col items-center text-center">
         <p className="text-l font-emphasize text-grey-100">
-          심리검사 결과지가 등록되었습니다.
+          심리검사 결과지를 등록했어요.
         </p>
         <p className="text-l font-emphasize text-grey-100">
-          이어서 결과지 분석을 진행해주세요.
+          이어서 결과지 분석을 시작해 주세요.
         </p>
       </div>
     </div>

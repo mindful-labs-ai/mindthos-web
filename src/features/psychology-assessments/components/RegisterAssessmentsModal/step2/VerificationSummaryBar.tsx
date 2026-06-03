@@ -28,11 +28,11 @@ export const VerificationSummaryBar = ({
     >
       <div className="flex items-center gap-2">
         <span className="rounded-md bg-green-20 px-3 py-2 text-sm font-medium text-green-80">
-          완성 {verifiedCount}
+          확인 {verifiedCount}
         </span>
         {missingCount > 0 && (
           <span className="rounded-md bg-yellow-20 px-3 py-2 text-sm font-medium text-yellow-80">
-            누락 {missingCount}
+            빈 항목 {missingCount}
           </span>
         )}
       </div>

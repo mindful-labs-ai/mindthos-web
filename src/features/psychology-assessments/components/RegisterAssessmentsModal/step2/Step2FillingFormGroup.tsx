@@ -8,6 +8,8 @@ import {
 import { MissingFieldsForm } from './MissingFieldsForm';
 
 export interface FillingFormDescriptor {
+  /** 검사별 고유 id — 서버 assessmentId 또는 폼 내부 식별자 */
+  id: string;
   /** 검사 카테고리 라벨 */
   categoryLabel: string;
   /** 누락된 항목 수 — 폼 진입 직전 초기값 (실시간으로는 폼 내부 카운트로 덮어씀) */
@@ -33,35 +35,44 @@ export const Step2FillingFormGroup = ({
   onCountsChange,
   className,
 }: Step2FillingFormGroupProps) => {
-  // 인덱스별 카운트 저장
+  // 검사 id별 카운트 저장. 목록이 바뀌어도 인덱스 이동으로 카운트가 섞이지 않게 한다.
   const [perFormCounts, setPerFormCounts] = useState<
-    Record<number, FillingFormCounts>
+    Record<string, FillingFormCounts>
+  >({});
+  const [expandedCompletedForms, setExpandedCompletedForms] = useState<
+    Record<string, boolean>
   >({});
 
-  const setFormCounts = useCallback(
-    (idx: number, counts: FillingFormCounts) => {
-      setPerFormCounts((prev) => {
-        const cur = prev[idx];
-        // 동일 값이면 setState 스킵 (무한 루프 방지)
-        if (cur && cur.filled === counts.filled && cur.total === counts.total) {
-          return prev;
-        }
-        return { ...prev, [idx]: counts };
-      });
-    },
-    []
-  );
+  const setFormCounts = useCallback((id: string, counts: FillingFormCounts) => {
+    setPerFormCounts((prev) => {
+      const cur = prev[id];
+      // 동일 값이면 setState 스킵 (무한 루프 방지)
+      if (cur && cur.filled === counts.filled && cur.total === counts.total) {
+        return prev;
+      }
+      return { ...prev, [id]: counts };
+    });
+  }, []);
+
+  const toggleCompletedForm = useCallback((id: string) => {
+    setExpandedCompletedForms((prev) => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  const formIdsKey = forms.map((form) => form.id).join('|');
 
   // 합산 카운트 → 부모로 통지 (ref 패턴으로 콜백 안정성 보장)
   const aggregated = useMemo(() => {
     let filled = 0;
     let total = 0;
-    Object.values(perFormCounts).forEach((c) => {
-      filled += c.filled;
-      total += c.total;
+    const formIds = formIdsKey ? formIdsKey.split('|') : [];
+    formIds.forEach((id) => {
+      const counts = perFormCounts[id];
+      if (!counts) return;
+      filled += counts.filled;
+      total += counts.total;
     });
     return { filled, total };
-  }, [perFormCounts]);
+  }, [formIdsKey, perFormCounts]);
 
   const onCountsChangeRef = useRef(onCountsChange);
   useEffect(() => {
@@ -91,22 +102,27 @@ export const Step2FillingFormGroup = ({
   return (
     <div className={className}>
       <div className="flex flex-col gap-4">
-        {forms.map((form, idx) => {
-          const counts = perFormCounts[idx];
+        {forms.map((form) => {
+          const counts = perFormCounts[form.id];
           const validated = !!counts && counts.filled >= counts.total;
           const missingCount = counts
             ? Math.max(0, counts.total - counts.filled)
             : form.missingCount;
+          const collapsed = validated && !expandedCompletedForms[form.id];
 
           // 폼별 callback (inline new instance — 폼 내부 ref 패턴으로 안전)
-          const handle = (c: FillingFormCounts) => setFormCounts(idx, c);
+          const handle = (c: FillingFormCounts) => setFormCounts(form.id, c);
 
           return (
             <MissingFieldsForm
-              key={`${form.formKey}-${idx}`}
+              key={form.id}
               categoryLabel={form.categoryLabel}
               missingCount={missingCount}
               validated={validated}
+              collapsed={collapsed}
+              onToggleCollapsed={
+                validated ? () => toggleCompletedForm(form.id) : undefined
+              }
             >
               {renderFormByKey(form, handle)}
             </MissingFieldsForm>

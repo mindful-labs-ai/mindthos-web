@@ -4,6 +4,9 @@ import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CheckIcon, CopyIcon, RetryIcon } from '@/shared/icons';
 import { MarkdownRenderer } from '@/shared/ui/composites/MarkdownRenderer';
+import { MindthosLoadingMark } from '@/shared/ui/composites/MindthosLoadingMark';
+import { useToast } from '@/shared/ui/composites/Toast';
+import { Tooltip } from '@/shared/ui/composites/Tooltip';
 import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 export interface ChatTurn {
@@ -20,6 +23,8 @@ interface ChatConversationViewProps {
   turns: ChatTurn[];
   /** 실패한 assistant 턴의 재시도 핸들러. (id = turn.id) */
   onRetry?: (turnId: string) => void;
+  /** 완료된 assistant 턴의 답변 다시 생성 요청 핸들러. (id = turn.id) */
+  onRegenerate?: (turnId: string) => void;
   /** 재시도 진행 중인 turn.id */
   retryingId?: string | null;
   className?: string;
@@ -32,11 +37,19 @@ interface ChatConversationViewProps {
 export const ChatConversationView = ({
   turns,
   onRetry,
+  onRegenerate,
   retryingId,
   className,
 }: ChatConversationViewProps) => {
   const { isMobile, isTablet } = useDevice();
+  const { toast } = useToast();
   const isMobileView = isMobile || isTablet;
+  const chatTextClassName = 'text-m';
+  const actionButtonClassName = cn(
+    'flex items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100',
+    isMobileView ? 'h-12 w-12' : 'h-7 w-7'
+  );
+  const actionIconSize = isMobileView ? 20 : 16;
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // 복사 완료 피드백 — 복사한 turn.id를 잠시 표시(체크 아이콘)
@@ -50,32 +63,49 @@ export const ChatConversationView = ({
   );
 
   const handleCopy = (turn: ChatTurn) => {
-    if (!navigator.clipboard) return;
+    if (!navigator.clipboard) {
+      toast({
+        title: '복사 실패 — 다시 시도해 주세요.',
+        description: '클립보드에 복사할 수 없어요.',
+        duration: 3000,
+      });
+      return;
+    }
+
     // 마크다운 서식(**볼드**, 헤더, 목록 기호 등)을 제거해 가독성 있는 plain text로 복사
     void navigator.clipboard
       .writeText(stripMarkdown(turn.content))
       .then(() => {
         setCopiedId(turn.id);
+        toast({
+          title: '복사되었습니다',
+          duration: 2000,
+        });
         if (copyResetRef.current) clearTimeout(copyResetRef.current);
         copyResetRef.current = setTimeout(() => setCopiedId(null), 1500);
       })
       .catch(() => {
-        /* 클립보드 권한 거부 등 — 무시 */
+        toast({
+          title: '복사 실패 — 다시 시도해 주세요.',
+          description: '클립보드에 복사할 수 없어요.',
+          duration: 3000,
+        });
       });
   };
 
-  // 마지막 assistant 턴 — 이 응답에만 로고 표시
-  const lastAssistantId = useMemo(() => {
+  // 마지막 assistant 턴 — 이 응답에만 로고/후속 액션 표시
+  const lastAssistantTurn = useMemo(() => {
     for (let i = turns.length - 1; i >= 0; i -= 1) {
-      if (turns[i].role === 'assistant') return turns[i].id;
+      if (turns[i].role === 'assistant') return turns[i];
     }
     return null;
   }, [turns]);
+  const lastAssistantId = lastAssistantTurn?.id ?? null;
 
-  // 새 턴이 추가되면 하단으로 자동 스크롤
+  // 새 턴이 추가되거나 답변이 완료되면 하단까지 자동 스크롤
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [turns.length]);
+  }, [lastAssistantId, lastAssistantTurn?.status, turns.length]);
 
   return (
     <div className={cn('flex w-full flex-col gap-8', className)}>
@@ -85,15 +115,23 @@ export const ChatConversationView = ({
             <div
               className={cn(
                 'max-w-[80%] rounded-2xl bg-grey-20 px-4 py-3 text-grey-100',
-                isMobileView ? 'text-sm' : 'text-m'
+                chatTextClassName
               )}
             >
               {turn.content}
             </div>
           </div>
         ) : (
-          <div key={turn.id} className="flex flex-col gap-3">
-            <MarkdownRenderer content={turn.content} disableHeadings={false} />
+          <div key={turn.id} className="group relative flex flex-col gap-3">
+            {turn.status === 'sending' ? (
+              <ThinkingMessage />
+            ) : (
+              <MarkdownRenderer
+                content={turn.content}
+                disableHeadings={false}
+                className={chatTextClassName}
+              />
+            )}
 
             {turn.status === 'failed' && onRetry && turn.messageId && (
               <button
@@ -110,47 +148,81 @@ export const ChatConversationView = ({
             )}
 
             {/* 복사 + 재시도 액션 — 마지막 AI 응답이 완료(ok)일 때만 노출 (평가 버튼 제외) */}
-            {turn.id === lastAssistantId &&
-              turn.status === 'ok' && (
-                <div className="flex items-center gap-1">
+            {turn.id === lastAssistantId && turn.status === 'ok' && (
+              <div className="flex items-center gap-1">
+                <Tooltip content="복사하기" placement="top" delay={100}>
                   <button
                     type="button"
                     onClick={() => handleCopy(turn)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
-                    aria-label="복사"
+                    className={actionButtonClassName}
+                    aria-label="복사하기"
                   >
                     {copiedId === turn.id ? (
-                      <CheckIcon size={16} />
+                      <CheckIcon size={actionIconSize} />
                     ) : (
-                      <CopyIcon size={16} />
+                      <CopyIcon size={actionIconSize} />
                     )}
                   </button>
-                  {onRetry && turn.messageId && (
+                </Tooltip>
+                {onRetry && turn.messageId && (
+                  <Tooltip content="재생성하기" placement="top" delay={100}>
                     <button
                       type="button"
-                      onClick={() => onRetry(turn.id)}
+                      onClick={() => (onRegenerate ?? onRetry)(turn.id)}
                       disabled={retryingId === turn.id}
                       className={cn(
-                        'flex h-7 w-7 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100',
-                        retryingId === turn.id && 'cursor-not-allowed opacity-50'
+                        actionButtonClassName,
+                        retryingId === turn.id &&
+                          'cursor-not-allowed opacity-50'
                       )}
-                      aria-label="재시도"
+                      aria-label="재생성하기"
                     >
-                      <RetryIcon size={16} />
+                      <RetryIcon size={actionIconSize} />
                     </button>
-                  )}
-                </div>
-              )}
+                  </Tooltip>
+                )}
+              </div>
+            )}
+
+            {turn.id !== lastAssistantId && turn.status === 'ok' && (
+              <div
+                className={cn(
+                  'flex items-center opacity-100 transition-opacity lg:pointer-events-none lg:absolute lg:-bottom-7 lg:left-0 lg:opacity-0 lg:focus-within:pointer-events-auto lg:focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100',
+                  isMobileView ? 'h-12' : 'h-7'
+                )}
+              >
+                <Tooltip content="복사하기" placement="top" delay={100}>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(turn)}
+                    className={actionButtonClassName}
+                    aria-label="복사하기"
+                  >
+                    {copiedId === turn.id ? (
+                      <CheckIcon size={actionIconSize} />
+                    ) : (
+                      <CopyIcon size={actionIconSize} />
+                    )}
+                  </button>
+                </Tooltip>
+              </div>
+            )}
 
             {/* 마음토스 로고 — 마지막 AI 응답에만 표시 */}
-            {turn.id === lastAssistantId && (
-              <img
-                src="/tutorial/mindthos_agent_icon.png"
-                alt="마음토스"
-                className={cn(isMobileView ? 'h-9 w-9' : 'h-12 w-12')}
-                draggable={false}
-              />
-            )}
+            {turn.id === lastAssistantId &&
+              (turn.status === 'sending' ? (
+                <MindthosLoadingMark
+                  ariaLabel="답변 생성 중"
+                  className="h-12 w-12"
+                />
+              ) : (
+                <img
+                  src="/tutorial/mindthos_agent_icon.png"
+                  alt="마음토스"
+                  className="h-12 w-12"
+                  draggable={false}
+                />
+              ))}
           </div>
         )
       )}
@@ -158,3 +230,14 @@ export const ChatConversationView = ({
     </div>
   );
 };
+
+function ThinkingMessage() {
+  return (
+    <p
+      className="thinking-text-wave inline-block w-fit text-m font-medium"
+      aria-live="polite"
+    >
+      깊게 생각하는 중...
+    </p>
+  );
+}

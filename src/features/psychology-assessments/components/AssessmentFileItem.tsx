@@ -3,7 +3,7 @@ import { XIcon } from '@/shared/icons';
 
 export interface AssessmentFile {
   id: string;
-  /** 검사 종류 라벨 (e.g. '다면적 인성 검사') */
+  /** 검사 종류 라벨 (e.g. '다면적 인성검사') */
   title: string;
   /** 실제 파일명 */
   fileName: string;

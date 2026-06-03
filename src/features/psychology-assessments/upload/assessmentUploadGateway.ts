@@ -42,10 +42,7 @@ export interface UploadAssessmentsResult {
 }
 
 /** OCR 검증 결과 (프론트 도메인). */
-export type AssessmentValidation =
-  | 'valid'
-  | 'missing_field'
-  | 'invalid';
+export type AssessmentValidation = 'valid' | 'missing_field' | 'invalid';
 
 /** 검사 1건의 현재 상태 (조회·폴링용). */
 export interface AssessmentItem {
@@ -60,6 +57,9 @@ export interface AssessmentItem {
   score: Record<string, unknown> | null;
   /** OCR 진행 중 임시 점수 (MISSING_FIELD 보완 시 기준). */
   tempScore: Record<string, unknown> | null;
+  /** 서버 row 생성 시각. 검사일을 OCR 점수에서 찾지 못할 때 UI fallback으로 사용. */
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /**
@@ -70,7 +70,7 @@ export interface AssessmentUploadGateway {
   /** 검사 결과지 여러 건 업로드 (presigned 발급 → S3 → complete). */
   uploadAssessments(
     clientId: string,
-    inputs: AssessmentUploadInput[],
+    inputs: AssessmentUploadInput[]
   ): Promise<UploadAssessmentsResult>;
 
   /** 내담자의 활성 검사 배치 조회 (상태 폴링용). */
@@ -82,7 +82,7 @@ export interface AssessmentUploadGateway {
   /** MISSING_FIELD 검사 확정 (빠진 필드 채운 최종 점수). */
   confirmAssessment(
     assessmentId: string,
-    score: Record<string, unknown>,
+    score: Record<string, unknown>
   ): Promise<AssessmentItem>;
 
   /** 드래프트/INVALID 검사 삭제. */

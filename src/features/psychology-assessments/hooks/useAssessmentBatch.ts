@@ -17,7 +17,7 @@ export const assessmentBatchKeys = {
  */
 export function useAssessmentBatch(
   clientId: string | undefined,
-  options: { enabled?: boolean; pollMs?: number } = {},
+  options: { enabled?: boolean; pollMs?: number } = {}
 ) {
   const { enabled = true, pollMs = 5000 } = options;
   return useQuery<AssessmentItem[]>({
@@ -33,7 +33,7 @@ export function useAssessmentBatch(
       const items = query.state.data;
       if (!items || items.length === 0) return false;
       const inFlight = items.some(
-        (it) => it.progress === 'pending' || it.progress === 'processing',
+        (it) => it.progress === 'pending' || it.progress === 'processing'
       );
       return inFlight ? pollMs : false;
     },

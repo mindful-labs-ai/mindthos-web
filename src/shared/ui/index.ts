@@ -91,6 +91,9 @@ export type { ModalProps } from './composites/Modal';
 export { Spinner } from './composites/Spinner';
 export type { SpinnerProps, SpinnerSize } from './composites/Spinner';
 
+export { MindthosLoadingMark } from './composites/MindthosLoadingMark';
+export type { MindthosLoadingMarkProps } from './composites/MindthosLoadingMark';
+
 export { List } from './composites/List';
 export type { ListProps } from './composites/List';
 
@@ -124,3 +127,6 @@ export type { SpotlightProps } from './composites/Spotlight';
 
 export { DatePicker } from './composites/DatePicker';
 export type { DatePickerProps } from './composites/DatePicker';
+
+export { WaveRotatingText } from './composites/WaveRotatingText';
+export type { WaveRotatingTextProps } from './composites/WaveRotatingText';

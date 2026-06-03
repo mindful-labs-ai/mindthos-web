@@ -41,6 +41,6 @@ export interface VerificationResult {
   invalidReason?: string;
 }
 
-// MMPI/TCI 각 1개씩 최대 2개. 서버 정책과 일치.
+// 다면적 인성검사/기질 검사 각 1개씩 최대 2개. 서버 정책과 일치.
 export const MAX_FILES = 2;
 export const MAX_FILE_SIZE_MB = 200;

@@ -24,9 +24,7 @@ export const FormField = ({
         {label}
         {required && <span className="text-[#EF4444]">*</span>}
       </label>
-      {helperText && (
-        <p className="text-xs text-grey-60">{helperText}</p>
-      )}
+      {helperText && <p className="text-xs text-grey-60">{helperText}</p>}
       <div className="flex items-center gap-2">
         <div className="flex-1">{children}</div>
         {validated && (

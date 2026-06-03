@@ -10,7 +10,7 @@ interface TciFillingFormProps {
   onValuesChange?: (values: Record<string, string>) => void;
 }
 
-/** 기질 검사 (TCI-RS) 폼 — schema 기반 동적 렌더링 */
+/** 기질 검사 폼 — schema 기반 동적 렌더링 */
 export const TciFillingForm = ({
   onCountsChange,
   visibleLeaf,

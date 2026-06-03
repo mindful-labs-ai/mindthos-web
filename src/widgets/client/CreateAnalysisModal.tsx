@@ -244,7 +244,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     <>
       <div className="flex items-center justify-between border-b border-grey-30 pb-4">
         <p className="text-m font-medium text-grey-100">분석 기법</p>
-        <div className="w-32">
+        <div className="w-64">
           <Select
             items={aiSupervisionItems}
             value={aiSupervisionTemplateId}

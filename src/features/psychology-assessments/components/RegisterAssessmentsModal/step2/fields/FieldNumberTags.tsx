@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
 
+import { FieldCheckbox } from './FieldCheckbox';
 import { FieldTextInput } from './FieldTextInput';
 
 interface FieldNumberTagsProps {
@@ -25,6 +26,18 @@ const parseTags = (value: string): string[] => {
 };
 
 const isItemNo = (s: string) => /^[0-9]{1,3}$/.test(s);
+const EMPTY_TAGS_VALUE = '[]';
+
+const isExplicitEmpty = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) && parsed.length === 0;
+  } catch {
+    return false;
+  }
+};
 
 /**
  * 결정적문항 등 "문항 번호 목록(배열)" 입력.
@@ -33,7 +46,8 @@ const isItemNo = (s: string) => /^[0-9]{1,3}$/.test(s);
  */
 export const FieldNumberTags = ({ value, onChange }: FieldNumberTagsProps) => {
   const [draft, setDraft] = useState('');
-  const tags = parseTags(value);
+  const emptyChecked = isExplicitEmpty(value);
+  const tags = emptyChecked ? [] : parseTags(value);
 
   const commit = (next: string[]) =>
     onChange(next.length ? JSON.stringify(next) : '');
@@ -45,12 +59,16 @@ export const FieldNumberTags = ({ value, onChange }: FieldNumberTagsProps) => {
       .filter(isItemNo);
     setDraft('');
     if (!items.length) return;
-    const merged = [...tags];
+    const merged = emptyChecked ? [] : [...tags];
     for (const it of items) if (!merged.includes(it)) merged.push(it);
     commit(merged);
   };
 
   const remove = (t: string) => commit(tags.filter((x) => x !== t));
+  const toggleEmpty = (checked: boolean) => {
+    setDraft('');
+    onChange(checked ? EMPTY_TAGS_VALUE : '');
+  };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -74,7 +92,7 @@ export const FieldNumberTags = ({ value, onChange }: FieldNumberTagsProps) => {
               <button
                 type="button"
                 onClick={() => remove(t)}
-                className="leading-none text-green-80/70 transition-colors hover:text-green-80"
+                className="text-green-80/70 leading-none transition-colors hover:text-green-80"
                 aria-label={`${t} 삭제`}
               >
                 ×
@@ -88,8 +106,15 @@ export const FieldNumberTags = ({ value, onChange }: FieldNumberTagsProps) => {
         onChange={(e) => setDraft(e.target.value.replace(/[^0-9,]/g, ''))}
         onKeyDown={onKeyDown}
         onBlur={addDraft}
-        placeholder="문항 번호 입력 후 Enter (예: 1, 4, 7)"
+        placeholder="문항 번호를 입력해 주세요. 없으면 문항 없음에 체크해 주세요."
         inputMode="numeric"
+        disabled={emptyChecked}
+        className="disabled:cursor-not-allowed disabled:opacity-50"
+      />
+      <FieldCheckbox
+        label="문항 없음"
+        checked={emptyChecked}
+        onChange={toggleEmpty}
       />
     </div>
   );

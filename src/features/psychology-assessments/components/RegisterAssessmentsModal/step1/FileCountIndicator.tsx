@@ -15,7 +15,7 @@ export const FileCountIndicator = ({
 }: FileCountIndicatorProps) => {
   return (
     <p className={cn('text-center text-sm font-sub text-grey-80', className)}>
-      파일 개수 {count} / {max}
+      등록 파일 {count} / {max}
     </p>
   );
 };

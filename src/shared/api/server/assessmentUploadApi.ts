@@ -25,10 +25,7 @@ export interface RequestedUpload {
   title: string;
 }
 
-export type ValidationStatus =
-  | 'VALID'
-  | 'MISSING_FIELD'
-  | 'INVALID';
+export type ValidationStatus = 'VALID' | 'MISSING_FIELD' | 'INVALID';
 
 /** 검사 1건의 외부 표현 (서버 ClientAssessmentDto). presignedUrl 없음. */
 export interface AssessmentRow {
@@ -80,10 +77,7 @@ export const ASSESSMENT_ROUTES = {
 
 // ─── 분석 도메인 타입 ────────────────────────────────────────────────────────
 
-export type ChatActiveStatus =
-  | 'OCR_PHASE'
-  | 'ANALYSIS_PHASE'
-  | 'CHAT_ACTIVE';
+export type ChatActiveStatus = 'OCR_PHASE' | 'ANALYSIS_PHASE' | 'CHAT_ACTIVE';
 
 /** POST /clients/:clientId/analysis 응답 data */
 export interface AnalysisStartResponse {
@@ -110,18 +104,18 @@ export interface AnalysisStatusResponse {
 /** 1) presigned PUT URL 배치 발급 */
 export function issueUploadUrlBatch(
   clientId: string,
-  uploadBatch: RequestedUpload[],
+  uploadBatch: RequestedUpload[]
 ): Promise<IssueUploadBatchResponse> {
   return serverRequest<IssueUploadBatchResponse>(
     ASSESSMENT_ROUTES.uploadBatch(clientId),
-    { method: 'POST', body: { uploadBatch } },
+    { method: 'POST', body: { uploadBatch } }
   );
 }
 
 /** 2) presigned URL로 S3에 PDF 직접 PUT (서버 우회, 브라우저 → S3) */
 export async function putFileToS3(
   presignedUrl: string,
-  file: File,
+  file: File
 ): Promise<void> {
   const res = await fetch(presignedUrl, {
     method: 'PUT',
@@ -130,7 +124,9 @@ export async function putFileToS3(
     body: file,
   });
   if (!res.ok) {
-    throw new Error(`S3 업로드 실패 (${res.status})`);
+    throw new Error(
+      '결과지를 업로드하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요.'
+    );
   }
 }
 
@@ -157,7 +153,7 @@ export function getAssessment(assessmentId: string): Promise<AssessmentRow> {
 /** MISSING_FIELD 검사 확정 — 빠진 필드 채운 최종 점수로 VALID 전이. */
 export function confirmAssessment(
   assessmentId: string,
-  ocrScore: Record<string, unknown>,
+  ocrScore: Record<string, unknown>
 ): Promise<AssessmentRow> {
   return serverRequest<AssessmentRow>(ASSESSMENT_ROUTES.confirm(assessmentId), {
     method: 'POST',
@@ -174,20 +170,20 @@ export function deleteAssessment(assessmentId: string): Promise<void> {
 
 /** 분석 시작 — POST /clients/:clientId/analysis (요청 body 없음). */
 export function startAnalysis(
-  clientId: string,
+  clientId: string
 ): Promise<AnalysisStartResponse> {
   return serverRequest<AnalysisStartResponse>(
     ASSESSMENT_ROUTES.analysis(clientId),
-    { method: 'POST' },
+    { method: 'POST' }
   );
 }
 
 /** 분석 진행 상태 조회 — GET /clients/:clientId/analysis-status. */
 export function getAnalysisStatus(
-  clientId: string,
+  clientId: string
 ): Promise<AnalysisStatusResponse> {
   return serverRequest<AnalysisStatusResponse>(
-    ASSESSMENT_ROUTES.analysisStatus(clientId),
+    ASSESSMENT_ROUTES.analysisStatus(clientId)
   );
 }
 
@@ -201,11 +197,11 @@ export interface OcrPhaseResetResponse {
 /** OCR 단계 복귀 — POST /clients/:clientId/ocr-phase-reset (CHAT_ACTIVE→OCR_PHASE).
  * 활성 검사 버전은 유지(재확정 시 N→N+1). CHAT_ACTIVE가 아니면 서버 409. */
 export function resetToOcrPhase(
-  clientId: string,
+  clientId: string
 ): Promise<OcrPhaseResetResponse> {
   return serverRequest<OcrPhaseResetResponse>(
     ASSESSMENT_ROUTES.ocrPhaseReset(clientId),
-    { method: 'POST' },
+    { method: 'POST' }
   );
 }
 
@@ -229,11 +225,11 @@ export interface UploadOutcome {
  */
 export async function uploadAssessments(
   clientId: string,
-  items: UploadItem[],
+  items: UploadItem[]
 ): Promise<{ assessmentVersion: number; outcomes: UploadOutcome[] }> {
   const { assessmentVersion, issuedUploadBatch } = await issueUploadUrlBatch(
     clientId,
-    items.map(({ type, title }) => ({ type, title })),
+    items.map(({ type, title }) => ({ type, title }))
   );
 
   const outcomes: UploadOutcome[] = [];
