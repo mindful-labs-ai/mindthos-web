@@ -147,11 +147,11 @@ export const AnalysisChatInput = ({
         paddingLeft: horizontalPaddingLeft,
       }}
     >
-      <div className="relative flex items-start gap-2">
+      <div className="relative flex items-center gap-2">
         {!value && (
           <SecurityShieldIcon
             size={20}
-            className="mt-0.5 flex-shrink-0 text-grey-70"
+            className="flex-shrink-0 text-grey-70"
           />
         )}
 
@@ -216,14 +216,11 @@ export const AnalysisChatInput = ({
           }}
         />
 
-        {showCreditChip && !normalizedValue && !isMobileView && (
-          <span
-            className="mt-0.5 inline-flex flex-shrink-0 items-center justify-center gap-1 rounded-md bg-grey-40 text-sm text-grey-80"
-            style={{ width: 68, height: 25 }}
-          >
+        {showCreditChip && !normalizedValue && (
+          <span className="inline-flex flex-shrink-0 items-center justify-center gap-1 rounded-md bg-grey-40 px-1 py-0.5 text-sm text-grey-80">
             <span>{creditCost}</span>
             <CreditIcon size={12} color="currentColor" />
-            <span>사용</span>
+            {!isMobileView && <span>사용</span>}
           </span>
         )}
 
