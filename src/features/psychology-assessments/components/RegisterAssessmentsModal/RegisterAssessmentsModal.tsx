@@ -12,6 +12,8 @@ import {
   useDeleteAssessment,
 } from '../../hooks/useAssessmentBatch';
 import { useModalStepBack } from '../../hooks/useModalStepBack';
+import { ASSESSMENT_SCHEMAS } from '../../schemas/assessmentSchemas';
+import type { JsonSchema } from '../../schemas/jsonSchema.types';
 import type {
   AssessmentItem,
   AssessmentKind,
@@ -25,6 +27,11 @@ import {
 import { serverAssessmentUploadAdapter } from '../../upload/serverAssessmentUploadAdapter';
 import { ASSESSMENT_KIND_LABEL } from '../../utils/assessmentDisplay';
 import { toLoadingDisplayPercent } from '../../utils/loadingProgress';
+import {
+  applyMissingSchemaConstants,
+  getSchemaReviewStats,
+  projectScoreToSchema,
+} from '../../utils/schemaReview';
 import { PATH_SEP } from '../../utils/schemaToFields';
 import {
   getCleanupErrorMessage,
@@ -108,71 +115,21 @@ const formatRejectedFileNames = (names: string[]) => {
   return `${visible}${suffix} 파일`;
 };
 
-/**
- * ocr_score(서버 교집합 결과)의 leaf 카운트. 서버 intersect-ocr-result와 동일 규칙:
- * null leaf = 비워진(불일치/누락) 필드. 0이면 VALID, 1+이면 MISSING_FIELD.
- */
-function countTotalLeaves(value: unknown): number {
-  if (Array.isArray(value)) {
-    return value.reduce<number>((acc, v) => acc + countTotalLeaves(v), 0);
-  }
-  if (value !== null && typeof value === 'object') {
-    return Object.values(value as Record<string, unknown>).reduce<number>(
-      (acc, v) => acc + countTotalLeaves(v),
-      0
-    );
-  }
-  return 1;
-}
-
-function countNullLeaves(value: unknown): number {
-  if (value === null) return 1;
-  if (Array.isArray(value)) {
-    return value.reduce<number>((acc, v) => acc + countNullLeaves(v), 0);
-  }
-  if (typeof value === 'object') {
-    return Object.values(value as Record<string, unknown>).reduce<number>(
-      (acc, v) => acc + countNullLeaves(v),
-      0
-    );
-  }
-  return 0;
-}
-
 const getReviewScore = (item: AssessmentItem): Record<string, unknown> =>
   item.score ?? item.tempScore ?? {};
 
-const getMissingLeafCount = (item: AssessmentItem): number =>
-  countNullLeaves(getReviewScore(item));
-
-const isFillableReviewItem = (item: AssessmentItem): boolean =>
-  item.progress === 'completed' &&
-  item.validation !== 'invalid' &&
-  getMissingLeafCount(item) > 0;
-
 const isReviewTerminalItem = (item: AssessmentItem): boolean =>
   item.progress === 'completed' || item.progress === 'failed';
-
-/** score를 path(PATH_SEP 구분)로 따라가 해당 leaf가 누락(null/부재/하강불가)인지. schema leaf 노출 필터용. */
-function isPathMissing(score: unknown, path: string): boolean {
-  let cur: unknown = score;
-  for (const seg of path.split(PATH_SEP)) {
-    if (cur === null || typeof cur !== 'object' || Array.isArray(cur)) {
-      return true;
-    }
-    cur = (cur as Record<string, unknown>)[seg];
-  }
-  return cur === null || cur === undefined;
-}
 
 const NUMERIC_RE = /^-?\d+(\.\d+)?$/;
 
 /** 사용자 입력값(path → 문자열)을 기존 score에 덮어써 확정용 전체 점수 객체를 만든다. */
 function applyValues(
   score: Record<string, unknown>,
-  values: Record<string, string>
+  values: Record<string, string>,
+  schema: JsonSchema
 ): Record<string, unknown> {
-  const clone = structuredClone(score);
+  const clone = applyMissingSchemaConstants(schema, score);
   for (const [path, raw] of Object.entries(values)) {
     const trimmed = raw.trim();
     if (trimmed === '') continue;
@@ -200,7 +157,7 @@ function applyValues(
     }
     cur[segs[segs.length - 1]] = coerced;
   }
-  return clone;
+  return projectScoreToSchema(schema, clone);
 }
 
 /* -----------------------------------------------------
@@ -330,6 +287,19 @@ export const RegisterAssessmentsModal = ({
     realUploadMode && step >= 2 && polledItems.length === 0
       ? reviewItemsSnapshot
       : polledItems;
+  const reviewStatsByAssessmentId = useMemo(
+    () =>
+      new Map(
+        reviewItems.map((item) => [
+          item.assessmentId,
+          getSchemaReviewStats(
+            ASSESSMENT_SCHEMAS[item.kind],
+            getReviewScore(item)
+          ),
+        ])
+      ),
+    [reviewItems]
+  );
 
   const realReviewingPercent = useMemo(() => {
     const percent = ocrReviewPercent(polledItems);
@@ -397,21 +367,40 @@ export const RegisterAssessmentsModal = ({
                 : '지원하는 결과지인지 확인해 주세요',
           };
         }
+        const stats = reviewStatsByAssessmentId.get(it.assessmentId);
+        if (!stats) {
+          return {
+            fileId: it.assessmentId,
+            fileName: it.title,
+            categoryLabel: KIND_TO_CATEGORY[it.kind],
+            itemsVerified: null,
+            itemsTotal: null,
+            status: 'invalid' as const,
+            invalidReason:
+              '확인할 수 없는 결과지 항목이 있어요. 다시 등록해 주세요',
+          };
+        }
         // MISSING_FIELD는 서버가 ocr_score를 null로 두고 교집합(누락=null)을 temp_ocr_score에
-        // 보관한다. 따라서 검증/보완은 score(=null) 대신 tempScore를 기준으로 계산한다.
-        const score = getReviewScore(it);
-        const total = countTotalLeaves(score);
-        const missing = getMissingLeafCount(it);
+        // 보관한다. object null은 스키마 하위 leaf로 펼쳐 실제 입력할 항목 수로 계산한다.
         return {
           fileId: it.assessmentId,
           fileName: it.title,
           categoryLabel: KIND_TO_CATEGORY[it.kind],
-          itemsVerified: total - missing,
-          itemsTotal: total,
-          status: missing > 0 ? ('missing' as const) : ('complete' as const),
+          itemsVerified: stats.verified,
+          itemsTotal: stats.total,
+          status:
+            stats.missing > 0
+              ? ('missing' as const)
+              : it.validation === 'missing_field'
+                ? ('invalid' as const)
+                : ('complete' as const),
+          invalidReason:
+            it.validation === 'missing_field' && stats.missing === 0
+              ? '확인할 수 없는 결과지 항목이 있어요. 다시 등록해 주세요'
+              : undefined,
         };
       }),
-    [reviewItems]
+    [reviewItems, reviewStatsByAssessmentId]
   );
 
   // 실모드는 서버 데이터 또는 완료 스냅샷만 사용한다. 가짜 mock을 보여주고 Step3까지
@@ -439,8 +428,17 @@ export const RegisterAssessmentsModal = ({
   /* -------- 누락 필드 확정 (write) -------- */
   // 검수 카드에서 누락으로 잡힌 검사만 채우기 대상. 사용자가 채운 값을 assessmentId별로 보관.
   const missingItems = useMemo(
-    () => reviewItems.filter(isFillableReviewItem),
-    [reviewItems]
+    () =>
+      reviewItems.filter((item) => {
+        const stats = reviewStatsByAssessmentId.get(item.assessmentId);
+        return (
+          item.progress === 'completed' &&
+          item.validation !== 'invalid' &&
+          stats !== undefined &&
+          stats.missing > 0
+        );
+      }),
+    [reviewItems, reviewStatsByAssessmentId]
   );
   // 실모드는 항상 실데이터 폼만 쓴다. missing이 없으면 폼도 비어있는 상태로 렌더링.
   const useRealFilling = realUploadMode;
@@ -454,14 +452,13 @@ export const RegisterAssessmentsModal = ({
 
   // 실데이터 채우기 폼: 각 MISSING_FIELD 검사의 null leaf만 노출 + 입력값 수집.
   const realFillingForms: FillingFormDescriptor[] = missingItems.map((it) => {
-    // MISSING_FIELD는 ocr_score가 null이고 누락(null) 포함 교집합이 temp_ocr_score에 있다.
-    const score = getReviewScore(it);
+    const stats = reviewStatsByAssessmentId.get(it.assessmentId);
     return {
       id: it.assessmentId,
       categoryLabel: KIND_TO_CATEGORY[it.kind],
-      missingCount: getMissingLeafCount(it),
+      missingCount: stats?.missing ?? 0,
       formKey: it.kind,
-      visibleLeaf: (path: string) => isPathMissing(score, path),
+      visibleLeaf: (path: string) => stats?.missingPaths.has(path) ?? false,
       onValuesChange: (values: Record<string, string>) =>
         setFillingValues((prev) => ({ ...prev, [it.assessmentId]: values })),
     };
@@ -476,7 +473,8 @@ export const RegisterAssessmentsModal = ({
         // MISSING_FIELD 기반은 temp_ocr_score(교집합). 채운 값을 덮어 full score로 confirm.
         const merged = applyValues(
           it.tempScore ?? it.score ?? {},
-          fillingValues[it.assessmentId] ?? {}
+          fillingValues[it.assessmentId] ?? {},
+          ASSESSMENT_SCHEMAS[it.kind]
         );
         await confirmMut.mutateAsync({
           assessmentId: it.assessmentId,
