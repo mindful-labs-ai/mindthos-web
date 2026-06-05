@@ -6,6 +6,7 @@ import {
   callEdgeFunction,
   EDGE_FUNCTION_ENDPOINTS,
 } from '@/shared/api/edgeFunctionClient';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -23,7 +24,7 @@ interface DeidResponse {
   stats: DeidStats;
 }
 
-const DEID_CREDIT = 20;
+const DEID_CREDIT = CREDIT_COST.DEIDENTIFICATION;
 
 interface UseDeidentificationOptions {
   sessionId?: string;

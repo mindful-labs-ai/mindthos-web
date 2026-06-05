@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { cn } from '@/lib/cn';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { useDevice } from '@/shared/hooks/useDevice';
 
 import {
@@ -238,7 +239,7 @@ const formatBy = (
 export const RegisterAssessmentsModal = ({
   open,
   onClose,
-  analyzeCost = 50,
+  analyzeCost = CREDIT_COST.PSYCH_ANALYSIS,
   onAnalyze,
   isStartingAnalysis = false,
   startAnalysisError = null,

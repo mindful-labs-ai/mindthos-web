@@ -11,6 +11,7 @@ import type {
   AssessmentReportStatus,
   ChatActiveStatus,
 } from '@/shared/api/server/assessmentUploadApi';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Spinner } from '@/shared/ui';
@@ -631,7 +632,7 @@ export const PsychologyAssessmentsMain = ({
   const assessmentSubjectMeta = clientId
     ? buildAssessmentSubjectMeta(realAssessments)
     : {};
-  const analyzeCost = 50;
+  const analyzeCost = CREDIT_COST.PSYCH_ANALYSIS;
 
   const chipStatus = modeToChipStatus[mode];
   const chatPlaceholder = CHAT_PLACEHOLDER[mode];
@@ -1080,14 +1081,14 @@ export const PsychologyAssessmentsMain = ({
         open={regenerateTurnId !== null}
         onClose={() => setRegenerateTurnId(null)}
         onConfirm={handleConfirmRegenerate}
-        creditCost={5}
+        creditCost={CREDIT_COST.PSYCH_CHAT}
       />
 
       <FirstChatCreditConfirmModal
         open={pendingFirstChat?.clientId === clientId}
         onClose={handleCloseFirstChatConfirm}
         onConfirm={handleConfirmFirstChat}
-        creditCost={5}
+        creditCost={CREDIT_COST.PSYCH_CHAT}
       />
 
       <ResetConfirmModal

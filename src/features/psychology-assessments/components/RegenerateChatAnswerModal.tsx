@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 
 import { cn } from '@/lib/cn';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { CreditIcon, XIcon } from '@/shared/icons';
 
 interface RegenerateChatAnswerModalProps {
@@ -15,7 +16,7 @@ export const RegenerateChatAnswerModal = ({
   open,
   onClose,
   onConfirm,
-  creditCost = 5,
+  creditCost = CREDIT_COST.PSYCH_CHAT,
   className,
 }: RegenerateChatAnswerModalProps) => {
   useEffect(() => {

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon, TooltipIcon } from '@/shared/icons';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -7,7 +8,7 @@ import { Tooltip } from '@/shared/ui/composites/Tooltip';
 
 export type DeidModalPhase = 'confirm' | 'loading' | 'complete' | 'error';
 
-const DEIDENTIFICATION_CREDIT = 20;
+const DEIDENTIFICATION_CREDIT = CREDIT_COST.DEIDENTIFICATION;
 
 export interface DeidStats {
   total_segments: number;
