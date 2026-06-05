@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -96,14 +97,16 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
             <div className="flex gap-2">
               <Text className="typo-xs text-fg">가계도 자동 생성</Text>
               <div>
-                <Text className="typo-xs font-emphasize text-fg">50크레딧</Text>
+                <Text className="typo-xs font-emphasize text-fg">
+                  {CREDIT_COST.GENOGRAM}크레딧
+                </Text>
               </div>
             </div>
             <div className="flex gap-2">
               <Text className="typo-xs text-fg">가계도 보고서</Text>
               <div>
                 <Text className="typo-xs font-emphasize text-fg">
-                  <del>100</del> 10크레딧
+                  {CREDIT_COST.GENOGRAM_REPORT}크레딧
                 </Text>
               </div>
             </div>

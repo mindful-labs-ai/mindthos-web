@@ -6,6 +6,7 @@
 import React from 'react';
 
 import type { ProgressNote } from '@/features/session/types';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
@@ -13,7 +14,7 @@ import { Title } from '@/shared/ui';
 import { CreateProgressNoteView } from './CreateProgressNoteView';
 import { MobileProgressNoteView } from './MobileProgressNoteView';
 
-const PROGRESS_NOTE_CREDIT = 10;
+const PROGRESS_NOTE_CREDIT = CREDIT_COST.PROGRESS_NOTE;
 
 interface ActiveCreatingTab {
   tabId: string;

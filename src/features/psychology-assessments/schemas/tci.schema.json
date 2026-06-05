@@ -16,15 +16,12 @@
     "Subject": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["이름", "검사일", "개인고유번호", "성별", "나이", "소속기관1", "소속기관2", "규준집단", "무응답수"],
+      "required": ["이름", "검사일", "성별", "나이", "규준집단", "무응답수"],
       "properties": {
         "이름": { "type": "string" },
         "검사일": { "type": "string", "pattern": "^[0-9]{8}$", "description": "YYYYMMDD" },
-        "개인고유번호": { "type": ["string", "null"] },
         "성별": { "type": "string", "enum": ["남자", "여자"] },
         "나이": { "type": "integer", "minimum": 0, "description": "만 나이" },
-        "소속기관1": { "type": ["string", "null"] },
-        "소속기관2": { "type": ["string", "null"] },
         "규준집단": { "type": "string", "description": "예: 일반성인" },
         "무응답수": { "type": "integer", "minimum": 0 }
       }
