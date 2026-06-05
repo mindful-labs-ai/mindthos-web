@@ -26,7 +26,12 @@ import {
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { CloudUploadIcon, CreditIcon, UserIcon } from '@/shared/icons';
+import {
+  CloudUploadIcon,
+  CreditIcon,
+  SecurityShieldIcon,
+  UserIcon,
+} from '@/shared/icons';
 import { Title } from '@/shared/ui';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -93,6 +98,22 @@ const ScrollFadeWrapper: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+const AiGuardNotice = ({ className }: { className?: string }) => (
+  <div
+    className={cn(
+      'flex flex-col items-center gap-3 rounded-xl bg-grey-100 py-5 text-center text-white',
+      className
+    )}
+  >
+    <SecurityShieldIcon size={32} className="text-white" />
+    <p className="text-m font-emphasize">
+      마음토스에 올리는 모든 내담자 정보는
+      <br />
+      철저하게 암호화되며 AI 학습에 이용되지 않아요.
+    </p>
+  </div>
+);
+
 interface CreateMultiSessionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -129,15 +150,30 @@ export const CreateMultiSessionModal: React.FC<
   const isMobileView = isMobile || isTablet;
 
   // 파일 관리
-  const {
-    files,
-    validFiles,
-    addFiles,
-    removeFile,
-    clearFiles,
-    isProcessing,
-    canAddMore,
-  } = useMultiFileUpload();
+  const { files, addFiles, removeFile, clearFiles, isProcessing, canAddMore } =
+    useMultiFileUpload();
+
+  const effectiveFiles = files;
+  const effectiveValidFiles = useMemo(
+    () => effectiveFiles.filter((file) => file.validationStatus === 'valid'),
+    [effectiveFiles]
+  );
+  const effectiveIsProcessing = isProcessing;
+  const effectiveCanAddMore = canAddMore;
+
+  const addRealFiles = useCallback(
+    (newFiles: File[]) => {
+      addFiles(newFiles);
+    },
+    [addFiles]
+  );
+
+  const removeUploadedFile = useCallback(
+    (fileId: string) => {
+      removeFile(fileId);
+    },
+    [removeFile]
+  );
 
   // 일괄 설정 (Step 1)
   const [batchConfig, setBatchConfig] = useState<BatchSessionConfig>({
@@ -159,6 +195,8 @@ export const CreateMultiSessionModal: React.FC<
       });
     },
   });
+  const effectiveResults = results;
+  const effectiveIsCreating = isCreating;
 
   // Drag and Drop
   const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
@@ -189,7 +227,7 @@ export const CreateMultiSessionModal: React.FC<
 
   // 크레딧 계산 (Step 1)
   const step1TotalCredit = useMemo(() => {
-    return validFiles.reduce((sum, file) => {
+    return effectiveValidFiles.reduce((sum, file) => {
       if (file.duration === undefined) return sum;
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
@@ -199,12 +237,12 @@ export const CreateMultiSessionModal: React.FC<
       });
       return sum + totalCredit;
     }, 0);
-  }, [validFiles, batchConfig.sttModel]);
+  }, [effectiveValidFiles, batchConfig.sttModel]);
 
   // 크레딧 계산 (Step 2)
   const step2TotalCredit = useMemo(() => {
     return fileConfigs.reduce((sum, config) => {
-      const file = validFiles.find((f) => f.id === config.fileId);
+      const file = effectiveValidFiles.find((f) => f.id === config.fileId);
       if (!file || file.duration === undefined) return sum;
       const { totalCredit } = calculateTotalCredit({
         uploadType: 'audio',
@@ -213,14 +251,14 @@ export const CreateMultiSessionModal: React.FC<
       });
       return sum + totalCredit;
     }, 0);
-  }, [fileConfigs, validFiles]);
+  }, [fileConfigs, effectiveValidFiles]);
 
   // 파일 드롭 핸들러
   const onFileDrop = useCallback(
     (droppedFiles: File[]) => {
-      addFiles(droppedFiles);
+      addRealFiles(droppedFiles);
     },
-    [addFiles]
+    [addRealFiles]
   );
 
   const onDrop = (e: React.DragEvent) => {
@@ -230,7 +268,7 @@ export const CreateMultiSessionModal: React.FC<
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputFiles = e.target.files;
     if (inputFiles) {
-      addFiles(Array.from(inputFiles));
+      addRealFiles(Array.from(inputFiles));
     }
     // 같은 파일 재선택 가능하도록 초기화
     e.target.value = '';
@@ -262,13 +300,13 @@ export const CreateMultiSessionModal: React.FC<
 
   // Step 2에서 파일 제거
   const handleRemoveFromConfig = (fileId: string) => {
-    removeFile(fileId);
+    removeUploadedFile(fileId);
     setFileConfigs((prev) => prev.filter((c) => c.fileId !== fileId));
   };
 
   // 다음 단계로
   const handleNextStep = () => {
-    if (validFiles.length === 0) {
+    if (effectiveValidFiles.length === 0) {
       toast({
         title: '업로드할 파일이 없어요',
         description: '업로드 가능한 파일을 추가해 주세요.',
@@ -279,11 +317,11 @@ export const CreateMultiSessionModal: React.FC<
     trackEvent(MixpanelEvent.MultiSessionStepChange, {
       from: 'upload',
       to: 'config',
-      file_count: validFiles.length,
+      file_count: effectiveValidFiles.length,
     });
     // Step 2로 이동 시 개별 설정 초기화
     setFileConfigs(
-      validFiles.map((file, index) => ({
+      effectiveValidFiles.map((file, index) => ({
         fileId: file.id,
         order: index + 1,
         sttModel: batchConfig.sttModel,
@@ -328,7 +366,7 @@ export const CreateMultiSessionModal: React.FC<
       total_credit: step2TotalCredit,
     });
 
-    const finalResults = await createSessions(fileConfigs, validFiles);
+    const finalResults = await createSessions(fileConfigs, effectiveValidFiles);
 
     const successCount = finalResults.filter(
       (r) => r.status === 'success'
@@ -398,8 +436,10 @@ export const CreateMultiSessionModal: React.FC<
 
   // Step 2에서 사용할 validFiles (config에 있는 것만)
   const configValidFiles = useMemo(() => {
-    return validFiles.filter((f) => fileConfigs.some((c) => c.fileId === f.id));
-  }, [validFiles, fileConfigs]);
+    return effectiveValidFiles.filter((f) =>
+      fileConfigs.some((c) => c.fileId === f.id)
+    );
+  }, [effectiveValidFiles, fileConfigs]);
 
   // 공통 파일 입력
   const fileInput = (
@@ -421,19 +461,19 @@ export const CreateMultiSessionModal: React.FC<
       onDrop={onDrop}
       className={cn(
         'bg-surface-contrast p-4 transition-colors',
-        isMobile && 'h-[36.8vh] min-h-[200px]',
-        isTablet && 'h-[32.4vh] min-h-[200px]',
-        !isMobileView && 'h-full min-h-[300px] rounded-lg',
+        isMobile && 'h-[28vh] min-h-[160px]',
+        isTablet && 'h-[24vh] min-h-[160px]',
+        !isMobileView && 'min-h-[180px] flex-1 rounded-lg',
         isDragging
           ? 'border-primary bg-primary-subtle'
           : 'border-surface-strong'
       )}
     >
-      {files.length === 0 ? (
+      {effectiveFiles.length === 0 ? (
         <div
           className={cn(
             'flex h-full flex-col items-center justify-center gap-4 break-keep',
-            !isMobileView && 'max-h-[431px] min-h-[280px]'
+            !isMobileView && 'max-h-[300px] min-h-[160px]'
           )}
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-contrast">
@@ -460,10 +500,14 @@ export const CreateMultiSessionModal: React.FC<
             !isMobileView && 'max-h-[431px] max-w-[488px]'
           )}
         >
-          {files.map((file) => (
-            <MultiFileItem key={file.id} file={file} onRemove={removeFile} />
+          {effectiveFiles.map((file) => (
+            <MultiFileItem
+              key={file.id}
+              file={file}
+              onRemove={removeUploadedFile}
+            />
           ))}
-          {canAddMore && (
+          {effectiveCanAddMore && (
             <button
               onClick={handleButtonClick}
               className="h-[82px] w-full rounded-lg border-2 border-surface-strong text-center text-5xl font-thin text-fg-muted"
@@ -477,11 +521,11 @@ export const CreateMultiSessionModal: React.FC<
   );
 
   // 공통 크레딧 정보 (Step 1)
-  const creditInfo1 = validFiles.length > 0 && (
+  const creditInfo1 = effectiveValidFiles.length > 0 && (
     <div className="flex flex-1 flex-col items-center justify-start text-center text-l font-emphasize text-grey-100 lg:justify-center">
       <p>
-        <span className="text-green-80">{validFiles.length}개</span>의 상담기록
-        생성으로
+        <span className="text-green-80">{effectiveValidFiles.length}개</span>의
+        상담기록 생성으로
       </p>
       <p>
         총 <span className="text-green-80">{step1TotalCredit} 크레딧</span>을
@@ -508,10 +552,11 @@ export const CreateMultiSessionModal: React.FC<
             file={file}
             config={config}
             clients={clients}
-            result={results.find((r) => r.fileId === config.fileId)}
+            result={effectiveResults.find((r) => r.fileId === config.fileId)}
             onConfigChange={handleConfigChange}
             onRemove={handleRemoveFromConfig}
             isMobileView={isMobileView}
+            isUploading={effectiveIsCreating}
           />
         );
       })}
@@ -522,7 +567,7 @@ export const CreateMultiSessionModal: React.FC<
   const step2Buttons = (
     <div className="flex flex-col gap-2">
       <div className="flex justify-center">
-        {isCreating ? (
+        {effectiveIsCreating ? (
           <div className="flex items-center gap-1 rounded-lg bg-danger-subtle px-3 py-1">
             <Text className="text-sm font-medium text-danger">
               업로드 중이에요. 페이지를 벗어나지 마세요.
@@ -544,7 +589,7 @@ export const CreateMultiSessionModal: React.FC<
           tone="neutral"
           size="lg"
           onClick={handlePrevStep}
-          disabled={isCreating}
+          disabled={effectiveIsCreating}
         >
           이전
         </Button>
@@ -553,10 +598,10 @@ export const CreateMultiSessionModal: React.FC<
           tone="primary"
           size="lg"
           onClick={handleCreateSessions}
-          disabled={fileConfigs.length === 0 || isCreating}
+          disabled={fileConfigs.length === 0 || effectiveIsCreating}
           className={isMobileView ? 'flex-1' : 'w-[335px] flex-1'}
         >
-          {isCreating ? '업로드 중...' : '상담 기록 만들기'}
+          {effectiveIsCreating ? '업로드 중...' : '상담 기록 만들기'}
         </Button>
       </div>
     </div>
@@ -570,7 +615,7 @@ export const CreateMultiSessionModal: React.FC<
       )}
       open={open}
       onOpenChange={handleClose}
-      closeOnOverlay={!isCreating && !isClientModalOpen}
+      closeOnOverlay={!effectiveIsCreating && !isClientModalOpen}
       mobileVariant={isMobileView ? 'fullScreen' : 'center'}
       hideCloseButton={isMobileView}
     >
@@ -596,6 +641,7 @@ export const CreateMultiSessionModal: React.FC<
         step === 'upload' ? (
           <div className="flex flex-1 flex-col overflow-y-auto">
             {fileInput}
+            <AiGuardNotice className="mx-4 mt-4 shrink-0 md:mx-12" />
             {fileDropArea}
 
             {/* 일괄 설정 */}
@@ -660,13 +706,16 @@ export const CreateMultiSessionModal: React.FC<
       step === 'upload' ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-12 md:flex-row">
           {/* 왼쪽: 파일 목록 */}
-          <div className="flex h-full w-full max-w-[488px] flex-1 flex-col">
+          <div className="flex h-full w-full max-w-[488px] flex-1 flex-col gap-4">
             {fileInput}
+            <AiGuardNotice className="shrink-0" />
             {fileDropArea}
             <Text className="typo-sm mt-2 text-center text-fg-muted">
               파일 개수{' '}
-              <span className="font-medium text-primary">{files.length}</span> /{' '}
-              {MULTI_UPLOAD_LIMITS.MAX_FILES}
+              <span className="font-medium text-primary">
+                {effectiveFiles.length}
+              </span>{' '}
+              / {MULTI_UPLOAD_LIMITS.MAX_FILES}
             </Text>
           </div>
 
@@ -711,10 +760,10 @@ export const CreateMultiSessionModal: React.FC<
             tone="primary"
             size="lg"
             onClick={handleNextStep}
-            disabled={validFiles.length === 0 || isProcessing}
+            disabled={effectiveValidFiles.length === 0 || effectiveIsProcessing}
             className={isMobileView ? 'w-full' : 'w-full max-w-[375px]'}
           >
-            {isProcessing ? '파일 업로드 중...' : '다음'}
+            {effectiveIsProcessing ? '파일 업로드 중...' : '다음'}
           </Button>
         ) : (
           step2Buttons

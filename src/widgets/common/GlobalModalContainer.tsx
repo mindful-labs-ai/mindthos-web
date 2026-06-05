@@ -86,7 +86,7 @@ export const GlobalModalContainer = () => {
   const addClientData = useModalStore(
     (state) =>
       state.modalData.addClient as
-        | { onClientCreated?: (clientId: string) => void }
+        | { onClientCreated?: (clientId: string, clientName?: string) => void }
         | undefined
   );
 
@@ -147,9 +147,9 @@ export const GlobalModalContainer = () => {
     if (!open) closeModal('addClient');
   };
 
-  const handleClientCreated = (clientId: string) => {
+  const handleClientCreated = (clientId: string, clientName?: string) => {
     queryClient.invalidateQueries({ queryKey: clientQueryKeys.lists() });
-    addClientData?.onClientCreated?.(clientId);
+    addClientData?.onClientCreated?.(clientId, clientName);
     closeModal('addClient');
   };
 

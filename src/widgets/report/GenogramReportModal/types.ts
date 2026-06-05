@@ -1,4 +1,4 @@
-import type { ReactNode, RefObject } from 'react';
+import type { RefObject } from 'react';
 
 import type { GenogramPageHandle } from '@/genogram';
 import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
@@ -68,6 +68,4 @@ export interface UseReportModalReturn {
   setAnswer: (index: number, value: number) => void;
   setFormField: (field: keyof ReportFormData, value: string) => void;
   setPreviewTitle: (title: string) => void;
-
-  debugPanel: ReactNode;
 }

@@ -16,8 +16,8 @@ interface AddClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: Client | null;
-  /** 내담자 생성 완료 시 콜백 (생성된 내담자 ID 전달) */
-  onClientCreated?: (clientId: string) => void;
+  /** 내담자 생성 완료 시 콜백 (생성된 내담자 ID와 이름 전달) */
+  onClientCreated?: (clientId: string, clientName?: string) => void;
 }
 
 export const AddClientModal: React.FC<AddClientModalProps> = ({
@@ -44,13 +44,48 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
     onOpenChange(false);
   };
 
+  const closeThenNotifyCreated = (notifyCreated: () => void) => {
+    if (!isMobileView) {
+      notifyCreated();
+      handleClose();
+      return;
+    }
+
+    let notified = false;
+    const notifyOnce = () => {
+      if (notified) return;
+      notified = true;
+      window.removeEventListener('popstate', handlePopState);
+      notifyCreated();
+    };
+    const handlePopState = () => {
+      window.setTimeout(notifyOnce, 50);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    handleClose();
+    window.setTimeout(notifyOnce, 250);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     const result = await form.handleSubmit(e);
     if (result) {
-      // 생성 모드이고 내담자 ID가 있으면 콜백 호출
-      if (!isEditMode && typeof result === 'string' && onClientCreated) {
-        onClientCreated(result);
+      const createdClient =
+        !isEditMode && onClientCreated
+          ? typeof result === 'string'
+            ? { id: result, name: undefined }
+            : typeof result === 'object' && 'id' in result
+              ? { id: result.id, name: result.name }
+              : null
+          : null;
+
+      if (createdClient) {
+        closeThenNotifyCreated(() => {
+          onClientCreated?.(createdClient.id, createdClient.name);
+        });
+        return;
       }
+
       handleClose();
     }
   };

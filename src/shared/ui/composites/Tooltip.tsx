@@ -33,6 +33,9 @@ export const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = React.useState(false);
   const [position, setPosition] = React.useState({ top: 0, left: 0 });
+  const [tooltipZIndex, setTooltipZIndex] = React.useState<
+    React.CSSProperties['zIndex']
+  >('calc(var(--z-modal) - 1)');
   const triggerRef = React.useRef<HTMLDivElement>(null);
   const tooltipRef = React.useRef<HTMLDivElement>(null);
   const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(
@@ -97,7 +100,15 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   const showTooltip = React.useCallback(() => {
     if (disabled) return;
+    const isInsideDialog = triggerRef.current?.closest(
+      '[role="dialog"], [aria-modal="true"]'
+    );
+    const nextZIndex = isInsideDialog
+      ? 'var(--z-tooltip)'
+      : 'calc(var(--z-modal) - 1)';
+
     timeoutRef.current = setTimeout(() => {
+      setTooltipZIndex(nextZIndex);
       setIsVisible(true);
     }, delay);
   }, [disabled, delay]);
@@ -141,7 +152,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
               position: 'fixed',
               top: `${position.top}px`,
               left: `${position.left}px`,
-              zIndex: 1200,
+              zIndex: tooltipZIndex,
             }}
             className={cn(
               'pointer-events-none',

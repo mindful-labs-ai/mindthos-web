@@ -395,6 +395,22 @@ body {
     animation: slideUpFull 0.3s ease-out;
   }
 
+  /* 세로 캐러셀: 이전 항목이 위로 밀려 나감 (slideUpFull과 짝) */
+  @keyframes slideUpOut {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-slideUpOut {
+    animation: slideUpOut 0.3s ease-out forwards;
+  }
+
   @keyframes slideInFromLeft {
     from {
       transform: translateX(-100%);
@@ -468,6 +484,44 @@ body {
 
   .animate-pulse-glow-subtle {
     animation: pulse-glow-subtle 1.5s ease-in-out infinite;
+  }
+
+  @keyframes thinking-text-wave {
+    0% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .thinking-text-wave {
+    color: var(--color-grey-60);
+    background-image: linear-gradient(
+      100deg,
+      var(--color-grey-60) 0%,
+      var(--color-grey-60) 32%,
+      var(--color-grey-40) 43%,
+      var(--color-grey-80) 50%,
+      var(--color-grey-40) 57%,
+      var(--color-grey-60) 68%,
+      var(--color-grey-60) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 100% 50%;
+    background-repeat: repeat-x;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: thinking-text-wave 1.35s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thinking-text-wave {
+      background-image: none;
+      -webkit-text-fill-color: currentColor;
+      animation: none;
+    }
   }
 
   /* 부모 생성 모드에서 파트너선 hover 시 커서 포인터 */

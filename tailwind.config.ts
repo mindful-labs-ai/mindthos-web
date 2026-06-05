@@ -125,6 +125,10 @@ export default {
           50: 'var(--color-red-50)',
           80: 'var(--color-red-80)',
         },
+        yellow: {
+          20: 'var(--color-yellow-20)',
+          80: 'var(--color-yellow-80)',
+        },
       },
 
       /* ========================================

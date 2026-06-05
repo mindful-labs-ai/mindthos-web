@@ -40,6 +40,10 @@
   --primitive-red-50: #f77575;
   --primitive-red-80: #d54036;
 
+  /* Yellow */
+  --primitive-yellow-20: #fff0d6;
+  --primitive-yellow-80: #ebae43;
+
   /* White / Black (불변) */
   --primitive-white: #ffffff;
   --primitive-black: #000000;
@@ -166,6 +170,10 @@
   --color-red-50: var(--primitive-red-50);
   --color-red-80: var(--primitive-red-80);
 
+  /* --- Yellow palette (Tailwind 유틸리티용) --- */
+  --color-yellow-20: var(--primitive-yellow-20);
+  --color-yellow-80: var(--primitive-yellow-80);
+
   /* ========================================
    * 3. RADIUS
    * ======================================== */
@@ -187,7 +195,6 @@
   --z-tooltip: 1200;
   --z-toast: 1300;
   --z-spotlight: 1400;
-  --z-debug: 1500;
 
   /* ========================================
    * 5. SPACING

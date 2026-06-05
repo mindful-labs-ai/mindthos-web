@@ -11,15 +11,23 @@ import {
 interface UseGenogramExportOptions {
   rawImageData: string | null;
   watermarkSrc?: string;
+  defaultShowWatermark?: boolean;
 }
 
 export function useGenogramExport({
   rawImageData,
   watermarkSrc,
+  defaultShowWatermark = true,
 }: UseGenogramExportOptions) {
   const [backgroundId, setBackgroundId] =
     useState<BackgroundOptionId>('transparent');
-  const [showWatermark, setShowWatermark] = useState(true);
+  const [showWatermarkOverride, setShowWatermarkOverride] = useState<
+    boolean | null
+  >(null);
+  const showWatermark = showWatermarkOverride ?? defaultShowWatermark;
+  const setShowWatermark = useCallback((nextValue: boolean) => {
+    setShowWatermarkOverride(nextValue);
+  }, []);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 

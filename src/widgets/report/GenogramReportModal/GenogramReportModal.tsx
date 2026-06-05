@@ -191,8 +191,6 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
             )}
           </div>
         )}
-
-        {modal.debugPanel}
       </Modal>
 
       {/* 크레딧 부족 SnackBar */}

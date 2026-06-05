@@ -1,0 +1,133 @@
+import { useEffect, useRef } from 'react';
+
+import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
+
+import { PopoverEntryCard } from './PopoverEntryCard';
+import { PopoverResetButton } from './PopoverResetButton';
+import { PopoverSection } from './PopoverSection';
+import type { RegisteredAssessmentEntry, TranscriptEntry } from './types';
+
+interface RegisteredPopoverProps {
+  open: boolean;
+  onClose: () => void;
+  /** chip 트리거 ref — 외부 클릭 시 트리거는 무시 */
+  triggerRef?: React.RefObject<HTMLElement>;
+
+  transcripts: TranscriptEntry[];
+  assessments: RegisteredAssessmentEntry[];
+
+  /** 초기화 버튼 클릭 (확인 모달 트리거) */
+  onReset: () => void;
+
+  className?: string;
+}
+
+export const RegisteredPopover = ({
+  open,
+  onClose,
+  triggerRef,
+  transcripts,
+  assessments,
+  onReset,
+  className,
+}: RegisteredPopoverProps) => {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (rootRef.current?.contains(target)) return;
+      if (triggerRef?.current?.contains(target)) return;
+      onClose();
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [open, onClose, triggerRef]);
+
+  if (!open) return null;
+
+  const body = (
+    <>
+      {transcripts.length > 0 && (
+        <PopoverSection title="축어록">
+          {transcripts.map((t) => (
+            <PopoverEntryCard
+              key={t.id}
+              title={t.title}
+              metaLabel={t.metaLabel}
+            />
+          ))}
+        </PopoverSection>
+      )}
+
+      {assessments.length > 0 && (
+        <PopoverSection title="심리검사 결과지">
+          {assessments.map((a) => (
+            <PopoverEntryCard
+              key={a.id}
+              title={a.fileName}
+              metaLabel={
+                a.metaLabel ??
+                `${a.testDate}  |  ${a.pageCount}p  |  ${a.categoryLabel}`
+              }
+            />
+          ))}
+        </PopoverSection>
+      )}
+
+      <PopoverResetButton label="결과지 초기화" onClick={onReset} />
+    </>
+  );
+
+  // 모바일: 하단 시트 형태로 풀너비 노출 (overlay + slide up)
+  if (isMobileView) {
+    return (
+      <div className="fixed inset-0 z-popover flex items-end">
+        {/* 백드롭: 시맨틱 버튼으로 두어 키보드(Enter/Space)로 닫기 가능. */}
+        <button
+          type="button"
+          aria-label="팝오버 닫기"
+          className="absolute inset-0 cursor-default bg-black/40"
+          onClick={onClose}
+        />
+        <div
+          ref={rootRef}
+          className={cn(
+            'relative flex max-h-[80vh] w-full flex-col gap-5 overflow-y-auto rounded-t-2xl bg-surface p-5',
+            className
+          )}
+          role="dialog"
+        >
+          {body}
+        </div>
+      </div>
+    );
+  }
+
+  // 데스크탑: chip 우하단 absolute popover
+  return (
+    <div
+      ref={rootRef}
+      className={cn(
+        'absolute right-0 top-full z-popover mt-2 flex w-[320px] flex-col gap-5 rounded-2xl border border-grey-20 bg-surface p-5 shadow-elevated',
+        className
+      )}
+      role="dialog"
+    >
+      {body}
+    </div>
+  );
+};
