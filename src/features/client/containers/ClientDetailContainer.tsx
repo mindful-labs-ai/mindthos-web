@@ -20,6 +20,7 @@ import type {
 import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { dummyClientAnalysisVersions } from '@/shared/constants/dummyClientAnalysis';
 import {
   MixpanelError,
@@ -71,7 +72,7 @@ export const ClientDetailContainer: React.FC = () => {
   const { toast } = useToast();
 
   const checkCredit = useCreditGuard();
-  const CLIENT_ANALYSIS_CREDIT = 50;
+  const CLIENT_ANALYSIS_CREDIT = CREDIT_COST.CLIENT_ANALYSIS;
 
   const { clients, isLoading: isLoadingClients } = useClientList();
 

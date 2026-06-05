@@ -6,6 +6,7 @@ import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { createHandWrittenSession } from '@/shared/api/supabase/sessionQueries';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -33,7 +34,7 @@ interface CreateHandWrittenSessionModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const HAND_WRITTEN_CREDIT = 30;
+const HAND_WRITTEN_CREDIT = CREDIT_COST.HANDWRITTEN_SESSION;
 const MIN_CONTENT_LENGTH = 100;
 const MAX_CONTENT_LENGTH = 50000;
 

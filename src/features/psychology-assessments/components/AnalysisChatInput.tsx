@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
   AnalysisChatSendIcon,
@@ -31,7 +32,7 @@ export const AnalysisChatInput = ({
   onSubmit,
   disabled,
   placeholder = '심리검사 결과지를 등록한 뒤 분석을 시작해 주세요.',
-  creditCost = 5,
+  creditCost = CREDIT_COST.PSYCH_CHAT,
   showCreditChip = true,
   className,
 }: AnalysisChatInputProps) => {

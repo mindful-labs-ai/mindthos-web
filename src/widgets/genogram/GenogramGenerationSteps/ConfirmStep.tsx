@@ -1,8 +1,7 @@
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { cn } from '@/lib/cn';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { Text } from '@/shared/ui';
-
-import { CREDIT_COST } from './types';
 
 interface ConfirmStepProps {
   onConfirm: () => void;
@@ -15,11 +14,11 @@ export function ConfirmStep({
 }: ConfirmStepProps) {
   const { creditInfo, isLoading: isLoadingCredits } = useCreditInfo();
   const remainingCredits = creditInfo?.plan?.remaining ?? 0;
-  const hasEnoughCredits = remainingCredits >= CREDIT_COST;
+  const hasEnoughCredits = remainingCredits >= CREDIT_COST.GENOGRAM;
 
   const creditBadge = (
     <div className="flex items-center gap-1 rounded-md bg-green-20 px-2 py-1">
-      <Text className="font-headline text-green-80">50</Text>
+      <Text className="font-headline text-green-80">{CREDIT_COST.GENOGRAM}</Text>
       <svg
         width="14"
         height="14"
