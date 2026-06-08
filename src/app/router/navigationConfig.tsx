@@ -2,7 +2,7 @@ import React from 'react';
 
 import {
   // SideAnalysisIcon,
-  // SideCalendarIcon,
+  SideCalendarIcon,
   SideClientIcon,
   SideGenogramIcon,
   SideHelpIcon,
@@ -31,20 +31,19 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     value: 'home',
     icon: <SideHomeIcon size={24} />,
   },
-  // {
-  //   path: ROUTES.CALENDAR,
-  //   label: '일정',
-  //   value: 'calendar',
-  //   icon: <SideCalendarIcon size={24} />,
-  //   badge: 'comingSoon',
-  //   disabled: true,
-  // },
   {
     path: ROUTES.CLIENTS,
     label: '내담자',
     value: 'client',
     icon: <SideClientIcon size={24} />,
   },
+  {
+    path: ROUTES.CALENDAR,
+    label: '일정',
+    value: 'calendar',
+    icon: <SideCalendarIcon size={24} />,
+  },
+
   {
     path: ROUTES.SESSIONS,
     label: '상담 기록',
