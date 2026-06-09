@@ -2,24 +2,16 @@ import React from 'react';
 
 import { useLocation } from 'react-router-dom';
 
-import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
-import {
-  calculateDaysUntilReset,
-  getPlanLabel,
-} from '@/features/settings/utils/planUtils';
 import { cn } from '@/lib/cn';
-import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Edit3Icon, PlusIcon, SideLockIcon, UploadIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useModalStore } from '@/stores/modalStore';
 import { CreateHandWrittenSessionModal } from '@/widgets/session/CreateHandWrittenSessionModal';
-import { CreditDisplay } from '@/widgets/settings/CreditDisplay';
 
 import {
   AI_ANALYSIS_ITEMS,
-  BOTTOM_NAV_ITEMS,
   SESSION_MANAGEMENT_ITEMS,
   getNavValueFromPath,
   getPathFromNavValue,
@@ -106,20 +98,12 @@ export const SideTab: React.FC<SideTabProps> = ({
   // 전역 모달 스토어 사용
   const openModal = useModalStore((state) => state.openModal);
 
-  // 크레딧 정보 가져오기
-  const { creditInfo } = useCreditInfo();
   // 현재 경로에 따라 activeNav 자동 설정
   const activeNav: string = React.useMemo(() => {
     return getNavValueFromPath(location.pathname);
   }, [location.pathname]);
 
   const handleNavSelect = (value: string) => {
-    if (value === 'help') {
-      window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
-      onNavSelect?.();
-      return;
-    }
-
     const path = getPathFromNavValue(value);
     if (path) {
       navigateWithUtm(path);
@@ -229,41 +213,6 @@ export const SideTab: React.FC<SideTabProps> = ({
           <Text className="nav-label">AI 분석</Text>
           <nav className="flex flex-col gap-1">
             {AI_ANALYSIS_ITEMS.map((item) => (
-              <NavItem
-                key={item.value}
-                icon={item.icon}
-                label={item.label}
-                value={item.value}
-                badge={item.badge}
-                disabled={item.disabled}
-                isActive={activeNav === item.value}
-                onSelect={handleNavSelect}
-                onDisabledClick={() =>
-                  openModal('comingSoon', { source: `sidebar_${item.value}` })
-                }
-              />
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      <div className="mt-5">
-        {/* Credit Display */}
-        {creditInfo && (
-          <CreditDisplay
-            totalCredit={creditInfo.plan.total}
-            usedCredit={creditInfo.plan.used}
-            planLabel={getPlanLabel(creditInfo.plan.type)}
-            planType={creditInfo.plan.type}
-            daysUntilReset={calculateDaysUntilReset(
-              creditInfo.subscription.reset_at
-            )}
-            variant="sidebar"
-          />
-        )}
-        <div className="border-t border-sidebar-border py-3">
-          <nav className="flex flex-col gap-1">
-            {BOTTOM_NAV_ITEMS.map((item) => (
               <NavItem
                 key={item.value}
                 icon={item.icon}
