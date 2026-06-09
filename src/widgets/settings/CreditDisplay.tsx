@@ -183,7 +183,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
           className="absolute right-2 top-2"
           onClick={(e) => e.stopPropagation()}
         >
-          <CreditPricingTooltip placement="right">
+          <CreditPricingTooltip>
             <svg
               width="14"
               height="14"
