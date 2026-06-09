@@ -44,7 +44,7 @@ export function MiniCalendar({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <span className="text-l font-medium text-grey-100">
+        <span className="text-m font-medium text-grey-100">
           {current.format('YYYY.MM')}
         </span>
         <div className="flex items-center gap-1">
@@ -67,13 +67,13 @@ export function MiniCalendar({
               className="flex items-center justify-center"
             >
               {isToday ? (
-                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-green-80 text-m font-emphasize text-white">
+                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-green-80 text-sm font-emphasize text-white">
                   {day.date()}
                 </span>
               ) : (
                 <span
                   className={cn(
-                    'flex h-[30px] w-[30px] items-center justify-center text-m font-medium',
+                    'flex h-[30px] w-[30px] items-center justify-center text-sm font-medium',
                     inMonth ? 'text-grey-100' : 'text-grey-60'
                   )}
                 >

@@ -22,7 +22,7 @@ export function MyCalendars({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h3 className="text-l font-medium text-grey-100">나의 캘린더</h3>
+        <h3 className="text-m font-medium text-grey-100">나의 캘린더</h3>
         <button
           type="button"
           aria-label="카테고리 추가"

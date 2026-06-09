@@ -41,7 +41,7 @@ export function CategoryToggleItem({
           <Check size={18} strokeWidth={3} className={style.swatchCheck} />
         )}
       </span>
-      <span className="text-m font-medium text-[#a2a2a2]">{label}</span>
+      <span className="text-sm font-medium text-[#a2a2a2]">{label}</span>
     </button>
   );
 }
