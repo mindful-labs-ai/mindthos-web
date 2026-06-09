@@ -199,14 +199,14 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
           </CreditPricingTooltip>
         </button>
       </Text>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2 lg:justify-start">
         <ProgressCircle
           value={percentage}
           size={28}
           strokeWidth={5}
           showValue={false}
         />
-        <div className="flex-1 text-left">
+        <div className="text-center lg:flex-1 lg:text-left">
           <Text className="typo-sm flex gap-2 text-fg">
             <span className="flex items-center gap-1 font-emphasize text-primary">
               {remaining.toLocaleString()}{' '}
@@ -251,7 +251,7 @@ export const CreditDisplay: React.FC<CreditDisplayProps> = ({
       </div>
 
       <div className="flex flex-col items-center justify-center gap-2">
-        <Text className="px-3 text-center text-sm font-medium text-fg-muted">
+        <Text className="text-center text-sm font-medium text-fg-muted">
           {isFree
             ? '더 많은 크레딧과 기능을 만나보세요'
             : daysUntilReset !== undefined &&
