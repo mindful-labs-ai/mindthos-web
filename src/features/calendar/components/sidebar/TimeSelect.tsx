@@ -39,7 +39,7 @@ export function TimeSelect({
         aria-label={ariaLabel}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="flex h-[38px] w-full items-center justify-between rounded-md border border-grey-40 bg-grey-10 px-3 text-m text-grey-100"
+        className="flex h-[38px] w-full items-center justify-between rounded-md border border-grey-40 bg-grey-10 px-3 text-sm text-grey-100"
       >
         <span>{value}</span>
         <ChevronDown size={16} className="shrink-0 text-[#a1a2a8]" />
@@ -56,7 +56,7 @@ export function TimeSelect({
                   setOpen(false);
                 }}
                 className={cn(
-                  'w-full px-3 py-1.5 text-left text-m lg:hover:bg-grey-20',
+                  'w-full px-3 py-1.5 text-left text-sm lg:hover:bg-grey-20',
                   opt === value
                     ? 'font-medium text-green-80'
                     : 'text-grey-100'

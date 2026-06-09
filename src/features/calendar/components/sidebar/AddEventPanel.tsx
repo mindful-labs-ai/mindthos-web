@@ -56,7 +56,7 @@ function formatDateLabel(date: Dayjs | null): string {
 }
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <span className="text-m font-emphasize text-grey-100">{children}</span>
+  <span className="text-sm font-emphasize text-grey-100">{children}</span>
 );
 
 /** 일정 추가하기 슬라이드오버 패널 */
@@ -144,7 +144,7 @@ export function AddEventPanel({
         >
           <ChevronLeft size={24} strokeWidth={2} />
         </button>
-        <h2 className="text-m font-emphasize text-[#222121]">
+        <h2 className="text-sm font-emphasize text-[#222121]">
           {isEdit ? '일정 변경하기' : '일정 추가하기'}
         </h2>
       </div>
@@ -163,7 +163,7 @@ export function AddEventPanel({
                   type="button"
                   onClick={() => setKind(opt.value)}
                   className={cn(
-                    'h-[35px] w-[60px] rounded-md border text-m font-medium',
+                    'h-[35px] w-[60px] rounded-md border text-sm font-medium',
                     active
                       ? 'border-green-80 bg-[#44ce4b0d] text-green-80'
                       : 'border-[#ecedf3] bg-white text-[#abaebe]'
@@ -188,7 +188,7 @@ export function AddEventPanel({
             onOpenChange={setClientSelectOpen}
             placement="bottom-right"
             trigger={
-              <div className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-m">
+              <div className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm">
                 <User
                   size={18}
                   strokeWidth={1.5}
@@ -213,7 +213,7 @@ export function AddEventPanel({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="제목을 입력해주세요"
-            className="h-[38px] w-full rounded-md border border-grey-40 bg-grey-10 px-3 text-m text-grey-100 placeholder:text-grey-60 focus:outline-none"
+            className="h-[38px] w-full rounded-md border border-grey-40 bg-grey-10 px-3 text-sm text-grey-100 placeholder:text-grey-60 focus:outline-none"
           />
         </div>
 
@@ -227,7 +227,7 @@ export function AddEventPanel({
               <button
                 type="button"
                 onClick={() => setDatePickerOpen((o) => !o)}
-                className="flex h-[38px] w-full items-center justify-between rounded-md border border-grey-40 bg-grey-10 px-3 text-m text-grey-100"
+                className="flex h-[38px] w-full items-center justify-between rounded-md border border-grey-40 bg-grey-10 px-3 text-sm text-grey-100"
               >
                 <span className={selectedDate ? 'text-grey-100' : 'text-grey-60'}>
                   {formatDateLabel(selectedDate)}
@@ -255,7 +255,7 @@ export function AddEventPanel({
                 onChange={handleStartChange}
                 ariaLabel="시작 시간"
               />
-              <span className="shrink-0 text-m text-black">~</span>
+              <span className="shrink-0 text-sm text-black">~</span>
               <TimeSelect
                 value={endTime}
                 options={endOptions}
@@ -271,7 +271,7 @@ export function AddEventPanel({
           <FieldLabel>상담 주기</FieldLabel>
           <button
             type="button"
-            className="flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-m text-[#abaebe]"
+            className="flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm text-[#abaebe]"
           >
             반복 안함
             <ChevronDown size={16} strokeWidth={1.5} />
@@ -283,7 +283,7 @@ export function AddEventPanel({
           <FieldLabel>상담 방식</FieldLabel>
           <button
             type="button"
-            className="flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-m text-[#abaebe]"
+            className="flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm text-[#abaebe]"
           >
             선택 안함
             <ChevronDown size={16} strokeWidth={1.5} />
@@ -298,7 +298,7 @@ export function AddEventPanel({
           disabled={!ctaEnabled}
           onClick={() => onSubmit({ kind, title, startTime, endTime })}
           className={cn(
-            'h-[41px] w-full rounded-md text-m font-emphasize text-white',
+            'h-[41px] w-full rounded-md text-sm font-emphasize text-white',
             ctaEnabled ? 'bg-green-80' : 'cursor-not-allowed bg-grey-40'
           )}
         >

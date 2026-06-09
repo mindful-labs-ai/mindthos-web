@@ -33,7 +33,7 @@ export function AddCalendarPanel({ onClose, onConnect }: AddCalendarPanelProps) 
         >
           <ChevronLeft size={24} strokeWidth={2} />
         </button>
-        <h2 className="text-m font-emphasize text-[#222121]">캘린더 추가하기</h2>
+        <h2 className="text-sm font-emphasize text-[#222121]">캘린더 추가하기</h2>
       </div>
 
       {/* 본문 */}

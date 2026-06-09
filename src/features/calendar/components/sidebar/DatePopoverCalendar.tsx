@@ -29,7 +29,7 @@ export function DatePopoverCalendar({
   return (
     <div className="absolute left-0 top-full z-30 mt-2 w-[311px] rounded-md border border-[#ecedf3] bg-white p-6 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
       <div className="flex items-center justify-between">
-        <span className="text-l font-medium text-grey-100">
+        <span className="text-m font-medium text-grey-100">
           {viewMonth.format('YYYY.MM')}
         </span>
         <div className="flex items-center gap-1">
@@ -66,7 +66,7 @@ export function DatePopoverCalendar({
                 type="button"
                 onClick={() => onSelect(day)}
                 className={cn(
-                  'flex h-[30px] w-[30px] items-center justify-center rounded-full text-m font-medium',
+                  'flex h-[30px] w-[30px] items-center justify-center rounded-full text-sm font-medium',
                   isSelected
                     ? 'bg-green-20 text-green-80'
                     : isToday
