@@ -27,6 +27,7 @@ import {
 import type { ClientTemplateGroups } from '@/features/client/types/clientAnalysis.types';
 import type { Session } from '@/features/session/types';
 import { trackEvent } from '@/lib/mixpanel';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
@@ -221,7 +222,9 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     <div className={isMobileView ? 'shrink-0 px-4 pb-4' : 'shrink-0 p-6 pt-0'}>
       <div className="flex items-center justify-center py-3">
         <div className="flex items-center justify-center gap-1 rounded-md bg-green-20 px-1.5 py-1">
-          <span className="text-m font-medium text-green-80">50</span>
+          <span className="text-m font-medium text-green-80">
+            {CREDIT_COST.CLIENT_ANALYSIS}
+          </span>
           <CreditIcon size={14} />
           <span className="text-m font-medium text-green-80">사용</span>
         </div>
