@@ -23,6 +23,10 @@ import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 import { LockedFeatureModal } from './LockedFeatureModal';
 import {
+  getTemplateConfig,
+  supervisionReportToPlainText,
+} from './supervision';
+import {
   parseSupervisionReport,
   SupervisionReportRenderer,
 } from './SupervisionReportRenderer';
@@ -181,9 +185,14 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   });
 
   // 클립보드 복사
-  const handleCopy = async (content: string) => {
+  const handleCopy = async (content: string, templateId?: number) => {
     try {
-      await navigator.clipboard.writeText(stripMarkdown(content));
+      // V2(고정 구조 JSON)면 읽기 좋은 평문으로, 아니면(legacy 마크다운) 기존대로.
+      const report = parseSupervisionReport(content);
+      const text = report
+        ? supervisionReportToPlainText(report, getTemplateConfig(templateId))
+        : stripMarkdown(content);
+      await navigator.clipboard.writeText(text);
       setCopiedKey('ai_supervision');
 
       trackEvent(MixpanelEvent.AnalysisCopy, { tab: activeTab });
@@ -270,7 +279,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => handleCopy(analysis.content || '')}
+                        onClick={() => handleCopy(analysis.content || '', analysis.template_id)}
                         className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         {copiedKey === 'ai_supervision' ? (
@@ -312,7 +321,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => handleCopy(analysis.content || '')}
+                        onClick={() => handleCopy(analysis.content || '', analysis.template_id)}
                         className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         <CopyIcon size={20} /> 복사하기
@@ -367,7 +376,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                           {!isTablet && (
                             <button
                               onClick={() => {
-                                handleCopy(analysis.content || '');
+                                handleCopy(analysis.content || '', analysis.template_id);
                                 setIsMenuOpen(false);
                               }}
                               className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
@@ -444,7 +453,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
           {/* 본문: JSON(section/block) 보고서면 전용 렌더러, 아니면 구 Markdown 하위호환 */}
           {report ? (
-            <SupervisionReportRenderer content={analysis.content} />
+            <SupervisionReportRenderer
+              content={analysis.content}
+              templateId={analysis.template_id}
+            />
           ) : (
             <MarkdownRenderer
               ref={isEditing ? markdownRef : undefined}
