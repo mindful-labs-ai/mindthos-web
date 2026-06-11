@@ -64,6 +64,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const isGenogram = location.pathname === '/genogram';
   const isPsychologyAssessments =
     location.pathname === '/psychology-assessments';
+  const isAiSupervision = location.pathname === '/ai-supervision';
 
   const pageTitle = React.useMemo(() => {
     const pathname = location.pathname;
@@ -78,12 +79,17 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const psychologyRightSlot = isPsychologyAssessments ? (
     <PsychologyHeaderControls />
   ) : null;
+  // AI 슈퍼비전: 내담자 선택 트리거 (데스크탑 ClientSidebar 대체)
+  const aiSupervisionRightSlot = isAiSupervision ? (
+    <HeaderClientSelectButton />
+  ) : null;
 
   const rightSlot = (() => {
     // 홈: 프로필 메뉴(상담사 정보·크레딧·설정) 진입점
     if (location.pathname === '/') return <ProfileMenu surface="sheet" />;
     if (genogramRightSlot) return genogramRightSlot;
     if (psychologyRightSlot) return psychologyRightSlot;
+    if (aiSupervisionRightSlot) return aiSupervisionRightSlot;
     if (location.pathname === '/clients') {
       return (
         <Button
@@ -252,16 +258,16 @@ function PsychologyHeaderControls() {
   return (
     <div className="flex min-w-0 items-center gap-2">
       <PsychologyAssessmentPopoverButton />
-      <PsychologyClientButton />
+      <HeaderClientSelectButton />
     </div>
   );
 }
 
 /**
- * 심리검사 해석 MobileHeader 우측 내담자 선택 버튼.
- * 데스크탑의 좌측 ClientSidebar를 모바일에서 대체.
+ * MobileHeader 우측 내담자 선택 버튼 (심리검사 해석·AI 슈퍼비전 공용).
+ * 데스크탑의 좌측 ClientSidebar를 모바일에서 대체 — ?clientId= 쿼리로 동기화.
  */
-function PsychologyClientButton() {
+function HeaderClientSelectButton() {
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
   const { clients } = useClientList();

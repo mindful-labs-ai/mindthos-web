@@ -230,7 +230,7 @@ export function AiSupervisionContainer() {
               </p>
               <p className="whitespace-pre-line text-sm text-grey-60">
                 {isMobileView
-                  ? '내담자를 선택하면\n다회기 분석을 받을 수 있어요.'
+                  ? '우측 상단에서 내담자를 선택하면\n다회기 분석을 받을 수 있어요.'
                   : '좌측에서 내담자를 선택하면\n다회기 분석을 받을 수 있어요.'}
               </p>
             </div>
