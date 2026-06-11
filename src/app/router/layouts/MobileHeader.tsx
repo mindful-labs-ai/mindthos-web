@@ -39,6 +39,7 @@ import { Modal } from '@/shared/ui/composites/Modal';
 import { useAuthStore } from '@/stores/authStore';
 import { useClientListScrollStore } from '@/stores/clientListScrollStore';
 import { useModalStore } from '@/stores/modalStore';
+import { ProfileMenu } from '@/widgets/profile';
 
 import { getRouteLabel } from '../navigationConfig';
 
@@ -79,6 +80,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   ) : null;
 
   const rightSlot = (() => {
+    // 홈: 프로필 메뉴(상담사 정보·크레딧·설정) 진입점
+    if (location.pathname === '/') return <ProfileMenu surface="sheet" />;
     if (genogramRightSlot) return genogramRightSlot;
     if (psychologyRightSlot) return psychologyRightSlot;
     if (location.pathname === '/clients') {
