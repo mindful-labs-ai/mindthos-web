@@ -170,6 +170,21 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     handleStructuredCancel,
   ]);
 
+  // 미저장 편집 중 새로고침/탭 닫기 방지 — draft는 메모리에만 있어 이탈 시 유실됨
+  const hasUnsavedEdits =
+    (isEditing && hasEdits) ||
+    (structuredSession.isEditing && structuredSession.hasEdits);
+  React.useEffect(() => {
+    if (!hasUnsavedEdits) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () =>
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedEdits]);
+
   // 템플릿 이름 조회 헬퍼
   const getTemplateName = (templateId: number | undefined): string => {
     if (!templateId || !templates) return 'AI 슈퍼비전';
