@@ -29,6 +29,7 @@ import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { useGenogramNoticeStore } from '@/stores/genogramNoticeStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
+import { ClientSidebar } from '@/widgets/client/ClientSidebar';
 import { GenogramExportModal } from '@/widgets/genogram/export';
 import { GenogramEmptyState } from '@/widgets/genogram/GenogramEmptyState';
 import { GenogramGenerationSteps } from '@/widgets/genogram/GenogramGenerationSteps';
@@ -83,6 +84,7 @@ export function GenogramClientContainer() {
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [temporaryData, setTemporaryData] = useState<string | null>(null);
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [exitedTemporaryMode, setExitedTemporaryMode] = useState(false);
@@ -422,6 +424,17 @@ export function GenogramClientContainer() {
 
   // --- Build widget slots ---
 
+  // 데스크탑 좌측 내담자 사이드바 — 기존 헤더의 내담자 드롭다운을 대체
+  const sidebar = !isMobileView ? (
+    <ClientSidebar
+      selectedClientId={clientId}
+      onSelectClient={handleClientSelect}
+      collapsed={isSidebarCollapsed}
+      onToggleCollapsed={() => setIsSidebarCollapsed((prev) => !prev)}
+      onAddClient={handleOpenAddClientModal}
+    />
+  ) : null;
+
   const header = isMobileView ? (
     showCanvas && clientId && !steps.isOpen ? (
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-3">
@@ -442,9 +455,7 @@ export function GenogramClientContainer() {
     ) : null
   ) : (
     <GenogramPageHeader
-      clients={clients}
       selectedClient={selectedClient}
-      onClientSelect={handleClientSelect}
       onUndo={handleUndo}
       onRedo={handleRedo}
       onExport={handleExport}
@@ -457,7 +468,6 @@ export function GenogramClientContainer() {
       isPanelOpen={isPanelOpen}
       isSaving={isSaving}
       lastSavedAt={lastSavedAt}
-      onAddClient={handleOpenAddClientModal}
       isTemporaryMode={isTemporaryMode}
       onReset={showCanvas && clientId ? handleReset : undefined}
       isResetting={isResetting}
@@ -624,6 +634,7 @@ export function GenogramClientContainer() {
   return (
     <>
       <GenogramClientView
+        sidebar={sidebar}
         header={header}
         content={content}
         addClientModal={addClientModal}

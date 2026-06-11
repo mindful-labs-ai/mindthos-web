@@ -3,6 +3,8 @@ import type { FC, ReactNode } from 'react';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
 
 export interface GenogramClientViewProps {
+  /** 데스크탑 좌측 내담자 사이드바 (모바일은 null) */
+  sidebar?: ReactNode;
   header: ReactNode;
   content: ReactNode;
   addClientModal: ReactNode;
@@ -18,6 +20,7 @@ export interface GenogramClientViewProps {
 }
 
 export const GenogramClientView: FC<GenogramClientViewProps> = ({
+  sidebar,
   header,
   content,
   addClientModal,
@@ -51,6 +54,14 @@ export const GenogramClientView: FC<GenogramClientViewProps> = ({
             {content}
           </div>
         </>
+      ) : sidebar ? (
+        <div className="flex min-h-0 flex-1">
+          {sidebar}
+          <div className="relative min-w-0 flex-1">
+            {header}
+            {content}
+          </div>
+        </div>
       ) : (
         <>
           {header}
