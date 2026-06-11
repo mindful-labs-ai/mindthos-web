@@ -1,9 +1,9 @@
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { ClientAvatar } from '@/widgets/client/ClientAvatar';
 
 import { AnalysisStatusChip, type AnalysisStatus } from './AnalysisStatusChip';
-import { ClientAvatar } from './ClientAvatar';
 
 interface ClientProfileHeaderProps {
   client: Client;

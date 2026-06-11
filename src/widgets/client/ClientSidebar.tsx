@@ -20,6 +20,8 @@ interface ClientSidebarProps {
   onSelectClient: (client: Client) => void;
   collapsed: boolean;
   onToggleCollapsed: () => void;
+  /** 내담자 추가 버튼 동작 오버라이드 — 기본은 전역 addClient 모달 */
+  onAddClient?: () => void;
 }
 
 const toClient = (item: ClientsPageItem, counselorId: string): Client => ({
@@ -43,6 +45,7 @@ export const ClientSidebar = ({
   onSelectClient,
   collapsed,
   onToggleCollapsed,
+  onAddClient,
 }: ClientSidebarProps) => {
   const userId = useAuthStore((state) => state.userId);
   const openModal = useModalStore((state) => state.openModal);
@@ -83,6 +86,10 @@ export const ClientSidebar = ({
   });
 
   const handleAddClient = () => {
+    if (onAddClient) {
+      onAddClient();
+      return;
+    }
     openModal('addClient');
   };
 
