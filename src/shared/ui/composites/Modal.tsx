@@ -20,6 +20,8 @@ export interface ModalProps {
   mobileVariant?: ModalMobileVariant;
   /** fullScreen에서 history 관리 비활성화 (중첩 모달에서 history 충돌 방지) */
   disableHistory?: boolean;
+  /** 오버레이(딤 + 래퍼) className 오버라이드 — 팝오버 위에 띄우는 등 z-index 조정용 */
+  overlayClassName?: string;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -58,6 +60,7 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   mobileVariant = 'center',
   disableHistory = false,
+  overlayClassName,
 }) => {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const previousFocusRef = React.useRef<HTMLElement | null>(null);
@@ -220,7 +223,8 @@ export const Modal: React.FC<ModalProps> = ({
       'flex items-end lg:items-center lg:justify-center lg:p-4',
     // fullScreen: 모바일/태블릿에서 전체 화면, lg 이상에서는 center
     mobileVariant === 'fullScreen' &&
-      'flex items-stretch lg:items-center lg:justify-center lg:p-4'
+      'flex items-stretch lg:items-center lg:justify-center lg:p-4',
+    overlayClassName
   );
 
   const contentClass = cn(

@@ -22,6 +22,14 @@ import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 import { LockedFeatureModal } from './LockedFeatureModal';
+import {
+  getTemplateConfig,
+  supervisionReportToPlainText,
+} from './supervision';
+import {
+  parseSupervisionReport,
+  SupervisionReportRenderer,
+} from './SupervisionReportRenderer';
 
 interface ClientAnalysisTabProps {
   analyses: ClientAnalysisVersion[];
@@ -177,9 +185,14 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   });
 
   // 클립보드 복사
-  const handleCopy = async (content: string) => {
+  const handleCopy = async (content: string, templateId?: number) => {
     try {
-      await navigator.clipboard.writeText(stripMarkdown(content));
+      // V2(고정 구조 JSON)면 읽기 좋은 평문으로, 아니면(legacy 마크다운) 기존대로.
+      const report = parseSupervisionReport(content);
+      const text = report
+        ? supervisionReportToPlainText(report, getTemplateConfig(templateId))
+        : stripMarkdown(content);
+      await navigator.clipboard.writeText(text);
       setCopiedKey('ai_supervision');
 
       trackEvent(MixpanelEvent.AnalysisCopy, { tab: activeTab });
@@ -232,6 +245,9 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       const dateStr = analysis.created_at
         ? formatDate(analysis.created_at)
         : '';
+      // JSON 보고서는 인라인 편집 미지원 → 편집 진입 버튼 숨김.
+      const report = parseSupervisionReport(analysis.content);
+      const canEdit = report === null && onSaveContent && !isReadOnly;
 
       return (
         <div className="relative">
@@ -252,7 +268,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                   {/* 데스크탑: 모든 버튼 인라인 */}
                   {!isMobileView && (
                     <>
-                      {onSaveContent && !isReadOnly && (
+                      {canEdit && (
                         <button
                           type="button"
                           onClick={handleEditStart}
@@ -263,7 +279,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => handleCopy(analysis.content || '')}
+                        onClick={() => handleCopy(analysis.content || '', analysis.template_id)}
                         className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         {copiedKey === 'ai_supervision' ? (
@@ -294,7 +310,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                   {/* 태블릿: 편집/복사 인라인 + ⋮ */}
                   {isMobileView && isTablet && (
                     <>
-                      {onSaveContent && !isReadOnly && (
+                      {canEdit && (
                         <button
                           type="button"
                           onClick={handleEditStart}
@@ -305,7 +321,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => handleCopy(analysis.content || '')}
+                        onClick={() => handleCopy(analysis.content || '', analysis.template_id)}
                         className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         <CopyIcon size={20} /> 복사하기
@@ -342,7 +358,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                         mobileVariant="bottomSheet"
                       >
                         <div className="mb-16 w-full space-y-1">
-                          {!isTablet && onSaveContent && !isReadOnly && (
+                          {!isTablet && canEdit && (
                             <button
                               onClick={() => {
                                 handleEditStart();
@@ -360,7 +376,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                           {!isTablet && (
                             <button
                               onClick={() => {
-                                handleCopy(analysis.content || '');
+                                handleCopy(analysis.content || '', analysis.template_id);
                                 setIsMenuOpen(false);
                               }}
                               className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
@@ -435,13 +451,20 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           {/* 모바일: 구분선 */}
           {isMobileView && <div className="mb-6 border-b border-grey-30" />}
 
-          {/* 마크다운 렌더링 */}
-          <MarkdownRenderer
-            ref={isEditing ? markdownRef : undefined}
-            content={removeNonverbalTags(analysis.content)}
-            className="text-start"
-            editable={isEditing}
-          />
+          {/* 본문: JSON(section/block) 보고서면 전용 렌더러, 아니면 구 Markdown 하위호환 */}
+          {report ? (
+            <SupervisionReportRenderer
+              content={analysis.content}
+              templateId={analysis.template_id}
+            />
+          ) : (
+            <MarkdownRenderer
+              ref={isEditing ? markdownRef : undefined}
+              content={removeNonverbalTags(analysis.content)}
+              className="text-start"
+              editable={isEditing}
+            />
+          )}
         </div>
       );
     }

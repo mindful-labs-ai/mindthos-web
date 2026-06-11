@@ -11,6 +11,7 @@ import {
   type BreadCrumbItem,
 } from '@/shared/ui/composites/BreadCrumb';
 import { useAuthStore } from '@/stores/authStore';
+import { ProfileMenu } from '@/widgets/profile';
 
 import { routeNameMap } from '../navigationConfig';
 
@@ -107,8 +108,9 @@ export const Header: React.FC = () => {
   const breadcrumbItems = getBreadcrumbItems();
 
   return (
-    <header className="sticky top-0 hidden h-header items-center justify-start border-b border-header-border bg-header-bg px-8 py-4 sm:flex">
+    <header className="sticky top-0 z-header hidden h-header items-center justify-between gap-4 border-b border-header-border bg-header-bg px-8 py-4 sm:flex">
       <BreadCrumb items={breadcrumbItems} />
+      <ProfileMenu surface="dropdown" />
     </header>
   );
 };
