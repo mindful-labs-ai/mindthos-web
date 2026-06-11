@@ -40,11 +40,11 @@ export function HomeEventBanner() {
   };
 
   return (
-    <div className="relative mb-6 w-full max-w-[1200px] overflow-hidden rounded-lg">
+    <div className="relative w-full max-w-[1200px] overflow-hidden rounded-lg">
       <img
         src={BANNER.imageSrc}
         alt={BANNER.title}
-        className="h-auto w-full object-cover"
+        className="h-16 w-full object-cover md:h-auto"
       />
       <button
         type="button"
