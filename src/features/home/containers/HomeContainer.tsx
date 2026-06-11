@@ -2,7 +2,11 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { ROUTES, getSessionDetailRoute } from '@/app/router/constants';
+import {
+  ROUTES,
+  getAiSupervisionRoute,
+  getSessionDetailRoute,
+} from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import {
   dummyClient,
@@ -25,6 +29,9 @@ import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   AddClientActionIcon,
   SessionHistoryActionIcon,
+  SideCalendarIcon,
+  SideGenogramIcon,
+  SideSupervisionIcon,
   UploadActionIcon,
 } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
@@ -36,6 +43,7 @@ import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 import { ActionCard } from '@/widgets/home/ActionCard';
 import { GreetingSection } from '@/widgets/home/GreetingSection';
+import { HomeEventBanner } from '@/widgets/home/HomeEventBanner';
 import { QuestStep } from '@/widgets/onboarding/QuestStep';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
@@ -205,6 +213,18 @@ const HomeContainer = () => {
     navigateWithUtm(ROUTES.SESSIONS);
   };
 
+  const handleGenogramClick = () => {
+    navigateWithUtm(ROUTES.GENOGRAM);
+  };
+
+  const handleCalendarClick = () => {
+    navigateWithUtm(ROUTES.CALENDAR);
+  };
+
+  const handleSupervisionClick = () => {
+    navigateWithUtm(getAiSupervisionRoute());
+  };
+
   const handleSessionClick = (record: SessionRecord) => {
     trackEvent(MixpanelEvent.SessionCardClick, {
       session_id: record.session_id,
@@ -252,26 +272,49 @@ const HomeContainer = () => {
     <GreetingSection userName={userName!} date={formatKoreanDate()} />
   );
 
+  const actionCardClass = 'h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]';
   const actionCards = (
-    <div className="mb-8 flex max-w-[1200px] flex-wrap gap-3 md:justify-start md:gap-5 lg:flex-nowrap lg:gap-6">
-      <ActionCard
-        icon={<UploadActionIcon size={24} />}
-        title="녹음 파일 업로드하기"
-        onClick={handleUploadClick}
-        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
-      />
-      <ActionCard
-        icon={<AddClientActionIcon size={24} className="text-danger" />}
-        title="내담자 추가하기"
-        onClick={handleAddCustomerClick}
-        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
-      />
-      <ActionCard
-        icon={<SessionHistoryActionIcon size={24} className="text-warn" />}
-        title="상담 기록 전체보기"
-        onClick={handleViewAllRecordsClick}
-        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
-      />
+    <div className="mb-8 flex max-w-[1200px] flex-col gap-3 md:gap-6">
+      <div className="flex flex-wrap gap-3 md:gap-5 lg:flex-nowrap lg:gap-6">
+        <ActionCard
+          icon={<UploadActionIcon size={24} />}
+          title="녹음 파일 업로드하기"
+          onClick={handleUploadClick}
+          className={actionCardClass}
+        />
+        <ActionCard
+          icon={<AddClientActionIcon size={24} className="text-danger" />}
+          title="내담자 추가하기"
+          onClick={handleAddCustomerClick}
+          className={actionCardClass}
+        />
+        <ActionCard
+          icon={<SessionHistoryActionIcon size={24} className="text-warn" />}
+          title="상담 기록 전체보기"
+          onClick={handleViewAllRecordsClick}
+          className={actionCardClass}
+        />
+        <ActionCard
+          icon={<SideGenogramIcon size={24} className="text-[#CACA2A]" />}
+          title="가계도 그리기"
+          onClick={handleGenogramClick}
+          className={actionCardClass}
+        />
+      </div>
+      <div className="flex flex-wrap gap-3 md:gap-5 lg:flex-nowrap lg:gap-6">
+        <ActionCard
+          icon={<SideCalendarIcon size={24} className="text-[#6E81EA]" />}
+          title="상담 일정 추가하기"
+          onClick={handleCalendarClick}
+          className={actionCardClass}
+        />
+        <ActionCard
+          icon={<SideSupervisionIcon size={24} className="text-[#B065E5]" />}
+          title="AI 슈퍼비전 받기"
+          onClick={handleSupervisionClick}
+          className={actionCardClass}
+        />
+      </div>
     </div>
   );
 
@@ -328,6 +371,7 @@ const HomeContainer = () => {
   );
 
   const viewProps = {
+    eventBanner: <HomeEventBanner />,
     onboardingSection,
     greetingSection,
     actionCards,
