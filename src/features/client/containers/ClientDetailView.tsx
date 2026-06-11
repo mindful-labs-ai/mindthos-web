@@ -10,6 +10,8 @@ import type { Client } from '../types';
 
 export interface ClientDetailViewProps {
   client: Client;
+  /** 데스크탑 좌측 내담자 사이드바 (모바일은 null) */
+  sidebar?: React.ReactNode;
   isDummyFlow: boolean;
   activeTab: 'history' | 'analyze';
   onTabChange: (tab: 'history' | 'analyze') => void;
@@ -26,6 +28,7 @@ export interface ClientDetailViewProps {
 
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
+  sidebar,
   isDummyFlow,
   activeTab,
   onTabChange,
@@ -202,77 +205,80 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   }
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-[1332px] flex-col">
-      {/* 헤더 */}
-      <div className="flex-shrink-0 px-16 pt-[42px]">
-        <div className="mb-4 flex items-start justify-between">
-          <div className="flex items-end gap-3">
-            <h1 className="text-2xl font-headline text-grey-100">
-              {client.name}
-            </h1>
-            <span className="text-xl font-medium text-grey-60">
-              총 {sessionRecordCount}개의 상담 기록
-            </span>
-            {isDummyFlow && (
-              <Badge tone="warning" variant="soft" size="sm">
-                예시
-              </Badge>
-            )}
+    <div className="flex h-full w-full">
+      {sidebar}
+      <div className="mx-auto flex h-full min-w-0 max-w-[1332px] flex-1 flex-col">
+        {/* 헤더 */}
+        <div className="flex-shrink-0 px-16 pt-[42px]">
+          <div className="mb-4 flex items-start justify-between">
+            <div className="flex items-end gap-3">
+              <h1 className="text-2xl font-headline text-grey-100">
+                {client.name}
+              </h1>
+              <span className="text-xl font-medium text-grey-60">
+                총 {sessionRecordCount}개의 상담 기록
+              </span>
+              {isDummyFlow && (
+                <Badge tone="warning" variant="soft" size="sm">
+                  예시
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 탭 */}
-      <div className="flex-shrink-0 px-12">{tabButtons}</div>
+        {/* 탭 */}
+        <div className="flex-shrink-0 px-12">{tabButtons}</div>
 
-      {/* 컨텐츠 */}
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {activeTab === 'history' ? (
-          <div className="h-full overflow-y-auto overflow-x-hidden">
-            <div className="px-12 pt-4">
-              <div className="mb-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
-                  }
-                  className="flex items-center gap-1.5 px-1 py-1.5 text-sm font-medium text-grey-100 transition-colors lg:hover:opacity-80"
-                >
-                  <SortDescIcon size={16} />
-                  {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
-                </button>
+        {/* 컨텐츠 */}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {activeTab === 'history' ? (
+            <div className="h-full overflow-y-auto overflow-x-hidden">
+              <div className="px-12 pt-4">
+                <div className="mb-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
+                    }
+                    className="flex items-center gap-1.5 px-1 py-1.5 text-sm font-medium text-grey-100 transition-colors lg:hover:opacity-80"
+                  >
+                    <SortDescIcon size={16} />
+                    {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-[1fr_400px] gap-6 px-12 pb-6">
-              {/* 왼쪽: 세션 목록 */}
-              <div className="min-w-0">{sessionList}</div>
+              <div className="grid grid-cols-[1fr_400px] gap-6 px-12 pb-6">
+                {/* 왼쪽: 세션 목록 */}
+                <div className="min-w-0">{sessionList}</div>
 
-              {/* 우측: 내담자 정보 */}
-              <div className="sticky top-0 h-fit">
-                <div className="rounded-lg border border-grey-30 bg-white p-6 text-left">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-sm text-grey-60">내담자 정보</h2>
-                    <button
-                      onClick={onEditClientClick}
-                      className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
-                    >
-                      편집
-                    </button>
+                {/* 우측: 내담자 정보 */}
+                <div className="sticky top-0 h-fit">
+                  <div className="rounded-lg border border-grey-30 bg-white p-6 text-left">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h2 className="text-sm text-grey-60">내담자 정보</h2>
+                      <button
+                        onClick={onEditClientClick}
+                        className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
+                      >
+                        편집
+                      </button>
+                    </div>
+                    <div className="space-y-4">{clientInfoFields}</div>
                   </div>
-                  <div className="space-y-4">{clientInfoFields}</div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex h-full flex-col overflow-hidden px-12 py-6">
-            {clientAnalysisTab}
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="flex h-full flex-col overflow-hidden px-12 py-6">
+              {clientAnalysisTab}
+            </div>
+          )}
+        </div>
 
-      {editModal}
-      {analysisModal}
+        {editModal}
+        {analysisModal}
+      </div>
     </div>
   );
 };

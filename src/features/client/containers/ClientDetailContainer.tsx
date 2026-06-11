@@ -3,7 +3,10 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-import { getSessionDetailRoute } from '@/app/router/constants';
+import {
+  getClientDetailRoute,
+  getSessionDetailRoute,
+} from '@/app/router/constants';
 import {
   dummyClient,
   dummySessionRelations,
@@ -35,6 +38,7 @@ import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ClientAnalysisTab } from '@/widgets/client/ClientAnalysisTab';
+import { ClientSidebar } from '@/widgets/client/ClientSidebar';
 import { CreateAnalysisModal } from '@/widgets/client/CreateAnalysisModal';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
@@ -46,6 +50,7 @@ import {
   useCreateClientAnalysis,
 } from '../hooks/useClientAnalysis';
 import { useClientList } from '../hooks/useClientList';
+import type { Client } from '../types';
 
 import { ClientDetailView } from './ClientDetailView';
 
@@ -64,6 +69,7 @@ export const ClientDetailContainer: React.FC = () => {
   );
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const [pollingVersion, setPollingVersion] = React.useState<number | null>(
     null
   );
@@ -320,18 +326,38 @@ export const ClientDetailContainer: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
+  const handleSelectClient = (selected: Client) => {
+    navigateWithUtm(getClientDetailRoute(selected.id));
+  };
+
+  // 데스크탑 전용 내담자 사이드바 — 로딩/미발견 화면에서도 유지
+  const clientSidebar = !isMobileView ? (
+    <ClientSidebar
+      selectedClientId={clientId ?? null}
+      onSelectClient={handleSelectClient}
+      collapsed={isSidebarCollapsed}
+      onToggleCollapsed={() => setIsSidebarCollapsed((prev) => !prev)}
+    />
+  ) : null;
+
   if (isLoadingClients || isLoadingSessions) {
     return (
-      <div className="flex h-full items-center justify-center bg-surface-contrast">
-        <p className="text-fg-muted">로딩 중...</p>
+      <div className="flex h-full w-full">
+        {clientSidebar}
+        <div className="flex min-w-0 flex-1 items-center justify-center bg-surface-contrast">
+          <p className="text-fg-muted">로딩 중...</p>
+        </div>
       </div>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex h-full items-center justify-center bg-surface-contrast">
-        <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
+      <div className="flex h-full w-full">
+        {clientSidebar}
+        <div className="flex min-w-0 flex-1 items-center justify-center bg-surface-contrast">
+          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
+        </div>
       </div>
     );
   }
@@ -393,6 +419,7 @@ export const ClientDetailContainer: React.FC = () => {
   return (
     <ClientDetailView
       client={client}
+      sidebar={clientSidebar}
       isDummyFlow={isDummyFlow}
       activeTab={activeTab}
       onTabChange={setActiveTab}
