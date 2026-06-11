@@ -81,15 +81,15 @@ export function MobileMonthGrid({
                 isSelected && 'bg-green-20'
               )}
             >
-              <div className="flex h-5 items-center justify-center">
+              <div className="flex h-6 items-center justify-center">
                 {isToday ? (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-80 text-[11px] font-emphasize text-white">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-80 text-sm font-emphasize text-white">
                     {day.date()}
                   </span>
                 ) : (
                   <span
                     className={cn(
-                      'text-[11px] font-medium',
+                      'text-sm font-medium',
                       inMonth ? 'text-grey-100' : 'text-grey-60'
                     )}
                   >
