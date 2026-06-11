@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
+import AiSupervisionPage from '@/features/ai-supervision/pages/AiSupervisionPage';
 import AuthCallbackPage from '@/features/auth/page/AuthCallbackPage';
 import AuthPage from '@/features/auth/page/AuthPage';
 import PasswordResetPage from '@/features/auth/page/PasswordResetPage';
@@ -79,6 +80,10 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.GENOGRAM,
             element: <GenogramClientPage />,
+          },
+          {
+            path: ROUTES.AI_SUPERVISION,
+            element: <AiSupervisionPage />,
           },
           {
             path: ROUTES.PSYCHOLOGY_ASSESSMENTS,

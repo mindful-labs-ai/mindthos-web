@@ -695,6 +695,29 @@ export const SidePsychologyAssessmentIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
+/** AI 슈퍼비전 - 사이드 네비게이션 아이콘 (book open) */
+export const SideSupervisionIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M12 6.03998C10.4077 4.61557 8.30506 3.75 6 3.75C4.94809 3.75 3.93834 3.93026 3 4.26161V18.5116C3.93834 18.1803 4.94809 18 6 18C8.30506 18 10.4077 18.8656 12 20.29M12 6.03998C13.5923 4.61557 15.6949 3.75 18 3.75C19.0519 3.75 20.0617 3.93026 21 4.26161V18.5116C20.0617 18.1803 19.0519 18 18 18C15.6949 18 13.5923 18.8656 12 20.29M12 6.03998V20.29"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 /** 심리검사 해석 - 클라이언트 사이드바 접기/펼치기 토글 아이콘 */
 export const ClientSidebarToggleIcon: React.FC<CustomIconProps> = ({
   size = 20,

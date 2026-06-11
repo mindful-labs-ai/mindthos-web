@@ -21,12 +21,16 @@ export const ROUTES = {
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
   ANALYSIS: '/analysis',
+  AI_SUPERVISION: '/ai-supervision',
   PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
   UNSUBSCRIBE: '/unsubscribe',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>
   clientId ? `/genogram?clientId=${clientId}` : '/genogram';
+
+export const getAiSupervisionRoute = (clientId?: string) =>
+  clientId ? `/ai-supervision?clientId=${clientId}` : '/ai-supervision';
 
 export const TERMS_TYPES = {
   SERVICE: 'service',

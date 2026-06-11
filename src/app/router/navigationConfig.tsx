@@ -10,6 +10,7 @@ import {
   SidePsychologyAssessmentIcon,
   SideSessionIcon,
   SideSettingsIcon,
+  SideSupervisionIcon,
   SideTemplateIcon,
 } from '@/shared/icons';
 
@@ -55,6 +56,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: '노트 양식',
     value: 'template',
     icon: <SideTemplateIcon size={24} />,
+  },
+  {
+    path: ROUTES.AI_SUPERVISION,
+    label: 'AI 슈퍼비전',
+    value: 'ai-supervision',
+    icon: <SideSupervisionIcon size={24} />,
   },
   {
     path: ROUTES.GENOGRAM,
@@ -139,7 +146,9 @@ export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
 }));
 
 export const AI_ANALYSIS_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['genogram', 'psychology-assessments', 'analysis'].includes(item.value)
+  ['ai-supervision', 'genogram', 'psychology-assessments', 'analysis'].includes(
+    item.value
+  )
 ).map((item) => ({
   icon: item.icon,
   label: item.label,
