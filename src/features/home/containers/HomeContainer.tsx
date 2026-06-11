@@ -20,7 +20,6 @@ import type {
 } from '@/features/session/types';
 import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { trackEvent } from '@/lib/mixpanel';
-import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
@@ -36,7 +35,6 @@ import {
 } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
-import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
@@ -57,8 +55,6 @@ const HomeContainer = () => {
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
   const user = useAuthStore((state) => state.user);
-  const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
-    React.useState(true);
 
   const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
     useQuestStore();
@@ -190,17 +186,6 @@ const HomeContainer = () => {
   };
   const remainingDays = calculateRemainingDays(startedAt);
 
-  React.useEffect(() => {
-    if (isWelcomeBannerVisible && isChecked && !shouldShowOnboarding) {
-      trackEvent(MixpanelEvent.WelcomeBannerView);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isChecked, shouldShowOnboarding]);
-
-  const handleGuideClick = () => {
-    window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
-  };
-
   const handleUploadClick = () => {
     openModal('createMultiSession');
   };
@@ -252,18 +237,8 @@ const HomeContainer = () => {
           onCompleteQuest3={handleCompleteQuest3}
         />
       ) : (
-        isWelcomeBannerVisible && (
-          <WelcomeBanner
-            title="마음토스 시작하기"
-            description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
-            buttonText="더 알아보기"
-            onButtonClick={handleGuideClick}
-            onClose={() => {
-              trackEvent(MixpanelEvent.WelcomeBannerDismiss);
-              setIsWelcomeBannerVisible(false);
-            }}
-          />
-        )
+        // 웰컴 배너 대체 — 이벤트 배너 띠 (닫음 상태는 위젯이 localStorage로 관리)
+        <HomeEventBanner />
       )}
     </div>
   ) : null;
@@ -371,7 +346,6 @@ const HomeContainer = () => {
   );
 
   const viewProps = {
-    eventBanner: <HomeEventBanner />,
     onboardingSection,
     greetingSection,
     actionCards,
