@@ -259,8 +259,8 @@ export function AiSupervisionContainer() {
               </div>
             </div>
 
-            {/* 다회기 분석 (기존 탭 컴포넌트 그대로) */}
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 md:px-12 md:py-6">
+            {/* 다회기 분석 (기존 탭 컴포넌트 그대로) — 모바일은 풀블리드 */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:px-12 md:py-6">
               <ClientAnalysisTab
                 analyses={displayAnalyses}
                 isLoading={isLoadingAnalyses && !isDummyFlow}
