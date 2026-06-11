@@ -4,6 +4,7 @@ import AuthCallbackPage from '@/features/auth/page/AuthCallbackPage';
 import AuthPage from '@/features/auth/page/AuthPage';
 import PasswordResetPage from '@/features/auth/page/PasswordResetPage';
 import UserVerifyPage from '@/features/auth/page/UserVerifyPage';
+import CalendarPage from '@/features/calendar/page/CalendarPage';
 import ClientDetailPage from '@/features/client/page/ClientDetailPage';
 import ClientListPage from '@/features/client/page/ClientListPage';
 import ErrorPage from '@/features/error/page/ErrorPage';
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <HomePage />,
+          },
+          {
+            path: ROUTES.CALENDAR,
+            element: <CalendarPage />,
           },
           {
             path: ROUTES.CLIENTS,
