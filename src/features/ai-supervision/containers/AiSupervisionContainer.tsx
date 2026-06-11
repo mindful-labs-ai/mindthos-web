@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
+import { File } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import {
@@ -236,21 +237,24 @@ export function AiSupervisionContainer() {
           </div>
         ) : (
           <div className="mx-auto flex h-full w-full max-w-[1332px] flex-col">
-            {/* 헤더 (내담자 상세와 동일 스타일) */}
+            {/* 헤더: 내담자명 + 우측 상담 기록 수 박스 */}
             <div className="flex-shrink-0 px-4 pt-6 md:px-16 md:pt-[42px]">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex items-end gap-3">
-                  <h1 className="text-2xl font-headline text-grey-100">
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <h1 className="truncate text-2xl font-headline text-grey-100">
                     {selectedClient.name}
                   </h1>
-                  <span className="text-xl font-medium text-grey-60">
-                    총 {sessionRecordCount}개의 상담 기록
-                  </span>
                   {isDummyFlow && (
                     <Badge tone="warning" variant="soft" size="sm">
                       예시
                     </Badge>
                   )}
+                </div>
+                <div className="flex h-10 flex-shrink-0 items-center gap-2 rounded-lg border border-[#D6D8E1] bg-white px-3">
+                  <File size={24} className="text-[#BABCC7]" />
+                  <span className="text-m font-medium text-grey-100">
+                    {sessionRecordCount}개의 상담 기록
+                  </span>
                 </div>
               </div>
             </div>
