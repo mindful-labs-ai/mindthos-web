@@ -113,6 +113,27 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
           </div>
         </div>
 
+        {/* 도메인 이동 버튼 (가로 스크롤) */}
+        <div className="flex flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-grey-30 bg-white px-4 py-2">
+          {domainLinks.map(({ label, onClick }) => {
+            const isActive = !onClick;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={onClick}
+                className={`flex h-9 flex-shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-[#D6D8E1] px-4 text-sm font-headline transition-colors ${
+                  isActive
+                    ? 'bg-white text-grey-100'
+                    : 'bg-[#FAFBFF] text-[#BABCC7]'
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* 콘텐츠 영역 */}
         <div className="min-h-0 flex-1 overflow-y-auto">
           <div className="px-4 py-4 md:px-10 md:py-6">
@@ -229,7 +250,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               {/* 왼쪽: 상담 기록 목록 */}
               <div className="min-w-0">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-xl font-headline text-grey-100">
+                  <h2 className="truncate pl-3 text-xl font-headline text-grey-100 lg:pl-6">
                     총 {sessionRecordCount}개의 상담 기록
                   </h2>
                   <button
@@ -237,7 +258,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                     onClick={() =>
                       onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
                     }
-                    className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
+                    className="flex items-center gap-2 truncate rounded-lg px-2.5 py-2 text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
                   >
                     <SortDescIcon size={20} />
                     {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
