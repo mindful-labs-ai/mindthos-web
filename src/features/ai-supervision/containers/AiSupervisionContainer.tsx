@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, FileText } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
 import {
@@ -13,10 +12,15 @@ import {
 } from '@/features/client/hooks/useClientAnalysis';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
+import {
+  dummyClient,
+  dummySessionRelations,
+} from '@/features/session/constants/dummySessions';
 import { useAllClientSessions } from '@/features/session/hooks/useSessionsList';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
 import { CREDIT_COST } from '@/shared/constants/credit';
+import { dummyClientAnalysisVersions } from '@/shared/constants/dummyClientAnalysis';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -25,19 +29,17 @@ import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { SideSupervisionIcon } from '@/shared/icons';
+import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
+import { ClientAnalysisTab } from '@/widgets/client/ClientAnalysisTab';
 import { ClientSidebar } from '@/widgets/client/ClientSidebar';
 import { CreateAnalysisModal } from '@/widgets/client/CreateAnalysisModal';
 
-import { SupervisionEmptyView } from '../components/SupervisionEmptyView';
-import { SupervisionReportView } from '../components/SupervisionReportView';
-import { SupervisionTabs } from '../components/SupervisionTabs';
-
 /**
- * AI 슈퍼비전 메인 화면.
- * 내담자 상세의 다회기 분석 탭과 동일한 데이터(useClientAnalyses 등)를 사용하고
- * 뷰만 독립 페이지로 분리. 생성/재생성은 기존 CreateAnalysisModal 재사용.
+ * AI 슈퍼비전(다회기 분석) 메인 화면.
+ * 내담자 상세의 다회기 분석 탭을 그대로 외부 페이지로 분리 —
+ * 데이터·UI 모두 기존 ClientAnalysisTab/CreateAnalysisModal 재사용.
  */
 export function AiSupervisionContainer() {
   const { isMobile, isTablet } = useDevice();
@@ -59,18 +61,27 @@ export function AiSupervisionContainer() {
   );
 
   const { clients } = useClientList();
-  const selectedClient = clients.find((c) => c.id === clientId) ?? null;
+
+  // 온보딩 더미 플로우 (내담자 상세와 동일)
+  const isDummyFlow = clientId === 'dummy_client_1';
+  const isReadOnly = isDummyFlow;
+
+  const selectedClient = isDummyFlow
+    ? dummyClient
+    : (clients.find((c) => c.id === clientId) ?? null);
 
   const { data: templates } = useClientTemplates();
   const { data: analyses = [], isLoading: isLoadingAnalyses } =
     useClientAnalyses(clientId || '');
   const createAnalysisMutation = useCreateClientAnalysis();
 
+  const displayAnalyses = isDummyFlow ? dummyClientAnalysisVersions : analyses;
+
   // 분석 모달용 세션 목록 — 모달 열릴 때만 활성화 (내담자 상세와 동일)
   const { data: allClientSessionItems } = useAllClientSessions({
     userId: userId ? Number(userId) : 0,
     clientId: clientId || '',
-    enabled: isAnalysisModalOpen && !!clientId && !!userId,
+    enabled: isAnalysisModalOpen && !isDummyFlow && !!clientId && !!userId,
     sortOrder: 'desc',
   });
 
@@ -80,8 +91,8 @@ export function AiSupervisionContainer() {
     enabled: !!clientId && !!pollingVersion,
     onComplete: () => {
       toast({
-        title: 'AI 슈퍼비전 완료',
-        description: 'AI 슈퍼비전 보고서를 만들었어요.',
+        title: '다회기 분석 완료',
+        description: '다회기 분석을 마쳤어요.',
         duration: 3000,
       });
       setPollingVersion(null);
@@ -114,6 +125,14 @@ export function AiSupervisionContainer() {
     sessionIds: string[];
     aiSupervisionTemplateId: number;
   }) => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '실제 내담자에서 분석을 만들 수 있어요.',
+        duration: 3000,
+      });
+      return;
+    }
     if (!clientId) return;
 
     // 액션 직전에 fresh 잔액으로 가드
@@ -121,7 +140,7 @@ export function AiSupervisionContainer() {
     if (!guard.ok && !guard.unavailable) {
       toast({
         title: '크레딧 부족',
-        description: `AI 슈퍼비전에 ${CREDIT_COST.CLIENT_ANALYSIS} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+        description: `다회기 분석에 ${CREDIT_COST.CLIENT_ANALYSIS} 크레딧이 필요해요. (보유: ${guard.remaining})`,
         duration: 5000,
       });
       return;
@@ -140,7 +159,7 @@ export function AiSupervisionContainer() {
       });
       toast({
         title: '분석 시작',
-        description: 'AI 슈퍼비전을 진행하고 있어요.',
+        description: '다회기 분석을 진행하고 있어요.',
         duration: 3000,
       });
 
@@ -158,27 +177,27 @@ export function AiSupervisionContainer() {
     }
   };
 
+  const handleOpenCreateAnalysis = () => {
+    if (isReadOnly) {
+      toast({
+        title: '읽기 전용',
+        description: '실제 내담자에서 분석을 만들 수 있어요.',
+        duration: 3000,
+      });
+      return;
+    }
+    setIsAnalysisModalOpen(true);
+  };
+
   const handleSelectClient = (client: Client) => {
     setSearchParamsWithUtm({ clientId: client.id });
   };
 
-  // 표시할 분석 버전: 처리 중 > 폴링 중 > 최신
-  const currentAnalysis = React.useMemo(() => {
-    const processing = analyses.find(
-      (a) =>
-        a.ai_supervision?.status === 'pending' ||
-        a.ai_supervision?.status === 'in_progress'
-    );
-    if (processing) return processing;
-
-    if (pollingVersion) {
-      const polling = analyses.find((a) => a.version === pollingVersion);
-      if (polling) return polling;
-    }
-
-    return analyses[0] ?? null;
-  }, [analyses, pollingVersion]);
-  const currentAnalysisData = currentAnalysis?.ai_supervision ?? null;
+  // 상담 기록 수 — 더미는 더미 세션, 실데이터는 내담자 목록의 집계 사용
+  const sessionRecordCount = isDummyFlow
+    ? dummySessionRelations.filter((s) => s.session.client_id === clientId)
+        .length
+    : (selectedClient?.session_count ?? 0);
 
   const clientSidebar = !isMobileView ? (
     <ClientSidebar
@@ -189,73 +208,16 @@ export function AiSupervisionContainer() {
     />
   ) : null;
 
-  // 카드 내부 콘텐츠
-  const cardContent = (() => {
-    if (isLoadingAnalyses) {
-      return (
-        <div className="flex flex-1 flex-col items-center justify-center py-24">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-grey-30 border-t-green-80" />
-          <p className="text-m text-grey-60">분석 데이터를 불러오는 중...</p>
-        </div>
-      );
-    }
-
-    if (
-      currentAnalysisData?.status === 'pending' ||
-      currentAnalysisData?.status === 'in_progress' ||
-      (pollingVersion && !currentAnalysisData)
-    ) {
-      return (
-        <div className="flex flex-1 flex-col items-center justify-center py-24">
-          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-grey-30 border-t-green-80" />
-          <p className="text-m text-grey-60">분석 중...</p>
-        </div>
-      );
-    }
-
-    if (currentAnalysisData?.status === 'failed') {
-      return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 py-24">
-          <p className="text-m text-danger">
-            {currentAnalysisData.error_message || '분석을 만들지 못했어요.'}
-          </p>
-          <button
-            type="button"
-            onClick={() => setIsAnalysisModalOpen(true)}
-            className="rounded-lg border border-green-80 bg-[#ECFAED] px-3.5 py-1.5 text-m font-medium text-green-80 transition-opacity lg:hover:opacity-80"
-          >
-            다시 시도하기
-          </button>
-        </div>
-      );
-    }
-
-    if (
-      currentAnalysisData?.status === 'succeeded' &&
-      currentAnalysisData.content
-    ) {
-      return (
-        <SupervisionReportView
-          analysis={currentAnalysisData}
-          templates={templates}
-          onCreateAnalysis={() => setIsAnalysisModalOpen(true)}
-          onSaveContent={handleSaveAnalysisContent}
-        />
-      );
-    }
-
-    return (
-      <SupervisionEmptyView
-        onCreateAnalysis={() => setIsAnalysisModalOpen(true)}
-      />
-    );
-  })();
+  // 다회기 분석 모달용 세션 목록 — useAllClientSessions (limit 없음)
+  const analysisSessionList = isDummyFlow
+    ? dummySessionRelations.map((s) => s.session)
+    : (allClientSessionItems ?? []).map((s) => s.session);
 
   return (
     <div className="flex h-full w-full">
       {clientSidebar}
 
-      <div className="min-w-0 flex-1 overflow-y-auto bg-app-bg">
+      <div className="min-w-0 flex-1 overflow-hidden">
         {!selectedClient ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-5 px-10 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-grey-20 text-grey-60">
@@ -267,42 +229,43 @@ export function AiSupervisionContainer() {
               </p>
               <p className="whitespace-pre-line text-sm text-grey-60">
                 {isMobileView
-                  ? '내담자를 선택하면\nAI 슈퍼비전 보고서를 받을 수 있어요.'
-                  : '좌측에서 내담자를 선택하면\nAI 슈퍼비전 보고서를 받을 수 있어요.'}
+                  ? '내담자를 선택하면\n다회기 분석을 받을 수 있어요.'
+                  : '좌측에서 내담자를 선택하면\n다회기 분석을 받을 수 있어요.'}
               </p>
             </div>
           </div>
         ) : (
-          <div className="mx-auto flex min-h-full w-full max-w-[1200px] flex-col px-6 pb-12 pt-10 lg:px-12">
-            {/* 헤더: 뒤로가기 + 내담자명 + 상담 기록 수 */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-6">
-                <button
-                  type="button"
-                  aria-label="내담자 선택 해제"
-                  onClick={() => setSearchParamsWithUtm({})}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#D6D8E1] bg-[#FAFBFF] text-[#9C9EA6] transition-colors lg:hover:bg-grey-20"
-                >
-                  <ChevronLeft size={22} />
-                </button>
-                <h1 className="text-2xl font-emphasize text-grey-100">
-                  {selectedClient.name}
-                </h1>
-              </div>
-              <div className="flex items-center gap-2 rounded-lg border border-[#D6D8E1] bg-white px-3 py-2">
-                <FileText size={20} className="text-[#BABCC7]" />
-                <span className="text-m font-medium text-grey-100">
-                  {selectedClient.session_count ?? 0}개의 상담 기록
-                </span>
+          <div className="mx-auto flex h-full w-full max-w-[1332px] flex-col">
+            {/* 헤더 (내담자 상세와 동일 스타일) */}
+            <div className="flex-shrink-0 px-4 pt-6 md:px-16 md:pt-[42px]">
+              <div className="mb-4 flex items-start justify-between">
+                <div className="flex items-end gap-3">
+                  <h1 className="text-2xl font-headline text-grey-100">
+                    {selectedClient.name}
+                  </h1>
+                  <span className="text-xl font-medium text-grey-60">
+                    총 {sessionRecordCount}개의 상담 기록
+                  </span>
+                  {isDummyFlow && (
+                    <Badge tone="warning" variant="soft" size="sm">
+                      예시
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* 탭 + 보고서 카드 */}
-            <div className="mt-9 flex flex-1 flex-col">
-              <SupervisionTabs />
-              <div className="flex min-h-[600px] flex-1 flex-col rounded-2xl border border-[#D6D8E1] bg-white">
-                {cardContent}
-              </div>
+            {/* 다회기 분석 (기존 탭 컴포넌트 그대로) */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 md:px-12 md:py-6">
+              <ClientAnalysisTab
+                analyses={displayAnalyses}
+                isLoading={isLoadingAnalyses && !isDummyFlow}
+                pollingVersion={pollingVersion}
+                isReadOnly={isReadOnly}
+                onSaveContent={handleSaveAnalysisContent}
+                onCreateAnalysis={handleOpenCreateAnalysis}
+                isMobileView={isMobileView}
+              />
             </div>
           </div>
         )}
@@ -313,7 +276,7 @@ export function AiSupervisionContainer() {
         open={isAnalysisModalOpen}
         onOpenChange={setIsAnalysisModalOpen}
         templates={templates}
-        sessions={(allClientSessionItems ?? []).map((s) => s.session)}
+        sessions={analysisSessionList}
         onCreateAnalysis={handleCreateAnalysis}
       />
     </div>
