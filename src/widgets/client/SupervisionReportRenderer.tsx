@@ -20,6 +20,11 @@ interface SupervisionReportRendererProps {
   content: string;
   /** 보고서 템플릿 id (섹션 제목·S3 헤더·S0 유무 config 선택). */
   templateId?: number;
+  /** 편집 모드 — draftReport를 렌더하고 변경을 onDraftChange로 전달 */
+  editable?: boolean;
+  /** 편집 중 draft (editable일 때 content 대신 사용) */
+  draftReport?: SupervisionReportV2 | null;
+  onDraftChange?: (next: SupervisionReportV2) => void;
 }
 
 function isKVSection(value: unknown): value is KVSection {
@@ -73,8 +78,13 @@ export function parseSupervisionReport(
 export function SupervisionReportRenderer({
   content,
   templateId,
+  editable = false,
+  draftReport,
+  onDraftChange,
 }: SupervisionReportRendererProps) {
-  const report = parseSupervisionReport(content);
+  // 편집 모드에서는 draft를 직접 렌더 (편집 아닐 땐 content 파싱)
+  const report =
+    editable && draftReport ? draftReport : parseSupervisionReport(content);
 
   // 하위호환: 신형 스키마가 아니면 기존 MarkdownRenderer로 폴백.
   if (!report) {
@@ -82,6 +92,10 @@ export function SupervisionReportRenderer({
   }
 
   const config = getTemplateConfig(templateId);
+
+  const isEditing = editable && !!onDraftChange;
+  const update = (patch: Partial<SupervisionReportV2>) =>
+    onDraftChange?.({ ...report, ...patch });
 
   const renderSection = (
     key: (typeof config.sectionOrder)[number]
@@ -93,6 +107,8 @@ export function SupervisionReportRenderer({
           <KeyValueSection
             title={config.titles.section0}
             items={report.section0.items}
+            editable={isEditing}
+            onItemsChange={(items) => update({ section0: { items } })}
           />
         ) : null;
       case 'section1':
@@ -100,6 +116,8 @@ export function SupervisionReportRenderer({
           <KeyValueSection
             title={config.titles.section1}
             items={report.section1.items}
+            editable={isEditing}
+            onItemsChange={(items) => update({ section1: { items } })}
           />
         );
       case 'section2':
@@ -108,6 +126,13 @@ export function SupervisionReportRenderer({
             title={config.titles.section2}
             sessions={report.section2.sessions}
             trajectory={report.section2.trajectory}
+            editable={isEditing}
+            onSessionsChange={(sessions) =>
+              update({ section2: { ...report.section2, sessions } })
+            }
+            onTrajectoryChange={(trajectory) =>
+              update({ section2: { ...report.section2, trajectory } })
+            }
           />
         );
       case 'section3':
@@ -116,6 +141,8 @@ export function SupervisionReportRenderer({
             title={config.titles.section3}
             headers={config.s3Headers}
             rows={report.section3.rows}
+            editable={isEditing}
+            onRowsChange={(rows) => update({ section3: { rows } })}
           />
         );
       case 'section4':
@@ -123,6 +150,8 @@ export function SupervisionReportRenderer({
           <KeyValueSection
             title={config.titles.section4}
             items={report.section4.items}
+            editable={isEditing}
+            onItemsChange={(items) => update({ section4: { items } })}
           />
         );
       case 'section5':
@@ -130,6 +159,8 @@ export function SupervisionReportRenderer({
           <KeyValueSection
             title={config.titles.section5}
             items={report.section5.items}
+            editable={isEditing}
+            onItemsChange={(items) => update({ section5: { items } })}
           />
         );
       case 'section6':
@@ -137,6 +168,10 @@ export function SupervisionReportRenderer({
           <QuestionList
             title={config.titles.section6}
             questions={report.section6.questions}
+            editable={isEditing}
+            onQuestionsChange={(questions) =>
+              update({ section6: { questions } })
+            }
           />
         );
       default:

@@ -84,6 +84,7 @@ export const MixpanelEvent = {
   AnalysisEditComplete: 'analysis_edit_complete',
   AnalysisEditCancel: 'analysis_edit_cancel',
   AnalysisTabChange: 'analysis_tab_change',
+  AnalysisPdfExport: 'analysis_pdf_export',
   SupervisionRetry: 'supervision_retry',
 
   // ─── Client ────────────────────────────────────────
