@@ -6,7 +6,6 @@ import type { ClientAnalysisStatus } from './clientAnalysis.types';
 
 export interface CreateClientAnalysisRequest {
   client_id: string;
-  user_id: number;
   session_ids: string[];
   ai_supervision_template_id: number;
 }
