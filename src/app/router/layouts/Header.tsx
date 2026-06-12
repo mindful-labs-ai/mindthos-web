@@ -11,6 +11,7 @@ import {
   type BreadCrumbItem,
 } from '@/shared/ui/composites/BreadCrumb';
 import { useAuthStore } from '@/stores/authStore';
+import { NotificationBell } from '@/widgets/notification';
 import { ProfileMenu } from '@/widgets/profile';
 
 import { routeNameMap } from '../navigationConfig';
@@ -110,7 +111,10 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-header hidden h-header items-center justify-between gap-4 border-b border-header-border bg-header-bg px-8 py-4 sm:flex">
       <BreadCrumb items={breadcrumbItems} />
-      <ProfileMenu surface="dropdown" />
+      <div className="flex items-center gap-3">
+        <NotificationBell />
+        <ProfileMenu surface="dropdown" />
+      </div>
     </header>
   );
 };
