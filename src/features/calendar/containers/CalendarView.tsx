@@ -85,31 +85,34 @@ export function CalendarView({
 }: CalendarViewProps) {
   return (
     <div className="relative flex h-full bg-grey-20">
-      <section className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto px-8 py-8">
-        <CalendarToolbar
-          current={current}
-          viewMode={viewMode}
-          onPrev={onPrev}
-          onNext={onNext}
-          onViewModeChange={onViewModeChange}
-        />
-        {viewMode === 'month' ? (
-          <MonthGrid
+      <section className="flex min-w-0 flex-1 flex-col overflow-y-auto px-8 py-8">
+        {/* 초대형 모니터에서 그리드 과확장 방지 — 콘텐츠만 중앙 캡 */}
+        <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6">
+          <CalendarToolbar
             current={current}
-            events={events}
-            selectedDate={selectedDate}
-            onDateClick={onDateClick}
-            onDateDoubleClick={onDateDoubleClick}
-            onEventClick={onEventClick}
+            viewMode={viewMode}
+            onPrev={onPrev}
+            onNext={onNext}
+            onViewModeChange={onViewModeChange}
           />
-        ) : (
-          <WeekGrid
-            current={current}
-            events={events}
-            onCreateRange={onCreateRange}
-            onEventClick={onEventClick}
-          />
-        )}
+          {viewMode === 'month' ? (
+            <MonthGrid
+              current={current}
+              events={events}
+              selectedDate={selectedDate}
+              onDateClick={onDateClick}
+              onDateDoubleClick={onDateDoubleClick}
+              onEventClick={onEventClick}
+            />
+          ) : (
+            <WeekGrid
+              current={current}
+              events={events}
+              onCreateRange={onCreateRange}
+              onEventClick={onEventClick}
+            />
+          )}
+        </div>
       </section>
 
       <aside className="h-full w-[295px] shrink-0 overflow-y-auto border-l border-[#ecedf3] bg-white">
