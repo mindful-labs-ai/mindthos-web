@@ -47,8 +47,7 @@ export function DocumentContainer() {
   };
 
   const handleSendDocuments = () => {
-    // 문서 발송 플로우는 후속 작업
-    openModal('comingSoon', { source: 'documents_send' });
+    openModal('sendDocument', { source: 'documents' });
   };
 
   return (

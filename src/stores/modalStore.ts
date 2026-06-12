@@ -15,7 +15,8 @@ export type ModalType =
   | 'sessionTypeSelect'
   | 'comingSoon'
   | 'couponModal'
-  | 'addClient';
+  | 'addClient'
+  | 'sendDocument';
 
 /**
  * 모달별 데이터 타입 정의
@@ -33,6 +34,8 @@ export interface ModalData {
   addClient:
     | { onClientCreated?: (clientId: string, clientName?: string) => void }
     | undefined;
+  /** 문서 발송 — 내담자 탭 등에서 초기 발송 대상 지정 가능 */
+  sendDocument: { source?: string; clientId?: string } | undefined;
 }
 
 interface ModalState {
