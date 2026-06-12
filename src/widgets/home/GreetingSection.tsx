@@ -10,7 +10,7 @@ export const GreetingSection: React.FC<GreetingSectionProps> = ({
   date,
 }) => {
   return (
-    <div className="mb-6 pl-1 pt-9">
+    <div className="mb-6 pt-9">
       <p className="greeting-section-typo mb-2 text-grey-60">{date}</p>
       <h2 className="greeting-section-typo text-grey-100">
         반가워요, {userName} 상담사님

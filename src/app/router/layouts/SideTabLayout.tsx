@@ -72,7 +72,7 @@ const MainFlowLayout = () => {
   if (chromeless) {
     return (
       <div className="flex h-dvh w-full flex-col overflow-hidden">
-        <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
           <Outlet />
         </main>
       </div>

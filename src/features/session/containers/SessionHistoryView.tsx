@@ -44,10 +44,10 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
       {sideList}
 
       {!sessionId ? (
-        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col p-16">
+        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-16 py-[42px]">
           <div className="flex-shrink-0 pb-6">
             <div className="flex items-center gap-2">
-              <Title as="h1" className="typo-2xl text-start font-headline">
+              <Title as="h1" className="text-start text-2xl font-headline text-grey-100">
                 상담 기록
               </Title>
               {isDummyFlow && (
