@@ -4,6 +4,7 @@ import {
   // SideAnalysisIcon,
   SideCalendarIcon,
   SideClientIcon,
+  SideDocumentIcon,
   SideGenogramIcon,
   SideHelpIcon,
   SideHomeIcon,
@@ -56,6 +57,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: '노트 양식',
     value: 'template',
     icon: <SideTemplateIcon size={24} />,
+  },
+  {
+    path: ROUTES.DOCUMENTS,
+    label: '문서 관리',
+    value: 'documents',
+    icon: <SideDocumentIcon size={24} />,
   },
   {
     path: ROUTES.AI_SUPERVISION,
@@ -136,7 +143,9 @@ export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
 }));
 
 export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['home', 'calendar', 'client', 'sessions', 'template'].includes(item.value)
+  ['home', 'calendar', 'client', 'sessions', 'template', 'documents'].includes(
+    item.value
+  )
 ).map((item) => ({
   icon: item.icon,
   label: item.label,

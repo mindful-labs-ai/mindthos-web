@@ -12,7 +12,6 @@ import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon } from '@/shared/icons';
 import { BackButton } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
-import { useModalStore } from '@/stores/modalStore';
 
 import type { Client } from '../types';
 
@@ -44,7 +43,6 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
 }) => {
   const navigate = useNavigate();
   const { navigateWithUtm } = useNavigateWithUtm();
-  const openModal = useModalStore((state) => state.openModal);
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
 
   // 내담자 정보 필드 (모바일 아코디언 + 데스크탑 카드 공용 데이터)
@@ -77,8 +75,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
     { label: '내담자 정보' }, // 현재 페이지 (활성)
     {
       label: '문서 관리',
-      onClick: () =>
-        openModal('comingSoon', { source: 'client_detail_documents' }),
+      onClick: () => navigateWithUtm(ROUTES.DOCUMENTS),
     },
     {
       label: '심리검사 해석',
@@ -201,7 +198,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
       {sidebar}
       <div className="mx-auto flex h-full min-w-0 max-w-[1332px] flex-1 flex-col">
         {/* 헤더: 뒤로가기 + 내담자명 + 도메인 이동 버튼 */}
-        <div className="flex-shrink-0 px-12 pt-9">
+        <div className="flex-shrink-0 px-16 pt-[42px]">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-6">
               <button
@@ -212,7 +209,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               >
                 <ChevronLeft size={22} />
               </button>
-              <h1 className="truncate text-2xl font-emphasize text-grey-100">
+              <h1 className="truncate text-2xl font-headline text-grey-100">
                 {client.name}
               </h1>
               {isDummyFlow && (
@@ -246,7 +243,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
         {/* 컨텐츠 */}
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto overflow-x-hidden">
-            <div className="grid grid-cols-[1fr_377px] gap-6 px-12 pb-6 pt-8">
+            <div className="grid grid-cols-[1fr_377px] gap-6 px-16 pb-[42px] pt-8">
               {/* 왼쪽: 상담 기록 목록 */}
               <div className="min-w-0">
                 <div className="mb-4 flex items-center justify-between">

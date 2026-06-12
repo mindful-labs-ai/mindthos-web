@@ -20,6 +20,7 @@ export const ROUTES = {
   NOT_FOUND: '*',
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
+  DOCUMENTS: '/documents',
   ANALYSIS: '/analysis',
   AI_SUPERVISION: '/ai-supervision',
   PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
