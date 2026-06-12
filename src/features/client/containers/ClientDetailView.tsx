@@ -12,7 +12,10 @@ import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon } from '@/shared/icons';
 import { BackButton } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
+import type { SentDocument } from '@/stores/sentDocumentStore';
 
+import { ClientDocumentsTab } from '../components/documents/ClientDocumentsTab';
+import { SentDocumentView } from '../components/documents/SentDocumentView';
 import type { Client } from '../types';
 
 export interface ClientDetailViewProps {
@@ -44,6 +47,13 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   const navigate = useNavigate();
   const { navigateWithUtm } = useNavigateWithUtm();
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
+  // 페이지 내 탭 — 문서 관리는 이동이 아니라 탭 전환 (데스크탑)
+  const [activeTab, setActiveTab] = React.useState<'info' | 'documents'>(
+    'info'
+  );
+  // 문서 관리 탭에서 열어본 발송 문서 (null = 목록)
+  const [viewingSentDocument, setViewingSentDocument] =
+    React.useState<SentDocument | null>(null);
 
   // 내담자 정보 필드 (모바일 아코디언 + 데스크탑 카드 공용 데이터)
   const infoFields = [
@@ -70,12 +80,24 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
     </>
   );
 
-  // 우상단 도메인 이동 버튼 (해당 도메인?clientId= 로 이동)
-  const domainLinks: { label: string; onClick?: () => void }[] = [
-    { label: '내담자 정보' }, // 현재 페이지 (활성)
+  // 우상단 도메인 버튼 — 내담자 정보/문서 관리는 페이지 내 탭, 나머지는 도메인 이동
+  // (모바일은 문서 관리 탭 미지원 — 문서 관리 페이지로 이동)
+  const domainLinks: {
+    label: string;
+    isActive?: boolean;
+    onClick?: () => void;
+  }[] = [
+    {
+      label: '내담자 정보',
+      isActive: isMobileView || activeTab === 'info',
+      onClick: isMobileView ? undefined : () => setActiveTab('info'),
+    },
     {
       label: '문서 관리',
-      onClick: () => navigateWithUtm(ROUTES.DOCUMENTS),
+      isActive: !isMobileView && activeTab === 'documents',
+      onClick: isMobileView
+        ? () => navigateWithUtm(ROUTES.DOCUMENTS)
+        : () => setActiveTab('documents'),
     },
     {
       label: '심리검사 해석',
@@ -112,8 +134,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
 
         {/* 도메인 이동 버튼 (가로 스크롤) */}
         <div className="flex flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-grey-30 bg-white px-4 py-2">
-          {domainLinks.map(({ label, onClick }) => {
-            const isActive = !onClick;
+          {domainLinks.map(({ label, onClick, isActive }) => {
             return (
               <button
                 key={label}
@@ -193,6 +214,23 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
     );
   }
 
+  // 문서 관리 탭에서 발송 문서를 열면 헤더까지 문서 뷰로 전환
+  if (viewingSentDocument) {
+    return (
+      <div className="flex h-full w-full">
+        {sidebar}
+        <div className="mx-auto h-full min-w-0 max-w-[1332px] flex-1 overflow-y-auto">
+          <div className="px-16 pb-[42px] pt-[42px]">
+            <SentDocumentView
+              document={viewingSentDocument}
+              onBack={() => setViewingSentDocument(null)}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full w-full">
       {sidebar}
@@ -219,8 +257,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               )}
             </div>
             <div className="flex flex-shrink-0 items-center gap-2">
-              {domainLinks.map(({ label, onClick }) => {
-                const isActive = !onClick;
+              {domainLinks.map(({ label, onClick, isActive }) => {
                 return (
                   <button
                     key={label}
@@ -243,56 +280,70 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
         {/* 컨텐츠 */}
         <div className="min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto overflow-x-hidden">
-            <div className="grid grid-cols-[1fr_377px] gap-6 px-16 pb-[42px] pt-8">
-              {/* 왼쪽: 상담 기록 목록 */}
-              <div className="min-w-0">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="truncate pl-3 text-xl font-headline text-grey-100 lg:pl-6">
-                    총 {sessionRecordCount}개의 상담 기록
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
-                    }
-                    className="flex items-center gap-2 truncate rounded-lg px-2.5 py-2 text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
-                  >
-                    <SortDescIcon size={20} />
-                    {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
-                  </button>
-                </div>
-                {sessionList}
+            {activeTab === 'documents' ? (
+              /* 문서 관리 탭 */
+              <div className="px-16 pb-[42px] pt-8">
+                <ClientDocumentsTab
+                  client={client}
+                  onOpenDocument={setViewingSentDocument}
+                />
               </div>
-
-              {/* 우측: 클라이언트 정보 카드 */}
-              <div className="sticky top-0 h-fit">
-                <div className="rounded-2xl border border-[#D6D8E1] bg-white p-6 text-left">
-                  <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-m font-medium text-[#9C9EA6]">
-                      클라이언트 정보
+            ) : (
+              <div className="grid grid-cols-[1fr_377px] gap-6 px-16 pb-[42px] pt-8">
+                {/* 왼쪽: 상담 기록 목록 */}
+                <div className="min-w-0">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="truncate pl-3 text-xl font-headline text-grey-100 lg:pl-6">
+                      총 {sessionRecordCount}개의 상담 기록
                     </h2>
                     <button
-                      onClick={onEditClientClick}
-                      className="rounded-lg border border-[#EDEFF6] px-3.5 py-1.5 text-m font-medium text-[#9C9EA6] transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-80"
+                      type="button"
+                      onClick={() =>
+                        onSortChange(
+                          sortOrder === 'newest' ? 'oldest' : 'newest'
+                        )
+                      }
+                      className="flex items-center gap-2 truncate rounded-lg px-2.5 py-2 text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-20"
                     >
-                      편집
+                      <SortDescIcon size={20} />
+                      {sortOrder === 'newest'
+                        ? '최신 날짜 순'
+                        : '오래된 날짜 순'}
                     </button>
                   </div>
-                  <div className="space-y-5">
-                    {infoFields.map(({ label, value }) => (
-                      <div key={label} className="space-y-2">
-                        <p className="text-m font-emphasize text-grey-100">
-                          {label}
-                        </p>
-                        <p className="break-all text-m text-grey-100">
-                          {value}
-                        </p>
-                      </div>
-                    ))}
+                  {sessionList}
+                </div>
+
+                {/* 우측: 클라이언트 정보 카드 */}
+                <div className="sticky top-0 h-fit">
+                  <div className="rounded-2xl border border-[#D6D8E1] bg-white p-6 text-left">
+                    <div className="mb-6 flex items-center justify-between">
+                      <h2 className="text-m font-medium text-[#9C9EA6]">
+                        클라이언트 정보
+                      </h2>
+                      <button
+                        onClick={onEditClientClick}
+                        className="rounded-lg border border-[#EDEFF6] px-3.5 py-1.5 text-m font-medium text-[#9C9EA6] transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-80"
+                      >
+                        편집
+                      </button>
+                    </div>
+                    <div className="space-y-5">
+                      {infoFields.map(({ label, value }) => (
+                        <div key={label} className="space-y-2">
+                          <p className="text-m font-emphasize text-grey-100">
+                            {label}
+                          </p>
+                          <p className="break-all text-m text-grey-100">
+                            {value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
