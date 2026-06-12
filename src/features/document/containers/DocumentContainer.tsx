@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
 
+import { getDocumentEditorRoute } from '@/app/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   DEFAULT_DOCUMENTS,
   useDocumentStore,
@@ -9,35 +11,39 @@ import {
 } from '@/stores/documentStore';
 import { useModalStore } from '@/stores/modalStore';
 
-import { AddDocumentPopover } from '../components/AddDocumentPopover';
+import {
+  AddDocumentMenu,
+  AddDocumentPopover,
+} from '../components/AddDocumentPopover';
 import { DocumentCard } from '../components/DocumentCard';
 import { MyDocumentCard } from '../components/MyDocumentCard';
-import { MY_DOCUMENT_DEFAULT_TITLE } from '../constants/myDocument';
 
 /**
  * 문서 관리 메인 화면.
  * 기본 문서는 고정 목록, 내 문서는 zustand 스토어(세션 내 임시 백엔드)로 관리.
- * 추가는 커서 위치 팝오버에서 양식 종류 선택 → 즉시 생성
- * (생성 전 상태 전이 플로우·내부 상세는 후속 작업).
+ * 추가는 커서 위치 팝오버에서 양식 종류 선택 → 제작 뷰(/documents/new)로
+ * 이동해 저장 시 생성 (내 문서 상세 뷰는 제작 뷰 기반으로 후속 작업).
  */
 export function DocumentContainer() {
+  const { navigateWithUtm } = useNavigateWithUtm();
   const myDocuments = useDocumentStore((state) => state.myDocuments);
-  const addMyDocument = useDocumentStore((state) => state.addMyDocument);
   const openModal = useModalStore((state) => state.openModal);
 
-  // 팝오버를 띄울 커서 좌표 (null = 닫힘)
+  // 팝오버를 띄울 커서 좌표 (null = 닫힘) — 하단 + 추가 카드용
   const [popoverPosition, setPopoverPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
+  // 헤더 '내 문서 등록하기' 버튼 하단 드롭다운
+  const [isAddDropdownOpen, setIsAddDropdownOpen] = useState(false);
 
   const handleOpenAddPopover = (e: React.MouseEvent) => {
     setPopoverPosition({ x: e.clientX, y: e.clientY });
   };
 
   const handleSelectKind = (kind: MyDocumentKind) => {
-    // 지금은 선택 즉시 기본 제목으로 생성 — 생성 플로우는 후속 단계에서 교체
-    addMyDocument({ title: MY_DOCUMENT_DEFAULT_TITLE[kind], kind });
+    // 종류 선택 → 제작 뷰로 이동 (저장 시 내 문서 생성)
+    navigateWithUtm(getDocumentEditorRoute(kind));
   };
 
   const handleSendDocuments = () => {
@@ -52,13 +58,24 @@ export function DocumentContainer() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-headline text-grey-100">문서 관리</h1>
         <div className="flex items-center gap-3 lg:gap-5">
-          <button
-            type="button"
-            onClick={handleOpenAddPopover}
-            className="h-[41px] rounded-lg border border-[#D6D8E1] bg-white px-7 text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
-          >
-            내 문서 등록하기
-          </button>
+          {/* 내 문서 등록하기 — 버튼 하단 드롭다운으로 양식 종류 선택 */}
+          <div className="relative">
+            <button
+              type="button"
+              aria-expanded={isAddDropdownOpen}
+              onClick={() => setIsAddDropdownOpen((prev) => !prev)}
+              className="h-[41px] rounded-lg border border-grey-40 bg-white px-7 text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+            >
+              내 문서 등록하기
+            </button>
+            {isAddDropdownOpen && (
+              <AddDocumentMenu
+                onSelect={handleSelectKind}
+                onClose={() => setIsAddDropdownOpen(false)}
+                className="absolute right-0 top-full mt-2"
+              />
+            )}
+          </div>
           <button
             type="button"
             onClick={handleSendDocuments}
@@ -93,7 +110,7 @@ export function DocumentContainer() {
             type="button"
             aria-label="내 문서 등록하기"
             onClick={handleOpenAddPopover}
-            className="flex h-[182px] w-[297px] flex-shrink-0 items-center justify-center rounded-2xl border border-[#D6D8E1] bg-[#F4F5FA] text-[#747479] transition-colors lg:hover:bg-grey-30"
+            className="flex h-[182px] w-[297px] flex-shrink-0 items-center justify-center rounded-2xl border border-grey-40 bg-grey-20 text-grey-80 transition-colors lg:hover:bg-grey-30"
           >
             <Plus size={22} />
           </button>

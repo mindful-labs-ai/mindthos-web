@@ -8,7 +8,9 @@ import UserVerifyPage from '@/features/auth/page/UserVerifyPage';
 import CalendarPage from '@/features/calendar/page/CalendarPage';
 import ClientDetailPage from '@/features/client/page/ClientDetailPage';
 import ClientListPage from '@/features/client/page/ClientListPage';
+import DocumentEditorPage from '@/features/document/page/DocumentEditorPage';
 import DocumentPage from '@/features/document/page/DocumentPage';
+import DocumentViewPage from '@/features/document/page/DocumentViewPage';
 import ErrorPage from '@/features/error/page/ErrorPage';
 import NotFoundPage from '@/features/error/page/NotFoundPage';
 import GenogramClientPage from '@/features/genogram/pages/GenogramClientPage';
@@ -81,6 +83,18 @@ export const router = createBrowserRouter([
           {
             path: ROUTES.DOCUMENTS,
             element: <DocumentPage />,
+          },
+          {
+            path: ROUTES.DOCUMENT_NEW,
+            element: <DocumentEditorPage />,
+          },
+          {
+            path: ROUTES.DOCUMENT_VIEW,
+            element: <DocumentViewPage />,
+          },
+          {
+            path: ROUTES.DOCUMENT_EDIT,
+            element: <DocumentEditorPage />,
           },
           {
             path: ROUTES.GENOGRAM,

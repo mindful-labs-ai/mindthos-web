@@ -21,6 +21,9 @@ export const ROUTES = {
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
   DOCUMENTS: '/documents',
+  DOCUMENT_NEW: '/documents/new',
+  DOCUMENT_VIEW: '/documents/:documentId',
+  DOCUMENT_EDIT: '/documents/:documentId/edit',
   ANALYSIS: '/analysis',
   AI_SUPERVISION: '/ai-supervision',
   PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
@@ -32,6 +35,15 @@ export const getGenogramRoute = (clientId?: string) =>
 
 export const getAiSupervisionRoute = (clientId?: string) =>
   clientId ? `/ai-supervision?clientId=${clientId}` : '/ai-supervision';
+
+export const getDocumentEditorRoute = (kind: 'consent' | 'qna') =>
+  `/documents/new?kind=${kind}`;
+
+export const getDocumentViewRoute = (documentId: string) =>
+  `/documents/${documentId}`;
+
+export const getDocumentEditRoute = (documentId: string) =>
+  `/documents/${documentId}/edit`;
 
 export const TERMS_TYPES = {
   SERVICE: 'service',

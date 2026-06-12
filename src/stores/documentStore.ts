@@ -95,13 +95,23 @@ export interface MyDocument {
 interface DocumentState {
   /** 내 문서 — 세션 내 추가/삭제 가능 */
   myDocuments: MyDocument[];
-  addMyDocument: (doc: { title: string; kind: MyDocumentKind }) => void;
+  addMyDocument: (doc: {
+    title: string;
+    kind: MyDocumentKind;
+    /** 동의서=HTML 문자열, 질문·응답=질문 배열 JSON 문자열 */
+    content?: string | null;
+  }) => void;
+  /** 편집 저장 — 제목·본문만 갱신 (kind·등록일 유지) */
+  updateMyDocument: (
+    id: string,
+    patch: { title: string; content: string | null }
+  ) => void;
   removeMyDocument: (id: string) => void;
 }
 
 export const useDocumentStore = create<DocumentState>((set) => ({
   myDocuments: [],
-  addMyDocument: ({ title, kind }) =>
+  addMyDocument: ({ title, kind, content = null }) =>
     set((state) => ({
       myDocuments: [
         ...state.myDocuments,
@@ -110,9 +120,15 @@ export const useDocumentStore = create<DocumentState>((set) => ({
           title,
           kind,
           createdAt: new Date().toISOString(),
-          content: null,
+          content,
         },
       ],
+    })),
+  updateMyDocument: (id, patch) =>
+    set((state) => ({
+      myDocuments: state.myDocuments.map((d) =>
+        d.id === id ? { ...d, ...patch } : d
+      ),
     })),
   removeMyDocument: (id) =>
     set((state) => ({

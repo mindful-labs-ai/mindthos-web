@@ -1478,6 +1478,155 @@ export const KakaoIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
+/**
+ * 문서 관리 — 질문·응답 에디터 전용 아이콘 묶음.
+ * 질문 유형(QnaQuestionType) 값을 키로 하며, 유형 드롭다운 등
+ * 문서 제작 에디터 영역에서만 사용한다.
+ */
+export const QnaQuestionTypeIcons = {
+  single: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <g clip-path="url(#clip0_8830_85545)">
+          <path
+            d="M18.3307 9.23355V10.0002C18.3297 11.7972 17.7478 13.5458 16.6718 14.9851C15.5959 16.4244 14.0835 17.4773 12.3602 17.9868C10.6369 18.4963 8.79511 18.4351 7.10945 17.8124C5.4238 17.1896 3.98461 16.0386 3.00653 14.5311C2.02845 13.0236 1.56389 11.2403 1.68213 9.44714C1.80036 7.65402 2.49507 5.94715 3.66263 4.58111C4.83019 3.21506 6.40805 2.26303 8.16089 1.867C9.91372 1.47097 11.7476 1.65216 13.3891 2.38355"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M18.3333 3.33398L10 11.6757L7.5 9.17565"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+        <defs>
+          <clipPath id="clip0_8830_85545">
+            <rect width={size} height={size} fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
+    </>
+  ),
+  multiple: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M7.5 9.16732L10 11.6673L18.3333 3.33398"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M17.5 10V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H13.3333"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  short: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M3.33594 11.3333H11.6693M3.33594 8H16.6693"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  long: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M3.33594 15H11.6693M3.33594 11.6667H16.6693M3.33594 8.33333H11.6693M3.33594 5H16.6693"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  score: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M6.76777 13.2322C6.31536 12.7798 5.69036 12.5 5 12.5C3.61929 12.5 2.5 13.6193 2.5 15C2.5 16.3807 3.61929 17.5 5 17.5C6.38071 17.5 7.5 16.3807 7.5 15C7.5 14.3096 7.22018 13.6846 6.76777 13.2322ZM6.76777 13.2322L13.2322 6.76777M13.2322 6.76777C13.6846 7.22018 14.3096 7.5 15 7.5C16.3807 7.5 17.5 6.38071 17.5 5C17.5 3.61929 16.3807 2.5 15 2.5C13.6193 2.5 12.5 3.61929 12.5 5C12.5 5.69036 12.7798 6.31536 13.2322 6.76777ZM13.2322 6.76777L13.2357 6.76432"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  section: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M11.6641 10.0007V12.834C11.6641 13.3007 11.6641 13.5339 11.7549 13.7121C11.8348 13.8689 11.9622 13.9967 12.119 14.0766C12.2971 14.1673 12.5303 14.1673 12.9961 14.1673H14.4987C14.9645 14.1673 15.1974 14.1673 15.3755 14.0766C15.5323 13.9967 15.6601 13.8689 15.74 13.7121C15.8307 13.534 15.8307 13.3011 15.8307 12.8353V11.3327C15.8307 10.8669 15.8307 10.6337 15.74 10.4556C15.6601 10.2988 15.5324 10.1714 15.3756 10.0915C15.1973 10.0007 14.9641 10.0007 14.4974 10.0007H11.6641ZM11.6641 10.0007V8.33398C11.6641 6.95327 12.7834 5.83398 14.1641 5.83398M4.16406 10.0007V12.834C4.16406 13.3007 4.16406 13.5339 4.25489 13.7121C4.33478 13.8689 4.46218 13.9967 4.61898 14.0766C4.79706 14.1673 5.03031 14.1673 5.49611 14.1673H6.99868C7.46448 14.1673 7.69739 14.1673 7.87548 14.0766C8.03228 13.9967 8.1601 13.8689 8.23999 13.7121C8.33073 13.534 8.33073 13.3011 8.33073 12.8353V11.3327C8.33073 10.8669 8.33073 10.6337 8.23999 10.4556C8.1601 10.2988 8.03236 10.1714 7.87556 10.0915C7.6973 10.0007 7.46411 10.0007 6.9974 10.0007H4.16406ZM4.16406 10.0007V8.33398C4.16406 6.95327 5.28335 5.83398 6.66406 5.83398"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+} as const satisfies Record<string, React.FC<CustomIconProps>>;
+
 // 편의를 위한 네임스페이스 export
 export const Icons = {
   // Stroke 버전

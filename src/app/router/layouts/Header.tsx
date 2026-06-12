@@ -11,6 +11,7 @@ import {
   type BreadCrumbItem,
 } from '@/shared/ui/composites/BreadCrumb';
 import { useAuthStore } from '@/stores/authStore';
+import { useDocumentStore } from '@/stores/documentStore';
 import { NotificationBell } from '@/widgets/notification';
 import { ProfileMenu } from '@/widgets/profile';
 
@@ -21,6 +22,7 @@ export const Header: React.FC = () => {
   const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const { clients } = useClientList();
+  const myDocuments = useDocumentStore((state) => state.myDocuments);
   const pathnames = location.pathname.split('/').filter((x) => x);
   const currentSessionId =
     pathnames.length >= 2 && pathnames[pathnames.length - 2] === 'sessions'
@@ -75,6 +77,24 @@ export const Header: React.FC = () => {
         const label = client?.name || '제목 없음';
         items.push({
           label,
+          href: currentPath,
+        });
+      }
+      // /documents/:documentId(/edit) 경로인 경우 문서 제목 사용 (/documents/new는 제작 뷰)
+      else if (pathnames[index - 1] === 'documents') {
+        const label =
+          name === 'new'
+            ? '빈 문서'
+            : myDocuments.find((d) => d.id === name)?.title || '제목 없음';
+        items.push({
+          label,
+          href: currentPath,
+        });
+      }
+      // /documents/:documentId/edit의 edit 세그먼트
+      else if (pathnames[index - 2] === 'documents' && name === 'edit') {
+        items.push({
+          label: '편집',
           href: currentPath,
         });
       }

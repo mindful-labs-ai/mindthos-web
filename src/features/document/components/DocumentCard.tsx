@@ -11,7 +11,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
   const category = DOCUMENT_CATEGORY_CONFIG[document.category];
 
   return (
-    <div className="relative flex h-[182px] w-[297px] flex-shrink-0 flex-col rounded-2xl border border-[#D6D8E1] bg-white px-7 py-6">
+    <div className="relative flex h-[182px] w-[297px] flex-shrink-0 flex-col rounded-2xl border border-grey-40 bg-white px-7 py-6">
       <h3 className="pr-6 text-xl font-headline leading-[24px] text-grey-100">
         {document.title}
       </h3>

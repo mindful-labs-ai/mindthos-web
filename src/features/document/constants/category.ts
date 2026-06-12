@@ -13,14 +13,14 @@ export const DOCUMENT_CATEGORY_CONFIG: Record<
 > = {
   ethics: {
     label: '행정 및 윤리',
-    chipClass: 'bg-[#FFF0D6] text-[#EBAE43]',
+    chipClass: 'bg-yellow-20 text-yellow-80',
   },
   preparation: {
     label: '상담 준비',
-    chipClass: 'bg-[#ECFAED] text-green-80',
+    chipClass: 'bg-green-20 text-green-80',
   },
   assessment: {
     label: '심리검사',
-    chipClass: 'bg-[#D6D8E1] text-[#4D4F54]',
+    chipClass: 'bg-grey-40 text-grey-90',
   },
 };

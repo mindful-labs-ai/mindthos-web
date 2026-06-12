@@ -563,3 +563,35 @@ body {
     animation: shimmer-progress 2s ease-in-out infinite;
   }
 }
+
+/* 문서 출력(@/features/document 뷰 페이지) — .print-area(문서 캔버스)만 인쇄.
+ * visibility 방식으로 사이드탭·헤더 등 레이아웃을 제외하고,
+ * 스크롤 컨테이너(overflow)가 인쇄를 한 페이지로 잘라내는 것을 방지한다. */
+@media print {
+  /* 페이지 여백 — 브라우저 머리글/바닥글(일시·제목·URL)과 본문 분리 */
+  @page {
+    margin: 18mm 14mm;
+  }
+  body *,
+  body *::before,
+  body *::after {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+    /* 배경색·체크 채움·점수 바가 인쇄에서 생략되지 않도록 */
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 24px 32px 32px;
+  }
+  * {
+    overflow: visible !important;
+  }
+}
