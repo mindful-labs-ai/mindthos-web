@@ -2,7 +2,9 @@ import { Fragment, useState } from 'react';
 
 import { ChevronDown } from 'lucide-react';
 
+import { useDevice } from '@/shared/hooks/useDevice';
 import { QnaQuestionTypeIcons } from '@/shared/icons';
+import { Modal } from '@/shared/ui/composites/Modal';
 
 import { QNA_QUESTION_TYPE_LABEL } from '../../constants/qnaQuestion';
 import type { QnaQuestionType } from '../../types';
@@ -25,7 +27,40 @@ export function QuestionTypeDropdown({
   onChange,
 }: QuestionTypeDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const TriggerIcon = QnaQuestionTypeIcons[type];
+
+  // 그룹 목록 본문 — 데스크탑 드롭다운/모바일 바텀시트 공용
+  const typeList = TYPE_GROUPS.map((group, groupIndex) => (
+    <Fragment key={groupIndex}>
+      {groupIndex > 0 && <div className="my-2 border-t border-grey-40" />}
+      {group.map((item) => {
+        const ItemIcon = QnaQuestionTypeIcons[item];
+        return (
+          <button
+            key={item}
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              onChange(item);
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors lg:hover:bg-grey-20 ${
+              item === type ? 'bg-grey-20' : ''
+            }`}
+          >
+            <span className="text-grey-80">
+              <ItemIcon size={20} />
+            </span>
+            <span className="text-m font-medium text-grey-100">
+              {QNA_QUESTION_TYPE_LABEL[item]}
+            </span>
+          </button>
+        );
+      })}
+    </Fragment>
+  ));
 
   return (
     <div className="relative">
@@ -45,52 +80,39 @@ export function QuestionTypeDropdown({
         <ChevronDown size={16} className="text-grey-70" />
       </button>
 
-      {isOpen && (
-        <>
-          {/* 바깥 클릭 닫기용 투명 오버레이 */}
-          <div
-            className="fixed inset-0 z-modal"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
-
-          <div
-            role="menu"
-            className="absolute right-0 top-full z-modal mt-2 w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
-          >
-            {TYPE_GROUPS.map((group, groupIndex) => (
-              <Fragment key={groupIndex}>
-                {groupIndex > 0 && (
-                  <div className="my-2 border-t border-grey-40" />
-                )}
-                {group.map((item) => {
-                  const ItemIcon = QnaQuestionTypeIcons[item];
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        onChange(item);
-                        setIsOpen(false);
-                      }}
-                      className={`flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors lg:hover:bg-grey-20 ${
-                        item === type ? 'bg-grey-20' : ''
-                      }`}
-                    >
-                      <span className="text-grey-80">
-                        <ItemIcon size={20} />
-                      </span>
-                      <span className="text-m font-medium text-grey-100">
-                        {QNA_QUESTION_TYPE_LABEL[item]}
-                      </span>
-                    </button>
-                  );
-                })}
-              </Fragment>
-            ))}
+      {isMobileView ? (
+        /* 모바일 — 바텀시트 */
+        <Modal
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          mobileVariant="bottomSheet"
+          hideCloseButton
+        >
+          <div className="pb-4">
+            <p className="px-1 pb-2 text-m font-emphasize text-grey-100">
+              질문 유형
+            </p>
+            {typeList}
           </div>
-        </>
+        </Modal>
+      ) : (
+        isOpen && (
+          <>
+            {/* 바깥 클릭 닫기용 투명 오버레이 */}
+            <div
+              className="fixed inset-0 z-modal"
+              onClick={() => setIsOpen(false)}
+              aria-hidden="true"
+            />
+
+            <div
+              role="menu"
+              className="absolute right-0 top-full z-modal mt-2 w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
+            >
+              {typeList}
+            </div>
+          </>
+        )
       )}
     </div>
   );

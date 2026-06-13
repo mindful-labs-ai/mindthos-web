@@ -33,12 +33,13 @@ import {
   MenuIcon,
   PlusIcon,
 } from '@/shared/icons';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useAuthStore } from '@/stores/authStore';
 import { useClientListScrollStore } from '@/stores/clientListScrollStore';
 import { useModalStore } from '@/stores/modalStore';
+import { NotificationBell } from '@/widgets/notification';
 import { ProfileMenu } from '@/widgets/profile';
 
 import { getRouteLabel } from '../navigationConfig';
@@ -139,7 +140,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         <span className="text-m font-medium text-grey-100">{pageTitle}</span>
       </div>
 
-      {rightSlot}
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        {rightSlot}
+      </div>
     </header>
   );
 };
@@ -199,10 +203,7 @@ function GenogramClientButton() {
         hideCloseButton
         className="flex flex-col"
       >
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
-          <BackButton onClick={() => setIsOpen(false)} />
-          <p className="text-m font-medium text-grey-100">내담자 선택</p>
-        </div>
+        <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <MobileAddClientButton
             onClick={handleOpenAddClient}
@@ -319,10 +320,7 @@ function HeaderClientSelectButton() {
         hideCloseButton
         className="flex flex-col"
       >
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
-          <BackButton onClick={() => setIsOpen(false)} />
-          <p className="text-m font-medium text-grey-100">내담자 선택</p>
-        </div>
+        <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <MobileAddClientButton
             onClick={handleOpenAddClient}

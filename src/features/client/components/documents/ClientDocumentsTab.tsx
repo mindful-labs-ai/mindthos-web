@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { MoreVertical } from 'lucide-react';
 
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useModalStore } from '@/stores/modalStore';
 import {
   SENT_DOCUMENT_STATUS_LABEL,
@@ -63,6 +64,8 @@ export function ClientDocumentsTab({
   onOpenDocument,
 }: ClientDocumentsTabProps) {
   const openModal = useModalStore((state) => state.openModal);
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   // 셀렉터에서 filter로 새 배열을 만들면 매 렌더 무한 루프 — 원본 구독 후 useMemo로 필터
   const allSentDocuments = useSentDocumentStore((state) => state.sentDocuments);
   const sentDocuments = useMemo(
@@ -97,46 +100,68 @@ export function ClientDocumentsTab({
     });
   };
 
-  return (
-    <div className="flex flex-col gap-6">
-      {/* 상태 필터 + 문서 발송 */}
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-grey-40 bg-white p-5">
-        <div className="flex items-center gap-2">
-          {STATUS_FILTERS.map(({ key, label }) => {
-            const isActive = key === filter;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key)}
-                className={`flex h-9 items-center gap-2 rounded-lg px-3 text-m font-emphasize transition-colors ${
-                  isActive
-                    ? 'bg-grey-30 text-grey-100'
-                    : 'bg-white text-grey-70 lg:hover:bg-grey-10'
-                }`}
-              >
-                {label}
-                <span
-                  className={`font-headline ${isActive ? 'text-grey-80' : 'text-grey-70'}`}
-                >
-                  {countOf(key)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <button
-          type="button"
-          onClick={handleOpenSendModal}
-          className="h-9 w-[163px] flex-shrink-0 rounded-lg bg-green-80 text-m font-emphasize text-white transition-opacity lg:hover:opacity-90"
+  // 필터 칩 목록 — 데스크탑 카드 바 / 모바일 가로 스크롤 띠 공용
+  const filterChips = STATUS_FILTERS.map(({ key, label }) => {
+    const isActive = key === filter;
+    return (
+      <button
+        key={key}
+        type="button"
+        onClick={() => setFilter(key)}
+        className={`flex h-9 flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 text-m font-emphasize transition-colors ${
+          isActive
+            ? 'bg-grey-30 text-grey-100'
+            : 'bg-white text-grey-70 lg:hover:bg-grey-10'
+        }`}
+      >
+        {label}
+        <span
+          className={`font-headline ${isActive ? 'text-grey-80' : 'text-grey-70'}`}
         >
-          문서 발송
-        </button>
-      </div>
+          {countOf(key)}
+        </span>
+      </button>
+    );
+  });
+
+  return (
+    <div className="flex flex-col gap-4 lg:gap-6">
+      {/* 상태 필터 + 문서 발송 — 모바일은 상단 띠 + full width CTA */}
+      {isMobileView ? (
+        <>
+          <div className="-mx-4 flex gap-2 overflow-x-auto px-4">
+            {filterChips}
+          </div>
+          <button
+            type="button"
+            onClick={handleOpenSendModal}
+            className="h-11 w-full rounded-lg bg-green-80 text-m font-emphasize text-white"
+          >
+            문서 발송
+          </button>
+        </>
+      ) : (
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-grey-40 bg-white p-5">
+          <div className="flex items-center gap-2">{filterChips}</div>
+          <button
+            type="button"
+            onClick={handleOpenSendModal}
+            className="h-9 w-[163px] flex-shrink-0 rounded-lg bg-green-80 text-m font-emphasize text-white transition-opacity lg:hover:opacity-90"
+          >
+            문서 발송
+          </button>
+        </div>
+      )}
 
       {sentDocuments.length === 0 ? (
-        /* 빈 상태 */
-        <div className="mx-auto mt-20 w-full max-w-[512px] rounded-2xl bg-white px-8 py-12 text-center">
+        /* 빈 상태 — 모바일은 탭 영역에 꽉 차게 */
+        <div
+          className={
+            isMobileView
+              ? 'flex min-h-[55dvh] w-full flex-col items-center justify-center rounded-2xl bg-white px-6 text-center'
+              : 'mx-auto mt-20 w-full max-w-[512px] rounded-2xl bg-white px-8 py-12 text-center'
+          }
+        >
           <p className="text-l font-emphasize text-grey-100">
             아직 보낸 문서가 없어요
           </p>
@@ -154,46 +179,69 @@ export function ClientDocumentsTab({
           </button>
         </div>
       ) : (
-        /* 발송 문서 목록 */
-        <div className="flex flex-col gap-4">
+        /* 발송 문서 목록 — 모바일은 단순화 카드 */
+        <div className="flex flex-col gap-3 lg:gap-4">
           {filtered.map((document) => (
             <div
               key={document.id}
-              className="relative rounded-2xl border border-grey-40 bg-white px-7 py-6"
+              className={`relative rounded-2xl border border-grey-40 bg-white ${
+                isMobileView ? 'px-4 py-4' : 'px-7 py-6'
+              }`}
             >
               <button
                 type="button"
                 onClick={() => onOpenDocument(document)}
-                className="block w-full text-left"
+                className="block w-full pr-7 text-left lg:pr-0"
               >
-                <span className="flex items-center gap-3">
-                  <span className="text-l font-headline text-grey-100">
+                <span className="flex items-center gap-2 lg:gap-3">
+                  <span
+                    className={`truncate font-headline text-grey-100 ${
+                      isMobileView ? 'text-m' : 'text-l'
+                    }`}
+                  >
                     {document.title}
                   </span>
                   <span
-                    className={`flex h-[29px] items-center rounded-lg px-2.5 text-sm font-headline ${STATUS_CHIP_CLASS[document.status]}`}
+                    className={`flex flex-shrink-0 items-center rounded-lg font-headline ${
+                      isMobileView
+                        ? 'h-6 px-2 text-xs'
+                        : 'h-[29px] px-2.5 text-sm'
+                    } ${STATUS_CHIP_CLASS[document.status]}`}
                   >
                     {SENT_DOCUMENT_STATUS_LABEL[document.status]}
                   </span>
                 </span>
-                <span className="mt-3 block text-sm text-grey-70">
+                <span
+                  className={`block text-grey-70 ${
+                    isMobileView ? 'mt-2 text-xs' : 'mt-3 text-sm'
+                  }`}
+                >
                   {formatSentHistory(document)}
                 </span>
               </button>
 
               {/* 완료 문서 — 서명본 확인 */}
-              {document.status === 'completed' && (
-                <button
-                  type="button"
-                  onClick={() => onOpenDocument(document)}
-                  className="absolute bottom-5 right-5 h-[29px] rounded-lg border border-green-80 bg-green-20 px-2.5 text-sm font-headline text-green-80 transition-opacity lg:hover:opacity-80"
-                >
-                  문서 확인하기
-                </button>
-              )}
+              {document.status === 'completed' &&
+                (isMobileView ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenDocument(document)}
+                    className="mt-3 h-7 rounded-lg border border-green-80 bg-green-20 px-2.5 text-xs font-headline text-green-80"
+                  >
+                    문서 확인하기
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onOpenDocument(document)}
+                    className="absolute bottom-5 right-5 h-[29px] rounded-lg border border-green-80 bg-green-20 px-2.5 text-sm font-headline text-green-80 transition-opacity lg:hover:opacity-80"
+                  >
+                    문서 확인하기
+                  </button>
+                ))}
 
               {/* 케밥 메뉴 */}
-              <div className="absolute right-4 top-[19px]">
+              <div className="absolute right-3 top-3 lg:right-4 lg:top-[19px]">
                 <button
                   type="button"
                   aria-label="문서 메뉴"

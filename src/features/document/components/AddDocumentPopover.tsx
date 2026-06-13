@@ -1,10 +1,16 @@
 import { CheckSquare, PenLine } from 'lucide-react';
 
+import { Modal } from '@/shared/ui/composites/Modal';
 import type { MyDocumentKind } from '@/stores/documentStore';
 
 import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
 
 const POPOVER_WIDTH = 234;
+
+const ADD_DOCUMENT_ITEMS: { kind: MyDocumentKind; icon: React.ReactNode }[] = [
+  { kind: 'consent', icon: <CheckSquare size={20} /> },
+  { kind: 'qna', icon: <PenLine size={20} /> },
+];
 
 interface AddDocumentMenuProps {
   onSelect: (kind: MyDocumentKind) => void;
@@ -21,10 +27,7 @@ export function AddDocumentMenu({
   className,
   style,
 }: AddDocumentMenuProps) {
-  const items: { kind: MyDocumentKind; icon: React.ReactNode }[] = [
-    { kind: 'consent', icon: <CheckSquare size={20} /> },
-    { kind: 'qna', icon: <PenLine size={20} /> },
-  ];
+  const items = ADD_DOCUMENT_ITEMS;
 
   return (
     <>
@@ -91,5 +94,49 @@ export function AddDocumentPopover({
       className="fixed"
       style={{ left, top }}
     />
+  );
+}
+
+interface AddDocumentBottomSheetProps {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (kind: MyDocumentKind) => void;
+}
+
+/** 내 문서 등록 바텀시트 — 모바일에서 팝오버/드롭다운 대체 */
+export function AddDocumentBottomSheet({
+  open,
+  onClose,
+  onSelect,
+}: AddDocumentBottomSheetProps) {
+  return (
+    <Modal
+      open={open}
+      onOpenChange={(o) => !o && onClose()}
+      mobileVariant="bottomSheet"
+      hideCloseButton
+    >
+      <div className="flex flex-col pb-4">
+        <p className="px-1 pb-2 text-m font-emphasize text-grey-100">
+          내 문서 등록하기
+        </p>
+        {ADD_DOCUMENT_ITEMS.map(({ kind, icon }) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => {
+              onSelect(kind);
+              onClose();
+            }}
+            className="flex h-12 w-full items-center gap-3 rounded-lg px-1 text-left transition-colors lg:hover:bg-grey-20"
+          >
+            <span className="text-grey-80">{icon}</span>
+            <span className="text-m font-medium text-grey-100">
+              {MY_DOCUMENT_KIND_LABEL[kind]}
+            </span>
+          </button>
+        ))}
+      </div>
+    </Modal>
   );
 }

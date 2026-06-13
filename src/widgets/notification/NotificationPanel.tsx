@@ -123,12 +123,14 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
 
       <aside
         aria-label="알림"
-        className={`fixed bottom-0 right-0 top-[var(--height-header)] z-modal flex w-[480px] max-w-full flex-col bg-white shadow-[-10px_-10px_40px_rgba(60,60,60,0.15)] transition-transform duration-300 ease-out ${
+        // 모바일(sm 미만)은 풀스크린(상태바/노치 회피 위해 safe-area 인셋),
+        // 데스크탑은 헤더 아래 우측 패널
+        className={`fixed bottom-0 right-0 top-0 z-modal flex w-full max-w-full flex-col bg-white pt-[env(safe-area-inset-top)] shadow-[-10px_-10px_40px_rgba(60,60,60,0.15)] transition-transform duration-300 ease-out sm:top-[var(--height-header)] sm:w-[480px] sm:pt-0 ${
           open && isVisible ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* 상단: 접기 + 필터 + 모두 읽기 */}
-        <div className="pr- flex h-[66px] flex-shrink-0 items-center gap-3 px-6 pt-6">
+        <div className="flex h-[66px] flex-shrink-0 items-center gap-3 px-6 pt-6">
           <button
             type="button"
             aria-label="알림 패널 닫기"

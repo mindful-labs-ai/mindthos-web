@@ -78,9 +78,9 @@ export function QnaQuestionContent({
 
   return (
     <div>
-      {/* 질문(제목) — 빈 값이면 placeholder 색 */}
+      {/* 질문(제목) — 빈 값이면 placeholder 색, 모바일은 한 단계 작게 */}
       <p
-        className={`text-[28px] font-emphasize leading-[150%] ${
+        className={`text-l font-emphasize leading-[150%] lg:text-[28px] ${
           question.title ? 'text-grey-100' : 'text-grey-80'
         }`}
       >
@@ -99,7 +99,7 @@ export function QnaQuestionContent({
               <>
                 {renderMarker(interactive && selected.includes(i))}
                 <span
-                  className={`text-xl font-medium ${
+                  className={`text-m font-medium lg:text-xl ${
                     option ? 'text-grey-100' : 'text-grey-80'
                   }`}
                 >
@@ -136,7 +136,7 @@ export function QnaQuestionContent({
               ) : (
                 renderMarker(false)
               )}
-              <span className="flex-shrink-0 text-xl font-medium text-grey-100">
+              <span className="flex-shrink-0 text-m font-medium text-grey-100 lg:text-xl">
                 기타 :
               </span>
               {interactive ? (
@@ -151,7 +151,7 @@ export function QnaQuestionContent({
                     })
                   }
                   aria-label="기타 입력"
-                  className="h-[30px] min-w-0 flex-1 border-b border-grey-40 bg-transparent text-xl font-medium text-grey-100 focus:outline-none"
+                  className="h-[30px] min-w-0 flex-1 border-b border-grey-40 bg-transparent text-m font-medium text-grey-100 focus:outline-none lg:text-xl"
                 />
               ) : (
                 <span className="mb-1 min-w-0 flex-1 self-end border-b border-grey-40" />
@@ -170,10 +170,10 @@ export function QnaQuestionContent({
             onChange={(e) => onAnswerChange?.({ text: e.target.value })}
             placeholder="답변을 입력해주세요."
             aria-label="답변 입력"
-            className="mt-6 flex h-[46px] w-full items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-xl font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none"
+            className="mt-6 flex h-[46px] w-full items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-m font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-xl"
           />
         ) : (
-          <div className="mt-6 flex h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-xl font-medium text-grey-60">
+          <div className="mt-6 flex h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-m font-medium text-grey-60 lg:text-xl">
             답변을 입력해주세요.
           </div>
         ))}
@@ -185,10 +185,10 @@ export function QnaQuestionContent({
             onChange={(e) => onAnswerChange?.({ text: e.target.value })}
             placeholder="답변을 입력해주세요."
             aria-label="답변 입력"
-            className="mt-6 block h-[134px] w-full resize-none rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-xl font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none"
+            className="mt-6 block h-[134px] w-full resize-none rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-xl"
           />
         ) : (
-          <div className="mt-6 h-[134px] rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-xl font-medium text-grey-60">
+          <div className="mt-6 h-[134px] rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-60 lg:text-xl">
             답변을 입력해주세요.
           </div>
         ))}
@@ -266,7 +266,7 @@ export function QnaQuestionContent({
       {/* 제목 및 설명 */}
       {question.type === 'section' && (
         <p
-          className={`mt-6 whitespace-pre-wrap text-xl font-medium ${
+          className={`mt-6 whitespace-pre-wrap text-m font-medium lg:text-xl ${
             question.description ? 'text-grey-100' : 'text-grey-60'
           }`}
         >

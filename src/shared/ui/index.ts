@@ -6,6 +6,9 @@ export type { VisuallyHiddenProps } from './primitives/VisuallyHidden';
 export { BackButton } from './atoms/BackButton';
 export type { BackButtonProps } from './atoms/BackButton';
 
+export { MobileModalHeader } from './atoms/MobileModalHeader';
+export type { MobileModalHeaderProps } from './atoms/MobileModalHeader';
+
 export { Button } from './atoms/Button';
 export type {
   ButtonProps,

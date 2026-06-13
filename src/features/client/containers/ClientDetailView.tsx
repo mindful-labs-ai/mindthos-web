@@ -10,8 +10,9 @@ import {
 } from '@/app/router/constants';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon } from '@/shared/icons';
-import { BackButton } from '@/shared/ui';
+import { MobileModalHeader } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
+import { Modal } from '@/shared/ui/composites/Modal';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
 import { ClientDocumentsTab } from '../components/documents/ClientDocumentsTab';
@@ -81,7 +82,6 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   );
 
   // 우상단 도메인 버튼 — 내담자 정보/문서 관리는 페이지 내 탭, 나머지는 도메인 이동
-  // (모바일은 문서 관리 탭 미지원 — 문서 관리 페이지로 이동)
   const domainLinks: {
     label: string;
     isActive?: boolean;
@@ -89,15 +89,13 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   }[] = [
     {
       label: '내담자 정보',
-      isActive: isMobileView || activeTab === 'info',
-      onClick: isMobileView ? undefined : () => setActiveTab('info'),
+      isActive: activeTab === 'info',
+      onClick: () => setActiveTab('info'),
     },
     {
       label: '문서 관리',
-      isActive: !isMobileView && activeTab === 'documents',
-      onClick: isMobileView
-        ? () => navigateWithUtm(ROUTES.DOCUMENTS)
-        : () => setActiveTab('documents'),
+      isActive: activeTab === 'documents',
+      onClick: () => setActiveTab('documents'),
     },
     {
       label: '심리검사 해석',
@@ -119,18 +117,20 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   if (isMobileView) {
     return (
       <div className="flex h-dvh w-full flex-col bg-app-bg">
-        {/* 자체 헤더 */}
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 bg-white px-4 py-3 md:gap-7">
-          <BackButton onClick={() => navigate(-1)} />
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="truncate text-m font-medium text-grey-100">
-              {client.name}
-            </span>
-            <span className="flex-shrink-0 text-sm text-grey-60">
-              총 {sessionRecordCount}개의 상담 기록
-            </span>
-          </div>
-        </div>
+        {/* 자체 헤더 — 이름 + 상담 기록 수 부제 */}
+        <MobileModalHeader
+          onBack={() => navigate(-1)}
+          title={
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="truncate text-m font-medium text-grey-100">
+                {client.name}
+              </span>
+              <span className="flex-shrink-0 text-sm text-grey-60">
+                총 {sessionRecordCount}개의 상담 기록
+              </span>
+            </div>
+          }
+        />
 
         {/* 도메인 이동 버튼 (가로 스크롤) */}
         <div className="flex flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-grey-30 bg-white px-4 py-2">
@@ -154,60 +154,88 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
 
         {/* 콘텐츠 영역 */}
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <div className="px-4 py-4 md:px-10 md:py-6">
-            {/* 아코디언 내담자 정보 */}
-            <div className="mb-6 rounded-xl border border-grey-30 bg-white">
-              <button
-                type="button"
-                onClick={() => setIsInfoOpen(!isInfoOpen)}
-                className="flex w-full items-center justify-between px-4 py-3"
-              >
-                <div className="flex items-center gap-1">
-                  <span className="text-sm text-grey-60">내담자 정보</span>
-                  <ChevronDownIcon
-                    size={16}
-                    className={`text-grey-60 transition-transform ${isInfoOpen ? 'rotate-180' : ''}`}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditClientClick();
-                  }}
-                  className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
-                >
-                  편집
-                </button>
-              </button>
-              {isInfoOpen && (
-                <div className="grid grid-cols-2 gap-4 border-t border-grey-30 px-4 py-4">
-                  {clientInfoFields}
-                </div>
-              )}
+          {activeTab === 'documents' ? (
+            /* 문서 관리 탭 */
+            <div className="px-4 py-4 md:px-10 md:py-6">
+              <ClientDocumentsTab
+                client={client}
+                onOpenDocument={setViewingSentDocument}
+              />
             </div>
-
-            {/* 세션 목록 */}
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-m font-emphasize text-grey-100 md:text-l">
-                  상담 기록
-                </h2>
+          ) : (
+            <div className="px-4 py-4 md:px-10 md:py-6">
+              {/* 아코디언 내담자 정보 */}
+              <div className="mb-6 rounded-xl border border-grey-30 bg-white">
                 <button
                   type="button"
-                  onClick={() =>
-                    onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
-                  }
-                  className="flex items-center gap-1.5 rounded-lg border border-grey-30 bg-white px-3 py-1.5 text-sm font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
+                  onClick={() => setIsInfoOpen(!isInfoOpen)}
+                  className="flex w-full items-center justify-between px-4 py-3"
                 >
-                  <SortDescIcon size={16} />
-                  {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-grey-60">내담자 정보</span>
+                    <ChevronDownIcon
+                      size={16}
+                      className={`text-grey-60 transition-transform ${isInfoOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditClientClick();
+                    }}
+                    className="rounded-md border border-grey-30 px-3 py-1 text-sm font-medium text-grey-80 transition-colors lg:hover:bg-grey-10"
+                  >
+                    편집
+                  </button>
                 </button>
+                {isInfoOpen && (
+                  <div className="grid grid-cols-2 gap-4 border-t border-grey-30 px-4 py-4">
+                    {clientInfoFields}
+                  </div>
+                )}
               </div>
-              {sessionList}
+
+              {/* 세션 목록 */}
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="text-m font-emphasize text-grey-100 md:text-l">
+                    상담 기록
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onSortChange(sortOrder === 'newest' ? 'oldest' : 'newest')
+                    }
+                    className="flex items-center gap-1.5 rounded-lg border border-grey-30 bg-white px-3 py-1.5 text-sm font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
+                  >
+                    <SortDescIcon size={16} />
+                    {sortOrder === 'newest' ? '최신 날짜 순' : '오래된 날짜 순'}
+                  </button>
+                </div>
+                {sessionList}
+              </div>
             </div>
-          </div>
+          )}
         </div>
+
+        {/* 발송 문서 뷰 — 풀스크린 depth (닫기는 브라우저/제스처 뒤로가기) */}
+        <Modal
+          open={!!viewingSentDocument}
+          onOpenChange={(o) => !o && setViewingSentDocument(null)}
+          mobileVariant="fullScreen"
+          hideCloseButton
+        >
+          {viewingSentDocument && (
+            <div className="px-4 py-4">
+              <SentDocumentView
+                document={viewingSentDocument}
+                onBack={() => setViewingSentDocument(null)}
+                isMobileView
+              />
+            </div>
+          )}
+        </Modal>
 
         {editModal}
       </div>

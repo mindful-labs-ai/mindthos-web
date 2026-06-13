@@ -58,7 +58,7 @@ export function QuestionCard({
       <button
         type="button"
         onClick={onActivate}
-        className="w-full rounded-2xl border border-grey-40 bg-white p-7 text-left"
+        className="w-full rounded-2xl border border-grey-40 bg-white p-4 text-left lg:p-7"
       >
         <QnaQuestionContent question={question} />
       </button>
@@ -102,7 +102,7 @@ export function QuestionCard({
   return (
     <div
       onFocusCapture={onActivate}
-      className="rounded-2xl border border-green-80 bg-white p-7"
+      className="rounded-2xl border border-green-80 bg-white p-4 lg:p-7"
     >
       {/* 질문 */}
       <input
@@ -275,7 +275,7 @@ export function QuestionCard({
       )}
 
       {/* 하단 액션: 복제 · 삭제 · 유형 드롭다운 */}
-      <div className="mt-6 flex items-center justify-end gap-10">
+      <div className="mt-6 flex flex-wrap items-center justify-end gap-4 lg:gap-10">
         <div className="flex items-center gap-6">
           <button
             type="button"

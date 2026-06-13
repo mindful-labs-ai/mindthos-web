@@ -4,6 +4,7 @@ import { ChevronLeft, Printer } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 import { getDocumentEditRoute, ROUTES } from '@/app/router/constants';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useDocumentStore } from '@/stores/documentStore';
 
@@ -21,6 +22,8 @@ import type { QnaAnswer } from '../types';
 export function DocumentViewContainer() {
   const { documentId } = useParams();
   const { navigateWithUtm } = useNavigateWithUtm();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
   const document = useDocumentStore((state) =>
     state.myDocuments.find((d) => d.id === documentId)
   );
@@ -66,17 +69,29 @@ export function DocumentViewContainer() {
           문서를 찾을 수 없습니다.
         </p>
       ) : (
-        <div className="print-area relative mt-8 min-h-[700px] rounded-2xl border border-grey-40 bg-white px-6 pb-10 pt-8 lg:px-12 print:border-none">
-          {/* 우상단: 출력하기 / 편집 — 인쇄 시 숨김 */}
-          <div className="absolute right-9 top-8 flex items-center gap-3 print:hidden">
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex h-8 items-center gap-1 rounded-lg border border-grey-30 bg-white px-3.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
-            >
-              <Printer size={20} />
-              출력하기
-            </button>
+        <div
+          className={`print-area relative rounded-2xl border border-grey-40 bg-white print:border-none ${
+            isMobileView
+              ? 'mt-4 min-h-[60dvh] px-4 pb-8 pt-4'
+              : 'mt-8 min-h-[700px] px-6 pb-10 pt-8 lg:px-12'
+          }`}
+        >
+          {/* 출력하기(데스크탑만) / 편집 — 인쇄 시 숨김 */}
+          <div
+            className={`flex items-center justify-end gap-3 print:hidden ${
+              isMobileView ? '' : 'absolute right-9 top-8'
+            }`}
+          >
+            {!isMobileView && (
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex h-8 items-center gap-1 rounded-lg border border-grey-30 bg-white px-3.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
+              >
+                <Printer size={20} />
+                출력하기
+              </button>
+            )}
             <button
               type="button"
               onClick={() => navigateWithUtm(getDocumentEditRoute(document.id))}
@@ -87,20 +102,36 @@ export function DocumentViewContainer() {
           </div>
 
           {/* 제목 */}
-          <h2 className="mx-auto mt-12 w-full max-w-[851px] text-center text-[32px] font-emphasize leading-[38px] text-grey-100">
+          <h2
+            className={`mx-auto w-full max-w-[851px] text-center font-emphasize text-grey-100 ${
+              isMobileView
+                ? 'mt-4 text-xl leading-[29px]'
+                : 'mt-12 text-[32px] leading-[38px]'
+            }`}
+          >
             {document.title}
           </h2>
-          <div className="mx-auto mt-12 w-full max-w-[851px] border-b border-grey-40" />
+          <div
+            className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
+          />
 
           {/* 종류별 본문 */}
           {document.kind === 'consent' ? (
             <div
-              className="mx-auto mt-10 w-full max-w-[851px] text-xl font-medium leading-[150%] text-grey-100 [&_h1]:text-[28px] [&_h1]:font-headline [&_h2]:text-2xl [&_h2]:font-headline"
+              className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 [&_h1]:font-headline [&_h2]:font-headline ${
+                isMobileView
+                  ? 'mt-6 text-m [&_h1]:text-xl [&_h2]:text-l'
+                  : 'mt-10 text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
+              }`}
               // 본인이 제작 뷰에서 작성한 HTML — 백엔드 연결 시 서버 측 sanitize 전제
               dangerouslySetInnerHTML={{ __html: document.content ?? '' }}
             />
           ) : (
-            <div className="mx-auto mt-10 flex w-full max-w-[851px] flex-col gap-10 pb-6">
+            <div
+              className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
+                isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
+              }`}
+            >
               {questions.map((question) => {
                 const number =
                   question.type === 'section' ? undefined : ++questionNumber;
