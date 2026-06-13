@@ -31,8 +31,7 @@ import { CREDIT_COST } from '@/shared/constants/credit';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
-import { Title } from '@/shared/ui';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -291,10 +290,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
     >
       {/* 헤더 */}
       {isMobileView ? (
-        <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
-          <BackButton onClick={handleClose} />
-          <p className="text-m font-medium text-grey-100">다회기 분석하기</p>
-        </div>
+        <MobileModalHeader title="다회기 분석하기" onBack={handleClose} />
       ) : (
         <div className="p-6 pb-0 text-center">
           <Title as="h3" className="text-xl font-headline text-grey-100">

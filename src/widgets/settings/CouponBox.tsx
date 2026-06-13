@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import type { Coupon } from '@/features/settings/types/coupon';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -211,10 +211,7 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
       {isMobileView ? (
         <>
           {/* 헤더 */}
-          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-m font-medium text-grey-100">나의 쿠폰함</p>
-          </div>
+          <MobileModalHeader title="나의 쿠폰함" onBack={() => onOpenChange(false)} />
 
           {/* 콘텐츠 */}
           <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">

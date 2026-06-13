@@ -5,6 +5,8 @@ import { Calendar, ChevronDown, ChevronLeft, User } from 'lucide-react';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
+import { useDevice } from '@/shared/hooks/useDevice';
+import { MobileModalHeader } from '@/shared/ui';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
 
 import { WEEKDAYS_KO } from '../../constants';
@@ -81,6 +83,8 @@ export function AddEventPanel({
   );
   const [clientSelectOpen, setClientSelectOpen] = React.useState(false);
   const { clients } = useClientList();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
 
   // 패널이 열린 상태에서 다시 드래그/선택해 초기 시간이 바뀌면 입력값 동기화
   React.useEffect(() => {
@@ -134,20 +138,27 @@ export function AddEventPanel({
 
   return (
     <div className="flex h-full flex-col">
-      {/* 헤더 */}
-      <div className="flex items-center gap-3 px-5 pb-4 pt-7">
-        <button
-          type="button"
-          aria-label="뒤로"
-          onClick={onClose}
-          className="text-[#8b8c93]"
-        >
-          <ChevronLeft size={24} strokeWidth={2} />
-        </button>
-        <h2 className="text-sm font-emphasize text-[#222121]">
-          {isEdit ? '일정 변경하기' : '일정 추가하기'}
-        </h2>
-      </div>
+      {/* 헤더 — 모바일은 녹음 업로드 모달과 동일한 고정 헤더, 데스크탑은 슬라이드오버 헤더 */}
+      {isMobileView ? (
+        <MobileModalHeader
+          title={isEdit ? '일정 변경하기' : '일정 추가하기'}
+          onBack={onClose}
+        />
+      ) : (
+        <div className="flex items-center gap-3 px-5 pb-4 pt-7">
+          <button
+            type="button"
+            aria-label="뒤로"
+            onClick={onClose}
+            className="text-[#8b8c93]"
+          >
+            <ChevronLeft size={24} strokeWidth={2} />
+          </button>
+          <h2 className="text-sm font-emphasize text-[#222121]">
+            {isEdit ? '일정 변경하기' : '일정 추가하기'}
+          </h2>
+        </div>
+      )}
 
       {/* 본문 */}
       <div className="flex flex-1 flex-col gap-7 overflow-y-auto px-5 py-3">
@@ -229,7 +240,9 @@ export function AddEventPanel({
                 onClick={() => setDatePickerOpen((o) => !o)}
                 className="flex h-[38px] w-full items-center justify-between rounded-md border border-grey-40 bg-grey-10 px-3 text-sm text-grey-100"
               >
-                <span className={selectedDate ? 'text-grey-100' : 'text-grey-60'}>
+                <span
+                  className={selectedDate ? 'text-grey-100' : 'text-grey-60'}
+                >
                   {formatDateLabel(selectedDate)}
                 </span>
                 <Calendar

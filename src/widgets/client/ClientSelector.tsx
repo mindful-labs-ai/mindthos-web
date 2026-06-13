@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import type { Client } from '@/features/client/types';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { SearchIcon, UserIcon, UserPlusIcon, XIcon } from '@/shared/icons';
-import { BackButton } from '@/shared/ui';
+import { MobileModalHeader } from '@/shared/ui';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -296,10 +296,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             hideCloseButton
             className="flex flex-col"
           >
-            <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-              <BackButton onClick={() => setIsOpen(false)} />
-              <p className="text-m font-medium text-grey-100">내담자 선택</p>
-            </div>
+            <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
             <div className="flex-1 space-y-2 overflow-y-auto p-4">
               {renderClientList()}
             </div>
@@ -366,10 +363,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           hideCloseButton
           className="flex flex-col"
         >
-          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={handleCloseModal} />
-            <p className="text-m font-medium text-grey-100">내담자 선택</p>
-          </div>
+          <MobileModalHeader title="내담자 선택" onBack={handleCloseModal} />
           <div className="flex min-h-0 flex-1 flex-col gap-4 px-4 py-4">
             {/* 검색 */}
             <div className="relative flex-shrink-0">

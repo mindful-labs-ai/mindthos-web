@@ -13,8 +13,7 @@ import { billingService } from '@/shared/api/supabase/billingQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { Text, Title } from '@/shared/ui';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader, Text, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -403,10 +402,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       closeOnOverlay={!upgradeModalOpen && !downgradeModalOpen}
     >
       {isMobileView && (
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-          <BackButton onClick={() => onOpenChange(false)} />
-          <p className="text-m font-medium text-grey-100">마음토스 플랜 변경</p>
-        </div>
+        <MobileModalHeader title="마음토스 플랜 변경" onBack={() => onOpenChange(false)} />
       )}
 
       <div

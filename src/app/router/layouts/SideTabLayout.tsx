@@ -9,7 +9,7 @@ import { SideTab } from '@/app/router/layouts/SideTab';
 import { isChromelessRoute } from '@/app/router/shellConfig';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { TitleEdit, UploadIcon } from '@/shared/icons';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useModalStore } from '@/stores/modalStore';
 import { ActionCard } from '@/widgets/home/ActionCard';
@@ -115,12 +115,10 @@ const MainFlowLayout = () => {
             hideCloseButton
             className="flex flex-col bg-grey-20"
           >
-            <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
-              <BackButton onClick={() => closeModal('sessionTypeSelect')} />
-              <p className="text-m font-medium text-grey-100">
-                상담 기록 만들기
-              </p>
-            </div>
+            <MobileModalHeader
+              title="상담 기록 만들기"
+              onBack={() => closeModal('sessionTypeSelect')}
+            />
             <div className="flex flex-col gap-4 p-6 md:p-12">
               <ActionCard
                 icon={<UploadIcon size={24} className="text-green-80" />}

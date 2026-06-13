@@ -20,7 +20,7 @@ import {
 import { qualificationQueryKeys } from '@/shared/constants/queryKeys';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -358,12 +358,7 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}
       >
         {isMobileView ? (
-          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-m font-medium text-grey-100">
-              회원 정보 수정하기
-            </p>
-          </div>
+          <MobileModalHeader title="회원 정보 수정하기" onBack={() => onOpenChange(false)} />
         ) : (
           <div className="px-6">
             <Title as="h2" className="typo-xl font-headline">

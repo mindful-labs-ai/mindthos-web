@@ -18,8 +18,7 @@ import {
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon, UserIcon } from '@/shared/icons';
-import { Title } from '@/shared/ui';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -339,10 +338,7 @@ export const CreateHandWrittenSessionModal: React.FC<
     >
       {/* 헤더 */}
       {isMobileView ? (
-        <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
-          <BackButton onClick={() => handleClose(false)} />
-          <p className="text-m font-medium text-grey-100">직접 입력하기</p>
-        </div>
+        <MobileModalHeader title="직접 입력하기" onBack={() => handleClose(false)} />
       ) : (
         <div className="pt-4 text-center">
           <Title as="h3" className="font-headline">

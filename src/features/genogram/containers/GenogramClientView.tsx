@@ -1,6 +1,6 @@
 import type { FC, ReactNode } from 'react';
 
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 
 export interface GenogramClientViewProps {
   /** 데스크탑 좌측 내담자 사이드바 (모바일은 null) */
@@ -39,15 +39,11 @@ export const GenogramClientView: FC<GenogramClientViewProps> = ({
       {isMobileView ? (
         <>
           {!hideMobileHeader && (
-            <div className="flex h-[67px] flex-shrink-0 items-center justify-between border-b border-grey-30 bg-white px-4">
-              <div className="flex items-center gap-3">
-                {onBack && <BackButton onClick={onBack} />}
-                <p className="text-m font-medium text-grey-100">
-                  {mobileHeaderTitle || '가계도'}
-                </p>
-              </div>
-              {mobileHeaderRight}
-            </div>
+            <MobileModalHeader
+              title={mobileHeaderTitle || '가계도'}
+              onBack={onBack ?? undefined}
+              right={mobileHeaderRight}
+            />
           )}
           <div className="relative flex-1 overflow-hidden">
             {header}

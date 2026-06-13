@@ -8,7 +8,7 @@ import {
 import { getPlanDisplayName } from '@/shared/constants/planNames';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { ArrowRightIcon, CheckIcon, HelpCircleIcon } from '@/shared/icons';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -222,10 +222,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-m font-medium text-grey-100">플랜 변경</p>
-          </div>
+          <MobileModalHeader title="플랜 변경" onBack={() => onOpenChange(false)} />
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
               <p className="font-emphasize text-grey-100">

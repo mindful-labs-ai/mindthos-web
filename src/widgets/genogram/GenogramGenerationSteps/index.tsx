@@ -2,7 +2,7 @@ import { AlertCircle } from 'lucide-react';
 
 import type { AIGenogramOutput } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 
 import { AnalyzeLoadingAnimation } from '../GenogramLoadingAnimation';
@@ -243,12 +243,10 @@ export function GenogramGenerationSteps({
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-grey-20">
         {/* 헤더 */}
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 bg-white px-4">
-          <BackButton onClick={() => onCancel?.()} />
-          <p className="text-m font-medium text-grey-100">
-            상담기록으로 가계도 생성하기
-          </p>
-        </div>
+        <MobileModalHeader
+          title="상담기록으로 가계도 생성하기"
+          onBack={() => onCancel?.()}
+        />
 
         {/* 스테퍼 */}
         <div className="flex-shrink-0 bg-white pb-2 pt-2">{stepper}</div>
