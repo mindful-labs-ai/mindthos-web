@@ -48,14 +48,21 @@ export const mockNotificationAdapter: NotificationAdapter = {
     );
   },
 
+  // 읽음 처리는 불변 업데이트로 — 새 객체 참조를 만들어야 react-query가
+  // 변경을 감지(structural sharing)하고 벨(unreadCount)을 리렌더한다.
+  // in-place 변경 시 이전 캐시도 같은 참조라 "변경 없음"으로 보여 점이 안 사라짐.
   async markRead(id) {
-    const target = mockNotifications.find((n) => n.id === id);
-    if (target) target.read = true;
+    const idx = mockNotifications.findIndex((n) => n.id === id);
+    if (idx >= 0) {
+      mockNotifications[idx] = { ...mockNotifications[idx], read: true };
+    }
   },
 
   async markAllRead() {
-    mockNotifications.forEach((n) => {
-      n.read = true;
-    });
+    for (let i = 0; i < mockNotifications.length; i++) {
+      if (!mockNotifications[i].read) {
+        mockNotifications[i] = { ...mockNotifications[i], read: true };
+      }
+    }
   },
 };
