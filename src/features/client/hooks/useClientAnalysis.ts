@@ -82,22 +82,11 @@ export function useCreateClientAnalysis() {
   return useMutation<
     CreateClientAnalysisResponse,
     ClientAnalysisApiError,
-    Omit<CreateClientAnalysisRequest, 'user_id'>
+    CreateClientAnalysisRequest
   >({
     mutationFn: async (request) => {
-      if (!userId) {
-        throw {
-          status: 401,
-          success: false,
-          error: 'UNAUTHORIZED',
-          message: '사용자 정보를 찾을 수 없어요.',
-        } as ClientAnalysisApiError;
-      }
-
-      return clientAnalysisService.createAnalysis({
-        ...request,
-        user_id: Number(userId),
-      });
+      // user_id는 서버가 Bearer JWT에서 도출하므로 body로 보내지 않는다.
+      return clientAnalysisService.createAnalysis(request);
     },
     onSuccess: (data, variables) => {
       // 생성 직후 분석 목록 쿼리 invalidate
