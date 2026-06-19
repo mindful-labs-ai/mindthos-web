@@ -1,22 +1,32 @@
-import { googleImportAdapter } from './import/googleImportAdapter';
-import type { CalendarImportAdapter, CalendarProvider } from './import/types';
+import { mockImportAdapter } from './import/mockImportAdapter';
+import { realImportAdapter } from './import/realImportAdapter';
+import type { CalendarImportAdapter } from './import/types';
 import { mockCalendarDataSource } from './mockCalendarDataSource';
+import { realCalendarDataSource } from './realCalendarDataSource';
 import type { CalendarDataSource } from './types';
 
 /**
  * 활성 어댑터 선택 지점 (단일 교체 포인트).
  *
- * 백엔드 연결 시: 아래 한 줄을 supabase/server 어댑터로 교체하면
- * UI/훅 변경 없이 실데이터로 전환된다.
+ * 기본은 실제 mindthos-server 어댑터.
+ * 백엔드 없이 UI를 확인하려면 VITE_USE_MOCK_CALENDAR=true 로 mock 사용.
+ * (UI·훅은 CalendarDataSource / CalendarImportAdapter 인터페이스만 의존)
  */
-export const calendarDataSource: CalendarDataSource = mockCalendarDataSource;
+const useMock = import.meta.env.VITE_USE_MOCK_CALENDAR === 'true';
 
-/** provider별 외부 캘린더 import 어댑터 (현재 google 스텁만) */
-export const calendarImportAdapters: Partial<
-  Record<CalendarProvider, CalendarImportAdapter>
-> = {
-  google: googleImportAdapter,
-};
+export const calendarDataSource: CalendarDataSource = useMock
+  ? mockCalendarDataSource
+  : realCalendarDataSource;
+
+/** 외부 캘린더 import 어댑터 (서버 매개 OAuth, apple은 비활성) */
+export const calendarImportAdapter: CalendarImportAdapter = useMock
+  ? mockImportAdapter
+  : realImportAdapter;
 
 export type { CalendarDataSource } from './types';
-export type { CalendarImportAdapter, CalendarProvider } from './import/types';
+export type {
+  CalendarImportAdapter,
+  CalendarProvider,
+  CalendarImportFinalizeInput,
+  CalendarImportResult,
+} from './import/types';

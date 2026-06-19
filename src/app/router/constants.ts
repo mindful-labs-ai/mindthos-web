@@ -20,6 +20,7 @@ export const ROUTES = {
   NOT_FOUND: '*',
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
+  CALENDAR_OAUTH_CALLBACK: '/calendar/oauth/callback',
   DOCUMENTS: '/documents',
   DOCUMENT_NEW: '/documents/new',
   DOCUMENT_VIEW: '/documents/:documentId',
