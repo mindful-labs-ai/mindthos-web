@@ -1,10 +1,17 @@
 import type { NotificationAdapter } from '../types';
 
 import { mockNotificationAdapter } from './mockNotificationAdapter';
+import { realNotificationAdapter } from './realNotificationAdapter';
 
 /**
  * 알림 데이터 소스 단일 스왑 포인트.
- * 백엔드가 정해지면 이 한 줄만 실제 어댑터 구현체로 교체한다
- * (UI·훅은 NotificationAdapter 인터페이스만 의존).
+ *
+ * 기본은 실제 mindthos-server 어댑터.
+ * 백엔드 없이 UI를 확인하려면 VITE_USE_MOCK_NOTIFICATIONS=true 로 mock 사용.
+ * (UI·훅은 NotificationAdapter 인터페이스만 의존)
  */
-export const notificationAdapter: NotificationAdapter = mockNotificationAdapter;
+const useMock = import.meta.env.VITE_USE_MOCK_NOTIFICATIONS === 'true';
+
+export const notificationAdapter: NotificationAdapter = useMock
+  ? mockNotificationAdapter
+  : realNotificationAdapter;
