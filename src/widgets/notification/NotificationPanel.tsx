@@ -2,7 +2,17 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { Bell, ChevronRight } from 'lucide-react';
 
-import { SideCalendarIcon, SideSessionIcon } from '@/shared/icons';
+import { ROUTES, getSessionDetailRoute } from '@/app/router/constants';
+import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import {
+  CreditIcon,
+  FileTextIcon,
+  SideCalendarIcon,
+  SideDocumentIcon,
+  SideGenogramIcon,
+  SideSessionIcon,
+  SideSupervisionIcon,
+} from '@/shared/icons';
 
 import type { AppNotification, NotificationKind } from './types';
 import { formatRelativeTime, useNotifications } from './useNotifications';
@@ -14,14 +24,57 @@ interface NotificationPanelProps {
   onClose: () => void;
 }
 
-/** 알림 종류별 행 아이콘 */
+/**
+ * resourceType(+resourceId) → 앱 라우트 매핑.
+ * 매핑 가능한 대상만 경로를 반환하고, 대상이 없으면(PAYMENT/SYSTEM 등) null.
+ *
+ * NOTE: GENOGRAM/AI_SUPERVISION/CALENDAR_EVENT/PROGRESS_NOTE는 현재
+ * 리소스 id로 직접 진입하는 라우트가 없어 가장 가까운 목록/페이지로 보낸다.
+ */
+function resolveDeepLink(notification: AppNotification): string | null {
+  const { resourceType, resourceId } = notification;
+  switch (resourceType) {
+    case 'SESSION':
+      return resourceId ? getSessionDetailRoute(resourceId) : ROUTES.SESSIONS;
+    case 'SENT_DOCUMENT':
+      // sent-document id → 문서 뷰 페이지(/documents/:documentId)
+      return resourceId ? `/documents/${resourceId}` : ROUTES.DOCUMENTS;
+    case 'CALENDAR_EVENT':
+      // TODO(deeplink): 개별 일정으로 진입하는 라우트가 생기면 resourceId로 연결.
+      return ROUTES.CALENDAR;
+    case 'AI_SUPERVISION':
+      // TODO(deeplink): /ai-supervision은 clientId 기준이라 analysis id로 진입 불가.
+      return ROUTES.AI_SUPERVISION;
+    case 'GENOGRAM':
+      // TODO(deeplink): /genogram은 clientId 기준이라 genogram id로 진입 불가.
+      return ROUTES.GENOGRAM;
+    case 'PROGRESS_NOTE':
+      // TODO(deeplink): 경과기록 단건 라우트가 없어 세션 목록으로 보낸다.
+      return ROUTES.SESSIONS;
+    default:
+      return null;
+  }
+}
+
+/** 알림 종류(8종)별 행 아이콘 */
 function KindIcon({ kind }: { kind: NotificationKind }) {
   const className = 'flex-shrink-0 text-[#BABCC7]';
   switch (kind) {
-    case 'session':
+    case 'SESSION':
       return <SideSessionIcon size={24} className={className} />;
-    case 'calendar':
+    case 'PROGRESS_NOTE':
+      return <FileTextIcon size={24} className={className} />;
+    case 'AI_SUPERVISION':
+      return <SideSupervisionIcon size={24} className={className} />;
+    case 'GENOGRAM':
+      return <SideGenogramIcon size={24} className={className} />;
+    case 'CALENDAR':
       return <SideCalendarIcon size={24} className={className} />;
+    case 'DOCUMENT':
+      return <SideDocumentIcon size={24} className={className} />;
+    case 'PAYMENT':
+      return <CreditIcon size={24} className={className} />;
+    case 'SYSTEM':
     default:
       return <Bell size={24} className={className} />;
   }
@@ -53,22 +106,26 @@ function FilterChip({
 
 function NotificationRow({
   notification,
-  onRead,
+  onClick,
 }: {
   notification: AppNotification;
-  onRead: (id: string) => void;
+  onClick: (notification: AppNotification) => void;
 }) {
   return (
     <button
       type="button"
-      onClick={() => onRead(notification.id)}
+      onClick={() => onClick(notification)}
       className="block w-full px-5 py-6 text-left transition-colors lg:hover:bg-grey-10"
     >
       <div className="flex gap-3">
-        <KindIcon kind={notification.kind} />
+        <KindIcon kind={notification.type} />
         <div className="min-w-0 flex-1">
-          <p className="break-keep text-m font-medium leading-snug text-grey-100">
-            {notification.message}
+          {/* 강조줄(title) + 본문(body) 2줄 */}
+          <p className="break-keep text-m font-semibold leading-snug text-grey-100">
+            {notification.title}
+          </p>
+          <p className="mt-1 break-keep text-m font-medium leading-snug text-grey-70">
+            {notification.body}
           </p>
           <div className="mt-3 flex items-center gap-4 text-sm font-medium text-[#BABCC7]">
             <span>{formatRelativeTime(notification.createdAt)}</span>
@@ -85,8 +142,8 @@ function NotificationRow({
  * 데이터는 NotificationAdapter 추상화 위에서 렌더 — 백엔드가 무엇이든 UI 동일.
  */
 export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
-  const { notifications, isLoading, markRead, markAllRead } =
-    useNotifications();
+  const { notifications, isLoading, markRead, markAllRead } = useNotifications();
+  const { navigateWithUtm } = useNavigateWithUtm();
   const [filter, setFilter] = useState<NotificationFilter>('all');
 
   // 슬라이드 인/아웃 — isVisible은 애니메이션 상태, 닫힐 때는 끝난 뒤 언마운트
@@ -106,6 +163,18 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
   }, [open]);
 
   if (!open && !isVisible) return null;
+
+  // 행 클릭: 읽음 처리 + 딥링크 이동(있으면 패널 닫고 이동)
+  const handleRowClick = (notification: AppNotification) => {
+    if (!notification.read) {
+      markRead(notification.id);
+    }
+    const path = resolveDeepLink(notification);
+    if (path) {
+      onClose();
+      navigateWithUtm(path);
+    }
+  };
 
   const filtered =
     filter === 'unread' ? notifications.filter((n) => !n.read) : notifications;
@@ -181,7 +250,7 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
                 )}
                 <NotificationRow
                   notification={notification}
-                  onRead={markRead}
+                  onClick={handleRowClick}
                 />
               </Fragment>
             ))
