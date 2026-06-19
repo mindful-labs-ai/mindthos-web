@@ -7,15 +7,21 @@ const NOTIFICATION_QUERY_KEY = ['notifications'] as const;
 /**
  * 알림 목록/읽음 처리 훅 — 어댑터를 react-query로 감싼다.
  * 백엔드 교체 시에도 이 훅과 UI는 그대로 유지된다.
+ *
+ * unreadCount는 서버 집계값을 사용한다(목록은 페이지네이션이므로
+ * 현재 페이지를 .filter 해선 안 됨).
  */
 export function useNotifications() {
   const queryClient = useQueryClient();
 
-  const { data: notifications = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: NOTIFICATION_QUERY_KEY,
     queryFn: () => notificationAdapter.list(),
     staleTime: 30 * 1000,
   });
+
+  const notifications = data?.notifications ?? [];
+  const unreadCount = data?.unreadCount ?? 0;
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: NOTIFICATION_QUERY_KEY });
@@ -30,7 +36,10 @@ export function useNotifications() {
     onSuccess: invalidate,
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => notificationAdapter.archive(id),
+    onSuccess: invalidate,
+  });
 
   return {
     notifications,
@@ -38,6 +47,7 @@ export function useNotifications() {
     isLoading,
     markRead: markReadMutation.mutate,
     markAllRead: markAllReadMutation.mutate,
+    archive: archiveMutation.mutate,
   };
 }
 
