@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { MoreVertical } from 'lucide-react';
 
@@ -72,12 +72,20 @@ export function ClientDocumentsTab({
     () => allSentDocuments.filter((d) => d.clientId === client.id),
     [allSentDocuments, client.id]
   );
+  const loadSentDocuments = useSentDocumentStore(
+    (state) => state.loadSentDocuments
+  );
   const cancelSentDocument = useSentDocumentStore(
     (state) => state.cancelSentDocument
   );
   const removeSentDocument = useSentDocumentStore(
     (state) => state.removeSentDocument
   );
+
+  // 진입 시 해당 내담자 발송 내역 로드 (clientName 보정)
+  useEffect(() => {
+    void loadSentDocuments(client.id, client.name);
+  }, [loadSentDocuments, client.id, client.name]);
 
   const [filter, setFilter] = useState<StatusFilter>('all');
   // 열려 있는 카드 케밥 메뉴의 문서 id (null = 닫힘)
