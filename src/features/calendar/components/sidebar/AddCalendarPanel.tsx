@@ -1,11 +1,11 @@
 import { ChevronLeft, Plus } from 'lucide-react';
 
-import type { CalendarProvider } from '../../adapters';
+import { calendarImportAdapter, type CalendarProvider } from '../../adapters';
 import { PROVIDER_ICONS } from '../../icons';
 
 interface AddCalendarPanelProps {
   onClose: () => void;
-  /** 후속 Phase: provider별 import 어댑터 연결 */
+  /** provider별 import 어댑터 authorize 트리거 */
   onConnect?: (provider: CalendarProvider) => void;
 }
 
@@ -40,6 +40,7 @@ export function AddCalendarPanel({ onClose, onConnect }: AddCalendarPanelProps) 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-5 py-3">
         {PROVIDERS.map((p) => {
           const Icon = PROVIDER_ICONS[p.provider];
+          const enabled = calendarImportAdapter.isEnabled(p.provider);
           return (
             <div
               key={p.provider}
@@ -53,11 +54,18 @@ export function AddCalendarPanel({ onClose, onConnect }: AddCalendarPanelProps) 
               </span>
               <button
                 type="button"
+                disabled={!enabled}
                 onClick={() => onConnect?.(p.provider)}
-                className="flex items-center gap-1.5 rounded-md border border-grey-40 bg-white px-[19px] py-1.5 text-sm font-headline text-grey-100"
+                className="flex items-center gap-1.5 rounded-md border border-grey-40 bg-white px-[19px] py-1.5 text-sm font-headline text-grey-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Plus size={12} strokeWidth={3} />
-                연결하기
+                {enabled ? (
+                  <>
+                    <Plus size={12} strokeWidth={3} />
+                    연결하기
+                  </>
+                ) : (
+                  '준비 중'
+                )}
               </button>
             </div>
           );

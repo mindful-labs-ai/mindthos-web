@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Modal } from '@/shared/ui/composites/Modal';
 
+import type { CalendarProvider } from '../adapters';
 import { CalendarFab } from '../components/mobile/CalendarFab';
 import { MobileCalendarToolbar } from '../components/mobile/MobileCalendarToolbar';
 import { MobileDayView } from '../components/mobile/MobileDayView';
@@ -45,6 +46,7 @@ interface MobileCalendarViewProps {
     time?: { start: string; end: string }
   ) => void;
   onOpenAddCalendar: () => void;
+  onConnectProvider: (provider: CalendarProvider) => void;
   onClosePanel: () => void;
   onSelectDate: (day: Dayjs) => void;
   onSubmitEvent: (draft: AddEventDraft) => void;
@@ -74,6 +76,7 @@ export function MobileCalendarView({
   onEventClick,
   onOpenAddEvent,
   onOpenAddCalendar,
+  onConnectProvider,
   onClosePanel,
   onSelectDate,
   onSubmitEvent,
@@ -170,7 +173,10 @@ export function MobileCalendarView({
         mobileVariant="fullScreen"
         hideCloseButton
       >
-        <AddCalendarPanel onClose={onClosePanel} />
+        <AddCalendarPanel
+          onClose={onClosePanel}
+          onConnect={onConnectProvider}
+        />
       </Modal>
 
       {/* 필터(일정 표시/나의 캘린더) bottomSheet */}

@@ -3,8 +3,13 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useToast } from '@/shared/ui/composites/Toast';
 
-import { calendarDataSource } from '../adapters';
+import {
+  calendarDataSource,
+  calendarImportAdapter,
+  type CalendarProvider,
+} from '../adapters';
 import type { AddEventDraft } from '../components/sidebar/AddEventPanel';
 import {
   useCalendarCategories,
@@ -23,6 +28,7 @@ import { MobileCalendarView } from './MobileCalendarView';
  */
 export default function CalendarContainer() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   const {
@@ -148,6 +154,29 @@ export default function CalendarContainer() {
     [selectedDate, current, editingEvent, queryClient, closePanel]
   );
 
+  // 외부 캘린더 연결: 서버에서 동의 URL을 받아 브라우저를 리다이렉트(이후 콜백 페이지가 finalize).
+  const handleConnectProvider = React.useCallback(
+    async (provider: CalendarProvider) => {
+      if (!calendarImportAdapter.isEnabled(provider)) {
+        toast({
+          title: '준비 중',
+          description: '해당 캘린더 연동은 아직 준비 중이에요.',
+        });
+        return;
+      }
+      try {
+        await calendarImportAdapter.authorize(provider);
+        // authorize는 동의 URL로 리다이렉트하므로 정상 흐름에선 여기 도달 X.
+      } catch {
+        toast({
+          title: '캘린더 연동 실패',
+          description: '잠시 후 다시 시도해 주세요.',
+        });
+      }
+    },
+    [toast]
+  );
+
   if (isMobileView) {
     return (
       <MobileCalendarView
@@ -170,6 +199,7 @@ export default function CalendarContainer() {
         onEventClick={openEditEvent}
         onOpenAddEvent={openAddEvent}
         onOpenAddCalendar={openAddCalendar}
+        onConnectProvider={handleConnectProvider}
         onClosePanel={closePanel}
         onSelectDate={setSelectedDate}
         onSubmitEvent={handleSubmitEvent}
@@ -205,6 +235,7 @@ export default function CalendarContainer() {
       onCreateRange={handleWeekRange}
       onOpenAddEvent={openAddEvent}
       onOpenAddCalendar={openAddCalendar}
+      onConnectProvider={handleConnectProvider}
       onClosePanel={closePanel}
       onSubmitEvent={handleSubmitEvent}
     />

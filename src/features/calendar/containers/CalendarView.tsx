@@ -1,3 +1,4 @@
+import type { CalendarProvider } from '../adapters';
 import { CalendarToolbar } from '../components/CalendarToolbar';
 import { MonthGrid } from '../components/MonthGrid';
 import { AddCalendarPanel } from '../components/sidebar/AddCalendarPanel';
@@ -44,6 +45,7 @@ interface CalendarViewProps {
   onCreateRange: (day: Dayjs, startMinutes: number, endMinutes: number) => void;
   onOpenAddEvent: (kind: CalendarEventKind) => void;
   onOpenAddCalendar: () => void;
+  onConnectProvider: (provider: CalendarProvider) => void;
   onClosePanel: () => void;
   onSubmitEvent: (draft: AddEventDraft) => void;
 }
@@ -80,6 +82,7 @@ export function CalendarView({
   onCreateRange,
   onOpenAddEvent,
   onOpenAddCalendar,
+  onConnectProvider,
   onClosePanel,
   onSubmitEvent,
 }: CalendarViewProps) {
@@ -147,7 +150,10 @@ export function CalendarView({
               onSubmit={onSubmitEvent}
             />
           ) : (
-            <AddCalendarPanel onClose={onClosePanel} />
+            <AddCalendarPanel
+              onClose={onClosePanel}
+              onConnect={onConnectProvider}
+            />
           )}
         </div>
       )}
