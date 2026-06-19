@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 
+import { documentDataSource } from '@/features/document/adapters';
+
 /**
- * 문서 관리 임시 백엔드 (zustand).
+ * 문서 관리 스토어 (zustand).
  * 내담자 탭 등 다른 화면과 한 세션 안에서 공유돼야 해서 전역 스토어로 둔다.
- * 새로고침 시 초기화 — 백엔드 연결 시 이 스토어의 액션 내부만 API 호출로 교체.
+ * 데이터는 documentDataSource 어댑터(real ↔ mock) 경유로 서버와 연결된다.
  */
 
 export type DocumentCategory = 'ethics' | 'preparation' | 'assessment';
@@ -93,45 +95,70 @@ export interface MyDocument {
 }
 
 interface DocumentState {
-  /** 내 문서 — 세션 내 추가/삭제 가능 */
+  /** 마음토스 기본 문서(템플릿) — 서버 목록에서 로드 */
+  templates: CounselDocument[];
+  /** 내 문서 — 추가/수정/삭제 가능 */
   myDocuments: MyDocument[];
+  /** 목록 로딩 여부 */
+  loading: boolean;
+  /** 문서 목록 조회 (templates + myDocuments) */
+  loadDocuments: () => Promise<void>;
+  /** 내 문서 단건 조회 (content 포함) — 편집/뷰에서 사용 */
+  getMyDocument: (id: string) => Promise<MyDocument>;
+  /** 기본 문서(템플릿) 단건 조회 (content 포함) */
+  getTemplate: (id: string) => Promise<CounselDocument>;
   addMyDocument: (doc: {
     title: string;
     kind: MyDocumentKind;
     /** 동의서=HTML 문자열, 질문·응답=질문 배열 JSON 문자열 */
     content?: string | null;
-  }) => void;
+  }) => Promise<MyDocument>;
   /** 편집 저장 — 제목·본문만 갱신 (kind·등록일 유지) */
   updateMyDocument: (
     id: string,
     patch: { title: string; content: string | null }
-  ) => void;
-  removeMyDocument: (id: string) => void;
+  ) => Promise<void>;
+  removeMyDocument: (id: string) => Promise<void>;
 }
 
-export const useDocumentStore = create<DocumentState>((set) => ({
+export const useDocumentStore = create<DocumentState>((set, get) => ({
+  templates: [],
   myDocuments: [],
-  addMyDocument: ({ title, kind, content = null }) =>
+  loading: false,
+  loadDocuments: async () => {
+    set({ loading: true });
+    try {
+      const { templates, myDocuments } =
+        await documentDataSource.listDocuments();
+      set({ templates, myDocuments });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  getMyDocument: (id) => documentDataSource.getMyDocument(id),
+  getTemplate: (id) => documentDataSource.getTemplate(id),
+  addMyDocument: async ({ title, kind, content = null }) => {
+    const created = await documentDataSource.createMyDocument({
+      title,
+      kind,
+      content,
+    });
+    set((state) => ({ myDocuments: [...state.myDocuments, created] }));
+    return created;
+  },
+  updateMyDocument: async (id, patch) => {
+    // content 봉투 매핑에 kind가 필요 — 현재 상태에서 읽는다.
+    const kind =
+      get().myDocuments.find((d) => d.id === id)?.kind ?? 'consent';
+    const updated = await documentDataSource.updateMyDocument(id, patch, kind);
     set((state) => ({
-      myDocuments: [
-        ...state.myDocuments,
-        {
-          id: `my-doc-${Date.now()}`,
-          title,
-          kind,
-          createdAt: new Date().toISOString(),
-          content,
-        },
-      ],
-    })),
-  updateMyDocument: (id, patch) =>
-    set((state) => ({
-      myDocuments: state.myDocuments.map((d) =>
-        d.id === id ? { ...d, ...patch } : d
-      ),
-    })),
-  removeMyDocument: (id) =>
+      myDocuments: state.myDocuments.map((d) => (d.id === id ? updated : d)),
+    }));
+  },
+  removeMyDocument: async (id) => {
+    await documentDataSource.deleteMyDocument(id);
     set((state) => ({
       myDocuments: state.myDocuments.filter((d) => d.id !== id),
-    })),
+    }));
+  },
 }));
