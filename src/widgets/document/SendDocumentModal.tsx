@@ -8,11 +8,12 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { UserIcon } from '@/shared/icons';
 import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
+import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import {
-  DEFAULT_DOCUMENTS,
   useDocumentStore,
   type CounselDocument,
+  type MyDocument,
   type MyDocumentKind,
 } from '@/stores/documentStore';
 import { useSentDocumentStore } from '@/stores/sentDocumentStore';
@@ -25,12 +26,13 @@ interface SendDocumentModalProps {
   initialClientId?: string;
 }
 
-/** 발송할 문서 — 내 문서/마음토스 양식 공용 표현 (발송 시 스냅샷용 kind/content 포함) */
+/** 발송할 문서 — 내 문서/마음토스 양식 공용 표현 (source로 발송 시 출처 구분) */
 interface SendTargetDocument {
   id: string;
   title: string;
   kind: MyDocumentKind;
-  content: string | null;
+  /** 'template'=마음토스 기본 문서, 'my'=내 문서 — 발송 시 sourceTemplateId/sourceUserDocumentId 결정 */
+  source: 'template' | 'my';
 }
 
 /** 마음토스 기본 문서 → 발송 대상 표현 (윤리 동의류=consent, 문항류=qna) */
@@ -39,8 +41,23 @@ function toSendTarget(doc: CounselDocument): SendTargetDocument {
     id: doc.id,
     title: doc.title,
     kind: doc.category === 'ethics' ? 'consent' : 'qna',
-    content: doc.content,
+    source: 'template',
   };
+}
+
+/** 내 문서 → 발송 대상 표현 */
+function myDocToSendTarget(doc: MyDocument): SendTargetDocument {
+  return { id: doc.id, title: doc.title, kind: doc.kind, source: 'my' };
+}
+
+/** 마감 기한 → 절대 ISO(expiredAt). 'none'이면 undefined(무기한). */
+function deadlineToExpiredAt(key: DeadlineKey): string | undefined {
+  if (key === 'none') return undefined;
+  const date = new Date();
+  if (key === '1m') date.setMonth(date.getMonth() + 1);
+  else
+    date.setDate(date.getDate() + (key === '3d' ? 3 : key === '1w' ? 7 : 14));
+  return date.toISOString();
 }
 
 const DEADLINE_OPTIONS = [
@@ -74,8 +91,13 @@ export function SendDocumentModal({
   initialClientId,
 }: SendDocumentModalProps) {
   const { clients } = useClientList();
+  const { toast } = useToast();
   const userName = useAuthStore((state) => state.userName);
+  const templates = useDocumentStore((state) => state.templates);
   const myDocuments = useDocumentStore((state) => state.myDocuments);
+  const loadDocuments = useDocumentStore((state) => state.loadDocuments);
+  const getMyDocument = useDocumentStore((state) => state.getMyDocument);
+  const getTemplate = useDocumentStore((state) => state.getTemplate);
   const addSentDocument = useSentDocumentStore(
     (state) => state.addSentDocument
   );
@@ -86,39 +108,76 @@ export function SendDocumentModal({
   const [selectedDocument, setSelectedDocument] =
     useState<SendTargetDocument | null>(null);
   const [deadline, setDeadline] = useState<DeadlineKey>('1w');
+  const [sending, setSending] = useState(false);
 
   // 드롭다운 열림 상태
   const [isClientOpen, setIsClientOpen] = useState(false);
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
   const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
 
-  // 열릴 때마다 초기화 — 초기 발송 대상/기본 문서/기본 기한
+  // 열릴 때마다 초기화 — 초기 발송 대상/기본 문서/기본 기한 + 문서 목록 로드
   useEffect(() => {
     if (!open) return;
     setSelectedClient(
       (initialClientId && clients.find((c) => c.id === initialClientId)) || null
     );
-    setSelectedDocument(toSendTarget(DEFAULT_DOCUMENTS[0]));
     setDeadline('1w');
+    void loadDocuments();
     // clients는 로딩 시점에 따라 갱신될 수 있어 open 시점 값만 사용
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initialClientId]);
 
-  const canSend = !!selectedClient && !!selectedDocument;
+  // 템플릿 로드 후 기본 선택이 비어 있으면 첫 마음토스 양식으로 채움
+  useEffect(() => {
+    if (!open || selectedDocument || templates.length === 0) return;
+    setSelectedDocument(toSendTarget(templates[0]));
+  }, [open, selectedDocument, templates]);
 
-  const handleSend = () => {
-    if (!selectedClient || !selectedDocument) return;
-    // 임시 백엔드(sentDocumentStore)에 발송 기록 — 실제 발송 API는 백엔드 연결 시 교체
-    addSentDocument({
-      clientId: selectedClient.id,
-      clientName: selectedClient.name,
-      title: selectedDocument.title,
-      kind: selectedDocument.kind,
-      content: selectedDocument.content,
-      deadlineLabel:
-        DEADLINE_OPTIONS.find((o) => o.key === deadline)?.label ?? '',
-    });
-    onOpenChange(false);
+  const canSend = !!selectedClient && !!selectedDocument && !sending;
+
+  const handleSend = async () => {
+    if (!selectedClient || !selectedDocument || sending) return;
+    setSending(true);
+    try {
+      // 발송 스냅샷 content는 목록에 없으므로 단건 조회로 채운다.
+      const content =
+        selectedDocument.source === 'my'
+          ? (await getMyDocument(selectedDocument.id)).content
+          : (await getTemplate(selectedDocument.id)).content;
+
+      const created = await addSentDocument({
+        clientId: selectedClient.id,
+        clientName: selectedClient.name,
+        documentTitle: selectedDocument.title,
+        kind: selectedDocument.kind,
+        content,
+        sourceTemplateId:
+          selectedDocument.source === 'template'
+            ? selectedDocument.id
+            : undefined,
+        sourceUserDocumentId:
+          selectedDocument.source === 'my' ? selectedDocument.id : undefined,
+        expiredAt: deadlineToExpiredAt(deadline),
+      });
+
+      // 서버가 동기 알림톡 발송 결과를 반영 — 실패면 토스트로 안내
+      if (created.failedAt) {
+        toast({
+          title: '문서 발송 실패',
+          description:
+            created.failureMessage ?? '알림톡 발송에 실패했어요. 다시 시도해 주세요.',
+        });
+        return;
+      }
+      onOpenChange(false);
+    } catch {
+      toast({
+        title: '문서 발송 실패',
+        description: '잠시 후 다시 시도해 주세요.',
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   const deadlineText = formatDeadline(deadline);
@@ -139,12 +198,7 @@ export function SendDocumentModal({
               type="button"
               role="menuitem"
               onClick={() => {
-                setSelectedDocument({
-                  id: doc.id,
-                  title: doc.title,
-                  kind: doc.kind,
-                  content: doc.content,
-                });
+                setSelectedDocument(myDocToSendTarget(doc));
                 setIsDocumentOpen(false);
               }}
               className={`flex w-full items-center rounded-lg px-2.5 py-2 text-left text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-20 ${
@@ -159,7 +213,7 @@ export function SendDocumentModal({
       <p className="px-2.5 py-1.5 text-sm font-medium text-grey-60">
         마음토스 양식
       </p>
-      {DEFAULT_DOCUMENTS.map((doc) => (
+      {templates.map((doc) => (
         <button
           key={doc.id}
           type="button"
