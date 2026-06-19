@@ -1,15 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Plus } from 'lucide-react';
 
 import { getDocumentEditorRoute } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import {
-  DEFAULT_DOCUMENTS,
-  useDocumentStore,
-  type MyDocumentKind,
-} from '@/stores/documentStore';
+import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
 import { useModalStore } from '@/stores/modalStore';
 
 import {
@@ -28,10 +24,17 @@ import { MyDocumentCard } from '../components/MyDocumentCard';
  */
 export function DocumentContainer() {
   const { navigateWithUtm } = useNavigateWithUtm();
+  const templates = useDocumentStore((state) => state.templates);
   const myDocuments = useDocumentStore((state) => state.myDocuments);
+  const loadDocuments = useDocumentStore((state) => state.loadDocuments);
   const openModal = useModalStore((state) => state.openModal);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+
+  // 진입 시 문서 목록(기본 문서 + 내 문서) 로드
+  useEffect(() => {
+    void loadDocuments();
+  }, [loadDocuments]);
 
   // 팝오버를 띄울 커서 좌표 (null = 닫힘) — 하단 + 추가 카드용 (데스크탑)
   const [popoverPosition, setPopoverPosition] = useState<{
@@ -125,7 +128,7 @@ export function DocumentContainer() {
           {isMobileView && sendButton}
         </div>
         <div className={cardListClass}>
-          {DEFAULT_DOCUMENTS.map((document) => (
+          {templates.map((document) => (
             <div key={document.id} className="snap-center">
               <DocumentCard document={document} />
             </div>

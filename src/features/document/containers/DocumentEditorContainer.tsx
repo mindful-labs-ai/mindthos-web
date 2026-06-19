@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -6,7 +6,11 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { getDocumentViewRoute, ROUTES } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
+import {
+  useDocumentStore,
+  type MyDocument,
+  type MyDocumentKind,
+} from '@/stores/documentStore';
 
 import { ConsentEditor } from '../components/editor/ConsentEditor';
 import { QnaEditor } from '../components/editor/QnaEditor';
@@ -38,24 +42,48 @@ export function DocumentEditorContainer() {
   const isMobileView = isMobile || isTablet;
   const addMyDocument = useDocumentStore((state) => state.addMyDocument);
   const updateMyDocument = useDocumentStore((state) => state.updateMyDocument);
-  // 편집 모드 — :documentId가 있으면 해당 문서를 로드
-  const editingDocument = useDocumentStore((state) =>
-    documentId ? state.myDocuments.find((d) => d.id === documentId) : undefined
+  const getMyDocument = useDocumentStore((state) => state.getMyDocument);
+
+  // 편집 모드 — :documentId가 있으면 단건 조회로 content까지 로드 (목록엔 content 없음)
+  const [editingDocument, setEditingDocument] = useState<MyDocument | null>(
+    null
   );
+  // 편집 모드 로딩/없음 판정 (생성 모드는 즉시 준비됨)
+  const [editLoading, setEditLoading] = useState(!!documentId);
+  const [editNotFound, setEditNotFound] = useState(false);
 
   const kind = editingDocument?.kind ?? parseKind(searchParams.get('kind'));
 
-  const [title, setTitle] = useState(editingDocument?.title ?? '');
+  const [title, setTitle] = useState('');
   // 동의서 본문 (HTML 문자열)
-  const [consentHtml, setConsentHtml] = useState(
-    editingDocument?.kind === 'consent' ? (editingDocument.content ?? '') : ''
-  );
+  const [consentHtml, setConsentHtml] = useState('');
   // 질문·응답 질문 목록 — 생성 시 기본 단일 선택 질문 1개, 편집 시 저장본 로드
-  const [questions, setQuestions] = useState<QnaQuestion[]>(() =>
-    editingDocument?.kind === 'qna'
-      ? parseQnaQuestions(editingDocument.content)
-      : [createQnaQuestion()]
-  );
+  const [questions, setQuestions] = useState<QnaQuestion[]>(() => [
+    createQnaQuestion(),
+  ]);
+
+  // 편집 모드: 단건 조회 후 에디터 상태(제목·본문) 채우기
+  useEffect(() => {
+    if (!documentId) return;
+    let active = true;
+    getMyDocument(documentId)
+      .then((doc) => {
+        if (!active) return;
+        setEditingDocument(doc);
+        setTitle(doc.title);
+        if (doc.kind === 'consent') setConsentHtml(doc.content ?? '');
+        else setQuestions(parseQnaQuestions(doc.content));
+      })
+      .catch(() => {
+        if (active) setEditNotFound(true);
+      })
+      .finally(() => {
+        if (active) setEditLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [documentId, getMyDocument]);
 
   // 뒤로가기/취소 — 편집은 뷰 페이지로, 생성은 목록으로
   const goBack = () => {
@@ -72,22 +100,33 @@ export function DocumentEditorContainer() {
     (kind === 'consent' ||
       (questions.length > 0 && !questions.some(hasEmptyQnaOption)));
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!canSave) return;
     const content =
       kind === 'consent'
         ? consentHtml.trim() || null
         : JSON.stringify(questions);
     if (editingDocument) {
-      updateMyDocument(editingDocument.id, { title: title.trim(), content });
+      await updateMyDocument(editingDocument.id, { title: title.trim(), content });
     } else {
-      addMyDocument({ title: title.trim(), kind, content });
+      await addMyDocument({ title: title.trim(), kind, content });
     }
     goBack();
   };
 
-  // 편집 URL로 직접 진입했는데 문서가 없는 경우 (스토어는 새로고침 시 초기화)
-  if (documentId && !editingDocument) {
+  // 편집 모드 단건 조회 중 — 에디터가 빈 상태로 깜빡이지 않도록 로딩 표시
+  if (documentId && editLoading) {
+    return (
+      <div className="mx-auto w-full max-w-[1364px] px-4 py-6 md:px-10 lg:px-16 lg:py-[42px]">
+        <p className="mt-10 text-m font-medium text-grey-80">
+          문서를 불러오는 중입니다...
+        </p>
+      </div>
+    );
+  }
+
+  // 편집 URL로 직접 진입했는데 문서가 없는 경우
+  if (documentId && (editNotFound || !editingDocument)) {
     return (
       <div className="mx-auto w-full max-w-[1364px] px-4 py-6 md:px-10 lg:px-16 lg:py-[42px]">
         <div className="flex items-center gap-6">

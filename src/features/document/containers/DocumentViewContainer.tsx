@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ChevronLeft, Printer } from 'lucide-react';
 import { useParams } from 'react-router-dom';
@@ -6,12 +6,25 @@ import { useParams } from 'react-router-dom';
 import { getDocumentEditRoute, ROUTES } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { useDocumentStore } from '@/stores/documentStore';
+import {
+  useDocumentStore,
+  type MyDocumentKind,
+} from '@/stores/documentStore';
 
 import { QnaQuestionContent } from '../components/QnaQuestionContent';
 import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
 import { parseQnaQuestions } from '../constants/qnaQuestion';
 import type { QnaAnswer } from '../types';
+
+/** 뷰에서 쓰는 통합 표현 — 내 문서(content+kind) / 템플릿(category→kind 파생) 공용 */
+interface ViewDocument {
+  id: string;
+  title: string;
+  kind: MyDocumentKind;
+  content: string | null;
+  /** 템플릿(기본 문서)이면 편집 불가 */
+  editable: boolean;
+}
 
 /**
  * 내 문서 뷰 페이지 — 제작 뷰와 같은 캔버스 레이아웃에 저장된 내용을 렌더링.
@@ -24,9 +37,53 @@ export function DocumentViewContainer() {
   const { navigateWithUtm } = useNavigateWithUtm();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
-  const document = useDocumentStore((state) =>
-    state.myDocuments.find((d) => d.id === documentId)
-  );
+  const getMyDocument = useDocumentStore((state) => state.getMyDocument);
+  const getTemplate = useDocumentStore((state) => state.getTemplate);
+
+  // 목록엔 content가 없으므로 단건 조회로 로드. 내 문서 우선, 없으면 템플릿 폴백.
+  const [document, setDocument] = useState<ViewDocument | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!documentId) return;
+    let active = true;
+    const load = async (): Promise<ViewDocument | null> => {
+      try {
+        const my = await getMyDocument(documentId);
+        return {
+          id: my.id,
+          title: my.title,
+          kind: my.kind,
+          content: my.content,
+          editable: true,
+        };
+      } catch {
+        // 내 문서가 아니면 기본 문서(템플릿)로 폴백
+        const template = await getTemplate(documentId);
+        return {
+          id: template.id,
+          title: template.title,
+          // 템플릿은 kind가 없어 category에서 파생 (윤리=동의서, 그 외=질문·응답)
+          kind: template.category === 'ethics' ? 'consent' : 'qna',
+          content: template.content,
+          editable: false,
+        };
+      }
+    };
+    load()
+      .then((doc) => {
+        if (active) setDocument(doc);
+      })
+      .catch(() => {
+        if (active) setDocument(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [documentId, getMyDocument, getTemplate]);
 
   // 질문 id → 응답 값 — 화면 표시·출력용 임시 상태 (저장 안 함)
   const [answers, setAnswers] = useState<Record<string, QnaAnswer>>({});
@@ -63,8 +120,11 @@ export function DocumentViewContainer() {
         </h1>
       </div>
 
-      {!document ? (
-        // 스토어가 세션 임시(새로고침 시 초기화)라 직접 진입하면 문서가 없을 수 있다
+      {loading ? (
+        <p className="mt-10 text-m font-medium text-grey-80">
+          문서를 불러오는 중입니다...
+        </p>
+      ) : !document ? (
         <p className="mt-10 text-m font-medium text-grey-80">
           문서를 찾을 수 없습니다.
         </p>
@@ -92,13 +152,17 @@ export function DocumentViewContainer() {
                 출력하기
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => navigateWithUtm(getDocumentEditRoute(document.id))}
-              className="h-[31px] rounded-lg border border-grey-30 bg-white px-3.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
-            >
-              편집
-            </button>
+            {document.editable && (
+              <button
+                type="button"
+                onClick={() =>
+                  navigateWithUtm(getDocumentEditRoute(document.id))
+                }
+                className="h-[31px] rounded-lg border border-grey-30 bg-white px-3.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
+              >
+                편집
+              </button>
+            )}
           </div>
 
           {/* 제목 */}
