@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-import { WEEKDAYS_KO } from '../../constants';
+import { WEEKDAYS_KO, weekdayColorClass } from '../../constants';
 import type { CalendarEvent } from '../../types';
 import {
   dayjs,
@@ -57,11 +57,7 @@ export function MobileDayView({
               <span
                 className={cn(
                   'text-[11px] font-medium',
-                  i === 0
-                    ? 'text-[#ff8787]'
-                    : i === 6
-                      ? 'text-[#87a5ff]'
-                      : 'text-grey-60'
+                  weekdayColorClass(i, 'text-grey-60')
                 )}
               >
                 {WEEKDAYS_KO[i]}
@@ -69,11 +65,12 @@ export function MobileDayView({
               <span
                 className={cn(
                   'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
+                  // 선택/오늘은 상태색 우선, 그 외엔 요일 헤더와 같은 주말 색(일 빨강/토 파랑).
                   isSel
                     ? 'bg-green-80 text-white'
                     : isToday
                       ? 'text-green-80'
-                      : 'text-grey-100'
+                      : weekdayColorClass(i)
                 )}
               >
                 {day.date()}

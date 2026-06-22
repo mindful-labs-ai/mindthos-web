@@ -3,6 +3,26 @@ import type { CalendarColorKey, CalendarEventKind } from '../types';
 /** 요일 헤더 (일요일 시작) */
 export const WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토'] as const;
 
+/** 주말 텍스트 색상 (요일 헤더 + 날짜 숫자 공통 단일 소스 — 일요일 빨강 / 토요일 파랑) */
+export const WEEKEND_TEXT_CLASS = {
+  /** 일요일 */ sun: 'text-[#ff8787]',
+  /** 토요일 */ sat: 'text-[#87a5ff]',
+} as const;
+
+/**
+ * 요일 인덱스(0=일 … 6=토) → 텍스트 색상 클래스.
+ * 헤더(위 글자)와 날짜 숫자가 같은 hex를 쓰도록 한 곳에서 결정한다. 평일 색은 뷰마다
+ * 달라(grey-100/80/60) `weekdayClass`로 주입하고, 주말만 공통 색으로 고정한다.
+ */
+export function weekdayColorClass(
+  dayOfWeek: number,
+  weekdayClass = 'text-grey-100'
+): string {
+  if (dayOfWeek === 0) return WEEKEND_TEXT_CLASS.sun;
+  if (dayOfWeek === 6) return WEEKEND_TEXT_CLASS.sat;
+  return weekdayClass;
+}
+
 /**
  * 색상 키 → Tailwind 클래스 매핑
  * (시맨틱 토큰 미사용: 팔레트 클래스 + 원시 hex 그대로 — 사용자 방침)

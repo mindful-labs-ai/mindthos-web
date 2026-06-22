@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-import { WEEKDAYS_KO } from '../../constants';
+import { WEEKDAYS_KO, weekdayColorClass } from '../../constants';
 import type { CalendarEvent } from '../../types';
 import { dayjs, getMonthMatrix, isSameDay } from '../../utils/calendarDate';
 import type { Dayjs } from '../../utils/calendarDate';
@@ -44,11 +44,7 @@ export function MobileMonthGrid({
             key={label}
             className={cn(
               'flex h-8 items-center justify-center text-xs font-medium',
-              i === 0
-                ? 'text-[#ff8787]'
-                : i === 6
-                  ? 'text-[#87a5ff]'
-                  : 'text-grey-80'
+              weekdayColorClass(i, 'text-grey-80')
             )}
           >
             {label}
@@ -90,7 +86,8 @@ export function MobileMonthGrid({
                   <span
                     className={cn(
                       'text-sm font-medium',
-                      inMonth ? 'text-grey-100' : 'text-grey-60'
+                      // 날짜도 요일 헤더와 같은 주말 색. 다른 달 날짜는 흐리게 유지.
+                      inMonth ? weekdayColorClass(day.day()) : 'text-grey-60'
                     )}
                   >
                     {day.date()}
