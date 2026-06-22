@@ -8,6 +8,28 @@
 /** 일정 종류 — '일정 표시' 토글(국가공휴일/상담/개인)의 필터 단위 */
 export type CalendarEventKind = 'counseling' | 'personal' | 'holiday';
 
+/** 상담 방식 (서버 IN_PERSON/ONLINE과 1:1). null = 선택 안 함. 상담 일정에서만 유효 */
+export type CounselMethod = 'in_person' | 'online';
+
+/** 일정 반복 주기 (서버 enum과 1:1; 격주는 weekly + interval 2로 표현) */
+export type CalendarRepeatCycle = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+/**
+ * 일정 반복 규칙 (없으면 단일 일정). 서버 calendar_event의 repeat_* 컬럼과 매핑된다.
+ * 격주는 별도 cycle 없이 { cycle: 'weekly', interval: 2 }로 표현한다.
+ */
+export interface CalendarRepeatRule {
+  cycle: CalendarRepeatCycle;
+  /** 간격(N주기마다). 매주=1, 격주=2. 기본 1 */
+  interval: number;
+  /** 반복 횟수(시작 포함 n회). null = 횟수 제한 없음 */
+  count: number | null;
+  /** 반복 종료일(YYYY-MM-DD, inclusive). null = 종료일 없음 */
+  until: string | null;
+  /** 예외 날짜(YYYY-MM-DD). 단일 인스턴스 삭제 시 채워짐(후속). null = 없음 */
+  exceptions: string[] | null;
+}
+
 /** 일정 칩/블록의 표시 색상 키 (Figma 색상 체계) */
 export type CalendarColorKey = 'green' | 'red' | 'blue' | 'grey';
 
@@ -37,6 +59,12 @@ export interface CalendarEvent {
   allDay?: boolean;
   /** '나의 캘린더' 카테고리 id (선택) */
   categoryId?: string;
+  /** 상담 일정 대상 내담자 id (상담 일정에서만) */
+  clientId?: string | null;
+  /** 상담 방식 (상담 일정에서만). null/없음 = 선택 안 함 */
+  counselMethod?: CounselMethod | null;
+  /** 반복 규칙 (없으면 단일 일정). GET 인스턴스는 마스터 규칙을 그대로 싣는다 */
+  repeat?: CalendarRepeatRule | null;
 }
 
 /** '나의 캘린더' 카테고리 */
@@ -55,6 +83,12 @@ export interface CalendarEventInput {
   end?: string;
   allDay?: boolean;
   categoryId?: string;
+  /** 상담 일정 대상 내담자 id (상담 일정에서만) */
+  clientId?: string | null;
+  /** 상담 방식 (상담 일정에서만). null = 선택 안 함 */
+  counselMethod?: CounselMethod | null;
+  /** 반복 규칙 (없으면 단일 일정) */
+  repeat?: CalendarRepeatRule | null;
 }
 
 /** 카테고리 생성 입력 (후속 Phase) */

@@ -8,6 +8,9 @@ import type {
   CalendarEvent,
   CalendarEventInput,
   CalendarEventKind,
+  CalendarRepeatCycle,
+  CalendarRepeatRule,
+  CounselMethod,
 } from '../types';
 
 import type { CalendarDataSource } from './types';
@@ -46,6 +49,7 @@ const CALENDAR_ROUTES = {
 type ServerEventKind = 'COUNSELING' | 'PERSONAL';
 type ServerColorKey = 'GREEN' | 'RED' | 'BLUE' | 'GREY';
 type ServerRepeatCycle = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+type ServerCounselMethod = 'IN_PERSON' | 'ONLINE';
 
 /** GET /calendar event[] 원소 (반복 펼쳐진 인스턴스) */
 interface CalendarEventDto {
@@ -57,8 +61,12 @@ interface CalendarEventDto {
   startsAt: string;
   endsAt: string | null;
   allDay: boolean;
+  counselMethod: ServerCounselMethod | null;
   repeatCycle: ServerRepeatCycle | null;
   repeatCount: number | null;
+  repeatInterval: number;
+  repeatUntil: string | null;
+  repeatExceptions: string[] | null;
 }
 
 /** GET /calendar holiday[] 원소 (public.holiday, date-only) */
@@ -92,8 +100,12 @@ interface EventRequestBody {
   startsAt: string;
   endsAt?: string | null;
   allDay: boolean;
+  counselMethod?: ServerCounselMethod | null;
   repeatCycle?: ServerRepeatCycle | null;
   repeatCount?: number | null;
+  repeatInterval?: number | null;
+  repeatUntil?: string | null;
+  repeatExceptions?: string[] | null;
 }
 
 /** POST/PATCH /calendar/categories 요청 body */
@@ -129,6 +141,42 @@ const COLOR_FROM_SERVER: Record<ServerColorKey, CalendarColorKey> = {
   GREY: 'grey',
 };
 
+const REPEAT_TO_SERVER: Record<CalendarRepeatCycle, ServerRepeatCycle> = {
+  daily: 'DAILY',
+  weekly: 'WEEKLY',
+  monthly: 'MONTHLY',
+  yearly: 'YEARLY',
+};
+
+const REPEAT_FROM_SERVER: Record<ServerRepeatCycle, CalendarRepeatCycle> = {
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
+};
+
+const COUNSEL_METHOD_TO_SERVER: Record<CounselMethod, ServerCounselMethod> = {
+  in_person: 'IN_PERSON',
+  online: 'ONLINE',
+};
+
+const COUNSEL_METHOD_FROM_SERVER: Record<ServerCounselMethod, CounselMethod> = {
+  IN_PERSON: 'in_person',
+  ONLINE: 'online',
+};
+
+/** 서버 이벤트 DTO의 repeat_* → 프론트 반복 규칙. repeatCycle 없으면 단일 일정(null). */
+function toRepeatRule(dto: CalendarEventDto): CalendarRepeatRule | null {
+  if (!dto.repeatCycle) return null;
+  return {
+    cycle: REPEAT_FROM_SERVER[dto.repeatCycle],
+    interval: dto.repeatInterval ?? 1,
+    count: dto.repeatCount,
+    until: dto.repeatUntil,
+    exceptions: dto.repeatExceptions,
+  };
+}
+
 /** kind 기본색 (카테고리 없는 이벤트) */
 function defaultColorForKind(kind: CalendarEventKind): CalendarColorKey {
   return kind === 'counseling' ? 'green' : 'red';
@@ -152,6 +200,11 @@ function toCalendarEvent(
     end: dto.endsAt ?? undefined,
     allDay: dto.allDay,
     categoryId: dto.categoryId ?? undefined,
+    clientId: dto.clientId ?? null,
+    counselMethod: dto.counselMethod
+      ? COUNSEL_METHOD_FROM_SERVER[dto.counselMethod]
+      : null,
+    repeat: toRepeatRule(dto),
   };
 }
 
@@ -184,14 +237,30 @@ function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
     input.kind === 'holiday'
       ? 'PERSONAL'
       : KIND_TO_SERVER[input.kind];
-  return {
+  const repeat = input.repeat ?? null;
+  const body: EventRequestBody = {
     kind,
     title: input.title,
+    clientId: input.clientId ?? null,
     categoryId: input.categoryId ?? null,
     startsAt: input.start,
     endsAt: input.end ?? null,
     allDay: input.allDay ?? false,
+    // 상담 방식: 상담 일정에서만 값, 그 외 null(서버가 개인+방식 조합을 400으로 막음).
+    counselMethod: input.counselMethod
+      ? COUNSEL_METHOD_TO_SERVER[input.counselMethod]
+      : null,
+    // 반복 해제(repeat=null)도 명시적으로 null을 보내 서버에서 부수 필드까지 정리되게 한다.
+    repeatCycle: repeat ? REPEAT_TO_SERVER[repeat.cycle] : null,
   };
+  // 반복이 있을 때만 부수 필드 전송(없을 때 보내면 서버가 400). 종료조건 없으면 count/until은 null.
+  if (repeat) {
+    body.repeatInterval = repeat.interval;
+    body.repeatCount = repeat.count;
+    body.repeatUntil = repeat.until;
+    body.repeatExceptions = repeat.exceptions;
+  }
+  return body;
 }
 
 export const realCalendarDataSource: CalendarDataSource = {
