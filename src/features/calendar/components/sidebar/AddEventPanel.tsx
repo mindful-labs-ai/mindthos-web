@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Calendar, ChevronDown, ChevronLeft, User } from 'lucide-react';
+import { Calendar, ChevronLeft, User } from 'lucide-react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
@@ -10,10 +10,17 @@ import { MobileModalHeader } from '@/shared/ui';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
 
 import { WEEKDAYS_KO } from '../../constants';
-import type { CalendarEvent, CalendarEventKind } from '../../types';
+import type {
+  CalendarEvent,
+  CalendarEventKind,
+  CalendarRepeatRule,
+  CounselMethod,
+} from '../../types';
 import { dayjs, type Dayjs } from '../../utils/calendarDate';
 
+import { CounselMethodSelect } from './CounselMethodSelect';
 import { DatePopoverCalendar } from './DatePopoverCalendar';
+import { RepeatSelect } from './RepeatSelect';
 import { TimeSelect } from './TimeSelect';
 
 export interface AddEventDraft {
@@ -21,6 +28,12 @@ export interface AddEventDraft {
   title: string;
   startTime: string;
   endTime: string;
+  /** 상담 일정 대상 내담자 id (상담 일정에서만, 개인은 null) */
+  clientId: string | null;
+  /** 상담 방식 (상담 일정에서만, 개인은 null) */
+  counselMethod: CounselMethod | null;
+  /** 반복 규칙 (없으면 단일 일정) */
+  repeat: CalendarRepeatRule | null;
 }
 
 interface AddEventPanelProps {
@@ -76,6 +89,12 @@ export function AddEventPanel({
   const [title, setTitle] = React.useState(editingEvent?.title ?? '');
   const [startTime, setStartTime] = React.useState(initialStartTime);
   const [endTime, setEndTime] = React.useState(initialEndTime);
+  const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(
+    editingEvent?.repeat ?? null
+  );
+  const [counselMethod, setCounselMethod] = React.useState<CounselMethod | null>(
+    editingEvent?.counselMethod ?? null
+  );
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const dateFieldRef = React.useRef<HTMLDivElement>(null);
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
@@ -107,6 +126,18 @@ export function AddEventPanel({
     return () => document.removeEventListener('mousedown', onDown);
   }, [datePickerOpen]);
 
+  // 편집 모드 — 상담 일정의 기존 내담자를 셀렉터에 prefill (clients 로드 후 1회)
+  const clientPrefilledRef = React.useRef(false);
+  React.useEffect(() => {
+    if (clientPrefilledRef.current) return;
+    if (editingEvent?.clientId && clients.length) {
+      setSelectedClient(
+        clients.find((c) => c.id === editingEvent.clientId) ?? null
+      );
+      clientPrefilledRef.current = true;
+    }
+  }, [editingEvent?.clientId, clients]);
+
   // 종료 시간은 시작 이후만 선택 가능
   const endOptions = END_TIME_OPTIONS.filter((t) => t > startTime);
 
@@ -126,6 +157,10 @@ export function AddEventPanel({
     editingEvent && editingEvent.end
       ? dayjs(editingEvent.end)
       : (origStart?.add(1, 'hour') ?? null);
+  // 내담자·상담 방식은 상담 일정에서만 의미 — 개인이면 항상 null로 본다.
+  const effectiveClientId =
+    kind === 'counseling' ? (selectedClient?.id ?? null) : null;
+  const effectiveCounselMethod = kind === 'counseling' ? counselMethod : null;
   const isDirty =
     !editingEvent ||
     kind !== editingEvent.kind ||
@@ -133,8 +168,13 @@ export function AddEventPanel({
     startTime !== (origStart ? origStart.format('HH:mm') : '') ||
     endTime !== (origEnd ? origEnd.format('HH:mm') : '') ||
     (selectedDate ? selectedDate.format('YYYY-MM-DD') : '') !==
-      (origStart ? origStart.format('YYYY-MM-DD') : '');
-  const ctaEnabled = !isEdit || isDirty;
+      (origStart ? origStart.format('YYYY-MM-DD') : '') ||
+    effectiveClientId !== (editingEvent.clientId ?? null) ||
+    effectiveCounselMethod !== (editingEvent.counselMethod ?? null) ||
+    JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
+  // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
+  const counselingNeedsClient = kind === 'counseling' && !selectedClient;
+  const ctaEnabled = (!isEdit || isDirty) && !counselingNeedsClient;
 
   return (
     <div className="flex h-full flex-col">
@@ -279,29 +319,21 @@ export function AddEventPanel({
           </div>
         </div>
 
-        {/* 상담 주기 */}
-        <div className="flex items-center justify-between gap-4">
-          <FieldLabel>상담 주기</FieldLabel>
-          <button
-            type="button"
-            className="flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm text-[#abaebe]"
-          >
-            반복 안함
-            <ChevronDown size={16} strokeWidth={1.5} />
-          </button>
-        </div>
+        {/* 주기 (반복 규칙) — 개인 일정은 '일정 주기', 상담은 '상담 주기' */}
+        <RepeatSelect
+          value={repeat}
+          onChange={setRepeat}
+          anchorDate={selectedDate}
+          label={kind === 'personal' ? '일정 주기' : '상담 주기'}
+        />
 
-        {/* 상담 방식 */}
-        <div className="flex items-center justify-between gap-4">
-          <FieldLabel>상담 방식</FieldLabel>
-          <button
-            type="button"
-            className="flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm text-[#abaebe]"
-          >
-            선택 안함
-            <ChevronDown size={16} strokeWidth={1.5} />
-          </button>
-        </div>
+        {/* 상담 방식 — 상담 일정에서만 노출(개인 일정은 숨김) */}
+        {kind === 'counseling' && (
+          <CounselMethodSelect
+            value={counselMethod}
+            onChange={setCounselMethod}
+          />
+        )}
       </div>
 
       {/* 푸터 */}
@@ -309,7 +341,17 @@ export function AddEventPanel({
         <button
           type="button"
           disabled={!ctaEnabled}
-          onClick={() => onSubmit({ kind, title, startTime, endTime })}
+          onClick={() =>
+            onSubmit({
+              kind,
+              title,
+              startTime,
+              endTime,
+              clientId: effectiveClientId,
+              counselMethod: effectiveCounselMethod,
+              repeat,
+            })
+          }
           className={cn(
             'h-[41px] w-full rounded-md text-sm font-emphasize text-white',
             ctaEnabled ? 'bg-green-80' : 'cursor-not-allowed bg-grey-40'

@@ -136,11 +136,12 @@ export default function CalendarContainer() {
         colorKey,
         start: start.toISOString(),
         end: end.toISOString(),
-        categoryId: editingEvent
-          ? editingEvent.categoryId
-          : draft.kind === 'counseling'
-            ? 'cat-mindthos'
-            : undefined,
+        // 카테고리는 '나의 캘린더' 사용자 카테고리에만 쓰임 — 기본 상담/개인 일정은 미지정.
+        // (편집 시 기존 카테고리 유지. 색은 kind에서 파생되므로 별도 카테고리 불필요.)
+        categoryId: editingEvent ? editingEvent.categoryId : undefined,
+        clientId: draft.clientId,
+        counselMethod: draft.counselMethod,
+        repeat: draft.repeat,
       };
 
       if (editingEvent) {
