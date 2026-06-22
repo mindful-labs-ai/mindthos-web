@@ -28,10 +28,15 @@ export function SentDocumentView({
   // 질문 번호 — 제목 및 설명(section)은 번호를 매기지 않는다
   let questionNumber = 0;
 
-  const historyParts = [
-    `${document.clientName} 내담자`,
-    `${formatSentDate(document.sentAt)} 발송됨`,
-  ];
+  const historyParts = [`${document.clientName} 내담자`];
+  // 발송 실패는 알림톡이 나가지 않았으므로 "발송됨" 대신 "발송 실패"로 표기.
+  if (document.status === 'failed') {
+    historyParts.push(
+      `${formatSentDate(document.failedAt ?? document.sentAt)} 발송 실패`
+    );
+  } else {
+    historyParts.push(`${formatSentDate(document.sentAt)} 발송됨`);
+  }
   if (document.status === 'completed' && document.completedAt) {
     historyParts.push(`${formatSentDate(document.completedAt)} 완료`);
   }
@@ -70,6 +75,17 @@ export function SentDocumentView({
             {historyParts.join('  |  ')}
           </p>
         </div>
+      )}
+
+      {/* 발송 실패 사유 — 서버가 내려준 UX 친화 문구(기술용어·PII 없음). 인쇄 시 숨김 */}
+      {document.status === 'failed' && document.failureMessage && (
+        <p
+          className={`rounded-lg bg-red-20 font-medium leading-[150%] text-red-80 print:hidden ${
+            isMobileView ? 'mt-4 px-3.5 py-3 text-xs' : 'mt-6 px-4 py-3 text-sm'
+          }`}
+        >
+          {document.failureMessage}
+        </p>
       )}
 
       {/* 문서 캔버스 */}

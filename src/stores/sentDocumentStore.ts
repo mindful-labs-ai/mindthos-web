@@ -9,12 +9,17 @@ import type { MyDocumentKind } from '@/stores/documentStore';
  * 데이터는 documentDataSource 어댑터(real ↔ mock) 경유로 서버와 연결된다.
  */
 
-export type SentDocumentStatus = 'pending' | 'completed' | 'canceled';
+export type SentDocumentStatus =
+  | 'pending'
+  | 'completed'
+  | 'canceled'
+  | 'failed';
 
 export const SENT_DOCUMENT_STATUS_LABEL: Record<SentDocumentStatus, string> = {
   pending: '대기 중',
   completed: '완료',
   canceled: '취소',
+  failed: '발송 실패',
 };
 
 export interface SentDocument {

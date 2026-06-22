@@ -238,10 +238,17 @@ function userDocumentToMyDocument(dto: UserDocumentDto): MyDocument {
   };
 }
 
-/** 서버 타임스탬프 → 프론트 status. canceled > completed > pending (failed는 pending). */
+/**
+ * 서버 타임스탬프 → 프론트 status. 우선순위 canceled > completed > failed > pending.
+ *  - canceled: 상담사가 발송 취소 (failed/pending 위에서도 취소가 우선).
+ *  - completed: 내담자 응답 제출 완료.
+ *  - failed: 알림톡 발송 실패(failed_at). 사유는 failureMessage(서버가 내려준 UX 친화 문구).
+ *  - pending: 발송됨 + 내담자 응답 대기.
+ */
 function deriveSentStatus(dto: SentDocumentDto): SentDocumentStatus {
   if (dto.canceledAt) return 'canceled';
   if (dto.completedAt) return 'completed';
+  if (dto.failedAt) return 'failed';
   return 'pending';
 }
 

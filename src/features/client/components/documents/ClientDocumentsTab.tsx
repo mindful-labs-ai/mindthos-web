@@ -25,6 +25,7 @@ const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: 'all', label: '전체' },
   { key: 'completed', label: '완료' },
   { key: 'pending', label: '대기 중' },
+  { key: 'failed', label: '발송 실패' },
   { key: 'canceled', label: '취소' },
 ];
 
@@ -33,6 +34,7 @@ const STATUS_CHIP_CLASS: Record<SentDocumentStatus, string> = {
   pending: 'bg-yellow-20 text-yellow-80',
   completed: 'bg-green-20 text-green-80',
   canceled: 'bg-grey-20 text-grey-80',
+  failed: 'bg-red-20 text-red-80',
 };
 
 /** "2026.5.20(수)" 형식 */
@@ -42,8 +44,13 @@ export function formatSentDate(iso: string): string {
   return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}(${weekday})`;
 }
 
-/** 발송/완료/취소 이력 한 줄 — "2026.5.20(수) 발송됨 | 2026.5.22(금) 완료" */
+/** 발송/완료/취소/실패 이력 한 줄 — "2026.5.20(수) 발송됨 | 2026.5.22(금) 완료" */
 export function formatSentHistory(document: SentDocument): string {
+  // 발송 실패는 "발송됨"이 아니라 "발송 시도"로 표기(알림톡이 나가지 않았으므로).
+  if (document.status === 'failed') {
+    const when = document.failedAt ?? document.sentAt;
+    return `${formatSentDate(when)} 발송 실패`;
+  }
   const parts = [`${formatSentDate(document.sentAt)} 발송됨`];
   if (document.status === 'completed' && document.completedAt) {
     parts.push(`${formatSentDate(document.completedAt)} 완료`);
@@ -227,6 +234,17 @@ export function ClientDocumentsTab({
                   {formatSentHistory(document)}
                 </span>
               </button>
+
+              {/* 발송 실패 — 사유 노출(서버가 내려준 UX 친화 문구, 기술용어·PII 없음) */}
+              {document.status === 'failed' && document.failureMessage && (
+                <p
+                  className={`mt-3 rounded-lg bg-red-20 font-medium leading-[150%] text-red-80 ${
+                    isMobileView ? 'px-3 py-2 text-xs' : 'px-3.5 py-2.5 text-sm'
+                  }`}
+                >
+                  {document.failureMessage}
+                </p>
+              )}
 
               {/* 완료 문서 — 서명본 확인 */}
               {document.status === 'completed' &&
