@@ -47,7 +47,15 @@ const CALENDAR_ROUTES = {
 
 /** 서버 enum(대문자) */
 type ServerEventKind = 'COUNSELING' | 'PERSONAL';
-type ServerColorKey = 'GREEN' | 'RED' | 'BLUE' | 'GREY';
+type ServerColorKey =
+  | 'GREEN'
+  | 'RED'
+  | 'BLUE'
+  | 'GREY'
+  | 'ORANGE'
+  | 'YELLOW'
+  | 'PURPLE'
+  | 'PINK';
 type ServerRepeatCycle = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ServerCounselMethod = 'IN_PERSON' | 'ONLINE';
 
@@ -132,6 +140,10 @@ const COLOR_TO_SERVER: Record<CalendarColorKey, ServerColorKey> = {
   red: 'RED',
   blue: 'BLUE',
   grey: 'GREY',
+  orange: 'ORANGE',
+  yellow: 'YELLOW',
+  purple: 'PURPLE',
+  pink: 'PINK',
 };
 
 const COLOR_FROM_SERVER: Record<ServerColorKey, CalendarColorKey> = {
@@ -139,6 +151,10 @@ const COLOR_FROM_SERVER: Record<ServerColorKey, CalendarColorKey> = {
   RED: 'red',
   BLUE: 'blue',
   GREY: 'grey',
+  ORANGE: 'orange',
+  YELLOW: 'yellow',
+  PURPLE: 'purple',
+  PINK: 'pink',
 };
 
 const REPEAT_TO_SERVER: Record<CalendarRepeatCycle, ServerRepeatCycle> = {

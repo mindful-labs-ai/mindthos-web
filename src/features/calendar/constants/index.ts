@@ -70,7 +70,47 @@ export const CALENDAR_COLOR_STYLES: Record<CalendarColorKey, CalendarColorStyle>
       swatchBg: 'bg-[#efefef]',
       swatchCheck: 'text-[#8e8e8e]',
     },
+    orange: {
+      chipBg: 'bg-[#fff0e1]',
+      chipTitle: 'text-black',
+      chipTime: 'text-[#f08a24]',
+      swatchBg: 'bg-[#fff0e1]',
+      swatchCheck: 'text-[#f08a24]',
+    },
+    yellow: {
+      chipBg: 'bg-[#fff7d6]',
+      chipTitle: 'text-black',
+      chipTime: 'text-[#c79600]',
+      swatchBg: 'bg-[#fff7d6]',
+      swatchCheck: 'text-[#c79600]',
+    },
+    purple: {
+      chipBg: 'bg-[#efe9ff]',
+      chipTitle: 'text-black',
+      chipTime: 'text-[#7c5cf0]',
+      swatchBg: 'bg-[#efe9ff]',
+      swatchCheck: 'text-[#7c5cf0]',
+    },
+    pink: {
+      chipBg: 'bg-[#ffe6f1]',
+      chipTitle: 'text-black',
+      chipTime: 'text-[#ec4f97]',
+      swatchBg: 'bg-[#ffe6f1]',
+      swatchCheck: 'text-[#ec4f97]',
+    },
   };
+
+/** 카테고리 색 선택 팔레트(설정 팝오버·생성 폼 공용). */
+export const CALENDAR_PALETTE: CalendarColorKey[] = [
+  'green',
+  'red',
+  'blue',
+  'grey',
+  'orange',
+  'yellow',
+  'purple',
+  'pink',
+];
 
 /** kind → 기본 색상 키 (개인은 카테고리 색으로 덮어쓸 수 있음) */
 export const KIND_DEFAULT_COLOR: Record<CalendarEventKind, CalendarColorKey> = {

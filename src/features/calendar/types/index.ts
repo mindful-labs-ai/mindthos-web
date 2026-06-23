@@ -30,8 +30,16 @@ export interface CalendarRepeatRule {
   exceptions: string[] | null;
 }
 
-/** 일정 칩/블록의 표시 색상 키 (Figma 색상 체계) */
-export type CalendarColorKey = 'green' | 'red' | 'blue' | 'grey';
+/** 일정 칩/블록의 표시 색상 키 (카테고리 색 팔레트) */
+export type CalendarColorKey =
+  | 'green'
+  | 'red'
+  | 'blue'
+  | 'grey'
+  | 'orange'
+  | 'yellow'
+  | 'purple'
+  | 'pink';
 
 /** 보기 모드 */
 export type CalendarViewMode = 'month' | 'week';
