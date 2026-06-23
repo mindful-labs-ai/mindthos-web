@@ -20,6 +20,7 @@ import PsychologyAssessmentsPage from '@/features/psychology-assessments/pages/P
 import SessionDetailPage from '@/features/session/page/SessionDetailPage';
 import SessionHistoryPage from '@/features/session/page/SessionHistoryPage';
 import SettingsPage from '@/features/settings/page/SettingsPage';
+import SharedDocumentPage from '@/features/shared-document/page/SharedDocumentPage';
 import TemplateListPage from '@/features/template/page/TemplateListPage';
 import TermsPage from '@/features/terms/page/TermsPage';
 import TermsAgreementPage from '@/features/terms-agreement/page/TermsAgreementPage';
@@ -154,6 +155,11 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.UNSUBSCRIBE,
         element: <UnsubscribePage />,
+      },
+      {
+        // 내담자 공유 링크 — 로그인 불필요(ProtectedRoute 미적용), URL 토큰으로만 접근
+        path: ROUTES.SHARED_DOCUMENT,
+        element: <SharedDocumentPage />,
       },
       {
         path: ROUTES.CALENDAR_OAUTH_CALLBACK,

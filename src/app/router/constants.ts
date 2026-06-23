@@ -29,6 +29,8 @@ export const ROUTES = {
   AI_SUPERVISION: '/ai-supervision',
   PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
   UNSUBSCRIBE: '/unsubscribe',
+  /** 내담자 공유 링크(@Public, 로그인 불필요) — 알림톡 링크 진입점 */
+  SHARED_DOCUMENT: '/shared-documents/:clientId/:sentRowId/:accessToken',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>
