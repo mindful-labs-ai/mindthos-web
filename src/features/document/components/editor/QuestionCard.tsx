@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'react';
 
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Copy, Trash2, X } from 'lucide-react';
+
+import { cn } from '@/lib/cn';
+import { DragHandleIcon } from '@/shared/icons';
 
 import { isChoiceQuestion } from '../../constants/qnaQuestion';
 import type { QnaQuestion } from '../../types';
@@ -53,15 +58,46 @@ export function QuestionCard({
     }
   });
 
-  if (!isActive) {
-    return (
+  // 항목 순서 변경(드래그) — 핸들에서만 시작
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: question.id });
+  const sortableStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  const dragHandle = (
+    <div className="mb-2 flex justify-center">
       <button
         type="button"
-        onClick={onActivate}
-        className="w-full rounded-2xl border border-grey-40 bg-white p-4 text-left lg:p-7"
+        aria-label="항목 순서 변경"
+        className="cursor-grab touch-none px-3 py-1 text-grey-60 active:cursor-grabbing lg:hover:text-grey-80"
+        {...attributes}
+        {...listeners}
       >
-        <QnaQuestionContent question={question} />
+        <DragHandleIcon size={18} />
       </button>
+    </div>
+  );
+
+  if (!isActive) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={sortableStyle}
+        className={cn(
+          'rounded-2xl border border-grey-40 bg-white p-4 lg:p-7',
+          isDragging && 'relative z-50 opacity-50'
+        )}
+      >
+        {dragHandle}
+        <button
+          type="button"
+          onClick={onActivate}
+          className="w-full text-left"
+        >
+          <QnaQuestionContent question={question} />
+        </button>
+      </div>
     );
   }
 
@@ -101,9 +137,15 @@ export function QuestionCard({
 
   return (
     <div
+      ref={setNodeRef}
+      style={sortableStyle}
       onFocusCapture={onActivate}
-      className="rounded-2xl border border-green-80 bg-white p-4 lg:p-7"
+      className={cn(
+        'rounded-2xl border border-green-80 bg-white p-4 lg:p-7',
+        isDragging && 'relative z-50 opacity-50'
+      )}
     >
+      {dragHandle}
       {/* 질문 */}
       <input
         type="text"

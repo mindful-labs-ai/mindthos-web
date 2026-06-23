@@ -1,5 +1,21 @@
 import { useState } from 'react';
 
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 
 import {
@@ -51,21 +67,50 @@ export function QnaEditor({ questions, onQuestionsChange }: QnaEditorProps) {
     onQuestionsChange(questions.filter((q) => q.id !== id));
   };
 
+  // 드래그로 항목 순서 변경 — 핸들에서만 시작(PointerSensor), 키보드 접근성(KeyboardSensor)
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = questions.findIndex((q) => q.id === active.id);
+    const newIndex = questions.findIndex((q) => q.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    onQuestionsChange(arrayMove(questions, oldIndex, newIndex));
+  };
+
   return (
     <div className="mx-auto mt-10 flex w-full max-w-[851px] flex-col">
-      <div className="flex flex-col gap-4">
-        {questions.map((question, index) => (
-          <QuestionCard
-            key={question.id}
-            question={question}
-            isActive={question.id === activeId}
-            onActivate={() => setActiveId(question.id)}
-            onChange={(patch) => updateQuestion(question.id, patch)}
-            onDuplicate={() => handleDuplicate(index)}
-            onDelete={() => handleDelete(question.id)}
-          />
-        ))}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={questions.map((q) => q.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="flex flex-col gap-4">
+            {questions.map((question, index) => (
+              <QuestionCard
+                key={question.id}
+                question={question}
+                isActive={question.id === activeId}
+                onActivate={() => setActiveId(question.id)}
+                onChange={(patch) => updateQuestion(question.id, patch)}
+                onDuplicate={() => handleDuplicate(index)}
+                onDelete={() => handleDelete(question.id)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* 항목 추가 */}
       <button
