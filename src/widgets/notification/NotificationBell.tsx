@@ -23,7 +23,7 @@ export function NotificationBell() {
       >
         <Bell size={22} />
         {unreadCount > 0 && (
-          <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-[#D54036]" />
+          <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-80" />
         )}
       </button>
 

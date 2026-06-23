@@ -58,7 +58,7 @@ function resolveDeepLink(notification: AppNotification): string | null {
 
 /** 알림 종류(8종)별 행 아이콘 */
 function KindIcon({ kind }: { kind: NotificationKind }) {
-  const className = 'flex-shrink-0 text-[#BABCC7]';
+  const className = 'flex-shrink-0 text-grey-60';
   switch (kind) {
     case 'SESSION':
       return <SideSessionIcon size={24} className={className} />;
@@ -95,7 +95,7 @@ function FilterChip({
       onClick={onClick}
       className={`flex h-[35px] w-[68px] items-center justify-center rounded-lg border px-2.5 text-m font-medium transition-colors ${
         active
-          ? 'border-green-80 bg-[#FDFFFE] text-green-80'
+          ? 'border-green-80 bg-green-10 text-green-80'
           : 'border-[#ECEDF3] bg-white text-[#ABAEBE] lg:hover:text-grey-80'
       }`}
     >
@@ -127,7 +127,7 @@ function NotificationRow({
           <p className="mt-1 break-keep text-m font-medium leading-snug text-grey-70">
             {notification.body}
           </p>
-          <div className="mt-3 flex items-center gap-4 text-sm font-medium text-[#BABCC7]">
+          <div className="mt-3 flex items-center gap-4 text-sm font-medium text-grey-60">
             <span>{formatRelativeTime(notification.createdAt)}</span>
             {!notification.read && <span>안 읽음</span>}
           </div>
