@@ -37,16 +37,21 @@ export function MyCalendars({
   const [creating, setCreating] = React.useState(false);
   const [newName, setNewName] = React.useState('');
   const [newColor, setNewColor] = React.useState<CalendarColorKey>('green');
+  // 생성 제출 중복 방지 — 첫 클릭 후 폼이 닫힐 때까지 추가 버튼 비활성.
+  const [submitting, setSubmitting] = React.useState(false);
 
   const resetForm = () => {
     setCreating(false);
     setNewName('');
     setNewColor('green');
+    setSubmitting(false);
   };
 
   const submit = () => {
+    if (submitting) return;
     const name = newName.trim();
     if (!name) return;
+    setSubmitting(true);
     onCreateCategory?.(name, newColor);
     resetForm();
   };
@@ -101,11 +106,13 @@ export function MyCalendars({
             </button>
             <button
               type="button"
-              disabled={!newName.trim()}
+              disabled={!newName.trim() || submitting}
               onClick={submit}
               className={cn(
                 'flex-1 rounded-md py-1.5 text-sm font-medium text-white',
-                newName.trim() ? 'bg-green-80' : 'cursor-not-allowed bg-grey-40'
+                newName.trim() && !submitting
+                  ? 'bg-green-80'
+                  : 'cursor-not-allowed bg-grey-40'
               )}
             >
               추가

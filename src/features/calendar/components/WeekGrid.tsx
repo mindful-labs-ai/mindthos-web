@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { WEEKDAYS_KO } from '../constants';
+import { WEEKDAYS_KO, weekdayColorClass } from '../constants';
 import type { CalendarEvent } from '../types';
 import {
   dayjs,
@@ -17,7 +17,11 @@ interface WeekGridProps {
   current: Dayjs;
   events: CalendarEvent[];
   /** 드래그로 시간 범위 선택 → 일정 추가 (day + 시작/종료 분) */
-  onCreateRange?: (day: Dayjs, startMinutes: number, endMinutes: number) => void;
+  onCreateRange?: (
+    day: Dayjs,
+    startMinutes: number,
+    endMinutes: number
+  ) => void;
   /** 일정 블록 클릭 — 일정 변경 패널 오픈 */
   onEventClick?: (event: CalendarEvent) => void;
   /** 일정 추가 패널이 가리키는 날짜(선택 박스를 그릴 컬럼) */
@@ -170,7 +174,9 @@ export function WeekGrid({
                 key={day.toISOString()}
                 className="flex flex-1 flex-col items-center gap-1 py-2"
               >
-                <span className="text-m font-medium text-grey-60">
+                <span
+                  className={`text-m font-medium ${weekdayColorClass(i, 'text-grey-60')}`}
+                >
                   {WEEKDAYS_KO[i]}
                 </span>
                 {isToday ? (
@@ -178,7 +184,9 @@ export function WeekGrid({
                     {day.date()}
                   </span>
                 ) : (
-                  <span className="flex h-[30px] items-center text-m font-medium text-grey-100">
+                  <span
+                    className={`flex h-[30px] items-center text-m font-medium ${weekdayColorClass(day.day())}`}
+                  >
                     {day.date()}
                   </span>
                 )}
@@ -191,15 +199,24 @@ export function WeekGrid({
             h-0 + overflow-visible로 그리드를 밀지 않고 위에 떠 있고, top=headerH로 헤더 바로 아래에 핀.
             z는 헤더(z-10)보다 낮아 일 표시띠를 가리지 않음. 컨테이너는 클릭 통과, 칩만 클릭. */}
         <div
-          className="pointer-events-none sticky z-[5] h-0"
+          className="pointer-events-none sticky z-[5] h-0 overflow-visible"
           style={{ top: headerH }}
         >
           <div className="flex">
             <div className="shrink-0" style={{ width: GUTTER_PX }} />
             {days.map((day) => {
-              const allDayEvents = events.filter(
-                (e) => e.allDay && isSameDay(dayjs(e.start), day)
-              );
+              // 다일(multi-day) 종일 일정 — [start, end] 구간에 걸치는 모든 날에 칩 표시.
+              // end가 없으면 시작일 하루만.
+              const allDayEvents = events.filter((e) => {
+                if (!e.allDay) return false;
+                const start = dayjs(e.start);
+                if (!e.end) return isSameDay(start, day);
+                const end = dayjs(e.end);
+                return (
+                  (day.isSame(start, 'day') || day.isAfter(start, 'day')) &&
+                  (day.isSame(end, 'day') || day.isBefore(end, 'day'))
+                );
+              });
               return (
                 <div
                   key={day.toISOString()}
@@ -277,7 +294,10 @@ export function WeekGrid({
                     setDrag({ day, startMin: min, endMin: min });
                   }}
                   onMouseMove={(e) => {
-                    if (!dragRef.current || !isSameDay(dragRef.current.day, day))
+                    if (
+                      !dragRef.current ||
+                      !isSameDay(dragRef.current.day, day)
+                    )
                       return;
                     const top = e.currentTarget.getBoundingClientRect().top;
                     const raw = yToSnappedMin(e.clientY, top);
