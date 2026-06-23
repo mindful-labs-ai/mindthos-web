@@ -129,6 +129,7 @@ interface SentDocumentDto {
   failedAt: string | null;
   failureCode: string | null;
   failureMessage: string | null;
+  response: Record<string, unknown> | null;
   completedAt: string | null;
   canceledAt: string | null;
   createdAt: string;
@@ -270,6 +271,7 @@ function toSentDocument(dto: SentDocumentDto): SentDocument {
     failureMessage: dto.failureMessage ?? undefined,
     completedAt: dto.completedAt ?? undefined,
     canceledAt: dto.canceledAt ?? undefined,
+    response: dto.response ?? null,
   };
 }
 

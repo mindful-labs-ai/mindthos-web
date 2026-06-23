@@ -97,7 +97,7 @@ export function QnaQuestionContent({
           {question.options.map((option, i) => {
             const optionContent = (
               <>
-                {renderMarker(interactive && selected.includes(i))}
+                {renderMarker(selected.includes(i))}
                 <span
                   className={`text-m font-medium lg:text-xl ${
                     option ? 'text-grey-100' : 'text-grey-80'
@@ -134,7 +134,7 @@ export function QnaQuestionContent({
                   {renderMarker(!!answer?.etcChecked)}
                 </button>
               ) : (
-                renderMarker(false)
+                renderMarker(!!answer?.etcChecked)
               )}
               <span className="flex-shrink-0 text-m font-medium text-grey-100 lg:text-xl">
                 기타 :
@@ -153,6 +153,10 @@ export function QnaQuestionContent({
                   aria-label="기타 입력"
                   className="h-[30px] min-w-0 flex-1 border-b border-grey-40 bg-transparent text-m font-medium text-grey-100 focus:outline-none lg:text-xl"
                 />
+              ) : answer?.etcText ? (
+                <span className="min-w-0 flex-1 text-m font-medium text-grey-100 lg:text-xl">
+                  {answer.etcText}
+                </span>
               ) : (
                 <span className="mb-1 min-w-0 flex-1 self-end border-b border-grey-40" />
               )}
@@ -172,6 +176,10 @@ export function QnaQuestionContent({
             aria-label="답변 입력"
             className="mt-6 flex h-[46px] w-full items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-m font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-xl"
           />
+        ) : answer?.text ? (
+          <div className="mt-6 flex min-h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 lg:text-xl">
+            {answer.text}
+          </div>
         ) : (
           <div className="mt-6 flex h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-m font-medium text-grey-60 lg:text-xl">
             답변을 입력해주세요.
@@ -187,6 +195,10 @@ export function QnaQuestionContent({
             aria-label="답변 입력"
             className="mt-6 block h-[134px] w-full resize-none rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-xl"
           />
+        ) : answer?.text ? (
+          <div className="mt-6 min-h-[134px] whitespace-pre-wrap rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 lg:text-xl">
+            {answer.text}
+          </div>
         ) : (
           <div className="mt-6 h-[134px] rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-60 lg:text-xl">
             답변을 입력해주세요.
@@ -246,6 +258,37 @@ export function QnaQuestionContent({
                 aria-label="점수 선택"
                 className="absolute inset-0 z-20 h-full w-full cursor-pointer appearance-none opacity-0"
               />
+            </div>
+          ) : answer?.score != null ? (
+            // 읽기전용 — 제출된 점수를 트랙 위 원으로 표시(입력 없음)
+            <div className="relative h-9">
+              <span className="absolute left-[18px] right-[18px] top-1/2 h-2 -translate-y-1/2 bg-grey-40" />
+              {answer.score > scoreMin && (
+                <span
+                  className="absolute left-[18px] top-1/2 h-2 -translate-y-1/2 bg-green-80"
+                  style={{
+                    width: `calc((100% - 36px) * ${
+                      (answer.score - scoreMin) / (scoreMax - scoreMin)
+                    })`,
+                  }}
+                />
+              )}
+              <span className={`${scoreCircleClass} absolute left-0 top-0`}>
+                {scoreMin}
+              </span>
+              <span className={`${scoreCircleClass} absolute right-0 top-0`}>
+                {scoreMax}
+              </span>
+              <span
+                className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-xl font-bold text-white"
+                style={{
+                  left: `calc((100% - 36px) * ${
+                    (answer.score - scoreMin) / (scoreMax - scoreMin)
+                  })`,
+                }}
+              >
+                {answer.score}
+              </span>
             </div>
           ) : (
             <div className="flex items-center">

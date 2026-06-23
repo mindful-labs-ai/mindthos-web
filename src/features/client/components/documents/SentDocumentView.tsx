@@ -2,6 +2,8 @@ import { ChevronLeft, Printer } from 'lucide-react';
 
 import { QnaQuestionContent } from '@/features/document/components/QnaQuestionContent';
 import { parseQnaQuestions } from '@/features/document/constants/qnaQuestion';
+import type { QnaAnswer } from '@/features/document/types';
+import { MobileModalHeader } from '@/shared/ui';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
 import { formatSentDate } from './ClientDocumentsTab';
@@ -28,6 +30,24 @@ export function SentDocumentView({
   // 질문 번호 — 제목 및 설명(section)은 번호를 매기지 않는다
   let questionNumber = 0;
 
+  // 내담자 제출 응답(완료 시) — qna=문항별 응답, consent=서명/동의.
+  const isCompleted = document.status === 'completed';
+  const response = document.response ?? null;
+  const qnaAnswers = (response?.answers ?? {}) as Record<string, QnaAnswer>;
+  const signatureDataUrl =
+    typeof response?.signatureDataUrl === 'string'
+      ? response.signatureDataUrl
+      : null;
+  const signedName =
+    typeof response?.signedName === 'string' ? response.signedName : '';
+  const sensitiveInfoConsent = response?.sensitiveInfoConsent === true;
+  const signedDate =
+    typeof response?.signedAt === 'string'
+      ? formatSentDate(response.signedAt)
+      : document.completedAt
+        ? formatSentDate(document.completedAt)
+        : '';
+
   const historyParts = [`${document.clientName} 내담자`];
   // 발송 실패는 알림톡이 나가지 않았으므로 "발송됨" 대신 "발송 실패"로 표기.
   if (document.status === 'failed') {
@@ -48,14 +68,17 @@ export function SentDocumentView({
     <div>
       {/* 헤더 — 데스크탑: 뒤로가기+제목+이력 한 줄 / 모바일: 제목·이력 두 줄 */}
       {isMobileView ? (
-        <div>
-          <h1 className="truncate text-l font-headline text-grey-100">
-            {document.title}
-          </h1>
-          <p className="mt-1.5 text-xs text-grey-70">
+        <>
+          {/* 앱 표준 모바일 풀페이지 헤더(뒤로가기 + 제목) — 래퍼 패딩 밖으로 풀블리드 */}
+          <MobileModalHeader
+            title={document.title}
+            onBack={onBack}
+            className="-mx-4 -mt-4"
+          />
+          <p className="mt-4 text-xs text-grey-70">
             {historyParts.join('  |  ')}
           </p>
-        </div>
+        </>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex min-w-0 items-center gap-6">
@@ -126,15 +149,44 @@ export function SentDocumentView({
 
         {/* 종류별 본문 — 발송 시점 스냅샷 */}
         {document.kind === 'consent' ? (
-          <div
-            className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 [&_h1]:font-headline [&_h2]:font-headline ${
-              isMobileView
-                ? 'mt-6 text-m [&_h1]:text-xl [&_h2]:text-l'
-                : 'mt-10 text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
-            }`}
-            // 상담사가 제작 뷰에서 작성한 HTML 스냅샷 — 백엔드 연결 시 서버 측 sanitize 전제
-            dangerouslySetInnerHTML={{ __html: document.content ?? '' }}
-          />
+          <>
+            <div
+              className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 [&_h1]:font-headline [&_h2]:font-headline ${
+                isMobileView
+                  ? 'mt-6 text-m [&_h1]:text-xl [&_h2]:text-l'
+                  : 'mt-10 text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
+              }`}
+              // 상담사가 제작 뷰에서 작성한 HTML 스냅샷 — 백엔드 연결 시 서버 측 sanitize 전제
+              dangerouslySetInnerHTML={{ __html: document.content ?? '' }}
+            />
+
+            {/* 내담자 서명·동의 (완료 시). 서명 이미지는 서명란 위로 겹쳐(종이 서명처럼). */}
+            {isCompleted && (signatureDataUrl || signedName) && (
+              <div className="mx-auto mt-10 w-full max-w-[851px] border-t border-grey-40 pt-8">
+                <div className="flex flex-col items-end gap-2 text-sm text-grey-100">
+                  {signedDate && <p>{signedDate}</p>}
+                  <div className="mt-1 flex items-center gap-9">
+                    <span>{signedName || document.clientName}</span>
+                    <span className="relative">
+                      (본인 또는 법정 대리인 서명)
+                      {signatureDataUrl && (
+                        <img
+                          src={signatureDataUrl}
+                          alt="내담자 서명"
+                          className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-auto -translate-x-1/2 -translate-y-1/2 object-contain"
+                        />
+                      )}
+                    </span>
+                  </div>
+                </div>
+                {sensitiveInfoConsent && (
+                  <p className="mt-4 text-xs text-grey-60">
+                    · 민감정보 수집·이용 동의 완료
+                  </p>
+                )}
+              </div>
+            )}
+          </>
         ) : (
           <div
             className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
@@ -149,6 +201,8 @@ export function SentDocumentView({
                   key={question.id}
                   question={question}
                   number={number}
+                  // 완료 시 내담자 응답을 읽기전용으로 표시(onAnswerChange 없음)
+                  answer={qnaAnswers[question.id]}
                 />
               );
             })}

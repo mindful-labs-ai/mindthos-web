@@ -43,6 +43,8 @@ export interface SentDocument {
   failureMessage?: string;
   completedAt?: string;
   canceledAt?: string;
+  /** 내담자가 제출한 응답 (완료 시) — consent=서명/동의, qna=문항별 응답 */
+  response?: Record<string, unknown> | null;
 }
 
 /** 발송 모달에서 넘기는 입력 — 어댑터가 서버 전송 후 결과를 반환 */
