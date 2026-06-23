@@ -1,5 +1,6 @@
 import type {
   CalendarCategory,
+  CalendarColorKey,
   CalendarEventKind,
 } from '../../types';
 import type { Dayjs } from '../../utils/calendarDate';
@@ -19,8 +20,13 @@ interface CalendarSidebarProps {
   categories: CalendarCategory[];
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
+  onChangeCategoryColor?: (
+    categoryId: string,
+    colorKey: CalendarColorKey
+  ) => void;
+  onDeleteCategory?: (categoryId: string) => void;
+  onCreateCategory?: (name: string, colorKey: CalendarColorKey) => void;
   onAddEvent?: (kind: CalendarEventKind) => void;
-  onAddCategory?: () => void;
   onConnectGoogle?: () => void;
 }
 
@@ -36,8 +42,10 @@ export function CalendarSidebar({
   categories,
   categoryVisible,
   onToggleCategory,
+  onChangeCategoryColor,
+  onDeleteCategory,
+  onCreateCategory,
   onAddEvent,
-  onAddCategory,
   onConnectGoogle,
 }: CalendarSidebarProps) {
   return (
@@ -58,7 +66,9 @@ export function CalendarSidebar({
         categories={categories}
         categoryVisible={categoryVisible}
         onToggleCategory={onToggleCategory}
-        onAddCategory={onAddCategory}
+        onCreateCategory={onCreateCategory}
+        onChangeCategoryColor={onChangeCategoryColor}
+        onDeleteCategory={onDeleteCategory}
       />
       <div className="mt-auto pt-4">
         <GoogleConnectCard onConnect={onConnectGoogle} />

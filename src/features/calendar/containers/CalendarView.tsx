@@ -11,6 +11,7 @@ import { WeekGrid } from '../components/WeekGrid';
 import type { CalendarSidePanel } from '../hooks/useCalendarState';
 import type {
   CalendarCategory,
+  CalendarColorKey,
   CalendarEvent,
   CalendarEventKind,
   CalendarViewMode,
@@ -29,6 +30,12 @@ interface CalendarViewProps {
   onViewModeChange: (mode: CalendarViewMode) => void;
   onToggleKind: (kind: CalendarEventKind) => void;
   onToggleCategory: (categoryId: string) => void;
+  onChangeCategoryColor?: (
+    categoryId: string,
+    colorKey: CalendarColorKey
+  ) => void;
+  onDeleteCategory?: (categoryId: string) => void;
+  onCreateCategory?: (name: string, colorKey: CalendarColorKey) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   // 사이드 패널 / 일정 추가
@@ -68,6 +75,9 @@ export function CalendarView({
   onViewModeChange,
   onToggleKind,
   onToggleCategory,
+  onChangeCategoryColor,
+  onDeleteCategory,
+  onCreateCategory,
   onPrevMonth,
   onNextMonth,
   sidePanel,
@@ -133,8 +143,10 @@ export function CalendarView({
           categories={categories}
           categoryVisible={categoryVisible}
           onToggleCategory={onToggleCategory}
+          onChangeCategoryColor={onChangeCategoryColor}
+          onDeleteCategory={onDeleteCategory}
+          onCreateCategory={onCreateCategory}
           onAddEvent={onOpenAddEvent}
-          onAddCategory={onOpenAddCalendar}
           onConnectGoogle={onOpenAddCalendar}
         />
       </aside>

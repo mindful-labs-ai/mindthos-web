@@ -16,7 +16,7 @@ import {
   useCalendarEvents,
 } from '../hooks/useCalendarEvents';
 import { useCalendarState } from '../hooks/useCalendarState';
-import type { CalendarEventInput } from '../types';
+import type { CalendarColorKey, CalendarEventInput } from '../types';
 import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
 
 import { CalendarView } from './CalendarView';
@@ -142,9 +142,9 @@ export default function CalendarContainer() {
         start: start.toISOString(),
         end: end?.toISOString(),
         allDay: draft.allDay,
-        // 카테고리는 '나의 캘린더' 사용자 카테고리에만 쓰임 — 기본 상담/개인 일정은 미지정.
-        // (편집 시 기존 카테고리 유지. 색은 kind에서 파생되므로 별도 카테고리 불필요.)
-        categoryId: editingEvent ? editingEvent.categoryId : undefined,
+        // 카테고리는 '나의 캘린더' 개인 일정에만 — 패널이 개인일 때만 선택값을 싣고, 상담이면 null.
+        // 이벤트 색은 카테고리(있으면)에서 파생되므로 색은 재조회 시 자동 반영.
+        categoryId: draft.categoryId ?? undefined,
         clientId: draft.clientId,
         counselMethod: draft.counselMethod,
         repeat: draft.repeat,
@@ -168,6 +168,39 @@ export default function CalendarContainer() {
     await queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
     closePanel();
   }, [editingEvent, queryClient, closePanel]);
+
+  // 카테고리 색상 변경(설정 팝오버) — 이름 유지 + 색만 갱신. 이벤트 색은 카테고리에서 파생되므로
+  // 캘린더 전체를 무효화해 색이 즉시 반영되게 한다.
+  const handleChangeCategoryColor = React.useCallback(
+    async (categoryId: string, colorKey: CalendarColorKey) => {
+      const category = categories.find((c) => c.id === categoryId);
+      if (!category) return;
+      await calendarDataSource.updateCategory?.(categoryId, {
+        name: category.name,
+        colorKey,
+      });
+      await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+    [categories, queryClient]
+  );
+
+  // 카테고리 삭제(설정 팝오버) — 소속 일정도 함께 삭제(서버 CASCADE). 캘린더 전체 무효화.
+  const handleDeleteCategory = React.useCallback(
+    async (categoryId: string) => {
+      await calendarDataSource.deleteCategory?.(categoryId);
+      await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+    [queryClient]
+  );
+
+  // 카테고리 생성(+ 버튼) — 이름 + 색. 생성 후 캘린더 무효화로 목록 갱신.
+  const handleCreateCategory = React.useCallback(
+    async (name: string, colorKey: CalendarColorKey) => {
+      await calendarDataSource.createCategory?.({ name, colorKey });
+      await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+    [queryClient]
+  );
 
   // 외부 캘린더 연결: 서버에서 동의 URL을 받아 브라우저를 리다이렉트(이후 콜백 페이지가 finalize).
   const handleConnectProvider = React.useCallback(
@@ -236,6 +269,9 @@ export default function CalendarContainer() {
       onViewModeChange={setViewMode}
       onToggleKind={toggleKind}
       onToggleCategory={toggleCategory}
+      onChangeCategoryColor={handleChangeCategoryColor}
+      onDeleteCategory={handleDeleteCategory}
+      onCreateCategory={handleCreateCategory}
       onPrevMonth={() => setCurrent(current.subtract(1, 'month'))}
       onNextMonth={() => setCurrent(current.add(1, 'month'))}
       sidePanel={sidePanel}
