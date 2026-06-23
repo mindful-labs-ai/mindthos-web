@@ -83,19 +83,19 @@ export function SharedConsentRead({
         onScroll={checkBottom}
         className="flex-1 overflow-y-auto px-5 pb-10 pt-6"
       >
-        <h2 className="text-center text-xl font-bold leading-[150%] text-[#3C3C3C]">
+        <h2 className="text-center text-xl font-bold leading-[150%] text-grey-100">
           {doc.documentTitle}
         </h2>
-        <div className="mx-auto mt-3 border-b border-[#D6D8E1]" />
+        <div className="mx-auto mt-3 border-b border-grey-40" />
 
         <div
-          className="mt-6 whitespace-pre-line text-sm font-medium leading-[150%] text-[#3C3C3C] [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-base [&_h2]:font-headline"
+          className="mt-6 whitespace-pre-line text-sm font-medium leading-[150%] text-grey-100 [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-base [&_h2]:font-headline"
           // 상담사가 작성한 HTML 스냅샷 — 클라이언트에서 DOMPurify로 sanitize.
           dangerouslySetInnerHTML={{ __html: safeHtml }}
         />
 
         {/* 서명란 — 상담사 사인오프 + 내담자 서명. 서명 이미지는 서명란 위로 겹쳐(종이 서명처럼). */}
-        <div className="mt-12 flex flex-col items-end gap-2 text-sm text-[#3C3C3C]">
+        <div className="mt-12 flex flex-col items-end gap-2 text-sm text-grey-100">
           <p className="font-bold">{doc.counselorName} 상담사</p>
           <p>{todayLabel()}</p>
           <div className="mt-1 flex items-center gap-9">

@@ -119,7 +119,7 @@ export function SharedQnaFunnel({
         <button
           type="button"
           onClick={goPrev}
-          className="h-[50px] w-[71px] flex-shrink-0 rounded-lg border border-[#D6D8E1] text-base font-medium text-[#9C9EA6] transition-colors active:bg-grey-10"
+          className="h-[50px] w-[71px] flex-shrink-0 rounded-lg border border-grey-40 text-base font-medium text-grey-70 transition-colors active:bg-grey-10"
         >
           이전
         </button>
@@ -131,7 +131,7 @@ export function SharedQnaFunnel({
             'h-[50px] flex-1 rounded-lg text-base font-medium transition-colors',
             answered && !submitting
               ? 'bg-green-80 text-white'
-              : 'cursor-not-allowed bg-[#F4F5FA] text-[#9C9EA6]'
+              : 'cursor-not-allowed bg-grey-20 text-grey-70'
           )}
         >
           {isLast ? (submitting ? '제출 중...' : '제출하기') : '다음'}

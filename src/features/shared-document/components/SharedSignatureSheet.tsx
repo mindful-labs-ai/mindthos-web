@@ -99,12 +99,12 @@ export function SharedSignatureSheet({
         className="w-full rounded-t-2xl bg-white pb-7 pt-5 lg:max-w-[460px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="px-6 text-sm font-bold text-[#3C3C3C]">서명하기</h3>
+        <h3 className="px-6 text-sm font-bold text-grey-100">서명하기</h3>
 
         <div className="px-6 pt-4">
           <canvas
             ref={canvasRef}
-            className="h-[194px] w-full touch-none rounded-[2px] border border-[#D6D8E1]"
+            className="h-[194px] w-full touch-none rounded-[2px] border border-grey-40"
             onPointerDown={handleDown}
             onPointerMove={handleMove}
             onPointerUp={handleUp}
@@ -117,7 +117,7 @@ export function SharedSignatureSheet({
             type="button"
             aria-label="다시 쓰기"
             onClick={clear}
-            className="flex h-[41px] w-[41px] flex-shrink-0 items-center justify-center rounded-lg border border-[#D6D8E1] text-[#9C9EA6] transition-colors active:bg-grey-10"
+            className="flex h-[41px] w-[41px] flex-shrink-0 items-center justify-center rounded-lg border border-grey-40 text-grey-70 transition-colors active:bg-grey-10"
           >
             <RotateCcw size={22} strokeWidth={1.8} />
           </button>
@@ -129,7 +129,7 @@ export function SharedSignatureSheet({
               'h-[41px] flex-1 rounded-lg text-base font-semibold transition-colors',
               hasInk
                 ? 'bg-green-80 text-white'
-                : 'cursor-not-allowed bg-[#F4F5FA] text-[#9C9EA6]'
+                : 'cursor-not-allowed bg-grey-20 text-grey-70'
             )}
           >
             서명 확인

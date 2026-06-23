@@ -18,7 +18,7 @@ export function SharedConsentDetail({
     <div className="flex h-dvh flex-col bg-white">
       <SharedHeader title="민감정보수집 및 이용 동의" onBack={onBack} />
 
-      <div className="flex-1 overflow-y-auto px-5 pb-10 pt-6 text-sm font-medium leading-[150%] text-[#3C3C3C]">
+      <div className="flex-1 overflow-y-auto px-5 pb-10 pt-6 text-sm font-medium leading-[150%] text-grey-100">
         <p className="font-bold">민감정보수집 및 이용동의</p>
 
         <p className="mt-5 font-bold">1. 비회원 이용자의 개인정보처리</p>

@@ -15,7 +15,7 @@ export function SharedDocumentComplete({ doc }: SharedDocumentCompleteProps) {
   const particle = objectParticle(doc.documentTitle);
 
   return (
-    <div className="flex min-h-dvh flex-col items-center bg-[#F4F5FA] px-7">
+    <div className="flex min-h-dvh flex-col items-center bg-grey-20 px-7">
       <img
         src="/logo_mindthos_kr.webp"
         alt="마음토스"
@@ -24,11 +24,11 @@ export function SharedDocumentComplete({ doc }: SharedDocumentCompleteProps) {
 
       <div className="flex w-full flex-1 items-center justify-center">
         <div className="w-full max-w-[319px] rounded-xl bg-white px-6 py-7 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#ECFAED]">
-            <Check size={26} strokeWidth={3} className="text-[#44CE4B]" />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-20">
+            <Check size={26} strokeWidth={3} className="text-green-80" />
           </div>
-          <p className="mt-4 text-xl font-bold text-[#3C3C3C]">문서 작성 완료</p>
-          <p className="mt-3 whitespace-pre-line text-base font-medium leading-[150%] text-[#3C3C3C]">
+          <p className="mt-4 text-xl font-bold text-grey-100">문서 작성 완료</p>
+          <p className="mt-3 whitespace-pre-line text-base font-medium leading-[150%] text-grey-100">
             {`${doc.documentTitle}${particle}\n${doc.counselorName} 상담사님에게 전달했어요.`}
           </p>
         </div>

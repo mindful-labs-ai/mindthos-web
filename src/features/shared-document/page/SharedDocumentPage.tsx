@@ -45,7 +45,7 @@ function CenterNotice({
   description?: string;
 }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F4F5FA] px-6">
+    <div className="flex min-h-dvh items-center justify-center bg-grey-20 px-6">
       <div className="w-full max-w-[480px] rounded-2xl border border-grey-40 bg-white px-8 py-12 text-center">
         <p className="text-l font-emphasize text-grey-100">{title}</p>
         {description && (
