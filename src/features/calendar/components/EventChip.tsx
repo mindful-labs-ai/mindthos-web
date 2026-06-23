@@ -10,6 +10,8 @@ interface EventChipProps {
   onClick?: (event: CalendarEvent) => void;
   /** 모바일 월간 미니칩 — 이름만, 작게(시간 생략) */
   compact?: boolean;
+  /** 칩 루트에 덧붙일 클래스(예: 주간뷰 플로팅 칩의 약한 border). */
+  className?: string;
 }
 
 /**
@@ -18,22 +20,30 @@ interface EventChipProps {
  * - 종일: 가운데 정렬, 시간 없음 / 시간 일정: 일정명(좌) + 시간(우)
  * - compact(모바일): 이름만, 18px 높이
  */
-export function EventChip({ event, onClick, compact }: EventChipProps) {
+export function EventChip({
+  event,
+  onClick,
+  compact,
+  className: extraClassName,
+}: EventChipProps) {
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
   const centered = event.allDay;
   const readOnly = event.kind === 'holiday';
 
-  const className = compact
-    ? cn(
-        'flex h-[18px] w-full items-center rounded-[3px] px-1',
-        style.chipBg,
-        centered ? 'justify-center' : 'justify-start'
-      )
-    : cn(
-        'flex h-[25px] w-full items-center rounded-sm px-2',
-        style.chipBg,
-        centered ? 'justify-center' : 'justify-between gap-1'
-      );
+  const className = cn(
+    compact
+      ? cn(
+          'flex h-[18px] w-full items-center rounded-[3px] px-1',
+          style.chipBg,
+          centered ? 'justify-center' : 'justify-start'
+        )
+      : cn(
+          'flex h-[25px] w-full items-center rounded-sm px-2',
+          style.chipBg,
+          centered ? 'justify-center' : 'justify-between gap-1'
+        ),
+    extraClassName
+  );
 
   const content = (
     <>
