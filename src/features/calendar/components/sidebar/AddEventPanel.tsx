@@ -7,6 +7,7 @@ import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { MobileModalHeader } from '@/shared/ui';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
 
 import { WEEKDAYS_KO } from '../../constants';
@@ -49,6 +50,8 @@ interface AddEventPanelProps {
   onSelectDate: (day: Dayjs) => void;
   onClose: () => void;
   onSubmit: (draft: AddEventDraft) => void;
+  /** 편집 모드 삭제 — 있으면 하단에 '삭제하기' 노출 */
+  onDelete?: () => void;
 }
 
 const KIND_OPTIONS: { value: CalendarEventKind; label: string }[] = [
@@ -70,9 +73,33 @@ function formatDateLabel(date: Dayjs | null): string {
   return `${date.format('YYYY.MM.DD')} ${WEEKDAYS_KO[date.day()]}요일`;
 }
 
-const FieldLabel = ({ children }: { children: React.ReactNode }) => (
-  <span className="text-sm font-emphasize text-grey-100">{children}</span>
+const FieldLabel = ({
+  children,
+  required,
+}: {
+  children: React.ReactNode;
+  /** 필수값(CTA 활성화 조건) — 라벨 오른쪽에 빨간 * */
+  required?: boolean;
+}) => (
+  <span className="text-sm font-emphasize text-grey-100">
+    {children}
+    {required && <span className="ml-0.5 text-red-80">*</span>}
+  </span>
 );
+
+/** 반복 주기 라벨 — 격주 = weekly + interval 2. */
+function repeatCycleLabel(repeat: CalendarRepeatRule): string {
+  switch (repeat.cycle) {
+    case 'daily':
+      return '매일';
+    case 'weekly':
+      return repeat.interval === 2 ? '격주' : '매주';
+    case 'monthly':
+      return '매월';
+    case 'yearly':
+      return '매년';
+  }
+}
 
 /** 일정 추가하기 슬라이드오버 패널 */
 export function AddEventPanel({
@@ -84,6 +111,7 @@ export function AddEventPanel({
   onSelectDate,
   onClose,
   onSubmit,
+  onDelete,
 }: AddEventPanelProps) {
   const [kind, setKind] = React.useState<CalendarEventKind>(initialKind);
   const [title, setTitle] = React.useState(editingEvent?.title ?? '');
@@ -95,6 +123,7 @@ export function AddEventPanel({
   const [counselMethod, setCounselMethod] = React.useState<CounselMethod | null>(
     editingEvent?.counselMethod ?? null
   );
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const dateFieldRef = React.useRef<HTMLDivElement>(null);
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
@@ -174,7 +203,9 @@ export function AddEventPanel({
     JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
   // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
   const counselingNeedsClient = kind === 'counseling' && !selectedClient;
-  const ctaEnabled = (!isEdit || isDirty) && !counselingNeedsClient;
+  // 필수값: 일정 제목 + 상담 일정이면 내담자.
+  const ctaEnabled =
+    (!isEdit || isDirty) && !counselingNeedsClient && title.trim().length > 0;
 
   return (
     <div className="flex h-full flex-col">
@@ -229,7 +260,7 @@ export function AddEventPanel({
 
         {/* 내담자 선택 — 앱 공용 ClientSelector 그대로 사용 */}
         <div className="flex items-center justify-between gap-4">
-          <FieldLabel>내담자 선택</FieldLabel>
+          <FieldLabel required={kind === 'counseling'}>내담자 선택</FieldLabel>
           <ClientSelector
             variant="dropdown"
             clients={clients}
@@ -259,7 +290,7 @@ export function AddEventPanel({
 
         {/* 일정 제목 */}
         <div className="flex flex-col gap-4">
-          <FieldLabel>일정 제목</FieldLabel>
+          <FieldLabel required>일정 제목</FieldLabel>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -334,6 +365,20 @@ export function AddEventPanel({
             onChange={setCounselMethod}
           />
         )}
+
+        {/* 편집 모드 — 항목 제일 하단 삭제하기 (확인 다이얼로그) */}
+        {isEdit && onDelete && (
+          <>
+            <div className="border-t border-[#ecedf3]" />
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="self-center text-sm font-emphasize text-red-80 transition-colors lg:hover:text-red-50"
+            >
+              삭제하기
+            </button>
+          </>
+        )}
       </div>
 
       {/* 푸터 */}
@@ -360,6 +405,68 @@ export function AddEventPanel({
           {isEdit ? '변경하기' : '일정 추가하기'}
         </button>
       </div>
+
+      {/* 삭제 확인 — '출시 예정 기능' 다이얼로그와 동일한 Modal UI */}
+      <Modal
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        className="max-w-[480px]"
+      >
+        <div className="flex flex-col items-center px-4 py-6">
+          <h2 className="text-xl font-headline text-grey-100">
+            일정을 삭제할까요?
+          </h2>
+
+          {editingEvent?.repeat ? (
+            <>
+              <p className="mt-8 text-center text-l font-medium text-grey-100">
+                반복 일정이에요.
+                <br />
+                연결된 모든 회차가 함께 삭제돼요.
+              </p>
+              <p className="mt-4 text-center text-sm text-grey-70">
+                {repeatCycleLabel(editingEvent.repeat)}
+                {editingEvent.repeat.count != null
+                  ? ` · 총 ${editingEvent.repeat.count}회`
+                  : editingEvent.repeat.until
+                    ? ` · ${editingEvent.repeat.until}까지`
+                    : ''}
+                <br />
+                삭제하면 되돌릴 수 없어요.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-8 text-center text-l font-medium text-grey-100">
+                삭제한 일정은 되돌릴 수 없어요.
+              </p>
+              <p className="mt-4 text-center text-sm text-grey-70">
+                삭제 후에는 다시 볼 수 없어요.
+              </p>
+            </>
+          )}
+
+          <div className="mt-10 flex w-full gap-3">
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              className="flex-1 rounded-lg border border-grey-40 bg-white py-2 text-l font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmDelete(false);
+                onDelete?.();
+              }}
+              className="flex-1 rounded-lg bg-red-80 py-2 text-l font-medium text-white transition-opacity lg:hover:opacity-90"
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
