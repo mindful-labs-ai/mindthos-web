@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Calendar, ChevronLeft, User } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronLeft, User } from 'lucide-react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
@@ -10,10 +10,11 @@ import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
 
-import { WEEKDAYS_KO } from '../../constants';
+import { CALENDAR_COLOR_STYLES, WEEKDAYS_KO } from '../../constants';
+import { useCalendarCategories } from '../../hooks/useCalendarEvents';
 import type {
-  CalendarEvent,
   CalendarEventKind,
+  CalendarEvent,
   CalendarRepeatRule,
   CounselMethod,
 } from '../../types';
@@ -35,6 +36,8 @@ export interface AddEventDraft {
   clientId: string | null;
   /** 상담 방식 (상담 일정에서만, 개인은 null) */
   counselMethod: CounselMethod | null;
+  /** '나의 캘린더' 카테고리 id (개인 일정에서만, 상담은 null) */
+  categoryId: string | null;
   /** 반복 규칙 (없으면 단일 일정) */
   repeat: CalendarRepeatRule | null;
 }
@@ -133,9 +136,33 @@ export function AddEventPanel({
     null
   );
   const [clientSelectOpen, setClientSelectOpen] = React.useState(false);
+  // 개인 일정 카테고리('나의 캘린더') — 선택 시 그 카테고리 색으로 표시. null = 선택 안 함.
+  const [categoryId, setCategoryId] = React.useState<string | null>(
+    editingEvent?.categoryId ?? null
+  );
+  const [categorySelectOpen, setCategorySelectOpen] = React.useState(false);
+  const categoryFieldRef = React.useRef<HTMLDivElement>(null);
   const { clients } = useClientList();
+  const { data: categories = [] } = useCalendarCategories();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+  const selectedCategory =
+    categories.find((c) => c.id === categoryId) ?? null;
+
+  // 카테고리 드롭다운 바깥 클릭 시 닫기
+  React.useEffect(() => {
+    if (!categorySelectOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (
+        categoryFieldRef.current &&
+        !categoryFieldRef.current.contains(e.target as Node)
+      ) {
+        setCategorySelectOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDown);
+    return () => document.removeEventListener('mousedown', onDown);
+  }, [categorySelectOpen]);
 
   // 패널이 열린 상태에서 다시 드래그/선택해 초기 시간이 바뀌면 입력값 동기화
   React.useEffect(() => {
@@ -189,10 +216,11 @@ export function AddEventPanel({
     editingEvent && editingEvent.end
       ? dayjs(editingEvent.end)
       : (origStart?.add(1, 'hour') ?? null);
-  // 내담자·상담 방식은 상담 일정에서만 의미 — 개인이면 항상 null로 본다.
+  // 내담자·상담 방식은 상담 일정에서만, 카테고리는 개인 일정에서만 의미 — 그 외면 null로 본다.
   const effectiveClientId =
     kind === 'counseling' ? (selectedClient?.id ?? null) : null;
   const effectiveCounselMethod = kind === 'counseling' ? counselMethod : null;
+  const effectiveCategoryId = kind === 'personal' ? categoryId : null;
   const isDirty =
     !editingEvent ||
     kind !== editingEvent.kind ||
@@ -204,6 +232,7 @@ export function AddEventPanel({
       (origStart ? origStart.format('YYYY-MM-DD') : '') ||
     effectiveClientId !== (editingEvent.clientId ?? null) ||
     effectiveCounselMethod !== (editingEvent.counselMethod ?? null) ||
+    effectiveCategoryId !== (editingEvent.categoryId ?? null) ||
     JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
   // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
   const counselingNeedsClient = kind === 'counseling' && !selectedClient;
@@ -394,6 +423,85 @@ export function AddEventPanel({
           />
         )}
 
+        {/* 카테고리(나의 캘린더) — 개인 일정에서만. 선택 시 그 카테고리 색으로 표시 */}
+        {kind === 'personal' && (
+          <div
+            ref={categoryFieldRef}
+            className="flex items-center justify-between gap-4"
+          >
+            <FieldLabel>카테고리</FieldLabel>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setCategorySelectOpen((o) => !o)}
+                className="flex h-9 min-w-[140px] items-center justify-between gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  {selectedCategory ? (
+                    <>
+                      <span
+                        className={cn(
+                          'h-3 w-3 shrink-0 rounded-full',
+                          CALENDAR_COLOR_STYLES[selectedCategory.colorKey]
+                            .swatchBg
+                        )}
+                      />
+                      <span className="truncate text-grey-100">
+                        {selectedCategory.name}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[#abaebe]">선택 안 함</span>
+                  )}
+                </span>
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.5}
+                  className="shrink-0 text-[#abaebe]"
+                />
+              </button>
+              {categorySelectOpen && (
+                <div className="absolute right-0 top-full z-20 mt-1 max-h-[210px] w-[180px] overflow-y-auto rounded-md border border-grey-40 bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoryId(null);
+                      setCategorySelectOpen(false);
+                    }}
+                    className="flex w-full items-center px-3 py-2 text-sm text-grey-60 lg:hover:bg-grey-10"
+                  >
+                    선택 안 함
+                  </button>
+                  {categories.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setCategoryId(c.id);
+                        setCategorySelectOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-grey-100 lg:hover:bg-grey-10"
+                    >
+                      <span
+                        className={cn(
+                          'h-3 w-3 shrink-0 rounded-full',
+                          CALENDAR_COLOR_STYLES[c.colorKey].swatchBg
+                        )}
+                      />
+                      <span className="truncate">{c.name}</span>
+                    </button>
+                  ))}
+                  {categories.length === 0 && (
+                    <p className="px-3 py-2 text-xs text-grey-60">
+                      카테고리가 없어요
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 편집 모드 — 항목 제일 하단 삭제하기 (확인 다이얼로그) */}
         {isEdit && onDelete && (
           <>
@@ -423,6 +531,7 @@ export function AddEventPanel({
               endTime,
               clientId: effectiveClientId,
               counselMethod: effectiveCounselMethod,
+              categoryId: effectiveCategoryId,
               repeat,
             })
           }
