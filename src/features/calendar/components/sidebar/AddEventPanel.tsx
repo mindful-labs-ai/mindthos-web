@@ -27,6 +27,8 @@ import { TimeSelect } from './TimeSelect';
 export interface AddEventDraft {
   kind: CalendarEventKind;
   title: string;
+  /** 하루 종일 일정이면 true — 시간 대신 그 날 전체. */
+  allDay: boolean;
   startTime: string;
   endTime: string;
   /** 상담 일정 대상 내담자 id (상담 일정에서만, 개인은 null) */
@@ -115,6 +117,7 @@ export function AddEventPanel({
 }: AddEventPanelProps) {
   const [kind, setKind] = React.useState<CalendarEventKind>(initialKind);
   const [title, setTitle] = React.useState(editingEvent?.title ?? '');
+  const [allDay, setAllDay] = React.useState(editingEvent?.allDay ?? false);
   const [startTime, setStartTime] = React.useState(initialStartTime);
   const [endTime, setEndTime] = React.useState(initialEndTime);
   const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(
@@ -194,6 +197,7 @@ export function AddEventPanel({
     !editingEvent ||
     kind !== editingEvent.kind ||
     title !== editingEvent.title ||
+    allDay !== (editingEvent.allDay ?? false) ||
     startTime !== (origStart ? origStart.format('HH:mm') : '') ||
     endTime !== (origEnd ? origEnd.format('HH:mm') : '') ||
     (selectedDate ? selectedDate.format('YYYY-MM-DD') : '') !==
@@ -332,21 +336,45 @@ export function AddEventPanel({
                 />
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <TimeSelect
-                value={startTime}
-                options={TIME_OPTIONS}
-                onChange={handleStartChange}
-                ariaLabel="시작 시간"
-              />
-              <span className="shrink-0 text-sm text-black">~</span>
-              <TimeSelect
-                value={endTime}
-                options={endOptions}
-                onChange={setEndTime}
-                ariaLabel="종료 시간"
-              />
+            {/* 하루 종일 토글 — 켜면 시간 선택을 숨기고 그 날 전체 일정으로 */}
+            <div className="flex items-center justify-between px-0.5 py-1">
+              <span className="text-sm text-grey-100">하루 종일</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={allDay}
+                aria-label="하루 종일"
+                onClick={() => setAllDay((v) => !v)}
+                className={cn(
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                  allDay ? 'bg-green-80' : 'bg-[#dfe1ea]'
+                )}
+              >
+                <span
+                  className={cn(
+                    'inline-block h-5 w-5 rounded-full bg-white transition-transform',
+                    allDay ? 'translate-x-5' : 'translate-x-0.5'
+                  )}
+                />
+              </button>
             </div>
+            {!allDay && (
+              <div className="flex items-center gap-2">
+                <TimeSelect
+                  value={startTime}
+                  options={TIME_OPTIONS}
+                  onChange={handleStartChange}
+                  ariaLabel="시작 시간"
+                />
+                <span className="shrink-0 text-sm text-black">~</span>
+                <TimeSelect
+                  value={endTime}
+                  options={endOptions}
+                  onChange={setEndTime}
+                  ariaLabel="종료 시간"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -390,6 +418,7 @@ export function AddEventPanel({
             onSubmit({
               kind,
               title,
+              allDay,
               startTime,
               endTime,
               clientId: effectiveClientId,

@@ -112,16 +112,21 @@ export default function CalendarContainer() {
   const handleSubmitEvent = React.useCallback(
     async (draft: AddEventDraft) => {
       const date = selectedDate ?? current;
+      // 하루 종일: 그 날 00:00 시작 + 종료 없음. 시간 일정: 선택한 시작/종료 시각.
       const [sh, sm] = draft.startTime.split(':').map(Number);
       const [eh, em] = draft.endTime.split(':').map(Number);
-      const start = date
-        .hour(sh || 0)
-        .minute(sm || 0)
-        .second(0);
-      const end = date
-        .hour(eh || 0)
-        .minute(em || 0)
-        .second(0);
+      const start = draft.allDay
+        ? date.hour(0).minute(0).second(0).millisecond(0)
+        : date
+            .hour(sh || 0)
+            .minute(sm || 0)
+            .second(0);
+      const end = draft.allDay
+        ? undefined
+        : date
+            .hour(eh || 0)
+            .minute(em || 0)
+            .second(0);
 
       // 종류가 그대로면 기존 색/카테고리 유지, 바뀌면 kind 기본값으로
       const colorKey =
@@ -135,7 +140,8 @@ export default function CalendarContainer() {
         kind: draft.kind,
         colorKey,
         start: start.toISOString(),
-        end: end.toISOString(),
+        end: end?.toISOString(),
+        allDay: draft.allDay,
         // 카테고리는 '나의 캘린더' 사용자 카테고리에만 쓰임 — 기본 상담/개인 일정은 미지정.
         // (편집 시 기존 카테고리 유지. 색은 kind에서 파생되므로 별도 카테고리 불필요.)
         categoryId: editingEvent ? editingEvent.categoryId : undefined,
