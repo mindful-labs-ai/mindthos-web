@@ -50,6 +50,7 @@ interface MobileCalendarViewProps {
   onClosePanel: () => void;
   onSelectDate: (day: Dayjs) => void;
   onSubmitEvent: (draft: AddEventDraft) => void;
+  onDeleteEvent?: () => void;
 }
 
 /**
@@ -80,6 +81,7 @@ export function MobileCalendarView({
   onClosePanel,
   onSelectDate,
   onSubmitEvent,
+  onDeleteEvent,
 }: MobileCalendarViewProps) {
   const [filterOpen, setFilterOpen] = React.useState(false);
   // 월간에서 탭으로 선택한 날짜 (없으면 null → 하이라이트/FAB 없음)
@@ -163,6 +165,7 @@ export function MobileCalendarView({
           onSelectDate={onSelectDate}
           onClose={onClosePanel}
           onSubmit={onSubmitEvent}
+          onDelete={onDeleteEvent}
         />
       </Modal>
 

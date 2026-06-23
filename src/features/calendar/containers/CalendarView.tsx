@@ -48,6 +48,7 @@ interface CalendarViewProps {
   onConnectProvider: (provider: CalendarProvider) => void;
   onClosePanel: () => void;
   onSubmitEvent: (draft: AddEventDraft) => void;
+  onDeleteEvent?: () => void;
 }
 
 /**
@@ -85,6 +86,7 @@ export function CalendarView({
   onConnectProvider,
   onClosePanel,
   onSubmitEvent,
+  onDeleteEvent,
 }: CalendarViewProps) {
   return (
     <div className="relative flex h-full bg-grey-20">
@@ -148,6 +150,7 @@ export function CalendarView({
               onSelectDate={onSelectDate}
               onClose={onClosePanel}
               onSubmit={onSubmitEvent}
+              onDelete={onDeleteEvent}
             />
           ) : (
             <AddCalendarPanel

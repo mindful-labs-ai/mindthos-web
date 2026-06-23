@@ -155,6 +155,14 @@ export default function CalendarContainer() {
     [selectedDate, current, editingEvent, queryClient, closePanel]
   );
 
+  // 일정 삭제(편집 모드) — 삭제 후 쿼리 무효화 + 패널 닫기.
+  const handleDeleteEvent = React.useCallback(async () => {
+    if (!editingEvent) return;
+    await calendarDataSource.deleteEvent?.(editingEvent.id);
+    await queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
+    closePanel();
+  }, [editingEvent, queryClient, closePanel]);
+
   // 외부 캘린더 연결: 서버에서 동의 URL을 받아 브라우저를 리다이렉트(이후 콜백 페이지가 finalize).
   const handleConnectProvider = React.useCallback(
     async (provider: CalendarProvider) => {
@@ -204,6 +212,7 @@ export default function CalendarContainer() {
         onClosePanel={closePanel}
         onSelectDate={setSelectedDate}
         onSubmitEvent={handleSubmitEvent}
+      onDeleteEvent={handleDeleteEvent}
       />
     );
   }
@@ -239,6 +248,7 @@ export default function CalendarContainer() {
       onConnectProvider={handleConnectProvider}
       onClosePanel={closePanel}
       onSubmitEvent={handleSubmitEvent}
+      onDeleteEvent={handleDeleteEvent}
     />
   );
 }
