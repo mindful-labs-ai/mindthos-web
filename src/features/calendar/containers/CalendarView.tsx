@@ -115,6 +115,9 @@ export function CalendarView({
               events={events}
               onCreateRange={onCreateRange}
               onEventClick={onEventClick}
+              selectedDate={selectedDate}
+              addEventTime={addEventTime}
+              showAddSelection={sidePanel === 'addEvent' && !editingEvent}
             />
           )}
         </div>

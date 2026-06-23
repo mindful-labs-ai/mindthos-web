@@ -11,6 +11,7 @@ import {
 import type { Dayjs } from '../utils/calendarDate';
 
 import { EventBlock } from './EventBlock';
+import { EventChip } from './EventChip';
 
 interface WeekGridProps {
   current: Dayjs;
@@ -19,6 +20,18 @@ interface WeekGridProps {
   onCreateRange?: (day: Dayjs, startMinutes: number, endMinutes: number) => void;
   /** 일정 블록 클릭 — 일정 변경 패널 오픈 */
   onEventClick?: (event: CalendarEvent) => void;
+  /** 일정 추가 패널이 가리키는 날짜(선택 박스를 그릴 컬럼) */
+  selectedDate?: Dayjs | null;
+  /** 일정 추가 패널의 시작/종료 시각(HH:mm) — 선택 박스 위치 */
+  addEventTime?: { start: string; end: string };
+  /** 새 일정 추가(편집 아님) 패널이 열려 있을 때만 선택 박스 유지 */
+  showAddSelection?: boolean;
+}
+
+/** 'HH:mm' → 자정 기준 분 */
+function hhmmToMin(t: string): number {
+  const [h, m] = t.split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
 }
 
 const HOUR_HEIGHT = 48;
@@ -95,9 +108,16 @@ export function WeekGrid({
   events,
   onCreateRange,
   onEventClick,
+  selectedDate,
+  addEventTime,
+  showAddSelection,
 }: WeekGridProps) {
   const days = getWeekDays(current);
   const today = dayjs();
+
+  // 일정 추가 패널 시간 → 선택 박스(분). 드래그 release 후에도 패널이 열려 있는 동안 유지된다.
+  const selStart = addEventTime ? hhmmToMin(addEventTime.start) : 0;
+  const selEnd = addEventTime ? hhmmToMin(addEventTime.end) : 0;
 
   const [drag, setDrag] = React.useState<DragState | null>(null);
   const dragRef = React.useRef<DragState | null>(null);
@@ -121,11 +141,27 @@ export function WeekGrid({
     return () => window.removeEventListener('mouseup', onUp);
   }, [onCreateRange]);
 
+  // 헤더 높이 측정 — 종일 플로팅 칩을 헤더 바로 아래에 sticky 고정(스크롤 따라옴)
+  const headerRef = React.useRef<HTMLDivElement>(null);
+  const [headerH, setHeaderH] = React.useState(0);
+  React.useLayoutEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => setHeaderH(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div className="overflow-hidden rounded-2xl border border-grey-40 bg-white">
       <div className="max-h-[760px] overflow-y-auto">
         {/* 헤더: 요일 + 날짜 (스크롤 시 상단 고정) */}
-        <div className="sticky top-0 z-10 flex border-b border-grey-40 bg-[#fcfcfe]">
+        <div
+          ref={headerRef}
+          className="sticky top-0 z-10 flex border-b border-grey-40 bg-[#fcfcfe]"
+        >
           <div className="shrink-0" style={{ width: GUTTER_PX }} />
           {days.map((day, i) => {
             const isToday = isSameDay(day, today);
@@ -149,6 +185,39 @@ export function WeekGrid({
               </div>
             );
           })}
+        </div>
+
+        {/* 종일 일정 오버레이 — 스크롤 컨테이너 직속(헤더 바로 뒤)이라 sticky가 확실히 동작.
+            h-0 + overflow-visible로 그리드를 밀지 않고 위에 떠 있고, top=headerH로 헤더 바로 아래에 핀.
+            z는 헤더(z-10)보다 낮아 일 표시띠를 가리지 않음. 컨테이너는 클릭 통과, 칩만 클릭. */}
+        <div
+          className="pointer-events-none sticky z-[5] h-0"
+          style={{ top: headerH }}
+        >
+          <div className="flex">
+            <div className="shrink-0" style={{ width: GUTTER_PX }} />
+            {days.map((day) => {
+              const allDayEvents = events.filter(
+                (e) => e.allDay && isSameDay(dayjs(e.start), day)
+              );
+              return (
+                <div
+                  key={day.toISOString()}
+                  className="flex flex-1 flex-col gap-0.5 px-0.5 pt-1"
+                >
+                  {allDayEvents.map((event) => (
+                    <div key={event.id} className="pointer-events-auto">
+                      <EventChip
+                        event={event}
+                        onClick={onEventClick}
+                        className="border border-grey-40"
+                      />
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* 본문 */}
@@ -221,14 +290,16 @@ export function WeekGrid({
                     setDrag((d) => (d ? { ...d, endMin: min } : d));
                   }}
                 >
-                  {dayEvents.map((event) => (
-                    <EventBlock
-                      key={event.id}
-                      event={event}
-                      hourHeight={HOUR_HEIGHT}
-                      onClick={onEventClick}
-                    />
-                  ))}
+                  {dayEvents
+                    .filter((event) => !event.allDay)
+                    .map((event) => (
+                      <EventBlock
+                        key={event.id}
+                        event={event}
+                        hourHeight={HOUR_HEIGHT}
+                        onClick={onEventClick}
+                      />
+                    ))}
 
                   {dragHere && (
                     <div
@@ -243,6 +314,22 @@ export function WeekGrid({
                       }}
                     />
                   )}
+
+                  {/* 일정 추가 패널이 열려 있는 동안 선택 박스 유지(드래그 종료 후에도).
+                      활성 드래그 중이면 그쪽이 우선. 패널의 추가 시간(addEventTime)과 동기화. */}
+                  {!dragHere &&
+                    showAddSelection &&
+                    selectedDate &&
+                    isSameDay(selectedDate, day) &&
+                    selEnd > selStart && (
+                      <div
+                        className="pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80 bg-[#44ce4b1a]"
+                        style={{
+                          top: (selStart / 60) * HOUR_HEIGHT,
+                          height: ((selEnd - selStart) / 60) * HOUR_HEIGHT,
+                        }}
+                      />
+                    )}
                 </div>
               );
             })}
