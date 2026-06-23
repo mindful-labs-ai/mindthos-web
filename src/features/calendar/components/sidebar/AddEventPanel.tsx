@@ -5,6 +5,7 @@ import { Calendar, ChevronDown, ChevronLeft, User } from 'lucide-react';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -103,6 +104,8 @@ function repeatCycleLabel(repeat: CalendarRepeatRule): string {
       return '매월';
     case 'yearly':
       return '매년';
+    default:
+      return repeat.cycle;
   }
 }
 
@@ -126,9 +129,8 @@ export function AddEventPanel({
   const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(
     editingEvent?.repeat ?? null
   );
-  const [counselMethod, setCounselMethod] = React.useState<CounselMethod | null>(
-    editingEvent?.counselMethod ?? null
-  );
+  const [counselMethod, setCounselMethod] =
+    React.useState<CounselMethod | null>(editingEvent?.counselMethod ?? null);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const dateFieldRef = React.useRef<HTMLDivElement>(null);
@@ -146,23 +148,14 @@ export function AddEventPanel({
   const { data: categories = [] } = useCalendarCategories();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
-  const selectedCategory =
-    categories.find((c) => c.id === categoryId) ?? null;
+  const selectedCategory = categories.find((c) => c.id === categoryId) ?? null;
 
   // 카테고리 드롭다운 바깥 클릭 시 닫기
-  React.useEffect(() => {
-    if (!categorySelectOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (
-        categoryFieldRef.current &&
-        !categoryFieldRef.current.contains(e.target as Node)
-      ) {
-        setCategorySelectOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [categorySelectOpen]);
+  useClickOutside(
+    categoryFieldRef,
+    () => setCategorySelectOpen(false),
+    categorySelectOpen
+  );
 
   // 패널이 열린 상태에서 다시 드래그/선택해 초기 시간이 바뀌면 입력값 동기화
   React.useEffect(() => {
@@ -171,19 +164,7 @@ export function AddEventPanel({
   }, [initialStartTime, initialEndTime]);
 
   // 팝오버 바깥 클릭 시 닫기
-  React.useEffect(() => {
-    if (!datePickerOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (
-        dateFieldRef.current &&
-        !dateFieldRef.current.contains(e.target as Node)
-      ) {
-        setDatePickerOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [datePickerOpen]);
+  useClickOutside(dateFieldRef, () => setDatePickerOpen(false), datePickerOpen);
 
   // 편집 모드 — 상담 일정의 기존 내담자를 셀렉터에 prefill (clients 로드 후 1회)
   const clientPrefilledRef = React.useRef(false);

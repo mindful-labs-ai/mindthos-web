@@ -3,6 +3,7 @@ import React from 'react';
 import { Calendar, ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 
 import type { CalendarRepeatCycle, CalendarRepeatRule } from '../../types';
 import { dayjs, type Dayjs } from '../../utils/calendarDate';
@@ -82,19 +83,9 @@ export function RepeatSelect({
   const cycleKey = cycleKeyOf(value);
   const endType = endTypeOf(value);
 
-  // 팝오버 바깥 클릭 닫기
-  React.useEffect(() => {
-    if (!menuOpen && !datePickerOpen) return;
-    const onDown = (e: MouseEvent) => {
-      const t = e.target as Node;
-      if (menuRef.current && !menuRef.current.contains(t)) setMenuOpen(false);
-      if (dateRef.current && !dateRef.current.contains(t)) {
-        setDatePickerOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [menuOpen, datePickerOpen]);
+  // 팝오버 바깥 클릭 닫기 (주기 드롭다운 / 종료일 달력 각각)
+  useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
+  useClickOutside(dateRef, () => setDatePickerOpen(false), datePickerOpen);
 
   const selectCycle = (key: CycleKey) => {
     setMenuOpen(false);

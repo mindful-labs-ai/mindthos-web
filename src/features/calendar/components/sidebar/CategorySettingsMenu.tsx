@@ -3,6 +3,7 @@ import React from 'react';
 import { MoreVertical, Trash2 } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import { CALENDAR_COLOR_STYLES, CALENDAR_PALETTE } from '../../constants';
@@ -42,16 +43,7 @@ export function CategorySettingsMenu({
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  useClickOutside(ref, () => setOpen(false), open);
 
   return (
     <div ref={ref} className="relative shrink-0">

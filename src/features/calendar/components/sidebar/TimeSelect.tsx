@@ -3,6 +3,7 @@ import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -30,16 +31,7 @@ export function TimeSelect({
   const isMobileView = isMobile || isTablet;
 
   // 데스크탑 드롭다운만 바깥 클릭으로 닫기 (모바일은 Modal이 닫기 처리)
-  React.useEffect(() => {
-    if (!open || isMobileView) return;
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open, isMobileView]);
+  useClickOutside(ref, () => setOpen(false), open && !isMobileView);
 
   const handleSelect = (opt: string) => {
     onChange(opt);
@@ -69,9 +61,7 @@ export function TimeSelect({
                 onClick={() => handleSelect(opt)}
                 className={cn(
                   'w-full px-3 py-1.5 text-left text-sm lg:hover:bg-grey-20',
-                  opt === value
-                    ? 'font-medium text-green-80'
-                    : 'text-grey-100'
+                  opt === value ? 'font-medium text-green-80' : 'text-grey-100'
                 )}
               >
                 {opt}

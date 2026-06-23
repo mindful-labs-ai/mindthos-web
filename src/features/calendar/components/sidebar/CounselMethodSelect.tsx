@@ -3,6 +3,7 @@ import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
+import { useClickOutside } from '@/shared/hooks/useClickOutside';
 
 import type { CounselMethod } from '../../types';
 
@@ -33,16 +34,7 @@ export function CounselMethodSelect({
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
+  useClickOutside(ref, () => setOpen(false), open);
 
   const currentKey: OptionKey = value ?? 'none';
 
