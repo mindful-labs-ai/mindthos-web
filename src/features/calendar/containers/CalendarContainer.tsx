@@ -150,24 +150,40 @@ export default function CalendarContainer() {
         repeat: draft.repeat,
       };
 
-      if (editingEvent) {
-        await calendarDataSource.updateEvent?.(editingEvent.id, input);
-      } else {
-        await calendarDataSource.createEvent?.(input);
+      try {
+        if (editingEvent) {
+          await calendarDataSource.updateEvent?.(editingEvent.id, input);
+        } else {
+          await calendarDataSource.createEvent?.(input);
+        }
+        await queryClient.invalidateQueries({
+          queryKey: ['calendar', 'events'],
+        });
+        closePanel();
+      } catch {
+        toast({
+          title: '일정 저장 실패',
+          description: '잠시 후 다시 시도해 주세요.',
+        });
       }
-      await queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
-      closePanel();
     },
-    [selectedDate, current, editingEvent, queryClient, closePanel]
+    [selectedDate, current, editingEvent, queryClient, closePanel, toast]
   );
 
   // 일정 삭제(편집 모드) — 삭제 후 쿼리 무효화 + 패널 닫기.
   const handleDeleteEvent = React.useCallback(async () => {
     if (!editingEvent) return;
-    await calendarDataSource.deleteEvent?.(editingEvent.id);
-    await queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
-    closePanel();
-  }, [editingEvent, queryClient, closePanel]);
+    try {
+      await calendarDataSource.deleteEvent?.(editingEvent.id);
+      await queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
+      closePanel();
+    } catch {
+      toast({
+        title: '일정 삭제 실패',
+        description: '잠시 후 다시 시도해 주세요.',
+      });
+    }
+  }, [editingEvent, queryClient, closePanel, toast]);
 
   // 카테고리 색상 변경(설정 팝오버) — 이름 유지 + 색만 갱신. 이벤트 색은 카테고리에서 파생되므로
   // 캘린더 전체를 무효화해 색이 즉시 반영되게 한다.
@@ -175,31 +191,52 @@ export default function CalendarContainer() {
     async (categoryId: string, colorKey: CalendarColorKey) => {
       const category = categories.find((c) => c.id === categoryId);
       if (!category) return;
-      await calendarDataSource.updateCategory?.(categoryId, {
-        name: category.name,
-        colorKey,
-      });
-      await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      try {
+        await calendarDataSource.updateCategory?.(categoryId, {
+          name: category.name,
+          colorKey,
+        });
+        await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      } catch {
+        toast({
+          title: '카테고리 변경 실패',
+          description: '잠시 후 다시 시도해 주세요.',
+        });
+      }
     },
-    [categories, queryClient]
+    [categories, queryClient, toast]
   );
 
   // 카테고리 삭제(설정 팝오버) — 소속 일정도 함께 삭제(서버 CASCADE). 캘린더 전체 무효화.
   const handleDeleteCategory = React.useCallback(
     async (categoryId: string) => {
-      await calendarDataSource.deleteCategory?.(categoryId);
-      await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      try {
+        await calendarDataSource.deleteCategory?.(categoryId);
+        await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      } catch {
+        toast({
+          title: '카테고리 삭제 실패',
+          description: '잠시 후 다시 시도해 주세요.',
+        });
+      }
     },
-    [queryClient]
+    [queryClient, toast]
   );
 
   // 카테고리 생성(+ 버튼) — 이름 + 색. 생성 후 캘린더 무효화로 목록 갱신.
   const handleCreateCategory = React.useCallback(
     async (name: string, colorKey: CalendarColorKey) => {
-      await calendarDataSource.createCategory?.({ name, colorKey });
-      await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      try {
+        await calendarDataSource.createCategory?.({ name, colorKey });
+        await queryClient.invalidateQueries({ queryKey: ['calendar'] });
+      } catch {
+        toast({
+          title: '카테고리 생성 실패',
+          description: '잠시 후 다시 시도해 주세요.',
+        });
+      }
     },
-    [queryClient]
+    [queryClient, toast]
   );
 
   // 외부 캘린더 연결: 서버에서 동의 URL을 받아 브라우저를 리다이렉트(이후 콜백 페이지가 finalize).
@@ -251,7 +288,7 @@ export default function CalendarContainer() {
         onClosePanel={closePanel}
         onSelectDate={setSelectedDate}
         onSubmitEvent={handleSubmitEvent}
-      onDeleteEvent={handleDeleteEvent}
+        onDeleteEvent={handleDeleteEvent}
       />
     );
   }
