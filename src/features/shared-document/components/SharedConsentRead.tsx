@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
+import DOMPurify from 'dompurify';
+
 import { cn } from '@/lib/cn';
 
 import type { SharedDocument } from '../api/sharedDocumentApi';
@@ -39,6 +41,8 @@ export function SharedConsentRead({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [atBottom, setAtBottom] = useState(false);
   const html = (doc.content as { html?: string }).html ?? '';
+  // 공개 페이지 — 상담사가 작성한 HTML을 클라이언트에서도 sanitize(방어적 다중화).
+  const safeHtml = DOMPurify.sanitize(html);
 
   const checkBottom = () => {
     const el = scrollRef.current;
@@ -54,7 +58,10 @@ export function SharedConsentRead({
   const scrollDown = () => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollBy({ top: Math.round(el.clientHeight * 0.85), behavior: 'smooth' });
+    el.scrollBy({
+      top: Math.round(el.clientHeight * 0.85),
+      behavior: 'smooth',
+    });
   };
 
   const signed = !!signatureDataUrl;
@@ -82,9 +89,9 @@ export function SharedConsentRead({
         <div className="mx-auto mt-3 border-b border-[#D6D8E1]" />
 
         <div
-          className="mt-6 whitespace-pre-line text-sm font-medium leading-[150%] text-[#3C3C3C] [&_h1]:font-headline [&_h1]:text-lg [&_h2]:font-headline [&_h2]:text-base"
-          // 상담사가 작성한 HTML 스냅샷 — 서버 측 sanitize 전제
-          dangerouslySetInnerHTML={{ __html: html }}
+          className="mt-6 whitespace-pre-line text-sm font-medium leading-[150%] text-[#3C3C3C] [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-base [&_h2]:font-headline"
+          // 상담사가 작성한 HTML 스냅샷 — 클라이언트에서 DOMPurify로 sanitize.
+          dangerouslySetInnerHTML={{ __html: safeHtml }}
         />
 
         {/* 서명란 — 상담사 사인오프 + 내담자 서명. 서명 이미지는 서명란 위로 겹쳐(종이 서명처럼). */}

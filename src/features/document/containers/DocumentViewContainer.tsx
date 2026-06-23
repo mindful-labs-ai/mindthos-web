@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 
+import DOMPurify from 'dompurify';
 import { ChevronLeft, Printer } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 import { getDocumentEditRoute, ROUTES } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import {
-  useDocumentStore,
-  type MyDocumentKind,
-} from '@/stores/documentStore';
+import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
 
 import { QnaQuestionContent } from '../components/QnaQuestionContent';
 import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
@@ -187,8 +185,10 @@ export function DocumentViewContainer() {
                   ? 'mt-6 text-m [&_h1]:text-xl [&_h2]:text-l'
                   : 'mt-10 text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
               }`}
-              // 본인이 제작 뷰에서 작성한 HTML — 백엔드 연결 시 서버 측 sanitize 전제
-              dangerouslySetInnerHTML={{ __html: document.content ?? '' }}
+              // 본인이 제작 뷰에서 작성한 HTML — 클라이언트에서 DOMPurify로 sanitize(방어적).
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(document.content ?? ''),
+              }}
             />
           ) : (
             <div

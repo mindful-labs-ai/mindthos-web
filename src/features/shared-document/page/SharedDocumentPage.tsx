@@ -1,4 +1,10 @@
-import { useEffect, useState, type ReactElement, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactElement,
+  type ReactNode,
+} from 'react';
 
 import { useParams } from 'react-router-dom';
 
@@ -23,7 +29,8 @@ type Step = 'intro' | 'detail' | 'read' | 'funnel';
 
 /** 로드 실패 상태 → 내담자 안내 문구(서버 가드 403/404/409). */
 function loadErrorMessage(status?: number): string {
-  if (status === 403) return '유효하지 않은 링크예요. 링크를 다시 확인해 주세요.';
+  if (status === 403)
+    return '유효하지 않은 링크예요. 링크를 다시 확인해 주세요.';
   if (status === 404) return '문서를 찾을 수 없어요.';
   if (status === 409) return '만료되었거나 취소된 문서예요.';
   return '문서를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
@@ -73,10 +80,13 @@ function SharedScreenFrame({ children }: { children: ReactNode }) {
  */
 export default function SharedDocumentPage() {
   const { clientId, sentRowId, accessToken } = useParams();
-  const params: SharedDocumentParams | null =
-    clientId && sentRowId && accessToken
-      ? { clientId, sentRowId, accessToken }
-      : null;
+  const params: SharedDocumentParams | null = useMemo(
+    () =>
+      clientId && sentRowId && accessToken
+        ? { clientId, sentRowId, accessToken }
+        : null,
+    [clientId, sentRowId, accessToken]
+  );
 
   const [doc, setDoc] = useState<SharedDocument | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,7 +136,15 @@ export default function SharedDocumentPage() {
   const updateAnswer = (questionId: string, patch: Partial<QnaAnswer>) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: { ...prev[questionId], ...patch },
+      [questionId]: {
+        selected: [],
+        text: '',
+        etcChecked: false,
+        etcText: '',
+        score: undefined,
+        ...prev[questionId],
+        ...patch,
+      },
     }));
   };
 
