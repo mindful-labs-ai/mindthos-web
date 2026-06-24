@@ -44,7 +44,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
       {sideList}
 
       {!sessionId ? (
-        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-16 py-[42px]">
+        <div className="mx-auto flex w-full max-w-[1332px] flex-1 flex-col px-16 pt-[42px]">
           <div className="flex-shrink-0 pb-6">
             <div className="flex items-center gap-2">
               <Title as="h1" className="text-start text-2xl font-headline text-grey-100">
@@ -122,7 +122,7 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-4">
+          <div className="flex-1 overflow-y-auto pt-4">
             <div className="space-y-3">{sessionCards}</div>
           </div>
         </div>
