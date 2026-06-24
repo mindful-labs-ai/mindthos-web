@@ -225,7 +225,7 @@ export const CreateHandWrittenSessionModal: React.FC<
     ? 'h-[34vh] min-h-[200px]'
     : isTablet
       ? 'h-[41.6vh] min-h-[200px]'
-      : 'h-full min-h-[300px]';
+      : 'h-[420px]';
 
   const textArea = (
     <div className="flex flex-1 flex-col">
@@ -383,7 +383,7 @@ export const CreateHandWrittenSessionModal: React.FC<
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 gap-8 px-8">
+        <div className="flex flex-1 gap-8 px-8 py-8">
           {textArea}
 
           <div className="flex w-[280px] flex-col gap-6">
