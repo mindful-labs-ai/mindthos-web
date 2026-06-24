@@ -238,8 +238,8 @@ export function ClientDocumentsTab({
               {/* 발송 실패 — 사유 노출(서버가 내려준 UX 친화 문구, 기술용어·PII 없음) */}
               {document.status === 'failed' && document.failureMessage && (
                 <p
-                  className={`mt-3 rounded-lg bg-red-20 font-medium leading-[150%] text-red-80 ${
-                    isMobileView ? 'px-3 py-2 text-xs' : 'px-3.5 py-2.5 text-sm'
+                  className={`mt-3 font-medium leading-[150%] text-red-80 ${
+                    isMobileView ? 'text-xs' : 'text-sm'
                   }`}
                 >
                   {document.failureMessage}
