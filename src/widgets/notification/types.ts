@@ -16,7 +16,7 @@ export type NotificationKind =
  * 딥링크 대상 종류(서버 ResourceType) — 없으면 null.
  * PAYMENT/SYSTEM 등은 딥링크 대상이 없을 수 있다.
  */
-export type NotificationResourceType =
+export type NotificationDeepLinkResourceType =
   | 'SESSION'
   | 'PROGRESS_NOTE'
   | 'AI_SUPERVISION'
@@ -37,7 +37,7 @@ export interface AppNotification {
   /** 본문 */
   body: string;
   /** 딥링크 대상 종류(없으면 null) */
-  resourceType: NotificationResourceType | null;
+  resourceType: NotificationDeepLinkResourceType | null;
   /** 딥링크 대상 id(없으면 null) */
   resourceId: string | null;
   /** ISO 문자열 */

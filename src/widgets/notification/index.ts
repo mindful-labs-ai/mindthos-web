@@ -5,6 +5,6 @@ export type {
   AppNotification,
   NotificationAdapter,
   NotificationKind,
-  NotificationResourceType,
+  NotificationDeepLinkResourceType,
   NotificationListResult,
 } from './types';
