@@ -519,7 +519,7 @@ export function FamilyMemberCard({
         {/* 우측 레이아웃 (나머지 공간, 스크롤 가능) */}
         <div
           ref={internalScrollRef}
-          className="relative min-w-0 flex-1 overflow-y-auto pt-[3px]"
+          className="relative min-w-0 flex-1 overflow-y-auto overscroll-contain pt-[3px]"
         >
           <div className="space-y-2">
             {/* 나이 */}

@@ -343,7 +343,7 @@ function PersonCard({
             left: dropdownPosition.left,
             zIndex: 1100,
           }}
-          className="max-h-[200px] min-w-[140px] overflow-y-auto rounded-xl bg-surface py-2 shadow-elevated"
+          className="max-h-[200px] min-w-[140px] overflow-y-auto overscroll-contain rounded-xl bg-surface py-2 shadow-elevated"
         >
           {personOptions.map((s) => (
             <button

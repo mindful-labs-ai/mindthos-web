@@ -258,7 +258,7 @@ export function GenogramGenerationSteps({
             currentStep === 'confirm' ||
               (currentStep === 'analyze' && isLoading)
               ? 'flex flex-col'
-              : 'overflow-y-auto'
+              : 'overflow-y-auto overscroll-contain'
           )}
         >
           {renderStepContent()}
