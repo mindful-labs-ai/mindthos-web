@@ -115,13 +115,14 @@ export default function CalendarContainer() {
       // 하루 종일: 그 날 00:00 시작 + 종료 없음. 시간 일정: 선택한 시작/종료 시각.
       const [sh, sm] = draft.startTime.split(':').map(Number);
       const [eh, em] = draft.endTime.split(':').map(Number);
-      const start = draft.allDay
+      const isAllDay = draft.eventTimeKind === 'ALL_DAY';
+      const start = isAllDay
         ? date.hour(0).minute(0).second(0).millisecond(0)
         : date
             .hour(sh || 0)
             .minute(sm || 0)
             .second(0);
-      const end = draft.allDay
+      const end = isAllDay
         ? undefined
         : date
             .hour(eh || 0)
@@ -141,7 +142,7 @@ export default function CalendarContainer() {
         colorKey,
         start: start.toISOString(),
         end: end?.toISOString(),
-        allDay: draft.allDay,
+        eventTimeKind: draft.eventTimeKind,
         // 카테고리는 '나의 캘린더' 개인 일정에만 — 패널이 개인일 때만 선택값을 싣고, 상담이면 null.
         // 이벤트 색은 카테고리(있으면)에서 파생되므로 색은 재조회 시 자동 반영.
         categoryId: draft.categoryId ?? undefined,

@@ -16,6 +16,7 @@ import { useCalendarCategories } from '../../hooks/useCalendarEvents';
 import type {
   CalendarEventKind,
   CalendarEvent,
+  CalendarEventTimeKind,
   CalendarRepeatRule,
   CounselMethod,
 } from '../../types';
@@ -29,8 +30,8 @@ import { TimeSelect } from './TimeSelect';
 export interface AddEventDraft {
   kind: CalendarEventKind;
   title: string;
-  /** 하루 종일 일정이면 true — 시간 대신 그 날 전체. */
-  allDay: boolean;
+  /** 시간 종류 — ALL_DAY면 시간 대신 그 날 전체. */
+  eventTimeKind: CalendarEventTimeKind;
   startTime: string;
   endTime: string;
   /** 상담 일정 대상 내담자 id (상담 일정에서만, 개인은 null) */
@@ -123,7 +124,9 @@ export function AddEventPanel({
 }: AddEventPanelProps) {
   const [kind, setKind] = React.useState<CalendarEventKind>(initialKind);
   const [title, setTitle] = React.useState(editingEvent?.title ?? '');
-  const [allDay, setAllDay] = React.useState(editingEvent?.allDay ?? false);
+  const [allDay, setAllDay] = React.useState(
+    editingEvent?.eventTimeKind === 'ALL_DAY'
+  );
   const [startTime, setStartTime] = React.useState(initialStartTime);
   const [endTime, setEndTime] = React.useState(initialEndTime);
   const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(
@@ -206,7 +209,7 @@ export function AddEventPanel({
     !editingEvent ||
     kind !== editingEvent.kind ||
     title !== editingEvent.title ||
-    allDay !== (editingEvent.allDay ?? false) ||
+    allDay !== (editingEvent.eventTimeKind === 'ALL_DAY') ||
     startTime !== (origStart ? origStart.format('HH:mm') : '') ||
     endTime !== (origEnd ? origEnd.format('HH:mm') : '') ||
     (selectedDate ? selectedDate.format('YYYY-MM-DD') : '') !==
@@ -507,7 +510,7 @@ export function AddEventPanel({
             onSubmit({
               kind,
               title,
-              allDay,
+              eventTimeKind: allDay ? 'ALL_DAY' : 'TIMED',
               startTime,
               endTime,
               clientId: effectiveClientId,

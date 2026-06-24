@@ -8,6 +8,9 @@
 /** 일정 종류 — '일정 표시' 토글(국가공휴일/상담/개인)의 필터 단위 */
 export type CalendarEventKind = 'counseling' | 'personal' | 'holiday';
 
+/** 일정 시간 종류 (서버 eventTimeKind와 1:1). ALL_DAY = 종일(공휴일 등), TIMED = 시간 지정 */
+export type CalendarEventTimeKind = 'TIMED' | 'ALL_DAY';
+
 /** 상담 방식 (서버 IN_PERSON/ONLINE과 1:1). null = 선택 안 함. 상담 일정에서만 유효 */
 export type CounselMethod = 'in_person' | 'online';
 
@@ -63,8 +66,8 @@ export interface CalendarEvent {
   start: string;
   /** 종료 시각 (ISO datetime, 선택) */
   end?: string;
-  /** 종일 일정 여부 (공휴일 등) */
-  allDay?: boolean;
+  /** 시간 종류 (ALL_DAY = 종일/공휴일 등, TIMED = 시간 지정) */
+  eventTimeKind?: CalendarEventTimeKind;
   /** '나의 캘린더' 카테고리 id (선택) */
   categoryId?: string;
   /** 상담 일정 대상 내담자 id (상담 일정에서만) */
@@ -89,7 +92,7 @@ export interface CalendarEventInput {
   colorKey: CalendarColorKey;
   start: string;
   end?: string;
-  allDay?: boolean;
+  eventTimeKind?: CalendarEventTimeKind;
   categoryId?: string;
   /** 상담 일정 대상 내담자 id (상담 일정에서만) */
   clientId?: string | null;

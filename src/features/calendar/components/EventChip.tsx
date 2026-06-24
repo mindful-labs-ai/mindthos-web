@@ -27,7 +27,7 @@ export function EventChip({
   className: extraClassName,
 }: EventChipProps) {
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
-  const centered = event.allDay;
+  const centered = event.eventTimeKind === 'ALL_DAY';
   const readOnly = event.kind === 'holiday';
 
   const className = cn(

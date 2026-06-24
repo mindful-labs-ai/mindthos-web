@@ -69,7 +69,7 @@ function buildMonthEvents(monthStart: dayjs.Dayjs): CalendarEvent[] {
       kind: 'holiday' as const,
       colorKey: 'grey' as const,
       start: at(monthStart, d, 0),
-      allDay: true,
+      eventTimeKind: 'ALL_DAY' as const,
     })),
     {
       id: `${ym}-family`,

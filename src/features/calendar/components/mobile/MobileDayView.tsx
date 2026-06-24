@@ -37,8 +37,8 @@ export function MobileDayView({
   const today = dayjs();
   const weekDays = getWeekDays(current);
   const dayEvents = events.filter((e) => isSameDay(dayjs(e.start), current));
-  const timed = dayEvents.filter((e) => !e.allDay);
-  const allDayEvents = dayEvents.filter((e) => e.allDay);
+  const timed = dayEvents.filter((e) => e.eventTimeKind !== 'ALL_DAY');
+  const allDayEvents = dayEvents.filter((e) => e.eventTimeKind === 'ALL_DAY');
 
   return (
     <div className="flex h-full flex-col">

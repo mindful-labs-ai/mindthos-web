@@ -59,7 +59,7 @@ function yToSnappedMin(clientY: number, columnTop: number): number {
 /** 종일 제외, 해당 날짜 일정의 [시작분, 종료분) 구간 목록 */
 function busyIntervals(events: CalendarEvent[]): [number, number][] {
   return events
-    .filter((e) => !e.allDay)
+    .filter((e) => e.eventTimeKind !== 'ALL_DAY')
     .map((e) => {
       const start = minutesFromMidnight(e.start);
       const end = e.end ? minutesFromMidnight(e.end) : start + 60;
@@ -208,7 +208,7 @@ export function WeekGrid({
               // 다일(multi-day) 종일 일정 — [start, end] 구간에 걸치는 모든 날에 칩 표시.
               // end가 없으면 시작일 하루만.
               const allDayEvents = events.filter((e) => {
-                if (!e.allDay) return false;
+                if (e.eventTimeKind !== 'ALL_DAY') return false;
                 const start = dayjs(e.start);
                 if (!e.end) return isSameDay(start, day);
                 const end = dayjs(e.end);
@@ -311,7 +311,7 @@ export function WeekGrid({
                   }}
                 >
                   {dayEvents
-                    .filter((event) => !event.allDay)
+                    .filter((event) => event.eventTimeKind !== 'ALL_DAY')
                     .map((event) => (
                       <EventBlock
                         key={event.id}

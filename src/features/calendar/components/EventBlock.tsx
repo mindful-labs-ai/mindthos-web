@@ -24,7 +24,7 @@ export function EventBlock({ event, hourHeight, onClick }: EventBlockProps) {
     onClick?.(event);
   };
 
-  if (event.allDay) {
+  if (event.eventTimeKind === 'ALL_DAY') {
     // 공휴일/종일 — 읽기 전용 배경(클릭/드래그 통과)
     return (
       <div

@@ -24,7 +24,9 @@ const MAX_CHIPS = 3;
 
 /** 일정 정렬: 종일 먼저, 그 다음 시작 시간순 */
 function sortEvents(a: CalendarEvent, b: CalendarEvent) {
-  if (!!a.allDay !== !!b.allDay) return a.allDay ? -1 : 1;
+  const aAllDay = a.eventTimeKind === 'ALL_DAY';
+  const bAllDay = b.eventTimeKind === 'ALL_DAY';
+  if (aAllDay !== bAllDay) return aAllDay ? -1 : 1;
   return a.start.localeCompare(b.start);
 }
 

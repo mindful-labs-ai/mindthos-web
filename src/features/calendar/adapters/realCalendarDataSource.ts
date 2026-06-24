@@ -8,6 +8,7 @@ import type {
   CalendarEvent,
   CalendarEventInput,
   CalendarEventKind,
+  CalendarEventTimeKind,
   CalendarRepeatCycle,
   CalendarRepeatRule,
   CounselMethod,
@@ -68,7 +69,7 @@ interface CalendarEventDto {
   categoryId: string | null;
   startsAt: string;
   endsAt: string | null;
-  allDay: boolean;
+  eventTimeKind: CalendarEventTimeKind;
   counselMethod: ServerCounselMethod | null;
   repeatCycle: ServerRepeatCycle | null;
   repeatCount: number | null;
@@ -107,7 +108,7 @@ interface EventRequestBody {
   categoryId?: string | null;
   startsAt: string;
   endsAt?: string | null;
-  allDay: boolean;
+  eventTimeKind: CalendarEventTimeKind;
   counselMethod?: ServerCounselMethod | null;
   repeatCycle?: ServerRepeatCycle | null;
   repeatCount?: number | null;
@@ -214,7 +215,7 @@ function toCalendarEvent(
     colorKey,
     start: dto.startsAt,
     end: dto.endsAt ?? undefined,
-    allDay: dto.allDay,
+    eventTimeKind: dto.eventTimeKind,
     categoryId: dto.categoryId ?? undefined,
     clientId: dto.clientId ?? null,
     counselMethod: dto.counselMethod
@@ -231,9 +232,9 @@ function holidayToCalendarEvent(dto: HolidayDto): CalendarEvent {
     title: dto.name,
     kind: 'holiday',
     colorKey: 'grey',
-    // date-only(YYYY-MM-DD) → 그 날 자정. UI는 allDay로 종일 처리.
+    // date-only(YYYY-MM-DD) → 그 날 자정. UI는 ALL_DAY로 종일 처리.
     start: `${dto.date}T00:00:00`,
-    allDay: true,
+    eventTimeKind: 'ALL_DAY',
   };
 }
 
@@ -261,7 +262,7 @@ function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
     categoryId: input.categoryId ?? null,
     startsAt: input.start,
     endsAt: input.end ?? null,
-    allDay: input.allDay ?? false,
+    eventTimeKind: input.eventTimeKind ?? 'TIMED',
     // 상담 방식: 상담 일정에서만 값, 그 외 null(서버가 개인+방식 조합을 400으로 막음).
     counselMethod: input.counselMethod
       ? COUNSEL_METHOD_TO_SERVER[input.counselMethod]

@@ -20,7 +20,9 @@ interface MobileMonthGridProps {
 const MAX_CHIPS = 3;
 
 function sortEvents(a: CalendarEvent, b: CalendarEvent) {
-  if (!!a.allDay !== !!b.allDay) return a.allDay ? -1 : 1;
+  const aAllDay = a.eventTimeKind === 'ALL_DAY';
+  const bAllDay = b.eventTimeKind === 'ALL_DAY';
+  if (aAllDay !== bAllDay) return aAllDay ? -1 : 1;
   return a.start.localeCompare(b.start);
 }
 
