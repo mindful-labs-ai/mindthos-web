@@ -27,10 +27,10 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   AddClientActionIcon,
+  GenogramActionIcon,
+  ScheduleActionIcon,
   SessionHistoryActionIcon,
-  SideCalendarIcon,
-  SideGenogramIcon,
-  SideSupervisionIcon,
+  SuperVisionActionIcon,
   UploadActionIcon,
 } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
@@ -270,7 +270,7 @@ const HomeContainer = () => {
           className={actionCardClass}
         />
         <ActionCard
-          icon={<SideGenogramIcon size={24} className="text-[#CACA2A]" />}
+          icon={<GenogramActionIcon size={24} />}
           title="가계도 그리기"
           onClick={handleGenogramClick}
           className={actionCardClass}
@@ -278,13 +278,13 @@ const HomeContainer = () => {
       </div>
       <div className="flex flex-wrap gap-3 md:gap-5 lg:flex-nowrap lg:gap-6">
         <ActionCard
-          icon={<SideCalendarIcon size={24} className="text-[#6E81EA]" />}
+          icon={<ScheduleActionIcon size={24} />}
           title="상담 일정 추가하기"
           onClick={handleCalendarClick}
           className={actionCardClass}
         />
         <ActionCard
-          icon={<SideSupervisionIcon size={24} className="text-[#B065E5]" />}
+          icon={<SuperVisionActionIcon size={24} />}
           title="AI 슈퍼비전 받기"
           onClick={handleSupervisionClick}
           className={actionCardClass}
