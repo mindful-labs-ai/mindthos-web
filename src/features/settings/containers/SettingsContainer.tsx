@@ -313,7 +313,7 @@ export const SettingsContainer: React.FC = () => {
             size={isMobile ? 16 : 20}
             className="text-grey-70"
           />
-          <Text className="text-m font-emphasize md:text-xl">
+          <Text className="text-m font-emphasize md:text-l">
             {userName || '이름 없음'}
           </Text>
         </div>
@@ -322,7 +322,7 @@ export const SettingsContainer: React.FC = () => {
             size={isMobile ? 16 : 20}
             className="text-grey-70"
           />
-          <Text className="text-m font-emphasize md:text-xl">
+          <Text className="text-m font-emphasize md:text-l">
             {user?.email || '이메일 없음'}
           </Text>
         </div>
@@ -331,7 +331,7 @@ export const SettingsContainer: React.FC = () => {
             size={isMobile ? 16 : 20}
             className="text-grey-70"
           />
-          <Text className="text-m font-emphasize md:text-xl">
+          <Text className="text-m font-emphasize md:text-l">
             {organization || '소속 기관 없음'}
           </Text>
         </div>
