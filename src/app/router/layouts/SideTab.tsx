@@ -137,7 +137,7 @@ export const SideTab: React.FC<SideTabProps> = ({
             <img
               src="/title_mindthos_logo.png"
               alt="마음토스"
-              className="h-6 w-full object-cover antialiased"
+              className="h-full w-full object-contain antialiased"
               draggable="false"
             />
           </button>
