@@ -30,7 +30,7 @@ export interface QnaQuestion {
   scoreMaxLabel?: string;
 }
 
-/** 뷰 페이지에서 채우는 응답 값 — 화면 표시·출력용, 저장하지 않는다 */
+/** 질문 1개에 대한 내담자 제출 응답 값 — QnaResponse.answers에 저장되는 응답 형태 */
 export interface QnaAnswer {
   /** 선택된 옵션 인덱스 — single은 1개, multiple은 여러 개 */
   selected?: number[];
@@ -43,3 +43,28 @@ export interface QnaAnswer {
   /** 점수 선택 값 */
   score?: number;
 }
+
+/** consent·qna 공통 필드 */
+export interface DocumentResponseBase {
+  /** 민감정보 수집·이용 동의 (consent·qna 공통) */
+  sensitiveInfoConsent?: boolean;
+}
+
+/** 동의서(CONSENT) 내담자 제출 응답 */
+export interface ConsentResponse extends DocumentResponseBase {
+  agreed: boolean;
+  signatureDataUrl?: string;
+  signedName?: string;
+  signedAt?: string;
+}
+
+/** 질문·응답(QNA) 내담자 제출 응답 — 질문 id별 답변 */
+export interface QnaResponse extends DocumentResponseBase {
+  answers: Record<string /* questionId */, QnaAnswer>;
+}
+
+/**
+ * 내담자 제출 응답(jsonb). 문서 kind(CONSENT/QNA)로 판별 — response 안에 kind 중복 X.
+ * mindthos-server의 DocumentResponse 미러(웹은 sensitiveInfoConsent 공통 base 추가).
+ */
+export type DocumentResponse = ConsentResponse | QnaResponse;

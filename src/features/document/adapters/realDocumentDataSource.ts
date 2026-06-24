@@ -1,3 +1,4 @@
+import type { DocumentResponse } from '@/features/document/types';
 import { serverRequest } from '@/shared/api/server/serverClient';
 import type {
   CounselDocument,
@@ -129,7 +130,7 @@ interface SentDocumentDto {
   failedAt: string | null;
   failureCode: string | null;
   failureMessage: string | null;
-  response: Record<string, unknown> | null;
+  response: DocumentResponse | null;
   completedAt: string | null;
   canceledAt: string | null;
   createdAt: string;

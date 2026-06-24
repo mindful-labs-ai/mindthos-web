@@ -10,7 +10,11 @@ import { useParams } from 'react-router-dom';
 
 import { ServerApiError } from '@/shared/api/server/serverClient';
 
-import type { QnaAnswer } from '../../document/types';
+import type {
+  ConsentResponse,
+  QnaAnswer,
+  QnaResponse,
+} from '../../document/types';
 import {
   fetchSharedDocument,
   submitSharedDocument,
@@ -148,7 +152,7 @@ export default function SharedDocumentPage() {
     }));
   };
 
-  const submit = async (response: Record<string, unknown>) => {
+  const submit = async (response: ConsentResponse | QnaResponse) => {
     if (!params) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -193,17 +197,24 @@ export default function SharedDocumentPage() {
     );
   }
 
-  const submitConsent = () =>
-    submit({
+  const submitConsent = () => {
+    const payload: ConsentResponse = {
       sensitiveInfoConsent: sensitiveConsent,
       agreed: true,
       signedName: doc.clientName,
-      signatureDataUrl: signature,
+      signatureDataUrl: signature ?? undefined,
       signedAt: new Date().toISOString(),
-    });
+    };
+    return submit(payload);
+  };
 
-  const submitQna = () =>
-    submit({ sensitiveInfoConsent: sensitiveConsent, answers });
+  const submitQna = () => {
+    const payload: QnaResponse = {
+      sensitiveInfoConsent: sensitiveConsent,
+      answers,
+    };
+    return submit(payload);
+  };
 
   let content: ReactElement;
   if (step === 'detail') {

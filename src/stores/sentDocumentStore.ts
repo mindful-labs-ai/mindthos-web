@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { documentDataSource } from '@/features/document/adapters';
+import type { DocumentResponse } from '@/features/document/types';
 import type { MyDocumentKind } from '@/stores/documentStore';
 
 /**
@@ -44,7 +45,7 @@ export interface SentDocument {
   completedAt?: string;
   canceledAt?: string;
   /** 내담자가 제출한 응답 (완료 시) — consent=서명/동의, qna=문항별 응답 */
-  response?: Record<string, unknown> | null;
+  response?: DocumentResponse | null;
 }
 
 /** 발송 모달에서 넘기는 입력 — 어댑터가 서버 전송 후 결과를 반환 */

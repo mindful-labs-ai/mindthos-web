@@ -1,3 +1,4 @@
+import type { DocumentResponse } from '@/features/document/types';
 import { serverRequestPublic } from '@/shared/api/server/serverClient';
 
 /**
@@ -30,7 +31,7 @@ export interface SharedDocument {
   /** 마감 기한 ISO (null = 무기한) */
   expiredAt: string | null;
   /** 이미 제출했다면 그 응답(null = 미제출) */
-  response: Record<string, unknown> | null;
+  response: DocumentResponse | null;
   /** 제출 시각 ISO (null = 미제출) */
   completedAt: string | null;
 }
@@ -49,7 +50,7 @@ export function fetchSharedDocument(
 /** 내담자 응답/서명 제출. 이미 제출/만료/취소면 서버가 409. */
 export function submitSharedDocument(
   params: SharedDocumentParams,
-  response: Record<string, unknown>
+  response: DocumentResponse
 ): Promise<SharedDocument> {
   return serverRequestPublic<SharedDocument>(`${basePath(params)}/response`, {
     method: 'POST',

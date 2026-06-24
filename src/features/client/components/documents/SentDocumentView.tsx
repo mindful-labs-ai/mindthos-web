@@ -2,7 +2,11 @@ import { ChevronLeft, Printer } from 'lucide-react';
 
 import { QnaQuestionContent } from '@/features/document/components/QnaQuestionContent';
 import { parseQnaQuestions } from '@/features/document/constants/qnaQuestion';
-import type { QnaAnswer } from '@/features/document/types';
+import type {
+  ConsentResponse,
+  QnaAnswer,
+  QnaResponse,
+} from '@/features/document/types';
 import { MobileModalHeader } from '@/shared/ui';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
@@ -30,23 +34,27 @@ export function SentDocumentView({
   // 질문 번호 — 제목 및 설명(section)은 번호를 매기지 않는다
   let questionNumber = 0;
 
-  // 내담자 제출 응답(완료 시) — qna=문항별 응답, consent=서명/동의.
+  // 내담자 제출 응답(완료 시) — document.kind로 판별: qna=문항별 응답, consent=서명/동의.
   const isCompleted = document.status === 'completed';
   const response = document.response ?? null;
-  const qnaAnswers = (response?.answers ?? {}) as Record<string, QnaAnswer>;
-  const signatureDataUrl =
-    typeof response?.signatureDataUrl === 'string'
-      ? response.signatureDataUrl
-      : null;
-  const signedName =
-    typeof response?.signedName === 'string' ? response.signedName : '';
+
+  // kind별로 narrowing: qna → QnaResponse, consent → ConsentResponse.
+  const consentResponse: ConsentResponse | null =
+    document.kind === 'consent' ? (response as ConsentResponse | null) : null;
+  const qnaResponse: QnaResponse | null =
+    document.kind === 'qna' ? (response as QnaResponse | null) : null;
+
+  const qnaAnswers: Record<string, QnaAnswer> = qnaResponse?.answers ?? {};
+  const signatureDataUrl: string | null =
+    consentResponse?.signatureDataUrl ?? null;
+  const signedName: string = consentResponse?.signedName ?? '';
+  // sensitiveInfoConsent은 base 필드 — 양쪽에 있으므로 response에서 직접 읽음
   const sensitiveInfoConsent = response?.sensitiveInfoConsent === true;
-  const signedDate =
-    typeof response?.signedAt === 'string'
-      ? formatSentDate(response.signedAt)
-      : document.completedAt
-        ? formatSentDate(document.completedAt)
-        : '';
+  const signedDate: string = consentResponse?.signedAt
+    ? formatSentDate(consentResponse.signedAt)
+    : document.completedAt
+      ? formatSentDate(document.completedAt)
+      : '';
 
   const historyParts = [`${document.clientName} 내담자`];
   // 발송 실패는 알림톡이 나가지 않았으므로 "발송됨" 대신 "발송 실패"로 표기.
