@@ -1,4 +1,11 @@
-import type { DocumentResponse } from '@/features/document/types';
+import {
+  buildContent,
+  parseContent,
+} from '@/features/document/constants/formField';
+import type {
+  DocumentContent,
+  DocumentResponse,
+} from '@/features/document/types';
 import { serverRequest } from '@/shared/api/server/serverClient';
 import type {
   CounselDocument,
@@ -32,11 +39,10 @@ import type { DocumentDataSource } from './types';
  *  - DELETE /sent-documents/:id              → 204
  *
  * 매핑 메모:
- *  - kind: 서버 CONSENT|QNA ↔ 프론트 consent|qna.
+ *  - kind: 서버 CONSENT|QNA ↔ 프론트 consent|qna (카테고리·UX 힌트일 뿐 content 모양은 동일).
  *  - category: 서버 ETHICS|PREPARATION|ASSESSMENT ↔ 프론트 ethics|preparation|assessment.
- *  - user-document 저장과 sent-document 발송의 QNA content 계약이 현재 다르다.
- *      user-document 저장 → QnaQuestion[] (서버 validation 임시 호환)
- *      sent-document 발송 → { questions: [...] } (공유문서 화면 계약)
+ *  - content: CONSENT/QNA 공통 단일 봉투 { version, fields }(DocumentContent). user-document
+ *      저장·sent-document 발송·공유문서 화면 모두 같은 봉투를 사용한다.
  *  - SentDocument.status는 서버 타임스탬프에서 파생, clientName은 호출자가 보정('').
  */
 
@@ -107,14 +113,14 @@ interface CreateUserDocumentRequest {
   sourceTemplateId?: string;
   title?: string;
   kind?: ServerKind;
-  content?: unknown | null;
+  content?: DocumentContent | null;
   status?: ServerStatus;
 }
 
 /** PATCH /user-documents/:id body */
 interface UpdateUserDocumentRequest {
   title?: string;
-  content?: unknown | null;
+  content?: DocumentContent | null;
   status?: ServerStatus;
 }
 
@@ -144,12 +150,12 @@ interface GetClientSentDocumentsResponse {
   sentDocument: SentDocumentDto[];
 }
 
-/** POST /sent-documents body */
+/** POST /sent-documents body — 발송본 content는 서버 @IsNotEmpty라 항상 봉투(non-null). */
 interface CreateSentDocumentRequest {
   clientId: string;
   documentTitle: string;
   kind: ServerKind;
-  content: Record<string, unknown>;
+  content: DocumentContent;
   sourceTemplateId?: string;
   sourceUserDocumentId?: string;
   expiredAt?: string;
@@ -186,56 +192,14 @@ const CATEGORY_FROM_SERVER: Record<ServerCategory, DocumentCategory> = {
   ASSESSMENT: 'assessment',
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+/** 프론트 content → 서버 jsonb. CONSENT/QNA 공통 { version, fields } 봉투를 그대로 전송. */
+function toServerContent(content: DocumentContent | null): DocumentContent | null {
+  return content ?? null;
 }
 
-/** 개인문서 저장용 content. QNA는 서버 validation 임시 호환을 위해 배열로 보낸다. */
-function toUserDocumentContent(
-  kind: MyDocumentKind,
-  content: string | null
-): unknown | null {
-  if (!content) return null;
-  if (kind === 'consent') return { html: content };
-  try {
-    return JSON.parse(content);
-  } catch {
-    return content;
-  }
-}
-
-/** 발송 스냅샷용 content. 공유문서 QNA 화면은 { questions } 봉투를 기대한다. */
-function toSentDocumentContent(
-  kind: MyDocumentKind,
-  content: string | null
-): Record<string, unknown> | null {
-  if (!content) return null;
-  if (kind === 'consent') return { html: content };
-  // qna: 질문 배열 JSON 문자열 → { questions: [...] }. 파싱 실패 시 { raw }.
-  try {
-    return { questions: JSON.parse(content) };
-  } catch {
-    return { raw: content };
-  }
-}
-
-/** 서버 jsonb → 프론트 content 문자열. QNA는 배열/봉투/문자열을 모두 수용한다. */
-function fromServerContent(
-  kind: MyDocumentKind,
-  obj: unknown | null
-): string | null {
-  if (!obj) return null;
-  if (kind === 'consent') {
-    if (typeof obj === 'string') return obj;
-    if (isRecord(obj) && typeof obj.html === 'string') return obj.html;
-    return null;
-  }
-  if (Array.isArray(obj)) return JSON.stringify(obj);
-  if (typeof obj === 'string') return obj;
-  if (isRecord(obj) && Array.isArray(obj.questions)) {
-    return JSON.stringify(obj.questions);
-  }
-  return JSON.stringify(obj);
+/** 서버 jsonb → 프론트 content. DocumentContent 봉투면 그대로, 아니면 null. */
+function fromServerContent(obj: unknown | null): DocumentContent | null {
+  return parseContent(obj);
 }
 
 /** DocumentListItem(source=TEMPLATE) → CounselDocument (content 없음 → null) */
@@ -266,27 +230,25 @@ function listItemToMyDocument(item: DocumentListItem): MyDocument {
 
 /** DocumentTemplateDto → CounselDocument (content 포함) */
 function templateToCounselDocument(dto: DocumentTemplateDto): CounselDocument {
-  const kind = KIND_FROM_SERVER[dto.kind];
   return {
     id: dto.id,
     title: dto.title,
     description: dto.description ?? '',
     category: CATEGORY_FROM_SERVER[dto.category],
-    content: fromServerContent(kind, dto.content),
+    content: fromServerContent(dto.content),
   };
 }
 
 /** UserDocumentDto → MyDocument (content 포함) */
 function userDocumentToMyDocument(dto: UserDocumentDto): MyDocument {
-  const kind = KIND_FROM_SERVER[dto.kind];
   return {
     id: dto.id,
     title: dto.title,
-    kind,
+    kind: KIND_FROM_SERVER[dto.kind],
     status: STATUS_FROM_SERVER[dto.status],
     validation: VALIDATION_FROM_SERVER[dto.validation],
     createdAt: dto.createdAt,
-    content: fromServerContent(kind, dto.content),
+    content: fromServerContent(dto.content),
   };
 }
 
@@ -306,14 +268,13 @@ function deriveSentStatus(dto: SentDocumentDto): SentDocumentStatus {
 
 /** SentDocumentDto → SentDocument (clientName은 호출자가 보정). */
 function toSentDocument(dto: SentDocumentDto): SentDocument {
-  const kind = KIND_FROM_SERVER[dto.kind];
   return {
     id: dto.id,
     clientId: dto.clientId,
     clientName: '',
     title: dto.documentTitle,
-    kind,
-    content: fromServerContent(kind, dto.content),
+    kind: KIND_FROM_SERVER[dto.kind],
+    content: fromServerContent(dto.content),
     expiredAt: dto.expiredAt,
     deadlineLabel: deadlineLabelFromExpiredAt(dto.expiredAt),
     status: deriveSentStatus(dto),
@@ -373,7 +334,7 @@ export const realDocumentDataSource: DocumentDataSource = {
     const body: CreateUserDocumentRequest = {
       title: input.title,
       kind: KIND_TO_SERVER[input.kind],
-      content: toUserDocumentContent(input.kind, input.content),
+      content: toServerContent(input.content),
       status: STATUS_TO_SERVER[input.status ?? 'completed'],
     };
     const dto = await serverRequest<UserDocumentDto>(
@@ -383,10 +344,10 @@ export const realDocumentDataSource: DocumentDataSource = {
     return userDocumentToMyDocument(dto);
   },
 
-  async updateMyDocument(id, patch, kind): Promise<MyDocument> {
+  async updateMyDocument(id, patch): Promise<MyDocument> {
     const body: UpdateUserDocumentRequest = {
       title: patch.title,
-      content: toUserDocumentContent(kind, patch.content),
+      content: toServerContent(patch.content),
       status: STATUS_TO_SERVER[patch.status ?? 'completed'],
     };
     const dto = await serverRequest<UserDocumentDto>(
@@ -414,7 +375,8 @@ export const realDocumentDataSource: DocumentDataSource = {
       clientId: input.clientId,
       documentTitle: input.documentTitle,
       kind: KIND_TO_SERVER[input.kind],
-      content: toSentDocumentContent(input.kind, input.content) ?? {},
+      // 서버 @IsNotEmpty — null 이면 400. 발송본은 빈 봉투라도 보장(상위 버그 방어).
+      content: toServerContent(input.content) ?? buildContent([]),
       ...(input.sourceTemplateId
         ? { sourceTemplateId: input.sourceTemplateId }
         : {}),

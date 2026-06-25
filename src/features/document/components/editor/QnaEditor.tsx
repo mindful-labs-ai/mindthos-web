@@ -18,53 +18,71 @@ import {
 } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 
-import {
-  createQnaQuestion,
-  duplicateQnaQuestion,
-} from '../../constants/qnaQuestion';
-import type { QnaQuestion } from '../../types';
+import { createField, duplicateField } from '../../constants/formField';
+import type { FormField } from '../../types';
 
 import { QuestionCard } from './QuestionCard';
 
 interface QnaEditorProps {
-  questions: QnaQuestion[];
-  onQuestionsChange: (questions: QnaQuestion[]) => void;
+  fields: FormField[];
+  onFieldsChange: (fields: FormField[]) => void;
+}
+
+/** 라벨/제목 텍스트를 유형 전환 시 보존하기 위해 읽는다(없으면 ''). */
+function fieldText(field: FormField): string {
+  if (field.type === 'section') return field.title;
+  if (field.type === 'richtext') return '';
+  return field.label;
 }
 
 /**
- * 질문·응답 양식 에디터 — 항목(질문) 카드 목록 + 하단 + 버튼으로 추가.
+ * 양식 필드 에디터 — 필드 카드 목록 + 하단 + 버튼으로 추가.
  * 항목이 없으면 빈 캔버스 (저장 비활성 조건은 컨테이너에서 처리).
  */
-export function QnaEditor({ questions, onQuestionsChange }: QnaEditorProps) {
+export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
   // 활성(편집 중) 항목 — 초록 보더 표시
-  const [activeId, setActiveId] = useState<string | null>(
-    questions[0]?.id ?? null
+  const [activeKey, setActiveKey] = useState<string | null>(
+    fields[0]?.key ?? null
   );
 
-  const updateQuestion = (id: string, patch: Partial<QnaQuestion>) => {
-    onQuestionsChange(
-      questions.map((q) => (q.id === id ? { ...q, ...patch } : q))
+  const updateField = (key: string, patch: Partial<FormField>) => {
+    onFieldsChange(
+      fields.map((field) => {
+        if (field.key !== key) return field;
+        // 유형 변경: 새 유형의 기본 필드로 재구성하되 key·라벨/제목은 보존.
+        if (patch.type && patch.type !== field.type) {
+          const rebuilt = createField(patch.type);
+          rebuilt.key = field.key;
+          const text = fieldText(field);
+          if (text) {
+            if (rebuilt.type === 'section') rebuilt.title = text;
+            else if (rebuilt.type !== 'richtext') rebuilt.label = text;
+          }
+          return rebuilt;
+        }
+        return { ...field, ...patch } as FormField;
+      })
     );
   };
 
   const handleAdd = () => {
-    const question = createQnaQuestion();
-    onQuestionsChange([...questions, question]);
-    setActiveId(question.id);
+    const field = createField();
+    onFieldsChange([...fields, field]);
+    setActiveKey(field.key);
   };
 
   const handleDuplicate = (index: number) => {
-    const copy = duplicateQnaQuestion(questions[index]);
-    onQuestionsChange([
-      ...questions.slice(0, index + 1),
+    const copy = duplicateField(fields[index]);
+    onFieldsChange([
+      ...fields.slice(0, index + 1),
       copy,
-      ...questions.slice(index + 1),
+      ...fields.slice(index + 1),
     ]);
-    setActiveId(copy.id);
+    setActiveKey(copy.key);
   };
 
-  const handleDelete = (id: string) => {
-    onQuestionsChange(questions.filter((q) => q.id !== id));
+  const handleDelete = (key: string) => {
+    onFieldsChange(fields.filter((field) => field.key !== key));
   };
 
   // 드래그로 항목 순서 변경 — 핸들에서만 시작(PointerSensor), 키보드 접근성(KeyboardSensor)
@@ -78,10 +96,10 @@ export function QnaEditor({ questions, onQuestionsChange }: QnaEditorProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = questions.findIndex((q) => q.id === active.id);
-    const newIndex = questions.findIndex((q) => q.id === over.id);
+    const oldIndex = fields.findIndex((f) => f.key === active.id);
+    const newIndex = fields.findIndex((f) => f.key === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
-    onQuestionsChange(arrayMove(questions, oldIndex, newIndex));
+    onFieldsChange(arrayMove(fields, oldIndex, newIndex));
   };
 
   return (
@@ -93,19 +111,19 @@ export function QnaEditor({ questions, onQuestionsChange }: QnaEditorProps) {
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={questions.map((q) => q.id)}
+          items={fields.map((f) => f.key)}
           strategy={verticalListSortingStrategy}
         >
           <div className="flex flex-col gap-4">
-            {questions.map((question, index) => (
+            {fields.map((field, index) => (
               <QuestionCard
-                key={question.id}
-                question={question}
-                isActive={question.id === activeId}
-                onActivate={() => setActiveId(question.id)}
-                onChange={(patch) => updateQuestion(question.id, patch)}
+                key={field.key}
+                field={field}
+                isActive={field.key === activeKey}
+                onActivate={() => setActiveKey(field.key)}
+                onChange={(patch) => updateField(field.key, patch)}
                 onDuplicate={() => handleDuplicate(index)}
-                onDelete={() => handleDelete(question.id)}
+                onDelete={() => handleDelete(field.key)}
               />
             ))}
           </div>

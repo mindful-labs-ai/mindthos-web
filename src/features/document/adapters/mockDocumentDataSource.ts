@@ -8,6 +8,9 @@ import {
 } from '@/stores/documentStore';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
+import { validateFields } from '../constants/formField';
+import type { DocumentContent } from '../types';
+
 import { deadlineLabelFromExpiredAt } from './realDocumentDataSource';
 import type { DocumentDataSource } from './types';
 
@@ -29,19 +32,10 @@ const sentDocuments: SentDocument[] = [];
 let sentDocSeq = 0;
 
 function deriveValidation(
-  kind: MyDocumentKind,
-  content: string | null
+  content: DocumentContent | null
 ): MyDocumentValidation {
-  if (!content || content.trim().length === 0) return 'invalid';
-  if (kind === 'consent') return 'valid';
-  try {
-    const questions = JSON.parse(content) as unknown;
-    return Array.isArray(questions) && questions.length > 0
-      ? 'valid'
-      : 'invalid';
-  } catch {
-    return 'invalid';
-  }
+  if (!content) return 'invalid';
+  return validateFields(content.fields) ? 'valid' : 'invalid';
 }
 
 export const mockDocumentDataSource: DocumentDataSource = {
@@ -69,7 +63,7 @@ export const mockDocumentDataSource: DocumentDataSource = {
     title: string;
     kind: MyDocumentKind;
     status?: MyDocumentStatus;
-    content: string | null;
+    content: DocumentContent | null;
   }): Promise<MyDocument> {
     myDocSeq += 1;
     const doc: MyDocument = {
@@ -77,7 +71,7 @@ export const mockDocumentDataSource: DocumentDataSource = {
       title: input.title,
       kind: input.kind,
       status: input.status ?? 'completed',
-      validation: deriveValidation(input.kind, input.content),
+      validation: deriveValidation(input.content),
       createdAt: new Date().toISOString(),
       content: input.content,
     };
@@ -89,7 +83,7 @@ export const mockDocumentDataSource: DocumentDataSource = {
     id: string,
     patch: {
       title: string;
-      content: string | null;
+      content: DocumentContent | null;
       status?: MyDocumentStatus;
     }
   ): Promise<MyDocument> {
@@ -98,7 +92,7 @@ export const mockDocumentDataSource: DocumentDataSource = {
     doc.title = patch.title;
     doc.content = patch.content;
     doc.status = patch.status ?? 'completed';
-    doc.validation = deriveValidation(doc.kind, patch.content);
+    doc.validation = deriveValidation(patch.content);
     return { ...doc };
   },
 
@@ -118,7 +112,7 @@ export const mockDocumentDataSource: DocumentDataSource = {
     clientId: string;
     documentTitle: string;
     kind: MyDocumentKind;
-    content: string | null;
+    content: DocumentContent | null;
     sourceTemplateId?: string;
     sourceUserDocumentId?: string;
     expiredAt?: string;

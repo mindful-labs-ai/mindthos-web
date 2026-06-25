@@ -1,4 +1,7 @@
-import type { DocumentResponse } from '@/features/document/types';
+import type {
+  DocumentContent,
+  DocumentResponse,
+} from '@/features/document/types';
 import { serverRequestPublic } from '@/shared/api/server/serverClient';
 
 /**
@@ -24,10 +27,10 @@ export interface SharedDocument {
   clientName: string;
   /** 보낸 상담사 이름(진입 화면 안내용) */
   counselorName: string;
-  /** 동의서(HTML) / 질문응답(JSON) */
+  /** 동의서 / 질문응답 — 카테고리·UX 힌트(퍼널 모드 결정). content 모양은 동일. */
   kind: 'CONSENT' | 'QNA';
-  /** kind별 본문 — CONSENT={ html }, QNA={ questions: [...] } */
-  content: Record<string, unknown>;
+  /** 통합 본문 봉투 { version, fields } — CONSENT/QNA 공통. */
+  content: DocumentContent;
   /** 마감 기한 ISO (null = 무기한) */
   expiredAt: string | null;
   /** 이미 제출했다면 그 응답(null = 미제출) */
@@ -47,13 +50,17 @@ export function fetchSharedDocument(
   return serverRequestPublic<SharedDocument>(basePath(params));
 }
 
-/** 내담자 응답/서명 제출. 이미 제출/만료/취소면 서버가 409. */
+/**
+ * 내담자 응답/서명 제출. 이미 제출/만료/취소면 서버가 409.
+ * sensitiveInfoConsent: 모든 공유문서 공통 [필수] 민감정보 동의(인트로 게이트) — 서버가 true 요구.
+ */
 export function submitSharedDocument(
   params: SharedDocumentParams,
-  response: DocumentResponse
+  response: DocumentResponse,
+  sensitiveInfoConsent: boolean
 ): Promise<SharedDocument> {
   return serverRequestPublic<SharedDocument>(`${basePath(params)}/response`, {
     method: 'POST',
-    body: { response },
+    body: { response, sensitiveInfoConsent },
   });
 }

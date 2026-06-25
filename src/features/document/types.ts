@@ -1,70 +1,168 @@
 /**
- * 질문·응답 양식의 질문(항목) 객체 모델.
- * 유형은 카드 우하단 드롭다운으로 변경 — 현재 상세 뷰는 단일 선택만,
- * 나머지 유형은 상태만 보관하고 뷰는 유형별로 순차 작업 예정.
+ * 문서(동의서·질문지) content의 단일 모델 — `FormField` discriminated union.
+ * mindthos-server `entity/document-template/type/form-field.type.ts`의 웹 미러(필드/키 동일).
+ *
+ * content jsonb 봉투: `{ version, fields: FormField[] }`. CONSENT/QNA 공통(kind는 카테고리·UX 힌트일 뿐
+ * content 모양은 동일). 각 변형은 field `type`으로 판별되며 변형별 필수 키만 가진다.
+ *
+ * 내담자 응답: `{ answers: Record<fieldKey, FieldAnswer> }`. FieldAnswer는 해당 필드 type에 대응.
  */
-export type QnaQuestionType =
-  | 'single'
-  | 'multiple'
+
+export const FORM_CONTENT_VERSION = 1 as const;
+
+export type FormFieldType =
+  | 'section'
+  | 'richtext'
   | 'short'
   | 'long'
+  | 'single'
+  | 'multiple'
   | 'score'
-  | 'section';
+  | 'consent'
+  | 'signature';
 
-export interface QnaQuestion {
-  id: string;
-  type: QnaQuestionType;
-  /** 질문 텍스트 */
+/** 선택형(single/multiple) 옵션. value는 안정 식별자, label은 표시 텍스트. */
+export interface FormFieldOption {
+  value: string;
+  label: string;
+  crisis?: boolean;
+}
+
+interface FormFieldBase {
+  /** 문서 내 고유 키(응답 답변맵의 키이자 안정 식별자). */
+  key: string;
+}
+
+/** 헤딩(제목·설명) — 응답 없음. */
+export interface SectionField extends FormFieldBase {
+  type: 'section';
   title: string;
-  /** 선택지 — 선택형 유형에서 사용 */
-  options: string[];
-  /** '기타 :' 자유 입력 옵션 포함 여부 (질문당 1개) */
-  hasEtcOption: boolean;
-  /** 부가 설명 — section(제목 및 설명)에서 사용 */
   description?: string;
-  /** 점수 범위 — score에서 사용 (미지정 시 1~5) */
-  scoreMin?: number;
-  scoreMax?: number;
-  /** 점수 최소/최대 라벨 (선택 사항) — score에서 사용 */
-  scoreMinLabel?: string;
-  scoreMaxLabel?: string;
 }
 
-/** 질문 1개에 대한 내담자 제출 응답 값 — QnaResponse.answers에 저장되는 응답 형태 */
-export interface QnaAnswer {
-  /** 선택된 옵션 인덱스 — single은 1개, multiple은 여러 개 */
-  selected?: number[];
-  /** '기타' 선택 여부 */
-  etcChecked?: boolean;
-  /** '기타' 자유 입력 텍스트 */
-  etcText?: string;
-  /** 단답/장문 응답 텍스트 */
-  text?: string;
-  /** 점수 선택 값 */
-  score?: number;
+/** 동의서 안내문 본문(리치 HTML) — 응답 없음. */
+export interface RichtextField extends FormFieldBase {
+  type: 'richtext';
+  html: string;
 }
 
-/** consent·qna 공통 필드 */
-export interface DocumentResponseBase {
-  /** 민감정보 수집·이용 동의 (consent·qna 공통) */
-  sensitiveInfoConsent?: boolean;
+/** 단답 입력. */
+export interface ShortField extends FormFieldBase {
+  type: 'short';
+  label: string;
+  required: boolean;
+  placeholder?: string;
+  helpText?: string;
 }
 
-/** 동의서(CONSENT) 내담자 제출 응답 */
-export interface ConsentResponse extends DocumentResponseBase {
+/** 장문 입력. area는 SCT 등 정성 해석 메타. */
+export interface LongField extends FormFieldBase {
+  type: 'long';
+  label: string;
+  required: boolean;
+  placeholder?: string;
+  helpText?: string;
+  area?: string;
+}
+
+/** 단일 선택. */
+export interface SingleField extends FormFieldBase {
+  type: 'single';
+  label: string;
+  required: boolean;
+  options: FormFieldOption[];
+  allowOther?: boolean;
+}
+
+/** 다중 선택. */
+export interface MultipleField extends FormFieldBase {
+  type: 'multiple';
+  label: string;
+  required: boolean;
+  options: FormFieldOption[];
+  allowOther?: boolean;
+}
+
+/** 점수/척도. PHQ/GAD는 각 값에 라벨이 필요해 scaleOptions로 표현. */
+export interface ScoreField extends FormFieldBase {
+  type: 'score';
+  label: string;
+  required: boolean;
+  min: number;
+  max: number;
+  minLabel?: string;
+  maxLabel?: string;
+  scaleOptions?: FormFieldOption[];
+}
+
+/** 항목별 동의 체크. sensitive=true면 민감정보(개보법 §23 별도 동의) 항목. */
+export interface ConsentField extends FormFieldBase {
+  type: 'consent';
+  label: string;
+  required: boolean;
+  sensitive: boolean;
+}
+
+/** 서명. */
+export interface SignatureField extends FormFieldBase {
+  type: 'signature';
+  label: string;
+  required: boolean;
+  helpText?: string;
+}
+
+export type FormField =
+  | SectionField
+  | RichtextField
+  | ShortField
+  | LongField
+  | SingleField
+  | MultipleField
+  | ScoreField
+  | ConsentField
+  | SignatureField;
+
+/** content jsonb 봉투 — 동의서/질문지 공통. */
+export interface DocumentContent {
+  version: typeof FORM_CONTENT_VERSION;
+  fields: FormField[];
+}
+
+// ── 응답 ─────────────────────────────────────────────────────────────────────
+
+/** short/long 응답. */
+export interface TextAnswer {
+  text: string;
+}
+/** single/multiple 응답 — 선택된 옵션 value 목록(single은 1개). otherText는 '기타' 자유입력. */
+export interface ChoiceAnswer {
+  selected: string[];
+  otherText?: string;
+}
+/** score 응답. */
+export interface ScoreAnswer {
+  score: number;
+}
+/** consent 응답. */
+export interface ConsentAnswer {
   agreed: boolean;
-  signatureDataUrl?: string;
+}
+/** signature 응답. */
+export interface SignatureAnswer {
+  signatureDataUrl: string;
   signedName?: string;
   signedAt?: string;
 }
 
-/** 질문·응답(QNA) 내담자 제출 응답 — 질문 id별 답변 */
-export interface QnaResponse extends DocumentResponseBase {
-  answers: Record<string /* questionId */, QnaAnswer>;
-}
+/** 필드 1개 답변 — 대응 필드 type으로 형태가 정해진다. */
+export type FieldAnswer =
+  | TextAnswer
+  | ChoiceAnswer
+  | ScoreAnswer
+  | ConsentAnswer
+  | SignatureAnswer;
 
-/**
- * 내담자 제출 응답(jsonb). 문서 kind(CONSENT/QNA)로 판별 — response 안에 kind 중복 X.
- * mindthos-server의 DocumentResponse 미러(웹은 sensitiveInfoConsent 공통 base 추가).
- */
-export type DocumentResponse = ConsentResponse | QnaResponse;
+/** 내담자 제출 응답(jsonb) — 필드키 → 답변. section/richtext는 키 없음. */
+export interface DocumentResponse {
+  answers: Record<string /* fieldKey */, FieldAnswer>;
+}

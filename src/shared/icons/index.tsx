@@ -49,6 +49,8 @@ import {
   type LucideProps,
 } from 'lucide-react';
 
+import type { FormFieldType } from '@/features/document/types';
+
 // 아이콘 타입 정의
 type IconComponent = React.FC<LucideProps>;
 
@@ -1563,11 +1565,11 @@ export const KakaoIcon: React.FC<CustomIconProps> = ({
 );
 
 /**
- * 문서 관리 — 질문·응답 에디터 전용 아이콘 묶음.
- * 질문 유형(QnaQuestionType) 값을 키로 하며, 유형 드롭다운 등
+ * 문서 관리 — 통합 양식(FormField) 에디터 전용 아이콘 묶음.
+ * 필드 유형(FormFieldType) 값을 키로 하며, 유형 드롭다운 등
  * 문서 제작 에디터 영역에서만 사용한다.
  */
-export const QnaQuestionTypeIcons = {
+export const FormFieldTypeIcons = {
   single: ({ size = 20, className }) => (
     <>
       <svg
@@ -1709,7 +1711,61 @@ export const QnaQuestionTypeIcons = {
       </svg>
     </>
   ),
-} as const satisfies Record<string, React.FC<CustomIconProps>>;
+  richtext: ({ size = 20, className }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M3.33594 5H16.6693M3.33594 8.33333H16.6693M3.33594 11.6667H13.3359M3.33594 15H10.0026"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  consent: ({ size = 20, className }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M7.08594 10.0007L9.16927 12.084L13.3359 7.91732M2.5 10.0007C2.5 5.85852 5.85785 2.50065 10 2.50065C14.1421 2.50065 17.5 5.85852 17.5 10.0007C17.5 14.1428 14.1421 17.5007 10 17.5007C5.85785 17.5007 2.5 14.1428 2.5 10.0007Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  signature: ({ size = 20, className }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M2.5 16.6673H17.5M3.33333 12.5007L11.25 4.58398C11.9404 3.89363 13.0596 3.89363 13.75 4.58398C14.4404 5.27434 14.4404 6.39357 13.75 7.08392L5.83333 15.0006L2.5 15.834L3.33333 12.5007Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+} as const satisfies Record<FormFieldType, React.FC<CustomIconProps>>;
 
 // 편의를 위한 네임스페이스 export
 export const Icons = {

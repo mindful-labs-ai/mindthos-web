@@ -12,15 +12,15 @@ import {
   type MyDocumentKind,
 } from '@/stores/documentStore';
 
-import { ConsentEditor } from '../components/editor/ConsentEditor';
 import { QnaEditor } from '../components/editor/QnaEditor';
-import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
 import {
-  createQnaQuestion,
-  isValidQnaQuestionForSave,
-  parseQnaQuestions,
-} from '../constants/qnaQuestion';
-import type { QnaQuestion } from '../types';
+  buildContent,
+  createField,
+  parseFields,
+  validateFields,
+} from '../constants/formField';
+import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
+import type { FormField } from '../types';
 
 /** ?kind= 쿼리 파싱 (미지정/오류 시 동의서) */
 function parseKind(value: string | null): MyDocumentKind {
@@ -55,14 +55,10 @@ export function DocumentEditorContainer() {
   const kind = editingDocument?.kind ?? parseKind(searchParams.get('kind'));
 
   const [title, setTitle] = useState('');
-  // 동의서 본문 (HTML 문자열)
-  const [consentHtml, setConsentHtml] = useState('');
-  // 질문·응답 질문 목록 — 생성 시 기본 단일 선택 질문 1개, 편집 시 저장본 로드
-  const [questions, setQuestions] = useState<QnaQuestion[]>(() => [
-    createQnaQuestion(),
-  ]);
+  // 통합 필드 목록 — kind 무관 단일 모델. 생성 시 기본 필드 1개, 편집 시 저장본 로드.
+  const [fields, setFields] = useState<FormField[]>(() => [createField()]);
 
-  // 편집 모드: 단건 조회 후 에디터 상태(제목·본문) 채우기
+  // 편집 모드: 단건 조회 후 에디터 상태(제목·필드) 채우기
   useEffect(() => {
     if (!documentId) return;
     let active = true;
@@ -71,8 +67,9 @@ export function DocumentEditorContainer() {
         if (!active) return;
         setEditingDocument(doc);
         setTitle(doc.title);
-        if (doc.kind === 'consent') setConsentHtml(doc.content ?? '');
-        else setQuestions(parseQnaQuestions(doc.content));
+        // content(DocumentContent 문자열) → 필드. 구/빈 content면 빈 목록으로 시작.
+        const loaded = parseFields(doc.content);
+        setFields(loaded.length > 0 ? loaded : [createField()]);
       })
       .catch(() => {
         if (active) setEditNotFound(true);
@@ -95,18 +92,11 @@ export function DocumentEditorContainer() {
   };
 
   // 임시 QA 정책: 저장 버튼은 서버 전송 가능 상태(COMPLETED)로 저장한다.
-  const canSave =
-    title.trim().length > 0 &&
-    (kind === 'consent'
-      ? consentHtml.trim().length > 0
-      : questions.length > 0 && questions.every(isValidQnaQuestionForSave));
+  const canSave = title.trim().length > 0 && validateFields(fields);
 
   const handleSave = async () => {
     if (!canSave) return;
-    const content =
-      kind === 'consent'
-        ? consentHtml.trim() || null
-        : JSON.stringify(questions);
+    const content = buildContent(fields);
     if (editingDocument) {
       await updateMyDocument(editingDocument.id, {
         title: title.trim(),
@@ -236,15 +226,8 @@ export function DocumentEditorContainer() {
           className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
         />
 
-        {/* 종류별 본문 에디터 */}
-        {kind === 'consent' ? (
-          <ConsentEditor
-            initialHtml={consentHtml || undefined}
-            onContentChange={setConsentHtml}
-          />
-        ) : (
-          <QnaEditor questions={questions} onQuestionsChange={setQuestions} />
-        )}
+        {/* 통합 필드 에디터 — kind 무관 단일 모델(9개 필드 유형 모두 사용 가능) */}
+        <QnaEditor fields={fields} onFieldsChange={setFields} />
       </div>
     </div>
   );

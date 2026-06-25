@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import DOMPurify from 'dompurify';
 
+import type { FormField } from '@/features/document/types';
 import { cn } from '@/lib/cn';
 
 import type { SharedDocument } from '../api/sharedDocumentApi';
@@ -10,6 +11,8 @@ import { SharedHeader } from './SharedHeader';
 
 interface SharedConsentReadProps {
   doc: SharedDocument;
+  /** 통합 본문 필드 — richtext/section을 본문으로 렌더 */
+  fields: FormField[];
   /** 서명 완료 시 dataURL — 푸터에 표시 + CTA를 제출하기로 전환 */
   signatureDataUrl: string | null;
   submitting: boolean;
@@ -27,11 +30,12 @@ function todayLabel(): string {
 }
 
 /**
- * 동의서 문서 열람(모바일). 본문 스크롤 + 하단 고정 CTA가 상태에 따라 변신:
+ * 동의서 문서 열람(모바일). 본문(richtext/section) 스크롤 + 하단 고정 CTA가 상태에 따라 변신:
  * 바닥 미도달 "아래로 내리기"(스크롤) → 바닥 도달 "서명하기"(바텀시트) → 서명 후 "제출하기".
  */
 export function SharedConsentRead({
   doc,
+  fields,
   signatureDataUrl,
   submitting,
   onBack,
@@ -40,9 +44,11 @@ export function SharedConsentRead({
 }: SharedConsentReadProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [atBottom, setAtBottom] = useState(false);
-  const html = (doc.content as { html?: string }).html ?? '';
-  // 공개 페이지 — 상담사가 작성한 HTML을 클라이언트에서도 sanitize(방어적 다중화).
-  const safeHtml = DOMPurify.sanitize(html);
+
+  // 본문은 richtext/section만 — 응답 필드(consent/signature 등)는 CTA·서명란으로 처리.
+  const bodyFields = fields.filter(
+    (f) => f.type === 'richtext' || f.type === 'section'
+  );
 
   const checkBottom = () => {
     const el = scrollRef.current;
@@ -88,11 +94,32 @@ export function SharedConsentRead({
         </h2>
         <div className="mx-auto mt-3 border-b border-grey-40" />
 
-        <div
-          className="mt-6 whitespace-pre-line text-sm font-medium leading-[150%] text-grey-100 [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-base [&_h2]:font-headline"
-          // 상담사가 작성한 HTML 스냅샷 — 클라이언트에서 DOMPurify로 sanitize.
-          dangerouslySetInnerHTML={{ __html: safeHtml }}
-        />
+        {/* 본문 — richtext(HTML)·section(제목·설명) */}
+        <div className="mt-6 flex flex-col gap-6">
+          {bodyFields.map((field) =>
+            field.type === 'richtext' ? (
+              <div
+                key={field.key}
+                className="whitespace-pre-line text-sm font-medium leading-[150%] text-grey-100 [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-base [&_h2]:font-headline"
+                // 상담사가 작성한 HTML 스냅샷 — 클라이언트에서 DOMPurify로 sanitize.
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(field.html),
+                }}
+              />
+            ) : (
+              <div key={field.key}>
+                <p className="text-base font-bold leading-[150%] text-grey-100">
+                  {field.title}
+                </p>
+                {field.description && (
+                  <p className="mt-2 whitespace-pre-line text-sm font-medium leading-[150%] text-grey-100">
+                    {field.description}
+                  </p>
+                )}
+              </div>
+            )
+          )}
+        </div>
 
         {/* 서명란 — 상담사 사인오프 + 내담자 서명. 서명 이미지는 서명란 위로 겹쳐(종이 서명처럼). */}
         <div className="mt-12 flex flex-col items-end gap-2 text-sm text-grey-100">

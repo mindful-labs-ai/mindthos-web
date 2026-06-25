@@ -6,6 +6,8 @@ import type {
 } from '@/stores/documentStore';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
+import type { DocumentContent } from '../types';
+
 /**
  * DocumentDataSource — 문서/발송 데이터 접근의 어댑터 경계.
  *
@@ -32,17 +34,16 @@ export interface DocumentDataSource {
     title: string;
     kind: MyDocumentKind;
     status?: MyDocumentStatus;
-    content: string | null;
+    content: DocumentContent | null;
   }): Promise<MyDocument>;
-  /** 편집 저장 — kind는 content 봉투 매핑에만 사용(서버 kind는 변경 안 함) */
+  /** 편집 저장 — 제목·본문·상태만 갱신(서버 kind는 변경 안 함). content가 단일 봉투라 kind 불필요. */
   updateMyDocument(
     id: string,
     patch: {
       title: string;
-      content: string | null;
+      content: DocumentContent | null;
       status?: MyDocumentStatus;
-    },
-    kind: MyDocumentKind
+    }
   ): Promise<MyDocument>;
   deleteMyDocument(id: string): Promise<void>;
   /** 내담자 발송 내역 (GET /clients/:clientId/sent-documents) — clientName은 ''(호출자 보정) */
@@ -51,7 +52,7 @@ export interface DocumentDataSource {
     clientId: string;
     documentTitle: string;
     kind: MyDocumentKind;
-    content: string | null;
+    content: DocumentContent | null;
     sourceTemplateId?: string;
     sourceUserDocumentId?: string;
     expiredAt?: string;

@@ -7,10 +7,11 @@ import { Copy, Trash2, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { DragHandleIcon } from '@/shared/icons';
 
-import { isChoiceQuestion } from '../../constants/qnaQuestion';
-import type { QnaQuestion } from '../../types';
-import { QnaQuestionContent } from '../QnaQuestionContent';
+import { createOption } from '../../constants/formField';
+import type { FormField, FormFieldOption } from '../../types';
+import { FieldContent } from '../FieldContent';
 
+import { ConsentEditor } from './ConsentEditor';
 import { QuestionTypeDropdown } from './QuestionTypeDropdown';
 import { ScoreRangeSelect } from './ScoreRangeSelect';
 
@@ -23,30 +24,29 @@ function scoreRange(from: number, to: number): number[] {
   return Array.from({ length: to - from + 1 }, (_, i) => from + i);
 }
 
-interface QuestionCardProps {
-  question: QnaQuestion;
+interface FieldCardProps {
+  field: FormField;
   /** 활성(편집 중) 카드 — 초록 보더 */
   isActive: boolean;
   onActivate: () => void;
-  onChange: (patch: Partial<QnaQuestion>) => void;
+  onChange: (patch: Partial<FormField>) => void;
   onDuplicate: () => void;
   onDelete: () => void;
 }
 
 /**
- * 질문·응답 항목 카드.
+ * 양식 필드 카드 — 9개 유형(section/richtext/short/long/single/multiple/score/consent/signature)을 편집.
  * 활성(선택된) 항목만 입력 UI + 복제/삭제/유형 드롭다운을 보여주고,
  * 비활성 항목은 정적 콘텐츠로 표시 — 클릭하면 활성화된다.
- * 점수는 범위 선택(기본 1~5) + 최소/최대 라벨(선택 사항) 입력.
  */
 export function QuestionCard({
-  question,
+  field,
   isActive,
   onActivate,
   onChange,
   onDuplicate,
   onDelete,
-}: QuestionCardProps) {
+}: FieldCardProps) {
   // 옵션 input Tab 이동/추가용 — 새로 만든 옵션은 렌더 후 포커스
   const optionInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const pendingFocusIndex = useRef<number | null>(null);
@@ -60,7 +60,7 @@ export function QuestionCard({
 
   // 항목 순서 변경(드래그) — 핸들에서만 시작
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: question.id });
+    useSortable({ id: field.key });
   const sortableStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -95,24 +95,30 @@ export function QuestionCard({
           onClick={onActivate}
           className="w-full text-left"
         >
-          <QnaQuestionContent question={question} />
+          <FieldContent field={field} />
         </button>
       </div>
     );
   }
 
-  const handleOptionChange = (index: number, value: string) => {
-    onChange({
-      options: question.options.map((o, i) => (i === index ? value : o)),
-    });
+  // 선택형(single/multiple) 옵션 헬퍼 — value는 안정 식별자(유지), label만 편집
+  const options: FormFieldOption[] =
+    field.type === 'single' || field.type === 'multiple' ? field.options : [];
+
+  const patchOptions = (next: FormFieldOption[]) => {
+    onChange({ options: next } as Partial<FormField>);
+  };
+
+  const handleOptionLabelChange = (index: number, label: string) => {
+    patchOptions(options.map((o, i) => (i === index ? { ...o, label } : o)));
   };
 
   const handleRemoveOption = (index: number) => {
-    onChange({ options: question.options.filter((_, i) => i !== index) });
+    patchOptions(options.filter((_, i) => i !== index));
   };
 
   const handleAddOption = () => {
-    onChange({ options: [...question.options, ''] });
+    patchOptions([...options, createOption()]);
   };
 
   // Tab: 다음 옵션으로 이동, 마지막 옵션이면 새 옵션 추가 후 이동
@@ -122,7 +128,7 @@ export function QuestionCard({
   ) => {
     if (e.key !== 'Tab' || e.shiftKey) return;
     e.preventDefault();
-    if (index < question.options.length - 1) {
+    if (index < options.length - 1) {
       optionInputRefs.current[index + 1]?.focus();
     } else {
       pendingFocusIndex.current = index + 1;
@@ -132,8 +138,27 @@ export function QuestionCard({
 
   // 옵션 마커 — 단일 선택은 원형, 다중 선택은 사각(체크박스)
   const markerClass = `h-6 w-6 flex-shrink-0 border-2 border-grey-40 ${
-    question.type === 'multiple' ? 'rounded-[4px]' : 'rounded-full'
+    field.type === 'multiple' ? 'rounded-[4px]' : 'rounded-full'
   }`;
+
+  // 상단 라벨 입력 — section은 title, richtext는 입력 없음, 그 외는 label
+  const headerInput =
+    field.type === 'richtext' ? null : (
+      <input
+        type="text"
+        value={field.type === 'section' ? field.title : field.label}
+        onChange={(e) =>
+          onChange(
+            field.type === 'section'
+              ? ({ title: e.target.value } as Partial<FormField>)
+              : ({ label: e.target.value } as Partial<FormField>)
+          )
+        }
+        placeholder={field.type === 'section' ? '제목' : '질문'}
+        aria-label="질문 입력"
+        className="h-[41px] w-full rounded-lg bg-grey-20 px-3 text-xl font-emphasize text-grey-100 placeholder:text-grey-80 focus:outline-none"
+      />
+    );
 
   return (
     <div
@@ -146,29 +171,21 @@ export function QuestionCard({
       )}
     >
       {dragHandle}
-      {/* 질문 */}
-      <input
-        type="text"
-        value={question.title}
-        onChange={(e) => onChange({ title: e.target.value })}
-        placeholder="질문"
-        aria-label="질문 입력"
-        className="h-[41px] w-full rounded-lg bg-grey-20 px-3 text-xl font-emphasize text-grey-100 placeholder:text-grey-80 focus:outline-none"
-      />
+      {headerInput}
 
       {/* 본문 — 선택형(단일/다중) */}
-      {isChoiceQuestion(question.type) && (
+      {(field.type === 'single' || field.type === 'multiple') && (
         <div className="mt-5 flex flex-col gap-3">
-          {question.options.map((option, i) => (
-            <div key={i} className="flex items-center gap-3">
+          {options.map((option, i) => (
+            <div key={option.value} className="flex items-center gap-3">
               <span className={markerClass} />
               <input
                 ref={(el) => {
                   optionInputRefs.current[i] = el;
                 }}
                 type="text"
-                value={option}
-                onChange={(e) => handleOptionChange(i, e.target.value)}
+                value={option.label}
+                onChange={(e) => handleOptionLabelChange(i, e.target.value)}
                 onKeyDown={(e) => handleOptionKeyDown(e, i)}
                 placeholder={`옵션 ${i + 1}`}
                 aria-label={`옵션 ${i + 1}`}
@@ -190,28 +207,7 @@ export function QuestionCard({
             </div>
           ))}
 
-          {/* 기타 옵션 — 자유 입력 자리(언더라인), 제작 화면에서는 표시만 */}
-          {question.hasEtcOption && (
-            <div className="flex items-center gap-3">
-              <span className={markerClass} />
-              <div className="flex h-[34px] min-w-0 flex-1 items-center px-3">
-                <span className="flex-shrink-0 text-m font-medium text-grey-80">
-                  기타 :
-                </span>
-                <span className="mb-0.5 ml-2 flex-1 self-end border-b border-grey-40" />
-              </div>
-              <button
-                type="button"
-                aria-label="기타 옵션 삭제"
-                onClick={() => onChange({ hasEtcOption: false })}
-                className="flex-shrink-0 text-grey-80 transition-colors lg:hover:text-grey-100"
-              >
-                <X size={24} />
-              </button>
-            </div>
-          )}
-
-          {/* 옵션 추가 | 기타 추가 */}
+          {/* 옵션 추가 */}
           <div className="ml-9 flex items-center gap-3 text-m font-medium">
             <button
               type="button"
@@ -220,69 +216,53 @@ export function QuestionCard({
             >
               옵션 추가
             </button>
-            {!question.hasEtcOption && (
-              <>
-                <span className="text-grey-80">|</span>
-                <button
-                  type="button"
-                  onClick={() => onChange({ hasEtcOption: true })}
-                  className="text-grey-80 transition-colors lg:hover:text-grey-100"
-                >
-                  기타 추가
-                </button>
-              </>
-            )}
           </div>
         </div>
       )}
 
       {/* 본문 — 단답형/장문형: 응답 자리 미리보기 */}
-      {question.type === 'short' && (
+      {field.type === 'short' && (
         <div className="mt-5 flex h-[34px] items-center rounded-lg bg-grey-20 px-3 text-m font-medium text-grey-80">
           답변
         </div>
       )}
 
-      {question.type === 'long' && (
+      {field.type === 'long' && (
         <div className="mt-5 h-[100px] rounded-lg bg-grey-20 px-3 py-[5px] text-m font-medium text-grey-80">
           답변
         </div>
       )}
 
       {/* 본문 — 점수: 범위 선택 + 최소/최대 라벨 */}
-      {question.type === 'score' && (
+      {field.type === 'score' && (
         <div className="mt-5 flex flex-col gap-3">
           {/* 범위 — 1~10 드롭다운, 최소<최대가 되도록 선택지 제한 */}
           <div className="flex items-center gap-6">
             <ScoreRangeSelect
-              value={question.scoreMin ?? 1}
-              options={scoreRange(
-                SCORE_LIMIT_MIN,
-                (question.scoreMax ?? 5) - 1
-              )}
+              value={field.min}
+              options={scoreRange(SCORE_LIMIT_MIN, field.max - 1)}
               ariaLabel="점수 최소값"
-              onChange={(scoreMin) => onChange({ scoreMin })}
+              onChange={(min) => onChange({ min } as Partial<FormField>)}
             />
             <span className="text-xl font-medium text-grey-100">~</span>
             <ScoreRangeSelect
-              value={question.scoreMax ?? 5}
-              options={scoreRange(
-                (question.scoreMin ?? 1) + 1,
-                SCORE_LIMIT_MAX
-              )}
+              value={field.max}
+              options={scoreRange(field.min + 1, SCORE_LIMIT_MAX)}
               ariaLabel="점수 최대값"
-              onChange={(scoreMax) => onChange({ scoreMax })}
+              onChange={(max) => onChange({ max } as Partial<FormField>)}
             />
           </div>
           <div className="mt-4 flex items-center gap-3">
             <span className="h-6 w-6 flex-shrink-0 rounded-full border-2 border-grey-40" />
             <span className="w-7 flex-shrink-0 text-center text-xl font-medium text-grey-100">
-              {question.scoreMin ?? 1}
+              {field.min}
             </span>
             <input
               type="text"
-              value={question.scoreMinLabel ?? ''}
-              onChange={(e) => onChange({ scoreMinLabel: e.target.value })}
+              value={field.minLabel ?? ''}
+              onChange={(e) =>
+                onChange({ minLabel: e.target.value } as Partial<FormField>)
+              }
               placeholder="라벨 (선택 사항)"
               aria-label="점수 최소값 라벨"
               className="h-[34px] min-w-0 flex-1 rounded-lg bg-grey-20 px-2 text-m font-medium text-grey-100 placeholder:text-grey-80 focus:outline-none"
@@ -291,12 +271,14 @@ export function QuestionCard({
           <div className="flex items-center gap-3">
             <span className="h-6 w-6 flex-shrink-0 rounded-full border-2 border-grey-40" />
             <span className="w-7 flex-shrink-0 text-center text-xl font-medium text-grey-100">
-              {question.scoreMax ?? 5}
+              {field.max}
             </span>
             <input
               type="text"
-              value={question.scoreMaxLabel ?? ''}
-              onChange={(e) => onChange({ scoreMaxLabel: e.target.value })}
+              value={field.maxLabel ?? ''}
+              onChange={(e) =>
+                onChange({ maxLabel: e.target.value } as Partial<FormField>)
+              }
               placeholder="라벨 (선택 사항)"
               aria-label="점수 최대값 라벨"
               className="h-[34px] min-w-0 flex-1 rounded-lg bg-grey-20 px-2 text-m font-medium text-grey-100 placeholder:text-grey-80 focus:outline-none"
@@ -306,13 +288,57 @@ export function QuestionCard({
       )}
 
       {/* 본문 — 제목 및 설명 */}
-      {question.type === 'section' && (
+      {field.type === 'section' && (
         <textarea
-          value={question.description ?? ''}
-          onChange={(e) => onChange({ description: e.target.value })}
+          value={field.description ?? ''}
+          onChange={(e) =>
+            onChange({ description: e.target.value } as Partial<FormField>)
+          }
           placeholder="설명"
           aria-label="설명 입력"
           className="mt-5 block h-[100px] w-full resize-none rounded-lg bg-grey-20 px-3 py-[5px] text-m font-medium text-grey-100 placeholder:text-grey-80 focus:outline-none"
+        />
+      )}
+
+      {/* 본문 — 안내문(리치 HTML): 기존 동의서 에디터 재사용 */}
+      {field.type === 'richtext' && (
+        <ConsentEditor
+          key={field.key}
+          initialHtml={field.html || undefined}
+          onContentChange={(html) =>
+            onChange({ html } as Partial<FormField>)
+          }
+        />
+      )}
+
+      {/* 본문 — 동의 항목: 민감정보(개보법 §23) 토글 */}
+      {field.type === 'consent' && (
+        <label className="mt-5 flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            checked={field.sensitive}
+            onChange={(e) =>
+              onChange({ sensitive: e.target.checked } as Partial<FormField>)
+            }
+            className="h-5 w-5 flex-shrink-0 accent-green-80"
+          />
+          <span className="text-m font-medium text-grey-100">
+            민감정보 동의 항목 (개인정보 보호법 별도 동의)
+          </span>
+        </label>
+      )}
+
+      {/* 본문 — 서명: 안내 문구(선택 사항) */}
+      {field.type === 'signature' && (
+        <input
+          type="text"
+          value={field.helpText ?? ''}
+          onChange={(e) =>
+            onChange({ helpText: e.target.value } as Partial<FormField>)
+          }
+          placeholder="안내 문구 (선택 사항)"
+          aria-label="서명 안내 문구"
+          className="mt-5 h-[34px] w-full rounded-lg bg-grey-20 px-3 text-m font-medium text-grey-100 placeholder:text-grey-80 focus:outline-none"
         />
       )}
 
@@ -337,8 +363,8 @@ export function QuestionCard({
           </button>
         </div>
         <QuestionTypeDropdown
-          type={question.type}
-          onChange={(type) => onChange({ type })}
+          type={field.type}
+          onChange={(type) => onChange({ type } as Partial<FormField>)}
         />
       </div>
     </div>

@@ -1,12 +1,7 @@
 import { ChevronLeft, Printer } from 'lucide-react';
 
-import { QnaQuestionContent } from '@/features/document/components/QnaQuestionContent';
-import { parseQnaQuestions } from '@/features/document/constants/qnaQuestion';
-import type {
-  ConsentResponse,
-  QnaAnswer,
-  QnaResponse,
-} from '@/features/document/types';
+import { FieldContent } from '@/features/document/components/FieldContent';
+import { parseFields } from '@/features/document/constants/formField';
 import { MobileModalHeader } from '@/shared/ui';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
@@ -29,32 +24,13 @@ export function SentDocumentView({
   onBack,
   isMobileView = false,
 }: SentDocumentViewProps) {
-  const questions =
-    document.kind === 'qna' ? parseQnaQuestions(document.content) : [];
-  // 질문 번호 — 제목 및 설명(section)은 번호를 매기지 않는다
-  let questionNumber = 0;
+  // 통합 본문 — kind 무관 단일 필드 목록. 발송 시점 스냅샷.
+  const fields = parseFields(document.content);
+  // 필드 번호 — section/richtext는 번호를 매기지 않는다
+  let fieldNumber = 0;
 
-  // 내담자 제출 응답(완료 시) — document.kind로 판별: qna=문항별 응답, consent=서명/동의.
-  const isCompleted = document.status === 'completed';
-  const response = document.response ?? null;
-
-  // kind별로 narrowing: qna → QnaResponse, consent → ConsentResponse.
-  const consentResponse: ConsentResponse | null =
-    document.kind === 'consent' ? (response as ConsentResponse | null) : null;
-  const qnaResponse: QnaResponse | null =
-    document.kind === 'qna' ? (response as QnaResponse | null) : null;
-
-  const qnaAnswers: Record<string, QnaAnswer> = qnaResponse?.answers ?? {};
-  const signatureDataUrl: string | null =
-    consentResponse?.signatureDataUrl ?? null;
-  const signedName: string = consentResponse?.signedName ?? '';
-  // sensitiveInfoConsent은 base 필드 — 양쪽에 있으므로 response에서 직접 읽음
-  const sensitiveInfoConsent = response?.sensitiveInfoConsent === true;
-  const signedDate: string = consentResponse?.signedAt
-    ? formatSentDate(consentResponse.signedAt)
-    : document.completedAt
-      ? formatSentDate(document.completedAt)
-      : '';
+  // 내담자 제출 응답(완료 시) — 필드 key → FieldAnswer.
+  const answers = document.response?.answers ?? {};
 
   const historyParts = [`${document.clientName} 내담자`];
   // 발송 실패는 알림톡이 나가지 않았으므로 "발송됨" 대신 "발송 실패"로 표기.
@@ -155,67 +131,28 @@ export function SentDocumentView({
           className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
         />
 
-        {/* 종류별 본문 — 발송 시점 스냅샷 */}
-        {document.kind === 'consent' ? (
-          <>
-            <div
-              className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 [&_h1]:font-headline [&_h2]:font-headline ${
-                isMobileView
-                  ? 'mt-6 text-m [&_h1]:text-xl [&_h2]:text-l'
-                  : 'mt-10 text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
-              }`}
-              // 상담사가 제작 뷰에서 작성한 HTML 스냅샷 — 백엔드 연결 시 서버 측 sanitize 전제
-              dangerouslySetInnerHTML={{ __html: document.content ?? '' }}
-            />
-
-            {/* 내담자 서명·동의 (완료 시). 서명 이미지는 서명란 위로 겹쳐(종이 서명처럼). */}
-            {isCompleted && (signatureDataUrl || signedName) && (
-              <div className="mx-auto mt-10 w-full max-w-[851px] border-t border-grey-40 pt-8">
-                <div className="flex flex-col items-end gap-2 text-sm text-grey-100">
-                  {signedDate && <p>{signedDate}</p>}
-                  <div className="mt-1 flex items-center gap-9">
-                    <span>{signedName || document.clientName}</span>
-                    <span className="relative">
-                      (본인 또는 법정 대리인 서명)
-                      {signatureDataUrl && (
-                        <img
-                          src={signatureDataUrl}
-                          alt="내담자 서명"
-                          className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-auto -translate-x-1/2 -translate-y-1/2 object-contain"
-                        />
-                      )}
-                    </span>
-                  </div>
-                </div>
-                {sensitiveInfoConsent && (
-                  <p className="mt-4 text-xs text-grey-60">
-                    · 민감정보 수집·이용 동의 완료
-                  </p>
-                )}
-              </div>
-            )}
-          </>
-        ) : (
-          <div
-            className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
-              isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
-            }`}
-          >
-            {questions.map((question) => {
-              const number =
-                question.type === 'section' ? undefined : ++questionNumber;
-              return (
-                <QnaQuestionContent
-                  key={question.id}
-                  question={question}
-                  number={number}
-                  // 완료 시 내담자 응답을 읽기전용으로 표시(onAnswerChange 없음)
-                  answer={qnaAnswers[question.id]}
-                />
-              );
-            })}
-          </div>
-        )}
+        {/* 통합 본문 — 필드를 읽기전용으로 나열. 완료 시 제출 응답을 함께 표시. */}
+        <div
+          className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
+            isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
+          }`}
+        >
+          {fields.map((field) => {
+            const number =
+              field.type === 'section' || field.type === 'richtext'
+                ? undefined
+                : ++fieldNumber;
+            return (
+              <FieldContent
+                key={field.key}
+                field={field}
+                number={number}
+                // 완료 시 내담자 응답을 읽기전용으로 표시(onAnswerChange 없음)
+                answer={answers[field.key]}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

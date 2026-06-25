@@ -3,25 +3,26 @@ import { Fragment, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 import { useDevice } from '@/shared/hooks/useDevice';
-import { QnaQuestionTypeIcons } from '@/shared/icons';
+import { FormFieldTypeIcons } from '@/shared/icons';
 import { Modal } from '@/shared/ui/composites/Modal';
 
-import { QNA_QUESTION_TYPE_LABEL } from '../../constants/qnaQuestion';
-import type { QnaQuestionType } from '../../types';
+import { FIELD_TYPE_LABEL } from '../../constants/formField';
+import type { FormFieldType } from '../../types';
 
 interface QuestionTypeDropdownProps {
-  type: QnaQuestionType;
-  onChange: (type: QnaQuestionType) => void;
+  type: FormFieldType;
+  onChange: (type: FormFieldType) => void;
 }
 
 /** 셀렉터 항목 그룹 — 그룹 사이에 구분선 */
-const TYPE_GROUPS: QnaQuestionType[][] = [
+const TYPE_GROUPS: FormFieldType[][] = [
   ['single', 'multiple'],
   ['short', 'long', 'score'],
-  ['section'],
+  ['consent', 'signature'],
+  ['section', 'richtext'],
 ];
 
-/** 질문 유형 드롭다운 — 카드 우하단 버튼, 클릭 시 하단으로 셀렉터가 펼쳐진다. */
+/** 필드 유형 드롭다운 — 카드 우하단 버튼, 클릭 시 하단으로 셀렉터가 펼쳐진다. */
 export function QuestionTypeDropdown({
   type,
   onChange,
@@ -29,14 +30,14 @@ export function QuestionTypeDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
-  const TriggerIcon = QnaQuestionTypeIcons[type];
+  const TriggerIcon = FormFieldTypeIcons[type];
 
   // 그룹 목록 본문 — 데스크탑 드롭다운/모바일 바텀시트 공용
   const typeList = TYPE_GROUPS.map((group, groupIndex) => (
     <Fragment key={groupIndex}>
       {groupIndex > 0 && <div className="my-2 border-t border-grey-40" />}
       {group.map((item) => {
-        const ItemIcon = QnaQuestionTypeIcons[item];
+        const ItemIcon = FormFieldTypeIcons[item];
         return (
           <button
             key={item}
@@ -54,7 +55,7 @@ export function QuestionTypeDropdown({
               <ItemIcon size={20} />
             </span>
             <span className="text-m font-medium text-grey-100">
-              {QNA_QUESTION_TYPE_LABEL[item]}
+              {FIELD_TYPE_LABEL[item]}
             </span>
           </button>
         );
@@ -74,7 +75,7 @@ export function QuestionTypeDropdown({
         <span className="flex items-center gap-2 text-grey-100">
           <TriggerIcon size={20} />
           <span className="text-m font-medium">
-            {QNA_QUESTION_TYPE_LABEL[type]}
+            {FIELD_TYPE_LABEL[type]}
           </span>
         </span>
         <ChevronDown size={16} className="text-grey-70" />

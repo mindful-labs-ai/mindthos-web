@@ -2,81 +2,97 @@ import { useMemo, useState } from 'react';
 
 import { cn } from '@/lib/cn';
 
-import { QnaQuestionContent } from '../../document/components/QnaQuestionContent';
-import { parseQnaQuestions } from '../../document/constants/qnaQuestion';
-import type { QnaAnswer, QnaQuestion } from '../../document/types';
+import { FieldContent } from '../../document/components/FieldContent';
+import { parseFields } from '../../document/constants/formField';
+import type {
+  FieldAnswer,
+  FormField,
+  RichtextField,
+  SectionField,
+} from '../../document/types';
 import type { SharedDocument } from '../api/sharedDocumentApi';
 
 import { SharedHeader } from './SharedHeader';
 
 interface SharedQnaFunnelProps {
   doc: SharedDocument;
-  answers: Record<string, QnaAnswer>;
-  onAnswerChange: (questionId: string, patch: Partial<QnaAnswer>) => void;
+  answers: Record<string, FieldAnswer>;
+  onAnswerChange: (fieldKey: string, answer: FieldAnswer) => void;
+  /** 서명 필드 입력 요청 — 페이지가 서명 시트를 열고 결과를 answers에 반영 */
+  onRequestSignature: (fieldKey: string) => void;
   submitting: boolean;
-  /** 첫 문항에서 "이전" — 진입 화면으로 */
+  /** 첫 필드에서 "이전" — 진입 화면으로 */
   onBack: () => void;
   onSubmit: () => void;
 }
 
-/** 모든 문항 필수 — 유형별 "응답됨" 판정(section은 응답 불필요). */
-function isAnswered(q: QnaQuestion, a: QnaAnswer | undefined): boolean {
-  if (q.type === 'section') return true;
-  if (!a) return false;
-  switch (q.type) {
+/** 응답 불필요(정보) 필드 — section/richtext (타입가드: 이후 분기에서 required 접근 가능). */
+function isInfoField(
+  field: FormField
+): field is SectionField | RichtextField {
+  return field.type === 'section' || field.type === 'richtext';
+}
+
+/**
+ * 유형별 "응답됨" 판정. 정보 필드(section/richtext)는 응답 불필요,
+ * required=false 필드는 미응답 허용(건너뛰기 가능). 선택형은 옵션 선택 또는 '기타' 입력으로 충족.
+ */
+function isAnswered(field: FormField, answer: FieldAnswer | undefined): boolean {
+  if (isInfoField(field)) return true;
+  // 선택(필수 아님) 필드는 응답 없이도 통과.
+  if (!field.required) return true;
+  if (!answer) return false;
+  switch (field.type) {
     case 'short':
     case 'long':
-      return !!a.text?.trim();
+      return 'text' in answer && !!answer.text.trim();
     case 'single':
     case 'multiple':
       return (
-        (a.selected?.length ?? 0) > 0 ||
-        (!!a.etcChecked && !!a.etcText?.trim())
+        'selected' in answer &&
+        (answer.selected.length > 0 || !!answer.otherText?.trim())
       );
     case 'score':
-      return a.score != null;
+      return 'score' in answer && answer.score != null;
+    case 'consent':
+      return 'agreed' in answer && answer.agreed === true;
+    case 'signature':
+      return 'signatureDataUrl' in answer && !!answer.signatureDataUrl;
     default:
       return true;
   }
 }
 
 /**
- * 질문응답 퍼널(모바일) — 한 문항 = 한 페이지, 이전/다음. 모든 문항 필수라
- * 현재 문항이 응답돼야 "다음" 활성. 마지막 문항에서 "제출하기".
+ * 질문응답 퍼널(모바일) — 한 필드 = 한 페이지, 이전/다음. 현재 필드가 응답(또는
+ * required=false라 건너뛰기 허용)돼야 "다음" 활성. 마지막 필드에서 "제출하기".
  */
 export function SharedQnaFunnel({
   doc,
   answers,
   onAnswerChange,
+  onRequestSignature,
   submitting,
   onBack,
   onSubmit,
 }: SharedQnaFunnelProps) {
-  const questions = useMemo(
-    () =>
-      parseQnaQuestions(
-        JSON.stringify(
-          (doc.content as { questions?: unknown }).questions ?? []
-        )
-      ),
-    [doc.content]
-  );
+  const fields = useMemo(() => parseFields(doc.content), [doc.content]);
 
   const [index, setIndex] = useState(0);
-  const total = questions.length;
-  const question = questions[index];
+  const total = fields.length;
+  const field = fields[index];
 
-  // 비-섹션 문항 기준 번호(Q번호) — 현재 문항까지의 비섹션 개수.
-  const questionNumber = useMemo(() => {
-    if (!question || question.type === 'section') return undefined;
+  // 비-정보 필드 기준 번호(Q번호) — 현재 필드까지의 비정보 개수.
+  const fieldNumber = useMemo(() => {
+    if (!field || isInfoField(field)) return undefined;
     let n = 0;
     for (let i = 0; i <= index; i += 1) {
-      if (questions[i].type !== 'section') n += 1;
+      if (!isInfoField(fields[i])) n += 1;
     }
     return n;
-  }, [questions, index, question]);
+  }, [fields, index, field]);
 
-  if (!question) {
+  if (!field) {
     return (
       <div className="flex h-dvh flex-col bg-white">
         <SharedHeader title={doc.documentTitle} onBack={onBack} />
@@ -88,7 +104,7 @@ export function SharedQnaFunnel({
   }
 
   const isLast = index === total - 1;
-  const answered = isAnswered(question, answers[question.id]);
+  const answered = isAnswered(field, answers[field.key]);
 
   const goPrev = () => {
     if (index === 0) onBack();
@@ -105,12 +121,13 @@ export function SharedQnaFunnel({
       <SharedHeader title={doc.documentTitle} onBack={goPrev} />
 
       <div className="flex-1 overflow-y-auto px-6 pb-10 pt-6">
-        <QnaQuestionContent
-          key={question.id}
-          question={question}
-          number={questionNumber}
-          answer={answers[question.id]}
-          onAnswerChange={(patch) => onAnswerChange(question.id, patch)}
+        <FieldContent
+          key={field.key}
+          field={field}
+          number={fieldNumber}
+          answer={answers[field.key]}
+          onAnswerChange={(answer) => onAnswerChange(field.key, answer)}
+          onRequestSignature={() => onRequestSignature(field.key)}
         />
       </div>
 

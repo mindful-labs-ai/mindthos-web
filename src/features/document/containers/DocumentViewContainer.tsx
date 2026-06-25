@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import DOMPurify from 'dompurify';
 import { ChevronLeft, Printer } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
@@ -9,17 +8,17 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
 
-import { QnaQuestionContent } from '../components/QnaQuestionContent';
+import { FieldContent } from '../components/FieldContent';
+import { parseFields } from '../constants/formField';
 import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
-import { parseQnaQuestions } from '../constants/qnaQuestion';
-import type { QnaAnswer } from '../types';
+import type { DocumentContent, FieldAnswer } from '../types';
 
 /** 뷰에서 쓰는 통합 표현 — 내 문서(content+kind) / 템플릿(category→kind 파생) 공용 */
 interface ViewDocument {
   id: string;
   title: string;
   kind: MyDocumentKind;
-  content: string | null;
+  content: DocumentContent | null;
   /** 템플릿(기본 문서)이면 편집 불가 */
   editable: boolean;
 }
@@ -83,23 +82,20 @@ export function DocumentViewContainer() {
     };
   }, [documentId, getMyDocument, getTemplate]);
 
-  // 질문 id → 응답 값 — 화면 표시·출력용 임시 상태 (저장 안 함)
-  const [answers, setAnswers] = useState<Record<string, QnaAnswer>>({});
+  // 필드 key → 응답 값 — 화면 표시·출력용 임시 상태 (저장 안 함)
+  const [answers, setAnswers] = useState<Record<string, FieldAnswer>>({});
 
-  const updateAnswer = (questionId: string, patch: Partial<QnaAnswer>) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: { ...prev[questionId], ...patch },
-    }));
+  const updateAnswer = (fieldKey: string, answer: FieldAnswer) => {
+    setAnswers((prev) => ({ ...prev, [fieldKey]: answer }));
   };
 
   const goBackToList = () => {
     navigateWithUtm(ROUTES.DOCUMENTS);
   };
 
-  const questions = parseQnaQuestions(document?.content ?? null);
-  // 질문 번호 — 제목 및 설명(section)은 번호를 매기지 않는다
-  let questionNumber = 0;
+  const fields = parseFields(document?.content ?? null);
+  // 필드 번호 — section/richtext는 번호를 매기지 않는다
+  let fieldNumber = 0;
 
   return (
     <div className="mx-auto w-full max-w-[1364px] px-4 py-6 md:px-10 lg:px-16 lg:py-[42px]">
@@ -177,40 +173,28 @@ export function DocumentViewContainer() {
             className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
           />
 
-          {/* 종류별 본문 */}
-          {document.kind === 'consent' ? (
-            <div
-              className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 [&_h1]:font-headline [&_h2]:font-headline ${
-                isMobileView
-                  ? 'mt-6 text-m [&_h1]:text-xl [&_h2]:text-l'
-                  : 'mt-10 text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
-              }`}
-              // 본인이 제작 뷰에서 작성한 HTML — 클라이언트에서 DOMPurify로 sanitize(방어적).
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(document.content ?? ''),
-              }}
-            />
-          ) : (
-            <div
-              className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
-                isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
-              }`}
-            >
-              {questions.map((question) => {
-                const number =
-                  question.type === 'section' ? undefined : ++questionNumber;
-                return (
-                  <QnaQuestionContent
-                    key={question.id}
-                    question={question}
-                    number={number}
-                    answer={answers[question.id]}
-                    onAnswerChange={(patch) => updateAnswer(question.id, patch)}
-                  />
-                );
-              })}
-            </div>
-          )}
+          {/* 통합 본문 — 필드를 카드 박스 없이 나열 (section/richtext 외엔 Q번호) */}
+          <div
+            className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
+              isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
+            }`}
+          >
+            {fields.map((field) => {
+              const number =
+                field.type === 'section' || field.type === 'richtext'
+                  ? undefined
+                  : ++fieldNumber;
+              return (
+                <FieldContent
+                  key={field.key}
+                  field={field}
+                  number={number}
+                  answer={answers[field.key]}
+                  onAnswerChange={(answer) => updateAnswer(field.key, answer)}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

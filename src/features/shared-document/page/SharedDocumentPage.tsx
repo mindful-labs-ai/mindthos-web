@@ -10,11 +10,8 @@ import { useParams } from 'react-router-dom';
 
 import { ServerApiError } from '@/shared/api/server/serverClient';
 
-import type {
-  ConsentResponse,
-  QnaAnswer,
-  QnaResponse,
-} from '../../document/types';
+import { parseFields } from '../../document/constants/formField';
+import type { DocumentResponse, FieldAnswer } from '../../document/types';
 import {
   fetchSharedDocument,
   submitSharedDocument,
@@ -97,12 +94,17 @@ export default function SharedDocumentPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [step, setStep] = useState<Step>('intro');
+  // 인트로 [필수] 민감정보 동의 — 모든 공유문서 공통 시스템 동의(문서 content 필드와 무관).
+  // 제출 시 sensitiveInfoConsent로 서버에 전송 → 서버가 true 강제 +
+  // sent_document.sensitive_info_consent_at에 동의 시각 기록(응답 jsonb와 분리된 전용 컬럼).
   const [sensitiveConsent, setSensitiveConsent] = useState(false);
 
-  // 질문응답
-  const [answers, setAnswers] = useState<Record<string, QnaAnswer>>({});
-  // 동의서 서명
+  // 필드 key → 응답(FieldAnswer) — CONSENT/QNA 공통 단일 응답맵
+  const [answers, setAnswers] = useState<Record<string, FieldAnswer>>({});
+  // 서명 시트 — 열려 있는 동안 대상 필드 key를 기억(QNA signature 필드). CONSENT는 null.
   const [signOpen, setSignOpen] = useState(false);
+  const [signTargetKey, setSignTargetKey] = useState<string | null>(null);
+  // 동의서(CONSENT) 모드 서명 dataURL — read 화면 푸터/제출에 사용
   const [signature, setSignature] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -137,27 +139,21 @@ export default function SharedDocumentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, sentRowId, accessToken]);
 
-  const updateAnswer = (questionId: string, patch: Partial<QnaAnswer>) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionId]: {
-        selected: [],
-        text: '',
-        etcChecked: false,
-        etcText: '',
-        score: undefined,
-        ...prev[questionId],
-        ...patch,
-      },
-    }));
+  const updateAnswer = (fieldKey: string, answer: FieldAnswer) => {
+    setAnswers((prev) => ({ ...prev, [fieldKey]: answer }));
   };
 
-  const submit = async (response: ConsentResponse | QnaResponse) => {
+  const submit = async (response: DocumentResponse) => {
     if (!params) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const updated = await submitSharedDocument(params, response);
+      // sensitiveConsent: 인트로 [필수] 민감정보 동의 — 서버가 true 요구·동의 시각 기록(전용 컬럼).
+      const updated = await submitSharedDocument(
+        params,
+        response,
+        sensitiveConsent
+      );
       setDoc(updated);
       setDone(true);
     } catch (e) {
@@ -197,24 +193,28 @@ export default function SharedDocumentPage() {
     );
   }
 
+  // 통합 본문 필드 — CONSENT/QNA 공통 봉투에서 파싱.
+  const fields = parseFields(doc.content);
+
+  /** 동의서(CONSENT) 제출 — consent 필드는 동의, signature 필드는 서명으로 채워 응답맵 구성. */
   const submitConsent = () => {
-    const payload: ConsentResponse = {
-      sensitiveInfoConsent: sensitiveConsent,
-      agreed: true,
-      signedName: doc.clientName,
-      signatureDataUrl: signature ?? undefined,
-      signedAt: new Date().toISOString(),
-    };
-    return submit(payload);
+    const signedAt = new Date().toISOString();
+    const built: Record<string, FieldAnswer> = { ...answers };
+    for (const field of fields) {
+      if (field.type === 'consent') {
+        built[field.key] = { agreed: true };
+      } else if (field.type === 'signature') {
+        built[field.key] = {
+          signatureDataUrl: signature ?? '',
+          signedName: doc.clientName,
+          signedAt,
+        };
+      }
+    }
+    return submit({ answers: built });
   };
 
-  const submitQna = () => {
-    const payload: QnaResponse = {
-      sensitiveInfoConsent: sensitiveConsent,
-      answers,
-    };
-    return submit(payload);
-  };
+  const submitQna = () => submit({ answers });
 
   let content: ReactElement;
   if (step === 'detail') {
@@ -229,24 +229,18 @@ export default function SharedDocumentPage() {
     );
   } else if (step === 'read') {
     content = (
-      <>
-        <SharedConsentRead
-          doc={doc}
-          signatureDataUrl={signature}
-          submitting={submitting}
-          onBack={() => setStep('intro')}
-          onSign={() => setSignOpen(true)}
-          onSubmit={submitConsent}
-        />
-        <SharedSignatureSheet
-          open={signOpen}
-          onClose={() => setSignOpen(false)}
-          onConfirm={(dataUrl) => {
-            setSignature(dataUrl);
-            setSignOpen(false);
-          }}
-        />
-      </>
+      <SharedConsentRead
+        doc={doc}
+        fields={fields}
+        signatureDataUrl={signature}
+        submitting={submitting}
+        onBack={() => setStep('intro')}
+        onSign={() => {
+          setSignTargetKey(null);
+          setSignOpen(true);
+        }}
+        onSubmit={submitConsent}
+      />
     );
   } else if (step === 'funnel') {
     content = (
@@ -254,6 +248,10 @@ export default function SharedDocumentPage() {
         doc={doc}
         answers={answers}
         onAnswerChange={updateAnswer}
+        onRequestSignature={(fieldKey) => {
+          setSignTargetKey(fieldKey);
+          setSignOpen(true);
+        }}
         submitting={submitting}
         onBack={() => setStep('intro')}
         onSubmit={submitQna}
@@ -275,6 +273,23 @@ export default function SharedDocumentPage() {
   return (
     <SharedScreenFrame>
       {content}
+      {/* 서명 시트(공용) — CONSENT는 서명 상태, QNA signature 필드는 해당 필드 응답으로 반영. */}
+      <SharedSignatureSheet
+        open={signOpen}
+        onClose={() => setSignOpen(false)}
+        onConfirm={(dataUrl) => {
+          if (signTargetKey) {
+            updateAnswer(signTargetKey, {
+              signatureDataUrl: dataUrl,
+              signedName: doc.clientName,
+              signedAt: new Date().toISOString(),
+            });
+          } else {
+            setSignature(dataUrl);
+          }
+          setSignOpen(false);
+        }}
+      />
       {submitError && (
         <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
           <div className="mx-auto max-w-[480px] rounded-lg bg-red-80 px-4 py-3 text-sm font-medium text-white shadow-lg">

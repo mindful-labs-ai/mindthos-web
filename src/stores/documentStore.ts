@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { documentDataSource } from '@/features/document/adapters';
+import type { DocumentContent } from '@/features/document/types';
 
 /**
  * 문서 관리 스토어 (zustand).
@@ -16,8 +17,8 @@ export interface CounselDocument {
   /** 카드 설명 (예: "내담자 서명", "10개 문항 질문") */
   description: string;
   category: DocumentCategory;
-  /** 문서 본문 — 기본 문서는 추후 채움, 내 문서는 커스텀 작업 예정 */
-  content: string | null;
+  /** 문서 본문 — 통합 양식(FormField) content 봉투 */
+  content: DocumentContent | null;
 }
 
 /** 마음토스 기본 문서 — 고정 목록 (추가/삭제 불가) */
@@ -94,8 +95,8 @@ export interface MyDocument {
   validation: MyDocumentValidation;
   /** 등록일 (ISO) */
   createdAt: string;
-  /** 문서 본문 — 내부 상세는 후속 작업 */
-  content: string | null;
+  /** 문서 본문 — 통합 양식(FormField) content 봉투 */
+  content: DocumentContent | null;
 }
 
 interface DocumentState {
@@ -115,22 +116,22 @@ interface DocumentState {
     title: string;
     kind: MyDocumentKind;
     status?: MyDocumentStatus;
-    /** 동의서=HTML 문자열, 질문·응답=질문 배열 JSON 문자열 */
-    content?: string | null;
+    /** 통합 양식 content 봉투 ({ version, fields }) */
+    content?: DocumentContent | null;
   }) => Promise<MyDocument>;
   /** 편집 저장 — 제목·본문·상태만 갱신 (kind·등록일 유지) */
   updateMyDocument: (
     id: string,
     patch: {
       title: string;
-      content: string | null;
+      content: DocumentContent | null;
       status?: MyDocumentStatus;
     }
   ) => Promise<void>;
   removeMyDocument: (id: string) => Promise<void>;
 }
 
-export const useDocumentStore = create<DocumentState>((set, get) => ({
+export const useDocumentStore = create<DocumentState>((set) => ({
   templates: [],
   myDocuments: [],
   loading: false,
@@ -157,9 +158,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     return created;
   },
   updateMyDocument: async (id, patch) => {
-    // content 봉투 매핑에 kind가 필요 — 현재 상태에서 읽는다.
-    const kind = get().myDocuments.find((d) => d.id === id)?.kind ?? 'consent';
-    const updated = await documentDataSource.updateMyDocument(id, patch, kind);
+    const updated = await documentDataSource.updateMyDocument(id, patch);
     set((state) => ({
       myDocuments: state.myDocuments.map((d) => (d.id === id ? updated : d)),
     }));

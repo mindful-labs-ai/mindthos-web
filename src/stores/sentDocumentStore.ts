@@ -1,7 +1,10 @@
 import { create } from 'zustand';
 
 import { documentDataSource } from '@/features/document/adapters';
-import type { DocumentResponse } from '@/features/document/types';
+import type {
+  DocumentContent,
+  DocumentResponse,
+} from '@/features/document/types';
 import type { MyDocumentKind } from '@/stores/documentStore';
 
 /**
@@ -30,7 +33,7 @@ export interface SentDocument {
   /** 발송 시점 문서 스냅샷 — 이후 문서가 수정/삭제돼도 발송본 유지 */
   title: string;
   kind: MyDocumentKind;
-  content: string | null;
+  content: DocumentContent | null;
   /** 마감 기한 ISO (null = 무기한) */
   expiredAt: string | null;
   /** 마감 기한 표시 라벨 — expiredAt에서 파생 (예: "2026.07.01까지", "마감 기한 없음") */
@@ -54,7 +57,7 @@ export interface SendDocumentInput {
   clientName: string;
   documentTitle: string;
   kind: MyDocumentKind;
-  content: string | null;
+  content: DocumentContent | null;
   sourceTemplateId?: string;
   sourceUserDocumentId?: string;
   /** 마감 기한 ISO (생략 = 무기한) */
