@@ -28,7 +28,7 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
       onClick={() => navigateWithUtm(getDocumentViewRoute(document.id))}
       className="relative flex h-[182px] w-[297px] flex-shrink-0 flex-col rounded-2xl border border-grey-40 bg-white px-7 py-6 text-left transition-colors lg:hover:bg-grey-10"
     >
-      <h3 className="truncate text-xl font-headline leading-[24px] text-grey-100">
+      <h3 className="truncate text-l font-headline leading-[24px] text-grey-100">
         {document.title}
       </h3>
       <p className="mt-3 text-m font-medium leading-[140%] text-grey-100">
