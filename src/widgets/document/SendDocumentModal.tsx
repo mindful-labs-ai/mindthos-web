@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
+import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { UserIcon } from '@/shared/icons';
 import { MobileModalHeader } from '@/shared/ui';
@@ -58,6 +59,26 @@ function deadlineToExpiredAt(key: DeadlineKey): string | undefined {
   else
     date.setDate(date.getDate() + (key === '3d' ? 3 : key === '1w' ? 7 : 14));
   return date.toISOString();
+}
+
+function hasClientPhoneNumber(client: Client | null): boolean {
+  return (
+    typeof client?.phone_number === 'string' &&
+    client.phone_number.trim().length > 0
+  );
+}
+
+function getServerErrorDataMessage(error: ServerApiError): string | null {
+  if (!error.raw || typeof error.raw !== 'object') return null;
+  const data = (error.raw as { data?: unknown }).data;
+  return typeof data === 'string' && data.trim().length > 0 ? data : null;
+}
+
+function getSendDocumentErrorMessage(error: unknown): string {
+  if (error instanceof ServerApiError) {
+    return getServerErrorDataMessage(error) ?? error.message;
+  }
+  return '잠시 후 다시 시도해 주세요.';
 }
 
 const DEADLINE_OPTIONS = [
@@ -133,10 +154,24 @@ export function SendDocumentModal({
     setSelectedDocument(toSendTarget(templates[0]));
   }, [open, selectedDocument, templates]);
 
-  const canSend = !!selectedClient && !!selectedDocument && !sending;
+  const selectedClientNeedsPhoneNumber =
+    !!selectedClient && !hasClientPhoneNumber(selectedClient);
+  const canSend =
+    !!selectedClient &&
+    !!selectedDocument &&
+    !selectedClientNeedsPhoneNumber &&
+    !sending;
 
   const handleSend = async () => {
     if (!selectedClient || !selectedDocument || sending) return;
+    if (!hasClientPhoneNumber(selectedClient)) {
+      toast({
+        title: '휴대폰 번호가 필요해요',
+        description:
+          '내담자 정보에 휴대폰 번호를 등록한 뒤 문서를 발송해 주세요.',
+      });
+      return;
+    }
     setSending(true);
     try {
       // 발송 스냅샷 content는 목록에 없으므로 단건 조회로 채운다.
@@ -165,15 +200,16 @@ export function SendDocumentModal({
         toast({
           title: '문서 발송 실패',
           description:
-            created.failureMessage ?? '알림톡 발송에 실패했어요. 다시 시도해 주세요.',
+            created.failureMessage ??
+            '알림톡 발송에 실패했어요. 다시 시도해 주세요.',
         });
         return;
       }
       onOpenChange(false);
-    } catch {
+    } catch (error) {
       toast({
         title: '문서 발송 실패',
-        description: '잠시 후 다시 시도해 주세요.',
+        description: getSendDocumentErrorMessage(error),
       });
     } finally {
       setSending(false);
@@ -272,25 +308,34 @@ export function SendDocumentModal({
 
       <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-5 pb-8 pt-6 lg:mt-12 lg:overflow-visible lg:px-0 lg:pb-0 lg:pt-0">
         {/* 발송 대상 — client-selector로 변경 가능 */}
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-m font-emphasize text-grey-100">발송 대상</span>
-          <ClientSelector
-            clients={clients}
-            selectedClient={selectedClient}
-            onSelect={setSelectedClient}
-            variant="dropdown"
-            open={isClientOpen}
-            onOpenChange={setIsClientOpen}
-            placement="bottom-right"
-            trigger={
-              <span className="flex h-[34px] cursor-pointer items-center gap-3 rounded-lg border border-grey-30 bg-white px-2.5 transition-colors lg:hover:bg-grey-10">
-                <UserIcon size={18} className="text-grey-60" />
-                <span className="text-sm font-medium text-grey-100">
-                  {selectedClient?.name ?? '내담자 선택'}
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-m font-emphasize text-grey-100">
+              발송 대상
+            </span>
+            <ClientSelector
+              clients={clients}
+              selectedClient={selectedClient}
+              onSelect={setSelectedClient}
+              variant="dropdown"
+              open={isClientOpen}
+              onOpenChange={setIsClientOpen}
+              placement="bottom-right"
+              trigger={
+                <span className="flex h-[34px] cursor-pointer items-center gap-3 rounded-lg border border-grey-30 bg-white px-2.5 transition-colors lg:hover:bg-grey-10">
+                  <UserIcon size={18} className="text-grey-60" />
+                  <span className="text-sm font-medium text-grey-100">
+                    {selectedClient?.name ?? '내담자 선택'}
+                  </span>
                 </span>
-              </span>
-            }
-          />
+              }
+            />
+          </div>
+          {selectedClientNeedsPhoneNumber && (
+            <p className="mt-2 text-right text-sm font-medium text-danger">
+              휴대폰 번호가 없는 내담자는 알림톡을 보낼 수 없어요.
+            </p>
+          )}
         </div>
 
         {/* 문서 선택 — 내 문서 / 마음토스 양식 그룹 드롭다운 */}
