@@ -82,12 +82,16 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
 
 /** 내 문서 양식 종류 — 카드 desc와 (추후) 내부 편집 UI를 결정 */
 export type MyDocumentKind = 'consent' | 'qna';
+export type MyDocumentStatus = 'draft' | 'completed';
+export type MyDocumentValidation = 'valid' | 'invalid';
 
 /** 내 문서 — 기본 문서와 카드 구성이 달라 별도 모델 */
 export interface MyDocument {
   id: string;
   title: string;
   kind: MyDocumentKind;
+  status: MyDocumentStatus;
+  validation: MyDocumentValidation;
   /** 등록일 (ISO) */
   createdAt: string;
   /** 문서 본문 — 내부 상세는 후속 작업 */
@@ -110,13 +114,18 @@ interface DocumentState {
   addMyDocument: (doc: {
     title: string;
     kind: MyDocumentKind;
+    status?: MyDocumentStatus;
     /** 동의서=HTML 문자열, 질문·응답=질문 배열 JSON 문자열 */
     content?: string | null;
   }) => Promise<MyDocument>;
-  /** 편집 저장 — 제목·본문만 갱신 (kind·등록일 유지) */
+  /** 편집 저장 — 제목·본문·상태만 갱신 (kind·등록일 유지) */
   updateMyDocument: (
     id: string,
-    patch: { title: string; content: string | null }
+    patch: {
+      title: string;
+      content: string | null;
+      status?: MyDocumentStatus;
+    }
   ) => Promise<void>;
   removeMyDocument: (id: string) => Promise<void>;
 }
@@ -137,10 +146,11 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   },
   getMyDocument: (id) => documentDataSource.getMyDocument(id),
   getTemplate: (id) => documentDataSource.getTemplate(id),
-  addMyDocument: async ({ title, kind, content = null }) => {
+  addMyDocument: async ({ title, kind, status, content = null }) => {
     const created = await documentDataSource.createMyDocument({
       title,
       kind,
+      status,
       content,
     });
     set((state) => ({ myDocuments: [...state.myDocuments, created] }));
@@ -148,8 +158,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   },
   updateMyDocument: async (id, patch) => {
     // content 봉투 매핑에 kind가 필요 — 현재 상태에서 읽는다.
-    const kind =
-      get().myDocuments.find((d) => d.id === id)?.kind ?? 'consent';
+    const kind = get().myDocuments.find((d) => d.id === id)?.kind ?? 'consent';
     const updated = await documentDataSource.updateMyDocument(id, patch, kind);
     set((state) => ({
       myDocuments: state.myDocuments.map((d) => (d.id === id ? updated : d)),

@@ -5,6 +5,8 @@ import type {
   DocumentCategory,
   MyDocument,
   MyDocumentKind,
+  MyDocumentStatus,
+  MyDocumentValidation,
 } from '@/stores/documentStore';
 import type {
   SentDocument,
@@ -32,8 +34,9 @@ import type { DocumentDataSource } from './types';
  * 매핑 메모:
  *  - kind: 서버 CONSENT|QNA ↔ 프론트 consent|qna.
  *  - category: 서버 ETHICS|PREPARATION|ASSESSMENT ↔ 프론트 ethics|preparation|assessment.
- *  - content 봉투(프론트 string ↔ 서버 jsonb object), kind별 매핑:
- *      consent → { html } / qna → { questions: [...] }.
+ *  - user-document 저장과 sent-document 발송의 QNA content 계약이 현재 다르다.
+ *      user-document 저장 → QnaQuestion[] (서버 validation 임시 호환)
+ *      sent-document 발송 → { questions: [...] } (공유문서 화면 계약)
  *  - SentDocument.status는 서버 타임스탬프에서 파생, clientName은 호출자가 보정('').
  */
 
@@ -80,7 +83,7 @@ interface DocumentTemplateDto {
   description: string | null;
   category: ServerCategory;
   kind: ServerKind;
-  content: Record<string, unknown> | null;
+  content: unknown | null;
   sortOrder: number | null;
   createdAt: string;
   updatedAt: string;
@@ -92,7 +95,7 @@ interface UserDocumentDto {
   sourceTemplateId: string | null;
   title: string;
   kind: ServerKind;
-  content: Record<string, unknown> | null;
+  content: unknown | null;
   status: ServerStatus;
   validation: ServerValidation;
   createdAt: string;
@@ -104,14 +107,14 @@ interface CreateUserDocumentRequest {
   sourceTemplateId?: string;
   title?: string;
   kind?: ServerKind;
-  content?: Record<string, unknown> | null;
+  content?: unknown | null;
   status?: ServerStatus;
 }
 
 /** PATCH /user-documents/:id body */
 interface UpdateUserDocumentRequest {
   title?: string;
-  content?: Record<string, unknown> | null;
+  content?: unknown | null;
   status?: ServerStatus;
 }
 
@@ -162,14 +165,47 @@ const KIND_FROM_SERVER: Record<ServerKind, MyDocumentKind> = {
   QNA: 'qna',
 };
 
+const STATUS_TO_SERVER: Record<MyDocumentStatus, ServerStatus> = {
+  draft: 'DRAFT',
+  completed: 'COMPLETED',
+};
+
+const STATUS_FROM_SERVER: Record<ServerStatus, MyDocumentStatus> = {
+  DRAFT: 'draft',
+  COMPLETED: 'completed',
+};
+
+const VALIDATION_FROM_SERVER: Record<ServerValidation, MyDocumentValidation> = {
+  VALID: 'valid',
+  INVALID: 'invalid',
+};
+
 const CATEGORY_FROM_SERVER: Record<ServerCategory, DocumentCategory> = {
   ETHICS: 'ethics',
   PREPARATION: 'preparation',
   ASSESSMENT: 'assessment',
 };
 
-/** content 문자열 → 서버 jsonb object (kind별 봉투). null/빈 값이면 null. */
-function toServerContent(
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** 개인문서 저장용 content. QNA는 서버 validation 임시 호환을 위해 배열로 보낸다. */
+function toUserDocumentContent(
+  kind: MyDocumentKind,
+  content: string | null
+): unknown | null {
+  if (!content) return null;
+  if (kind === 'consent') return { html: content };
+  try {
+    return JSON.parse(content);
+  } catch {
+    return content;
+  }
+}
+
+/** 발송 스냅샷용 content. 공유문서 QNA 화면은 { questions } 봉투를 기대한다. */
+function toSentDocumentContent(
   kind: MyDocumentKind,
   content: string | null
 ): Record<string, unknown> | null {
@@ -183,15 +219,23 @@ function toServerContent(
   }
 }
 
-/** 서버 jsonb object → content 문자열 (kind별 봉투). 없으면 null. */
+/** 서버 jsonb → 프론트 content 문자열. QNA는 배열/봉투/문자열을 모두 수용한다. */
 function fromServerContent(
   kind: MyDocumentKind,
-  obj: Record<string, unknown> | null
+  obj: unknown | null
 ): string | null {
   if (!obj) return null;
-  if (kind === 'consent') return (obj.html as string) ?? null;
-  // qna: questions가 있으면 JSON 문자열로, 없으면 객체 전체를 폴백 직렬화.
-  return obj.questions ? JSON.stringify(obj.questions) : JSON.stringify(obj);
+  if (kind === 'consent') {
+    if (typeof obj === 'string') return obj;
+    if (isRecord(obj) && typeof obj.html === 'string') return obj.html;
+    return null;
+  }
+  if (Array.isArray(obj)) return JSON.stringify(obj);
+  if (typeof obj === 'string') return obj;
+  if (isRecord(obj) && Array.isArray(obj.questions)) {
+    return JSON.stringify(obj.questions);
+  }
+  return JSON.stringify(obj);
 }
 
 /** DocumentListItem(source=TEMPLATE) → CounselDocument (content 없음 → null) */
@@ -211,6 +255,10 @@ function listItemToMyDocument(item: DocumentListItem): MyDocument {
     id: item.id,
     title: item.title,
     kind: KIND_FROM_SERVER[item.kind],
+    status: item.status ? STATUS_FROM_SERVER[item.status] : 'draft',
+    validation: item.validation
+      ? VALIDATION_FROM_SERVER[item.validation]
+      : 'invalid',
     createdAt: item.createdAt,
     content: null,
   };
@@ -235,6 +283,8 @@ function userDocumentToMyDocument(dto: UserDocumentDto): MyDocument {
     id: dto.id,
     title: dto.title,
     kind,
+    status: STATUS_FROM_SERVER[dto.status],
+    validation: VALIDATION_FROM_SERVER[dto.validation],
     createdAt: dto.createdAt,
     content: fromServerContent(kind, dto.content),
   };
@@ -323,8 +373,8 @@ export const realDocumentDataSource: DocumentDataSource = {
     const body: CreateUserDocumentRequest = {
       title: input.title,
       kind: KIND_TO_SERVER[input.kind],
-      content: toServerContent(input.kind, input.content),
-      // status는 생략 → 서버 기본 DRAFT
+      content: toUserDocumentContent(input.kind, input.content),
+      status: STATUS_TO_SERVER[input.status ?? 'completed'],
     };
     const dto = await serverRequest<UserDocumentDto>(
       DOCUMENT_ROUTES.userDocuments,
@@ -336,7 +386,8 @@ export const realDocumentDataSource: DocumentDataSource = {
   async updateMyDocument(id, patch, kind): Promise<MyDocument> {
     const body: UpdateUserDocumentRequest = {
       title: patch.title,
-      content: toServerContent(kind, patch.content),
+      content: toUserDocumentContent(kind, patch.content),
+      status: STATUS_TO_SERVER[patch.status ?? 'completed'],
     };
     const dto = await serverRequest<UserDocumentDto>(
       DOCUMENT_ROUTES.userDocument(id),
@@ -363,7 +414,7 @@ export const realDocumentDataSource: DocumentDataSource = {
       clientId: input.clientId,
       documentTitle: input.documentTitle,
       kind: KIND_TO_SERVER[input.kind],
-      content: toServerContent(input.kind, input.content) ?? {},
+      content: toSentDocumentContent(input.kind, input.content) ?? {},
       ...(input.sourceTemplateId
         ? { sourceTemplateId: input.sourceTemplateId }
         : {}),

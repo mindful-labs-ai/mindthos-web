@@ -3,6 +3,8 @@ import {
   type CounselDocument,
   type MyDocument,
   type MyDocumentKind,
+  type MyDocumentStatus,
+  type MyDocumentValidation,
 } from '@/stores/documentStore';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
@@ -25,6 +27,22 @@ let myDocSeq = 0;
 /** 발송 내역 (인메모리) */
 const sentDocuments: SentDocument[] = [];
 let sentDocSeq = 0;
+
+function deriveValidation(
+  kind: MyDocumentKind,
+  content: string | null
+): MyDocumentValidation {
+  if (!content || content.trim().length === 0) return 'invalid';
+  if (kind === 'consent') return 'valid';
+  try {
+    const questions = JSON.parse(content) as unknown;
+    return Array.isArray(questions) && questions.length > 0
+      ? 'valid'
+      : 'invalid';
+  } catch {
+    return 'invalid';
+  }
+}
 
 export const mockDocumentDataSource: DocumentDataSource = {
   async listDocuments() {
@@ -50,6 +68,7 @@ export const mockDocumentDataSource: DocumentDataSource = {
   async createMyDocument(input: {
     title: string;
     kind: MyDocumentKind;
+    status?: MyDocumentStatus;
     content: string | null;
   }): Promise<MyDocument> {
     myDocSeq += 1;
@@ -57,6 +76,8 @@ export const mockDocumentDataSource: DocumentDataSource = {
       id: `my-doc-${myDocSeq}`,
       title: input.title,
       kind: input.kind,
+      status: input.status ?? 'completed',
+      validation: deriveValidation(input.kind, input.content),
       createdAt: new Date().toISOString(),
       content: input.content,
     };
@@ -66,12 +87,18 @@ export const mockDocumentDataSource: DocumentDataSource = {
 
   async updateMyDocument(
     id: string,
-    patch: { title: string; content: string | null }
+    patch: {
+      title: string;
+      content: string | null;
+      status?: MyDocumentStatus;
+    }
   ): Promise<MyDocument> {
     const doc = myDocuments.find((d) => d.id === id);
     if (!doc) throw new Error(`내 문서를 찾을 수 없습니다: ${id}`);
     doc.title = patch.title;
     doc.content = patch.content;
+    doc.status = patch.status ?? 'completed';
+    doc.validation = deriveValidation(doc.kind, patch.content);
     return { ...doc };
   },
 

@@ -2,6 +2,7 @@ import type {
   CounselDocument,
   MyDocument,
   MyDocumentKind,
+  MyDocumentStatus,
 } from '@/stores/documentStore';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
@@ -30,12 +31,17 @@ export interface DocumentDataSource {
   createMyDocument(input: {
     title: string;
     kind: MyDocumentKind;
+    status?: MyDocumentStatus;
     content: string | null;
   }): Promise<MyDocument>;
   /** 편집 저장 — kind는 content 봉투 매핑에만 사용(서버 kind는 변경 안 함) */
   updateMyDocument(
     id: string,
-    patch: { title: string; content: string | null },
+    patch: {
+      title: string;
+      content: string | null;
+      status?: MyDocumentStatus;
+    },
     kind: MyDocumentKind
   ): Promise<MyDocument>;
   deleteMyDocument(id: string): Promise<void>;
