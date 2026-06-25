@@ -266,6 +266,7 @@ export function AiSupervisionContainer() {
                 isLoading={isLoadingAnalyses && !isDummyFlow}
                 pollingVersion={pollingVersion}
                 isReadOnly={isReadOnly}
+                hasNoSessionRecords={sessionRecordCount === 0}
                 onSaveContent={handleSaveAnalysisContent}
                 onCreateAnalysis={handleOpenCreateAnalysis}
                 isMobileView={isMobileView}

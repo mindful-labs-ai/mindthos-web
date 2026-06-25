@@ -11,7 +11,12 @@ import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
-import { CheckIcon, ChevronRightIcon, CopyIcon } from '@/shared/icons';
+import {
+  CheckIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  CreditIcon,
+} from '@/shared/icons';
 import { Modal } from '@/shared/ui';
 import type { TabItem } from '@/shared/ui/atoms/Tab';
 import { Tab } from '@/shared/ui/atoms/Tab';
@@ -44,6 +49,8 @@ interface ClientAnalysisTabProps {
   isReadOnly?: boolean;
   /** 분석 내용 저장 핸들러 */
   onSaveContent?: (analysisId: string, content: string) => Promise<void>;
+  /** 선택된 내담자의 상담 기록이 0개인지 — true면 빈 상태에서 생성 CTA 대신 안내문구 표시 */
+  hasNoSessionRecords?: boolean;
   isMobileView?: boolean;
 }
 
@@ -54,6 +61,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   pollingVersion,
   isReadOnly = false,
   onSaveContent,
+  hasNoSessionRecords = false,
   isMobileView = false,
 }) => {
   const { toast } = useToast();
@@ -181,8 +189,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       e.returnValue = '';
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () =>
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedEdits]);
 
   // 템플릿 이름 조회 헬퍼
@@ -703,18 +710,34 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
         {/* 분석 내용 */}
         <div
           className={`flex h-full min-h-[400px] flex-col items-center justify-center bg-white p-6 ${
-            isMobileView && !isTablet ? '' : 'rounded-lg border border-grey-30'
+            isMobileView && !isTablet ? '' : 'rounded-lg border border-grey-40'
           }`}
         >
-          <p className="mb-4 text-m text-grey-60">아직 분석 기록이 없어요.</p>
-          {onCreateAnalysis && (
-            <button
-              type="button"
-              onClick={onCreateAnalysis}
-              className="rounded-lg bg-green-80 px-8 py-3 text-m font-medium text-white transition-colors lg:hover:opacity-90"
-            >
-              AI 슈퍼비전 받기
-            </button>
+          {hasNoSessionRecords ? (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <p className="text-l font-medium text-grey-70">
+                아직 등록된 상담 기록이 없어요. <br /> 슈퍼비전을 위해서는 상담
+                기록을 <br /> 1회기 이상 등록해주세요.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="mb-6 text-center text-l font-medium text-grey-100">
+                다회기의 상담기록을 기반으로 <br /> 슈퍼비전을 받아보세요.
+              </p>
+              {onCreateAnalysis && (
+                <button
+                  type="button"
+                  onClick={onCreateAnalysis}
+                  className="flex gap-2 rounded-md border border-green-80 bg-green-20 px-3.5 py-1.5 text-m font-medium text-green-80 transition-colors lg:hover:opacity-90"
+                >
+                  AI 슈퍼비전 받기{' '}
+                  <span className="flex items-center justify-center gap-0.5 text-center">
+                    50 <CreditIcon size={14} className="text-green-80" />
+                  </span>
+                </button>
+              )}
+            </>
           )}
         </div>
         <LockedFeatureModal
