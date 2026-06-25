@@ -34,6 +34,21 @@ export function hasEmptyQnaOption(question: QnaQuestion): boolean {
   );
 }
 
+/** 서버 validation과 맞춘 저장 가능 질문 검사. */
+export function isValidQnaQuestionForSave(question: QnaQuestion): boolean {
+  if (question.title.trim().length === 0) return false;
+  if (hasEmptyQnaOption(question)) return false;
+  if (
+    question.type === 'score' &&
+    question.scoreMin !== undefined &&
+    question.scoreMax !== undefined &&
+    question.scoreMin >= question.scoreMax
+  ) {
+    return false;
+  }
+  return true;
+}
+
 /** 저장된 질문 JSON 파싱 — 형식이 다르면 빈 목록 */
 export function parseQnaQuestions(content: string | null): QnaQuestion[] {
   if (!content) return [];

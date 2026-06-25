@@ -17,7 +17,7 @@ import { QnaEditor } from '../components/editor/QnaEditor';
 import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
 import {
   createQnaQuestion,
-  hasEmptyQnaOption,
+  isValidQnaQuestionForSave,
   parseQnaQuestions,
 } from '../constants/qnaQuestion';
 import type { QnaQuestion } from '../types';
@@ -94,11 +94,12 @@ export function DocumentEditorContainer() {
     );
   };
 
-  // 질문·응답은 항목 1개 이상 + 선택형 항목에 빈 옵션이 없어야 저장 가능
+  // 임시 QA 정책: 저장 버튼은 서버 전송 가능 상태(COMPLETED)로 저장한다.
   const canSave =
     title.trim().length > 0 &&
-    (kind === 'consent' ||
-      (questions.length > 0 && !questions.some(hasEmptyQnaOption)));
+    (kind === 'consent'
+      ? consentHtml.trim().length > 0
+      : questions.length > 0 && questions.every(isValidQnaQuestionForSave));
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -107,9 +108,18 @@ export function DocumentEditorContainer() {
         ? consentHtml.trim() || null
         : JSON.stringify(questions);
     if (editingDocument) {
-      await updateMyDocument(editingDocument.id, { title: title.trim(), content });
+      await updateMyDocument(editingDocument.id, {
+        title: title.trim(),
+        content,
+        status: 'completed',
+      });
     } else {
-      await addMyDocument({ title: title.trim(), kind, content });
+      await addMyDocument({
+        title: title.trim(),
+        kind,
+        content,
+        status: 'completed',
+      });
     }
     goBack();
   };
