@@ -7,7 +7,7 @@ export type InputTone = 'primary' | 'secondary' | 'accent' | 'neutral';
 export type InputVariant = 'solid' | 'outline' | 'ghost' | 'soft';
 
 export interface InputProps
-  extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size'> {
+  extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size' | 'prefix'> {
   size?: InputSize;
   tone?: InputTone;
   variant?: InputVariant;
