@@ -54,13 +54,6 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     content: null,
   },
   {
-    id: 'default-intake-interview',
-    title: '심화 면접지',
-    description: '24개 문항 질문',
-    category: 'preparation',
-    content: null,
-  },
-  {
     id: 'default-phq9',
     title: 'PHQ-9',
     description: '9개 문항 질문',
