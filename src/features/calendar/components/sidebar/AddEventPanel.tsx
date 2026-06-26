@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { Calendar, ChevronDown, ChevronLeft, User } from 'lucide-react';
+import { Calendar, ChevronDown, User, X } from 'lucide-react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
@@ -57,8 +58,8 @@ interface AddEventPanelProps {
   onSelectDate: (day: Dayjs) => void;
   onClose: () => void;
   onSubmit: (draft: AddEventDraft) => void;
-  /** 편집 모드 삭제 — 있으면 하단에 '삭제하기' 노출 */
-  onDelete?: () => void;
+  /** 편집 모드 삭제 — 있으면 하단에 '삭제하기' 노출. 반복 일정은 'this'(이 회차)/'all'(전체) 구분 */
+  onDelete?: (mode: 'this' | 'all') => void;
 }
 
 const KIND_OPTIONS: { value: CalendarEventKind; label: string }[] = [
@@ -159,6 +160,15 @@ export function AddEventPanel({
     () => setCategorySelectOpen(false),
     categorySelectOpen
   );
+  // 화면 밖으로 안 나가게: 카테고리 드롭다운 위/아래 펼침 + 넘치면 좌표 보정
+  const categoryDropdownRef = React.useRef<HTMLDivElement>(null);
+  const { direction: categoryDirection, offset: categoryOffset } =
+    useDropdownPosition(
+      categoryFieldRef,
+      categoryDropdownRef,
+      categorySelectOpen,
+      { estimatedHeight: 210 }
+    );
 
   // 패널이 열린 상태에서 다시 드래그/선택해 초기 시간이 바뀌면 입력값 동기화
   React.useEffect(() => {
@@ -220,9 +230,8 @@ export function AddEventPanel({
     JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
   // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
   const counselingNeedsClient = kind === 'counseling' && !selectedClient;
-  // 필수값: 일정 제목 + 상담 일정이면 내담자.
-  const ctaEnabled =
-    (!isEdit || isDirty) && !counselingNeedsClient && title.trim().length > 0;
+  // 필수값: 상담 일정이면 내담자. 제목은 비워도 추가 가능('제목 없음'으로 저장).
+  const ctaEnabled = (!isEdit || isDirty) && !counselingNeedsClient;
 
   return (
     <div className="flex h-full flex-col">
@@ -233,18 +242,18 @@ export function AddEventPanel({
           onBack={onClose}
         />
       ) : (
-        <div className="flex items-center gap-3 px-5 pb-4 pt-7">
-          <button
-            type="button"
-            aria-label="뒤로"
-            onClick={onClose}
-            className="text-[#8b8c93]"
-          >
-            <ChevronLeft size={24} strokeWidth={2} />
-          </button>
+        <div className="flex items-center justify-between px-5 pb-4 pt-7">
           <h2 className="text-sm font-emphasize text-[#222121]">
             {isEdit ? '일정 변경하기' : '일정 추가하기'}
           </h2>
+          <button
+            type="button"
+            aria-label="닫기"
+            onClick={onClose}
+            className="text-[#8b8c93]"
+          >
+            <X size={24} strokeWidth={2} />
+          </button>
         </div>
       )}
 
@@ -275,39 +284,41 @@ export function AddEventPanel({
           </div>
         </div>
 
-        {/* 내담자 선택 — 앱 공용 ClientSelector 그대로 사용 */}
-        <div className="flex items-center justify-between gap-4">
-          <FieldLabel required={kind === 'counseling'}>내담자 선택</FieldLabel>
-          <ClientSelector
-            variant="dropdown"
-            clients={clients}
-            selectedClient={selectedClient}
-            onSelect={setSelectedClient}
-            open={clientSelectOpen}
-            onOpenChange={setClientSelectOpen}
-            placement="bottom-right"
-            trigger={
-              <div className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm">
-                <User
-                  size={18}
-                  strokeWidth={1.5}
-                  className="shrink-0 text-[#abaebe]"
-                />
-                <span
-                  className={
-                    selectedClient ? 'text-grey-100' : 'text-[#abaebe]'
-                  }
-                >
-                  {selectedClient ? selectedClient.name : '고객 선택 안됨'}
-                </span>
-              </div>
-            }
-          />
-        </div>
+        {/* 내담자 선택 — 상담 일정에서만 노출(개인 일정은 숨김) */}
+        {kind === 'counseling' && (
+          <div className="flex items-center justify-between gap-4">
+            <FieldLabel required>내담자 선택</FieldLabel>
+            <ClientSelector
+              variant="dropdown"
+              clients={clients}
+              selectedClient={selectedClient}
+              onSelect={setSelectedClient}
+              open={clientSelectOpen}
+              onOpenChange={setClientSelectOpen}
+              placement="bottom-right"
+              trigger={
+                <div className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm">
+                  <User
+                    size={18}
+                    strokeWidth={1.5}
+                    className="shrink-0 text-[#abaebe]"
+                  />
+                  <span
+                    className={
+                      selectedClient ? 'text-grey-100' : 'text-[#abaebe]'
+                    }
+                  >
+                    {selectedClient ? selectedClient.name : '고객 선택 안됨'}
+                  </span>
+                </div>
+              }
+            />
+          </div>
+        )}
 
-        {/* 일정 제목 */}
+        {/* 일정 제목 — 비워두면 '제목 없음'으로 저장(필수 아님) */}
         <div className="flex flex-col gap-4">
-          <FieldLabel required>일정 제목</FieldLabel>
+          <FieldLabel>일정 제목</FieldLabel>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -445,7 +456,21 @@ export function AddEventPanel({
                 />
               </button>
               {categorySelectOpen && (
-                <div className="absolute right-0 top-full z-20 mt-1 max-h-[210px] w-[180px] overflow-y-auto rounded-md border border-grey-40 bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+                <div
+                  ref={categoryDropdownRef}
+                  style={{
+                    transform:
+                      categoryOffset.x || categoryOffset.y
+                        ? `translate(${categoryOffset.x}px, ${categoryOffset.y}px)`
+                        : undefined,
+                  }}
+                  className={cn(
+                    'absolute right-0 z-30 max-h-[210px] w-[180px] overflow-y-auto rounded-md border border-grey-40 bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.1)]',
+                    categoryDirection === 'up'
+                      ? 'bottom-full mb-1'
+                      : 'top-full mt-1'
+                  )}
+                >
                   <button
                     type="button"
                     onClick={() => {
@@ -541,52 +566,73 @@ export function AddEventPanel({
 
           {editingEvent?.repeat ? (
             <>
-              <p className="mt-8 text-center text-l font-medium text-grey-100">
-                반복 일정이에요.
-                <br />
-                연결된 모든 회차가 함께 삭제돼요.
+              <p className="mt-6 text-center text-l font-medium text-grey-100">
+                반복 일정이에요. 삭제 범위를 선택해 주세요.
               </p>
-              <p className="mt-4 text-center text-sm text-grey-70">
+              <p className="mt-3 text-center text-sm text-grey-70">
                 {repeatCycleLabel(editingEvent.repeat)}
                 {editingEvent.repeat.count != null
                   ? ` · 총 ${editingEvent.repeat.count}회`
                   : editingEvent.repeat.until
                     ? ` · ${editingEvent.repeat.until}까지`
                     : ''}
-                <br />
-                삭제하면 되돌릴 수 없어요.
               </p>
+              <div className="mt-8 flex w-full flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmDelete(false);
+                    onDelete?.('this');
+                  }}
+                  className="w-full rounded-lg bg-red-80 py-2.5 text-l font-medium text-white transition-opacity lg:hover:opacity-90"
+                >
+                  이 일정만 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmDelete(false);
+                    onDelete?.('all');
+                  }}
+                  className="w-full rounded-lg border border-red-80 bg-white py-2.5 text-l font-medium text-red-80 transition-colors lg:hover:bg-grey-10"
+                >
+                  전체 일정 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="w-full rounded-lg border border-grey-40 bg-white py-2.5 text-l font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+                >
+                  취소
+                </button>
+              </div>
             </>
           ) : (
             <>
-              <p className="mt-8 text-center text-l font-medium text-grey-100">
+              <p className="mt-6 text-center text-l font-medium text-grey-100">
                 삭제한 일정은 되돌릴 수 없어요.
               </p>
-              <p className="mt-4 text-center text-sm text-grey-70">
-                삭제 후에는 다시 볼 수 없어요.
-              </p>
+              <div className="mt-8 flex w-full gap-3">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 rounded-lg border border-grey-40 bg-white py-2.5 text-l font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmDelete(false);
+                    onDelete?.('all');
+                  }}
+                  className="flex-1 rounded-lg bg-red-80 py-2.5 text-l font-medium text-white transition-opacity lg:hover:opacity-90"
+                >
+                  삭제
+                </button>
+              </div>
             </>
           )}
-
-          <div className="mt-10 flex w-full gap-3">
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(false)}
-              className="flex-1 rounded-lg border border-grey-40 bg-white py-2 text-l font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setConfirmDelete(false);
-                onDelete?.();
-              }}
-              className="flex-1 rounded-lg bg-red-80 py-2 text-l font-medium text-white transition-opacity lg:hover:opacity-90"
-            >
-              삭제
-            </button>
-          </div>
         </div>
       </Modal>
     </div>

@@ -1,4 +1,4 @@
-import { ChevronLeft, Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 import { calendarImportAdapter, type CalendarProvider } from '../../adapters';
 import { PROVIDER_ICONS } from '../../icons';
@@ -11,8 +11,6 @@ interface AddCalendarPanelProps {
 
 const PROVIDERS: { provider: CalendarProvider; name: string }[] = [
   { provider: 'google', name: '구글 캘린더' },
-  { provider: 'naver', name: '네이버 캘린더' },
-  { provider: 'apple', name: '애플 캘린더' },
 ];
 
 /**
@@ -20,20 +18,25 @@ const PROVIDERS: { provider: CalendarProvider; name: string }[] = [
  * provider 아이콘은 `features/calendar/icons`의 PROVIDER_ICONS에서 교체.
  * 연결 동작은 후속 Phase(import 어댑터).
  */
-export function AddCalendarPanel({ onClose, onConnect }: AddCalendarPanelProps) {
+export function AddCalendarPanel({
+  onClose,
+  onConnect,
+}: AddCalendarPanelProps) {
   return (
     <div className="flex h-full flex-col">
       {/* 헤더 */}
-      <div className="flex items-center gap-3 px-5 pb-4 pt-7">
+      <div className="flex items-center justify-between px-5 pb-4 pt-7">
+        <h2 className="text-sm font-emphasize text-[#222121]">
+          캘린더 추가하기
+        </h2>
         <button
           type="button"
-          aria-label="뒤로"
+          aria-label="닫기"
           onClick={onClose}
           className="text-[#8b8c93]"
         >
-          <ChevronLeft size={24} strokeWidth={2} />
+          <X size={24} strokeWidth={2} />
         </button>
-        <h2 className="text-sm font-emphasize text-[#222121]">캘린더 추가하기</h2>
       </div>
 
       {/* 본문 */}
