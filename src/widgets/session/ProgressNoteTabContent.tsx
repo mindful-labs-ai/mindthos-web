@@ -129,7 +129,6 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                     )}
                   selectedTemplateId={creatingTabs[activeTab] || null}
                   onTemplateSelect={onTemplateSelect}
-                  columns={2}
                 />
               </div>
               {/* 하단 배너 (템플릿 선택 시) */}

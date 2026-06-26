@@ -109,7 +109,7 @@ export const TemplateListPage: React.FC = () => {
           <Text className="text-l text-grey-60">로딩 중...</Text>
         </div>
       ) : (
-        <div className={isMobileView ? 'flex flex-col gap-8' : 'flex-1 py-6'}>
+        <div className={isMobileView ? 'flex flex-col' : 'flex-1 py-6'}>
           {/* 카테고리별 섹션 */}
           {NOTE_FORM_CATEGORY_ORDER.map((category) => {
             const list = grouped[category];

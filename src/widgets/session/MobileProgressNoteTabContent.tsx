@@ -7,7 +7,6 @@ import React from 'react';
 
 import type { ProgressNote } from '@/features/session/types';
 import { CREDIT_COST } from '@/shared/constants/credit';
-import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
 
@@ -67,7 +66,6 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
       onSaveSummary,
       onNoteEditStateChange,
     }) => {
-      const { isTablet } = useDevice();
       // 생성 중 또는 템플릿 선택 탭인 경우
       if (activeTab.startsWith('create-note-') || activeCreatingTab) {
         if (activeCreatingTab?.isProcessing) {
@@ -126,7 +124,6 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                     )}
                   selectedTemplateId={creatingTabs[activeTab] || null}
                   onTemplateSelect={onTemplateSelect}
-                  columns={isTablet ? 2 : 1}
                 />
               </div>
             </div>

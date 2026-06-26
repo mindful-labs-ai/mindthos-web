@@ -16,8 +16,6 @@ interface CreateProgressNoteViewProps {
   usedTemplateIds: number[];
   selectedTemplateId: number | null;
   onTemplateSelect: (templateId: number | null) => void;
-  /** 그리드 열 수 (기본값: 1) */
-  columns?: 1 | 2;
 }
 
 export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
