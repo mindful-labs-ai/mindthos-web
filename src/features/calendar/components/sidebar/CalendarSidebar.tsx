@@ -53,7 +53,7 @@ export function CalendarSidebar({
   onConnectGoogle,
 }: CalendarSidebarProps) {
   return (
-    <div className="flex h-full flex-col gap-6 px-4 pb-6 pt-10">
+    <div className="flex min-h-full flex-col gap-6 px-4 pb-6 pt-10">
       <AddEventButtons onAdd={onAddEvent} />
       <MiniCalendar
         current={current}
