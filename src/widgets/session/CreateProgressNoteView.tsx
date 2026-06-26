@@ -1,11 +1,14 @@
 import React from 'react';
 
-import { useSetDefaultTemplate } from '@/features/template/hooks/useSetDefaultTemplate';
+import {
+  NOTE_FORM_CATEGORY_LABEL,
+  groupTemplatesByCategory,
+} from '@/features/template/constants/noteCategory';
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
-import { useToggleTemplatePin } from '@/features/template/hooks/useToggleTemplatePin';
 import type { TemplateListItem } from '@/features/template/types';
 import { Text } from '@/shared/ui/atoms/Text';
-import { TemplateCard } from '@/widgets/template/TemplateCard';
+
+import { NoteTemplateSelectCard } from './NoteTemplateSelectCard';
 
 interface CreateProgressNoteViewProps {
   sessionId: string;
@@ -26,15 +29,28 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
 }) => {
   // 템플릿 목록 조회 (pin, is_default 정보 포함)
   const { templates, isLoading, error } = useTemplateList();
-  const togglePinMutation = useToggleTemplatePin();
-  const setDefaultMutation = useSetDefaultTemplate();
 
-  // 사용 가능한 템플릿 필터링
-  const availableTemplates = React.useMemo(() => {
-    return templates.filter(
-      (template) => !usedTemplateIds.includes(template.id)
+  // 섹션 구성: 즐겨찾기(pin) → 기관 및 센터 제출용 → 이론별 사례개념화.
+  // 즐겨찾기한 양식은 즐겨찾기에만(원래 카테고리에서는 제외).
+  const sections = React.useMemo(() => {
+    const favorites = templates.filter((t) => t.pin);
+    const byCategory = groupTemplatesByCategory(
+      templates.filter((t) => !t.pin)
     );
-  }, [templates, usedTemplateIds]);
+    return [
+      { key: 'favorites', label: '즐겨찾기 양식', items: favorites },
+      {
+        key: 'institution',
+        label: NOTE_FORM_CATEGORY_LABEL.institution,
+        items: byCategory.institution,
+      },
+      {
+        key: 'caseConceptualization',
+        label: NOTE_FORM_CATEGORY_LABEL.caseConceptualization,
+        items: byCategory.caseConceptualization,
+      },
+    ].filter((section) => section.items.length > 0);
+  }, [templates]);
 
   // 로딩 상태
   if (isLoading) {
@@ -59,38 +75,15 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
     );
   }
 
-  const handleTogglePin = (template: TemplateListItem) => {
-    togglePinMutation.mutate(template.id);
-  };
-
-  const handleSetDefault = (template: TemplateListItem) => {
-    if (!template.is_default) {
-      setDefaultMutation.mutate(template.id);
-    }
-  };
-
   const handleSelect = (template: TemplateListItem) => {
     if (!transcribedText) return;
-
-    if (selectedTemplateId === template.id) {
-      onTemplateSelect(null);
-    } else {
-      onTemplateSelect(template.id);
-    }
+    onTemplateSelect(selectedTemplateId === template.id ? null : template.id);
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent,
-    template: TemplateListItem
-  ) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      handleSelect(template);
-    }
-  };
+  const gridCols = columns === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1';
 
   return (
-    <div className="space-y-6 text-left">
+    <div className="space-y-8 text-left">
       {/* 전사 텍스트 없음 경고 */}
       {!transcribedText && (
         <div className="border-warning rounded-lg border p-4">
@@ -100,70 +93,32 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
         </div>
       )}
 
-      {/* 템플릿 카드 그리드 */}
-      {availableTemplates.length > 0 ? (
-        <div
-          className={`grid grid-cols-1 gap-4 ${columns === 2 ? 'md:grid-cols-2' : ''}`}
-        >
-          {availableTemplates.map((template) => {
-            const isSelected = selectedTemplateId === template.id;
-
-            return (
-              <div
-                key={template.id}
-                role="button"
-                tabIndex={transcribedText ? 0 : -1}
-                className={`relative cursor-pointer transition-all ${
-                  !transcribedText
-                    ? 'cursor-not-allowed opacity-50'
-                    : isSelected
-                      ? 'rounded-lg ring-2 ring-primary'
-                      : ''
-                }`}
-                onClick={() => handleSelect(template)}
-                onKeyDown={(e) => handleKeyDown(e, template)}
-                aria-label={`${template.title} 노트 양식 ${isSelected ? '선택됨' : '선택하기'}`}
-                aria-disabled={!transcribedText}
-              >
-                {/* TemplateCard */}
-                <TemplateCard
-                  template={template}
-                  onTogglePin={handleTogglePin}
-                  onSetDefault={handleSetDefault}
-                />
-
-                {/* 우측 하단 선택 체크 - absolute로 덮기 */}
-                <div className="pointer-events-none absolute bottom-6 right-6">
-                  <div
-                    className={`flex h-6 w-6 items-center justify-center rounded-full transition-all ${
-                      isSelected ? 'bg-primary' : 'border-default bg-surface'
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg
-                        className="h-4 w-4 text-primary-fg"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
+      {templates.length === 0 ? (
         <div className="flex h-64 items-center justify-center">
           <Text className="text-fg-muted">
-            모든 노트 양식을 이미 사용했어요.
+            사용할 수 있는 노트 양식이 없어요.
           </Text>
         </div>
+      ) : (
+        sections.map((section) => (
+          <section key={section.key}>
+            <h2 className="text-l font-headline text-grey-100">
+              {section.label}
+            </h2>
+            <div className={`mt-5 grid gap-4 ${gridCols}`}>
+              {section.items.map((template) => (
+                <NoteTemplateSelectCard
+                  key={template.id}
+                  template={template}
+                  isSelected={selectedTemplateId === template.id}
+                  isUsed={usedTemplateIds.includes(template.id)}
+                  disabled={!transcribedText}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
+          </section>
+        ))
       )}
     </div>
   );

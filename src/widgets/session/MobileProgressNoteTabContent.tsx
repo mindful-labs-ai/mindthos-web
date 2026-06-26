@@ -95,7 +95,9 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
           return (
             <div className="flex h-full flex-col px-4 md:px-10">
               <div className="sticky top-0 z-10 flex items-center justify-between bg-white py-3">
-                <p className="text-sm text-grey-60 md:text-m">상담노트 양식</p>
+                <p className="text-sm text-grey-60 md:text-m">
+                  상담 노트 템플릿
+                </p>
                 <button
                   onClick={onCreateProgressNote}
                   disabled={isReadOnly || !isTemplateSelected}
@@ -105,7 +107,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                       : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
-                  상담노트 만들기
+                  상담 노트 만들기
                   <span className="flex items-center gap-0.5">
                     {PROGRESS_NOTE_CREDIT}
                     <CreditIcon size={14} color="currentColor" />
