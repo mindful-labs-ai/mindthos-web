@@ -15,7 +15,8 @@ interface NoteTemplateSelectCardProps {
 
 /**
  * 상담 기록 '빈 노트' 탭의 양식 선택 카드.
- * 양식 페이지 카드(별·기본노트 변경)와 달리 선택 체크 + 기본노트/이미생성 배지만 가진다.
+ * 양식 페이지 카드(별·기본노트 변경)와 달리, 하단에 배지·선택 체크가
+ * 각자 영역(flow)을 차지한다(absolute 고정 아님).
  */
 export function NoteTemplateSelectCard({
   template,
@@ -33,7 +34,7 @@ export function NoteTemplateSelectCard({
       onClick={() => onSelect(template)}
       aria-label={`${template.title} 노트 양식 ${isSelected ? '선택됨' : '선택하기'}`}
       className={cn(
-        'relative h-[195px] w-full rounded-2xl border bg-white p-7 text-left transition-all',
+        'flex w-full flex-col rounded-2xl border bg-white p-7 text-left transition-all lg:w-[400px]',
         inactive
           ? 'cursor-not-allowed border-grey-40 opacity-60'
           : isSelected
@@ -41,35 +42,38 @@ export function NoteTemplateSelectCard({
             : 'border-grey-40 lg:hover:border-grey-60'
       )}
     >
-      <h3 className="line-clamp-1 pr-8 text-l font-headline text-grey-100">
+      <h3 className="line-clamp-1 text-l font-headline text-grey-100">
         {template.title}
       </h3>
-      <p className="mt-4 line-clamp-3 text-m font-medium text-grey-100">
+      <p className="mt-4 line-clamp-2 text-m font-medium text-grey-100">
         {template.description}
       </p>
 
-      {/* 좌하단: 이미 생성됨 / 기본 노트 배지 */}
-      {isUsed ? (
-        <span className="absolute bottom-6 left-7 inline-flex items-center rounded-lg bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-60">
-          이미 생성된 노트
-        </span>
-      ) : template.is_default ? (
-        <span className="absolute bottom-6 left-7 inline-flex items-center rounded-lg bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
-          기본 노트
-        </span>
-      ) : null}
+      {/* 하단 영역 — 배지(좌)와 선택 체크(우)가 각자 영역을 차지(flow) */}
+      <div className="mt-auto flex items-center justify-between pt-4">
+        <div>
+          {isUsed ? (
+            <span className="inline-flex items-center rounded-lg bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-60">
+              이미 생성된 노트
+            </span>
+          ) : template.is_default ? (
+            <span className="inline-flex items-center rounded-lg bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
+              기본 노트
+            </span>
+          ) : null}
+        </div>
 
-      {/* 우하단: 선택 체크 (이미 생성된 노트는 숨김) */}
-      {!isUsed && (
-        <span
-          className={cn(
-            'absolute bottom-3 right-3 flex h-6 w-6 items-center justify-center rounded-full transition-colors',
-            isSelected ? 'bg-green-80' : 'bg-grey-40'
-          )}
-        >
-          <Check size={14} strokeWidth={3} className="text-white" />
-        </span>
-      )}
+        {!isUsed && (
+          <span
+            className={cn(
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors',
+              isSelected ? 'bg-green-80' : 'bg-grey-40'
+            )}
+          >
+            <Check size={14} strokeWidth={3} className="text-white" />
+          </span>
+        )}
+      </div>
     </button>
   );
 }

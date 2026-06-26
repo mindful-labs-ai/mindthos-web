@@ -25,7 +25,6 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
   usedTemplateIds,
   selectedTemplateId,
   onTemplateSelect,
-  columns = 1,
 }) => {
   // 템플릿 목록 조회 (pin, is_default 정보 포함)
   const { templates, isLoading, error } = useTemplateList();
@@ -80,10 +79,8 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
     onTemplateSelect(selectedTemplateId === template.id ? null : template.id);
   };
 
-  const gridCols = columns === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1';
-
   return (
-    <div className="space-y-8 text-left">
+    <div className="mx-auto max-w-[824px] space-y-8 text-left">
       {/* 전사 텍스트 없음 경고 */}
       {!transcribedText && (
         <div className="border-warning rounded-lg border p-4">
@@ -105,7 +102,7 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
             <h2 className="text-l font-headline text-grey-100">
               {section.label}
             </h2>
-            <div className={`mt-5 grid gap-4 ${gridCols}`}>
+            <div className="mt-5 flex flex-wrap gap-6">
               {section.items.map((template) => (
                 <NoteTemplateSelectCard
                   key={template.id}
