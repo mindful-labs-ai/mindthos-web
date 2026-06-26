@@ -2,6 +2,8 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useToast } from '@/shared/ui/composites/Toast';
 
@@ -16,8 +18,12 @@ import {
   useCalendarEvents,
 } from '../hooks/useCalendarEvents';
 import { useCalendarState } from '../hooks/useCalendarState';
-import type { CalendarColorKey, CalendarEventInput } from '../types';
-import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
+import type {
+  CalendarColorKey,
+  CalendarEvent,
+  CalendarEventInput,
+} from '../types';
+import { dayjs, minutesToHHmm, type Dayjs } from '../utils/calendarDate';
 
 import { CalendarView } from './CalendarView';
 import { MobileCalendarView } from './MobileCalendarView';
@@ -75,15 +81,13 @@ export default function CalendarContainer() {
     [events, kindVisible, categoryVisible]
   );
 
-  // 단일 클릭:
-  //  - 추가 모드: 선택 날짜만 갱신(작성 중 내용 유지)
-  //  - 편집 모드: 그 날짜의 '새 일정 추가' 모드로 전환(기본값 초기화)
-  //  - 패널 닫힘: 아무 동작 안 함
+  // 단일 클릭(구글 캘린더식 — 클릭으로 사이드패널 활성화):
+  //  - 추가 작성 중: 선택 날짜만 갱신(작성 중 내용 유지)
+  //  - 그 외(패널 닫힘/편집 중): 그 날짜로 '새 일정 추가' 패널 오픈
   const handleDateClick = React.useCallback(
     (day: Dayjs) => {
-      if (sidePanel !== 'addEvent') return;
-      if (editingEvent) openAddEvent('counseling', day);
-      else setSelectedDate(day);
+      if (sidePanel === 'addEvent' && !editingEvent) setSelectedDate(day);
+      else openAddEvent('counseling', day);
     },
     [sidePanel, editingEvent, openAddEvent, setSelectedDate]
   );
@@ -137,7 +141,7 @@ export default function CalendarContainer() {
             ? 'green'
             : 'red';
       const input: CalendarEventInput = {
-        title: draft.title.trim() || '(제목 없음)',
+        title: draft.title.trim() || '제목 없음',
         kind: draft.kind,
         colorKey,
         start: start.toISOString(),
@@ -160,6 +164,12 @@ export default function CalendarContainer() {
         await queryClient.invalidateQueries({
           queryKey: ['calendar', 'events'],
         });
+        trackEvent(
+          editingEvent
+            ? MixpanelEvent.CalendarEventUpdate
+            : MixpanelEvent.CalendarEventCreate,
+          { kind: draft.kind, allDay: isAllDay, recurring: !!draft.repeat }
+        );
         closePanel();
       } catch {
         toast({
@@ -171,20 +181,58 @@ export default function CalendarContainer() {
     [selectedDate, current, editingEvent, queryClient, closePanel, toast]
   );
 
-  // 일정 삭제(편집 모드) — 삭제 후 쿼리 무효화 + 패널 닫기.
-  const handleDeleteEvent = React.useCallback(async () => {
-    if (!editingEvent) return;
-    try {
-      await calendarDataSource.deleteEvent?.(editingEvent.id);
-      await queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
-      closePanel();
-    } catch {
-      toast({
-        title: '일정 삭제 실패',
-        description: '잠시 후 다시 시도해 주세요.',
+  // 일정 삭제(편집 모드) — 낙관적 제거(반응성) 후 API. 단일/전체는 DELETE,
+  // 반복 '이 회차만'은 예외(EXDATE) 추가(부분 PATCH). 실패 시 캐시 롤백.
+  const handleDeleteEvent = React.useCallback(
+    async (mode: 'this' | 'all') => {
+      if (!editingEvent) return;
+      const target = editingEvent;
+      const occDate = dayjs(target.start).format('YYYY-MM-DD');
+      const isOccurrence = mode === 'this' && !!target.repeat;
+
+      // 낙관적 제거 — 캐시에서 즉시 빼고 패널을 닫는다.
+      const snapshots = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: ['calendar', 'events'],
       });
-    }
-  }, [editingEvent, queryClient, closePanel, toast]);
+      queryClient.setQueriesData<CalendarEvent[]>(
+        { queryKey: ['calendar', 'events'] },
+        (old) =>
+          old?.filter((e) =>
+            isOccurrence
+              ? !(e.id === target.id && e.start === target.start)
+              : e.id !== target.id
+          )
+      );
+      closePanel();
+
+      try {
+        if (isOccurrence && target.repeat) {
+          const exceptions = [...(target.repeat.exceptions ?? []), occDate];
+          await calendarDataSource.updateEventExceptions?.(
+            target.id,
+            exceptions
+          );
+        } else {
+          await calendarDataSource.deleteEvent?.(target.id);
+        }
+        await queryClient.invalidateQueries({
+          queryKey: ['calendar', 'events'],
+        });
+        trackEvent(MixpanelEvent.CalendarEventDelete, {
+          mode,
+          recurring: !!target.repeat,
+        });
+      } catch {
+        // 롤백 — 낙관적으로 제거한 캐시를 원복.
+        snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
+        toast({
+          title: '일정 삭제 실패',
+          description: '잠시 후 다시 시도해 주세요.',
+        });
+      }
+    },
+    [editingEvent, queryClient, closePanel, toast]
+  );
 
   // 카테고리 색상 변경(설정 팝오버) — 이름 유지 + 색만 갱신. 이벤트 색은 카테고리에서 파생되므로
   // 캘린더 전체를 무효화해 색이 즉시 반영되게 한다.
@@ -251,6 +299,7 @@ export default function CalendarContainer() {
         return;
       }
       try {
+        trackEvent(MixpanelEvent.CalendarGoogleConnect, { provider });
         await calendarImportAdapter.authorize(provider);
         // authorize는 동의 URL로 리다이렉트하므로 정상 흐름에선 여기 도달 X.
       } catch {

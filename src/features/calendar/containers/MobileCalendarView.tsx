@@ -50,7 +50,7 @@ interface MobileCalendarViewProps {
   onClosePanel: () => void;
   onSelectDate: (day: Dayjs) => void;
   onSubmitEvent: (draft: AddEventDraft) => void;
-  onDeleteEvent?: () => void;
+  onDeleteEvent?: (mode: 'this' | 'all') => void;
 }
 
 /**
