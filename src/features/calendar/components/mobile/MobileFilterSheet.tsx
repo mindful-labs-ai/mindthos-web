@@ -45,7 +45,6 @@ export function MobileFilterSheet({
           categories={categories}
           categoryVisible={categoryVisible}
           onToggleCategory={onToggleCategory}
-          onAddCategory={onOpenAddCalendar}
         />
         <div className="border-t border-[#ecedf3]" />
         <button

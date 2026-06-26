@@ -88,7 +88,7 @@ export function useCreateClientAnalysis() {
       // user_id는 서버가 Bearer JWT에서 도출하므로 body로 보내지 않는다.
       return clientAnalysisService.createAnalysis(request);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       // 생성 직후 분석 목록 쿼리 invalidate
       queryClient.invalidateQueries({
         queryKey: clientAnalysisQueryKeys.analysesByClient(variables.client_id),
