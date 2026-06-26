@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 
+import type { CalendarEvent } from '../../types';
 import { dayjs, getMonthMatrix, isSameDay } from '../../utils/calendarDate';
 import type { Dayjs } from '../../utils/calendarDate';
 
@@ -9,6 +10,8 @@ interface MiniCalendarProps {
   current: Dayjs;
   onPrevMonth: () => void;
   onNextMonth: () => void;
+  /** 점(일정 있는 날) 표시용 이벤트 목록 */
+  events?: CalendarEvent[];
 }
 
 function MiniNavButton({
@@ -37,9 +40,14 @@ export function MiniCalendar({
   current,
   onPrevMonth,
   onNextMonth,
+  events = [],
 }: MiniCalendarProps) {
   const weeks = getMonthMatrix(current);
   const today = dayjs();
+  // 일정 있는 날(YYYY-MM-DD) 집합 — 날짜 아래 점으로 표시
+  const eventDays = new Set(
+    events.map((e) => dayjs(e.start).format('YYYY-MM-DD'))
+  );
 
   return (
     <div>
@@ -61,10 +69,11 @@ export function MiniCalendar({
         {weeks.flat().map((day) => {
           const inMonth = day.isSame(current, 'month');
           const isToday = isSameDay(day, today);
+          const hasEvent = eventDays.has(day.format('YYYY-MM-DD'));
           return (
             <div
               key={day.toISOString()}
-              className="flex items-center justify-center"
+              className="flex flex-col items-center justify-start gap-0.5"
             >
               {isToday ? (
                 <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-green-80 text-sm font-emphasize text-white">
@@ -80,6 +89,13 @@ export function MiniCalendar({
                   {day.date()}
                 </span>
               )}
+              {/* 일정 있는 날 점 — 자리는 항상 차지(정렬 유지), 없으면 투명 */}
+              <span
+                className={cn(
+                  'h-1 w-1 rounded-full',
+                  hasEvent ? 'bg-green-80' : 'bg-transparent'
+                )}
+              />
             </div>
           );
         })}

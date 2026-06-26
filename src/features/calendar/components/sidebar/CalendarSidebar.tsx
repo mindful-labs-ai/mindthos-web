@@ -1,6 +1,7 @@
 import type {
   CalendarCategory,
   CalendarColorKey,
+  CalendarEvent,
   CalendarEventKind,
 } from '../../types';
 import type { Dayjs } from '../../utils/calendarDate';
@@ -13,6 +14,8 @@ import { VisibilityToggles } from './VisibilityToggles';
 
 interface CalendarSidebarProps {
   current: Dayjs;
+  /** 미니 달력 점 표시용 이벤트 */
+  events: CalendarEvent[];
   onPrevMonth: () => void;
   onNextMonth: () => void;
   kindVisible: Record<CalendarEventKind, boolean>;
@@ -35,6 +38,7 @@ const Divider = () => <div className="border-t border-[#ecedf3]" />;
 /** 우측 사이드탭 — 일정추가/미니달력/표시토글/나의캘린더/연동카드 */
 export function CalendarSidebar({
   current,
+  events,
   onPrevMonth,
   onNextMonth,
   kindVisible,
@@ -53,6 +57,7 @@ export function CalendarSidebar({
       <AddEventButtons onAdd={onAddEvent} />
       <MiniCalendar
         current={current}
+        events={events}
         onPrevMonth={onPrevMonth}
         onNextMonth={onNextMonth}
       />
@@ -70,9 +75,12 @@ export function CalendarSidebar({
         onChangeCategoryColor={onChangeCategoryColor}
         onDeleteCategory={onDeleteCategory}
       />
-      <div className="mt-auto pt-4">
-        <GoogleConnectCard onConnect={onConnectGoogle} />
-      </div>
+      {/* 구글 연동 후엔 배너 숨김(카테고리 sourceProvider로 감지) */}
+      {!categories.some((c) => c.sourceProvider === 'google') && (
+        <div className="mt-auto pt-4">
+          <GoogleConnectCard onConnect={onConnectGoogle} />
+        </div>
+      )}
     </div>
   );
 }
