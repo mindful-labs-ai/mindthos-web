@@ -22,7 +22,9 @@ export function SharedDocumentComplete({ doc }: SharedDocumentCompleteProps) {
         className="mt-11 h-[34px] w-auto"
       />
 
-      <div className="flex w-full flex-1 items-center justify-center">
+      {/* 중앙보다 살짝 위(상단 3 : 하단 4 = 상단에서 3/7 지점)에 카드를 둔다 */}
+      <div className="flex w-full flex-1 flex-col items-center">
+        <div className="flex-[3]" aria-hidden />
         <div className="w-full max-w-[319px] rounded-xl bg-white px-6 py-7 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-20">
             <Check size={26} strokeWidth={3} className="text-green-80" />
@@ -32,6 +34,7 @@ export function SharedDocumentComplete({ doc }: SharedDocumentCompleteProps) {
             {`${doc.documentTitle}${particle}\n${doc.counselorName} 상담사님에게 전달했어요.`}
           </p>
         </div>
+        <div className="flex-[4]" aria-hidden />
       </div>
     </div>
   );
