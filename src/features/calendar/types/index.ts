@@ -83,6 +83,8 @@ export interface CalendarCategory {
   id: string;
   name: string;
   colorKey: CalendarColorKey;
+  /** 외부 연동 출처(구글/네이버/애플). null/없음 = 마음토스 자체 카테고리 */
+  sourceProvider?: 'google' | 'naver' | 'apple' | null;
 }
 
 /** 일정 생성 입력 (후속 Phase에서 사용) */

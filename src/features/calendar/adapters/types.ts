@@ -20,6 +20,11 @@ export interface CalendarDataSource {
   createEvent?(input: CalendarEventInput): Promise<CalendarEvent>;
   updateEvent?(id: string, input: CalendarEventInput): Promise<CalendarEvent>;
   deleteEvent?(id: string): Promise<void>;
+  /**
+   * 반복 일정의 단건(occurrence) 삭제 — 마스터 anchor·기타 필드는 보존하고
+   * 예외 날짜(EXDATE) 목록만 부분 PATCH한다. exceptions는 기존 + 신규를 합친 전체 목록.
+   */
+  updateEventExceptions?(id: string, exceptions: string[]): Promise<void>;
   createCategory?(input: CalendarCategoryInput): Promise<CalendarCategory>;
   updateCategory?(
     id: string,

@@ -244,6 +244,9 @@ function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
     id: dto.id,
     name: dto.name,
     colorKey: COLOR_FROM_SERVER[dto.colorKey] ?? 'grey',
+    sourceProvider: dto.sourceProvider
+      ? (dto.sourceProvider.toLowerCase() as 'google' | 'naver' | 'apple')
+      : null,
   };
 }
 
@@ -251,9 +254,7 @@ function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
 function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
   // holiday는 서버 이벤트 종류가 아니다(public.holiday). 사용자는 counseling/personal만 생성.
   const kind: ServerEventKind =
-    input.kind === 'holiday'
-      ? 'PERSONAL'
-      : KIND_TO_SERVER[input.kind];
+    input.kind === 'holiday' ? 'PERSONAL' : KIND_TO_SERVER[input.kind];
   const repeat = input.repeat ?? null;
   const body: EventRequestBody = {
     kind,
@@ -337,6 +338,15 @@ export const realCalendarDataSource: CalendarDataSource = {
 
   async deleteEvent(id: string): Promise<void> {
     await serverRequest<void>(CALENDAR_ROUTES.event(id), { method: 'DELETE' });
+  },
+
+  async updateEventExceptions(id: string, exceptions: string[]): Promise<void> {
+    // 부분 PATCH — startsAt 등 다른 필드는 서버가 기존 값을 보존하므로(미지정 시 유지)
+    // 예외 목록만 보낸다. 마스터 anchor가 occurrence로 밀리는 버그를 피한다.
+    await serverRequest<CalendarEventDto>(CALENDAR_ROUTES.event(id), {
+      method: 'PATCH',
+      body: { repeatExceptions: exceptions },
+    });
   },
 
   async createCategory(
