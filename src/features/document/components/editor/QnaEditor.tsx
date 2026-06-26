@@ -19,7 +19,7 @@ import {
 import { Plus } from 'lucide-react';
 
 import { createField, duplicateField } from '../../constants/formField';
-import type { FormField } from '../../types';
+import type { FormField, FormFieldType } from '../../types';
 
 import { QuestionCard } from './QuestionCard';
 
@@ -45,22 +45,24 @@ export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
     fields[0]?.key ?? null
   );
 
-  const updateField = (key: string, patch: Partial<FormField>) => {
+  // 완성된 필드로 교체 — FieldBody의 변형별 에디터가 타입 안전하게 구성해 넘긴다(캐스팅 없음).
+  const replaceField = (key: string, updated: FormField) => {
+    onFieldsChange(fields.map((field) => (field.key === key ? updated : field)));
+  };
+
+  // 유형 변경 — 새 유형 기본 필드로 재구성하되 key·라벨/제목은 보존(판별자 변경은 속성 패치와 별개).
+  const changeFieldType = (key: string, type: FormFieldType) => {
     onFieldsChange(
       fields.map((field) => {
-        if (field.key !== key) return field;
-        // 유형 변경: 새 유형의 기본 필드로 재구성하되 key·라벨/제목은 보존.
-        if (patch.type && patch.type !== field.type) {
-          const rebuilt = createField(patch.type);
-          rebuilt.key = field.key;
-          const text = fieldText(field);
-          if (text) {
-            if (rebuilt.type === 'section') rebuilt.title = text;
-            else if (rebuilt.type !== 'richtext') rebuilt.label = text;
-          }
-          return rebuilt;
+        if (field.key !== key || field.type === type) return field;
+        const rebuilt = createField(type);
+        rebuilt.key = field.key;
+        const text = fieldText(field);
+        if (text) {
+          if (rebuilt.type === 'section') rebuilt.title = text;
+          else if (rebuilt.type !== 'richtext') rebuilt.label = text;
         }
-        return { ...field, ...patch } as FormField;
+        return rebuilt;
       })
     );
   };
@@ -121,7 +123,8 @@ export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
                 field={field}
                 isActive={field.key === activeKey}
                 onActivate={() => setActiveKey(field.key)}
-                onChange={(patch) => updateField(field.key, patch)}
+                onChange={(updated) => replaceField(field.key, updated)}
+                onTypeChange={(type) => changeFieldType(field.key, type)}
                 onDuplicate={() => handleDuplicate(index)}
                 onDelete={() => handleDelete(field.key)}
               />
