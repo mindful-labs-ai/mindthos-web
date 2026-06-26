@@ -70,14 +70,14 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       {/* 기본 노트 상태 — 배지(기본) 또는 변경 버튼 — 좌하단 */}
       <div className="absolute bottom-6 left-7">
         {template.is_default ? (
-          <span className="inline-flex items-center rounded-lg bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
+          <span className="inline-flex items-center rounded-md bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
             기본 노트
           </span>
         ) : (
           <button
             type="button"
             onClick={handleDefaultClick}
-            className="inline-flex items-center rounded-lg bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-80 transition-colors lg:hover:bg-grey-40"
+            className="inline-flex items-center rounded-md bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-80 transition-colors lg:hover:bg-grey-40"
           >
             기본 노트로 변경하기
           </button>

@@ -53,11 +53,11 @@ export function NoteTemplateSelectCard({
       <div className="mt-auto flex items-center justify-between pt-4">
         <div>
           {isUsed ? (
-            <span className="inline-flex items-center rounded-lg bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-60">
+            <span className="inline-flex items-center rounded-md bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-60">
               이미 생성된 노트
             </span>
           ) : template.is_default ? (
-            <span className="inline-flex items-center rounded-lg bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
+            <span className="inline-flex items-center rounded-md bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
               기본 노트
             </span>
           ) : null}
