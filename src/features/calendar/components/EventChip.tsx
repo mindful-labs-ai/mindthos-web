@@ -32,8 +32,8 @@ export function EventChip({
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
   const centered = event.eventTimeKind === 'ALL_DAY';
   const readOnly = event.kind === 'holiday';
-  // 선택(편집 중) 시 색 반전: 옅은 칩 배경 → 진한 솔리드 + 흰 글자
-  const bgClass = selected ? style.swatchBg : style.chipBg;
+  // 선택(편집 중) 강조: 옅은 칩 배경 → 시간 텍스트 색(진한 솔리드) 배경 + 흰 글자
+  const bgClass = selected ? style.selectedBg : style.chipBg;
   const titleColor = selected ? 'text-white' : style.chipTitle;
   const timeColor = selected ? 'text-white' : style.chipTime;
 

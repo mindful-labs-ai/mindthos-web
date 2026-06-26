@@ -34,71 +34,83 @@ export interface CalendarColorStyle {
   chipTitle: string;
   /** 시간 텍스트 */
   chipTime: string;
+  /** 선택(편집 중) 일정 칩 배경 — 시간 텍스트 색을 솔리드 배경으로 */
+  selectedBg: string;
   /** 색상 체크박스 배경 (사이드탭) */
   swatchBg: string;
   /** 체크 아이콘 색상 */
   swatchCheck: string;
 }
 
-export const CALENDAR_COLOR_STYLES: Record<CalendarColorKey, CalendarColorStyle> =
-  {
-    green: {
-      chipBg: 'bg-green-20',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#31a837]',
-      swatchBg: 'bg-green-20',
-      swatchCheck: 'text-green-80',
-    },
-    red: {
-      chipBg: 'bg-[#ffe7e7]',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#ff8787]',
-      swatchBg: 'bg-[#ffe7e7]',
-      swatchCheck: 'text-[#ff8787]',
-    },
-    blue: {
-      chipBg: 'bg-[#e7edff]',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#6462f7]',
-      swatchBg: 'bg-[#e7edff]',
-      swatchCheck: 'text-[#6462f7]',
-    },
-    grey: {
-      chipBg: 'bg-[#efefef]',
-      chipTitle: 'text-[#8e8e8e]',
-      chipTime: 'text-[#8e8e8e]',
-      swatchBg: 'bg-[#efefef]',
-      swatchCheck: 'text-[#8e8e8e]',
-    },
-    orange: {
-      chipBg: 'bg-[#fff0e1]',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#f08a24]',
-      swatchBg: 'bg-[#fff0e1]',
-      swatchCheck: 'text-[#f08a24]',
-    },
-    yellow: {
-      chipBg: 'bg-[#fff7d6]',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#c79600]',
-      swatchBg: 'bg-[#fff7d6]',
-      swatchCheck: 'text-[#c79600]',
-    },
-    purple: {
-      chipBg: 'bg-[#efe9ff]',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#7c5cf0]',
-      swatchBg: 'bg-[#efe9ff]',
-      swatchCheck: 'text-[#7c5cf0]',
-    },
-    pink: {
-      chipBg: 'bg-[#ffe6f1]',
-      chipTitle: 'text-black',
-      chipTime: 'text-[#ec4f97]',
-      swatchBg: 'bg-[#ffe6f1]',
-      swatchCheck: 'text-[#ec4f97]',
-    },
-  };
+export const CALENDAR_COLOR_STYLES: Record<
+  CalendarColorKey,
+  CalendarColorStyle
+> = {
+  green: {
+    chipBg: 'bg-green-20',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#31a837]',
+    selectedBg: 'bg-[#31a837]',
+    swatchBg: 'bg-green-20',
+    swatchCheck: 'text-green-80',
+  },
+  red: {
+    chipBg: 'bg-[#ffe7e7]',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#ff8787]',
+    selectedBg: 'bg-[#ff8787]',
+    swatchBg: 'bg-[#ffe7e7]',
+    swatchCheck: 'text-[#ff8787]',
+  },
+  blue: {
+    chipBg: 'bg-[#e7edff]',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#6462f7]',
+    selectedBg: 'bg-[#6462f7]',
+    swatchBg: 'bg-[#e7edff]',
+    swatchCheck: 'text-[#6462f7]',
+  },
+  grey: {
+    chipBg: 'bg-[#efefef]',
+    chipTitle: 'text-[#8e8e8e]',
+    chipTime: 'text-[#8e8e8e]',
+    selectedBg: 'bg-[#8e8e8e]',
+    swatchBg: 'bg-[#efefef]',
+    swatchCheck: 'text-[#8e8e8e]',
+  },
+  orange: {
+    chipBg: 'bg-[#fff0e1]',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#f08a24]',
+    selectedBg: 'bg-[#f08a24]',
+    swatchBg: 'bg-[#fff0e1]',
+    swatchCheck: 'text-[#f08a24]',
+  },
+  yellow: {
+    chipBg: 'bg-[#fff7d6]',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#c79600]',
+    selectedBg: 'bg-[#c79600]',
+    swatchBg: 'bg-[#fff7d6]',
+    swatchCheck: 'text-[#c79600]',
+  },
+  purple: {
+    chipBg: 'bg-[#efe9ff]',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#7c5cf0]',
+    selectedBg: 'bg-[#7c5cf0]',
+    swatchBg: 'bg-[#efe9ff]',
+    swatchCheck: 'text-[#7c5cf0]',
+  },
+  pink: {
+    chipBg: 'bg-[#ffe6f1]',
+    chipTitle: 'text-black',
+    chipTime: 'text-[#ec4f97]',
+    selectedBg: 'bg-[#ec4f97]',
+    swatchBg: 'bg-[#ffe6f1]',
+    swatchCheck: 'text-[#ec4f97]',
+  },
+};
 
 /** 카테고리 색 선택 팔레트(설정 팝오버·생성 폼 공용). */
 export const CALENDAR_PALETTE: CalendarColorKey[] = [

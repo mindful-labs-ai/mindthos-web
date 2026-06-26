@@ -23,8 +23,8 @@ export function EventBlock({
   selected,
 }: EventBlockProps) {
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
-  // 선택(편집 중) 시 색 반전: 옅은 배경 → 진한 솔리드 + 흰 글자
-  const bgClass = selected ? style.swatchBg : style.chipBg;
+  // 선택(편집 중) 강조: 옅은 배경 → 시간 텍스트 색(진한 솔리드) 배경 + 흰 글자
+  const bgClass = selected ? style.selectedBg : style.chipBg;
   const titleColor = selected ? 'text-white' : style.chipTitle;
   const timeColor = selected ? 'text-white' : style.chipTime;
 
