@@ -252,7 +252,7 @@ export function ClientDocumentsTab({
                   <button
                     type="button"
                     onClick={() => onOpenDocument(document)}
-                    className="mt-3 h-7 rounded-lg border border-green-80 bg-green-20 px-2.5 text-xs font-headline text-green-80"
+                    className="mt-3 h-7 rounded-md border border-green-80 bg-green-20 px-2.5 text-xs font-headline text-green-80"
                   >
                     문서 확인하기
                   </button>
@@ -260,7 +260,7 @@ export function ClientDocumentsTab({
                   <button
                     type="button"
                     onClick={() => onOpenDocument(document)}
-                    className="absolute bottom-5 right-5 h-[29px] rounded-lg border border-green-80 bg-green-20 px-2.5 text-sm font-headline text-green-80 transition-opacity lg:hover:opacity-80"
+                    className="absolute bottom-5 right-5 h-[29px] rounded-md border border-green-80 bg-green-20 px-2.5 text-sm font-headline text-green-80 transition-opacity lg:hover:opacity-80"
                   >
                     문서 확인하기
                   </button>

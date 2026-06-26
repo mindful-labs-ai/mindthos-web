@@ -292,7 +292,7 @@ export function SendDocumentModal({
       // 모바일은 depth 있는 풀스크린 페이지(헤더 고정), 데스크탑은 648px 센터 모달
       mobileVariant="fullScreen"
       hideCloseButton={isMobileView}
-      className="flex flex-col p-0 lg:block lg:max-h-[90vh] lg:w-[648px] lg:max-w-[648px] lg:rounded-2xl lg:px-10 lg:pb-10 lg:pt-10"
+      className="flex flex-col p-0 lg:max-h-[90vh] lg:w-[648px] lg:max-w-[648px] lg:rounded-2xl lg:px-10 lg:pb-10 lg:pt-10"
     >
       {/* 헤더 — 모바일은 MobileModalHeader, 데스크탑은 중앙 제목 */}
       {isMobileView ? (
@@ -306,7 +306,7 @@ export function SendDocumentModal({
         </h2>
       )}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-5 pb-8 pt-6 lg:mt-12 lg:overflow-visible lg:px-0 lg:pb-0 lg:pt-0">
+      <div className="flex min-h-0 flex-1 flex-col gap-7 overflow-y-auto px-5 pb-8 pt-6 lg:mt-12 lg:flex-none lg:overflow-visible lg:px-0 lg:pb-0 lg:pt-0">
         {/* 발송 대상 — client-selector로 변경 가능 */}
         <div>
           <div className="flex items-center justify-between gap-3">
@@ -462,7 +462,7 @@ export function SendDocumentModal({
                   </div>
                   <button
                     type="button"
-                    className="mx-4 mb-4 h-[43px] w-[254px] cursor-default rounded-xl bg-[#FFE412] text-m font-emphasize text-grey-100"
+                    className="mx-4 mb-4 h-[43px] w-[254px] cursor-default rounded-lg bg-[#FFE412] text-m font-emphasize text-grey-100"
                   >
                     문서 확인하기
                   </button>

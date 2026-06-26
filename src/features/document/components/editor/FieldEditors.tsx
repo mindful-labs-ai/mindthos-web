@@ -58,13 +58,14 @@ function HeaderInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       aria-label="질문 입력"
-      className="h-[41px] w-full rounded-lg bg-grey-20 px-3 text-xl font-emphasize text-grey-100 placeholder:text-grey-80 focus:outline-none"
+      className="h-[41px] w-full rounded-lg bg-grey-20 px-3 text-l font-emphasize text-grey-100 placeholder:text-grey-80 focus:outline-none"
     />
   );
 }
 
 function SectionEditor({ field, onChange }: EditorProps<SectionField>) {
-  const update = (patch: Partial<SectionField>) => onChange({ ...field, ...patch });
+  const update = (patch: Partial<SectionField>) =>
+    onChange({ ...field, ...patch });
   return (
     <>
       <HeaderInput
@@ -84,7 +85,8 @@ function SectionEditor({ field, onChange }: EditorProps<SectionField>) {
 }
 
 function RichtextEditor({ field, onChange }: EditorProps<RichtextField>) {
-  const update = (patch: Partial<RichtextField>) => onChange({ ...field, ...patch });
+  const update = (patch: Partial<RichtextField>) =>
+    onChange({ ...field, ...patch });
   // 기존 동의서 리치텍스트 에디터(ConsentEditor) 재사용.
   return (
     <ConsentEditor
@@ -118,7 +120,10 @@ function TextEditor({ field, onChange }: EditorProps<ShortField | LongField>) {
   );
 }
 
-function ChoiceEditor({ field, onChange }: EditorProps<SingleField | MultipleField>) {
+function ChoiceEditor({
+  field,
+  onChange,
+}: EditorProps<SingleField | MultipleField>) {
   // 옵션 input Tab 이동/추가용 — 새로 만든 옵션은 렌더 후 포커스
   const optionInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const pendingFocusIndex = useRef<number | null>(null);
@@ -219,7 +224,8 @@ function ChoiceEditor({ field, onChange }: EditorProps<SingleField | MultipleFie
 }
 
 function ScoreEditor({ field, onChange }: EditorProps<ScoreField>) {
-  const update = (patch: Partial<ScoreField>) => onChange({ ...field, ...patch });
+  const update = (patch: Partial<ScoreField>) =>
+    onChange({ ...field, ...patch });
   return (
     <>
       <HeaderInput
@@ -236,7 +242,7 @@ function ScoreEditor({ field, onChange }: EditorProps<ScoreField>) {
             ariaLabel="점수 최소값"
             onChange={(min) => update({ min })}
           />
-          <span className="text-xl font-medium text-grey-100">~</span>
+          <span className="text-l font-medium text-grey-100">~</span>
           <ScoreRangeSelect
             value={field.max}
             options={scoreRange(field.min + 1, SCORE_LIMIT_MAX)}
@@ -246,7 +252,7 @@ function ScoreEditor({ field, onChange }: EditorProps<ScoreField>) {
         </div>
         <div className="mt-4 flex items-center gap-3">
           <span className="h-6 w-6 flex-shrink-0 rounded-full border-2 border-grey-40" />
-          <span className="w-7 flex-shrink-0 text-center text-xl font-medium text-grey-100">
+          <span className="w-7 flex-shrink-0 text-center text-l font-medium text-grey-100">
             {field.min}
           </span>
           <input
@@ -260,7 +266,7 @@ function ScoreEditor({ field, onChange }: EditorProps<ScoreField>) {
         </div>
         <div className="flex items-center gap-3">
           <span className="h-6 w-6 flex-shrink-0 rounded-full border-2 border-grey-40" />
-          <span className="w-7 flex-shrink-0 text-center text-xl font-medium text-grey-100">
+          <span className="w-7 flex-shrink-0 text-center text-l font-medium text-grey-100">
             {field.max}
           </span>
           <input
@@ -278,7 +284,8 @@ function ScoreEditor({ field, onChange }: EditorProps<ScoreField>) {
 }
 
 function ConsentFieldEditor({ field, onChange }: EditorProps<ConsentField>) {
-  const update = (patch: Partial<ConsentField>) => onChange({ ...field, ...patch });
+  const update = (patch: Partial<ConsentField>) =>
+    onChange({ ...field, ...patch });
   return (
     <>
       <HeaderInput
@@ -302,7 +309,8 @@ function ConsentFieldEditor({ field, onChange }: EditorProps<ConsentField>) {
 }
 
 function SignatureEditor({ field, onChange }: EditorProps<SignatureField>) {
-  const update = (patch: Partial<SignatureField>) => onChange({ ...field, ...patch });
+  const update = (patch: Partial<SignatureField>) =>
+    onChange({ ...field, ...patch });
   return (
     <>
       <HeaderInput
