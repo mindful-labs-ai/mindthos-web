@@ -54,7 +54,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   },
   {
     path: ROUTES.TEMPLATE,
-    label: '노트 양식',
+    label: '상담 노트 양식',
     value: 'template',
     icon: <SideTemplateIcon size={24} />,
   },
