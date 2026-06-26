@@ -190,6 +190,15 @@ export const MixpanelEvent = {
   TutorialGuideStepChange: 'tutorial_guide_step_change',
   TutorialGuideComplete: 'tutorial_guide_complete',
 
+  // ─── Calendar ──────────────────────────────────────
+  CalendarEventCreate: 'calendar_event_create',
+  CalendarEventUpdate: 'calendar_event_update',
+  CalendarEventDelete: 'calendar_event_delete',
+  CalendarGoogleConnect: 'calendar_google_connect',
+
+  // ─── Document ──────────────────────────────────────
+  DocumentDelete: 'document_delete',
+
   // ─── Common ────────────────────────────────────────
   ComingSoonModalOpened: 'coming_soon_modal_opened',
   LockedFeatureModalOpen: 'locked_feature_modal_open',
