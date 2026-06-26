@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import { getDocumentEditRoute, ROUTES } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { Spinner } from '@/shared/ui';
 import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
 
 import { FieldContent } from '../components/FieldContent';
@@ -115,9 +116,9 @@ export function DocumentViewContainer() {
       </div>
 
       {loading ? (
-        <p className="mt-10 text-m font-medium text-grey-80">
-          문서를 불러오는 중입니다...
-        </p>
+        <div className="mt-10 flex justify-center">
+          <Spinner size="lg" />
+        </div>
       ) : !document ? (
         <p className="mt-10 text-m font-medium text-grey-80">
           문서를 찾을 수 없습니다.

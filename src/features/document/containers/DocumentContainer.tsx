@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react';
 import { getDocumentEditorRoute } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { Skeleton } from '@/shared/ui/atoms/Skeleton';
 import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
 import { useModalStore } from '@/stores/modalStore';
 
@@ -27,6 +28,7 @@ export function DocumentContainer() {
   const templates = useDocumentStore((state) => state.templates);
   const myDocuments = useDocumentStore((state) => state.myDocuments);
   const loadDocuments = useDocumentStore((state) => state.loadDocuments);
+  const loading = useDocumentStore((state) => state.loading);
   const openModal = useModalStore((state) => state.openModal);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
@@ -67,6 +69,23 @@ export function DocumentContainer() {
   const handleSendDocuments = () => {
     openModal('sendDocument', { source: 'documents' });
   };
+
+  // 로딩 중 카드 자리 — 실제 카드(297×182) 형태를 흉내낸 스켈레톤
+  const renderSkeletonCards = (count: number) =>
+    Array.from({ length: count }).map((_, i) => (
+      <div key={i} className="snap-center">
+        <div className="flex h-[182px] w-[297px] flex-shrink-0 flex-col rounded-2xl border border-grey-40 bg-white px-7 py-6">
+          <Skeleton variant="text" width="55%" height={20} />
+          <Skeleton variant="text" width="38%" height={16} className="mt-4" />
+          <Skeleton
+            variant="text"
+            width="46%"
+            height={16}
+            className="mt-auto"
+          />
+        </div>
+      </div>
+    ));
 
   // 내 문서 등록하기 — 데스크탑은 버튼 하단 드롭다운, 모바일은 바텀시트.
   // 데스크탑 상단 헤더 / 모바일 '내 문서' 제목 옆 두 위치에서 공용.
@@ -128,11 +147,13 @@ export function DocumentContainer() {
           {isMobileView && sendButton}
         </div>
         <div className={cardListClass}>
-          {templates.map((document) => (
-            <div key={document.id} className="snap-center">
-              <DocumentCard document={document} />
-            </div>
-          ))}
+          {loading
+            ? renderSkeletonCards(4)
+            : templates.map((document) => (
+                <div key={document.id} className="snap-center">
+                  <DocumentCard document={document} />
+                </div>
+              ))}
         </div>
       </section>
 
@@ -143,20 +164,26 @@ export function DocumentContainer() {
           {isMobileView && registerButton}
         </div>
         <div className={cardListClass}>
-          {myDocuments.map((document) => (
-            <div key={document.id} className="snap-center">
-              <MyDocumentCard document={document} />
-            </div>
-          ))}
-          {/* 추가 카드 */}
-          <button
-            type="button"
-            aria-label="내 문서 등록하기"
-            onClick={handleOpenAddPopover}
-            className="flex h-[182px] w-[297px] flex-shrink-0 snap-center items-center justify-center rounded-2xl border border-grey-40 bg-grey-20 text-grey-80 transition-colors lg:hover:bg-grey-30"
-          >
-            <Plus size={22} />
-          </button>
+          {loading ? (
+            renderSkeletonCards(2)
+          ) : (
+            <>
+              {myDocuments.map((document) => (
+                <div key={document.id} className="snap-center">
+                  <MyDocumentCard document={document} />
+                </div>
+              ))}
+              {/* 추가 카드 */}
+              <button
+                type="button"
+                aria-label="내 문서 등록하기"
+                onClick={handleOpenAddPopover}
+                className="flex h-[182px] w-[297px] flex-shrink-0 snap-center items-center justify-center rounded-2xl border border-grey-40 bg-grey-20 text-grey-80 transition-colors lg:hover:bg-grey-30"
+              >
+                <Plus size={22} />
+              </button>
+            </>
+          )}
         </div>
       </section>
 
