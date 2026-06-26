@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface ScoreRangeSelectProps {
@@ -25,9 +26,18 @@ export function ScoreRangeSelect({
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+  // 드롭다운 위치 보정(화면 밖 방지)
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { direction, offset } = useDropdownPosition(
+    triggerRef,
+    dropdownRef,
+    isOpen && !isMobileView,
+    { estimatedHeight: 240 }
+  );
 
   return (
-    <div className="relative">
+    <div ref={triggerRef} className="relative">
       <button
         type="button"
         aria-label={ariaLabel}
@@ -82,8 +92,17 @@ export function ScoreRangeSelect({
             />
 
             <div
+              ref={dropdownRef}
               role="menu"
-              className="absolute left-0 top-full z-modal mt-2 max-h-[240px] w-16 overflow-y-auto rounded-lg border border-grey-30 bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
+              style={{
+                transform:
+                  offset.x || offset.y
+                    ? `translate(${offset.x}px, ${offset.y}px)`
+                    : undefined,
+              }}
+              className={`absolute left-0 z-modal max-h-[240px] w-16 overflow-y-auto rounded-lg border border-grey-30 bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)] ${
+                direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+              }`}
             >
               {options.map((option) => (
                 <button

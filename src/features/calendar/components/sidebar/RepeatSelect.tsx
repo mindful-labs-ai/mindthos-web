@@ -4,6 +4,7 @@ import { Calendar, ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 
 import type { CalendarRepeatCycle, CalendarRepeatRule } from '../../types';
 import { dayjs, type Dayjs } from '../../utils/calendarDate';
@@ -86,6 +87,12 @@ export function RepeatSelect({
   // 팝오버 바깥 클릭 닫기 (주기 드롭다운 / 종료일 달력 각각)
   useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
   useClickOutside(dateRef, () => setDatePickerOpen(false), datePickerOpen);
+  // 주기 드롭다운 위치 보정(화면 밖 방지)
+  const menuDropdownRef = React.useRef<HTMLDivElement>(null);
+  const { direction: cycleDirection, offset: cycleOffset } =
+    useDropdownPosition(menuRef, menuDropdownRef, menuOpen, {
+      estimatedHeight: 240,
+    });
 
   const selectCycle = (key: CycleKey) => {
     setMenuOpen(false);
@@ -137,7 +144,19 @@ export function RepeatSelect({
             <ChevronDown size={16} strokeWidth={1.5} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full z-30 mt-1 w-[120px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
+            <div
+              ref={menuDropdownRef}
+              style={{
+                transform:
+                  cycleOffset.x || cycleOffset.y
+                    ? `translate(${cycleOffset.x}px, ${cycleOffset.y}px)`
+                    : undefined,
+              }}
+              className={cn(
+                'absolute right-0 z-30 w-[120px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]',
+                cycleDirection === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+              )}
+            >
               {CYCLE_OPTIONS.map((o) => (
                 <button
                   key={o.key}

@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 
 import type { CounselMethod } from '../../types';
 
@@ -33,8 +34,13 @@ export function CounselMethodSelect({
 }: CounselMethodSelectProps) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   useClickOutside(ref, () => setOpen(false), open);
+  // 화면 밖으로 안 나가게: 위/아래 펼침 + 넘치면 좌표 보정
+  const { direction, offset } = useDropdownPosition(ref, dropdownRef, open, {
+    estimatedHeight: 160,
+  });
 
   const currentKey: OptionKey = value ?? 'none';
 
@@ -54,7 +60,19 @@ export function CounselMethodSelect({
           <ChevronDown size={16} strokeWidth={1.5} />
         </button>
         {open && (
-          <div className="absolute right-0 top-full z-30 mt-1 w-[110px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
+          <div
+            ref={dropdownRef}
+            style={{
+              transform:
+                offset.x || offset.y
+                  ? `translate(${offset.x}px, ${offset.y}px)`
+                  : undefined,
+            }}
+            className={cn(
+              'absolute right-0 z-30 w-[110px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]',
+              direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+            )}
+          >
             {OPTIONS.map((o) => (
               <button
                 key={o.key}

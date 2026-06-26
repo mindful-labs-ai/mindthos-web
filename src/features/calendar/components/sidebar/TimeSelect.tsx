@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface TimeSelectProps {
@@ -27,11 +28,19 @@ export function TimeSelect({
 }: TimeSelectProps) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
+  const dropdownRef = React.useRef<HTMLUListElement>(null);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
 
   // 데스크탑 드롭다운만 바깥 클릭으로 닫기 (모바일은 Modal이 닫기 처리)
   useClickOutside(ref, () => setOpen(false), open && !isMobileView);
+  // 화면 밖으로 안 나가게: 아래 공간 부족 시 위로 펼치고, 그래도 넘치면 좌표 보정
+  const { direction, offset } = useDropdownPosition(
+    ref,
+    dropdownRef,
+    open && !isMobileView,
+    { estimatedHeight: 200 }
+  );
 
   const handleSelect = (opt: string) => {
     onChange(opt);
@@ -53,7 +62,19 @@ export function TimeSelect({
 
       {/* 데스크탑: 절대 배치 드롭다운 */}
       {open && !isMobileView && (
-        <ul className="absolute left-0 top-full z-30 mt-1 max-h-[200px] w-full overflow-auto rounded-md border border-[#ecedf3] bg-white py-1 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]">
+        <ul
+          ref={dropdownRef}
+          style={{
+            transform:
+              offset.x || offset.y
+                ? `translate(${offset.x}px, ${offset.y}px)`
+                : undefined,
+          }}
+          className={cn(
+            'absolute left-0 z-30 max-h-[200px] w-full overflow-auto rounded-md border border-[#ecedf3] bg-white py-1 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]',
+            direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}
+        >
           {options.map((opt) => (
             <li key={opt}>
               <button

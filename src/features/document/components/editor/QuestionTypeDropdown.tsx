@@ -1,8 +1,9 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 
 import { ChevronDown } from 'lucide-react';
 
 import { useDevice } from '@/shared/hooks/useDevice';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 import { FormFieldTypeIcons } from '@/shared/icons';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -31,6 +32,15 @@ export function QuestionTypeDropdown({
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   const TriggerIcon = FormFieldTypeIcons[type];
+  // 드롭다운 위치 보정(화면 밖 방지) — 카드가 하단에 있으면 위로 펼치고 넘치면 좌표 보정
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { direction, offset } = useDropdownPosition(
+    triggerRef,
+    dropdownRef,
+    isOpen && !isMobileView,
+    { estimatedHeight: 360 }
+  );
 
   // 그룹 목록 본문 — 데스크탑 드롭다운/모바일 바텀시트 공용
   const typeList = TYPE_GROUPS.map((group, groupIndex) => (
@@ -64,7 +74,7 @@ export function QuestionTypeDropdown({
   ));
 
   return (
-    <div className="relative">
+    <div ref={triggerRef} className="relative">
       <button
         type="button"
         aria-label="질문 유형 선택"
@@ -74,9 +84,7 @@ export function QuestionTypeDropdown({
       >
         <span className="flex items-center gap-2 text-grey-100">
           <TriggerIcon size={20} />
-          <span className="text-m font-medium">
-            {FIELD_TYPE_LABEL[type]}
-          </span>
+          <span className="text-m font-medium">{FIELD_TYPE_LABEL[type]}</span>
         </span>
         <ChevronDown size={16} className="text-grey-70" />
       </button>
@@ -107,8 +115,17 @@ export function QuestionTypeDropdown({
             />
 
             <div
+              ref={dropdownRef}
               role="menu"
-              className="absolute right-0 top-full z-modal mt-2 w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
+              style={{
+                transform:
+                  offset.x || offset.y
+                    ? `translate(${offset.x}px, ${offset.y}px)`
+                    : undefined,
+              }}
+              className={`absolute right-0 z-modal w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)] ${
+                direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+              }`}
             >
               {typeList}
             </div>
