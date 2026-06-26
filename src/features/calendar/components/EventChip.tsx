@@ -10,6 +10,8 @@ interface EventChipProps {
   onClick?: (event: CalendarEvent) => void;
   /** 모바일 월간 미니칩 — 이름만, 작게(시간 생략) */
   compact?: boolean;
+  /** 선택(편집 중) 일정 — 색 반전 강조 */
+  selected?: boolean;
   /** 칩 루트에 덧붙일 클래스(예: 주간뷰 플로팅 칩의 약한 border). */
   className?: string;
 }
@@ -24,22 +26,27 @@ export function EventChip({
   event,
   onClick,
   compact,
+  selected,
   className: extraClassName,
 }: EventChipProps) {
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
   const centered = event.eventTimeKind === 'ALL_DAY';
   const readOnly = event.kind === 'holiday';
+  // 선택(편집 중) 시 색 반전: 옅은 칩 배경 → 진한 솔리드 + 흰 글자
+  const bgClass = selected ? style.swatchBg : style.chipBg;
+  const titleColor = selected ? 'text-white' : style.chipTitle;
+  const timeColor = selected ? 'text-white' : style.chipTime;
 
   const className = cn(
     compact
       ? cn(
           'flex h-[18px] w-full items-center rounded-[3px] px-1',
-          style.chipBg,
+          bgClass,
           centered ? 'justify-center' : 'justify-start'
         )
       : cn(
           'flex h-[25px] w-full items-center rounded-sm px-2',
-          style.chipBg,
+          bgClass,
           centered ? 'justify-center' : 'justify-between gap-1'
         ),
     extraClassName
@@ -51,14 +58,14 @@ export function EventChip({
         className={cn(
           'truncate font-medium',
           compact ? 'text-[10px] leading-none' : 'text-xs',
-          style.chipTitle
+          titleColor
         )}
         title={event.title}
       >
         {event.title}
       </span>
       {!centered && !compact && (
-        <span className={cn('shrink-0 text-xs font-medium', style.chipTime)}>
+        <span className={cn('shrink-0 text-xs font-medium', timeColor)}>
           {formatEventTime(event.start)}
         </span>
       )}

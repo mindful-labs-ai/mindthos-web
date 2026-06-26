@@ -11,11 +11,22 @@ interface EventBlockProps {
   hourHeight: number;
   /** 블록 클릭 — 일정 변경 패널 오픈 */
   onClick?: (event: CalendarEvent) => void;
+  /** 선택(편집 중) 일정 — 색 반전 강조 */
+  selected?: boolean;
 }
 
 /** 주간 뷰 시간 블록 (요일 컬럼 내 절대 배치) */
-export function EventBlock({ event, hourHeight, onClick }: EventBlockProps) {
+export function EventBlock({
+  event,
+  hourHeight,
+  onClick,
+  selected,
+}: EventBlockProps) {
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
+  // 선택(편집 중) 시 색 반전: 옅은 배경 → 진한 솔리드 + 흰 글자
+  const bgClass = selected ? style.swatchBg : style.chipBg;
+  const titleColor = selected ? 'text-white' : style.chipTitle;
+  const timeColor = selected ? 'text-white' : style.chipTime;
 
   // 드래그 생성과 충돌하지 않도록 mousedown 전파 차단, 클릭 시 편집
   const handleMouseDown = (e: React.MouseEvent) => e.stopPropagation();
@@ -29,7 +40,7 @@ export function EventBlock({ event, hourHeight, onClick }: EventBlockProps) {
     return (
       <div
         className={cn(
-          'pointer-events-none absolute inset-x-0 top-0 bottom-0 flex items-start justify-center px-2 py-1',
+          'pointer-events-none absolute inset-x-0 bottom-0 top-0 flex items-start justify-center px-2 py-1',
           style.chipBg
         )}
       >
@@ -52,15 +63,15 @@ export function EventBlock({ event, hourHeight, onClick }: EventBlockProps) {
       onClick={handleClick}
       className={cn(
         'absolute inset-x-0 overflow-hidden px-2 py-1 text-left',
-        style.chipBg
+        bgClass
       )}
       style={{ top, height }}
     >
       <div className="flex items-center justify-between gap-1">
-        <span className={cn('truncate text-xs font-medium', style.chipTitle)}>
+        <span className={cn('truncate text-xs font-medium', titleColor)}>
           {event.title}
         </span>
-        <span className={cn('shrink-0 text-xs font-medium', style.chipTime)}>
+        <span className={cn('shrink-0 text-xs font-medium', timeColor)}>
           {formatEventTime(event.start)}
         </span>
       </div>

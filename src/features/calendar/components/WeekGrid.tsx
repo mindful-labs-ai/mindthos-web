@@ -30,6 +30,8 @@ interface WeekGridProps {
   addEventTime?: { start: string; end: string };
   /** 새 일정 추가(편집 아님) 패널이 열려 있을 때만 선택 박스 유지 */
   showAddSelection?: boolean;
+  /** 편집 중 일정 — 블록/칩 색 반전 강조 */
+  selectedEvent?: CalendarEvent | null;
 }
 
 /** 'HH:mm' → 자정 기준 분 */
@@ -115,9 +117,16 @@ export function WeekGrid({
   selectedDate,
   addEventTime,
   showAddSelection,
+  selectedEvent,
 }: WeekGridProps) {
   const days = getWeekDays(current);
   const today = dayjs();
+
+  // 활동 시간대부터 보이도록 마운트 시 스크롤을 8시(오전)로 핀(구글 캘린더식)
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  React.useLayoutEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 8 * HOUR_HEIGHT;
+  }, []);
 
   // 일정 추가 패널 시간 → 선택 박스(분). 드래그 release 후에도 패널이 열려 있는 동안 유지된다.
   const selStart = addEventTime ? hhmmToMin(addEventTime.start) : 0;
@@ -160,7 +169,7 @@ export function WeekGrid({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-grey-40 bg-white">
-      <div className="max-h-[760px] overflow-y-auto">
+      <div ref={scrollRef} className="max-h-[760px] overflow-y-auto">
         {/* 헤더: 요일 + 날짜 (스크롤 시 상단 고정) */}
         <div
           ref={headerRef}
@@ -227,6 +236,11 @@ export function WeekGrid({
                       <EventChip
                         event={event}
                         onClick={onEventClick}
+                        selected={
+                          !!selectedEvent &&
+                          event.id === selectedEvent.id &&
+                          event.start === selectedEvent.start
+                        }
                         className="border border-grey-40"
                       />
                     </div>
@@ -318,6 +332,11 @@ export function WeekGrid({
                         event={event}
                         hourHeight={HOUR_HEIGHT}
                         onClick={onEventClick}
+                        selected={
+                          !!selectedEvent &&
+                          event.id === selectedEvent.id &&
+                          event.start === selectedEvent.start
+                        }
                       />
                     ))}
 

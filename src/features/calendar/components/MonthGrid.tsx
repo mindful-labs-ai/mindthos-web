@@ -12,6 +12,8 @@ interface MonthGridProps {
   events: CalendarEvent[];
   /** 일정 추가 시 선택된 날짜 (초록 테두리 하이라이트) */
   selectedDate?: Dayjs | null;
+  /** 편집 중 일정 — 그리드 칩 색 반전 강조 */
+  selectedEvent?: CalendarEvent | null;
   /** 날짜 셀 단일 클릭 — 추가 모드일 때만 선택 날짜 갱신 */
   onDateClick?: (day: Dayjs) => void;
   /** 날짜 셀 더블 클릭 (데스크탑) — 일정 추가 패널 오픈 */
@@ -35,6 +37,7 @@ export function MonthGrid({
   current,
   events,
   selectedDate,
+  selectedEvent,
   onDateClick,
   onDateDoubleClick,
   onEventClick,
@@ -95,9 +98,7 @@ export function MonthGrid({
                     className={cn(
                       'pl-1 text-m font-medium',
                       // 날짜 숫자도 요일 헤더와 같은 주말 색(일 빨강/토 파랑). 다른 달 날짜는 흐리게 유지.
-                      inMonth
-                        ? weekdayColorClass(day.day())
-                        : 'text-grey-60'
+                      inMonth ? weekdayColorClass(day.day()) : 'text-grey-60'
                     )}
                   >
                     {day.date()}
@@ -111,6 +112,11 @@ export function MonthGrid({
                     key={event.id}
                     event={event}
                     onClick={onEventClick}
+                    selected={
+                      !!selectedEvent &&
+                      event.id === selectedEvent.id &&
+                      event.start === selectedEvent.start
+                    }
                   />
                 ))}
                 {overflow > 0 && (

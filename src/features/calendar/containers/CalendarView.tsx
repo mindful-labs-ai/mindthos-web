@@ -55,7 +55,7 @@ interface CalendarViewProps {
   onConnectProvider: (provider: CalendarProvider) => void;
   onClosePanel: () => void;
   onSubmitEvent: (draft: AddEventDraft) => void;
-  onDeleteEvent?: () => void;
+  onDeleteEvent?: (mode: 'this' | 'all') => void;
 }
 
 /**
@@ -115,6 +115,7 @@ export function CalendarView({
               current={current}
               events={events}
               selectedDate={selectedDate}
+              selectedEvent={editingEvent}
               onDateClick={onDateClick}
               onDateDoubleClick={onDateDoubleClick}
               onEventClick={onEventClick}
@@ -126,6 +127,7 @@ export function CalendarView({
               onCreateRange={onCreateRange}
               onEventClick={onEventClick}
               selectedDate={selectedDate}
+              selectedEvent={editingEvent}
               addEventTime={addEventTime}
               showAddSelection={sidePanel === 'addEvent' && !editingEvent}
             />
@@ -136,6 +138,7 @@ export function CalendarView({
       <aside className="h-full w-[295px] shrink-0 overflow-y-auto border-l border-[#ecedf3] bg-white">
         <CalendarSidebar
           current={current}
+          events={events}
           onPrevMonth={onPrevMonth}
           onNextMonth={onNextMonth}
           kindVisible={kindVisible}
