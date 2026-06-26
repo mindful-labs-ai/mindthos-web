@@ -2,6 +2,8 @@ import { create } from 'zustand';
 
 import { documentDataSource } from '@/features/document/adapters';
 import type { DocumentContent } from '@/features/document/types';
+import { trackEvent } from '@/lib/mixpanel';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 
 /**
  * 문서 관리 스토어 (zustand).
@@ -131,7 +133,7 @@ interface DocumentState {
   removeMyDocument: (id: string) => Promise<void>;
 }
 
-export const useDocumentStore = create<DocumentState>((set) => ({
+export const useDocumentStore = create<DocumentState>((set, get) => ({
   templates: [],
   myDocuments: [],
   loading: false,
@@ -164,9 +166,15 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     }));
   },
   removeMyDocument: async (id) => {
-    await documentDataSource.deleteMyDocument(id);
-    set((state) => ({
-      myDocuments: state.myDocuments.filter((d) => d.id !== id),
-    }));
+    // 낙관적 제거 — 즉시 목록에서 빼고(반응성), 실패 시 원복.
+    const prev = get().myDocuments;
+    set({ myDocuments: prev.filter((d) => d.id !== id) });
+    try {
+      await documentDataSource.deleteMyDocument(id);
+      trackEvent(MixpanelEvent.DocumentDelete);
+    } catch (error) {
+      set({ myDocuments: prev });
+      throw error;
+    }
   },
 }));
