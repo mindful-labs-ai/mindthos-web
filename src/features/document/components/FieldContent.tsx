@@ -58,7 +58,7 @@ export function FieldContent({
   if (field.type === 'richtext') {
     return (
       <div
-        className="font-medium leading-[150%] text-grey-100 [&_h1]:font-headline [&_h1]:text-[28px] [&_h2]:font-headline [&_h2]:text-2xl"
+        className="font-medium leading-[150%] text-grey-100 [&_h1]:text-xl [&_h1]:font-headline [&_h2]:text-xl [&_h2]:font-headline"
         // 상담사가 작성한 HTML — 클라이언트에서 DOMPurify로 sanitize(방어적).
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(field.html) }}
       />
@@ -70,14 +70,14 @@ export function FieldContent({
     return (
       <div>
         <p
-          className={`text-l font-emphasize leading-[150%] lg:text-[28px] ${
+          className={`text-m font-emphasize leading-[150%] lg:text-l ${
             field.title ? 'text-grey-100' : 'text-grey-80'
           }`}
         >
           {field.title || '제목'}
         </p>
         <p
-          className={`mt-6 whitespace-pre-wrap text-m font-medium lg:text-xl ${
+          className={`mt-6 whitespace-pre-wrap text-sm font-medium lg:text-l ${
             field.description ? 'text-grey-100' : 'text-grey-60'
           }`}
         >
@@ -90,13 +90,11 @@ export function FieldContent({
   const label = field.label;
   const heading = (
     <p
-      className={`text-l font-emphasize leading-[150%] lg:text-[28px] ${
+      className={`text-m font-emphasize leading-[150%] lg:text-l ${
         label ? 'text-grey-100' : 'text-grey-80'
       }`}
     >
-      {label
-        ? `${number !== undefined ? `Q${number}. ` : ''}${label}`
-        : '질문'}
+      {label ? `${number !== undefined ? `Q${number}. ` : ''}${label}` : '질문'}
     </p>
   );
 
@@ -121,14 +119,14 @@ export function FieldContent({
             onChange={(e) => onAnswerChange?.({ text: e.target.value })}
             placeholder="답변을 입력해주세요."
             aria-label="답변 입력"
-            className="mt-6 flex h-[46px] w-full items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-m font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-xl"
+            className="mt-6 flex h-[46px] w-full items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-sm font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-l"
           />
         ) : asText(answer)?.text ? (
-          <div className="mt-6 flex min-h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 lg:text-xl">
+          <div className="mt-6 flex min-h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-100 lg:text-l">
             {asText(answer)?.text}
           </div>
         ) : (
-          <div className="mt-6 flex h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-m font-medium text-grey-60 lg:text-xl">
+          <div className="mt-6 flex h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-sm font-medium text-grey-60 lg:text-l">
             답변을 입력해주세요.
           </div>
         ))}
@@ -140,14 +138,14 @@ export function FieldContent({
             onChange={(e) => onAnswerChange?.({ text: e.target.value })}
             placeholder="답변을 입력해주세요."
             aria-label="답변 입력"
-            className="mt-6 block h-[134px] w-full resize-none rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-xl"
+            className="mt-6 block h-[134px] w-full resize-none rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-l"
           />
         ) : asText(answer)?.text ? (
-          <div className="mt-6 min-h-[134px] whitespace-pre-wrap rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-100 lg:text-xl">
+          <div className="mt-6 min-h-[134px] whitespace-pre-wrap rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-100 lg:text-l">
             {asText(answer)?.text}
           </div>
         ) : (
-          <div className="mt-6 h-[134px] rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-m font-medium text-grey-60 lg:text-xl">
+          <div className="mt-6 h-[134px] rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-60 lg:text-l">
             답변을 입력해주세요.
           </div>
         ))}
@@ -176,7 +174,7 @@ export function FieldContent({
             </span>
           );
           const text = (
-            <span className="text-m font-medium text-grey-100 lg:text-xl">
+            <span className="text-sm font-medium text-grey-100 lg:text-l">
               동의합니다
             </span>
           );
@@ -270,7 +268,7 @@ function ChoiceBody({
           <>
             {renderMarker(isSelected)}
             <span
-              className={`text-m font-medium lg:text-xl ${
+              className={`text-sm font-medium lg:text-l ${
                 option.label ? 'text-grey-100' : 'text-grey-80'
               }`}
             >
@@ -313,7 +311,7 @@ function ScoreBody({
   const scoreMax = field.max;
   const score = answer?.score;
   const scoreCircleClass =
-    'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-grey-40 bg-white text-xl font-bold text-grey-100';
+    'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-grey-40 bg-white text-l font-bold text-grey-100';
 
   return (
     <div className="mt-6">
@@ -338,7 +336,7 @@ function ScoreBody({
           </span>
           {score !== undefined && (
             <span
-              className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-xl font-bold text-white"
+              className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-bold text-white"
               style={{
                 left: `calc((100% - 36px) * ${
                   (score - scoreMin) / (scoreMax - scoreMin)
@@ -384,7 +382,7 @@ function ScoreBody({
             {scoreMax}
           </span>
           <span
-            className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-xl font-bold text-white"
+            className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-bold text-white"
             style={{
               left: `calc((100% - 36px) * ${
                 (score - scoreMin) / (scoreMax - scoreMin)
@@ -402,7 +400,7 @@ function ScoreBody({
         </div>
       )}
       {(field.minLabel || field.maxLabel) && (
-        <div className="mt-3 flex items-center justify-between gap-4 text-m font-medium text-grey-60">
+        <div className="mt-3 flex items-center justify-between gap-4 text-sm font-medium text-grey-60">
           <span>{field.minLabel}</span>
           <span className="text-right">{field.maxLabel}</span>
         </div>
@@ -427,7 +425,7 @@ function SignatureBody({
   return (
     <div className="mt-6">
       {field.helpText && (
-        <p className="mb-3 text-m font-medium text-grey-60 lg:text-xl">
+        <p className="mb-3 text-sm font-medium text-grey-60 lg:text-l">
           {field.helpText}
         </p>
       )}
@@ -444,12 +442,12 @@ function SignatureBody({
         <button
           type="button"
           onClick={onRequestSignature}
-          className="flex h-[60px] w-full items-center justify-center rounded-lg border border-dashed border-grey-40 bg-grey-20 text-m font-medium text-grey-70 lg:text-xl"
+          className="flex h-[60px] w-full items-center justify-center rounded-lg border border-dashed border-grey-40 bg-grey-20 text-sm font-medium text-grey-70 lg:text-l"
         >
           서명하기
         </button>
       ) : (
-        <div className="flex h-[60px] w-full items-center justify-center rounded-lg border border-dashed border-grey-40 bg-grey-20 text-m font-medium text-grey-60 lg:text-xl">
+        <div className="flex h-[60px] w-full items-center justify-center rounded-lg border border-dashed border-grey-40 bg-grey-20 text-sm font-medium text-grey-60 lg:text-l">
           서명란
         </div>
       )}
