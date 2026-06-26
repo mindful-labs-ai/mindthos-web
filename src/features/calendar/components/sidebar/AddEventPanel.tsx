@@ -553,23 +553,23 @@ export function AddEventPanel({
         </button>
       </div>
 
-      {/* 삭제 확인 — '출시 예정 기능' 다이얼로그와 동일한 Modal UI */}
+      {/* 삭제 확인 — 컴팩트 다이얼로그 */}
       <Modal
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
-        className="max-w-[480px]"
+        className="max-w-[320px]"
       >
-        <div className="flex flex-col items-center px-4 py-6">
-          <h2 className="text-xl font-headline text-grey-100">
+        <div className="flex flex-col px-5 pb-6 pt-7 text-center">
+          <h2 className="text-l font-headline text-grey-100">
             일정을 삭제할까요?
           </h2>
 
           {editingEvent?.repeat ? (
             <>
-              <p className="mt-6 text-center text-l font-medium text-grey-100">
+              <p className="mt-2 text-sm font-medium text-grey-80">
                 반복 일정이에요. 삭제 범위를 선택해 주세요.
               </p>
-              <p className="mt-3 text-center text-sm text-grey-70">
+              <p className="mt-1 text-xs text-grey-60">
                 {repeatCycleLabel(editingEvent.repeat)}
                 {editingEvent.repeat.count != null
                   ? ` · 총 ${editingEvent.repeat.count}회`
@@ -577,14 +577,14 @@ export function AddEventPanel({
                     ? ` · ${editingEvent.repeat.until}까지`
                     : ''}
               </p>
-              <div className="mt-8 flex w-full flex-col gap-2">
+              <div className="mt-6 flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={() => {
                     setConfirmDelete(false);
                     onDelete?.('this');
                   }}
-                  className="w-full rounded-lg bg-red-80 py-2.5 text-l font-medium text-white transition-opacity lg:hover:opacity-90"
+                  className="h-11 w-full rounded-lg bg-red-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
                 >
                   이 일정만 삭제
                 </button>
@@ -594,14 +594,14 @@ export function AddEventPanel({
                     setConfirmDelete(false);
                     onDelete?.('all');
                   }}
-                  className="w-full rounded-lg border border-red-80 bg-white py-2.5 text-l font-medium text-red-80 transition-colors lg:hover:bg-grey-10"
+                  className="h-11 w-full rounded-lg border border-red-80 bg-white text-m font-medium text-red-80 transition-colors lg:hover:bg-grey-10"
                 >
                   전체 일정 삭제
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="w-full rounded-lg border border-grey-40 bg-white py-2.5 text-l font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+                  className="mt-1 py-1 text-sm font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
                 >
                   취소
                 </button>
@@ -609,14 +609,14 @@ export function AddEventPanel({
             </>
           ) : (
             <>
-              <p className="mt-6 text-center text-l font-medium text-grey-100">
+              <p className="mt-2 text-sm text-grey-70">
                 삭제한 일정은 되돌릴 수 없어요.
               </p>
-              <div className="mt-8 flex w-full gap-3">
+              <div className="mt-6 flex gap-2">
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(false)}
-                  className="flex-1 rounded-lg border border-grey-40 bg-white py-2.5 text-l font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+                  className="h-11 flex-1 rounded-lg border border-grey-40 bg-white text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
                 >
                   취소
                 </button>
@@ -626,7 +626,7 @@ export function AddEventPanel({
                     setConfirmDelete(false);
                     onDelete?.('all');
                   }}
-                  className="flex-1 rounded-lg bg-red-80 py-2.5 text-l font-medium text-white transition-opacity lg:hover:opacity-90"
+                  className="h-11 flex-1 rounded-lg bg-red-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
                 >
                   삭제
                 </button>
