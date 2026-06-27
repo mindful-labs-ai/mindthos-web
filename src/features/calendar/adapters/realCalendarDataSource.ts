@@ -14,7 +14,7 @@ import type {
   CounselMethod,
 } from '../types';
 
-import type { CalendarDataSource } from './types';
+import type { CalendarDataSource, UpdateEventOptions } from './types';
 
 /**
  * mindthos-server 실제 캘린더 API 어댑터.
@@ -106,9 +106,10 @@ interface EventRequestBody {
   title: string;
   clientId?: string | null;
   categoryId?: string | null;
-  startsAt: string;
+  // startsAt/endsAt/eventTimeKind는 앵커 보존 PATCH에선 생략 가능(서버가 기존값 유지).
+  startsAt?: string;
   endsAt?: string | null;
-  eventTimeKind: CalendarEventTimeKind;
+  eventTimeKind?: CalendarEventTimeKind;
   counselMethod?: ServerCounselMethod | null;
   repeatCycle?: ServerRepeatCycle | null;
   repeatCount?: number | null;
@@ -251,7 +252,10 @@ function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
 }
 
 /** 프론트 입력 → 서버 event body */
-function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
+function toEventRequestBody(
+  input: CalendarEventInput,
+  preserveAnchor = false
+): EventRequestBody {
   // holiday는 서버 이벤트 종류가 아니다(public.holiday). 사용자는 counseling/personal만 생성.
   const kind: ServerEventKind =
     input.kind === 'holiday' ? 'PERSONAL' : KIND_TO_SERVER[input.kind];
@@ -261,9 +265,6 @@ function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
     title: input.title,
     clientId: input.clientId ?? null,
     categoryId: input.categoryId ?? null,
-    startsAt: input.start,
-    endsAt: input.end ?? null,
-    eventTimeKind: input.eventTimeKind ?? 'TIMED',
     // 상담 방식: 상담 일정에서만 값, 그 외 null(서버가 개인+방식 조합을 400으로 막음).
     counselMethod: input.counselMethod
       ? COUNSEL_METHOD_TO_SERVER[input.counselMethod]
@@ -271,6 +272,13 @@ function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
     // 반복 해제(repeat=null)도 명시적으로 null을 보내 서버에서 부수 필드까지 정리되게 한다.
     repeatCycle: repeat ? REPEAT_TO_SERVER[repeat.cycle] : null,
   };
+  // 앵커 보존 모드(반복 일정의 단건 편집)에선 시간 앵커를 보내지 않는다 — 서버가 마스터
+  // 기존 startsAt/endsAt/eventTimeKind를 유지하므로 occurrence로 재앵커되지 않는다.
+  if (!preserveAnchor) {
+    body.startsAt = input.start;
+    body.endsAt = input.end ?? null;
+    body.eventTimeKind = input.eventTimeKind ?? 'TIMED';
+  }
   // 반복이 있을 때만 부수 필드 전송(없을 때 보내면 서버가 400). 종료조건 없으면 count/until은 null.
   if (repeat) {
     body.repeatInterval = repeat.interval;
@@ -324,13 +332,14 @@ export const realCalendarDataSource: CalendarDataSource = {
 
   async updateEvent(
     id: string,
-    input: CalendarEventInput
+    input: CalendarEventInput,
+    options?: UpdateEventOptions
   ): Promise<CalendarEvent> {
     const dto = await serverRequest<CalendarEventDto>(
       CALENDAR_ROUTES.event(id),
       {
         method: 'PATCH',
-        body: toEventRequestBody(input),
+        body: toEventRequestBody(input, options?.preserveAnchor),
       }
     );
     return toCalendarEvent(dto, new Map());

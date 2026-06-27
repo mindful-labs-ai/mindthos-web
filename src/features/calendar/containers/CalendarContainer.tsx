@@ -155,9 +155,61 @@ export default function CalendarContainer() {
         repeat: draft.repeat,
       };
 
+      // 반복 일정 편집:
+      //  - 시간/날짜(앵커) 변경 → 펼쳐진 인스턴스엔 마스터 앵커가 없어, 시리즈 전체를
+      //    재생성(생성 성공 후 기존 삭제)한다. 편집한 회차 날짜 기준 새 시리즈가 된다.
+      //  - 그 외 필드(제목·색·카테고리 등) → 앵커 보존 부분수정으로 시리즈 전체에 반영.
+      // 단일 일정은 일반 수정.
+      // 앵커(시간/날짜) 변경 여부는 '로컬 프레임 분 단위'로 판정한다. ISO 문자열 직접 비교는
+      // UTC 자정으로 저장된 외부 연동 올데이 이벤트가 round-trip되지 않아, 제목만 바꿔도
+      // 재생성되는 오탐을 낳는다. 올데이는 날짜만, 시간 일정은 날짜+시작/종료 시각을 비교.
+      const anchorChanged = (() => {
+        if (!editingEvent) return false;
+        const wasAllDay = editingEvent.eventTimeKind === 'ALL_DAY';
+        if (isAllDay !== wasAllDay) return true;
+        const origStart = dayjs(editingEvent.start);
+        if (isAllDay) return !date.isSame(origStart, 'day');
+        if (
+          start.format('YYYY-MM-DD HH:mm') !==
+          origStart.format('YYYY-MM-DD HH:mm')
+        ) {
+          return true;
+        }
+        const newEndKey = end ? end.format('YYYY-MM-DD HH:mm') : null;
+        const origEndKey = editingEvent.end
+          ? dayjs(editingEvent.end).format('YYYY-MM-DD HH:mm')
+          : null;
+        return newEndKey !== origEndKey;
+      })();
+
       try {
-        if (editingEvent) {
-          await calendarDataSource.updateEvent?.(editingEvent.id, input);
+        if (editingEvent && editingEvent.repeat && anchorChanged) {
+          // 시간/날짜 변경 → 시리즈 재생성. 새 시리즈 생성 성공 후 기존 시리즈 삭제.
+          // 새 시리즈는 편집 회차 날짜 기준이라, 이월돼도 무의미한 옛 예외(EXDATE)는 비운다.
+          // TODO(반복 일정 편집 — 서버 작업 필요): 현재는 "편집 회차부터 새 시리즈" 시맨틱이라
+          //   그 이전 회차가 사라지고 create→delete 2회 호출이 비원자적이다. 서버에
+          //   reschedule-from-occurrence(이 회차 이후만 분리) 또는 "이 회차/이후/전체" 스코프
+          //   엔드포인트를 추가하고, 마스터 앵커를 응답에 실어 프론트가 시간만 시프트할 수 있게 한다.
+          await calendarDataSource.createEvent?.({
+            ...input,
+            repeat: input.repeat
+              ? { ...input.repeat, exceptions: null }
+              : input.repeat,
+          });
+          try {
+            await calendarDataSource.deleteEvent?.(editingEvent.id);
+          } catch {
+            // 새 시리즈는 이미 생성됨(데이터 유실 없음) — 기존 시리즈 정리만 실패(중복).
+            toast({
+              title: '기존 반복 일정 정리에 실패했어요',
+              description: '중복으로 보이는 일정이 있으면 삭제해 주세요.',
+            });
+          }
+        } else if (editingEvent) {
+          // 비-앵커 편집 또는 단일 일정 — 부분 수정. 반복이면 앵커 보존(occurrence 재앵커 방지).
+          await calendarDataSource.updateEvent?.(editingEvent.id, input, {
+            preserveAnchor: !!editingEvent.repeat,
+          });
         } else {
           await calendarDataSource.createEvent?.(input);
         }
@@ -187,30 +239,62 @@ export default function CalendarContainer() {
     async (mode: 'this' | 'all') => {
       if (!editingEvent) return;
       const target = editingEvent;
-      const occDate = dayjs(target.start).format('YYYY-MM-DD');
+      // EXDATE 키는 서버가 startsAt의 UTC 날짜로 매칭한다(expand-recurrence).
+      // start는 서버 startsAt(UTC ISO …Z)이므로 로컬 포맷(dayjs) 대신 날짜부를
+      // 그대로 잘라 UTC 날짜를 보낸다. (로컬 변환 시 KST 오전 회차가 하루 밀려 어긋남)
+      const occDate = target.start.slice(0, 10);
       const isOccurrence = mode === 'this' && !!target.repeat;
+
+      // 진행 중인 listEvents refetch를 멈춰 낙관적 제거가 곧바로 되살아나지 않게 한다.
+      await queryClient.cancelQueries({ queryKey: ['calendar', 'events'] });
 
       // 낙관적 제거 — 캐시에서 즉시 빼고 패널을 닫는다.
       const snapshots = queryClient.getQueriesData<CalendarEvent[]>({
         queryKey: ['calendar', 'events'],
       });
+
+      // 같은 마스터의 캐시된 인스턴스에서 최신 예외 목록을 모아 occDate를 더한다 —
+      // 연속 단건삭제 시 직전 삭제가 추가한 예외를 놓쳐 서버 배열을 덮어쓰고 회차가
+      // 되살아나는 레이스를 방지한다.
+      const exceptionSet = new Set<string>(target.repeat?.exceptions ?? []);
+      if (isOccurrence) {
+        snapshots.forEach(([, data]) =>
+          data?.forEach((e) => {
+            if (e.id === target.id) {
+              e.repeat?.exceptions?.forEach((d) => exceptionSet.add(d));
+            }
+          })
+        );
+        exceptionSet.add(occDate);
+      }
+      const mergedExceptions = Array.from(exceptionSet);
+
       queryClient.setQueriesData<CalendarEvent[]>(
         { queryKey: ['calendar', 'events'] },
         (old) =>
-          old?.filter((e) =>
-            isOccurrence
-              ? !(e.id === target.id && e.start === target.start)
-              : e.id !== target.id
-          )
+          old
+            ?.filter((e) =>
+              isOccurrence
+                ? !(e.id === target.id && e.start === target.start)
+                : e.id !== target.id
+            )
+            // 남은 인스턴스의 예외 목록도 즉시 갱신해 다음 단건삭제가 최신값을 읽게 한다.
+            .map((e) =>
+              isOccurrence && e.id === target.id && e.repeat
+                ? {
+                    ...e,
+                    repeat: { ...e.repeat, exceptions: mergedExceptions },
+                  }
+                : e
+            )
       );
       closePanel();
 
       try {
         if (isOccurrence && target.repeat) {
-          const exceptions = [...(target.repeat.exceptions ?? []), occDate];
           await calendarDataSource.updateEventExceptions?.(
             target.id,
-            exceptions
+            mergedExceptions
           );
         } else {
           await calendarDataSource.deleteEvent?.(target.id);
