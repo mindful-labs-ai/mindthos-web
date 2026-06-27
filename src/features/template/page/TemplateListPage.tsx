@@ -14,7 +14,7 @@ import { TEMPLATE_REQUEST_FORM_URL } from '@/shared/constants/externalUrls';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
-import { Text } from '@/shared/ui/atoms/Text';
+import { Skeleton } from '@/shared/ui/atoms/Skeleton';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Card } from '@/shared/ui/composites/Card';
 import { TemplateCard } from '@/widgets/template/TemplateCard';
@@ -105,8 +105,29 @@ export const TemplateListPage: React.FC = () => {
 
       {/* 로딩 상태 */}
       {isLoading ? (
-        <div className="flex min-h-[400px] items-center justify-center">
-          <Text className="text-l text-grey-60">로딩 중...</Text>
+        <div className={isMobileView ? 'flex flex-col' : 'flex-1 py-6'}>
+          <div className={`grid gap-4 md:gap-6 ${gridCols}`}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex h-[219px] flex-col rounded-2xl border border-grey-40 bg-white p-7"
+              >
+                <Skeleton variant="text" width="55%" height={20} />
+                <Skeleton
+                  variant="text"
+                  width="38%"
+                  height={16}
+                  className="mt-4"
+                />
+                <Skeleton
+                  variant="text"
+                  width="46%"
+                  height={16}
+                  className="mt-auto"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className={isMobileView ? 'flex flex-col' : 'flex-1 py-6'}>

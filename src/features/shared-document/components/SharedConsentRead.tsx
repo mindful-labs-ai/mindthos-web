@@ -31,7 +31,7 @@ function todayLabel(): string {
 
 /**
  * 동의서 문서 열람(모바일). 본문(richtext/section) 스크롤 + 하단 고정 CTA가 상태에 따라 변신:
- * 바닥 미도달 "아래로 내리기"(스크롤) → 바닥 도달 "서명하기"(바텀시트) → 서명 후 "제출하기".
+ * 바닥 미도달 "아래로 내리기"(스크롤) → 바닥 도달 "서명하기"(바텀시트) → 서명 후 "동의하기".
  */
 export function SharedConsentRead({
   doc,

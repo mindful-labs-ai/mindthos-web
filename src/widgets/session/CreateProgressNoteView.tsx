@@ -74,8 +74,14 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
 
   const handleSelect = (template: TemplateListItem) => {
     if (!transcribedText) return;
+    if (usedTemplateIds.includes(template.id)) return; // 이미 생성된 노트는 선택 불가
     onTemplateSelect(selectedTemplateId === template.id ? null : template.id);
   };
+
+  // 양식이 있지만 전부 이미 사용된 경우
+  const allUsed =
+    templates.length > 0 &&
+    templates.every((t) => usedTemplateIds.includes(t.id));
 
   return (
     <div className="mx-auto max-w-[824px] space-y-8 text-left">
@@ -92,6 +98,12 @@ export const CreateProgressNoteView: React.FC<CreateProgressNoteViewProps> = ({
         <div className="flex h-64 items-center justify-center">
           <Text className="text-fg-muted">
             사용할 수 있는 노트 양식이 없어요.
+          </Text>
+        </div>
+      ) : allUsed ? (
+        <div className="flex h-64 items-center justify-center">
+          <Text className="text-fg-muted">
+            이미 모든 노트 양식으로 노트를 만들었어요.
           </Text>
         </div>
       ) : (
