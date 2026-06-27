@@ -193,7 +193,7 @@ export function RepeatSelect({
                     className={cn(
                       'h-[30px] rounded-md border px-2.5 text-sm font-medium',
                       active
-                        ? 'border-green-80 bg-[#44ce4b0d] text-green-80'
+                        ? 'bg-green-80/5 border-green-80 text-green-80'
                         : 'border-[#ecedf3] bg-white text-[#abaebe]'
                     )}
                   >

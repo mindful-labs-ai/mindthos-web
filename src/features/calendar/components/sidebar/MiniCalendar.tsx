@@ -44,9 +44,12 @@ export function MiniCalendar({
 }: MiniCalendarProps) {
   const weeks = getMonthMatrix(current);
   const today = dayjs();
-  // 일정 있는 날(YYYY-MM-DD) 집합 — 날짜 아래 점으로 표시
+  // 일정 있는 날(YYYY-MM-DD) 집합 — 날짜 아래 점으로 표시.
+  // 공휴일은 '실제 일정'이 아니므로 점 표시에서 제외한다.
   const eventDays = new Set(
-    events.map((e) => dayjs(e.start).format('YYYY-MM-DD'))
+    events
+      .filter((e) => e.kind !== 'holiday')
+      .map((e) => dayjs(e.start).format('YYYY-MM-DD'))
   );
 
   return (

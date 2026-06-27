@@ -138,7 +138,6 @@ export function CalendarView({
       <aside className="h-full w-[295px] shrink-0 overflow-y-auto border-l border-[#ecedf3] bg-white">
         <CalendarSidebar
           current={current}
-          events={events}
           onPrevMonth={onPrevMonth}
           onNextMonth={onNextMonth}
           kindVisible={kindVisible}

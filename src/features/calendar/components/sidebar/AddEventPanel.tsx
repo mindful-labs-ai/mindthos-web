@@ -273,7 +273,7 @@ export function AddEventPanel({
                   className={cn(
                     'h-[35px] w-[60px] rounded-md border text-sm font-medium',
                     active
-                      ? 'border-green-80 bg-[#44ce4b0d] text-green-80'
+                      ? 'bg-green-80/5 border-green-80 text-green-80'
                       : 'border-[#ecedf3] bg-white text-[#abaebe]'
                   )}
                 >
