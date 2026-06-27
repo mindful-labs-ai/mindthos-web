@@ -193,7 +193,9 @@ const CATEGORY_FROM_SERVER: Record<ServerCategory, DocumentCategory> = {
 };
 
 /** 프론트 content → 서버 jsonb. CONSENT/QNA 공통 { version, fields } 봉투를 그대로 전송. */
-function toServerContent(content: DocumentContent | null): DocumentContent | null {
+function toServerContent(
+  content: DocumentContent | null
+): DocumentContent | null {
   return content ?? null;
 }
 
@@ -209,6 +211,7 @@ function listItemToCounselDocument(item: DocumentListItem): CounselDocument {
     title: item.title,
     description: item.description ?? '',
     category: item.category ? CATEGORY_FROM_SERVER[item.category] : 'ethics',
+    kind: KIND_FROM_SERVER[item.kind],
     content: null,
   };
 }
@@ -235,6 +238,7 @@ function templateToCounselDocument(dto: DocumentTemplateDto): CounselDocument {
     title: dto.title,
     description: dto.description ?? '',
     category: CATEGORY_FROM_SERVER[dto.category],
+    kind: KIND_FROM_SERVER[dto.kind],
     content: fromServerContent(dto.content),
   };
 }

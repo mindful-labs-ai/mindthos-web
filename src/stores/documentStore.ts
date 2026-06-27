@@ -19,6 +19,8 @@ export interface CounselDocument {
   /** 카드 설명 (예: "내담자 서명", "10개 문항 질문") */
   description: string;
   category: DocumentCategory;
+  /** 문서 종류 — 서버 kind를 그대로 전달 (consent=동의서, qna=질문·응답) */
+  kind: MyDocumentKind;
   /** 문서 본문 — 통합 양식(FormField) content 봉투 */
   content: DocumentContent | null;
 }
@@ -30,6 +32,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: '심리상담 동의서',
     description: '내담자 서명',
     category: 'ethics',
+    kind: 'consent',
     content: null,
   },
   {
@@ -37,6 +40,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: '축어록 녹음 동의서',
     description: '내담자 서명',
     category: 'ethics',
+    kind: 'consent',
     content: null,
   },
   {
@@ -44,6 +48,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: '생명존중 서약서',
     description: '내담자 서명',
     category: 'ethics',
+    kind: 'consent',
     content: null,
   },
   {
@@ -51,6 +56,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: '상담 신청서',
     description: '10개 문항 질문',
     category: 'preparation',
+    kind: 'qna',
     content: null,
   },
   {
@@ -58,6 +64,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: 'PHQ-9',
     description: '9개 문항 질문',
     category: 'assessment',
+    kind: 'qna',
     content: null,
   },
   {
@@ -65,6 +72,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: 'GAD-7',
     description: '7개 문항 질문',
     category: 'assessment',
+    kind: 'qna',
     content: null,
   },
   {
@@ -72,6 +80,7 @@ export const DEFAULT_DOCUMENTS: CounselDocument[] = [
     title: 'SCT(문장 완성 검사)',
     description: '52개 문항 질문',
     category: 'assessment',
+    kind: 'qna',
     content: null,
   },
 ];

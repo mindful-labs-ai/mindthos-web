@@ -61,8 +61,8 @@ export function DocumentViewContainer() {
         return {
           id: template.id,
           title: template.title,
-          // 템플릿은 kind가 없어 category에서 파생 (윤리=동의서, 그 외=질문·응답)
-          kind: template.category === 'ethics' ? 'consent' : 'qna',
+          // 서버 kind를 그대로 사용 (category 추론 제거)
+          kind: template.kind,
           content: template.content,
           editable: false,
         };

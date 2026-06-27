@@ -36,12 +36,12 @@ interface SendTargetDocument {
   source: 'template' | 'my';
 }
 
-/** 마음토스 기본 문서 → 발송 대상 표현 (윤리 동의류=consent, 문항류=qna) */
+/** 마음토스 기본 문서 → 발송 대상 표현 (서버 kind를 그대로 사용) */
 function toSendTarget(doc: CounselDocument): SendTargetDocument {
   return {
     id: doc.id,
     title: doc.title,
-    kind: doc.category === 'ethics' ? 'consent' : 'qna',
+    kind: doc.kind,
     source: 'template',
   };
 }
