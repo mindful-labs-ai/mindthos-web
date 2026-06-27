@@ -100,7 +100,8 @@ export function FieldContent({
 
   return (
     <div>
-      {heading}
+      {/* consent는 동의 체크 행에 라벨을 함께 표기하므로 제목을 중복 렌더하지 않는다. */}
+      {field.type !== 'consent' && heading}
 
       {(field.type === 'single' || field.type === 'multiple') && (
         <ChoiceBody
@@ -175,7 +176,7 @@ export function FieldContent({
           );
           const text = (
             <span className="text-sm font-medium text-grey-100 lg:text-l">
-              동의합니다
+              {label || '동의합니다'}
             </span>
           );
           return (
@@ -310,6 +311,9 @@ function ScoreBody({
   const scoreMin = field.min;
   const scoreMax = field.max;
   const score = answer?.score;
+  // min===max인 손상 데이터에서 0으로 나눠 폭/위치가 NaN이 되는 것 방지.
+  const scoreRatio = (s: number) =>
+    scoreMax > scoreMin ? (s - scoreMin) / (scoreMax - scoreMin) : 0;
   const scoreCircleClass =
     'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-grey-40 bg-white text-l font-bold text-grey-100';
 
@@ -322,9 +326,7 @@ function ScoreBody({
             <span
               className="absolute left-[18px] top-1/2 h-2 -translate-y-1/2 bg-green-80"
               style={{
-                width: `calc((100% - 36px) * ${
-                  (score - scoreMin) / (scoreMax - scoreMin)
-                })`,
+                width: `calc((100% - 36px) * ${scoreRatio(score)})`,
               }}
             />
           )}
@@ -338,9 +340,7 @@ function ScoreBody({
             <span
               className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-bold text-white"
               style={{
-                left: `calc((100% - 36px) * ${
-                  (score - scoreMin) / (scoreMax - scoreMin)
-                })`,
+                left: `calc((100% - 36px) * ${scoreRatio(score)})`,
               }}
             >
               {score}
@@ -369,9 +369,7 @@ function ScoreBody({
             <span
               className="absolute left-[18px] top-1/2 h-2 -translate-y-1/2 bg-green-80"
               style={{
-                width: `calc((100% - 36px) * ${
-                  (score - scoreMin) / (scoreMax - scoreMin)
-                })`,
+                width: `calc((100% - 36px) * ${scoreRatio(score)})`,
               }}
             />
           )}
@@ -384,9 +382,7 @@ function ScoreBody({
           <span
             className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-bold text-white"
             style={{
-              left: `calc((100% - 36px) * ${
-                (score - scoreMin) / (scoreMax - scoreMin)
-              })`,
+              left: `calc((100% - 36px) * ${scoreRatio(score)})`,
             }}
           >
             {score}

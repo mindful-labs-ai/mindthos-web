@@ -159,14 +159,30 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     }));
   },
   removeMyDocument: async (id) => {
-    // 낙관적 제거 — 즉시 목록에서 빼고(반응성), 실패 시 원복.
+    // 낙관적 제거 — 즉시 목록에서 빼고(반응성), 실패 시 제거 항목만 원위치로 되돌린다.
     const prev = get().myDocuments;
+    const index = prev.findIndex((d) => d.id === id);
+    const removed = index >= 0 ? prev[index] : null;
     set({ myDocuments: prev.filter((d) => d.id !== id) });
     try {
       await documentDataSource.deleteMyDocument(id);
       trackEvent(MixpanelEvent.DocumentDelete);
     } catch (error) {
-      set({ myDocuments: prev });
+      // 전체 스냅샷 복원 대신 제거 항목만 원위치 삽입 — 그 사이 추가/삭제된 다른
+      // 항목을 덮어쓰지 않아 동시 삭제 시 clobber를 피한다.
+      if (removed) {
+        set((state) =>
+          state.myDocuments.some((d) => d.id === id)
+            ? state
+            : {
+                myDocuments: [
+                  ...state.myDocuments.slice(0, index),
+                  removed,
+                  ...state.myDocuments.slice(index),
+                ],
+              }
+        );
+      }
       throw error;
     }
   },

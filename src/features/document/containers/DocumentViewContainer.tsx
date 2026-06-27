@@ -181,8 +181,12 @@ export function DocumentViewContainer() {
             }`}
           >
             {fields.map((field) => {
+              // 동의서(consent)는 안내·동의·서명 양식이라 문항 번호를 매기지 않는다.
+              // 질문·응답(qna)에서만 section/richtext를 제외하고 Q번호 부여.
               const number =
-                field.type === 'section' || field.type === 'richtext'
+                document?.kind === 'consent' ||
+                field.type === 'section' ||
+                field.type === 'richtext'
                   ? undefined
                   : ++fieldNumber;
               return (
