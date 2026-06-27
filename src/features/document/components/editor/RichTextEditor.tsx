@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
+import DOMPurify from 'dompurify';
 import { Bold, Heading1, Heading2, Italic, Underline } from 'lucide-react';
 
 import { useDevice } from '@/shared/hooks/useDevice';
 
-interface ConsentEditorProps {
+interface RichTextEditorProps {
   /** 편집 진입 시 초기 본문 HTML — 마운트 시 1회만 주입 */
   initialHtml?: string;
   /** 본문 HTML 변경 콜백 (저장 시 content로 사용) */
@@ -22,13 +23,14 @@ const TOOLBAR_ITEMS: { command: FormatCommand; icon: React.ReactNode }[] = [
 ];
 
 /**
- * 동의서 양식 본문 에디터 — 항목·조항 텍스트 작성 + 글자 스타일(H1/H2/B/I/U).
+ * 리치텍스트 필드 에디터 — 항목·조항 텍스트 작성 + 글자 스타일(H1/H2/B/I/U).
  * contentEditable + execCommand 기반 경량 서식, 저장 content는 HTML 문자열.
+ * 동의서 본문 에디터 및 richtext 필드 에디터 양쪽에서 재사용된다.
  */
-export function ConsentEditor({
+export function RichTextEditor({
   initialHtml,
   onContentChange,
-}: ConsentEditorProps) {
+}: RichTextEditorProps) {
   const [activeFormats, setActiveFormats] = useState<Set<FormatCommand>>(
     new Set()
   );
@@ -40,7 +42,8 @@ export function ConsentEditor({
 
   useEffect(() => {
     if (initialHtmlRef.current && editorRef.current) {
-      editorRef.current.innerHTML = initialHtmlRef.current;
+      // 저장된 HTML 주입 시에도 sanitize — 렌더 경로(FieldContent)와 방어 패리티.
+      editorRef.current.innerHTML = DOMPurify.sanitize(initialHtmlRef.current);
     }
   }, []);
 

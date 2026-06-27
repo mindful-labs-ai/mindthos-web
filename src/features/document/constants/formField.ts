@@ -140,6 +140,36 @@ export function buildContent(fields: FormField[]): DocumentContent {
   return { version: FORM_CONTENT_VERSION, fields };
 }
 
+/**
+ * 동의서(kind=consent) content 빌드 — 본문(richtext) + 표준 동의·서명 필드.
+ * 동의서 에디터는 본문 HTML만 작성하고, 동의·서명은 자동 부착한다(내담자 화면의
+ * 동의 CTA·서명란이 이 필드들에 응답을 저장 — 필드가 없으면 서명이 보관되지 않음).
+ */
+export function buildConsentContent(html: string): DocumentContent {
+  return {
+    version: FORM_CONTENT_VERSION,
+    fields: [
+      { key: nextFieldKey(), type: 'richtext', html },
+      {
+        key: nextFieldKey(),
+        type: 'consent',
+        label: '위 내용을 모두 확인하였으며 이에 동의합니다.',
+        required: true,
+        sensitive: false,
+      },
+      { key: nextFieldKey(), type: 'signature', label: '서명', required: true },
+    ],
+  };
+}
+
+/** 동의서 content → 본문 HTML(첫 richtext 필드). 편집 진입 시 에디터 초기값. */
+export function extractConsentHtml(content: unknown): string {
+  const richtext = parseContent(content)?.fields.find(
+    (f) => f.type === 'richtext'
+  );
+  return richtext?.type === 'richtext' ? richtext.html : '';
+}
+
 const ALL_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set<FormFieldType>([
   'section',
   'richtext',
@@ -160,9 +190,10 @@ function isValidField(field: FormField): boolean {
   }
   switch (field.type) {
     case 'section':
-      return typeof field.title === 'string';
+      // 서버 validate-user-document와 동일하게 비어있지 않은 제목 요구(빈 문자 거부).
+      return field.title.trim().length > 0;
     case 'richtext':
-      return typeof field.html === 'string';
+      return field.html.trim().length > 0;
     case 'short':
     case 'long':
       return field.label.trim().length > 0;

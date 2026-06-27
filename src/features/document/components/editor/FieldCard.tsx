@@ -9,7 +9,7 @@ import type { FormField, FormFieldType } from '../../types';
 import { FieldContent } from '../FieldContent';
 
 import { FieldBody } from './FieldEditors';
-import { QuestionTypeDropdown } from './QuestionTypeDropdown';
+import { FieldTypeDropdown } from './FieldTypeDropdown';
 
 interface FieldCardProps {
   field: FormField;
@@ -29,7 +29,7 @@ interface FieldCardProps {
  * 활성 편집 본문은 유형별 에디터(FieldBody)에 위임한다. 9개 유형
  * (section/richtext/short/long/single/multiple/score/consent/signature) 편집.
  */
-export function QuestionCard({
+export function FieldCard({
   field,
   isActive,
   onActivate,
@@ -39,8 +39,14 @@ export function QuestionCard({
   onDelete,
 }: FieldCardProps) {
   // 항목 순서 변경(드래그) — 핸들에서만 시작
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: field.key });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.key });
   const sortableStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -70,11 +76,7 @@ export function QuestionCard({
         )}
       >
         {dragHandle}
-        <button
-          type="button"
-          onClick={onActivate}
-          className="w-full text-left"
-        >
+        <button type="button" onClick={onActivate} className="w-full text-left">
           <FieldContent field={field} />
         </button>
       </div>
@@ -114,7 +116,7 @@ export function QuestionCard({
             삭제
           </button>
         </div>
-        <QuestionTypeDropdown type={field.type} onChange={onTypeChange} />
+        <FieldTypeDropdown type={field.type} onChange={onTypeChange} />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { getDocumentViewRoute, ROUTES } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { useToast } from '@/shared/ui/composites/Toast';
 import {
   useDocumentStore,
   type MyDocument,
@@ -13,9 +14,12 @@ import {
 } from '@/stores/documentStore';
 
 import { QnaEditor } from '../components/editor/QnaEditor';
+import { RichTextEditor } from '../components/editor/RichTextEditor';
 import {
+  buildConsentContent,
   buildContent,
   createField,
+  extractConsentHtml,
   parseFields,
   validateFields,
 } from '../constants/formField';
@@ -43,6 +47,7 @@ export function DocumentEditorContainer() {
   const addMyDocument = useDocumentStore((state) => state.addMyDocument);
   const updateMyDocument = useDocumentStore((state) => state.updateMyDocument);
   const getMyDocument = useDocumentStore((state) => state.getMyDocument);
+  const { toast } = useToast();
 
   // 편집 모드 — :documentId가 있으면 단건 조회로 content까지 로드 (목록엔 content 없음)
   const [editingDocument, setEditingDocument] = useState<MyDocument | null>(
@@ -55,10 +60,12 @@ export function DocumentEditorContainer() {
   const kind = editingDocument?.kind ?? parseKind(searchParams.get('kind'));
 
   const [title, setTitle] = useState('');
-  // 통합 필드 목록 — kind 무관 단일 모델. 생성 시 기본 필드 1개, 편집 시 저장본 로드.
+  // 질문·응답(qna) 필드 목록. 생성 시 기본 필드 1개, 편집 시 저장본 로드.
   const [fields, setFields] = useState<FormField[]>(() => [createField()]);
+  // 동의서(consent) 본문 — 텍스트+도구모음 에디터의 HTML 문자열.
+  const [consentHtml, setConsentHtml] = useState('');
 
-  // 편집 모드: 단건 조회 후 에디터 상태(제목·필드) 채우기
+  // 편집 모드: 단건 조회 후 에디터 상태(제목·본문) 채우기
   useEffect(() => {
     if (!documentId) return;
     let active = true;
@@ -67,9 +74,14 @@ export function DocumentEditorContainer() {
         if (!active) return;
         setEditingDocument(doc);
         setTitle(doc.title);
-        // content(DocumentContent 문자열) → 필드. 구/빈 content면 빈 목록으로 시작.
-        const loaded = parseFields(doc.content);
-        setFields(loaded.length > 0 ? loaded : [createField()]);
+        if (doc.kind === 'consent') {
+          // 동의서는 본문 richtext 필드의 HTML만 에디터로 로드한다.
+          setConsentHtml(extractConsentHtml(doc.content));
+        } else {
+          // qna: content → 필드. 구/빈 content면 빈 목록으로 시작.
+          const loaded = parseFields(doc.content);
+          setFields(loaded.length > 0 ? loaded : [createField()]);
+        }
       })
       .catch(() => {
         if (active) setEditNotFound(true);
@@ -92,26 +104,41 @@ export function DocumentEditorContainer() {
   };
 
   // 임시 QA 정책: 저장 버튼은 서버 전송 가능 상태(COMPLETED)로 저장한다.
-  const canSave = title.trim().length > 0 && validateFields(fields);
+  // 동의서는 본문 HTML만, qna는 필드 유효성으로 판정.
+  const canSave =
+    title.trim().length > 0 &&
+    (kind === 'consent'
+      ? consentHtml.trim().length > 0
+      : validateFields(fields));
 
   const handleSave = async () => {
     if (!canSave) return;
-    const content = buildContent(fields);
-    if (editingDocument) {
-      await updateMyDocument(editingDocument.id, {
-        title: title.trim(),
-        content,
-        status: 'completed',
-      });
-    } else {
-      await addMyDocument({
-        title: title.trim(),
-        kind,
-        content,
-        status: 'completed',
+    const content =
+      kind === 'consent'
+        ? buildConsentContent(consentHtml.trim())
+        : buildContent(fields);
+    try {
+      if (editingDocument) {
+        await updateMyDocument(editingDocument.id, {
+          title: title.trim(),
+          content,
+          status: 'completed',
+        });
+      } else {
+        await addMyDocument({
+          title: title.trim(),
+          kind,
+          content,
+          status: 'completed',
+        });
+      }
+      goBack();
+    } catch {
+      toast({
+        title: '문서 저장 실패',
+        description: '잠시 후 다시 시도해 주세요.',
       });
     }
-    goBack();
   };
 
   // 편집 모드 단건 조회 중 — 에디터가 빈 상태로 깜빡이지 않도록 로딩 표시
@@ -226,8 +253,15 @@ export function DocumentEditorContainer() {
           className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
         />
 
-        {/* 통합 필드 에디터 — kind 무관 단일 모델(9개 필드 유형 모두 사용 가능) */}
-        <QnaEditor fields={fields} onFieldsChange={setFields} />
+        {/* 동의서: 텍스트+도구모음 본문 에디터 / 질문·응답: 필드 에디터 */}
+        {kind === 'consent' ? (
+          <RichTextEditor
+            initialHtml={consentHtml || undefined}
+            onContentChange={setConsentHtml}
+          />
+        ) : (
+          <QnaEditor fields={fields} onFieldsChange={setFields} />
+        )}
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ import { Modal } from '@/shared/ui/composites/Modal';
 import { FIELD_TYPE_LABEL } from '../../constants/formField';
 import type { FormFieldType } from '../../types';
 
-interface QuestionTypeDropdownProps {
+interface FieldTypeDropdownProps {
   type: FormFieldType;
   onChange: (type: FormFieldType) => void;
 }
@@ -24,10 +24,7 @@ const TYPE_GROUPS: FormFieldType[][] = [
 ];
 
 /** 필드 유형 드롭다운 — 카드 우하단 버튼, 클릭 시 하단으로 셀렉터가 펼쳐진다. */
-export function QuestionTypeDropdown({
-  type,
-  onChange,
-}: QuestionTypeDropdownProps) {
+export function FieldTypeDropdown({ type, onChange }: FieldTypeDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;

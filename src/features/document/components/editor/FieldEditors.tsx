@@ -17,7 +17,7 @@ import type {
   SingleField,
 } from '../../types';
 
-import { ConsentEditor } from './ConsentEditor';
+import { RichTextEditor } from './RichTextEditor';
 import { ScoreRangeSelect } from './ScoreRangeSelect';
 
 /**
@@ -46,10 +46,12 @@ function HeaderInput({
   value,
   onChange,
   placeholder,
+  ariaLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  ariaLabel: string;
 }) {
   return (
     <input
@@ -57,7 +59,7 @@ function HeaderInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      aria-label="질문 입력"
+      aria-label={ariaLabel}
       className="h-[41px] w-full rounded-lg bg-grey-20 px-3 text-l font-emphasize text-grey-100 placeholder:text-grey-80 focus:outline-none"
     />
   );
@@ -72,6 +74,7 @@ function SectionEditor({ field, onChange }: EditorProps<SectionField>) {
         value={field.title}
         onChange={(title) => update({ title })}
         placeholder="제목"
+        ariaLabel="제목 입력"
       />
       <textarea
         value={field.description ?? ''}
@@ -87,9 +90,8 @@ function SectionEditor({ field, onChange }: EditorProps<SectionField>) {
 function RichtextEditor({ field, onChange }: EditorProps<RichtextField>) {
   const update = (patch: Partial<RichtextField>) =>
     onChange({ ...field, ...patch });
-  // 기존 동의서 리치텍스트 에디터(ConsentEditor) 재사용.
   return (
-    <ConsentEditor
+    <RichTextEditor
       key={field.key}
       initialHtml={field.html || undefined}
       onContentChange={(html) => update({ html })}
@@ -106,6 +108,7 @@ function TextEditor({ field, onChange }: EditorProps<ShortField | LongField>) {
         value={field.label}
         onChange={(label) => update({ label })}
         placeholder="질문"
+        ariaLabel="항목 입력"
       />
       {field.type === 'short' ? (
         <div className="mt-5 flex h-[34px] items-center rounded-lg bg-grey-20 px-3 text-m font-medium text-grey-80">
@@ -175,6 +178,7 @@ function ChoiceEditor({
         value={field.label}
         onChange={(label) => update({ label })}
         placeholder="질문"
+        ariaLabel="항목 입력"
       />
       <div className="mt-5 flex flex-col gap-3">
         {options.map((option, i) => (
@@ -232,6 +236,7 @@ function ScoreEditor({ field, onChange }: EditorProps<ScoreField>) {
         value={field.label}
         onChange={(label) => update({ label })}
         placeholder="질문"
+        ariaLabel="항목 입력"
       />
       <div className="mt-5 flex flex-col gap-3">
         {/* 범위 — 1~10 드롭다운, 최소<최대가 되도록 선택지 제한 */}
@@ -292,6 +297,7 @@ function ConsentFieldEditor({ field, onChange }: EditorProps<ConsentField>) {
         value={field.label}
         onChange={(label) => update({ label })}
         placeholder="질문"
+        ariaLabel="항목 입력"
       />
       <label className="mt-5 flex cursor-pointer items-center gap-3">
         <input
@@ -317,6 +323,7 @@ function SignatureEditor({ field, onChange }: EditorProps<SignatureField>) {
         value={field.label}
         onChange={(label) => update({ label })}
         placeholder="질문"
+        ariaLabel="항목 입력"
       />
       <input
         type="text"

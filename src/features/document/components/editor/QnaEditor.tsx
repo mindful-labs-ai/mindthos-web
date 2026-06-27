@@ -21,7 +21,7 @@ import { Plus } from 'lucide-react';
 import { createField, duplicateField } from '../../constants/formField';
 import type { FormField, FormFieldType } from '../../types';
 
-import { QuestionCard } from './QuestionCard';
+import { FieldCard } from './FieldCard';
 
 interface QnaEditorProps {
   fields: FormField[];
@@ -47,7 +47,9 @@ export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
 
   // 완성된 필드로 교체 — FieldBody의 변형별 에디터가 타입 안전하게 구성해 넘긴다(캐스팅 없음).
   const replaceField = (key: string, updated: FormField) => {
-    onFieldsChange(fields.map((field) => (field.key === key ? updated : field)));
+    onFieldsChange(
+      fields.map((field) => (field.key === key ? updated : field))
+    );
   };
 
   // 유형 변경 — 새 유형 기본 필드로 재구성하되 key·라벨/제목은 보존(판별자 변경은 속성 패치와 별개).
@@ -118,7 +120,7 @@ export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
         >
           <div className="flex flex-col gap-4">
             {fields.map((field, index) => (
-              <QuestionCard
+              <FieldCard
                 key={field.key}
                 field={field}
                 isActive={field.key === activeKey}

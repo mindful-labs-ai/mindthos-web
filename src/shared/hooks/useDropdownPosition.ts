@@ -25,7 +25,7 @@ interface Options {
  *
  * TODO(드롭다운 위치 보정 — 전체 적용 계획):
  *  - 적용 완료: TimeSelect, CounselMethodSelect, AddEventPanel(카테고리),
- *    RepeatSelect(주기), QuestionTypeDropdown, ScoreRangeSelect.
+ *    RepeatSelect(주기), FieldTypeDropdown, ScoreRangeSelect.
  *  - 후속 적용 대상:
  *      · DatePopoverCalendar(날짜 팝오버) — AddEventPanel 날짜필드 + RepeatSelect 종료일에서
  *        공용. 부모가 트리거 ref/open을 가지므로 ref·direction·offset 전달 리팩터 필요.
