@@ -8,6 +8,10 @@ import {
 
 import { useParams } from 'react-router-dom';
 
+import {
+  pauseTrackingForSensitiveScreen,
+  resumeTrackingAfterSensitiveScreen,
+} from '@/lib/mixpanel';
 import { ServerApiError } from '@/shared/api/server/serverClient';
 
 import { parseFields } from '../../document/constants/formField';
@@ -110,6 +114,14 @@ export default function SharedDocumentPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  // 민감 화면 — 진입 동안 Mixpanel 수집(이벤트·autocapture·세션 리플레이) 제외.
+  // 직접 로드는 init에서 이미 비활성이지만, 앱 내 이동으로 들어온 경우까지 막고
+  // 이탈 시 재개한다.
+  useEffect(() => {
+    pauseTrackingForSensitiveScreen();
+    return () => resumeTrackingAfterSensitiveScreen();
+  }, []);
 
   useEffect(() => {
     if (!params) {
