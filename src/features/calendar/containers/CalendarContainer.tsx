@@ -182,31 +182,21 @@ export default function CalendarContainer() {
         return newEndKey !== origEndKey;
       })();
 
+      // 반복 일정의 시간/날짜(앵커) 변경은 막는다 — 재생성(create→delete) 방식은 이전 회차가
+      // 사라지는 데이터 손실 + 비원자 경로다. 서버의 scope(이 회차/이후/전체) 엔드포인트 도입
+      // 전까지 차단한다. 설계안: mindthos-server/docs/CALENDAR_RECURRENCE_REDESIGN.md
+      if (editingEvent && editingEvent.repeat && anchorChanged) {
+        toast({
+          title: '반복 일정의 시간·날짜는 변경할 수 없어요',
+          description: '시간을 바꾸려면 일정을 삭제한 뒤 다시 만들어 주세요.',
+        });
+        return;
+      }
+
       try {
-        if (editingEvent && editingEvent.repeat && anchorChanged) {
-          // 시간/날짜 변경 → 시리즈 재생성. 새 시리즈 생성 성공 후 기존 시리즈 삭제.
-          // 새 시리즈는 편집 회차 날짜 기준이라, 이월돼도 무의미한 옛 예외(EXDATE)는 비운다.
-          // TODO(반복 일정 편집 — 서버 작업 필요): 현재는 "편집 회차부터 새 시리즈" 시맨틱이라
-          //   그 이전 회차가 사라지고 create→delete 2회 호출이 비원자적이다. 서버에
-          //   reschedule-from-occurrence(이 회차 이후만 분리) 또는 "이 회차/이후/전체" 스코프
-          //   엔드포인트를 추가하고, 마스터 앵커를 응답에 실어 프론트가 시간만 시프트할 수 있게 한다.
-          await calendarDataSource.createEvent?.({
-            ...input,
-            repeat: input.repeat
-              ? { ...input.repeat, exceptions: null }
-              : input.repeat,
-          });
-          try {
-            await calendarDataSource.deleteEvent?.(editingEvent.id);
-          } catch {
-            // 새 시리즈는 이미 생성됨(데이터 유실 없음) — 기존 시리즈 정리만 실패(중복).
-            toast({
-              title: '기존 반복 일정 정리에 실패했어요',
-              description: '중복으로 보이는 일정이 있으면 삭제해 주세요.',
-            });
-          }
-        } else if (editingEvent) {
-          // 비-앵커 편집 또는 단일 일정 — 부분 수정. 반복이면 앵커 보존(occurrence 재앵커 방지).
+        if (editingEvent) {
+          // 편집 — 부분 수정. 반복이면 앵커 보존(occurrence로 재앵커되는 손실 방지),
+          // 비-앵커 필드(제목·색·카테고리 등)는 시리즈 전체에 반영된다.
           await calendarDataSource.updateEvent?.(editingEvent.id, input, {
             preserveAnchor: !!editingEvent.repeat,
           });
