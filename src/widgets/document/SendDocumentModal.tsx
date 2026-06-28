@@ -51,14 +51,19 @@ function myDocToSendTarget(doc: MyDocument): SendTargetDocument {
   return { id: doc.id, title: doc.title, kind: doc.kind, source: 'my' };
 }
 
-/** 마감 기한 → 절대 ISO(expiredAt). 'none'이면 undefined(무기한). */
-function deadlineToExpiredAt(key: DeadlineKey): string | undefined {
-  if (key === 'none') return undefined;
+/** 마감 기한 key → 만료 시각(Date). 'none'이면 null(무기한). */
+function resolveDeadlineDate(key: DeadlineKey): Date | null {
+  if (key === 'none') return null;
   const date = new Date();
   if (key === '1m') date.setMonth(date.getMonth() + 1);
   else
     date.setDate(date.getDate() + (key === '3d' ? 3 : key === '1w' ? 7 : 14));
-  return date.toISOString();
+  return date;
+}
+
+/** 마감 기한 → 절대 ISO(expiredAt). 'none'이면 undefined(무기한). */
+function deadlineToExpiredAt(key: DeadlineKey): string | undefined {
+  return resolveDeadlineDate(key)?.toISOString();
 }
 
 function hasClientPhoneNumber(client: Client | null): boolean {
@@ -93,11 +98,8 @@ type DeadlineKey = (typeof DEADLINE_OPTIONS)[number]['key'];
 
 /** 마감 기한 → "2026년 5월 30일까지" / 없음이면 "없음" */
 function formatDeadline(key: DeadlineKey): string {
-  if (key === 'none') return '없음';
-  const date = new Date();
-  if (key === '1m') date.setMonth(date.getMonth() + 1);
-  else
-    date.setDate(date.getDate() + (key === '3d' ? 3 : key === '1w' ? 7 : 14));
+  const date = resolveDeadlineDate(key);
+  if (!date) return '없음';
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일까지`;
 }
 
@@ -125,7 +127,8 @@ export function SendDocumentModal({
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
 
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  // 선택된 내담자는 id만 보관하고 client는 목록에서 파생 — 목록 로딩이 늦어도 자동 반영
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [selectedDocument, setSelectedDocument] =
     useState<SendTargetDocument | null>(null);
   const [deadline, setDeadline] = useState<DeadlineKey>('1w');
@@ -136,17 +139,15 @@ export function SendDocumentModal({
   const [isDocumentOpen, setIsDocumentOpen] = useState(false);
   const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
 
+  const selectedClient = clients.find((c) => c.id === selectedClientId) ?? null;
+
   // 열릴 때마다 초기화 — 초기 발송 대상/기본 문서/기본 기한 + 문서 목록 로드
   useEffect(() => {
     if (!open) return;
-    setSelectedClient(
-      (initialClientId && clients.find((c) => c.id === initialClientId)) || null
-    );
+    setSelectedClientId(initialClientId ?? null);
     setDeadline('1w');
     void loadDocuments();
-    // clients는 로딩 시점에 따라 갱신될 수 있어 open 시점 값만 사용
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialClientId]);
+  }, [open, initialClientId, loadDocuments]);
 
   // 템플릿 로드 후 기본 선택이 비어 있으면 첫 마음토스 양식으로 채움
   useEffect(() => {
@@ -316,7 +317,7 @@ export function SendDocumentModal({
             <ClientSelector
               clients={clients}
               selectedClient={selectedClient}
-              onSelect={setSelectedClient}
+              onSelect={(client) => setSelectedClientId(client?.id ?? null)}
               variant="dropdown"
               open={isClientOpen}
               onOpenChange={setIsClientOpen}
