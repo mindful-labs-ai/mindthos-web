@@ -15,14 +15,24 @@ vi.mock('mixpanel-browser', () => ({
   default: mixpanelMock,
 }));
 
-import { identifyUser, resetMixpanel } from './mixpanel';
+const importMixpanel = async (token = '') => {
+  vi.resetModules();
+  // 항상 stub한다(미지정=빈 토큰). 안 그러면 CI의 실제 VITE_MIXPANEL_TOKEN이 새어들어
+  // '토큰 없음' 시나리오가 실패한다.
+  vi.stubEnv('VITE_MIXPANEL_TOKEN', token);
+  return import('./mixpanel');
+};
 
 describe('mixpanel helpers', () => {
   afterEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
+    vi.resetModules();
   });
 
-  it('keeps Mixpanel identity on auth UUID and registers DB user_id as a join key', () => {
+  it('keeps Mixpanel identity on auth UUID and registers DB user_id as a join key', async () => {
+    const { identifyUser } = await importMixpanel('test-token');
+
     identifyUser(
       'auth-uuid',
       {
@@ -41,7 +51,9 @@ describe('mixpanel helpers', () => {
     });
   });
 
-  it('does not register invalid join user IDs', () => {
+  it('does not register invalid join user IDs', async () => {
+    const { identifyUser } = await importMixpanel('test-token');
+
     identifyUser(
       'auth-uuid',
       { email: 'user@example.com' },
@@ -55,9 +67,24 @@ describe('mixpanel helpers', () => {
     });
   });
 
-  it('resets Mixpanel state on logout', () => {
+  it('resets Mixpanel state on logout', async () => {
+    const { resetMixpanel } = await importMixpanel('test-token');
+
     resetMixpanel();
 
     expect(mixpanelMock.reset).toHaveBeenCalled();
+  });
+
+  it('no-ops safely when token is missing', async () => {
+    const { identifyUser, resetMixpanel, trackEvent } = await importMixpanel();
+
+    trackEvent('clicked');
+    identifyUser('auth-uuid');
+    resetMixpanel();
+
+    expect(mixpanelMock.init).not.toHaveBeenCalled();
+    expect(mixpanelMock.track).not.toHaveBeenCalled();
+    expect(mixpanelMock.identify).not.toHaveBeenCalled();
+    expect(mixpanelMock.reset).not.toHaveBeenCalled();
   });
 });
