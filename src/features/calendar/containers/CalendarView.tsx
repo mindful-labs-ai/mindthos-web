@@ -2,14 +2,12 @@ import type { CalendarProvider } from '../adapters';
 import { CalendarToolbar } from '../components/CalendarToolbar';
 import { MonthGrid } from '../components/MonthGrid';
 import { AddCalendarPanel } from '../components/sidebar/AddCalendarPanel';
-import {
-  AddEventPanel,
-  type AddEventDraft,
-} from '../components/sidebar/AddEventPanel';
+import { AddEventPanel } from '../components/sidebar/AddEventPanel';
 import { CalendarSidebar } from '../components/sidebar/CalendarSidebar';
 import { WeekGrid } from '../components/WeekGrid';
 import type { CalendarSidePanel } from '../hooks/useCalendarState';
 import type {
+  AddEventDraft,
   CalendarCategory,
   CalendarColorKey,
   CalendarEvent,

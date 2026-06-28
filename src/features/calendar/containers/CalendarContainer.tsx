@@ -12,18 +12,19 @@ import {
   calendarImportAdapter,
   type CalendarProvider,
 } from '../adapters';
-import type { AddEventDraft } from '../components/sidebar/AddEventPanel';
 import {
   useCalendarCategories,
   useCalendarEvents,
 } from '../hooks/useCalendarEvents';
 import { useCalendarState } from '../hooks/useCalendarState';
-import type {
-  CalendarColorKey,
-  CalendarEvent,
-  CalendarEventInput,
-} from '../types';
-import { dayjs, minutesToHHmm, type Dayjs } from '../utils/calendarDate';
+import type { AddEventDraft, CalendarColorKey, CalendarEvent } from '../types';
+import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
+import {
+  applyOccurrenceDeleteOptimistic,
+  buildCalendarEventInput,
+  hasAnchorChanged,
+  mergeOccurrenceExceptions,
+} from '../utils/eventMutations';
 
 import { CalendarView } from './CalendarView';
 import { MobileCalendarView } from './MobileCalendarView';
@@ -116,76 +117,16 @@ export default function CalendarContainer() {
   const handleSubmitEvent = React.useCallback(
     async (draft: AddEventDraft) => {
       const date = selectedDate ?? current;
-      // 하루 종일: 그 날 00:00 시작 + 종료 없음. 시간 일정: 선택한 시작/종료 시각.
-      const [sh, sm] = draft.startTime.split(':').map(Number);
-      const [eh, em] = draft.endTime.split(':').map(Number);
-      const isAllDay = draft.eventTimeKind === 'ALL_DAY';
-      const start = isAllDay
-        ? date.hour(0).minute(0).second(0).millisecond(0)
-        : date
-            .hour(sh || 0)
-            .minute(sm || 0)
-            .second(0);
-      const end = isAllDay
-        ? undefined
-        : date
-            .hour(eh || 0)
-            .minute(em || 0)
-            .second(0);
+      const input = buildCalendarEventInput(draft, date, editingEvent);
 
-      // 종류가 그대로면 기존 색/카테고리 유지, 바뀌면 kind 기본값으로
-      const colorKey =
-        editingEvent && editingEvent.kind === draft.kind
-          ? editingEvent.colorKey
-          : draft.kind === 'counseling'
-            ? 'green'
-            : 'red';
-      const input: CalendarEventInput = {
-        title: draft.title.trim() || '제목 없음',
-        kind: draft.kind,
-        colorKey,
-        start: start.toISOString(),
-        end: end?.toISOString(),
-        eventTimeKind: draft.eventTimeKind,
-        // 카테고리는 '나의 캘린더' 개인 일정에만 — 패널이 개인일 때만 선택값을 싣고, 상담이면 null.
-        // 이벤트 색은 카테고리(있으면)에서 파생되므로 색은 재조회 시 자동 반영.
-        categoryId: draft.categoryId ?? undefined,
-        clientId: draft.clientId,
-        counselMethod: draft.counselMethod,
-        repeat: draft.repeat,
-      };
-
-      // 반복 일정 편집:
-      //  - 시간/날짜(앵커) 변경 → 펼쳐진 인스턴스엔 마스터 앵커가 없어, 시리즈 전체를
-      //    재생성(생성 성공 후 기존 삭제)한다. 편집한 회차 날짜 기준 새 시리즈가 된다.
-      //  - 그 외 필드(제목·색·카테고리 등) → 앵커 보존 부분수정으로 시리즈 전체에 반영.
-      // 단일 일정은 일반 수정.
-      // 앵커(시간/날짜) 변경 여부는 '로컬 프레임 분 단위'로 판정한다. ISO 문자열 직접 비교는
-      // UTC 자정으로 저장된 외부 연동 올데이 이벤트가 round-trip되지 않아, 제목만 바꿔도
-      // 재생성되는 오탐을 낳는다. 올데이는 날짜만, 시간 일정은 날짜+시작/종료 시각을 비교.
-      const anchorChanged = (() => {
-        if (!editingEvent) return false;
-        const wasAllDay = editingEvent.eventTimeKind === 'ALL_DAY';
-        if (isAllDay !== wasAllDay) return true;
-        const origStart = dayjs(editingEvent.start);
-        if (isAllDay) return !date.isSame(origStart, 'day');
-        if (
-          start.format('YYYY-MM-DD HH:mm') !==
-          origStart.format('YYYY-MM-DD HH:mm')
-        ) {
-          return true;
-        }
-        const newEndKey = end ? end.format('YYYY-MM-DD HH:mm') : null;
-        const origEndKey = editingEvent.end
-          ? dayjs(editingEvent.end).format('YYYY-MM-DD HH:mm')
-          : null;
-        return newEndKey !== origEndKey;
-      })();
-
-      // 반복 일정의 시간/날짜(앵커) 변경은 막는다 — 재생성(create→delete) 방식은 이전 회차가
-      // 사라지는 데이터 손실 + 비원자 경로다. 서버의 scope(이 회차/이후/전체) 엔드포인트 도입
-      // 전까지 차단한다. 설계안: mindthos-server/docs/CALENDAR_RECURRENCE_REDESIGN.md
-      if (editingEvent && editingEvent.repeat && anchorChanged) {
+      // 반복 일정의 시간/날짜(앵커) 변경은 막는다 — 재생성(create→delete)은 이전 회차가
+      // 사라지는 데이터 손실 경로다. 서버 scope(이 회차/이후/전체) 엔드포인트 도입 전까지 차단.
+      // 설계안: mindthos-server/docs/CALENDAR_RECURRENCE_REDESIGN.md
+      if (
+        editingEvent &&
+        editingEvent.repeat &&
+        hasAnchorChanged(draft, date, editingEvent)
+      ) {
         toast({
           title: '반복 일정의 시간·날짜는 변경할 수 없어요',
           description: '시간을 바꾸려면 일정을 삭제한 뒤 다시 만들어 주세요.',
@@ -210,7 +151,11 @@ export default function CalendarContainer() {
           editingEvent
             ? MixpanelEvent.CalendarEventUpdate
             : MixpanelEvent.CalendarEventCreate,
-          { kind: draft.kind, allDay: isAllDay, recurring: !!draft.repeat }
+          {
+            kind: draft.kind,
+            allDay: draft.eventTimeKind === 'ALL_DAY',
+            recurring: !!draft.repeat,
+          }
         );
         closePanel();
       } catch {
@@ -246,37 +191,23 @@ export default function CalendarContainer() {
       // 같은 마스터의 캐시된 인스턴스에서 최신 예외 목록을 모아 occDate를 더한다 —
       // 연속 단건삭제 시 직전 삭제가 추가한 예외를 놓쳐 서버 배열을 덮어쓰고 회차가
       // 되살아나는 레이스를 방지한다.
-      const exceptionSet = new Set<string>(target.repeat?.exceptions ?? []);
-      if (isOccurrence) {
-        snapshots.forEach(([, data]) =>
-          data?.forEach((e) => {
-            if (e.id === target.id) {
-              e.repeat?.exceptions?.forEach((d) => exceptionSet.add(d));
-            }
-          })
-        );
-        exceptionSet.add(occDate);
-      }
-      const mergedExceptions = Array.from(exceptionSet);
+      const mergedExceptions = isOccurrence
+        ? mergeOccurrenceExceptions(
+            target,
+            snapshots.map(([, data]) => data),
+            occDate
+          )
+        : [];
 
       queryClient.setQueriesData<CalendarEvent[]>(
         { queryKey: ['calendar', 'events'] },
         (old) =>
-          old
-            ?.filter((e) =>
-              isOccurrence
-                ? !(e.id === target.id && e.start === target.start)
-                : e.id !== target.id
-            )
-            // 남은 인스턴스의 예외 목록도 즉시 갱신해 다음 단건삭제가 최신값을 읽게 한다.
-            .map((e) =>
-              isOccurrence && e.id === target.id && e.repeat
-                ? {
-                    ...e,
-                    repeat: { ...e.repeat, exceptions: mergedExceptions },
-                  }
-                : e
-            )
+          applyOccurrenceDeleteOptimistic(
+            old,
+            target,
+            isOccurrence,
+            mergedExceptions
+          )
       );
       closePanel();
 

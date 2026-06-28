@@ -104,6 +104,24 @@ export interface CalendarEventInput {
   repeat?: CalendarRepeatRule | null;
 }
 
+/** 일정 추가/편집 패널의 입력 draft — 패널이 onSubmit으로 넘기는 폼 값. */
+export interface AddEventDraft {
+  kind: CalendarEventKind;
+  title: string;
+  /** 시간 종류 — ALL_DAY면 시간 대신 그 날 전체. */
+  eventTimeKind: CalendarEventTimeKind;
+  startTime: string;
+  endTime: string;
+  /** 상담 일정 대상 내담자 id (상담 일정에서만, 개인은 null) */
+  clientId: string | null;
+  /** 상담 방식 (상담 일정에서만, 개인은 null) */
+  counselMethod: CounselMethod | null;
+  /** '나의 캘린더' 카테고리 id (개인 일정에서만, 상담은 null) */
+  categoryId: string | null;
+  /** 반복 규칙 (없으면 단일 일정) */
+  repeat: CalendarRepeatRule | null;
+}
+
 /** 카테고리 생성 입력 (후속 Phase) */
 export interface CalendarCategoryInput {
   name: string;

@@ -9,12 +9,10 @@ import { MobileDayView } from '../components/mobile/MobileDayView';
 import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
 import { MobileMonthGrid } from '../components/mobile/MobileMonthGrid';
 import { AddCalendarPanel } from '../components/sidebar/AddCalendarPanel';
-import {
-  AddEventPanel,
-  type AddEventDraft,
-} from '../components/sidebar/AddEventPanel';
+import { AddEventPanel } from '../components/sidebar/AddEventPanel';
 import type { CalendarSidePanel } from '../hooks/useCalendarState';
 import type {
+  AddEventDraft,
   CalendarCategory,
   CalendarEvent,
   CalendarEventKind,
