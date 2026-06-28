@@ -6,6 +6,7 @@ import type {
   ConsentAnswer,
   FieldAnswer,
   FormField,
+  FormFieldType,
   ScoreAnswer,
   SignatureAnswer,
   TextAnswer,
@@ -23,21 +24,55 @@ interface FieldContentProps {
   onRequestSignature?: () => void;
 }
 
-/** 응답을 각 답변 타입으로 좁혀 읽는 헬퍼 (잘못된 타입이면 undefined) */
-function asText(a: FieldAnswer | undefined): TextAnswer | undefined {
-  return a && 'text' in a ? a : undefined;
-}
-function asChoice(a: FieldAnswer | undefined): ChoiceAnswer | undefined {
-  return a && 'selected' in a ? a : undefined;
-}
-function asScore(a: FieldAnswer | undefined): ScoreAnswer | undefined {
-  return a && 'score' in a ? a : undefined;
-}
-function asConsent(a: FieldAnswer | undefined): ConsentAnswer | undefined {
-  return a && 'agreed' in a ? a : undefined;
-}
-function asSignature(a: FieldAnswer | undefined): SignatureAnswer | undefined {
-  return a && 'signatureDataUrl' in a ? a : undefined;
+/** 필드 type(판별자)별로 대응되는 답변 타입. */
+type AnswerFor<F extends FormField> = F['type'] extends 'short' | 'long'
+  ? TextAnswer
+  : F['type'] extends 'single' | 'multiple'
+    ? ChoiceAnswer
+    : F['type'] extends 'score'
+      ? ScoreAnswer
+      : F['type'] extends 'consent'
+        ? ConsentAnswer
+        : F['type'] extends 'signature'
+          ? SignatureAnswer
+          : never;
+
+/**
+ * 응답을 필드 type(판별자) 기준으로 해당 답변 타입에 맞춰 읽는다.
+ * 답변 키를 추측하지 않고 field.type별로 기대 키만 검증하므로, 새 필드/답변 타입이
+ * 추가되면 switch의 exhaustiveness(never)로 컴파일 에러가 나 조용히 잘못 렌더되지 않는다.
+ * 기대 키가 없는(타입 불일치 손상) 응답이면 undefined.
+ */
+function answerForField<F extends FormField>(
+  field: F,
+  answer: FieldAnswer | undefined
+): AnswerFor<F> | undefined {
+  if (answer === undefined) return undefined;
+  const fieldType: FormFieldType = field.type;
+  const hasExpectedKey = (): boolean => {
+    switch (fieldType) {
+      case 'short':
+      case 'long':
+        return 'text' in answer;
+      case 'single':
+      case 'multiple':
+        return 'selected' in answer;
+      case 'score':
+        return 'score' in answer;
+      case 'consent':
+        return 'agreed' in answer;
+      case 'signature':
+        return 'signatureDataUrl' in answer;
+      case 'section':
+      case 'richtext':
+        return false;
+      default: {
+        const _exhaustive: never = fieldType;
+        return _exhaustive;
+      }
+    }
+  };
+  return hasExpectedKey() ? (answer as AnswerFor<F>) : undefined;
 }
 
 /**
@@ -106,7 +141,7 @@ export function FieldContent({
       {(field.type === 'single' || field.type === 'multiple') && (
         <ChoiceBody
           field={field}
-          answer={asChoice(answer)}
+          answer={answerForField(field, answer)}
           interactive={interactive}
           onAnswerChange={onAnswerChange}
         />
@@ -116,15 +151,15 @@ export function FieldContent({
         (interactive ? (
           <input
             type="text"
-            value={asText(answer)?.text ?? ''}
+            value={answerForField(field, answer)?.text ?? ''}
             onChange={(e) => onAnswerChange?.({ text: e.target.value })}
             placeholder="답변을 입력해주세요."
             aria-label="답변 입력"
             className="mt-6 flex h-[46px] w-full items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-sm font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-l"
           />
-        ) : asText(answer)?.text ? (
+        ) : answerForField(field, answer)?.text ? (
           <div className="mt-6 flex min-h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-100 lg:text-l">
-            {asText(answer)?.text}
+            {answerForField(field, answer)?.text}
           </div>
         ) : (
           <div className="mt-6 flex h-[46px] items-center rounded-lg border border-grey-40 bg-grey-20 px-4 text-sm font-medium text-grey-60 lg:text-l">
@@ -135,15 +170,15 @@ export function FieldContent({
       {field.type === 'long' &&
         (interactive ? (
           <textarea
-            value={asText(answer)?.text ?? ''}
+            value={answerForField(field, answer)?.text ?? ''}
             onChange={(e) => onAnswerChange?.({ text: e.target.value })}
             placeholder="답변을 입력해주세요."
             aria-label="답변 입력"
             className="mt-6 block h-[134px] w-full resize-none rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-100 placeholder:text-grey-60 focus:outline-none lg:text-l"
           />
-        ) : asText(answer)?.text ? (
+        ) : answerForField(field, answer)?.text ? (
           <div className="mt-6 min-h-[134px] whitespace-pre-wrap rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-100 lg:text-l">
-            {asText(answer)?.text}
+            {answerForField(field, answer)?.text}
           </div>
         ) : (
           <div className="mt-6 h-[134px] rounded-lg border border-grey-40 bg-grey-20 px-4 py-2 text-sm font-medium text-grey-60 lg:text-l">
@@ -154,7 +189,7 @@ export function FieldContent({
       {field.type === 'score' && (
         <ScoreBody
           field={field}
-          answer={asScore(answer)}
+          answer={answerForField(field, answer)}
           interactive={interactive}
           onAnswerChange={onAnswerChange}
         />
@@ -162,7 +197,7 @@ export function FieldContent({
 
       {field.type === 'consent' &&
         (() => {
-          const agreed = asConsent(answer)?.agreed ?? false;
+          const agreed = answerForField(field, answer)?.agreed ?? false;
           const marker = (
             <span
               className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-[4px] border-2 ${
@@ -204,7 +239,7 @@ export function FieldContent({
       {field.type === 'signature' && (
         <SignatureBody
           field={field}
-          answer={asSignature(answer)}
+          answer={answerForField(field, answer)}
           interactive={interactive}
           onRequestSignature={onRequestSignature}
         />
