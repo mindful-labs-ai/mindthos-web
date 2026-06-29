@@ -17,13 +17,16 @@ import {
   useCalendarEvents,
 } from '../hooks/useCalendarEvents';
 import { useCalendarState } from '../hooks/useCalendarState';
-import type { AddEventDraft, CalendarColorKey, CalendarEvent } from '../types';
+import type {
+  AddEventDraft,
+  CalendarColorKey,
+  CalendarEvent,
+  CalendarEventScope,
+} from '../types';
 import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
 import {
-  applyOccurrenceDeleteOptimistic,
+  applyScopedDeleteOptimistic,
   buildCalendarEventInput,
-  hasAnchorChanged,
-  mergeOccurrenceExceptions,
 } from '../utils/eventMutations';
 
 import { CalendarView } from './CalendarView';
@@ -113,33 +116,17 @@ export default function CalendarContainer() {
     [openAddEvent]
   );
 
-  // 일정 추가/변경 제출: 편집 중이면 update, 아니면 create → 쿼리 무효화
+  // 일정 추가/변경 제출: 편집 중이면 update(반복은 scope로 범위 지정), 아니면 create → 쿼리 무효화.
   const handleSubmitEvent = React.useCallback(
-    async (draft: AddEventDraft) => {
+    async (draft: AddEventDraft, scope?: CalendarEventScope) => {
       const date = selectedDate ?? current;
       const input = buildCalendarEventInput(draft, date, editingEvent);
 
-      // 반복 일정의 시간/날짜(앵커) 변경은 막는다 — 재생성(create→delete)은 이전 회차가
-      // 사라지는 데이터 손실 경로다. 서버 scope(이 회차/이후/전체) 엔드포인트 도입 전까지 차단.
-      // 설계안: mindthos-server/docs/CALENDAR_RECURRENCE_REDESIGN.md
-      if (
-        editingEvent &&
-        editingEvent.repeat &&
-        hasAnchorChanged(draft, date, editingEvent)
-      ) {
-        toast({
-          title: '반복 일정의 시간·날짜는 변경할 수 없어요',
-          description: '시간을 바꾸려면 일정을 삭제한 뒤 다시 만들어 주세요.',
-        });
-        return;
-      }
-
       try {
         if (editingEvent) {
-          // 편집 — 부분 수정. 반복이면 앵커 보존(occurrence로 재앵커되는 손실 방지),
-          // 비-앵커 필드(제목·색·카테고리 등)는 시리즈 전체에 반영된다.
+          // 편집 — 반복(시리즈)이면 scope(this/following/all)로 적용 범위. 단일은 scope 무시.
           await calendarDataSource.updateEvent?.(editingEvent.id, input, {
-            preserveAnchor: !!editingEvent.repeat,
+            scope,
           });
         } else {
           await calendarDataSource.createEvent?.(input);
@@ -154,7 +141,7 @@ export default function CalendarContainer() {
           {
             kind: draft.kind,
             allDay: draft.eventTimeKind === 'ALL_DAY',
-            recurring: !!draft.repeat,
+            recurring: !!draft.repeat || !!editingEvent?.seriesId,
           }
         );
         closePanel();
@@ -168,64 +155,34 @@ export default function CalendarContainer() {
     [selectedDate, current, editingEvent, queryClient, closePanel, toast]
   );
 
-  // 일정 삭제(편집 모드) — 낙관적 제거(반응성) 후 API. 단일/전체는 DELETE,
-  // 반복 '이 회차만'은 예외(EXDATE) 추가(부분 PATCH). 실패 시 캐시 롤백.
+  // 일정 삭제(편집 모드) — 낙관적 제거(반응성) 후 scope DELETE. 반복은 this/following/all.
+  // 회차가 실제 row라 scope에 맞춰 캐시에서 제거하고, 실패 시 스냅샷 롤백.
   const handleDeleteEvent = React.useCallback(
-    async (mode: 'this' | 'all') => {
+    async (scope: CalendarEventScope) => {
       if (!editingEvent) return;
       const target = editingEvent;
-      // EXDATE 키는 서버가 startsAt의 UTC 날짜로 매칭한다(expand-recurrence).
-      // start는 서버 startsAt(UTC ISO …Z)이므로 로컬 포맷(dayjs) 대신 날짜부를
-      // 그대로 잘라 UTC 날짜를 보낸다. (로컬 변환 시 KST 오전 회차가 하루 밀려 어긋남)
-      const occDate = target.start.slice(0, 10);
-      const isOccurrence = mode === 'this' && !!target.repeat;
 
       // 진행 중인 listEvents refetch를 멈춰 낙관적 제거가 곧바로 되살아나지 않게 한다.
       await queryClient.cancelQueries({ queryKey: ['calendar', 'events'] });
-
-      // 낙관적 제거 — 캐시에서 즉시 빼고 패널을 닫는다.
       const snapshots = queryClient.getQueriesData<CalendarEvent[]>({
         queryKey: ['calendar', 'events'],
       });
 
-      // 같은 마스터의 캐시된 인스턴스에서 최신 예외 목록을 모아 occDate를 더한다 —
-      // 연속 단건삭제 시 직전 삭제가 추가한 예외를 놓쳐 서버 배열을 덮어쓰고 회차가
-      // 되살아나는 레이스를 방지한다.
-      const mergedExceptions = isOccurrence
-        ? mergeOccurrenceExceptions(
-            target,
-            snapshots.map(([, data]) => data),
-            occDate
-          )
-        : [];
-
+      // 낙관적 제거 — scope에 맞춰 캐시에서 즉시 빼고 패널을 닫는다.
       queryClient.setQueriesData<CalendarEvent[]>(
         { queryKey: ['calendar', 'events'] },
-        (old) =>
-          applyOccurrenceDeleteOptimistic(
-            old,
-            target,
-            isOccurrence,
-            mergedExceptions
-          )
+        (old) => applyScopedDeleteOptimistic(old, target, scope)
       );
       closePanel();
 
       try {
-        if (isOccurrence && target.repeat) {
-          await calendarDataSource.updateEventExceptions?.(
-            target.id,
-            mergedExceptions
-          );
-        } else {
-          await calendarDataSource.deleteEvent?.(target.id);
-        }
+        await calendarDataSource.deleteEvent?.(target.id, scope);
         await queryClient.invalidateQueries({
           queryKey: ['calendar', 'events'],
         });
         trackEvent(MixpanelEvent.CalendarEventDelete, {
-          mode,
-          recurring: !!target.repeat,
+          scope,
+          recurring: !!target.seriesId,
         });
       } catch {
         // 롤백 — 낙관적으로 제거한 캐시를 원복.

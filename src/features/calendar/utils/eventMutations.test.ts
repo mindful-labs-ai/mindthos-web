@@ -4,11 +4,9 @@ import type { AddEventDraft, CalendarEvent } from '../types';
 
 import { dayjs } from './calendarDate';
 import {
-  applyOccurrenceDeleteOptimistic,
+  applyScopedDeleteOptimistic,
   buildCalendarEventInput,
   computeEventTimes,
-  hasAnchorChanged,
-  mergeOccurrenceExceptions,
 } from './eventMutations';
 
 function draft(overrides: Partial<AddEventDraft> = {}): AddEventDraft {
@@ -78,133 +76,37 @@ describe('buildCalendarEventInput', () => {
   });
 });
 
-describe('hasAnchorChanged', () => {
-  const date = dayjs('2026-06-10T00:00:00');
+describe('applyScopedDeleteOptimistic', () => {
+  // 한 시리즈의 회차 3개(각각 고유 id) + 무관 단일 일정 1개.
+  const series = (): CalendarEvent[] => [
+    event({ id: 'a', seriesId: 's1', start: '2026-06-01T00:00:00.000Z' }),
+    event({ id: 'b', seriesId: 's1', start: '2026-06-08T00:00:00.000Z' }),
+    event({ id: 'c', seriesId: 's1', start: '2026-06-15T00:00:00.000Z' }),
+    event({ id: 'x', seriesId: null, start: '2026-06-09T00:00:00.000Z' }),
+  ];
 
-  it('편집 중이 아니면 false', () => {
-    expect(hasAnchorChanged(draft(), date, null)).toBe(false);
+  it('this는 그 회차(id)만 제거', () => {
+    const events = series();
+    const result = applyScopedDeleteOptimistic(events, events[1], 'this');
+    expect(result?.map((e) => e.id)).toEqual(['a', 'c', 'x']);
   });
 
-  it('시간/종료 변경이 없으면(라운드트립) false', () => {
-    const d = draft({ startTime: '09:00', endTime: '10:00' });
-    const t = computeEventTimes(d, date);
-    const editing = event({
-      eventTimeKind: 'TIMED',
-      start: t.start.toISOString(),
-      end: t.end?.toISOString(),
-    });
-    expect(hasAnchorChanged(d, date, editing)).toBe(false);
+  it('following은 같은 시리즈의 기준 시작 이후 회차들만 제거', () => {
+    const events = series();
+    const result = applyScopedDeleteOptimistic(events, events[1], 'following');
+    // b(기준)·c 제거, a(이전)·x(무관) 유지.
+    expect(result?.map((e) => e.id)).toEqual(['a', 'x']);
   });
 
-  it('시작 시각이 바뀌면 true', () => {
-    const editing = event({
-      eventTimeKind: 'TIMED',
-      start: computeEventTimes(
-        draft({ startTime: '09:00' }),
-        date
-      ).start.toISOString(),
-    });
-    expect(hasAnchorChanged(draft({ startTime: '11:00' }), date, editing)).toBe(
-      true
-    );
+  it('all은 같은 시리즈 전체 제거(무관 일정 유지)', () => {
+    const events = series();
+    const result = applyScopedDeleteOptimistic(events, events[1], 'all');
+    expect(result?.map((e) => e.id)).toEqual(['x']);
   });
 
-  it('외부 연동 올데이(UTC 자정 저장) 제목만 수정은 재앵커 오탐 없음', () => {
-    // 회귀 가드: ISO 직접 비교였다면 KST 재구성과 어긋나 true가 됐었다.
-    const start = '2026-06-10T00:00:00.000Z';
-    const editing = event({ eventTimeKind: 'ALL_DAY', start });
-    const sameDate = dayjs(start);
-    expect(
-      hasAnchorChanged(draft({ eventTimeKind: 'ALL_DAY' }), sameDate, editing)
-    ).toBe(false);
-  });
-
-  it('올데이 날짜가 바뀌면 true', () => {
-    const editing = event({
-      eventTimeKind: 'ALL_DAY',
-      start: '2026-06-10T00:00:00.000Z',
-    });
-    expect(
-      hasAnchorChanged(
-        draft({ eventTimeKind: 'ALL_DAY' }),
-        dayjs('2026-06-11T00:00:00.000Z'),
-        editing
-      )
-    ).toBe(true);
-  });
-});
-
-describe('mergeOccurrenceExceptions', () => {
-  it('대상·캐시 인스턴스 예외 + occDate를 합쳐 중복 제거', () => {
-    const target = event({
-      id: 'm1',
-      repeat: {
-        cycle: 'weekly',
-        interval: 1,
-        count: 5,
-        until: null,
-        exceptions: ['2026-06-01'],
-      },
-    });
-    const cached: CalendarEvent[] = [
-      event({
-        id: 'm1',
-        start: '2026-06-08T00:00:00.000Z',
-        repeat: {
-          cycle: 'weekly',
-          interval: 1,
-          count: 5,
-          until: null,
-          exceptions: ['2026-06-08'],
-        },
-      }),
-      event({ id: 'other' }),
-    ];
-    expect(
-      mergeOccurrenceExceptions(
-        target,
-        [cached, undefined],
-        '2026-06-15'
-      ).sort()
-    ).toEqual(['2026-06-01', '2026-06-08', '2026-06-15']);
-  });
-});
-
-describe('applyOccurrenceDeleteOptimistic', () => {
-  const repeat = {
-    cycle: 'weekly' as const,
-    interval: 1,
-    count: 5,
-    until: null,
-    exceptions: null,
-  };
-
-  it('단건 삭제는 해당 회차만 제거하고 남은 인스턴스 예외를 갱신', () => {
-    const events: CalendarEvent[] = [
-      event({ id: 'm1', start: '2026-06-08T00:00:00.000Z', repeat }),
-      event({ id: 'm1', start: '2026-06-15T00:00:00.000Z', repeat }),
-    ];
-    const target = events[0];
-    const result = applyOccurrenceDeleteOptimistic(events, target, true, [
-      '2026-06-08',
-    ]);
-    expect(result).toHaveLength(1);
-    expect(result?.[0].start).toBe('2026-06-15T00:00:00.000Z');
-    expect(result?.[0].repeat?.exceptions).toEqual(['2026-06-08']);
-  });
-
-  it('전체 삭제는 같은 id를 모두 제거', () => {
-    const events: CalendarEvent[] = [
-      event({ id: 'm1', start: '2026-06-08T00:00:00.000Z', repeat }),
-      event({ id: 'm1', start: '2026-06-15T00:00:00.000Z', repeat }),
-      event({ id: 'keep' }),
-    ];
-    const result = applyOccurrenceDeleteOptimistic(
-      events,
-      events[0],
-      false,
-      []
-    );
-    expect(result?.map((e) => e.id)).toEqual(['keep']);
+  it('단일 일정(seriesId 없음)은 scope와 무관하게 그 id만 제거', () => {
+    const events = series();
+    const result = applyScopedDeleteOptimistic(events, events[3], 'all');
+    expect(result?.map((e) => e.id)).toEqual(['a', 'b', 'c']);
   });
 });

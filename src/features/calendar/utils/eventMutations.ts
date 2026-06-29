@@ -1,15 +1,16 @@
 /**
  * 일정 생성/수정/삭제의 '순수' 도메인 로직 — 컨테이너(상태·API·캐시)에서 분리해 단위 테스트한다.
- * 반복 일정 anchor 판정·EXDATE 병합 등 회귀가 잦은 부분을 여기로 모은다.
+ * 반복은 회차별 row + series_id로 저장되므로, 삭제 낙관적 업데이트도 scope(이 회차/이후/전체) 기준이다.
  */
 import type {
   AddEventDraft,
   CalendarColorKey,
   CalendarEvent,
   CalendarEventInput,
+  CalendarEventScope,
 } from '../types';
 
-import { dayjs, type Dayjs } from './calendarDate';
+import { type Dayjs } from './calendarDate';
 
 export interface EventTimes {
   start: Dayjs;
@@ -69,73 +70,26 @@ export function buildCalendarEventInput(
 }
 
 /**
- * 시간/날짜(앵커) 변경 여부 — '로컬 프레임 분 단위'로 판정. ISO 문자열 직접 비교는 UTC 자정으로
- * 저장된 외부 연동 올데이 이벤트가 round-trip되지 않아 제목만 바꿔도 오탐을 낸다. 올데이는
- * 날짜만, 시간 일정은 날짜+시작/종료 시각을 비교한다.
+ * 삭제 낙관적 업데이트 — scope에 맞춰 캐시에서 대상 row들을 제거한다.
+ *  - this(또는 단일): 그 회차 row 1건(id 일치)만.
+ *  - following: 같은 series의 기준 시작 이후 회차들(start는 서버 UTC ISO라 문자열 비교 = 시간순).
+ *  - all: 같은 series 전체.
  */
-export function hasAnchorChanged(
-  draft: AddEventDraft,
-  date: Dayjs,
-  editingEvent: CalendarEvent | null
-): boolean {
-  if (!editingEvent) return false;
-  const { start, end, isAllDay } = computeEventTimes(draft, date);
-  const wasAllDay = editingEvent.eventTimeKind === 'ALL_DAY';
-  if (isAllDay !== wasAllDay) return true;
-  const origStart = dayjs(editingEvent.start);
-  if (isAllDay) return !date.isSame(origStart, 'day');
-  if (
-    start.format('YYYY-MM-DD HH:mm') !== origStart.format('YYYY-MM-DD HH:mm')
-  ) {
-    return true;
-  }
-  const newEndKey = end ? end.format('YYYY-MM-DD HH:mm') : null;
-  const origEndKey = editingEvent.end
-    ? dayjs(editingEvent.end).format('YYYY-MM-DD HH:mm')
-    : null;
-  return newEndKey !== origEndKey;
-}
-
-/**
- * 같은 마스터의 캐시 인스턴스들에서 예외(EXDATE)를 모아 occDate를 더한다 — 연속 단건삭제 시
- * 직전 삭제가 추가한 예외를 놓쳐 서버 배열을 덮어쓰고 회차가 되살아나는 레이스를 방지한다.
- */
-export function mergeOccurrenceExceptions(
-  target: CalendarEvent,
-  cachedEventArrays: (CalendarEvent[] | undefined)[],
-  occDate: string
-): string[] {
-  const set = new Set<string>(target.repeat?.exceptions ?? []);
-  cachedEventArrays.forEach((data) =>
-    data?.forEach((e) => {
-      if (e.id === target.id) {
-        e.repeat?.exceptions?.forEach((d) => set.add(d));
-      }
-    })
-  );
-  set.add(occDate);
-  return Array.from(set);
-}
-
-/**
- * 삭제 낙관적 업데이트 — 대상을 캐시에서 제거하고, 단건(EXDATE) 삭제면 같은 마스터의 남은
- * 인스턴스 예외 목록도 갱신해 다음 단건삭제가 최신값을 읽게 한다.
- */
-export function applyOccurrenceDeleteOptimistic(
+export function applyScopedDeleteOptimistic(
   events: CalendarEvent[] | undefined,
   target: CalendarEvent,
-  isOccurrence: boolean,
-  mergedExceptions: string[]
+  scope: CalendarEventScope
 ): CalendarEvent[] | undefined {
-  return events
-    ?.filter((e) =>
-      isOccurrence
-        ? !(e.id === target.id && e.start === target.start)
-        : e.id !== target.id
-    )
-    .map((e) =>
-      isOccurrence && e.id === target.id && e.repeat
-        ? { ...e, repeat: { ...e.repeat, exceptions: mergedExceptions } }
-        : e
-    );
+  if (!events) return events;
+  const seriesId = target.seriesId ?? null;
+  const matches = (e: CalendarEvent): boolean => {
+    if (scope === 'this' || !seriesId) {
+      return e.id === target.id;
+    }
+    if (scope === 'following') {
+      return e.seriesId === seriesId && e.start >= target.start;
+    }
+    return e.seriesId === seriesId; // all
+  };
+  return events.filter((e) => !matches(e));
 }

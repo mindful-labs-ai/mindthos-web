@@ -16,6 +16,7 @@ import type {
   CalendarCategory,
   CalendarEvent,
   CalendarEventKind,
+  CalendarEventScope,
   CalendarViewMode,
 } from '../types';
 import type { Dayjs } from '../utils/calendarDate';
@@ -47,8 +48,8 @@ interface MobileCalendarViewProps {
   onConnectProvider: (provider: CalendarProvider) => void;
   onClosePanel: () => void;
   onSelectDate: (day: Dayjs) => void;
-  onSubmitEvent: (draft: AddEventDraft) => void;
-  onDeleteEvent?: (mode: 'this' | 'all') => void;
+  onSubmitEvent: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
+  onDeleteEvent?: (mode: CalendarEventScope) => void;
 }
 
 /**
