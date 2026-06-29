@@ -20,6 +20,17 @@ export function SharedSignatureSheet({
   onClose,
   onConfirm,
 }: SharedSignatureSheetProps) {
+  if (!open) return null;
+
+  return (
+    <SharedSignatureSheetContent onClose={onClose} onConfirm={onConfirm} />
+  );
+}
+
+function SharedSignatureSheetContent({
+  onClose,
+  onConfirm,
+}: Omit<SharedSignatureSheetProps, 'open'>) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const last = useRef<{ x: number; y: number } | null>(null);
@@ -27,7 +38,6 @@ export function SharedSignatureSheet({
 
   // 열릴 때 캔버스를 표시 박스 크기(dpr 보정)로 세팅.
   useEffect(() => {
-    if (!open) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
@@ -42,8 +52,7 @@ export function SharedSignatureSheet({
       ctx.lineJoin = 'round';
       ctx.strokeStyle = '#3C3C3C';
     }
-    setHasInk(false);
-  }, [open]);
+  }, []);
 
   const point = (e: React.PointerEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
@@ -88,18 +97,26 @@ export function SharedSignatureSheet({
     onConfirm(canvas.toDataURL('image/png'));
   };
 
-  if (!open) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-end justify-center">
+      <button
+        type="button"
+        aria-label="서명 닫기"
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
       <div
-        className="w-full rounded-t-2xl bg-white pb-7 pt-5 lg:max-w-[460px]"
-        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shared-signature-title"
+        className="relative z-10 w-full rounded-t-2xl bg-white pb-7 pt-5 lg:max-w-[460px]"
       >
-        <h3 className="px-6 text-sm font-bold text-grey-100">서명하기</h3>
+        <h3
+          id="shared-signature-title"
+          className="px-6 text-sm font-bold text-grey-100"
+        >
+          서명하기
+        </h3>
 
         <div className="px-6 pt-4">
           <canvas
