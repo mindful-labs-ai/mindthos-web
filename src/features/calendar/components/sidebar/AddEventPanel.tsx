@@ -18,10 +18,12 @@ import type {
   AddEventDraft,
   CalendarEventKind,
   CalendarEvent,
+  CalendarEventScope,
   CalendarRepeatRule,
   CounselMethod,
 } from '../../types';
 import { dayjs, type Dayjs } from '../../utils/calendarDate';
+import { computeEventTimes } from '../../utils/eventMutations';
 
 import { CounselMethodSelect } from './CounselMethodSelect';
 import { DatePopoverCalendar } from './DatePopoverCalendar';
@@ -40,9 +42,10 @@ interface AddEventPanelProps {
   /** 팝오버 달력에서 날짜 선택 (달력 하이라이트와 동기화) */
   onSelectDate: (day: Dayjs) => void;
   onClose: () => void;
-  onSubmit: (draft: AddEventDraft) => void;
-  /** 편집 모드 삭제 — 있으면 하단에 '삭제하기' 노출. 반복 일정은 'this'(이 회차)/'all'(전체) 구분 */
-  onDelete?: (mode: 'this' | 'all') => void;
+  /** 저장. 반복(시리즈) 일정 편집이면 scope(this/following/all)를 함께 넘긴다(신규·단일은 생략). */
+  onSubmit: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
+  /** 편집 모드 삭제 — 있으면 하단에 '삭제하기' 노출. 반복 일정은 this/following/all 구분 */
+  onDelete?: (mode: CalendarEventScope) => void;
 }
 
 const KIND_OPTIONS: { value: CalendarEventKind; label: string }[] = [
@@ -78,22 +81,6 @@ const FieldLabel = ({
   </span>
 );
 
-/** 반복 주기 라벨 — 격주 = weekly + interval 2. */
-function repeatCycleLabel(repeat: CalendarRepeatRule): string {
-  switch (repeat.cycle) {
-    case 'daily':
-      return '매일';
-    case 'weekly':
-      return repeat.interval === 2 ? '격주' : '매주';
-    case 'monthly':
-      return '매월';
-    case 'yearly':
-      return '매년';
-    default:
-      return repeat.cycle;
-  }
-}
-
 /** 일정 추가하기 슬라이드오버 패널 */
 export function AddEventPanel({
   initialKind,
@@ -113,12 +100,13 @@ export function AddEventPanel({
   );
   const [startTime, setStartTime] = React.useState(initialStartTime);
   const [endTime, setEndTime] = React.useState(initialEndTime);
-  const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(
-    editingEvent?.repeat ?? null
-  );
+  // 반복 규칙은 신규 생성에서만 입력 — 편집 모드에선 RepeatSelect를 숨기므로 항상 null로 시작.
+  const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(null);
   const [counselMethod, setCounselMethod] =
     React.useState<CounselMethod | null>(editingEvent?.counselMethod ?? null);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
+  // 반복(시리즈) 일정 편집 저장 시 적용 범위 선택 모달.
+  const [confirmEditScope, setConfirmEditScope] = React.useState(false);
   const [datePickerOpen, setDatePickerOpen] = React.useState(false);
   const dateFieldRef = React.useRef<HTMLDivElement>(null);
   const [selectedClient, setSelectedClient] = React.useState<Client | null>(
@@ -152,6 +140,14 @@ export function AddEventPanel({
       categorySelectOpen,
       { estimatedHeight: 210 }
     );
+  // 날짜 팝오버 — 하단에서 아래로 펼치면 CTA 밑으로 잘리므로 위치 보정(달력 ~360px).
+  const datePopoverRef = React.useRef<HTMLDivElement>(null);
+  const { direction: dateDirection, offset: dateOffset } = useDropdownPosition(
+    dateFieldRef,
+    datePopoverRef,
+    datePickerOpen,
+    { estimatedHeight: 360 }
+  );
 
   // 패널이 열린 상태에서 다시 드래그/선택해 초기 시간이 바뀌면 입력값 동기화
   React.useEffect(() => {
@@ -188,6 +184,8 @@ export function AddEventPanel({
 
   // 편집 모드 + 변경 감지 (수정사항이 있을 때만 CTA 활성화)
   const isEdit = !!editingEvent;
+  // 반복(시리즈) 일정의 편집 — 저장 시 적용 범위(이 회차/이후/전체)를 묻는다.
+  const isRecurringEdit = isEdit && !!editingEvent?.seriesId;
   const origStart = editingEvent ? dayjs(editingEvent.start) : null;
   const origEnd =
     editingEvent && editingEvent.end
@@ -209,12 +207,42 @@ export function AddEventPanel({
       (origStart ? origStart.format('YYYY-MM-DD') : '') ||
     effectiveClientId !== (editingEvent.clientId ?? null) ||
     effectiveCounselMethod !== (editingEvent.counselMethod ?? null) ||
-    effectiveCategoryId !== (editingEvent.categoryId ?? null) ||
-    JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
+    effectiveCategoryId !== (editingEvent.categoryId ?? null);
   // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
   const counselingNeedsClient = kind === 'counseling' && !selectedClient;
   // 필수값: 상담 일정이면 내담자. 제목은 비워도 추가 가능('제목 없음'으로 저장).
   const ctaEnabled = (!isEdit || isDirty) && !counselingNeedsClient;
+
+  const buildDraft = (): AddEventDraft => ({
+    kind,
+    title,
+    eventTimeKind: allDay ? 'ALL_DAY' : 'TIMED',
+    startTime,
+    endTime,
+    clientId: effectiveClientId,
+    counselMethod: effectiveCounselMethod,
+    categoryId: effectiveCategoryId,
+    repeat,
+  });
+
+  // 저장 — 반복(시리즈) 편집은 적용 범위 모달을 먼저 띄우고, 그 외엔 바로 저장.
+  const handleSave = () => {
+    if (isRecurringEdit) {
+      setConfirmEditScope(true);
+      return;
+    }
+    onSubmit(buildDraft());
+  };
+
+  // 반복 종료일 상한/하한 기준 — 서버로 보낼 실제 시작의 'UTC 날짜'(서버 회차 판정과 동일 기준).
+  // 로컬 선택일이 아니라 이 값을 써야 이른 새벽/올데이의 KST↔UTC 날짜 밀림에서도 상한이 정확히 맞는다.
+  const repeatAnchorDate: Dayjs | null = selectedDate
+    ? dayjs(
+        computeEventTimes(buildDraft(), selectedDate)
+          .start.toISOString()
+          .slice(0, 10)
+      )
+    : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -335,6 +363,9 @@ export function AddEventPanel({
               </button>
               {datePickerOpen && (
                 <DatePopoverCalendar
+                  ref={datePopoverRef}
+                  direction={dateDirection}
+                  offset={dateOffset}
                   value={selectedDate}
                   onSelect={(d) => {
                     onSelectDate(d);
@@ -385,13 +416,15 @@ export function AddEventPanel({
           </div>
         </div>
 
-        {/* 주기 (반복 규칙) — 개인 일정은 '일정 주기', 상담은 '상담 주기' */}
-        <RepeatSelect
-          value={repeat}
-          onChange={setRepeat}
-          anchorDate={selectedDate}
-          label={kind === 'personal' ? '일정 주기' : '상담 주기'}
-        />
+        {/* 주기 (반복 규칙) — 신규 생성에서만. 편집 모드에선 반복주기를 바꿀 수 없어 숨긴다. */}
+        {!isEdit && (
+          <RepeatSelect
+            value={repeat}
+            onChange={setRepeat}
+            anchorDate={repeatAnchorDate}
+            label={kind === 'personal' ? '일정 주기' : '상담 주기'}
+          />
+        )}
 
         {/* 상담 방식 — 상담 일정에서만 노출(개인 일정은 숨김) */}
         {kind === 'counseling' && (
@@ -514,19 +547,7 @@ export function AddEventPanel({
         <button
           type="button"
           disabled={!ctaEnabled}
-          onClick={() =>
-            onSubmit({
-              kind,
-              title,
-              eventTimeKind: allDay ? 'ALL_DAY' : 'TIMED',
-              startTime,
-              endTime,
-              clientId: effectiveClientId,
-              counselMethod: effectiveCounselMethod,
-              categoryId: effectiveCategoryId,
-              repeat,
-            })
-          }
+          onClick={handleSave}
           className={cn(
             'h-[41px] w-full rounded-md text-sm font-emphasize text-white',
             ctaEnabled ? 'bg-green-80' : 'cursor-not-allowed bg-grey-40'
@@ -547,18 +568,10 @@ export function AddEventPanel({
             일정을 삭제할까요?
           </h2>
 
-          {editingEvent?.repeat ? (
+          {editingEvent?.seriesId ? (
             <>
               <p className="mt-2 text-sm font-medium text-grey-80">
                 반복 일정이에요. 삭제 범위를 선택해 주세요.
-              </p>
-              <p className="mt-1 text-xs text-grey-60">
-                {repeatCycleLabel(editingEvent.repeat)}
-                {editingEvent.repeat.count != null
-                  ? ` · 총 ${editingEvent.repeat.count}회`
-                  : editingEvent.repeat.until
-                    ? ` · ${editingEvent.repeat.until}까지`
-                    : ''}
               </p>
               <div className="mt-6 flex flex-col gap-2">
                 <button
@@ -570,6 +583,16 @@ export function AddEventPanel({
                   className="h-11 w-full rounded-lg bg-red-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
                 >
                   이 일정만 삭제
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmDelete(false);
+                    onDelete?.('following');
+                  }}
+                  className="h-11 w-full rounded-lg border border-red-80 bg-white text-m font-medium text-red-80 transition-colors lg:hover:bg-grey-10"
+                >
+                  이 일정부터 삭제
                 </button>
                 <button
                   type="button"
@@ -616,6 +639,61 @@ export function AddEventPanel({
               </div>
             </>
           )}
+        </div>
+      </Modal>
+
+      {/* 반복 일정 편집 — 적용 범위 선택 */}
+      <Modal
+        open={confirmEditScope}
+        onOpenChange={setConfirmEditScope}
+        className="max-w-[320px]"
+      >
+        <div className="flex flex-col px-5 pb-6 pt-7 text-center">
+          <h2 className="text-l font-headline text-grey-100">
+            변경 범위를 선택해 주세요
+          </h2>
+          <p className="mt-2 text-sm font-medium text-grey-80">
+            반복 일정이에요. 어디까지 변경할까요?
+          </p>
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmEditScope(false);
+                onSubmit(buildDraft(), 'this');
+              }}
+              className="h-11 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
+            >
+              이 일정만 변경
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmEditScope(false);
+                onSubmit(buildDraft(), 'following');
+              }}
+              className="h-11 w-full rounded-lg border border-green-80 bg-white text-m font-medium text-green-80 transition-colors lg:hover:bg-grey-10"
+            >
+              이 일정부터 변경
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmEditScope(false);
+                onSubmit(buildDraft(), 'all');
+              }}
+              className="h-11 w-full rounded-lg border border-green-80 bg-white text-m font-medium text-green-80 transition-colors lg:hover:bg-grey-10"
+            >
+              전체 일정 변경
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmEditScope(false)}
+              className="mt-1 py-1 text-sm font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
+            >
+              취소
+            </button>
+          </div>
         </div>
       </Modal>
     </div>

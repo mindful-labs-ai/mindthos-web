@@ -46,12 +46,12 @@ const CYCLE_LABEL: Record<CycleKey, string> = {
   yearly: '매년',
 };
 
-type EndType = 'never' | 'until' | 'count';
+type EndType = 'until' | 'count';
 
+// 종료조건 필수 — '계속(무한)'은 없앤다(서버가 회차 row로 materialize하므로 끝이 필요).
 const END_OPTIONS: { key: EndType; label: string }[] = [
-  { key: 'never', label: '계속' },
-  { key: 'until', label: '종료일' },
   { key: 'count', label: '횟수' },
+  { key: 'until', label: '종료일' },
 ];
 
 /** 현재 규칙 → UI 주기 키 (weekly+interval2 → 격주). */
@@ -61,15 +61,36 @@ function cycleKeyOf(rule: CalendarRepeatRule | null): CycleKey {
   return rule.cycle;
 }
 
-/** 현재 규칙 → 종료 조건 타입. */
+/** 현재 규칙 → 종료 조건 타입(횟수 기본). */
 function endTypeOf(rule: CalendarRepeatRule | null): EndType {
-  if (!rule) return 'never';
-  if (rule.count !== null) return 'count';
-  if (rule.until !== null) return 'until';
-  return 'never';
+  if (rule && rule.until !== null) return 'until';
+  return 'count';
 }
 
-/** 일정 반복 규칙 편집 — 주기 드롭다운 + 종료 조건(계속/종료일/횟수). */
+/** 백엔드 생성 상한과 동일 — 한 반복은 최대 100회차(횟수·종료일 공통). */
+const MAX_OCCURRENCES = 100;
+
+const CYCLE_UNIT: Record<
+  CalendarRepeatCycle,
+  'day' | 'week' | 'month' | 'year'
+> = {
+  daily: 'day',
+  weekly: 'week',
+  monthly: 'month',
+  yearly: 'year',
+};
+
+/**
+ * 종료일 상한 = "100번째 회차 날짜" = 시작일 + (100-1)×interval 주기단위.
+ * 백엔드 MAX_N(100)과 정확히 일치 — 이 이상 고르면 서버가 회차 과다로 400을 낸다.
+ */
+function maxUntilDate(anchor: Dayjs, rule: CalendarRepeatRule | null): Dayjs {
+  if (!rule) return anchor.add(MAX_OCCURRENCES - 1, 'day');
+  const step = Math.max(1, rule.interval || 1);
+  return anchor.add((MAX_OCCURRENCES - 1) * step, CYCLE_UNIT[rule.cycle]);
+}
+
+/** 일정 반복 규칙 편집 — 주기 드롭다운 + 종료 조건(횟수/종료일, 종료 필수). */
 export function RepeatSelect({
   value,
   onChange,
@@ -84,6 +105,10 @@ export function RepeatSelect({
   const cycleKey = cycleKeyOf(value);
   const endType = endTypeOf(value);
 
+  // 종료일 선택 범위 — 하한=시작일, 상한=100번째 회차(백엔드 상한과 일치).
+  const anchor = anchorDate ?? dayjs();
+  const untilMax = maxUntilDate(anchor, value);
+
   // 팝오버 바깥 클릭 닫기 (주기 드롭다운 / 종료일 달력 각각)
   useClickOutside(menuRef, () => setMenuOpen(false), menuOpen);
   useClickOutside(dateRef, () => setDatePickerOpen(false), datePickerOpen);
@@ -92,6 +117,12 @@ export function RepeatSelect({
   const { direction: cycleDirection, offset: cycleOffset } =
     useDropdownPosition(menuRef, menuDropdownRef, menuOpen, {
       estimatedHeight: 240,
+    });
+  // 종료일 팝오버 — 하단에서 아래로 펼치면 CTA 밑으로 잘리므로 위치 보정(달력 ~360px).
+  const datePopoverRef = React.useRef<HTMLDivElement>(null);
+  const { direction: untilDirection, offset: untilOffset } =
+    useDropdownPosition(dateRef, datePopoverRef, datePickerOpen, {
+      estimatedHeight: 360,
     });
 
   const selectCycle = (key: CycleKey) => {
@@ -102,22 +133,33 @@ export function RepeatSelect({
     }
     const opt = CYCLE_OPTIONS.find((o) => o.key === key);
     if (!opt?.cycle) return;
-    // 주기를 바꿔도 기존 종료조건/예외는 유지.
-    onChange({
+    // 종료조건 필수 — 기존에 없으면 기본 10회. 주기를 바꿔도 기존 종료조건은 유지.
+    const hasEnd = value?.count != null || value?.until != null;
+    const next: CalendarRepeatRule = {
       cycle: opt.cycle,
       interval: opt.interval ?? 1,
-      count: value?.count ?? null,
+      count: hasEnd ? (value?.count ?? null) : 10,
       until: value?.until ?? null,
-      exceptions: value?.exceptions ?? null,
-    });
+    };
+    // 주기 변경으로 종료일이 새 상한(100회차)을 넘으면 상한으로 당김.
+    if (next.until) {
+      const cap = maxUntilDate(anchor, next);
+      if (dayjs(next.until).isAfter(cap)) {
+        next.until = cap.format('YYYY-MM-DD');
+      }
+    }
+    onChange(next);
   };
 
-  const defaultUntil = (): string =>
-    (anchorDate ?? dayjs()).add(1, 'month').format('YYYY-MM-DD');
+  const defaultUntil = (): string => {
+    const preferred = anchor.add(1, 'month');
+    return (preferred.isAfter(untilMax) ? untilMax : preferred).format(
+      'YYYY-MM-DD'
+    );
+  };
 
   const selectEnd = (type: EndType) => {
     if (!value) return;
-    if (type === 'never') onChange({ ...value, count: null, until: null });
     if (type === 'count') {
       onChange({ ...value, count: value.count ?? 10, until: null });
     }
@@ -209,11 +251,15 @@ export function RepeatSelect({
               <input
                 type="number"
                 min={1}
+                max={100}
                 value={value.count ?? 1}
                 onChange={(e) =>
                   onChange({
                     ...value,
-                    count: Math.max(1, Number(e.target.value) || 1),
+                    count: Math.min(
+                      100,
+                      Math.max(1, Number(e.target.value) || 1)
+                    ),
                   })
                 }
                 className="h-[35px] w-[72px] rounded-md border border-grey-40 bg-white px-2.5 text-right text-sm text-grey-100 focus:outline-none"
@@ -238,7 +284,12 @@ export function RepeatSelect({
               </button>
               {datePickerOpen && (
                 <DatePopoverCalendar
+                  ref={datePopoverRef}
+                  direction={untilDirection}
+                  offset={untilOffset}
                   value={value.until ? dayjs(value.until) : anchorDate}
+                  minDate={anchor}
+                  maxDate={untilMax}
                   onSelect={(d) => {
                     onChange({
                       ...value,
