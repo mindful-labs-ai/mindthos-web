@@ -4,12 +4,15 @@ import type {
   CalendarDateRange,
   CalendarEvent,
   CalendarEventInput,
+  CalendarEventScope,
 } from '../types';
+
+export type { CalendarEventScope };
 
 /** updateEvent 옵션 */
 export interface UpdateEventOptions {
-  /** 시간 앵커(startsAt/endsAt/eventTimeKind)를 전송하지 않고 서버 기존값을 유지 */
-  preserveAnchor?: boolean;
+  /** 반복 일정일 때 적용 범위(단일 일정은 무시). 기본 this */
+  scope?: CalendarEventScope;
 }
 
 /**
@@ -25,21 +28,16 @@ export interface CalendarDataSource {
   listCategories(): Promise<CalendarCategory[]>;
   createEvent?(input: CalendarEventInput): Promise<CalendarEvent>;
   /**
-   * 일정 수정. `preserveAnchor`면 시간 앵커(startsAt/endsAt/eventTimeKind)를
-   * 전송하지 않아 서버가 마스터 기존값을 유지한다 — 반복 일정의 한 회차를 편집할 때
-   * 마스터가 그 회차로 재앵커되어 앞 회차가 사라지는 데이터 손실을 막는다.
+   * 일정 수정. 반복 일정이면 `options.scope`(this/following/all)로 적용 범위를 정한다 —
+   * 회차가 실제 row라 this는 그 회차만, following/이후·all/전체는 시리즈 일괄 적용.
    */
   updateEvent?(
     id: string,
     input: CalendarEventInput,
     options?: UpdateEventOptions
   ): Promise<CalendarEvent>;
-  deleteEvent?(id: string): Promise<void>;
-  /**
-   * 반복 일정의 단건(occurrence) 삭제 — 마스터 anchor·기타 필드는 보존하고
-   * 예외 날짜(EXDATE) 목록만 부분 PATCH한다. exceptions는 기존 + 신규를 합친 전체 목록.
-   */
-  updateEventExceptions?(id: string, exceptions: string[]): Promise<void>;
+  /** 일정 삭제. 반복 일정이면 scope로 적용 범위(this/following/all). 기본 this */
+  deleteEvent?(id: string, scope?: CalendarEventScope): Promise<void>;
   createCategory?(input: CalendarCategoryInput): Promise<CalendarCategory>;
   updateCategory?(
     id: string,

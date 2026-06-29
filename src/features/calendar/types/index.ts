@@ -18,19 +18,18 @@ export type CounselMethod = 'in_person' | 'online';
 export type CalendarRepeatCycle = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 /**
- * 일정 반복 규칙 (없으면 단일 일정). 서버 calendar_event의 repeat_* 컬럼과 매핑된다.
- * 격주는 별도 cycle 없이 { cycle: 'weekly', interval: 2 }로 표현한다.
+ * 일정 반복 규칙 — 생성 시에만 사용하는 입력(서버는 이 규칙으로 회차 row를 materialize). 저장 후에는
+ * 규칙을 보관하지 않으므로 GET 응답엔 없다(반복 여부는 CalendarEvent.seriesId로 판별).
+ * 격주는 별도 cycle 없이 { cycle: 'weekly', interval: 2 }로 표현한다. 종료조건(count·until)은 필수.
  */
 export interface CalendarRepeatRule {
   cycle: CalendarRepeatCycle;
   /** 간격(N주기마다). 매주=1, 격주=2. 기본 1 */
   interval: number;
-  /** 반복 횟수(시작 포함 n회). null = 횟수 제한 없음 */
+  /** 반복 횟수(시작 포함 n회). null = 종료일로만 제한 */
   count: number | null;
-  /** 반복 종료일(YYYY-MM-DD, inclusive). null = 종료일 없음 */
+  /** 반복 종료일(YYYY-MM-DD, inclusive). null = 횟수로만 제한 */
   until: string | null;
-  /** 예외 날짜(YYYY-MM-DD). 단일 인스턴스 삭제 시 채워짐(후속). null = 없음 */
-  exceptions: string[] | null;
 }
 
 /** 일정 칩/블록의 표시 색상 키 (카테고리 색 팔레트) */
@@ -46,6 +45,9 @@ export type CalendarColorKey =
 
 /** 보기 모드 */
 export type CalendarViewMode = 'month' | 'week';
+
+/** 반복 일정 수정/삭제 적용 범위. this=이 회차 / following=이후 / all=전체 */
+export type CalendarEventScope = 'this' | 'following' | 'all';
 
 /** ISO 문자열 기반 기간 (어댑터 조회 범위) */
 export interface CalendarDateRange {
@@ -74,8 +76,11 @@ export interface CalendarEvent {
   clientId?: string | null;
   /** 상담 방식 (상담 일정에서만). null/없음 = 선택 안 함 */
   counselMethod?: CounselMethod | null;
-  /** 반복 규칙 (없으면 단일 일정). GET 인스턴스는 마스터 규칙을 그대로 싣는다 */
-  repeat?: CalendarRepeatRule | null;
+  /**
+   * 반복(시리즈) 묶음 id. null/없음 = 단일 일정. 같은 값 = 한 반복의 회차들.
+   * 반복 여부·편집/삭제 scope 노출은 이 값으로 판단한다(서버가 회차별 row로 저장).
+   */
+  seriesId?: string | null;
 }
 
 /** '나의 캘린더' 카테고리 */

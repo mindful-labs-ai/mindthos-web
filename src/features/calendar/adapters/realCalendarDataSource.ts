@@ -10,20 +10,23 @@ import type {
   CalendarEventKind,
   CalendarEventTimeKind,
   CalendarRepeatCycle,
-  CalendarRepeatRule,
   CounselMethod,
 } from '../types';
 
-import type { CalendarDataSource, UpdateEventOptions } from './types';
+import type {
+  CalendarDataSource,
+  CalendarEventScope,
+  UpdateEventOptions,
+} from './types';
 
 /**
  * mindthos-server 실제 캘린더 API 어댑터.
  *
  * 서버 계약 (모두 /v1, Bearer):
- *  - GET    /calendar?from=&to=  → { event, holiday, category } (반복 펼쳐진 인스턴스)
+ *  - GET    /calendar?from=&to=  → { event, holiday, category } (회차별 row 그대로)
  *  - POST   /calendar/events
- *  - PATCH  /calendar/events/:id
- *  - DELETE /calendar/events/:id
+ *  - PATCH  /calendar/events/:id?scope=this|following|all
+ *  - DELETE /calendar/events/:id?scope=this|following|all
  *  - POST   /calendar/categories
  *  - PATCH  /calendar/categories/:id
  *  - DELETE /calendar/categories/:id
@@ -60,7 +63,7 @@ type ServerColorKey =
 type ServerRepeatCycle = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ServerCounselMethod = 'IN_PERSON' | 'ONLINE';
 
-/** GET /calendar event[] 원소 (반복 펼쳐진 인스턴스) */
+/** GET /calendar event[] 원소 (회차별 row 그대로) */
 interface CalendarEventDto {
   id: string;
   kind: ServerEventKind;
@@ -71,11 +74,8 @@ interface CalendarEventDto {
   endsAt: string | null;
   eventTimeKind: CalendarEventTimeKind;
   counselMethod: ServerCounselMethod | null;
-  repeatCycle: ServerRepeatCycle | null;
-  repeatCount: number | null;
-  repeatInterval: number;
-  repeatUntil: string | null;
-  repeatExceptions: string[] | null;
+  /** 같은 반복(시리즈) 묶음 id. null = 단일 일정 */
+  repeatSeriesId: string | null;
 }
 
 /** GET /calendar holiday[] 원소 (public.holiday, date-only) */
@@ -106,16 +106,16 @@ interface EventRequestBody {
   title: string;
   clientId?: string | null;
   categoryId?: string | null;
-  // startsAt/endsAt/eventTimeKind는 앵커 보존 PATCH에선 생략 가능(서버가 기존값 유지).
+  // 시간 앵커 — 생성·수정 모두 전송(수정은 scope에 따라 서버가 회차 시간대로 적용).
   startsAt?: string;
   endsAt?: string | null;
   eventTimeKind?: CalendarEventTimeKind;
   counselMethod?: ServerCounselMethod | null;
+  // 반복 규칙은 생성(POST) 시에만 — 서버가 회차 row로 materialize. 수정(PATCH)에선 보내지 않는다.
   repeatCycle?: ServerRepeatCycle | null;
   repeatCount?: number | null;
   repeatInterval?: number | null;
   repeatUntil?: string | null;
-  repeatExceptions?: string[] | null;
 }
 
 /** POST/PATCH /calendar/categories 요청 body */
@@ -166,13 +166,6 @@ const REPEAT_TO_SERVER: Record<CalendarRepeatCycle, ServerRepeatCycle> = {
   yearly: 'YEARLY',
 };
 
-const REPEAT_FROM_SERVER: Record<ServerRepeatCycle, CalendarRepeatCycle> = {
-  DAILY: 'daily',
-  WEEKLY: 'weekly',
-  MONTHLY: 'monthly',
-  YEARLY: 'yearly',
-};
-
 const COUNSEL_METHOD_TO_SERVER: Record<CounselMethod, ServerCounselMethod> = {
   in_person: 'IN_PERSON',
   online: 'ONLINE',
@@ -182,18 +175,6 @@ const COUNSEL_METHOD_FROM_SERVER: Record<ServerCounselMethod, CounselMethod> = {
   IN_PERSON: 'in_person',
   ONLINE: 'online',
 };
-
-/** 서버 이벤트 DTO의 repeat_* → 프론트 반복 규칙. repeatCycle 없으면 단일 일정(null). */
-function toRepeatRule(dto: CalendarEventDto): CalendarRepeatRule | null {
-  if (!dto.repeatCycle) return null;
-  return {
-    cycle: REPEAT_FROM_SERVER[dto.repeatCycle],
-    interval: dto.repeatInterval ?? 1,
-    count: dto.repeatCount,
-    until: dto.repeatUntil,
-    exceptions: dto.repeatExceptions,
-  };
-}
 
 /** kind 기본색 (카테고리 없는 이벤트) */
 function defaultColorForKind(kind: CalendarEventKind): CalendarColorKey {
@@ -222,7 +203,7 @@ function toCalendarEvent(
     counselMethod: dto.counselMethod
       ? COUNSEL_METHOD_FROM_SERVER[dto.counselMethod]
       : null,
-    repeat: toRepeatRule(dto),
+    seriesId: dto.repeatSeriesId ?? null,
   };
 }
 
@@ -251,15 +232,18 @@ function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
   };
 }
 
-/** 프론트 입력 → 서버 event body */
+/**
+ * 프론트 입력 → 서버 event body. 시간 앵커(startsAt/endsAt/eventTimeKind)는 항상 전송한다.
+ * 반복 규칙은 생성 때만(`includeRepeat`) — 서버가 회차 row로 materialize. 수정에선 보내지 않는다
+ * (반복주기 변경 미지원, 적용 범위는 ?scope= 쿼리로).
+ */
 function toEventRequestBody(
   input: CalendarEventInput,
-  preserveAnchor = false
+  includeRepeat: boolean
 ): EventRequestBody {
   // holiday는 서버 이벤트 종류가 아니다(public.holiday). 사용자는 counseling/personal만 생성.
   const kind: ServerEventKind =
     input.kind === 'holiday' ? 'PERSONAL' : KIND_TO_SERVER[input.kind];
-  const repeat = input.repeat ?? null;
   const body: EventRequestBody = {
     kind,
     title: input.title,
@@ -269,22 +253,17 @@ function toEventRequestBody(
     counselMethod: input.counselMethod
       ? COUNSEL_METHOD_TO_SERVER[input.counselMethod]
       : null,
-    // 반복 해제(repeat=null)도 명시적으로 null을 보내 서버에서 부수 필드까지 정리되게 한다.
-    repeatCycle: repeat ? REPEAT_TO_SERVER[repeat.cycle] : null,
+    startsAt: input.start,
+    endsAt: input.end ?? null,
+    eventTimeKind: input.eventTimeKind ?? 'TIMED',
   };
-  // 앵커 보존 모드(반복 일정의 단건 편집)에선 시간 앵커를 보내지 않는다 — 서버가 마스터
-  // 기존 startsAt/endsAt/eventTimeKind를 유지하므로 occurrence로 재앵커되지 않는다.
-  if (!preserveAnchor) {
-    body.startsAt = input.start;
-    body.endsAt = input.end ?? null;
-    body.eventTimeKind = input.eventTimeKind ?? 'TIMED';
-  }
-  // 반복이 있을 때만 부수 필드 전송(없을 때 보내면 서버가 400). 종료조건 없으면 count/until은 null.
+  // 생성 시 반복이 있으면 규칙 전송(종료조건 없으면 서버가 400). 단일·수정엔 미전송.
+  const repeat = includeRepeat ? (input.repeat ?? null) : null;
   if (repeat) {
+    body.repeatCycle = REPEAT_TO_SERVER[repeat.cycle];
     body.repeatInterval = repeat.interval;
     body.repeatCount = repeat.count;
     body.repeatUntil = repeat.until;
-    body.repeatExceptions = repeat.exceptions;
   }
   return body;
 }
@@ -325,7 +304,7 @@ export const realCalendarDataSource: CalendarDataSource = {
   async createEvent(input: CalendarEventInput): Promise<CalendarEvent> {
     const dto = await serverRequest<CalendarEventDto>(CALENDAR_ROUTES.events, {
       method: 'POST',
-      body: toEventRequestBody(input),
+      body: toEventRequestBody(input, true),
     });
     return toCalendarEvent(dto, new Map());
   },
@@ -335,26 +314,23 @@ export const realCalendarDataSource: CalendarDataSource = {
     input: CalendarEventInput,
     options?: UpdateEventOptions
   ): Promise<CalendarEvent> {
+    const scope = options?.scope ?? 'this';
     const dto = await serverRequest<CalendarEventDto>(
-      CALENDAR_ROUTES.event(id),
+      `${CALENDAR_ROUTES.event(id)}?scope=${scope}`,
       {
         method: 'PATCH',
-        body: toEventRequestBody(input, options?.preserveAnchor),
+        body: toEventRequestBody(input, false),
       }
     );
     return toCalendarEvent(dto, new Map());
   },
 
-  async deleteEvent(id: string): Promise<void> {
-    await serverRequest<void>(CALENDAR_ROUTES.event(id), { method: 'DELETE' });
-  },
-
-  async updateEventExceptions(id: string, exceptions: string[]): Promise<void> {
-    // 부분 PATCH — startsAt 등 다른 필드는 서버가 기존 값을 보존하므로(미지정 시 유지)
-    // 예외 목록만 보낸다. 마스터 anchor가 occurrence로 밀리는 버그를 피한다.
-    await serverRequest<CalendarEventDto>(CALENDAR_ROUTES.event(id), {
-      method: 'PATCH',
-      body: { repeatExceptions: exceptions },
+  async deleteEvent(
+    id: string,
+    scope: CalendarEventScope = 'this'
+  ): Promise<void> {
+    await serverRequest<void>(`${CALENDAR_ROUTES.event(id)}?scope=${scope}`, {
+      method: 'DELETE',
     });
   },
 
