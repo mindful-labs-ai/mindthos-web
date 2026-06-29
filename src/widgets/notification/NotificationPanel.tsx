@@ -2,7 +2,12 @@ import { Fragment, useEffect, useState } from 'react';
 
 import { Bell, ChevronRight } from 'lucide-react';
 
-import { ROUTES, getSessionDetailRoute } from '@/app/router/constants';
+import {
+  ROUTES,
+  getClientDetailRoute,
+  getSessionDetailRoute,
+} from '@/app/router/constants';
+import { serverRequest } from '@/shared/api/server/serverClient';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   CreditIcon,
@@ -24,21 +29,34 @@ interface NotificationPanelProps {
   onClose: () => void;
 }
 
+interface SentDocumentLinkDto {
+  clientId: string;
+}
+
 /**
  * resourceType(+resourceId) → 앱 라우트 매핑.
  * 매핑 가능한 대상만 경로를 반환하고, 대상이 없으면(PAYMENT/SYSTEM 등) null.
  *
- * NOTE: GENOGRAM/AI_SUPERVISION/CALENDAR_EVENT/PROGRESS_NOTE는 현재
+ * NOTE: SENT_DOCUMENT/GENOGRAM/AI_SUPERVISION/CALENDAR_EVENT/PROGRESS_NOTE는 현재
  * 리소스 id로 직접 진입하는 라우트가 없어 가장 가까운 목록/페이지로 보낸다.
  */
-function resolveDeepLink(notification: AppNotification): string | null {
+async function resolveDeepLink(
+  notification: AppNotification
+): Promise<string | null> {
   const { resourceType, resourceId } = notification;
   switch (resourceType) {
     case 'SESSION':
       return resourceId ? getSessionDetailRoute(resourceId) : ROUTES.SESSIONS;
     case 'SENT_DOCUMENT':
-      // sent-document id → 문서 뷰 페이지(/documents/:documentId)
-      return resourceId ? `/documents/${resourceId}` : ROUTES.DOCUMENTS;
+      if (!resourceId) return ROUTES.DOCUMENTS;
+      try {
+        const doc = await serverRequest<SentDocumentLinkDto>(
+          `/sent-documents/${resourceId}`
+        );
+        return `${getClientDetailRoute(doc.clientId)}?tab=documents`;
+      } catch {
+        return ROUTES.DOCUMENTS;
+      }
     case 'CALENDAR_EVENT':
       // TODO(deeplink): 개별 일정으로 진입하는 라우트가 생기면 resourceId로 연결.
       return ROUTES.CALENDAR;
@@ -109,12 +127,14 @@ function NotificationRow({
   onClick,
 }: {
   notification: AppNotification;
-  onClick: (notification: AppNotification) => void;
+  onClick: (notification: AppNotification) => void | Promise<void>;
 }) {
   return (
     <button
       type="button"
-      onClick={() => onClick(notification)}
+      onClick={() => {
+        void onClick(notification);
+      }}
       className="block w-full px-5 py-6 text-left transition-colors lg:hover:bg-grey-10"
     >
       <div className="flex gap-3">
@@ -142,7 +162,8 @@ function NotificationRow({
  * 데이터는 NotificationAdapter 추상화 위에서 렌더 — 백엔드가 무엇이든 UI 동일.
  */
 export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
-  const { notifications, isLoading, markRead, markAllRead } = useNotifications();
+  const { notifications, isLoading, markRead, markAllRead } =
+    useNotifications();
   const { navigateWithUtm } = useNavigateWithUtm();
   const [filter, setFilter] = useState<NotificationFilter>('all');
 
@@ -165,11 +186,11 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
   if (!open && !isVisible) return null;
 
   // 행 클릭: 읽음 처리 + 딥링크 이동(있으면 패널 닫고 이동)
-  const handleRowClick = (notification: AppNotification) => {
+  const handleRowClick = async (notification: AppNotification) => {
     if (!notification.read) {
       markRead(notification.id);
     }
-    const path = resolveDeepLink(notification);
+    const path = await resolveDeepLink(notification);
     if (path) {
       onClose();
       navigateWithUtm(path);

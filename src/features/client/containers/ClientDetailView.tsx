@@ -31,6 +31,7 @@ export interface ClientDetailViewProps {
   onSortChange: (order: 'newest' | 'oldest') => void;
   editModal: React.ReactNode;
   isMobileView?: boolean;
+  initialTab?: 'info' | 'documents';
 }
 
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
@@ -44,17 +45,23 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   onSortChange,
   editModal,
   isMobileView = false,
+  initialTab = 'info',
 }) => {
   const navigate = useNavigate();
   const { navigateWithUtm } = useNavigateWithUtm();
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   // 페이지 내 탭 — 문서 관리는 이동이 아니라 탭 전환 (데스크탑)
   const [activeTab, setActiveTab] = React.useState<'info' | 'documents'>(
-    'info'
+    initialTab
   );
   // 문서 관리 탭에서 열어본 발송 문서 (null = 목록)
   const [viewingSentDocument, setViewingSentDocument] =
     React.useState<SentDocument | null>(null);
+
+  React.useEffect(() => {
+    setActiveTab(initialTab);
+    setViewingSentDocument(null);
+  }, [initialTab, client.id]);
 
   // 내담자 정보 필드 (모바일 아코디언 + 데스크탑 카드 공용 데이터)
   const infoFields = [

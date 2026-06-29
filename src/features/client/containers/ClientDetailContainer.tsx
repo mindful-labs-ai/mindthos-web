@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import {
   getClientDetailRoute,
@@ -34,6 +34,7 @@ import { ClientDetailView } from './ClientDetailView';
 
 export const ClientDetailContainer: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
+  const [searchParams] = useSearchParams();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
   const { navigateWithUtm } = useNavigateWithUtm();
@@ -46,6 +47,8 @@ export const ClientDetailContainer: React.FC = () => {
   const { toast } = useToast();
 
   const { clients, isLoading: isLoadingClients } = useClientList();
+  const initialTab =
+    searchParams.get('tab') === 'documents' ? 'documents' : 'info';
 
   const isDummyClientId = clientId === 'dummy_client_1';
 
@@ -250,6 +253,7 @@ export const ClientDetailContainer: React.FC = () => {
       onSortChange={setSortOrder}
       editModal={editModalWidget}
       isMobileView={isMobileView}
+      initialTab={initialTab}
     />
   );
 };
