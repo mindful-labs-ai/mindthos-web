@@ -10,25 +10,60 @@ export interface DropdownPosition {
 interface Options {
   /** 방향 결정용 예상 높이(드롭다운 렌더 전 사용) */
   estimatedHeight?: number;
-  /** 뷰포트 가장자리 여백 */
+  /** 클립 박스 가장자리 여백 */
   margin?: number;
 }
 
 /**
- * 드롭다운이 화면 밖으로 나가지 않게 두 단계로 위치를 잡는다.
- *  1) **방향**: 트리거 아래 공간이 부족하고 위가 더 넓으면 위로 펼친다.
- *  2) **보정**: 그 상태로도 뷰포트를 벗어나면, 벗어난 좌표만큼 translate로 끌어들인다(상하좌우).
+ * 트리거의 가장 가까운 스크롤/클립 조상의 가시 영역(뷰포트와 교집합). 없으면 뷰포트.
+ * 드롭다운이 패널 본문(overflow-y-auto) 안에 있을 때, 뷰포트가 아니라 이 본문 박스를 기준으로
+ * 방향/보정을 잡아야 화면은 길어도 본문이 CTA 위에서 끝나는 경우 아래로 넘쳐 가려지지 않는다.
+ */
+function clipBounds(el: HTMLElement): {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+} {
+  let box = {
+    top: 0,
+    bottom: window.innerHeight,
+    left: 0,
+    right: window.innerWidth,
+  };
+  for (let node = el.parentElement; node; node = node.parentElement) {
+    const s = getComputedStyle(node);
+    if (
+      /(auto|scroll|hidden)/.test(s.overflowY) ||
+      /(auto|scroll|hidden)/.test(s.overflowX)
+    ) {
+      const r = node.getBoundingClientRect();
+      box = { top: r.top, bottom: r.bottom, left: r.left, right: r.right };
+      break;
+    }
+  }
+  return {
+    top: Math.max(box.top, 0),
+    bottom: Math.min(box.bottom, window.innerHeight),
+    left: Math.max(box.left, 0),
+    right: Math.min(box.right, window.innerWidth),
+  };
+}
+
+/**
+ * 드롭다운이 클립 박스(가장 가까운 스크롤 조상, 없으면 뷰포트) 밖으로 나가지 않게 두 단계로 잡는다.
+ *  1) **방향**: 트리거 아래(클립 박스 기준) 공간이 부족하고 위가 더 넓으면 위로 펼친다.
+ *  2) **보정**: 그래도 클립 박스를 벗어나면, 벗어난 좌표만큼 translate로 끌어들인다(상하좌우).
  *
  * 열릴 때 1회 계산(짧게 떴다 닫히는 드롭다운이라 스크롤/리사이즈 추적은 생략).
- * absolute 드롭다운이라 부모 overflow 박스 ≈ 패널(=뷰포트 높이)이므로 뷰포트 기준 보정이
- * 컨테이너 클리핑도 함께 완화한다.
+ * 패널 본문(overflow-y-auto) 안의 드롭다운은 그 본문 박스가 기준이라, 화면이 길어도 본문이
+ * CTA 푸터 위에서 끝나면 하단 필드에서 위로 플립돼 푸터에 가리거나 본문이 스크롤되지 않는다.
  *
  * TODO(드롭다운 위치 보정 — 전체 적용 계획):
- *  - 적용 완료: TimeSelect, CounselMethodSelect, AddEventPanel(카테고리),
- *    RepeatSelect(주기), FieldTypeDropdown, ScoreRangeSelect.
+ *  - 적용 완료: TimeSelect, CounselMethodSelect, AddEventPanel(카테고리·날짜),
+ *    RepeatSelect(주기·종료일), DatePopoverCalendar(ref/direction/offset 수신),
+ *    FieldTypeDropdown, ScoreRangeSelect.
  *  - 후속 적용 대상:
- *      · DatePopoverCalendar(날짜 팝오버) — AddEventPanel 날짜필드 + RepeatSelect 종료일에서
- *        공용. 부모가 트리거 ref/open을 가지므로 ref·direction·offset 전달 리팩터 필요.
  *      · CategorySettingsMenu(사이드바 카테고리 설정 ⋯)
  *      · MyDocumentCard(내 문서 ⋯ 케밥), SendDocumentModal(문서 선택 등)
  *      · 이후 신규로 추가되는 absolute 드롭다운은 기본적으로 이 훅을 적용.
@@ -49,21 +84,23 @@ export function useDropdownPosition<
   // setOffset과 항상 동기. 측정 rect에서 '적용된 transform'을 빼 자연 위치를 얻는 데 쓴다.
   const offsetRef = useRef({ x: 0, y: 0 });
 
-  // 1) 방향 — 트리거 위치 기준(드롭다운 렌더 전에 결정 가능)
+  // 1) 방향 — 트리거 위치 기준(드롭다운 렌더 전에 결정 가능). 클립 박스(스크롤 본문) 기준.
   useLayoutEffect(() => {
     const trigger = triggerRef.current;
     if (!open || !trigger) return;
     const decide = () => {
       const rect = trigger.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
+      const clip = clipBounds(trigger);
+      const spaceBelow = clip.bottom - rect.bottom;
+      const spaceAbove = rect.top - clip.top;
       setDirection(
-        spaceBelow < estimatedHeight && rect.top > spaceBelow ? 'up' : 'down'
+        spaceBelow < estimatedHeight && spaceAbove > spaceBelow ? 'up' : 'down'
       );
     };
     decide();
   }, [open, triggerRef, estimatedHeight]);
 
-  // 2) 보정 — 최종 방향으로 렌더된 드롭다운의 뷰포트 침범량만큼 translate
+  // 2) 보정 — 렌더된 드롭다운의 클립 박스 침범량만큼 translate
   useLayoutEffect(() => {
     const dropdown = dropdownRef.current;
     if (!open || !dropdown) return;
@@ -75,23 +112,22 @@ export function useDropdownPosition<
       const right = rect.right - prev.x;
       const top = rect.top - prev.y;
       const bottom = rect.bottom - prev.y;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      const clip = clipBounds(triggerRef.current ?? dropdown);
 
       let x = 0;
-      if (right > vw - margin) x = vw - margin - right; // 오른쪽 침범 → 왼쪽으로
-      if (left + x < margin) x = margin - left; // 왼쪽 침범 → 오른쪽으로(우선)
+      if (right > clip.right - margin) x = clip.right - margin - right; // 오른쪽 침범 → 왼쪽으로
+      if (left + x < clip.left + margin) x = clip.left + margin - left; // 왼쪽 침범 → 오른쪽으로(우선)
 
       let y = 0;
-      if (bottom > vh - margin) y = vh - margin - bottom; // 아래 침범 → 위로
-      if (top + y < margin) y = margin - top; // 위 침범 → 아래로(우선)
+      if (bottom > clip.bottom - margin) y = clip.bottom - margin - bottom; // 아래 침범 → 위로
+      if (top + y < clip.top + margin) y = clip.top + margin - top; // 위 침범 → 아래로(우선)
 
       const next = { x: Math.round(x), y: Math.round(y) };
       offsetRef.current = next;
       setOffset(next);
     };
     correct();
-  }, [open, direction, dropdownRef, margin]);
+  }, [open, direction, dropdownRef, triggerRef, margin]);
 
   return { direction, offset };
 }
