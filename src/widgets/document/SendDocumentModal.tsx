@@ -347,9 +347,10 @@ export function SendDocumentModal({
               type="button"
               aria-expanded={isDocumentOpen}
               onClick={() => setIsDocumentOpen((prev) => !prev)}
-              className="flex h-[34px] items-center rounded-lg border border-grey-30 bg-white px-2.5 text-sm font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+              className="flex h-[34px] items-center gap-2 rounded-lg border border-grey-30 bg-white px-2.5 text-sm font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
             >
               {documentTitle}
+              <ChevronDown size={16} className="text-grey-70" />
             </button>
             {isMobileView ? (
               /* 모바일 — 바텀시트 */
