@@ -8,7 +8,6 @@ import type {
   FormField,
   FormFieldType,
   ScoreAnswer,
-  SignatureAnswer,
   TextAnswer,
 } from '../types';
 
@@ -20,8 +19,6 @@ interface FieldContentProps {
   answer?: FieldAnswer;
   /** 전달되면 응답 입력 가능(뷰 페이지), 없으면 정적 표시(편집 뷰 비활성 카드/읽기전용) */
   onAnswerChange?: (answer: FieldAnswer) => void;
-  /** 서명 입력 트리거 — signature 필드 입력 모드에서 캔버스 시트를 연다 */
-  onRequestSignature?: () => void;
 }
 
 /** 필드 type(판별자)별로 대응되는 답변 타입. */
@@ -33,9 +30,7 @@ type AnswerFor<F extends FormField> = F['type'] extends 'short' | 'long'
       ? ScoreAnswer
       : F['type'] extends 'consent'
         ? ConsentAnswer
-        : F['type'] extends 'signature'
-          ? SignatureAnswer
-          : never;
+        : never;
 
 /**
  * 응답을 필드 type(판별자) 기준으로 해당 답변 타입에 맞춰 읽는다.
@@ -61,8 +56,6 @@ function answerForField<F extends FormField>(
         return 'score' in answer;
       case 'consent':
         return 'agreed' in answer;
-      case 'signature':
-        return 'signatureDataUrl' in answer;
       case 'section':
       case 'richtext':
         return false;
@@ -77,15 +70,14 @@ function answerForField<F extends FormField>(
 
 /**
  * 양식 필드 콘텐츠 — 편집 뷰의 비활성 카드(정적)와 응답 화면(입력)이 공유.
- * 9개 유형을 모두 렌더링한다. 선택형 응답은 옵션 value 기준으로 저장/표시한다.
- * richtext는 DOMPurify로 sanitize한 HTML을 렌더.
+ * 8개 유형을 모두 렌더링한다. 선택형 응답은 옵션 value 기준으로 저장/표시한다.
+ * richtext는 DOMPurify로 sanitize한 HTML을 렌더. (서명은 필드가 아니라 문서 레벨 — 여기서 다루지 않는다.)
  */
 export function FieldContent({
   field,
   number,
   answer,
   onAnswerChange,
-  onRequestSignature,
 }: FieldContentProps) {
   const interactive = onAnswerChange !== undefined;
 
@@ -137,6 +129,11 @@ export function FieldContent({
     <div>
       {/* consent는 동의 체크 행에 라벨을 함께 표기하므로 제목을 중복 렌더하지 않는다. */}
       {field.type !== 'consent' && heading}
+
+      {/* 다중 선택은 내담자가 인지하기 어려워 제목 바로 아래에 작게 안내(단일은 라디오로 자명). */}
+      {field.type === 'multiple' && (
+        <p className="mt-1 text-sm font-medium text-grey-60">복수 선택 가능</p>
+      )}
 
       {(field.type === 'single' || field.type === 'multiple') && (
         <ChoiceBody
@@ -235,15 +232,6 @@ export function FieldContent({
             </div>
           );
         })()}
-
-      {field.type === 'signature' && (
-        <SignatureBody
-          field={field}
-          answer={answerForField(field, answer)}
-          interactive={interactive}
-          onRequestSignature={onRequestSignature}
-        />
-      )}
     </div>
   );
 }
@@ -430,57 +418,43 @@ function ScoreBody({
           <span className={scoreCircleClass}>{scoreMax}</span>
         </div>
       )}
-      {(field.minLabel || field.maxLabel) && (
-        <div className="mt-3 flex items-center justify-between gap-4 text-sm font-medium text-grey-60">
-          <span>{field.minLabel}</span>
-          <span className="text-right">{field.maxLabel}</span>
+      {/* 척도 라벨 — scaleOptions(값별 상태: 0=전혀 아니다 … 3=거의 매일)는 각 눈금 아래에 표시.
+          scaleOptions가 없으면 양끝(min/max) 라벨만. */}
+      {field.scaleOptions && field.scaleOptions.length > 0 ? (
+        <div className="relative mt-2 h-9">
+          {field.scaleOptions.map((opt, i, arr) => {
+            const ratio = scoreRatio(Number(opt.value));
+            const isFirst = i === 0;
+            const isLast = i === arr.length - 1;
+            return (
+              <span
+                key={opt.value}
+                className={`absolute top-0 w-16 break-keep text-xs font-medium leading-tight text-grey-60 ${
+                  isFirst ? 'text-left' : isLast ? 'text-right' : 'text-center'
+                }`}
+                style={
+                  isFirst
+                    ? { left: 0 }
+                    : isLast
+                      ? { right: 0 }
+                      : {
+                          left: `calc((100% - 36px) * ${ratio} + 18px)`,
+                          transform: 'translateX(-50%)',
+                        }
+                }
+              >
+                {opt.label}
+              </span>
+            );
+          })}
         </div>
-      )}
-    </div>
-  );
-}
-
-// ── 서명 본문 ────────────────────────────────────────────────────────────────
-function SignatureBody({
-  field,
-  answer,
-  interactive,
-  onRequestSignature,
-}: {
-  field: Extract<FormField, { type: 'signature' }>;
-  answer: SignatureAnswer | undefined;
-  interactive: boolean;
-  onRequestSignature?: () => void;
-}) {
-  const signed = !!answer?.signatureDataUrl;
-  return (
-    <div className="mt-6">
-      {field.helpText && (
-        <p className="mb-3 text-sm font-medium text-grey-60 lg:text-l">
-          {field.helpText}
-        </p>
-      )}
-      {signed ? (
-        <img
-          src={answer?.signatureDataUrl}
-          alt="서명"
-          // 내담자(작성, interactive): full width 자동 높이 / 상담사 읽기전용 뷰: 높이 200 고정·중앙정렬
-          className={`rounded-lg border border-grey-40 bg-white object-contain p-2 ${
-            interactive ? 'h-auto w-full' : 'mx-auto block h-[200px] w-auto'
-          }`}
-        />
-      ) : interactive ? (
-        <button
-          type="button"
-          onClick={onRequestSignature}
-          className="flex h-[60px] w-full items-center justify-center rounded-lg border border-dashed border-grey-40 bg-grey-20 text-sm font-medium text-grey-70 lg:text-l"
-        >
-          서명하기
-        </button>
       ) : (
-        <div className="flex h-[60px] w-full items-center justify-center rounded-lg border border-dashed border-grey-40 bg-grey-20 text-sm font-medium text-grey-60 lg:text-l">
-          서명란
-        </div>
+        (field.minLabel || field.maxLabel) && (
+          <div className="mt-3 flex items-center justify-between gap-4 text-sm font-medium text-grey-60">
+            <span>{field.minLabel}</span>
+            <span className="text-right">{field.maxLabel}</span>
+          </div>
+        )
       )}
     </div>
   );
