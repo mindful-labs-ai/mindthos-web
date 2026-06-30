@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import DOMPurify from 'dompurify';
 
+import {
+  DocumentSignatureFooter,
+  koreanDateLabel,
+} from '@/features/document/components/DocumentSignatureFooter';
 import type { FormField } from '@/features/document/types';
 import { cn } from '@/lib/cn';
 
@@ -23,12 +27,6 @@ interface SharedConsentReadProps {
   onSubmit: () => void;
 }
 
-/** 오늘 날짜 "YYYY년 M월 D일". */
-function todayLabel(): string {
-  const d = new Date();
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
-
 /**
  * 동의서 문서 열람(모바일). 본문(richtext/section) 스크롤 + 하단 고정 CTA가 상태에 따라 변신:
  * 바닥 미도달 "아래로 내리기"(스크롤) → 바닥 도달 "서명하기"(바텀시트) → 서명 후 "동의하기".
@@ -45,7 +43,7 @@ export function SharedConsentRead({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [atBottom, setAtBottom] = useState(false);
 
-  // 본문은 richtext/section만 — 응답 필드(consent/signature 등)는 CTA·서명란으로 처리.
+  // 본문은 richtext/section만 — 동의(consent) 필드는 CTA로, 최종 서명은 문서 레벨로 처리.
   const bodyFields = fields.filter(
     (f) => f.type === 'richtext' || f.type === 'section'
   );
@@ -121,23 +119,14 @@ export function SharedConsentRead({
           )}
         </div>
 
-        {/* 서명란 — 상담사 사인오프 + 내담자 서명. 서명 이미지는 서명란 위로 겹쳐(종이 서명처럼). */}
-        <div className="mt-12 flex flex-col items-end gap-2 text-sm text-grey-100">
-          <p className="font-bold">{doc.counselorName} 상담사</p>
-          <p>{todayLabel()}</p>
-          <div className="mt-1 flex items-center gap-9">
-            <span>{doc.clientName}</span>
-            <span className="relative">
-              (본인 또는 법정 대리인 서명)
-              {signed && (
-                <img
-                  src={signatureDataUrl}
-                  alt="서명"
-                  className="pointer-events-none absolute left-1/2 top-1/2 h-14 w-auto -translate-x-1/2 -translate-y-1/2 object-contain"
-                />
-              )}
-            </span>
-          </div>
+        {/* 서명란 — 문서 레벨 최종 서명(날짜/내담자 이름/서명란). 상담사 미리보기와 동일 렌더. */}
+        <div className="mt-12">
+          <DocumentSignatureFooter
+            signatureDataUrl={signatureDataUrl}
+            clientName={doc.clientName}
+            dateLabel={koreanDateLabel(new Date())}
+            counselorName={doc.counselorName}
+          />
         </div>
       </div>
 

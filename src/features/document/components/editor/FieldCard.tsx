@@ -26,8 +26,8 @@ interface FieldCardProps {
 
 /**
  * 양식 필드 카드 — 셸(드래그·활성보더·하단 액션·비활성 미리보기)만 담당하고,
- * 활성 편집 본문은 유형별 에디터(FieldBody)에 위임한다. 9개 유형
- * (section/richtext/short/long/single/multiple/score/consent/signature) 편집.
+ * 활성 편집 본문은 유형별 에디터(FieldBody)에 위임한다. 8개 유형
+ * (section/richtext/short/long/single/multiple/score/consent) 편집.
  */
 export function FieldCard({
   field,

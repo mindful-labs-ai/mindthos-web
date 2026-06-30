@@ -19,7 +19,7 @@ interface FieldTypeDropdownProps {
 const TYPE_GROUPS: FormFieldType[][] = [
   ['single', 'multiple'],
   ['short', 'long', 'score'],
-  ['consent', 'signature'],
+  ['consent'],
   ['section', 'richtext'],
 ];
 

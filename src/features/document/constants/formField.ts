@@ -16,7 +16,6 @@ export const FIELD_TYPE_LABEL: Record<FormFieldType, string> = {
   multiple: '다중 선택',
   score: '점수',
   consent: '동의 항목',
-  signature: '서명',
 };
 
 /** 선택형(옵션 목록 사용) 유형 여부 */
@@ -85,8 +84,6 @@ export function createField(type: FormFieldType = 'single'): FormField {
         required: true,
         sensitive: false,
       };
-    case 'signature':
-      return { key, type: 'signature', label: '', required: true };
     default: {
       // 모든 유형 처리 보장 (컴파일 타임 exhaustiveness)
       const _exhaustive: never = type;
@@ -141,13 +138,14 @@ export function buildContent(fields: FormField[]): DocumentContent {
 }
 
 /**
- * 동의서(kind=consent) content 빌드 — 본문(richtext) + 표준 동의·서명 필드.
- * 동의서 에디터는 본문 HTML만 작성하고, 동의·서명은 자동 부착한다(내담자 화면의
- * 동의 CTA·서명란이 이 필드들에 응답을 저장 — 필드가 없으면 서명이 보관되지 않음).
+ * 동의서(kind=consent) content 빌드 — 본문(richtext) + 표준 동의 항목 + 문서 레벨 서명.
+ * 동의서 에디터는 본문 HTML만 작성하고, 동의 항목은 자동 부착한다. 서명은 더 이상 필드가 아니라
+ * requireSignature=true로 표시 — 내담자가 제출 직전 1회 서명하면 모든 동의에 적용되어 문서 하단에 렌더된다.
  */
 export function buildConsentContent(html: string): DocumentContent {
   return {
     version: FORM_CONTENT_VERSION,
+    requireSignature: true,
     fields: [
       { key: nextFieldKey(), type: 'richtext', html },
       {
@@ -157,7 +155,6 @@ export function buildConsentContent(html: string): DocumentContent {
         required: true,
         sensitive: false,
       },
-      { key: nextFieldKey(), type: 'signature', label: '서명', required: true },
     ],
   };
 }
@@ -179,7 +176,6 @@ const ALL_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set<FormFieldType>([
   'multiple',
   'score',
   'consent',
-  'signature',
 ]);
 
 /** 단일 필드 유효성 — 서버 validateFields 규칙 미러 */
@@ -213,7 +209,6 @@ function isValidField(field: FormField): boolean {
     case 'score':
       return field.label.trim().length > 0 && field.min < field.max;
     case 'consent':
-    case 'signature':
       return field.label.trim().length > 0;
     default:
       return false;

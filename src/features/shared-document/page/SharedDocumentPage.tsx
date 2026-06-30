@@ -105,10 +105,9 @@ export default function SharedDocumentPage() {
 
   // 필드 key → 응답(FieldAnswer) — CONSENT/QNA 공통 단일 응답맵
   const [answers, setAnswers] = useState<Record<string, FieldAnswer>>({});
-  // 서명 시트 — 열려 있는 동안 대상 필드 key를 기억(QNA signature 필드). CONSENT는 null.
+  // 서명 시트 — 동의서 최종 서명(문서 레벨, 1회) 입력.
   const [signOpen, setSignOpen] = useState(false);
-  const [signTargetKey, setSignTargetKey] = useState<string | null>(null);
-  // 동의서(CONSENT) 모드 서명 dataURL — read 화면 푸터/제출에 사용
+  // 동의서(CONSENT) 최종 서명 dataURL — read 화면 푸터 + 제출 시 응답 레벨 signatureDataUrl.
   const [signature, setSignature] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
@@ -208,22 +207,19 @@ export default function SharedDocumentPage() {
   // 통합 본문 필드 — CONSENT/QNA 공통 봉투에서 파싱.
   const fields = parseFields(doc.content);
 
-  /** 동의서(CONSENT) 제출 — consent 필드는 동의, signature 필드는 서명으로 채워 응답맵 구성. */
+  /**
+   * 동의서(CONSENT) 제출 — consent 필드는 모두 동의(agreed:true)로 채우고,
+   * 최종 서명은 문서 레벨 signatureDataUrl로 1회 첨부(모든 동의에 적용). 서명자명/서명일은
+   * 서버·뷰에서 내담자명·제출시각으로 파생하므로 응답에 저장하지 않는다.
+   */
   const submitConsent = () => {
-    const signedAt = new Date().toISOString();
     const built: Record<string, FieldAnswer> = { ...answers };
     for (const field of fields) {
       if (field.type === 'consent') {
         built[field.key] = { agreed: true };
-      } else if (field.type === 'signature') {
-        built[field.key] = {
-          signatureDataUrl: signature ?? '',
-          signedName: doc.clientName,
-          signedAt,
-        };
       }
     }
-    return submit({ answers: built });
+    return submit({ answers: built, signatureDataUrl: signature ?? undefined });
   };
 
   const submitQna = () => submit({ answers });
@@ -247,10 +243,7 @@ export default function SharedDocumentPage() {
         signatureDataUrl={signature}
         submitting={submitting}
         onBack={() => setStep('intro')}
-        onSign={() => {
-          setSignTargetKey(null);
-          setSignOpen(true);
-        }}
+        onSign={() => setSignOpen(true)}
         onSubmit={submitConsent}
       />
     );
@@ -260,10 +253,6 @@ export default function SharedDocumentPage() {
         doc={doc}
         answers={answers}
         onAnswerChange={updateAnswer}
-        onRequestSignature={(fieldKey) => {
-          setSignTargetKey(fieldKey);
-          setSignOpen(true);
-        }}
         submitting={submitting}
         onBack={() => setStep('intro')}
         onSubmit={submitQna}
@@ -285,20 +274,12 @@ export default function SharedDocumentPage() {
   return (
     <SharedScreenFrame>
       {content}
-      {/* 서명 시트(공용) — CONSENT는 서명 상태, QNA signature 필드는 해당 필드 응답으로 반영. */}
+      {/* 서명 시트 — 동의서 최종 서명(문서 레벨, 1회). */}
       <SharedSignatureSheet
         open={signOpen}
         onClose={() => setSignOpen(false)}
         onConfirm={(dataUrl) => {
-          if (signTargetKey) {
-            updateAnswer(signTargetKey, {
-              signatureDataUrl: dataUrl,
-              signedName: doc.clientName,
-              signedAt: new Date().toISOString(),
-            });
-          } else {
-            setSignature(dataUrl);
-          }
+          setSignature(dataUrl);
           setSignOpen(false);
         }}
       />

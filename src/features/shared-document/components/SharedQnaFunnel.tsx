@@ -18,8 +18,6 @@ interface SharedQnaFunnelProps {
   doc: SharedDocument;
   answers: Record<string, FieldAnswer>;
   onAnswerChange: (fieldKey: string, answer: FieldAnswer) => void;
-  /** 서명 필드 입력 요청 — 페이지가 서명 시트를 열고 결과를 answers에 반영 */
-  onRequestSignature: (fieldKey: string) => void;
   submitting: boolean;
   /** 첫 필드에서 "이전" — 진입 화면으로 */
   onBack: () => void;
@@ -27,9 +25,7 @@ interface SharedQnaFunnelProps {
 }
 
 /** 응답 불필요(정보) 필드 — section/richtext (타입가드: 이후 분기에서 required 접근 가능). */
-function isInfoField(
-  field: FormField
-): field is SectionField | RichtextField {
+function isInfoField(field: FormField): field is SectionField | RichtextField {
   return field.type === 'section' || field.type === 'richtext';
 }
 
@@ -37,7 +33,10 @@ function isInfoField(
  * 유형별 "응답됨" 판정. 정보 필드(section/richtext)는 응답 불필요,
  * required=false 필드는 미응답 허용(건너뛰기 가능). 선택형은 옵션 선택 또는 '기타' 입력으로 충족.
  */
-function isAnswered(field: FormField, answer: FieldAnswer | undefined): boolean {
+function isAnswered(
+  field: FormField,
+  answer: FieldAnswer | undefined
+): boolean {
   if (isInfoField(field)) return true;
   // 선택(필수 아님) 필드는 응답 없이도 통과.
   if (!field.required) return true;
@@ -56,8 +55,6 @@ function isAnswered(field: FormField, answer: FieldAnswer | undefined): boolean 
       return 'score' in answer && answer.score != null;
     case 'consent':
       return 'agreed' in answer && answer.agreed === true;
-    case 'signature':
-      return 'signatureDataUrl' in answer && !!answer.signatureDataUrl;
     default:
       return true;
   }
@@ -71,7 +68,6 @@ export function SharedQnaFunnel({
   doc,
   answers,
   onAnswerChange,
-  onRequestSignature,
   submitting,
   onBack,
   onSubmit,
@@ -127,7 +123,6 @@ export function SharedQnaFunnel({
           number={fieldNumber}
           answer={answers[field.key]}
           onAnswerChange={(answer) => onAnswerChange(field.key, answer)}
-          onRequestSignature={() => onRequestSignature(field.key)}
         />
       </div>
 

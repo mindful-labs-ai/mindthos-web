@@ -9,7 +9,8 @@ import { FIELD_TYPE_LABEL } from './formField';
  *   server: src/module/sent-document/util/document-response-validator.contract.spec.ts
  * (참고) 타입별 답변 허용 키(서버 answerKeys와 동일해야 함):
  *   short/long→[text], single/multiple→[selected, otherText], score→[score],
- *   consent→[agreed], signature→[signatureDataUrl, signedName, signedAt], section/richtext→[]
+ *   consent→[agreed], section/richtext→[]
+ * 서명은 더 이상 필드 타입이 아니다 — content.requireSignature(문서 레벨) + response.signatureDataUrl.
  */
 const FIELD_TYPES = [
   'consent',
@@ -19,12 +20,11 @@ const FIELD_TYPES = [
   'score',
   'section',
   'short',
-  'signature',
   'single',
 ] as const;
 
 describe('FormField 필드 타입 계약(드리프트 가드)', () => {
-  it('필드 타입은 정확히 9종이어야 합니다.', () => {
+  it('필드 타입은 정확히 8종이어야 합니다.', () => {
     expect(Object.keys(FIELD_TYPE_LABEL).sort()).toEqual([...FIELD_TYPES]);
   });
 });

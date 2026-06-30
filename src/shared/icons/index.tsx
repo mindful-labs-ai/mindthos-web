@@ -1747,24 +1747,6 @@ export const FormFieldTypeIcons = {
       />
     </svg>
   ),
-  signature: ({ size = 20, className }) => (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        d="M2.5 16.6673H17.5M3.33333 12.5007L11.25 4.58398C11.9404 3.89363 13.0596 3.89363 13.75 4.58398C14.4404 5.27434 14.4404 6.39357 13.75 7.08392L5.83333 15.0006L2.5 15.834L3.33333 12.5007Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  ),
 } as const satisfies Record<FormFieldType, React.FC<CustomIconProps>>;
 
 // 편의를 위한 네임스페이스 export

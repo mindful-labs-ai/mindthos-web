@@ -13,7 +13,6 @@ import type {
   ScoreField,
   SectionField,
   ShortField,
-  SignatureField,
   SingleField,
 } from '../../types';
 
@@ -314,29 +313,6 @@ function ConsentFieldEditor({ field, onChange }: EditorProps<ConsentField>) {
   );
 }
 
-function SignatureEditor({ field, onChange }: EditorProps<SignatureField>) {
-  const update = (patch: Partial<SignatureField>) =>
-    onChange({ ...field, ...patch });
-  return (
-    <>
-      <HeaderInput
-        value={field.label}
-        onChange={(label) => update({ label })}
-        placeholder="질문"
-        ariaLabel="항목 입력"
-      />
-      <input
-        type="text"
-        value={field.helpText ?? ''}
-        onChange={(e) => update({ helpText: e.target.value })}
-        placeholder="안내 문구 (선택 사항)"
-        aria-label="서명 안내 문구"
-        className="mt-5 h-[34px] w-full rounded-lg bg-grey-20 px-3 text-m font-medium text-grey-100 placeholder:text-grey-80 focus:outline-none"
-      />
-    </>
-  );
-}
-
 /** 활성 필드 본문 — 변형별 에디터로 분기(switch narrowing → 구체 변형 전달). */
 export function FieldBody({
   field,
@@ -360,8 +336,6 @@ export function FieldBody({
       return <ScoreEditor field={field} onChange={onChange} />;
     case 'consent':
       return <ConsentFieldEditor field={field} onChange={onChange} />;
-    case 'signature':
-      return <SignatureEditor field={field} onChange={onChange} />;
     default: {
       // 컴파일 타임 exhaustiveness — 새 유형 추가 시 여기서 에러.
       const _exhaustive: never = field;

@@ -18,8 +18,7 @@ export type FormFieldType =
   | 'single'
   | 'multiple'
   | 'score'
-  | 'consent'
-  | 'signature';
+  | 'consent';
 
 /** 선택형(single/multiple) 옵션. value는 안정 식별자, label은 표시 텍스트. */
 export interface FormFieldOption {
@@ -103,14 +102,6 @@ export interface ConsentField extends FormFieldBase {
   sensitive: boolean;
 }
 
-/** 서명. */
-export interface SignatureField extends FormFieldBase {
-  type: 'signature';
-  label: string;
-  required: boolean;
-  helpText?: string;
-}
-
 export type FormField =
   | SectionField
   | RichtextField
@@ -119,13 +110,17 @@ export type FormField =
   | SingleField
   | MultipleField
   | ScoreField
-  | ConsentField
-  | SignatureField;
+  | ConsentField;
 
-/** content jsonb 봉투 — 동의서/질문지 공통. */
+/**
+ * content jsonb 봉투 — 동의서/질문지 공통.
+ * requireSignature: 동의서 등 최종 서명이 필요한 문서. true면 제출 시 내담자 최종 서명(1회)을 요구하고,
+ *   문서 하단에 이름(내담자)/날짜(제출일)/서명을 자동 렌더한다. 서명은 더 이상 필드가 아니라 문서 레벨이다.
+ */
 export interface DocumentContent {
   version: typeof FORM_CONTENT_VERSION;
   fields: FormField[];
+  requireSignature?: boolean;
 }
 
 // ── 응답 ─────────────────────────────────────────────────────────────────────
@@ -147,22 +142,20 @@ export interface ScoreAnswer {
 export interface ConsentAnswer {
   agreed: boolean;
 }
-/** signature 응답. */
-export interface SignatureAnswer {
-  signatureDataUrl: string;
-  signedName?: string;
-  signedAt?: string;
-}
 
 /** 필드 1개 답변 — 대응 필드 type으로 형태가 정해진다. */
 export type FieldAnswer =
   | TextAnswer
   | ChoiceAnswer
   | ScoreAnswer
-  | ConsentAnswer
-  | SignatureAnswer;
+  | ConsentAnswer;
 
-/** 내담자 제출 응답(jsonb) — 필드키 → 답변. section/richtext는 키 없음. */
+/**
+ * 내담자 제출 응답(jsonb) — 필드키 → 답변. section/richtext는 키 없음.
+ * signatureDataUrl: 문서 레벨 최종 서명 이미지(data:image/ URL). requireSignature 문서에서 필수.
+ *   서명자명=내담자명, 서명일=제출 시각으로 렌더 시 파생한다.
+ */
 export interface DocumentResponse {
   answers: Record<string /* fieldKey */, FieldAnswer>;
+  signatureDataUrl?: string;
 }
