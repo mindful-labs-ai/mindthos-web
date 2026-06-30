@@ -12,10 +12,11 @@ import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
 
-import { CALENDAR_COLOR_STYLES, WEEKDAYS_KO } from '../../constants';
+import { KIND_DEFAULT_COLOR, WEEKDAYS_KO } from '../../constants';
 import { useCalendarCategories } from '../../hooks/useCalendarEvents';
 import type {
   AddEventDraft,
+  CalendarColorKey,
   CalendarEventKind,
   CalendarEvent,
   CalendarEventScope,
@@ -25,6 +26,7 @@ import type {
 import { dayjs, type Dayjs } from '../../utils/calendarDate';
 import { computeEventTimes } from '../../utils/eventMutations';
 
+import { CalendarColorPicker } from './CalendarColorPicker';
 import { CounselMethodSelect } from './CounselMethodSelect';
 import { DatePopoverCalendar } from './DatePopoverCalendar';
 import { RepeatSelect } from './RepeatSelect';
@@ -41,6 +43,8 @@ interface AddEventPanelProps {
   editingEvent?: CalendarEvent | null;
   /** 팝오버 달력에서 날짜 선택 (달력 하이라이트와 동기화) */
   onSelectDate: (day: Dayjs) => void;
+  /** 시작/종료 시간 수정 (캘린더 더미/선택 미리보기와 실시간 동기화) */
+  onTimeChange?: (time: { start: string; end: string }) => void;
   onClose: () => void;
   /** 저장. 반복(시리즈) 일정 편집이면 scope(this/following/all)를 함께 넘긴다(신규·단일은 생략). */
   onSubmit: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
@@ -89,19 +93,26 @@ export function AddEventPanel({
   initialEndTime,
   editingEvent,
   onSelectDate,
+  onTimeChange,
   onClose,
   onSubmit,
   onDelete,
 }: AddEventPanelProps) {
   const [kind, setKind] = React.useState<CalendarEventKind>(initialKind);
+  // 표시 색상 — 편집은 기존 색, 신규는 kind 기본색. 사용자가 색상 선택기로 변경 가능.
+  const [colorKey, setColorKey] = React.useState<CalendarColorKey>(
+    editingEvent ? editingEvent.colorKey : KIND_DEFAULT_COLOR[initialKind]
+  );
   const [title, setTitle] = React.useState(editingEvent?.title ?? '');
   const [allDay, setAllDay] = React.useState(
     editingEvent?.eventTimeKind === 'ALL_DAY'
   );
   const [startTime, setStartTime] = React.useState(initialStartTime);
   const [endTime, setEndTime] = React.useState(initialEndTime);
-  // 반복 규칙은 신규 생성에서만 입력 — 편집 모드에선 RepeatSelect를 숨기므로 항상 null로 시작.
-  const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(null);
+  // 반복 규칙 — 신규 생성, 또는 반복(시리즈) 편집 시 마스터 규칙을 표시/수정(이후/전체 scope에 적용).
+  const [repeat, setRepeat] = React.useState<CalendarRepeatRule | null>(
+    editingEvent?.repeat ?? null
+  );
   const [counselMethod, setCounselMethod] =
     React.useState<CounselMethod | null>(editingEvent?.counselMethod ?? null);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
@@ -113,7 +124,7 @@ export function AddEventPanel({
     null
   );
   const [clientSelectOpen, setClientSelectOpen] = React.useState(false);
-  // 개인 일정 카테고리('나의 캘린더') — 선택 시 그 카테고리 색으로 표시. null = 선택 안 함.
+  // 개인 일정 카테고리('나의 캘린더') — 표시 on/off 그룹핑용(색과 무관). null = 선택 안 함.
   const [categoryId, setCategoryId] = React.useState<string | null>(
     editingEvent?.categoryId ?? null
   );
@@ -173,13 +184,29 @@ export function AddEventPanel({
   // 종료 시간은 시작 이후만 선택 가능
   const endOptions = END_TIME_OPTIONS.filter((t) => t > startTime);
 
-  // 시작 시간 변경 시, 종료가 시작보다 빠르면 자동으로 다음 슬롯으로 밀기
+  // 시작 시간 변경 시, 종료가 시작보다 빠르면 자동으로 다음 슬롯으로 밀기.
+  // 신규 추가 모드면 캘린더 미리보기(더미/선택)도 즉시 갱신.
   const handleStartChange = (v: string) => {
     setStartTime(v);
+    let nextEnd = endTime;
     if (endTime <= v) {
       const idx = END_TIME_OPTIONS.indexOf(v);
-      setEndTime(END_TIME_OPTIONS[idx + 1] ?? v);
+      nextEnd = END_TIME_OPTIONS[idx + 1] ?? v;
+      setEndTime(nextEnd);
     }
+    if (!editingEvent) onTimeChange?.({ start: v, end: nextEnd });
+  };
+
+  const handleEndChange = (v: string) => {
+    setEndTime(v);
+    if (!editingEvent) onTimeChange?.({ start: startTime, end: v });
+  };
+
+  // 종류 변경 시 색을 그 종류 기본색으로 초기화(이후 색상 선택기로 재선택 가능).
+  const handleKindChange = (next: CalendarEventKind) => {
+    if (next === kind) return;
+    setKind(next);
+    setColorKey(KIND_DEFAULT_COLOR[next]);
   };
 
   // 편집 모드 + 변경 감지 (수정사항이 있을 때만 CTA 활성화)
@@ -207,7 +234,8 @@ export function AddEventPanel({
       (origStart ? origStart.format('YYYY-MM-DD') : '') ||
     effectiveClientId !== (editingEvent.clientId ?? null) ||
     effectiveCounselMethod !== (editingEvent.counselMethod ?? null) ||
-    effectiveCategoryId !== (editingEvent.categoryId ?? null);
+    effectiveCategoryId !== (editingEvent.categoryId ?? null) ||
+    JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
   // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
   const counselingNeedsClient = kind === 'counseling' && !selectedClient;
   // 필수값: 상담 일정이면 내담자. 제목은 비워도 추가 가능('제목 없음'으로 저장).
@@ -215,6 +243,7 @@ export function AddEventPanel({
 
   const buildDraft = (): AddEventDraft => ({
     kind,
+    colorKey,
     title,
     eventTimeKind: allDay ? 'ALL_DAY' : 'TIMED',
     startTime,
@@ -280,7 +309,7 @@ export function AddEventPanel({
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => setKind(opt.value)}
+                  onClick={() => handleKindChange(opt.value)}
                   className={cn(
                     'h-[35px] w-[60px] rounded-md border text-sm font-medium',
                     active
@@ -293,6 +322,12 @@ export function AddEventPanel({
               );
             })}
           </div>
+        </div>
+
+        {/* 색상 — 기본은 kind 기본색, 색상 선택기로 변경 가능(모든 일정) */}
+        <div className="flex items-center justify-between gap-4">
+          <FieldLabel>색상</FieldLabel>
+          <CalendarColorPicker value={colorKey} onChange={setColorKey} />
         </div>
 
         {/* 내담자 선택 — 상담 일정에서만 노출(개인 일정은 숨김) */}
@@ -408,7 +443,7 @@ export function AddEventPanel({
                 <TimeSelect
                   value={endTime}
                   options={endOptions}
-                  onChange={setEndTime}
+                  onChange={handleEndChange}
                   ariaLabel="종료 시간"
                 />
               </div>
@@ -416,8 +451,8 @@ export function AddEventPanel({
           </div>
         </div>
 
-        {/* 주기 (반복 규칙) — 신규 생성에서만. 편집 모드에선 반복주기를 바꿀 수 없어 숨긴다. */}
-        {!isEdit && (
+        {/* 주기 (반복 규칙) — 신규 생성, 또는 반복(시리즈) 편집 시 노출(규칙은 이후/전체 scope에 적용). */}
+        {(!isEdit || isRecurringEdit) && (
           <RepeatSelect
             value={repeat}
             onChange={setRepeat}
@@ -434,7 +469,7 @@ export function AddEventPanel({
           />
         )}
 
-        {/* 카테고리(나의 캘린더) — 개인 일정에서만. 선택 시 그 카테고리 색으로 표시 */}
+        {/* 카테고리(나의 캘린더) — 개인 일정에서만. 표시 on/off 그룹핑용(색과 무관) */}
         {kind === 'personal' && (
           <div
             ref={categoryFieldRef}
@@ -449,18 +484,9 @@ export function AddEventPanel({
               >
                 <span className="flex min-w-0 items-center gap-2">
                   {selectedCategory ? (
-                    <>
-                      <span
-                        className={cn(
-                          'h-3 w-3 shrink-0 rounded-full',
-                          CALENDAR_COLOR_STYLES[selectedCategory.colorKey]
-                            .swatchBg
-                        )}
-                      />
-                      <span className="truncate text-grey-100">
-                        {selectedCategory.name}
-                      </span>
-                    </>
+                    <span className="truncate text-grey-100">
+                      {selectedCategory.name}
+                    </span>
                   ) : (
                     <span className="text-[#abaebe]">선택 안 함</span>
                   )}
@@ -505,14 +531,8 @@ export function AddEventPanel({
                         setCategoryId(c.id);
                         setCategorySelectOpen(false);
                       }}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-sm text-grey-100 lg:hover:bg-grey-10"
+                      className="flex w-full items-center px-3 py-2 text-sm text-grey-100 lg:hover:bg-grey-10"
                     >
-                      <span
-                        className={cn(
-                          'h-3 w-3 shrink-0 rounded-full',
-                          CALENDAR_COLOR_STYLES[c.colorKey].swatchBg
-                        )}
-                      />
                       <span className="truncate">{c.name}</span>
                     </button>
                   ))}

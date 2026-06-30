@@ -1,9 +1,5 @@
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
-import type {
-  CalendarCategory,
-  CalendarColorKey,
-  CalendarEventKind,
-} from '../../types';
+import type { CalendarCategory, CalendarEventKind } from '../../types';
 import type { Dayjs } from '../../utils/calendarDate';
 
 import { AddEventButtons } from './AddEventButtons';
@@ -21,12 +17,8 @@ interface CalendarSidebarProps {
   categories: CalendarCategory[];
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
-  onChangeCategoryColor?: (
-    categoryId: string,
-    colorKey: CalendarColorKey
-  ) => void;
   onDeleteCategory?: (categoryId: string) => void;
-  onCreateCategory?: (name: string, colorKey: CalendarColorKey) => void;
+  onCreateCategory?: (name: string) => void;
   onAddEvent?: (kind: CalendarEventKind) => void;
   onConnectGoogle?: () => void;
 }
@@ -43,7 +35,6 @@ export function CalendarSidebar({
   categories,
   categoryVisible,
   onToggleCategory,
-  onChangeCategoryColor,
   onDeleteCategory,
   onCreateCategory,
   onAddEvent,
@@ -73,7 +64,6 @@ export function CalendarSidebar({
         categoryVisible={categoryVisible}
         onToggleCategory={onToggleCategory}
         onCreateCategory={onCreateCategory}
-        onChangeCategoryColor={onChangeCategoryColor}
         onDeleteCategory={onDeleteCategory}
       />
       {/* 구글 연동 후엔 배너 숨김(카테고리 sourceProvider로 감지) */}

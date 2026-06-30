@@ -18,7 +18,7 @@ import type { CalendarDataSource } from './types';
  */
 
 const CATEGORIES: CalendarCategory[] = [
-  { id: 'cat-mindthos', name: '마음토스 캘린더', colorKey: 'green' },
+  { id: 'cat-mindthos', name: '마음토스 캘린더' },
 ];
 
 /** 사용자가 추가한 일정 (인메모리). 추후 백엔드 어댑터에서는 서버가 보관. */

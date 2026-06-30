@@ -13,6 +13,8 @@ export type { CalendarEventScope };
 export interface UpdateEventOptions {
   /** 반복 일정일 때 적용 범위(단일 일정은 무시). 기본 this */
   scope?: CalendarEventScope;
+  /** this/following scope에서 대상 회차 날짜(YYYY-MM-DD UTC). 마스터 인스턴스 수정 시 필요. */
+  occurrenceDate?: string | null;
 }
 
 /**
@@ -28,16 +30,21 @@ export interface CalendarDataSource {
   listCategories(): Promise<CalendarCategory[]>;
   createEvent?(input: CalendarEventInput): Promise<CalendarEvent>;
   /**
-   * 일정 수정. 반복 일정이면 `options.scope`(this/following/all)로 적용 범위를 정한다 —
-   * 회차가 실제 row라 this는 그 회차만, following/이후·all/전체는 시리즈 일괄 적용.
+   * 일정 수정(구글식 하이브리드). 반복 일정이면 `options.scope`(this/following/all)로 적용 범위를 정한다 —
+   * this=이 회차(EXDATE+override), following=이후(시리즈 분할), all=전체(마스터 규칙). this/following은
+   * `options.occurrenceDate`(회차 날짜)가 필요하다.
    */
   updateEvent?(
     id: string,
     input: CalendarEventInput,
     options?: UpdateEventOptions
   ): Promise<CalendarEvent>;
-  /** 일정 삭제. 반복 일정이면 scope로 적용 범위(this/following/all). 기본 this */
-  deleteEvent?(id: string, scope?: CalendarEventScope): Promise<void>;
+  /** 일정 삭제. 반복이면 scope(this/following/all) + this/following은 occurrenceDate 필요. 기본 this */
+  deleteEvent?(
+    id: string,
+    scope?: CalendarEventScope,
+    occurrenceDate?: string | null
+  ): Promise<void>;
   createCategory?(input: CalendarCategoryInput): Promise<CalendarCategory>;
   updateCategory?(
     id: string,

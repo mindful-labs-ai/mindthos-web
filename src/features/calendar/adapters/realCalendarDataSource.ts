@@ -37,7 +37,7 @@ import type {
  * 매핑 메모:
  *  - 서버 event.kind = COUNSELING | PERSONAL (공휴일은 별도 holiday[]).
  *    프론트 kind = counseling | personal | holiday → holiday는 holiday[]에서 파생.
- *  - 이벤트엔 색이 없다(서버). colorKey는 categoryId→category.colorKey, 없으면 kind 기본값.
+ *  - 색은 이벤트가 보관한다(서버 event.colorKey). 카테고리는 색이 없다(표시 그룹핑 전용).
  *  - 서버 시각 필드 startsAt/endsAt ↔ 프론트 start/end.
  */
 
@@ -51,31 +51,35 @@ const CALENDAR_ROUTES = {
 
 /** 서버 enum(대문자) */
 type ServerEventKind = 'COUNSELING' | 'PERSONAL';
-type ServerColorKey =
-  | 'GREEN'
-  | 'RED'
-  | 'BLUE'
-  | 'GREY'
-  | 'ORANGE'
-  | 'YELLOW'
-  | 'PURPLE'
-  | 'PINK';
 type ServerRepeatCycle = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type ServerCounselMethod = 'IN_PERSON' | 'ONLINE';
+/** 서버 색상 enum은 대문자(GREEN/RED…), 프론트 CalendarColorKey는 소문자(green/red…). */
+type ServerColorKey = Uppercase<CalendarColorKey>;
 
-/** GET /calendar event[] 원소 (회차별 row 그대로) */
+/** GET /calendar event[] 원소 (마스터 인스턴스 / override / 단일) */
 interface CalendarEventDto {
   id: string;
   kind: ServerEventKind;
   title: string;
+  /** 표시 색상 — 이벤트가 직접 보관(서버 contract). 서버 enum은 대문자. */
+  colorKey: ServerColorKey;
   clientId: string | null;
   categoryId: string | null;
   startsAt: string;
   endsAt: string | null;
   eventTimeKind: CalendarEventTimeKind;
   counselMethod: ServerCounselMethod | null;
-  /** 같은 반복(시리즈) 묶음 id. null = 단일 일정 */
-  repeatSeriesId: string | null;
+  /** 마스터 인스턴스의 반복 규칙(편집 시 표시용). override/단일은 cycle null. */
+  repeatCycle: ServerRepeatCycle | null;
+  repeatCount: number | null;
+  repeatInterval: number;
+  repeatUntil: string | null;
+  /** 같은 반복(시리즈) 묶음 id. null = 단일 일정. */
+  seriesId: string | null;
+  /** 이 행이 차지하는 회차 날짜(YYYY-MM-DD UTC). 단일은 null. scope 키. */
+  occurrenceDate: string | null;
+  /** override가 대체하는 원본 회차 날짜. 그 외 null. */
+  recurrenceOriginalDate: string | null;
 }
 
 /** GET /calendar holiday[] 원소 (public.holiday, date-only) */
@@ -85,11 +89,10 @@ interface HolidayDto {
   date: string;
 }
 
-/** GET /calendar category[] 원소 */
+/** GET /calendar category[] 원소 — 색 없음(표시 그룹핑 전용). */
 interface CalendarCategoryDto {
   id: string;
   name: string;
-  colorKey: ServerColorKey;
   sourceProvider: 'GOOGLE' | 'NAVER' | 'APPLE' | null;
 }
 
@@ -104,6 +107,8 @@ interface GetCalendarResponse {
 interface EventRequestBody {
   kind: ServerEventKind;
   title: string;
+  /** 표시 색상 — 이벤트가 직접 보관. 서버 enum은 대문자. */
+  colorKey: ServerColorKey;
   clientId?: string | null;
   categoryId?: string | null;
   // 시간 앵커 — 생성·수정 모두 전송(수정은 scope에 따라 서버가 회차 시간대로 적용).
@@ -118,10 +123,9 @@ interface EventRequestBody {
   repeatUntil?: string | null;
 }
 
-/** POST/PATCH /calendar/categories 요청 body */
+/** POST/PATCH /calendar/categories 요청 body — 색 없음(이름만). */
 interface CategoryRequestBody {
   name: string;
-  colorKey: ServerColorKey;
 }
 
 const KIND_TO_SERVER: Record<
@@ -137,33 +141,18 @@ const KIND_FROM_SERVER: Record<ServerEventKind, CalendarEventKind> = {
   PERSONAL: 'personal',
 };
 
-const COLOR_TO_SERVER: Record<CalendarColorKey, ServerColorKey> = {
-  green: 'GREEN',
-  red: 'RED',
-  blue: 'BLUE',
-  grey: 'GREY',
-  orange: 'ORANGE',
-  yellow: 'YELLOW',
-  purple: 'PURPLE',
-  pink: 'PINK',
-};
-
-const COLOR_FROM_SERVER: Record<ServerColorKey, CalendarColorKey> = {
-  GREEN: 'green',
-  RED: 'red',
-  BLUE: 'blue',
-  GREY: 'grey',
-  ORANGE: 'orange',
-  YELLOW: 'yellow',
-  PURPLE: 'purple',
-  PINK: 'pink',
-};
-
 const REPEAT_TO_SERVER: Record<CalendarRepeatCycle, ServerRepeatCycle> = {
   daily: 'DAILY',
   weekly: 'WEEKLY',
   monthly: 'MONTHLY',
   yearly: 'YEARLY',
+};
+
+const REPEAT_FROM_SERVER: Record<ServerRepeatCycle, CalendarRepeatCycle> = {
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly',
 };
 
 const COUNSEL_METHOD_TO_SERVER: Record<CounselMethod, ServerCounselMethod> = {
@@ -176,25 +165,13 @@ const COUNSEL_METHOD_FROM_SERVER: Record<ServerCounselMethod, CounselMethod> = {
   ONLINE: 'online',
 };
 
-/** kind 기본색 (카테고리 없는 이벤트) */
-function defaultColorForKind(kind: CalendarEventKind): CalendarColorKey {
-  return kind === 'counseling' ? 'green' : 'red';
-}
-
-/** CalendarEventDto → 프론트 CalendarEvent (색은 카테고리/kind에서 파생) */
-function toCalendarEvent(
-  dto: CalendarEventDto,
-  categoryColor: Map<string, CalendarColorKey>
-): CalendarEvent {
-  const kind = KIND_FROM_SERVER[dto.kind];
-  const colorKey =
-    (dto.categoryId ? categoryColor.get(dto.categoryId) : undefined) ??
-    defaultColorForKind(kind);
+/** CalendarEventDto → 프론트 CalendarEvent (색은 이벤트가 직접 보관). */
+function toCalendarEvent(dto: CalendarEventDto): CalendarEvent {
   return {
     id: dto.id,
     title: dto.title,
-    kind,
-    colorKey,
+    kind: KIND_FROM_SERVER[dto.kind],
+    colorKey: dto.colorKey.toLowerCase() as CalendarColorKey,
     start: dto.startsAt,
     end: dto.endsAt ?? undefined,
     eventTimeKind: dto.eventTimeKind,
@@ -203,7 +180,17 @@ function toCalendarEvent(
     counselMethod: dto.counselMethod
       ? COUNSEL_METHOD_FROM_SERVER[dto.counselMethod]
       : null,
-    seriesId: dto.repeatSeriesId ?? null,
+    seriesId: dto.seriesId ?? null,
+    occurrenceDate: dto.occurrenceDate ?? null,
+    // 마스터 인스턴스만 규칙 보유(편집 시 표시용). override/단일은 null.
+    repeat: dto.repeatCycle
+      ? {
+          cycle: REPEAT_FROM_SERVER[dto.repeatCycle],
+          interval: dto.repeatInterval ?? 1,
+          count: dto.repeatCount,
+          until: dto.repeatUntil,
+        }
+      : null,
   };
 }
 
@@ -220,12 +207,11 @@ function holidayToCalendarEvent(dto: HolidayDto): CalendarEvent {
   };
 }
 
-/** CalendarCategoryDto → 프론트 CalendarCategory */
+/** CalendarCategoryDto → 프론트 CalendarCategory (색 없음) */
 function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
   return {
     id: dto.id,
     name: dto.name,
-    colorKey: COLOR_FROM_SERVER[dto.colorKey] ?? 'grey',
     sourceProvider: dto.sourceProvider
       ? (dto.sourceProvider.toLowerCase() as 'google' | 'naver' | 'apple')
       : null,
@@ -234,19 +220,17 @@ function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
 
 /**
  * 프론트 입력 → 서버 event body. 시간 앵커(startsAt/endsAt/eventTimeKind)는 항상 전송한다.
- * 반복 규칙은 생성 때만(`includeRepeat`) — 서버가 회차 row로 materialize. 수정에선 보내지 않는다
- * (반복주기 변경 미지원, 적용 범위는 ?scope= 쿼리로).
+ * 반복 규칙도 있으면 전송 — 생성은 마스터 규칙, 수정은 scope=all/following에서 규칙 변경에 사용
+ * (this/단일은 서버가 규칙을 무시). 적용 범위는 ?scope=, 회차는 ?occurrenceDate= 쿼리로.
  */
-function toEventRequestBody(
-  input: CalendarEventInput,
-  includeRepeat: boolean
-): EventRequestBody {
+function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
   // holiday는 서버 이벤트 종류가 아니다(public.holiday). 사용자는 counseling/personal만 생성.
   const kind: ServerEventKind =
     input.kind === 'holiday' ? 'PERSONAL' : KIND_TO_SERVER[input.kind];
   const body: EventRequestBody = {
     kind,
     title: input.title,
+    colorKey: input.colorKey.toUpperCase() as ServerColorKey,
     clientId: input.clientId ?? null,
     categoryId: input.categoryId ?? null,
     // 상담 방식: 상담 일정에서만 값, 그 외 null(서버가 개인+방식 조합을 400으로 막음).
@@ -257,8 +241,7 @@ function toEventRequestBody(
     endsAt: input.end ?? null,
     eventTimeKind: input.eventTimeKind ?? 'TIMED',
   };
-  // 생성 시 반복이 있으면 규칙 전송(종료조건 없으면 서버가 400). 단일·수정엔 미전송.
-  const repeat = includeRepeat ? (input.repeat ?? null) : null;
+  const repeat = input.repeat ?? null;
   if (repeat) {
     body.repeatCycle = REPEAT_TO_SERVER[repeat.cycle];
     body.repeatInterval = repeat.interval;
@@ -266,6 +249,18 @@ function toEventRequestBody(
     body.repeatUntil = repeat.until;
   }
   return body;
+}
+
+/** scope(+occurrenceDate) 쿼리스트링. */
+function scopeQuery(
+  scope: CalendarEventScope,
+  occurrenceDate?: string | null
+): string {
+  const qs = new URLSearchParams({ scope });
+  if (occurrenceDate) {
+    qs.set('occurrenceDate', occurrenceDate);
+  }
+  return qs.toString();
 }
 
 export const realCalendarDataSource: CalendarDataSource = {
@@ -279,12 +274,8 @@ export const realCalendarDataSource: CalendarDataSource = {
       `${CALENDAR_ROUTES.base}?${qs}`
     );
 
-    const categoryColor = new Map<string, CalendarColorKey>(
-      data.category.map((c) => [c.id, COLOR_FROM_SERVER[c.colorKey] ?? 'grey'])
-    );
-
     return [
-      ...data.event.map((e) => toCalendarEvent(e, categoryColor)),
+      ...data.event.map(toCalendarEvent),
       ...data.holiday.map(holidayToCalendarEvent),
     ];
   },
@@ -304,9 +295,9 @@ export const realCalendarDataSource: CalendarDataSource = {
   async createEvent(input: CalendarEventInput): Promise<CalendarEvent> {
     const dto = await serverRequest<CalendarEventDto>(CALENDAR_ROUTES.events, {
       method: 'POST',
-      body: toEventRequestBody(input, true),
+      body: toEventRequestBody(input),
     });
-    return toCalendarEvent(dto, new Map());
+    return toCalendarEvent(dto);
   },
 
   async updateEvent(
@@ -316,22 +307,24 @@ export const realCalendarDataSource: CalendarDataSource = {
   ): Promise<CalendarEvent> {
     const scope = options?.scope ?? 'this';
     const dto = await serverRequest<CalendarEventDto>(
-      `${CALENDAR_ROUTES.event(id)}?scope=${scope}`,
+      `${CALENDAR_ROUTES.event(id)}?${scopeQuery(scope, options?.occurrenceDate)}`,
       {
         method: 'PATCH',
-        body: toEventRequestBody(input, false),
+        body: toEventRequestBody(input),
       }
     );
-    return toCalendarEvent(dto, new Map());
+    return toCalendarEvent(dto);
   },
 
   async deleteEvent(
     id: string,
-    scope: CalendarEventScope = 'this'
+    scope: CalendarEventScope = 'this',
+    occurrenceDate?: string | null
   ): Promise<void> {
-    await serverRequest<void>(`${CALENDAR_ROUTES.event(id)}?scope=${scope}`, {
-      method: 'DELETE',
-    });
+    await serverRequest<void>(
+      `${CALENDAR_ROUTES.event(id)}?${scopeQuery(scope, occurrenceDate)}`,
+      { method: 'DELETE' }
+    );
   },
 
   async createCategory(
@@ -339,7 +332,6 @@ export const realCalendarDataSource: CalendarDataSource = {
   ): Promise<CalendarCategory> {
     const body: CategoryRequestBody = {
       name: input.name,
-      colorKey: COLOR_TO_SERVER[input.colorKey],
     };
     const dto = await serverRequest<CalendarCategoryDto>(
       CALENDAR_ROUTES.categories,
@@ -354,7 +346,6 @@ export const realCalendarDataSource: CalendarDataSource = {
   ): Promise<CalendarCategory> {
     const body: CategoryRequestBody = {
       name: input.name,
-      colorKey: COLOR_TO_SERVER[input.colorKey],
     };
     const dto = await serverRequest<CalendarCategoryDto>(
       CALENDAR_ROUTES.category(id),

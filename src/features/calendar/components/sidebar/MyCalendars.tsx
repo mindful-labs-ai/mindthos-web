@@ -4,8 +4,7 @@ import { Plus } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 
-import { CALENDAR_COLOR_STYLES, CALENDAR_PALETTE } from '../../constants';
-import type { CalendarCategory, CalendarColorKey } from '../../types';
+import type { CalendarCategory } from '../../types';
 
 import { CategorySettingsMenu } from './CategorySettingsMenu';
 import { CategoryToggleItem } from './CategoryToggleItem';
@@ -14,36 +13,28 @@ interface MyCalendarsProps {
   categories: CalendarCategory[];
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
-  /** 카테고리 생성(이름 + 색) */
-  onCreateCategory?: (name: string, colorKey: CalendarColorKey) => void;
-  /** 카테고리 색상 변경(설정 팝오버) */
-  onChangeCategoryColor?: (
-    categoryId: string,
-    colorKey: CalendarColorKey
-  ) => void;
-  /** 카테고리 삭제(설정 팝오버, 소속 일정 함께 삭제) */
+  /** 카테고리 생성(이름만 — 카테고리는 색을 갖지 않음) */
+  onCreateCategory?: (name: string) => void;
+  /** 카테고리 삭제(설정 메뉴, 소속 일정 함께 삭제) */
   onDeleteCategory?: (categoryId: string) => void;
 }
 
-/** '나의 캘린더' — 카테고리 목록 + 생성(+) + 항목별 설정(색상/삭제) */
+/** '나의 캘린더' — 카테고리 목록 + 생성(+) + 항목별 설정(삭제) */
 export function MyCalendars({
   categories,
   categoryVisible,
   onToggleCategory,
   onCreateCategory,
-  onChangeCategoryColor,
   onDeleteCategory,
 }: MyCalendarsProps) {
   const [creating, setCreating] = React.useState(false);
   const [newName, setNewName] = React.useState('');
-  const [newColor, setNewColor] = React.useState<CalendarColorKey>('green');
   // 생성 제출 중복 방지 — 첫 클릭 후 폼이 닫힐 때까지 추가 버튼 비활성.
   const [submitting, setSubmitting] = React.useState(false);
 
   const resetForm = () => {
     setCreating(false);
     setNewName('');
-    setNewColor('green');
     setSubmitting(false);
   };
 
@@ -52,7 +43,7 @@ export function MyCalendars({
     const name = newName.trim();
     if (!name) return;
     setSubmitting(true);
-    onCreateCategory?.(name, newColor);
+    onCreateCategory?.(name);
     resetForm();
   };
 
@@ -70,7 +61,7 @@ export function MyCalendars({
         </button>
       </div>
 
-      {/* 카테고리 생성 폼 — + 버튼으로 토글. 이름 + 색 선택 후 추가. */}
+      {/* 카테고리 생성 폼 — + 버튼으로 토글. 이름만 입력(색 없음). */}
       {creating && (
         <div className="mt-4 rounded-md border border-grey-40 p-3">
           <input
@@ -80,22 +71,6 @@ export function MyCalendars({
             placeholder="카테고리 이름"
             className="h-9 w-full rounded-md border border-grey-40 bg-grey-10 px-3 text-sm text-grey-100 placeholder:text-grey-60 focus:outline-none"
           />
-          <div className="mt-3 grid grid-cols-8 gap-1.5">
-            {CALENDAR_PALETTE.map((c) => (
-              <button
-                key={c}
-                type="button"
-                aria-label={c}
-                aria-pressed={c === newColor}
-                onClick={() => setNewColor(c)}
-                className={cn(
-                  'h-5 w-5 rounded-full',
-                  CALENDAR_COLOR_STYLES[c].swatchBg,
-                  c === newColor && 'ring-2 ring-grey-100 ring-offset-1'
-                )}
-              />
-            ))}
-          </div>
           <div className="mt-3 flex gap-2">
             <button
               type="button"
@@ -127,19 +102,14 @@ export function MyCalendars({
             <div className="min-w-0 flex-1">
               <CategoryToggleItem
                 label={category.name}
-                colorKey={category.colorKey}
                 checked={categoryVisible[category.id] ?? true}
                 onToggle={() => onToggleCategory(category.id)}
               />
             </div>
-            {(onChangeCategoryColor || onDeleteCategory) && (
+            {onDeleteCategory && (
               <CategorySettingsMenu
                 categoryName={category.name}
-                colorKey={category.colorKey}
-                onChangeColor={(colorKey) =>
-                  onChangeCategoryColor?.(category.id, colorKey)
-                }
-                onDelete={() => onDeleteCategory?.(category.id)}
+                onDelete={() => onDeleteCategory(category.id)}
               />
             )}
           </div>

@@ -78,16 +78,27 @@ export interface CalendarEvent {
   counselMethod?: CounselMethod | null;
   /**
    * 반복(시리즈) 묶음 id. null/없음 = 단일 일정. 같은 값 = 한 반복의 회차들.
-   * 반복 여부·편집/삭제 scope 노출은 이 값으로 판단한다(서버가 회차별 row로 저장).
+   * 반복 여부·편집/삭제 scope 노출은 이 값으로 판단한다.
    */
   seriesId?: string | null;
+  /**
+   * 이 행이 차지하는 회차 날짜(YYYY-MM-DD, UTC). 마스터 인스턴스=그 회차, override=대체 회차, 단일=없음.
+   * "이 회차/이후" scope 수정·삭제 시 서버로 보내는 키.
+   */
+  occurrenceDate?: string | null;
+  /**
+   * 반복 규칙(마스터 인스턴스만 — 편집 시 규칙 표시/수정용). override/단일은 없음.
+   * scope=all/following 수정에 사용. seriesId로 반복 여부를 판단하므로 표시는 seriesId 우선.
+   */
+  repeat?: CalendarRepeatRule | null;
+  /** 임시 미리보기(작성 중) 더미 일정 — 저장 전 어디에 추가될지 표시용. 비클릭. */
+  isDraft?: boolean;
 }
 
-/** '나의 캘린더' 카테고리 */
+/** '나의 캘린더' 카테고리 — 색 없음(표시 on/off 그룹핑 전용). 색은 일정 단위로 보관. */
 export interface CalendarCategory {
   id: string;
   name: string;
-  colorKey: CalendarColorKey;
   /** 외부 연동 출처(구글/네이버/애플). null/없음 = 마음토스 자체 카테고리 */
   sourceProvider?: 'google' | 'naver' | 'apple' | null;
 }
@@ -112,6 +123,8 @@ export interface CalendarEventInput {
 /** 일정 추가/편집 패널의 입력 draft — 패널이 onSubmit으로 넘기는 폼 값. */
 export interface AddEventDraft {
   kind: CalendarEventKind;
+  /** 표시 색상 — 기본은 kind 기본색, 사용자가 색상 선택기로 변경 가능 */
+  colorKey: CalendarColorKey;
   title: string;
   /** 시간 종류 — ALL_DAY면 시간 대신 그 날 전체. */
   eventTimeKind: CalendarEventTimeKind;
@@ -127,8 +140,7 @@ export interface AddEventDraft {
   repeat: CalendarRepeatRule | null;
 }
 
-/** 카테고리 생성 입력 (후속 Phase) */
+/** 카테고리 생성 입력 (후속 Phase) — 색 없음(이름만). */
 export interface CalendarCategoryInput {
   name: string;
-  colorKey: CalendarColorKey;
 }
