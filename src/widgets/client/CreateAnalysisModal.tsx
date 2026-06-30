@@ -258,7 +258,7 @@ export const CreateAnalysisModal: React.FC<CreateAnalysisModalProps> = ({
             }}
             placeholder="선택"
             disabled={aiSupervisionItems.length === 0}
-            maxDropdownHeight={120}
+            maxDropdownHeight={240}
             className="truncate"
           />
         </div>
