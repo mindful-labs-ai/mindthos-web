@@ -226,6 +226,8 @@ const HomeContainer = () => {
   const hasSession = sessionItems.length > 0;
   const hasMoreSessions = sessionsWithTranscribes.length > 5;
 
+  // 워크숍 이벤트 배너 — 추가 기획 전까지 유저에게 노출하지 않는다(QA). 재개 시 true로.
+  const SHOW_HOME_EVENT_BANNER: boolean = false;
   const onboardingSection = isChecked ? (
     <div className="max-w-[1200px]">
       {shouldShowOnboarding ? (
@@ -236,10 +238,10 @@ const HomeContainer = () => {
           hasSession={hasSession}
           onCompleteQuest3={handleCompleteQuest3}
         />
-      ) : (
+      ) : SHOW_HOME_EVENT_BANNER ? (
         // 웰컴 배너 대체 — 이벤트 배너 띠 (닫음 상태는 위젯이 localStorage로 관리)
         <HomeEventBanner />
-      )}
+      ) : null}
     </div>
   ) : null;
 
