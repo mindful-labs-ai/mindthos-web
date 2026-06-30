@@ -25,7 +25,7 @@ export const NOTE_FORM_CATEGORY_ORDER: NoteFormCategory[] = [
  * 기본값(기관 및 센터 제출용)으로 분류된다. 새 사례개념화 노트 추가 시 id를 더한다.
  */
 export const CASE_CONCEPTUALIZATION_TEMPLATE_IDS = new Set<number>([
-  1, 2, 3, 5, 7, 8, 11, 12, 18, 19, 21, 22, 25, 26, 27, 28, 29,
+  1, 2, 3, 5, 7, 8, 11, 12, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29,
 ]);
 
 /** 템플릿 id의 카테고리 (사례개념화 목록에 없으면 기관 및 센터 제출용). */
