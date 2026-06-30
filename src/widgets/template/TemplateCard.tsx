@@ -63,7 +63,8 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
       <h3 className="line-clamp-1 pr-8 text-l font-headline text-grey-100">
         {template.title}
       </h3>
-      <p className="mt-4 line-clamp-3 text-m font-medium text-grey-100">
+      {/* 설명 — 생략(...) 대신 스크롤로 전체 내용을 볼 수 있게. 하단 배지(absolute)와 겹치지 않도록 높이 제한. */}
+      <p className="mt-4 max-h-[64px] overflow-y-auto whitespace-pre-line pr-1 text-m font-medium text-grey-100">
         {template.description}
       </p>
 
