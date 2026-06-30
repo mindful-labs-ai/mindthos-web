@@ -48,6 +48,7 @@ interface MobileCalendarViewProps {
   onConnectProvider: (provider: CalendarProvider) => void;
   onClosePanel: () => void;
   onSelectDate: (day: Dayjs) => void;
+  onTimeChange: (time: { start: string; end: string }) => void;
   onSubmitEvent: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
   onDeleteEvent?: (mode: CalendarEventScope) => void;
 }
@@ -79,6 +80,7 @@ export function MobileCalendarView({
   onConnectProvider,
   onClosePanel,
   onSelectDate,
+  onTimeChange,
   onSubmitEvent,
   onDeleteEvent,
 }: MobileCalendarViewProps) {
@@ -162,6 +164,7 @@ export function MobileCalendarView({
           initialEndTime={addEventTime.end}
           editingEvent={editingEvent}
           onSelectDate={onSelectDate}
+          onTimeChange={onTimeChange}
           onClose={onClosePanel}
           onSubmit={onSubmitEvent}
           onDelete={onDeleteEvent}

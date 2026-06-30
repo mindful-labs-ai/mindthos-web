@@ -40,6 +40,8 @@ export interface CalendarState {
   addEventKind: CalendarEventKind;
   /** 일정 추가 패널 초기 시간 (주간 드래그/기본값) */
   addEventTime: { start: string; end: string };
+  /** 패널에서 시간 수정 시 호출 — 캘린더 더미/선택 미리보기를 실시간 동기화 */
+  setAddEventTime: (time: { start: string; end: string }) => void;
   openAddEvent: (
     kind: CalendarEventKind,
     date?: Dayjs,
@@ -97,7 +99,10 @@ export function useCalendarState(): CalendarState {
   }, []);
 
   const toggleCategory = React.useCallback((categoryId: string) => {
-    setCategoryVisible((prev) => ({ ...prev, [categoryId]: !prev[categoryId] }));
+    setCategoryVisible((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }));
   }, []);
 
   /** 카테고리 목록 로드 시 기본 표시(true)로 등록 */
@@ -158,6 +163,7 @@ export function useCalendarState(): CalendarState {
     sidePanel,
     addEventKind,
     addEventTime,
+    setAddEventTime,
     openAddEvent,
     openAddCalendar,
     closePanel,

@@ -12,6 +12,7 @@ import {
   calendarImportAdapter,
   type CalendarProvider,
 } from '../adapters';
+import { KIND_DEFAULT_COLOR } from '../constants';
 import {
   useCalendarCategories,
   useCalendarEvents,
@@ -19,15 +20,11 @@ import {
 import { useCalendarState } from '../hooks/useCalendarState';
 import type {
   AddEventDraft,
-  CalendarColorKey,
   CalendarEvent,
   CalendarEventScope,
 } from '../types';
 import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
-import {
-  applyScopedDeleteOptimistic,
-  buildCalendarEventInput,
-} from '../utils/eventMutations';
+import { buildCalendarEventInput } from '../utils/eventMutations';
 
 import { CalendarView } from './CalendarView';
 import { MobileCalendarView } from './MobileCalendarView';
@@ -56,6 +53,7 @@ export default function CalendarContainer() {
     sidePanel,
     addEventKind,
     addEventTime,
+    setAddEventTime,
     editingEvent,
     openEditEvent,
     openSeq,
@@ -83,6 +81,39 @@ export default function CalendarContainer() {
           (!e.categoryId || categoryVisible[e.categoryId] !== false)
       ),
     [events, kindVisible, categoryVisible]
+  );
+
+  // 작성 중(새 일정 추가) 미리보기 더미 일정 — 선택 날짜·시간에 임시 칩/블록을 띄워 어디에 추가될지 보여준다.
+  // 월간(칩)·주간(시간 블록) 공통 표시. 주간은 더미 블록이 보이면 기존 선택 박스는 숨긴다.
+  const draftEvent = React.useMemo<CalendarEvent | null>(() => {
+    if (sidePanel !== 'addEvent' || editingEvent || !selectedDate) return null;
+    const [sh, sm] = addEventTime.start.split(':').map(Number);
+    const [eh, em] = addEventTime.end.split(':').map(Number);
+    return {
+      id: '__draft__',
+      title: '',
+      kind: addEventKind,
+      colorKey: KIND_DEFAULT_COLOR[addEventKind],
+      start: selectedDate
+        .hour(sh)
+        .minute(sm)
+        .second(0)
+        .millisecond(0)
+        .toISOString(),
+      end: selectedDate
+        .hour(eh)
+        .minute(em)
+        .second(0)
+        .millisecond(0)
+        .toISOString(),
+      eventTimeKind: 'TIMED',
+      isDraft: true,
+    };
+  }, [sidePanel, editingEvent, selectedDate, addEventTime, addEventKind]);
+
+  const eventsForView = React.useMemo(
+    () => (draftEvent ? [...visibleEvents, draftEvent] : visibleEvents),
+    [visibleEvents, draftEvent]
   );
 
   // 단일 클릭(구글 캘린더식 — 클릭으로 사이드패널 활성화):
@@ -120,13 +151,15 @@ export default function CalendarContainer() {
   const handleSubmitEvent = React.useCallback(
     async (draft: AddEventDraft, scope?: CalendarEventScope) => {
       const date = selectedDate ?? current;
-      const input = buildCalendarEventInput(draft, date, editingEvent);
+      const input = buildCalendarEventInput(draft, date);
 
       try {
         if (editingEvent) {
-          // 편집 — 반복(시리즈)이면 scope(this/following/all)로 적용 범위. 단일은 scope 무시.
+          // 편집 — 반복(시리즈)이면 scope(this/following/all). this/following은 회차(occurrenceDate)로
+          // 어느 회차인지 서버에 알린다(EXDATE+override / 분할). 단일은 scope 무시.
           await calendarDataSource.updateEvent?.(editingEvent.id, input, {
             scope,
+            occurrenceDate: editingEvent.occurrenceDate ?? null,
           });
         } else {
           await calendarDataSource.createEvent?.(input);
@@ -155,28 +188,19 @@ export default function CalendarContainer() {
     [selectedDate, current, editingEvent, queryClient, closePanel, toast]
   );
 
-  // 일정 삭제(편집 모드) — 낙관적 제거(반응성) 후 scope DELETE. 반복은 this/following/all.
-  // 회차가 실제 row라 scope에 맞춰 캐시에서 제거하고, 실패 시 스냅샷 롤백.
+  // 일정 삭제(편집 모드) — scope DELETE 후 재조회. 반복은 this(EXDATE+override)/following(분할)/all.
+  // EXDATE/override/분할은 캐시 재구성이 복잡해 낙관적 제거 대신 invalidate로 서버 상태를 다시 읽는다.
   const handleDeleteEvent = React.useCallback(
     async (scope: CalendarEventScope) => {
       if (!editingEvent) return;
       const target = editingEvent;
-
-      // 진행 중인 listEvents refetch를 멈춰 낙관적 제거가 곧바로 되살아나지 않게 한다.
-      await queryClient.cancelQueries({ queryKey: ['calendar', 'events'] });
-      const snapshots = queryClient.getQueriesData<CalendarEvent[]>({
-        queryKey: ['calendar', 'events'],
-      });
-
-      // 낙관적 제거 — scope에 맞춰 캐시에서 즉시 빼고 패널을 닫는다.
-      queryClient.setQueriesData<CalendarEvent[]>(
-        { queryKey: ['calendar', 'events'] },
-        (old) => applyScopedDeleteOptimistic(old, target, scope)
-      );
       closePanel();
-
       try {
-        await calendarDataSource.deleteEvent?.(target.id, scope);
+        await calendarDataSource.deleteEvent?.(
+          target.id,
+          scope,
+          target.occurrenceDate ?? null
+        );
         await queryClient.invalidateQueries({
           queryKey: ['calendar', 'events'],
         });
@@ -185,8 +209,6 @@ export default function CalendarContainer() {
           recurring: !!target.seriesId,
         });
       } catch {
-        // 롤백 — 낙관적으로 제거한 캐시를 원복.
-        snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
         toast({
           title: '일정 삭제 실패',
           description: '잠시 후 다시 시도해 주세요.',
@@ -194,28 +216,6 @@ export default function CalendarContainer() {
       }
     },
     [editingEvent, queryClient, closePanel, toast]
-  );
-
-  // 카테고리 색상 변경(설정 팝오버) — 이름 유지 + 색만 갱신. 이벤트 색은 카테고리에서 파생되므로
-  // 캘린더 전체를 무효화해 색이 즉시 반영되게 한다.
-  const handleChangeCategoryColor = React.useCallback(
-    async (categoryId: string, colorKey: CalendarColorKey) => {
-      const category = categories.find((c) => c.id === categoryId);
-      if (!category) return;
-      try {
-        await calendarDataSource.updateCategory?.(categoryId, {
-          name: category.name,
-          colorKey,
-        });
-        await queryClient.invalidateQueries({ queryKey: ['calendar'] });
-      } catch {
-        toast({
-          title: '카테고리 변경 실패',
-          description: '잠시 후 다시 시도해 주세요.',
-        });
-      }
-    },
-    [categories, queryClient, toast]
   );
 
   // 카테고리 삭제(설정 팝오버) — 소속 일정도 함께 삭제(서버 CASCADE). 캘린더 전체 무효화.
@@ -234,11 +234,11 @@ export default function CalendarContainer() {
     [queryClient, toast]
   );
 
-  // 카테고리 생성(+ 버튼) — 이름 + 색. 생성 후 캘린더 무효화로 목록 갱신.
+  // 카테고리 생성(+ 버튼) — 이름만(색 없음). 생성 후 캘린더 무효화로 목록 갱신.
   const handleCreateCategory = React.useCallback(
-    async (name: string, colorKey: CalendarColorKey) => {
+    async (name: string) => {
       try {
-        await calendarDataSource.createCategory?.({ name, colorKey });
+        await calendarDataSource.createCategory?.({ name });
         await queryClient.invalidateQueries({ queryKey: ['calendar'] });
       } catch {
         toast({
@@ -279,7 +279,7 @@ export default function CalendarContainer() {
       <MobileCalendarView
         current={current}
         viewMode={viewMode}
-        events={visibleEvents}
+        events={eventsForView}
         categories={categories}
         kindVisible={kindVisible}
         categoryVisible={categoryVisible}
@@ -299,6 +299,7 @@ export default function CalendarContainer() {
         onConnectProvider={handleConnectProvider}
         onClosePanel={closePanel}
         onSelectDate={setSelectedDate}
+        onTimeChange={setAddEventTime}
         onSubmitEvent={handleSubmitEvent}
         onDeleteEvent={handleDeleteEvent}
       />
@@ -309,7 +310,7 @@ export default function CalendarContainer() {
     <CalendarView
       current={current}
       viewMode={viewMode}
-      events={visibleEvents}
+      events={eventsForView}
       categories={categories}
       kindVisible={kindVisible}
       categoryVisible={categoryVisible}
@@ -318,7 +319,6 @@ export default function CalendarContainer() {
       onViewModeChange={setViewMode}
       onToggleKind={toggleKind}
       onToggleCategory={toggleCategory}
-      onChangeCategoryColor={handleChangeCategoryColor}
       onDeleteCategory={handleDeleteCategory}
       onCreateCategory={handleCreateCategory}
       onPrevMonth={() => setCurrent(current.subtract(1, 'month'))}
@@ -331,6 +331,7 @@ export default function CalendarContainer() {
       selectedDate={selectedDate}
       onDateClick={handleDateClick}
       onSelectDate={setSelectedDate}
+      onTimeChange={setAddEventTime}
       onDateDoubleClick={handleDateDoubleClick}
       onEventClick={openEditEvent}
       onCreateRange={handleWeekRange}

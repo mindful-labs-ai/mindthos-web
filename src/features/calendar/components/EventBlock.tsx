@@ -27,6 +27,9 @@ export function EventBlock({
   const bgClass = selected ? style.selectedBg : style.chipBg;
   const titleColor = selected ? 'text-white' : style.chipTitle;
   const timeColor = selected ? 'text-white' : style.chipTime;
+  // 작성 중 더미 블록(미리보기) — 점선·반투명·비클릭, 제목 없으면 '새 일정'.
+  const isDraft = !!event.isDraft;
+  const displayTitle = event.title || (isDraft ? '새 일정' : '');
 
   // 드래그 생성과 충돌하지 않도록 mousedown 전파 차단, 클릭 시 편집
   const handleMouseDown = (e: React.MouseEvent) => e.stopPropagation();
@@ -56,6 +59,32 @@ export function EventBlock({
   const top = (startMin / 60) * hourHeight;
   const height = Math.max(((endMin - startMin) / 60) * hourHeight, 22);
 
+  const inner = (
+    <div className="flex items-center justify-between gap-1">
+      <span className={cn('truncate text-xs font-medium', titleColor)}>
+        {displayTitle}
+      </span>
+      <span className={cn('shrink-0 text-xs font-medium', timeColor)}>
+        {formatEventTime(event.start)}
+      </span>
+    </div>
+  );
+
+  // 더미 블록 — 비클릭(셀로 통과), 점선 테두리로 미리보기 표시.
+  if (isDraft) {
+    return (
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-x-0 overflow-hidden rounded-sm border border-dashed border-green-80 px-2 py-1 text-left opacity-90',
+          bgClass
+        )}
+        style={{ top, height }}
+      >
+        {inner}
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -67,14 +96,7 @@ export function EventBlock({
       )}
       style={{ top, height }}
     >
-      <div className="flex items-center justify-between gap-1">
-        <span className={cn('truncate text-xs font-medium', titleColor)}>
-          {event.title}
-        </span>
-        <span className={cn('shrink-0 text-xs font-medium', timeColor)}>
-          {formatEventTime(event.start)}
-        </span>
-      </div>
+      {inner}
     </button>
   );
 }

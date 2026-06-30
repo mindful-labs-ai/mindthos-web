@@ -31,7 +31,10 @@ export function EventChip({
 }: EventChipProps) {
   const style = CALENDAR_COLOR_STYLES[event.colorKey];
   const centered = event.eventTimeKind === 'ALL_DAY';
-  const readOnly = event.kind === 'holiday';
+  // 작성 중 더미 칩(미리보기)·공휴일은 클릭 불가.
+  const isDraft = !!event.isDraft;
+  const readOnly = event.kind === 'holiday' || isDraft;
+  const displayTitle = event.title || (isDraft ? '새 일정' : '');
   // 선택(편집 중) 강조: 옅은 칩 배경 → 시간 텍스트 색(진한 솔리드) 배경 + 흰 글자
   const bgClass = selected ? style.selectedBg : style.chipBg;
   const titleColor = selected ? 'text-white' : style.chipTitle;
@@ -49,6 +52,7 @@ export function EventChip({
           bgClass,
           centered ? 'justify-center' : 'justify-between gap-1'
         ),
+    isDraft && 'border border-dashed border-green-80 opacity-90',
     extraClassName
   );
 
@@ -60,9 +64,9 @@ export function EventChip({
           compact ? 'text-[10px] leading-none' : 'text-xs',
           titleColor
         )}
-        title={event.title}
+        title={displayTitle}
       >
-        {event.title}
+        {displayTitle}
       </span>
       {!centered && !compact && (
         <span className={cn('shrink-0 text-xs font-medium', timeColor)}>

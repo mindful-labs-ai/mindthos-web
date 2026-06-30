@@ -45,23 +45,22 @@ const TOP_PAD = 12; // 12 AM 라벨/선 잘림 방지 여백
 const BOTTOM_PAD = 12; // 마지막 시간 라벨/선 잘림 방지 여백
 const GUTTER_PX = 66; // 시간 거터 너비
 const LINE_LEFT_PX = 61; // 수평선이 거터로 약 5px 침범 → 시간 라벨과 밀접
-const SNAP_MIN = 30; // 드래그 스냅 단위(분)
+const CELL_MIN = 60; // 한 칸(시간 셀) = 1시간. 클릭=한 칸, 드래그=셀 단위 확장.
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const GRID_HEIGHT = HOURS.length * HOUR_HEIGHT;
 // 12 AM(0) ~ 24:00 까지 선 (HOURS + 1개)
 const HOUR_LINES = Array.from({ length: HOURS.length + 1 }, (_, i) => i);
 
-/** 컬럼 내 y좌표(px) → 스냅된 분 */
-function yToSnappedMin(clientY: number, columnTop: number): number {
-  const raw = ((clientY - columnTop) / HOUR_HEIGHT) * 60;
-  const clamped = Math.max(0, Math.min(24 * 60, raw));
-  return Math.round(clamped / SNAP_MIN) * SNAP_MIN;
+/** 컬럼 내 y좌표(px) → 가리키는 시간 셀의 시작 분(정시, 0~23시 = 0~1380). */
+function yToCellStartMin(clientY: number, columnTop: number): number {
+  const hour = Math.floor((clientY - columnTop) / HOUR_HEIGHT);
+  return Math.max(0, Math.min(23, hour)) * 60;
 }
 
-/** 종일 제외, 해당 날짜 일정의 [시작분, 종료분) 구간 목록 */
+/** 종일·더미(작성 중) 제외, 해당 날짜 일정의 [시작분, 종료분) 구간 목록 */
 function busyIntervals(events: CalendarEvent[]): [number, number][] {
   return events
-    .filter((e) => e.eventTimeKind !== 'ALL_DAY')
+    .filter((e) => e.eventTimeKind !== 'ALL_DAY' && !e.isDraft)
     .map((e) => {
       const start = minutesFromMidnight(e.start);
       const end = e.end ? minutesFromMidnight(e.end) : start + 60;
@@ -98,8 +97,18 @@ function clampDragEnd(
 
 interface DragState {
   day: Dayjs;
+  /** 드래그 시작(앵커) 셀의 시작 분(정시). 위/아래 확장 기준. */
+  anchorMin: number;
   startMin: number;
   endMin: number;
+  /** 시작 시점 해당 날짜의 일정 구간 — 종료점 clamp용 */
+  busy: [number, number][];
+}
+
+/** 마우스가 올라간 빈 시간 셀(영역 하이라이트용). */
+interface HoverCell {
+  dayKey: string;
+  startMin: number;
 }
 
 /**
@@ -107,7 +116,7 @@ interface DragState {
  *
  * - 헤더와 본문을 같은 스크롤 컨테이너에 넣고 헤더를 sticky로 고정 → 컬럼 경계선 정렬.
  * - 수평 시간선은 절대 배치로 12 AM ~ 24:00, 거터로 약간 침범시켜 라벨과 밀접.
- * - 컬럼을 세로로 드래그하면 시간 범위가 선택되고, 놓으면 그 시간으로 일정 추가 패널이 열림.
+ * - 컬럼을 클릭하면 기본 한 칸이, 세로로 드래그하면 그 범위가 선택되며 일정 추가 패널이 열림.
  */
 export function WeekGrid({
   current,
@@ -134,6 +143,8 @@ export function WeekGrid({
 
   const [drag, setDrag] = React.useState<DragState | null>(null);
   const dragRef = React.useRef<DragState | null>(null);
+  // 마우스가 올라간 빈 시간 셀 — 어느 영역을 누르게 되는지 하이라이트.
+  const [hoverCell, setHoverCell] = React.useState<HoverCell | null>(null);
 
   // 최신 drag 값을 ref에 동기화 (window mouseup 핸들러에서 참조)
   React.useEffect(() => {
@@ -148,7 +159,8 @@ export function WeekGrid({
       const start = Math.min(d.startMin, d.endMin);
       const end = Math.max(d.startMin, d.endMin);
       setDrag(null);
-      if (end - start >= SNAP_MIN) onCreateRange?.(d.day, start, end);
+      // 클릭=한 칸 / 드래그=여러 칸. 두 경우 모두 셀 범위가 그대로 선택된다.
+      if (end > start) onCreateRange?.(d.day, start, end);
     };
     window.addEventListener('mouseup', onUp);
     return () => window.removeEventListener('mouseup', onUp);
@@ -285,7 +297,7 @@ export function WeekGrid({
               ))}
             </div>
 
-            {/* 요일 컬럼 (드래그로 시간 범위 선택 가능) */}
+            {/* 요일 컬럼 (클릭=기본 한 칸 / 드래그=범위 선택) */}
             {days.map((day) => {
               const dayEvents = events.filter((e) =>
                 isSameDay(dayjs(e.start), day)
@@ -302,26 +314,65 @@ export function WeekGrid({
                   onMouseDown={(e) => {
                     if (e.button !== 0) return;
                     const top = e.currentTarget.getBoundingClientRect().top;
-                    const min = yToSnappedMin(e.clientY, top);
-                    // 기존 일정 위에서는 드래그 시작하지 않음
-                    if (isInsideBusy(min, busy)) return;
-                    setDrag({ day, startMin: min, endMin: min });
-                  }}
-                  onMouseMove={(e) => {
-                    if (
-                      !dragRef.current ||
-                      !isSameDay(dragRef.current.day, day)
-                    )
-                      return;
-                    const top = e.currentTarget.getBoundingClientRect().top;
-                    const raw = yToSnappedMin(e.clientY, top);
-                    // 기존 일정에 닿지 않도록 종료점 제한
-                    const min = clampDragEnd(
-                      dragRef.current.startMin,
-                      raw,
+                    const cellStart = yToCellStartMin(e.clientY, top);
+                    // 기존 일정 위 셀에서는 드래그/클릭 시작하지 않음
+                    if (isInsideBusy(cellStart, busy)) return;
+                    // 클릭한 한 칸 — 종료점은 다음 일정에 닿지 않게 clamp
+                    const cellEnd = clampDragEnd(
+                      cellStart,
+                      cellStart + CELL_MIN,
                       busy
                     );
-                    setDrag((d) => (d ? { ...d, endMin: min } : d));
+                    setHoverCell(null);
+                    setDrag({
+                      day,
+                      anchorMin: cellStart,
+                      startMin: cellStart,
+                      endMin: cellEnd,
+                      busy,
+                    });
+                  }}
+                  onMouseMove={(e) => {
+                    const top = e.currentTarget.getBoundingClientRect().top;
+                    const cellStart = yToCellStartMin(e.clientY, top);
+                    // 드래그 중 — 앵커 셀 기준 위/아래로 셀 단위 확장
+                    if (
+                      dragRef.current &&
+                      isSameDay(dragRef.current.day, day)
+                    ) {
+                      const anchor = dragRef.current.anchorMin;
+                      const next =
+                        cellStart >= anchor
+                          ? {
+                              startMin: anchor,
+                              endMin: clampDragEnd(
+                                anchor,
+                                cellStart + CELL_MIN,
+                                busy
+                              ),
+                            }
+                          : {
+                              startMin: clampDragEnd(anchor, cellStart, busy),
+                              endMin: anchor + CELL_MIN,
+                            };
+                      setDrag((d) => (d ? { ...d, ...next } : d));
+                      return;
+                    }
+                    // 비드래그 — 빈 셀이면 영역 하이라이트
+                    const key = day.toISOString();
+                    if (isInsideBusy(cellStart, busy)) {
+                      setHoverCell((h) => (h?.dayKey === key ? null : h));
+                    } else {
+                      setHoverCell((h) =>
+                        h?.dayKey === key && h.startMin === cellStart
+                          ? h
+                          : { dayKey: key, startMin: cellStart }
+                      );
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const key = day.toISOString();
+                    setHoverCell((h) => (h?.dayKey === key ? null : h));
                   }}
                 >
                   {dayEvents
@@ -340,6 +391,17 @@ export function WeekGrid({
                       />
                     ))}
 
+                  {/* 호버 셀 하이라이트 — 누르면 선택될 시간 영역(드래그 중엔 선택 박스가 우선) */}
+                  {!dragHere && hoverCell?.dayKey === day.toISOString() && (
+                    <div
+                      className="pointer-events-none absolute inset-x-0.5 rounded-sm bg-[#44ce4b14]"
+                      style={{
+                        top: (hoverCell.startMin / 60) * HOUR_HEIGHT,
+                        height: HOUR_HEIGHT,
+                      }}
+                    />
+                  )}
+
                   {dragHere && (
                     <div
                       className="pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80 bg-[#44ce4b1a]"
@@ -355,8 +417,9 @@ export function WeekGrid({
                   )}
 
                   {/* 일정 추가 패널이 열려 있는 동안 선택 박스 유지(드래그 종료 후에도).
-                      활성 드래그 중이면 그쪽이 우선. 패널의 추가 시간(addEventTime)과 동기화. */}
+                      활성 드래그/더미 블록이 있으면 그쪽이 우선(박스 숨김). addEventTime과 동기화. */}
                   {!dragHere &&
+                    !events.some((e) => e.isDraft) &&
                     showAddSelection &&
                     selectedDate &&
                     isSameDay(selectedDate, day) &&

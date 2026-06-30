@@ -76,8 +76,15 @@ export function MiniCalendar({
           return (
             <div
               key={day.toISOString()}
-              className="flex flex-col items-center justify-start gap-0.5"
+              className="flex flex-col items-center justify-start"
             >
+              {/* 일정 있는 날 점 — 날짜 위에 표시. 자리는 항상 차지(정렬 유지), 없으면 투명 */}
+              <span
+                className={cn(
+                  'h-1 w-1 rounded-full',
+                  hasEvent ? 'bg-green-80' : 'bg-transparent'
+                )}
+              />
               {isToday ? (
                 <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-green-80 text-sm font-emphasize text-white">
                   {day.date()}
@@ -92,13 +99,6 @@ export function MiniCalendar({
                   {day.date()}
                 </span>
               )}
-              {/* 일정 있는 날 점 — 자리는 항상 차지(정렬 유지), 없으면 투명 */}
-              <span
-                className={cn(
-                  'h-1 w-1 rounded-full',
-                  hasEvent ? 'bg-green-80' : 'bg-transparent'
-                )}
-              />
             </div>
           );
         })}

@@ -9,7 +9,6 @@ import type { CalendarSidePanel } from '../hooks/useCalendarState';
 import type {
   AddEventDraft,
   CalendarCategory,
-  CalendarColorKey,
   CalendarEvent,
   CalendarEventKind,
   CalendarEventScope,
@@ -29,12 +28,8 @@ interface CalendarViewProps {
   onViewModeChange: (mode: CalendarViewMode) => void;
   onToggleKind: (kind: CalendarEventKind) => void;
   onToggleCategory: (categoryId: string) => void;
-  onChangeCategoryColor?: (
-    categoryId: string,
-    colorKey: CalendarColorKey
-  ) => void;
   onDeleteCategory?: (categoryId: string) => void;
-  onCreateCategory?: (name: string, colorKey: CalendarColorKey) => void;
+  onCreateCategory?: (name: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   // 사이드 패널 / 일정 추가
@@ -46,6 +41,7 @@ interface CalendarViewProps {
   selectedDate: Dayjs | null;
   onDateClick: (day: Dayjs) => void;
   onSelectDate: (day: Dayjs) => void;
+  onTimeChange: (time: { start: string; end: string }) => void;
   onDateDoubleClick: (day: Dayjs) => void;
   onEventClick: (event: CalendarEvent) => void;
   onCreateRange: (day: Dayjs, startMinutes: number, endMinutes: number) => void;
@@ -74,7 +70,6 @@ export function CalendarView({
   onViewModeChange,
   onToggleKind,
   onToggleCategory,
-  onChangeCategoryColor,
   onDeleteCategory,
   onCreateCategory,
   onPrevMonth,
@@ -87,6 +82,7 @@ export function CalendarView({
   selectedDate,
   onDateClick,
   onSelectDate,
+  onTimeChange,
   onDateDoubleClick,
   onEventClick,
   onCreateRange,
@@ -144,7 +140,6 @@ export function CalendarView({
           categories={categories}
           categoryVisible={categoryVisible}
           onToggleCategory={onToggleCategory}
-          onChangeCategoryColor={onChangeCategoryColor}
           onDeleteCategory={onDeleteCategory}
           onCreateCategory={onCreateCategory}
           onAddEvent={onOpenAddEvent}
@@ -164,6 +159,7 @@ export function CalendarView({
               initialEndTime={addEventTime.end}
               editingEvent={editingEvent}
               onSelectDate={onSelectDate}
+              onTimeChange={onTimeChange}
               onClose={onClosePanel}
               onSubmit={onSubmitEvent}
               onDelete={onDeleteEvent}
