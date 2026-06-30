@@ -7,12 +7,16 @@ import { getDocumentEditRoute, ROUTES } from '@/app/router/constants';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Spinner } from '@/shared/ui';
+import { useAuthStore } from '@/stores/authStore';
 import { useDocumentStore, type MyDocumentKind } from '@/stores/documentStore';
 
+import {
+  DocumentSignatureFooter,
+  koreanDateLabel,
+} from '../components/DocumentSignatureFooter';
 import { FieldContent } from '../components/FieldContent';
 import { parseFields } from '../constants/formField';
-import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
-import type { DocumentContent, FieldAnswer } from '../types';
+import type { DocumentContent } from '../types';
 
 /** 뷰에서 쓰는 통합 표현 — 내 문서(content+kind) / 템플릿(category→kind 파생) 공용 */
 interface ViewDocument {
@@ -27,7 +31,7 @@ interface ViewDocument {
 /**
  * 내 문서 뷰 페이지 — 제작 뷰와 같은 캔버스 레이아웃에 저장된 내용을 렌더링.
  * 동의서=HTML, 질문·응답=항목을 카드 박스 없이 나열 (section 외 질문엔 Q번호).
- * 질문·응답은 화면에서 직접 응답을 채워 출력 가능 — 응답은 저장하지 않는다.
+ * 미리보기는 정적 — 선택/입력 필드에 응답 인터랙션을 두지 않는다(읽기 전용).
  * 출력하기=브라우저 인쇄(.print-area만 인쇄), 편집=제작 뷰 재사용(/edit).
  */
 export function DocumentViewContainer() {
@@ -37,6 +41,7 @@ export function DocumentViewContainer() {
   const isMobileView = isMobile || isTablet;
   const getMyDocument = useDocumentStore((state) => state.getMyDocument);
   const getTemplate = useDocumentStore((state) => state.getTemplate);
+  const userName = useAuthStore((state) => state.userName);
 
   // 목록엔 content가 없으므로 단건 조회로 로드. 내 문서 우선, 없으면 템플릿 폴백.
   const [document, setDocument] = useState<ViewDocument | null>(null);
@@ -83,13 +88,6 @@ export function DocumentViewContainer() {
     };
   }, [documentId, getMyDocument, getTemplate]);
 
-  // 필드 key → 응답 값 — 화면 표시·출력용 임시 상태 (저장 안 함)
-  const [answers, setAnswers] = useState<Record<string, FieldAnswer>>({});
-
-  const updateAnswer = (fieldKey: string, answer: FieldAnswer) => {
-    setAnswers((prev) => ({ ...prev, [fieldKey]: answer }));
-  };
-
   const goBackToList = () => {
     navigateWithUtm(ROUTES.DOCUMENTS);
   };
@@ -111,7 +109,11 @@ export function DocumentViewContainer() {
           <ChevronLeft size={22} />
         </button>
         <h1 className="text-2xl font-headline text-grey-100">
-          {document ? MY_DOCUMENT_KIND_LABEL[document.kind] : '문서 보기'}
+          {document
+            ? document.editable
+              ? '내 문서'
+              : '마음토스 기본 문서'
+            : '문서 보기'}
         </h1>
       </div>
 
@@ -162,7 +164,7 @@ export function DocumentViewContainer() {
 
           {/* 제목 */}
           <h2
-            className={`mx-auto w-full max-w-[851px] text-center font-emphasize text-grey-100 ${
+            className={`print-doc-title mx-auto w-full max-w-[851px] text-center font-emphasize text-grey-100 ${
               isMobileView
                 ? 'mt-4 text-xl leading-[29px]'
                 : 'mt-12 text-[32px] leading-[38px]'
@@ -171,12 +173,12 @@ export function DocumentViewContainer() {
             {document.title}
           </h2>
           <div
-            className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
+            className={`print-doc-divider mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
           />
 
           {/* 통합 본문 — 필드를 카드 박스 없이 나열 (section/richtext 외엔 Q번호) */}
           <div
-            className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
+            className={`print-doc-body mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
               isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
             }`}
           >
@@ -190,15 +192,20 @@ export function DocumentViewContainer() {
                   ? undefined
                   : ++fieldNumber;
               return (
-                <FieldContent
-                  key={field.key}
-                  field={field}
-                  number={number}
-                  answer={answers[field.key]}
-                  onAnswerChange={(answer) => updateAnswer(field.key, answer)}
-                />
+                <FieldContent key={field.key} field={field} number={number} />
               );
             })}
+
+            {/* 문서 레벨 서명 — requireSignature 동의서 하단 서명란. 내담자 뷰와 동일 렌더
+                (양식 미리보기라 이름은 OOO, 서명란은 공란). */}
+            {document.content?.requireSignature && (
+              <DocumentSignatureFooter
+                signatureDataUrl={null}
+                clientName=""
+                dateLabel={koreanDateLabel(new Date())}
+                counselorName={userName ?? undefined}
+              />
+            )}
           </div>
         </div>
       )}

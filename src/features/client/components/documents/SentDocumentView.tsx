@@ -1,8 +1,13 @@
 import { ChevronLeft, Printer } from 'lucide-react';
 
+import {
+  DocumentSignatureFooter,
+  koreanDateLabel,
+} from '@/features/document/components/DocumentSignatureFooter';
 import { FieldContent } from '@/features/document/components/FieldContent';
 import { parseFields } from '@/features/document/constants/formField';
 import { MobileModalHeader } from '@/shared/ui';
+import { useAuthStore } from '@/stores/authStore';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
 import { formatSentDate } from './ClientDocumentsTab';
@@ -24,6 +29,7 @@ export function SentDocumentView({
   onBack,
   isMobileView = false,
 }: SentDocumentViewProps) {
+  const counselorName = useAuthStore((state) => state.userName);
   // 통합 본문 — kind 무관 단일 필드 목록. 발송 시점 스냅샷.
   const fields = parseFields(document.content);
   // 필드 번호 — section/richtext는 번호를 매기지 않는다
@@ -119,7 +125,7 @@ export function SentDocumentView({
 
         {/* 제목 */}
         <h2
-          className={`mx-auto w-full max-w-[851px] text-center font-emphasize text-grey-100 ${
+          className={`print-doc-title mx-auto w-full max-w-[851px] text-center font-emphasize text-grey-100 ${
             isMobileView
               ? 'text-xl leading-[29px]'
               : 'mt-12 text-[32px] leading-[38px]'
@@ -128,12 +134,12 @@ export function SentDocumentView({
           {document.title}
         </h2>
         <div
-          className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
+          className={`print-doc-divider mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
         />
 
         {/* 통합 본문 — 필드를 읽기전용으로 나열. 완료 시 제출 응답을 함께 표시. */}
         <div
-          className={`mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
+          className={`print-doc-body mx-auto flex w-full max-w-[851px] flex-col pb-6 ${
             isMobileView ? 'mt-6 gap-6' : 'mt-10 gap-10'
           }`}
         >
@@ -152,6 +158,20 @@ export function SentDocumentView({
               />
             );
           })}
+
+          {/* 문서 레벨 최종 서명 — 완료된 동의서(requireSignature)의 제출 응답에 담긴 서명. */}
+          {document.response?.signatureDataUrl && (
+            <DocumentSignatureFooter
+              signatureDataUrl={document.response.signatureDataUrl}
+              clientName={document.clientName}
+              dateLabel={
+                document.completedAt
+                  ? koreanDateLabel(new Date(document.completedAt))
+                  : ''
+              }
+              counselorName={counselorName ?? undefined}
+            />
+          )}
         </div>
       </div>
     </div>
