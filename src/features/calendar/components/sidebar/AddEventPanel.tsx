@@ -226,6 +226,7 @@ export function AddEventPanel({
   const isDirty =
     !editingEvent ||
     kind !== editingEvent.kind ||
+    colorKey !== editingEvent.colorKey ||
     title !== editingEvent.title ||
     allDay !== (editingEvent.eventTimeKind === 'ALL_DAY') ||
     startTime !== (origStart ? origStart.format('HH:mm') : '') ||
