@@ -155,6 +155,35 @@ describe('realCalendarDataSource.createEvent', () => {
   });
 });
 
+describe('realCalendarDataSource — repeat=null은 반복 해제(명시적 null 전송)', () => {
+  it('createEvent: repeat 없으면 네 반복 필드를 명시적 null로 보낸다.', async () => {
+    req.mockResolvedValue(eventDto());
+    await realCalendarDataSource.createEvent?.(input({ repeat: null }));
+    const [, opts] = req.mock.calls[0];
+    // 필드가 생략(undefined)되면 서버가 "미변경"으로 오해 → 반드시 명시적 null.
+    expect(opts.body).toMatchObject({
+      repeatCycle: null,
+      repeatInterval: null,
+      repeatCount: null,
+      repeatUntil: null,
+    });
+  });
+
+  it('updateEvent: repeat 없으면 네 반복 필드를 명시적 null로 보낸다(해제).', async () => {
+    req.mockResolvedValue(eventDto());
+    await realCalendarDataSource.updateEvent?.('m1', input({ repeat: null }), {
+      scope: 'all',
+    });
+    const [, opts] = req.mock.calls[0];
+    expect(opts.body).toMatchObject({
+      repeatCycle: null,
+      repeatInterval: null,
+      repeatCount: null,
+      repeatUntil: null,
+    });
+  });
+});
+
 describe('realCalendarDataSource.updateEvent — scope/occurrenceDate 쿼리', () => {
   it('this + occurrenceDate를 쿼리로 전송.', async () => {
     req.mockResolvedValue(eventDto());

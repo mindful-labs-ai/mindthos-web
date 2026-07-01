@@ -116,7 +116,8 @@ interface EventRequestBody {
   endsAt?: string | null;
   eventTimeKind?: CalendarEventTimeKind;
   counselMethod?: ServerCounselMethod | null;
-  // 반복 규칙은 생성(POST) 시에만 — 서버가 회차 row로 materialize. 수정(PATCH)에선 보내지 않는다.
+  // 반복 규칙 — 생성/수정 모두 전송(하이브리드 모델: 마스터 규칙 + EXDATE + override).
+  // PATCH scope=all/following에서 규칙 변경에 쓰이고, 명시적 null은 반복 해제(this/단일은 서버가 무시).
   repeatCycle?: ServerRepeatCycle | null;
   repeatCount?: number | null;
   repeatInterval?: number | null;
@@ -245,8 +246,10 @@ function toCalendarCategory(dto: CalendarCategoryDto): CalendarCategory {
 
 /**
  * 프론트 입력 → 서버 event body. 시간 앵커(startsAt/endsAt/eventTimeKind)는 항상 전송한다.
- * 반복 규칙도 있으면 전송 — 생성은 마스터 규칙, 수정은 scope=all/following에서 규칙 변경에 사용
- * (this/단일은 서버가 규칙을 무시). 적용 범위는 ?scope=, 회차는 ?occurrenceDate= 쿼리로.
+ * 반복 네 필드(repeatCycle/Interval/Count/Until)도 항상 전송 — 생성은 마스터 규칙, 수정은
+ * scope=all/following에서 규칙 변경에 사용. 반복 없음/해제는 네 필드를 명시적 null로 보내
+ * 서버가 "해제"와 "미변경"을 구분하게 한다(this/단일은 서버가 규칙 무시).
+ * 적용 범위는 ?scope=, 회차는 ?occurrenceDate= 쿼리로.
  */
 function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
   // holiday는 서버 이벤트 종류가 아니다(public.holiday). 사용자는 counseling/personal만 생성.
@@ -272,6 +275,12 @@ function toEventRequestBody(input: CalendarEventInput): EventRequestBody {
     body.repeatInterval = repeat.interval;
     body.repeatCount = repeat.count;
     body.repeatUntil = repeat.until;
+  } else {
+    // 반복 없음/해제 — 네 필드를 명시적 null로 보내 서버가 "해제"와 "미변경"을 구분한다.
+    body.repeatCycle = null;
+    body.repeatInterval = null;
+    body.repeatCount = null;
+    body.repeatUntil = null;
   }
   return body;
 }
