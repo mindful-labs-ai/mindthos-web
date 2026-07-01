@@ -53,6 +53,10 @@ interface CalendarViewProps {
   onClosePanel: () => void;
   onSubmitEvent: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
   onDeleteEvent?: (mode: CalendarEventScope) => void;
+  /** 일정 저장(추가·변경) 진행 중 — 패널 CTA·범위 선택 버튼 disable */
+  submitting?: boolean;
+  /** 일정 삭제 진행 중 — 패널 삭제 버튼 disable */
+  deleting?: boolean;
 }
 
 /**
@@ -94,6 +98,8 @@ export function CalendarView({
   onClosePanel,
   onSubmitEvent,
   onDeleteEvent,
+  submitting,
+  deleting,
 }: CalendarViewProps) {
   return (
     <div className="relative flex h-full bg-grey-20">
@@ -167,6 +173,8 @@ export function CalendarView({
               onClose={onClosePanel}
               onSubmit={onSubmitEvent}
               onDelete={onDeleteEvent}
+              submitting={submitting}
+              deleting={deleting}
             />
           ) : (
             <AddCalendarPanel

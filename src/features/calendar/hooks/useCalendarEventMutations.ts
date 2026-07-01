@@ -92,7 +92,7 @@ export function useCalendarEventMutations() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const { mutate: submitEvent } = useMutation<
+  const { mutate: submitEvent, isPending: isSubmitting } = useMutation<
     unknown,
     unknown,
     SubmitEventVars,
@@ -147,7 +147,7 @@ export function useCalendarEventMutations() {
     onSettled: () => invalidateEvents(queryClient),
   });
 
-  const { mutate: deleteEvent } = useMutation<
+  const { mutate: deleteEvent, isPending: isDeleting } = useMutation<
     unknown,
     unknown,
     DeleteEventVars,
@@ -175,5 +175,5 @@ export function useCalendarEventMutations() {
     onSettled: () => invalidateEvents(queryClient),
   });
 
-  return { submitEvent, deleteEvent };
+  return { submitEvent, deleteEvent, isSubmitting, isDeleting };
 }

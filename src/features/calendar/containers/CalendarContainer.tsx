@@ -164,7 +164,9 @@ export default function CalendarContainer() {
 
   // 일정 생성/수정·삭제 낙관적 뮤테이션(캐시 스냅샷·롤백·재조정)은 훅으로 분리.
   // 여기선 반환된 mutate를 per-call onSuccess(트래킹·패널 닫기)와 함께 오케스트레이션만 한다.
-  const { submitEvent, deleteEvent } = useCalendarEventMutations();
+  // isSubmitting/isDeleting은 패널의 CTA·삭제 버튼을 로딩 중 disable(중복 제출 방지)하는 데 쓴다.
+  const { submitEvent, deleteEvent, isSubmitting, isDeleting } =
+    useCalendarEventMutations();
 
   // 일정 추가/변경 제출: 편집 중이면 update(반복은 scope로 범위 지정), 아니면 create.
   // 낙관 반영은 뮤테이션이 담당하고, 성공 시에만 트래킹 + 패널 닫기.
@@ -200,11 +202,11 @@ export default function CalendarContainer() {
   );
 
   // 일정 삭제(편집 모드) — 반복은 this(EXDATE+override)/following(분할)/all. 낙관 제거는 뮤테이션이 담당.
+  // 패널은 성공 시 닫는다(제출과 동일) — 로딩 중 삭제 버튼 disable이 보이고, 실패 시 패널이 남아 재시도 가능.
   const handleDeleteEvent = React.useCallback(
     (scope: CalendarEventScope) => {
       if (!editingEvent) return;
       const target = editingEvent;
-      closePanel();
       deleteEvent(
         {
           id: target.id,
@@ -217,6 +219,7 @@ export default function CalendarContainer() {
               scope,
               recurring: !!target.seriesId,
             });
+            closePanel();
           },
         }
       );
@@ -293,6 +296,8 @@ export default function CalendarContainer() {
         onTimeChange={setAddEventTime}
         onSubmitEvent={handleSubmitEvent}
         onDeleteEvent={handleDeleteEvent}
+        submitting={isSubmitting}
+        deleting={isDeleting}
       />
     );
   }
@@ -332,6 +337,8 @@ export default function CalendarContainer() {
       onClosePanel={closePanel}
       onSubmitEvent={handleSubmitEvent}
       onDeleteEvent={handleDeleteEvent}
+      submitting={isSubmitting}
+      deleting={isDeleting}
     />
   );
 }

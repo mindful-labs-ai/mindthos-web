@@ -54,6 +54,10 @@ interface MobileCalendarViewProps {
   onTimeChange: (time: { start: string; end: string }) => void;
   onSubmitEvent: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
   onDeleteEvent?: (mode: CalendarEventScope) => void;
+  /** 일정 저장(추가·변경) 진행 중 — 패널 CTA·범위 선택 버튼 disable */
+  submitting?: boolean;
+  /** 일정 삭제 진행 중 — 패널 삭제 버튼 disable */
+  deleting?: boolean;
 }
 
 /**
@@ -87,6 +91,8 @@ export function MobileCalendarView({
   onTimeChange,
   onSubmitEvent,
   onDeleteEvent,
+  submitting,
+  deleting,
 }: MobileCalendarViewProps) {
   const [filterOpen, setFilterOpen] = React.useState(false);
   // 월간에서 탭으로 선택한 날짜 (없으면 null → 하이라이트/FAB 없음)
@@ -173,6 +179,8 @@ export function MobileCalendarView({
           onClose={onClosePanel}
           onSubmit={onSubmitEvent}
           onDelete={onDeleteEvent}
+          submitting={submitting}
+          deleting={deleting}
         />
       </Modal>
 
