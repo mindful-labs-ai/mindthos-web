@@ -252,7 +252,7 @@ const HomeContainer = () => {
   // 액션 카드 — grid로 배치해 모든 행의 카드 width가 동일하게(셀 폭 = w-full). 6장 = lg 4+2 / md 3+3 / 모바일 2씩.
   const actionCardClass = 'h-[136px] w-full md:h-40';
   const actionCards = (
-    <div className="mb-8 grid max-w-[1200px] grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
+    <div className="mb-8 grid max-w-[1200px] grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 xl:grid-cols-4 xl:gap-6">
       <ActionCard
         icon={<UploadActionIcon size={24} />}
         title="녹음 파일 업로드하기"
