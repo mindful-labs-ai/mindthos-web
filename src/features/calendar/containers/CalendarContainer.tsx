@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
@@ -14,6 +14,10 @@ import {
 } from '../adapters';
 import { KIND_DEFAULT_COLOR } from '../constants';
 import {
+  TEMP_EVENT_PREFIX,
+  useCalendarEventMutations,
+} from '../hooks/useCalendarEventMutations';
+import {
   useCalendarCategories,
   useCalendarEvents,
 } from '../hooks/useCalendarEvents';
@@ -21,7 +25,6 @@ import { useCalendarState } from '../hooks/useCalendarState';
 import type {
   AddEventDraft,
   CalendarEvent,
-  CalendarEventInput,
   CalendarEventScope,
 } from '../types';
 import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
@@ -29,46 +32,6 @@ import { buildCalendarEventInput } from '../utils/eventMutations';
 
 import { CalendarView } from './CalendarView';
 import { MobileCalendarView } from './MobileCalendarView';
-
-/** 낙관적 임시 일정 id 접두사 — 서버 재조회로 교체되기 전 캐시에 잠깐 얹는 표식. */
-const TEMP_EVENT_PREFIX = '__temp__';
-
-/** 일정 캐시 쿼리들(현재 뷰 포함)에 대한 낙관적 갱신용 필터·타입. */
-type EventsCacheEntry = [readonly unknown[], CalendarEvent[] | undefined];
-
-interface EventMutationContext {
-  previous: EventsCacheEntry[];
-}
-
-interface SubmitEventVars {
-  input: CalendarEventInput;
-  editing: CalendarEvent | null;
-  scope?: CalendarEventScope;
-  occurrenceDate: string | null;
-}
-
-interface DeleteEventVars {
-  id: string;
-  scope: CalendarEventScope;
-  occurrenceDate: string | null;
-}
-
-/** 서버 입력(CalendarEventInput) → 캐시 표시용 이벤트 필드(id 제외). 낙관적 생성/수정 공용. */
-function eventFieldsFromInput(
-  input: CalendarEventInput
-): Omit<CalendarEvent, 'id'> {
-  return {
-    title: input.title,
-    kind: input.kind,
-    colorKey: input.colorKey,
-    start: input.start,
-    end: input.end,
-    eventTimeKind: input.eventTimeKind,
-    categoryId: input.categoryId,
-    clientId: input.clientId,
-    counselMethod: input.counselMethod,
-  };
-}
 
 /**
  * 캘린더 컨테이너 — 상태/데이터/필터 로직.
@@ -199,109 +162,9 @@ export default function CalendarContainer() {
     [openAddEvent]
   );
 
-  // 일정 생성/수정 낙관적 뮤테이션.
-  //  onMutate: 진행 중 refetch 취소 + 현재 뷰 포함 모든 일정 캐시를 스냅샷 → 즉시 반영
-  //    (단일 생성=임시 이벤트 추가, 수정=id 매칭 이벤트 교체). 반복 생성은 회차 전개가 서버 몫이라 스킵.
-  //  onError: 스냅샷으로 롤백 + 실패 토스트.
-  //  onSettled: 서버 진실로 재조정(invalidate) — 근사 낙관치는 여기서 정확히 교정된다.
-  const { mutate: submitEvent } = useMutation<
-    unknown,
-    unknown,
-    SubmitEventVars,
-    EventMutationContext
-  >({
-    mutationFn: ({ input, editing, scope, occurrenceDate }) => {
-      if (editing) {
-        // 편집 — 반복(시리즈)이면 scope(this/following/all). this/following은 회차(occurrenceDate)로
-        // 어느 회차인지 서버에 알린다(EXDATE+override / 분할). 단일은 scope 무시.
-        return (
-          calendarDataSource.updateEvent?.(editing.id, input, {
-            scope,
-            occurrenceDate,
-          }) ?? Promise.resolve()
-        );
-      }
-      return calendarDataSource.createEvent?.(input) ?? Promise.resolve();
-    },
-    onMutate: async ({ input, editing }) => {
-      await queryClient.cancelQueries({ queryKey: ['calendar'] });
-      const previous = queryClient.getQueriesData<CalendarEvent[]>({
-        queryKey: ['calendar', 'events'],
-      });
-      if (editing) {
-        const id = editing.id;
-        queryClient.setQueriesData<CalendarEvent[]>(
-          { queryKey: ['calendar', 'events'] },
-          (old) =>
-            old?.map((e) =>
-              e.id === id ? { ...e, ...eventFieldsFromInput(input) } : e
-            )
-        );
-      } else if (!input.repeat) {
-        // 반복 생성은 회차를 클라이언트에서 전개할 수 없어 낙관 추가를 생략(onSettled 재조회에 의존).
-        const temp: CalendarEvent = {
-          id: `${TEMP_EVENT_PREFIX}${Date.now()}`,
-          ...eventFieldsFromInput(input),
-          // 진행 중 생성 — 재조회가 실제 이벤트로 대체할 때까지 read-only로 표시한다.
-          // (temp를 클릭/편집/삭제하면 존재하지 않는 temp id로 서버 호출되어 404·헛토스트가 난다.)
-          isDraft: true,
-        };
-        queryClient.setQueriesData<CalendarEvent[]>(
-          { queryKey: ['calendar', 'events'] },
-          (old) => (old ? [...old, temp] : old)
-        );
-      }
-      return { previous };
-    },
-    onError: (_err, _vars, context) => {
-      context?.previous.forEach(([key, data]) =>
-        queryClient.setQueryData(key, data)
-      );
-      toast({
-        title: '일정 저장 실패',
-        description: '잠시 후 다시 시도해 주세요.',
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
-    },
-  });
-
-  // 일정 삭제 낙관적 뮤테이션 — id 매칭 이벤트를 즉시 제거. 반복(all/following)은 한 행만 지워 근사이며,
-  // onSettled 재조회로 EXDATE/override/분할 결과를 서버에서 다시 읽어 정확히 맞춘다.
-  const { mutate: deleteEvent } = useMutation<
-    unknown,
-    unknown,
-    DeleteEventVars,
-    EventMutationContext
-  >({
-    mutationFn: ({ id, scope, occurrenceDate }) =>
-      calendarDataSource.deleteEvent?.(id, scope, occurrenceDate) ??
-      Promise.resolve(),
-    onMutate: async ({ id }) => {
-      await queryClient.cancelQueries({ queryKey: ['calendar'] });
-      const previous = queryClient.getQueriesData<CalendarEvent[]>({
-        queryKey: ['calendar', 'events'],
-      });
-      queryClient.setQueriesData<CalendarEvent[]>(
-        { queryKey: ['calendar', 'events'] },
-        (old) => old?.filter((e) => e.id !== id)
-      );
-      return { previous };
-    },
-    onError: (_err, _vars, context) => {
-      context?.previous.forEach(([key, data]) =>
-        queryClient.setQueryData(key, data)
-      );
-      toast({
-        title: '일정 삭제 실패',
-        description: '잠시 후 다시 시도해 주세요.',
-      });
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
-    },
-  });
+  // 일정 생성/수정·삭제 낙관적 뮤테이션(캐시 스냅샷·롤백·재조정)은 훅으로 분리.
+  // 여기선 반환된 mutate를 per-call onSuccess(트래킹·패널 닫기)와 함께 오케스트레이션만 한다.
+  const { submitEvent, deleteEvent } = useCalendarEventMutations();
 
   // 일정 추가/변경 제출: 편집 중이면 update(반복은 scope로 범위 지정), 아니면 create.
   // 낙관 반영은 뮤테이션이 담당하고, 성공 시에만 트래킹 + 패널 닫기.
