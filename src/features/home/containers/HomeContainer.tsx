@@ -249,49 +249,46 @@ const HomeContainer = () => {
     <GreetingSection userName={userName!} date={formatKoreanDate()} />
   );
 
-  const actionCardClass = 'h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]';
+  // 액션 카드 — grid로 배치해 모든 행의 카드 width가 동일하게(셀 폭 = w-full). 6장 = lg 4+2 / md 3+3 / 모바일 2씩.
+  const actionCardClass = 'h-[136px] w-full md:h-40';
   const actionCards = (
-    <div className="mb-8 flex max-w-[1200px] flex-col gap-3 md:gap-6">
-      <div className="flex flex-wrap gap-3 md:gap-5 lg:flex-nowrap lg:gap-6">
-        <ActionCard
-          icon={<UploadActionIcon size={24} />}
-          title="녹음 파일 업로드하기"
-          onClick={handleUploadClick}
-          className={actionCardClass}
-        />
-        <ActionCard
-          icon={<AddClientActionIcon size={24} className="text-danger" />}
-          title="내담자 추가하기"
-          onClick={handleAddCustomerClick}
-          className={actionCardClass}
-        />
-        <ActionCard
-          icon={<SessionHistoryActionIcon size={24} className="text-warn" />}
-          title="상담 기록 전체보기"
-          onClick={handleViewAllRecordsClick}
-          className={actionCardClass}
-        />
-        <ActionCard
-          icon={<GenogramActionIcon size={24} />}
-          title="가계도 그리기"
-          onClick={handleGenogramClick}
-          className={actionCardClass}
-        />
-      </div>
-      <div className="flex flex-wrap gap-3 md:gap-5 lg:flex-nowrap lg:gap-6">
-        <ActionCard
-          icon={<ScheduleActionIcon size={24} />}
-          title="상담 일정 추가하기"
-          onClick={handleCalendarClick}
-          className={actionCardClass}
-        />
-        <ActionCard
-          icon={<SuperVisionActionIcon size={24} />}
-          title="AI 슈퍼비전 받기"
-          onClick={handleSupervisionClick}
-          className={actionCardClass}
-        />
-      </div>
+    <div className="mb-8 grid max-w-[1200px] grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4 lg:gap-6">
+      <ActionCard
+        icon={<UploadActionIcon size={24} />}
+        title="녹음 파일 업로드하기"
+        onClick={handleUploadClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<AddClientActionIcon size={24} className="text-danger" />}
+        title="내담자 추가하기"
+        onClick={handleAddCustomerClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<SessionHistoryActionIcon size={24} className="text-warn" />}
+        title="상담 기록 전체보기"
+        onClick={handleViewAllRecordsClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<GenogramActionIcon size={24} />}
+        title="가계도 그리기"
+        onClick={handleGenogramClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<ScheduleActionIcon size={24} />}
+        title="상담 일정 추가하기"
+        onClick={handleCalendarClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<SuperVisionActionIcon size={24} />}
+        title="AI 슈퍼비전 받기"
+        onClick={handleSupervisionClick}
+        className={actionCardClass}
+      />
     </div>
   );
 
