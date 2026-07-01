@@ -18,8 +18,8 @@ interface CalendarSidebarProps {
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
   onDeleteCategory?: (categoryId: string) => void;
-  onCreateCategory?: (name: string) => void;
   onAddEvent?: (kind: CalendarEventKind) => void;
+  /** 외부 캘린더(구글) 연동/재연동 트리거 */
   onConnectGoogle?: () => void;
 }
 
@@ -36,7 +36,6 @@ export function CalendarSidebar({
   categoryVisible,
   onToggleCategory,
   onDeleteCategory,
-  onCreateCategory,
   onAddEvent,
   onConnectGoogle,
 }: CalendarSidebarProps) {
@@ -63,15 +62,15 @@ export function CalendarSidebar({
         categories={categories}
         categoryVisible={categoryVisible}
         onToggleCategory={onToggleCategory}
-        onCreateCategory={onCreateCategory}
         onDeleteCategory={onDeleteCategory}
       />
-      {/* 구글 연동 후엔 배너 숨김(카테고리 sourceProvider로 감지) */}
-      {!categories.some((c) => c.sourceProvider === 'google') && (
-        <div className="mt-auto pt-4">
-          <GoogleConnectCard onConnect={onConnectGoogle} />
-        </div>
-      )}
+      {/* 하단 연동 카드 — 유일한 연동/재연동 진입점. 구글이 이미 연동돼 있으면 비활성화(연동 해제 후 재연결). */}
+      <div className="mt-auto pt-4">
+        <GoogleConnectCard
+          onConnect={onConnectGoogle}
+          disabled={categories.some((c) => c.sourceProvider === 'google')}
+        />
+      </div>
     </div>
   );
 }

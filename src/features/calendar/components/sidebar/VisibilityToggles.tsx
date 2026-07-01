@@ -15,7 +15,7 @@ export function VisibilityToggles({
 }: VisibilityTogglesProps) {
   return (
     <div>
-      <h3 className="text-m font-medium text-grey-100">나의 캘린더</h3>
+      <h3 className="text-m font-medium text-grey-100">일정 표시</h3>
       <div className="mt-5 flex flex-col gap-3">
         {VISIBILITY_KINDS.map((item) => (
           <CategoryToggleItem

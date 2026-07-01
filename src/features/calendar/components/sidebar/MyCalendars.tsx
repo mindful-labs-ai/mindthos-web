@@ -1,10 +1,4 @@
-import React from 'react';
-
-import { Plus } from 'lucide-react';
-
-import { cn } from '@/lib/cn';
-
-import type { CalendarCategory } from '../../types';
+import type { CalendarCategory, CalendarColorKey } from '../../types';
 
 import { CategorySettingsMenu } from './CategorySettingsMenu';
 import { CategoryToggleItem } from './CategoryToggleItem';
@@ -13,108 +7,65 @@ interface MyCalendarsProps {
   categories: CalendarCategory[];
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
-  /** 카테고리 생성(이름만 — 카테고리는 색을 갖지 않음) */
-  onCreateCategory?: (name: string) => void;
-  /** 카테고리 삭제(설정 메뉴, 소속 일정 함께 삭제) */
+  /** 연동 해제(설정 메뉴) — 카테고리와 소속(연동) 일정 함께 삭제. */
   onDeleteCategory?: (categoryId: string) => void;
 }
 
-/** '나의 캘린더' — 카테고리 목록 + 생성(+) + 항목별 설정(삭제) */
+/** provider별 표시 색 — 서버 import 기본색과 일치(구글=파랑, 그 외=회색). */
+const PROVIDER_COLOR: Record<string, CalendarColorKey> = {
+  google: 'blue',
+  naver: 'grey',
+  apple: 'grey',
+};
+
+/** provider별 표시 이름. */
+const PROVIDER_LABEL: Record<string, string> = {
+  google: '구글 캘린더',
+  naver: '네이버 캘린더',
+  apple: '애플 캘린더',
+};
+
+function calendarLabel(category: CalendarCategory): string {
+  return PROVIDER_LABEL[category.sourceProvider ?? ''] ?? category.name;
+}
+
+/**
+ * '나의 캘린더' — 연동된 외부 캘린더(구글 등) 목록.
+ * 카테고리는 외부 캘린더 연동 전용 도메인이라(일정에서 직접 지정 불가), 여기서 표시 on/off만 한다.
+ * 색 스와치는 provider 기본색(구글=파랑)으로 서버 import 색과 맞춘다. 연동/재연동은 하단 연동 카드에서.
+ */
 export function MyCalendars({
   categories,
   categoryVisible,
   onToggleCategory,
-  onCreateCategory,
   onDeleteCategory,
 }: MyCalendarsProps) {
-  const [creating, setCreating] = React.useState(false);
-  const [newName, setNewName] = React.useState('');
-  // 생성 제출 중복 방지 — 첫 클릭 후 폼이 닫힐 때까지 추가 버튼 비활성.
-  const [submitting, setSubmitting] = React.useState(false);
-
-  const resetForm = () => {
-    setCreating(false);
-    setNewName('');
-    setSubmitting(false);
-  };
-
-  const submit = () => {
-    if (submitting) return;
-    const name = newName.trim();
-    if (!name) return;
-    setSubmitting(true);
-    onCreateCategory?.(name);
-    resetForm();
-  };
-
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h3 className="text-m font-medium text-grey-100">카테고리</h3>
-        <button
-          type="button"
-          aria-label="카테고리 추가"
-          onClick={() => setCreating((c) => !c)}
-          className="flex h-6 w-6 items-center justify-center text-grey-100"
-        >
-          <Plus size={16} strokeWidth={2} />
-        </button>
-      </div>
+      <h3 className="text-m font-medium text-grey-100">나의 캘린더</h3>
 
-      {/* 카테고리 생성 폼 — + 버튼으로 토글. 이름만 입력(색 없음). */}
-      {creating && (
-        <div className="mt-4 rounded-md border border-grey-40 p-3">
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder="카테고리 이름"
-            className="h-9 w-full rounded-md border border-grey-40 bg-grey-10 px-3 text-sm text-grey-100 placeholder:text-grey-60 focus:outline-none"
-          />
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={resetForm}
-              className="flex-1 rounded-md border border-grey-40 bg-white py-1.5 text-sm font-medium text-grey-100 lg:hover:bg-grey-10"
-            >
-              취소
-            </button>
-            <button
-              type="button"
-              disabled={!newName.trim() || submitting}
-              onClick={submit}
-              className={cn(
-                'flex-1 rounded-md py-1.5 text-sm font-medium text-white',
-                newName.trim() && !submitting
-                  ? 'bg-green-80'
-                  : 'cursor-not-allowed bg-grey-40'
+      {categories.length > 0 && (
+        <div className="mt-5 flex flex-col gap-3">
+          {categories.map((category) => (
+            <div key={category.id} className="flex items-center gap-1">
+              <div className="min-w-0 flex-1">
+                <CategoryToggleItem
+                  label={calendarLabel(category)}
+                  colorKey={PROVIDER_COLOR[category.sourceProvider ?? '']}
+                  checked={categoryVisible[category.id] ?? true}
+                  onToggle={() => onToggleCategory(category.id)}
+                />
+              </div>
+              {onDeleteCategory && (
+                <CategorySettingsMenu
+                  categoryName={calendarLabel(category)}
+                  onDelete={() => onDeleteCategory(category.id)}
+                />
               )}
-            >
-              추가
-            </button>
-          </div>
+            </div>
+          ))}
         </div>
       )}
-
-      <div className="mt-5 flex flex-col gap-3">
-        {categories.map((category) => (
-          <div key={category.id} className="flex items-center gap-1">
-            <div className="min-w-0 flex-1">
-              <CategoryToggleItem
-                label={category.name}
-                checked={categoryVisible[category.id] ?? true}
-                onToggle={() => onToggleCategory(category.id)}
-              />
-            </div>
-            {onDeleteCategory && (
-              <CategorySettingsMenu
-                categoryName={category.name}
-                onDelete={() => onDeleteCategory(category.id)}
-              />
-            )}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

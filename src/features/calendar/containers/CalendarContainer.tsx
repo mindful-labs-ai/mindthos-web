@@ -240,22 +240,6 @@ export default function CalendarContainer() {
     [queryClient, toast]
   );
 
-  // 카테고리 생성(+ 버튼) — 이름만(색 없음). 생성 후 캘린더 무효화로 목록 갱신.
-  const handleCreateCategory = React.useCallback(
-    async (name: string) => {
-      try {
-        await calendarDataSource.createCategory?.({ name });
-        await queryClient.invalidateQueries({ queryKey: ['calendar'] });
-      } catch {
-        toast({
-          title: '카테고리 생성 실패',
-          description: '잠시 후 다시 시도해 주세요.',
-        });
-      }
-    },
-    [queryClient, toast]
-  );
-
   // 외부 캘린더 연결: 서버에서 동의 URL을 받아 브라우저를 리다이렉트(이후 콜백 페이지가 finalize).
   const handleConnectProvider = React.useCallback(
     async (provider: CalendarProvider) => {
@@ -328,7 +312,6 @@ export default function CalendarContainer() {
       onToggleKind={toggleKind}
       onToggleCategory={toggleCategory}
       onDeleteCategory={handleDeleteCategory}
-      onCreateCategory={handleCreateCategory}
       onPrevMonth={() => setCurrent(current.subtract(1, 'month'))}
       onNextMonth={() => setCurrent(current.add(1, 'month'))}
       sidePanel={sidePanel}

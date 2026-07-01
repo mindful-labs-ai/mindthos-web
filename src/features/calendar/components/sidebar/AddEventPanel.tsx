@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Calendar, ChevronDown, User, X } from 'lucide-react';
+import { Calendar, Trash2, User, X } from 'lucide-react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
@@ -13,7 +13,6 @@ import { Modal } from '@/shared/ui/composites/Modal';
 import { ClientSelector } from '@/widgets/client/ClientSelector';
 
 import { KIND_DEFAULT_COLOR, WEEKDAYS_KO } from '../../constants';
-import { useCalendarCategories } from '../../hooks/useCalendarEvents';
 import type {
   AddEventDraft,
   CalendarColorKey,
@@ -48,8 +47,12 @@ interface AddEventPanelProps {
   onClose: () => void;
   /** 저장. 반복(시리즈) 일정 편집이면 scope(this/following/all)를 함께 넘긴다(신규·단일은 생략). */
   onSubmit: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
-  /** 편집 모드 삭제 — 있으면 하단에 '삭제하기' 노출. 반복 일정은 this/following/all 구분 */
+  /** 편집 모드 삭제 — 있으면 헤더 쓰레기통 아이콘 노출. 반복 일정은 this/following/all 구분 */
   onDelete?: (mode: CalendarEventScope) => void;
+  /** 저장(추가·변경) 진행 중 — CTA·범위 선택 버튼 disable(중복 제출 방지). */
+  submitting?: boolean;
+  /** 삭제 진행 중 — 삭제 확인 버튼 disable. 성공 시 상위가 패널을 닫는다. */
+  deleting?: boolean;
 }
 
 const KIND_OPTIONS: { value: CalendarEventKind; label: string }[] = [
@@ -97,6 +100,8 @@ export function AddEventPanel({
   onClose,
   onSubmit,
   onDelete,
+  submitting = false,
+  deleting = false,
 }: AddEventPanelProps) {
   const [kind, setKind] = React.useState<CalendarEventKind>(initialKind);
   // 표시 색상 — 편집은 기존 색, 신규는 kind 기본색. 사용자가 색상 선택기로 변경 가능.
@@ -124,33 +129,10 @@ export function AddEventPanel({
     null
   );
   const [clientSelectOpen, setClientSelectOpen] = React.useState(false);
-  // 개인 일정 카테고리('나의 캘린더') — 표시 on/off 그룹핑용(색과 무관). null = 선택 안 함.
-  const [categoryId, setCategoryId] = React.useState<string | null>(
-    editingEvent?.categoryId ?? null
-  );
-  const [categorySelectOpen, setCategorySelectOpen] = React.useState(false);
-  const categoryFieldRef = React.useRef<HTMLDivElement>(null);
   const { clients } = useClientList();
-  const { data: categories = [] } = useCalendarCategories();
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
-  const selectedCategory = categories.find((c) => c.id === categoryId) ?? null;
 
-  // 카테고리 드롭다운 바깥 클릭 시 닫기
-  useClickOutside(
-    categoryFieldRef,
-    () => setCategorySelectOpen(false),
-    categorySelectOpen
-  );
-  // 화면 밖으로 안 나가게: 카테고리 드롭다운 위/아래 펼침 + 넘치면 좌표 보정
-  const categoryDropdownRef = React.useRef<HTMLDivElement>(null);
-  const { direction: categoryDirection, offset: categoryOffset } =
-    useDropdownPosition(
-      categoryFieldRef,
-      categoryDropdownRef,
-      categorySelectOpen,
-      { estimatedHeight: 210 }
-    );
   // 날짜 팝오버 — 하단에서 아래로 펼치면 CTA 밑으로 잘리므로 위치 보정(달력 ~360px).
   const datePopoverRef = React.useRef<HTMLDivElement>(null);
   const { direction: dateDirection, offset: dateOffset } = useDropdownPosition(
@@ -218,11 +200,10 @@ export function AddEventPanel({
     editingEvent && editingEvent.end
       ? dayjs(editingEvent.end)
       : (origStart?.add(1, 'hour') ?? null);
-  // 내담자·상담 방식은 상담 일정에서만, 카테고리는 개인 일정에서만 의미 — 그 외면 null로 본다.
+  // 내담자·상담 방식은 상담 일정에서만 의미 — 그 외면 null로 본다.
   const effectiveClientId =
     kind === 'counseling' ? (selectedClient?.id ?? null) : null;
   const effectiveCounselMethod = kind === 'counseling' ? counselMethod : null;
-  const effectiveCategoryId = kind === 'personal' ? categoryId : null;
   const isDirty =
     !editingEvent ||
     kind !== editingEvent.kind ||
@@ -235,12 +216,13 @@ export function AddEventPanel({
       (origStart ? origStart.format('YYYY-MM-DD') : '') ||
     effectiveClientId !== (editingEvent.clientId ?? null) ||
     effectiveCounselMethod !== (editingEvent.counselMethod ?? null) ||
-    effectiveCategoryId !== (editingEvent.categoryId ?? null) ||
     JSON.stringify(repeat) !== JSON.stringify(editingEvent.repeat ?? null);
   // 상담 일정은 내담자 선택이 필수(서버 계약: COUNSELING은 clientId 필요).
   const counselingNeedsClient = kind === 'counseling' && !selectedClient;
   // 필수값: 상담 일정이면 내담자. 제목은 비워도 추가 가능('제목 없음'으로 저장).
   const ctaEnabled = (!isEdit || isDirty) && !counselingNeedsClient;
+  // 저장/삭제 진행 중 — CTA·삭제·범위 선택 버튼을 잠가 중복 제출을 막는다.
+  const busy = submitting || deleting;
 
   const buildDraft = (): AddEventDraft => ({
     kind,
@@ -251,12 +233,14 @@ export function AddEventPanel({
     endTime,
     clientId: effectiveClientId,
     counselMethod: effectiveCounselMethod,
-    categoryId: effectiveCategoryId,
+    // 일정 폼에서 카테고리는 선택 불가(연동 전용 도메인) — 편집 시 기존 값 보존, 신규는 null.
+    categoryId: editingEvent?.categoryId ?? null,
     repeat,
   });
 
   // 저장 — 반복(시리즈) 편집은 적용 범위 모달을 먼저 띄우고, 그 외엔 바로 저장.
   const handleSave = () => {
+    if (busy) return;
     if (isRecurringEdit) {
       setConfirmEditScope(true);
       return;
@@ -276,17 +260,44 @@ export function AddEventPanel({
 
   return (
     <div className="flex h-full flex-col">
-      {/* 헤더 — 모바일은 녹음 업로드 모달과 동일한 고정 헤더, 데스크탑은 슬라이드오버 헤더 */}
+      {/* 헤더 — 모바일은 녹음 업로드 모달과 동일한 고정 헤더, 데스크탑은 슬라이드오버 헤더.
+          편집 모드면 제목 옆에 삭제(쓰레기통) — 반복 일정은 확인 다이얼로그에서 scope 선택. */}
       {isMobileView ? (
         <MobileModalHeader
           title={isEdit ? '일정 변경하기' : '일정 추가하기'}
           onBack={onClose}
+          right={
+            isEdit && onDelete ? (
+              <button
+                type="button"
+                aria-label="일정 삭제"
+                disabled={busy}
+                onClick={() => setConfirmDelete(true)}
+                className="text-red-80 transition-colors disabled:opacity-40 lg:hover:text-red-50"
+              >
+                <Trash2 size={20} strokeWidth={1.75} />
+              </button>
+            ) : undefined
+          }
         />
       ) : (
         <div className="flex items-center justify-between px-5 pb-4 pt-7">
-          <h2 className="text-sm font-emphasize text-[#222121]">
-            {isEdit ? '일정 변경하기' : '일정 추가하기'}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-emphasize text-[#222121]">
+              {isEdit ? '일정 변경하기' : '일정 추가하기'}
+            </h2>
+            {isEdit && onDelete && (
+              <button
+                type="button"
+                aria-label="일정 삭제"
+                disabled={busy}
+                onClick={() => setConfirmDelete(true)}
+                className="text-red-80 transition-colors disabled:opacity-40 lg:hover:text-red-50"
+              >
+                <Trash2 size={16} strokeWidth={1.75} />
+              </button>
+            )}
+          </div>
           <button
             type="button"
             aria-label="닫기"
@@ -469,112 +480,28 @@ export function AddEventPanel({
             onChange={setCounselMethod}
           />
         )}
-
-        {/* 카테고리(나의 캘린더) — 개인 일정에서만. 표시 on/off 그룹핑용(색과 무관) */}
-        {kind === 'personal' && (
-          <div
-            ref={categoryFieldRef}
-            className="flex items-center justify-between gap-4"
-          >
-            <FieldLabel>카테고리</FieldLabel>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setCategorySelectOpen((o) => !o)}
-                className="flex h-9 min-w-[140px] items-center justify-between gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  {selectedCategory ? (
-                    <span className="truncate text-grey-100">
-                      {selectedCategory.name}
-                    </span>
-                  ) : (
-                    <span className="text-[#abaebe]">선택 안 함</span>
-                  )}
-                </span>
-                <ChevronDown
-                  size={16}
-                  strokeWidth={1.5}
-                  className="shrink-0 text-[#abaebe]"
-                />
-              </button>
-              {categorySelectOpen && (
-                <div
-                  ref={categoryDropdownRef}
-                  style={{
-                    transform:
-                      categoryOffset.x || categoryOffset.y
-                        ? `translate(${categoryOffset.x}px, ${categoryOffset.y}px)`
-                        : undefined,
-                  }}
-                  className={cn(
-                    'absolute right-0 z-30 max-h-[210px] w-[180px] overflow-y-auto rounded-md border border-grey-40 bg-white py-1 shadow-[0_4px_16px_rgba(0,0,0,0.1)]',
-                    categoryDirection === 'up'
-                      ? 'bottom-full mb-1'
-                      : 'top-full mt-1'
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCategoryId(null);
-                      setCategorySelectOpen(false);
-                    }}
-                    className="flex w-full items-center px-3 py-2 text-sm text-grey-60 lg:hover:bg-grey-10"
-                  >
-                    선택 안 함
-                  </button>
-                  {categories.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => {
-                        setCategoryId(c.id);
-                        setCategorySelectOpen(false);
-                      }}
-                      className="flex w-full items-center px-3 py-2 text-sm text-grey-100 lg:hover:bg-grey-10"
-                    >
-                      <span className="truncate">{c.name}</span>
-                    </button>
-                  ))}
-                  {categories.length === 0 && (
-                    <p className="px-3 py-2 text-xs text-grey-60">
-                      카테고리가 없어요
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* 편집 모드 — 항목 제일 하단 삭제하기 (확인 다이얼로그) */}
-        {isEdit && onDelete && (
-          <>
-            <div className="border-t border-[#ecedf3]" />
-            <button
-              type="button"
-              onClick={() => setConfirmDelete(true)}
-              className="self-center text-sm font-emphasize text-red-80 transition-colors lg:hover:text-red-50"
-            >
-              삭제하기
-            </button>
-          </>
-        )}
       </div>
 
       {/* 푸터 */}
       <div className="px-5 pb-9 pt-4">
         <button
           type="button"
-          disabled={!ctaEnabled}
+          disabled={!ctaEnabled || busy}
           onClick={handleSave}
           className={cn(
             'h-[41px] w-full rounded-md text-sm font-emphasize text-white',
-            ctaEnabled ? 'bg-green-80' : 'cursor-not-allowed bg-grey-40'
+            ctaEnabled && !busy
+              ? 'bg-green-80'
+              : 'cursor-not-allowed bg-grey-40'
           )}
         >
-          {isEdit ? '변경하기' : '일정 추가하기'}
+          {submitting
+            ? isEdit
+              ? '변경 중…'
+              : '추가 중…'
+            : isEdit
+              ? '변경하기'
+              : '일정 추가하기'}
         </button>
       </div>
 
@@ -597,38 +524,33 @@ export function AddEventPanel({
               <div className="mt-6 flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setConfirmDelete(false);
-                    onDelete?.('this');
-                  }}
-                  className="h-11 w-full rounded-lg bg-red-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
+                  disabled={deleting}
+                  onClick={() => onDelete?.('this')}
+                  className="h-11 w-full rounded-lg bg-red-80 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
                 >
-                  이 일정만 삭제
+                  {deleting ? '삭제 중…' : '이 일정만 삭제'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setConfirmDelete(false);
-                    onDelete?.('following');
-                  }}
-                  className="h-11 w-full rounded-lg border border-red-80 bg-white text-m font-medium text-red-80 transition-colors lg:hover:bg-grey-10"
+                  disabled={deleting}
+                  onClick={() => onDelete?.('following')}
+                  className="h-11 w-full rounded-lg border border-red-80 bg-white text-m font-medium text-red-80 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:bg-grey-10"
                 >
                   이 일정부터 삭제
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setConfirmDelete(false);
-                    onDelete?.('all');
-                  }}
-                  className="h-11 w-full rounded-lg border border-red-80 bg-white text-m font-medium text-red-80 transition-colors lg:hover:bg-grey-10"
+                  disabled={deleting}
+                  onClick={() => onDelete?.('all')}
+                  className="h-11 w-full rounded-lg border border-red-80 bg-white text-m font-medium text-red-80 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:bg-grey-10"
                 >
                   전체 일정 삭제
                 </button>
                 <button
                   type="button"
+                  disabled={deleting}
                   onClick={() => setConfirmDelete(false)}
-                  className="mt-1 py-1 text-sm font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
+                  className="mt-1 py-1 text-sm font-medium text-grey-60 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:text-grey-80"
                 >
                   취소
                 </button>
@@ -642,20 +564,19 @@ export function AddEventPanel({
               <div className="mt-6 flex gap-2">
                 <button
                   type="button"
+                  disabled={deleting}
                   onClick={() => setConfirmDelete(false)}
-                  className="h-11 flex-1 rounded-lg border border-grey-40 bg-white text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+                  className="h-11 flex-1 rounded-lg border border-grey-40 bg-white text-m font-medium text-grey-100 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:bg-grey-10"
                 >
                   취소
                 </button>
                 <button
                   type="button"
-                  onClick={() => {
-                    setConfirmDelete(false);
-                    onDelete?.('all');
-                  }}
-                  className="h-11 flex-1 rounded-lg bg-red-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
+                  disabled={deleting}
+                  onClick={() => onDelete?.('all')}
+                  className="h-11 flex-1 rounded-lg bg-red-80 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
                 >
-                  삭제
+                  {deleting ? '삭제 중…' : '삭제'}
                 </button>
               </div>
             </>
@@ -679,38 +600,33 @@ export function AddEventPanel({
           <div className="mt-6 flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => {
-                setConfirmEditScope(false);
-                onSubmit(buildDraft(), 'this');
-              }}
-              className="h-11 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
+              disabled={submitting}
+              onClick={() => onSubmit(buildDraft(), 'this')}
+              className="h-11 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
             >
-              이 일정만 변경
+              {submitting ? '변경 중…' : '이 일정만 변경'}
             </button>
             <button
               type="button"
-              onClick={() => {
-                setConfirmEditScope(false);
-                onSubmit(buildDraft(), 'following');
-              }}
-              className="h-11 w-full rounded-lg border border-green-80 bg-white text-m font-medium text-green-80 transition-colors lg:hover:bg-grey-10"
+              disabled={submitting}
+              onClick={() => onSubmit(buildDraft(), 'following')}
+              className="h-11 w-full rounded-lg border border-green-80 bg-white text-m font-medium text-green-80 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:bg-grey-10"
             >
               이 일정부터 변경
             </button>
             <button
               type="button"
-              onClick={() => {
-                setConfirmEditScope(false);
-                onSubmit(buildDraft(), 'all');
-              }}
-              className="h-11 w-full rounded-lg border border-green-80 bg-white text-m font-medium text-green-80 transition-colors lg:hover:bg-grey-10"
+              disabled={submitting}
+              onClick={() => onSubmit(buildDraft(), 'all')}
+              className="h-11 w-full rounded-lg border border-green-80 bg-white text-m font-medium text-green-80 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:bg-grey-10"
             >
               전체 일정 변경
             </button>
             <button
               type="button"
+              disabled={submitting}
               onClick={() => setConfirmEditScope(false)}
-              className="mt-1 py-1 text-sm font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
+              className="mt-1 py-1 text-sm font-medium text-grey-60 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:text-grey-80"
             >
               취소
             </button>

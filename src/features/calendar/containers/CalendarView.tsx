@@ -32,7 +32,6 @@ interface CalendarViewProps {
   onToggleKind: (kind: CalendarEventKind) => void;
   onToggleCategory: (categoryId: string) => void;
   onDeleteCategory?: (categoryId: string) => void;
-  onCreateCategory?: (name: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   // 사이드 패널 / 일정 추가
@@ -75,7 +74,6 @@ export function CalendarView({
   onToggleKind,
   onToggleCategory,
   onDeleteCategory,
-  onCreateCategory,
   onPrevMonth,
   onNextMonth,
   sidePanel,
@@ -148,7 +146,6 @@ export function CalendarView({
           categoryVisible={categoryVisible}
           onToggleCategory={onToggleCategory}
           onDeleteCategory={onDeleteCategory}
-          onCreateCategory={onCreateCategory}
           onAddEvent={onOpenAddEvent}
           onConnectGoogle={onOpenAddCalendar}
         />
