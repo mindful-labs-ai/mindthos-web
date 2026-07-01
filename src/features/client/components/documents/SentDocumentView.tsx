@@ -50,6 +50,7 @@ export function SentDocumentView({
   isMobileView = false,
 }: SentDocumentViewProps) {
   const counselorName = useAuthStore((state) => state.userName);
+  const counselorOrganization = useAuthStore((state) => state.organization);
   // 통합 본문 — kind 무관 단일 필드 목록. 발송 시점 스냅샷.
   const fields = parseFields(document.content);
   // 필드 번호 — section/richtext는 번호를 매기지 않는다
@@ -193,6 +194,7 @@ export function SentDocumentView({
                   : ''
               }
               counselorName={counselorName ?? undefined}
+              counselorOrganization={counselorOrganization ?? undefined}
             />
           )}
         </div>

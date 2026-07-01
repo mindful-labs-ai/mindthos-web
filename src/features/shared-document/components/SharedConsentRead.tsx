@@ -126,6 +126,7 @@ export function SharedConsentRead({
             clientName={doc.clientName}
             dateLabel={koreanDateLabel(new Date())}
             counselorName={doc.counselorName}
+            counselorOrganization={doc.counselorOrganization ?? undefined}
           />
         </div>
       </div>

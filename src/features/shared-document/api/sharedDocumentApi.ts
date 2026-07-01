@@ -27,6 +27,8 @@ export interface SharedDocument {
   clientName: string;
   /** 보낸 상담사 이름(진입 화면 안내용) */
   counselorName: string;
+  /** 보낸 상담사 소속(서명란 "{소속} {이름}"용). 미설정이면 null. */
+  counselorOrganization: string | null;
   /** 동의서 / 질문응답 — 카테고리·UX 힌트(퍼널 모드 결정). content 모양은 동일. */
   kind: 'CONSENT' | 'QNA';
   /** 통합 본문 봉투 { version, fields } — CONSENT/QNA 공통. */

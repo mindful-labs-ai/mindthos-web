@@ -42,6 +42,7 @@ export function DocumentViewContainer() {
   const getMyDocument = useDocumentStore((state) => state.getMyDocument);
   const getTemplate = useDocumentStore((state) => state.getTemplate);
   const userName = useAuthStore((state) => state.userName);
+  const organization = useAuthStore((state) => state.organization);
 
   // 목록엔 content가 없으므로 단건 조회로 로드. 내 문서 우선, 없으면 템플릿 폴백.
   const [document, setDocument] = useState<ViewDocument | null>(null);
@@ -204,6 +205,7 @@ export function DocumentViewContainer() {
                 clientName=""
                 dateLabel={koreanDateLabel(new Date())}
                 counselorName={userName ?? undefined}
+                counselorOrganization={organization ?? undefined}
               />
             )}
           </div>
