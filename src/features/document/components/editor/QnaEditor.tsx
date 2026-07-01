@@ -18,7 +18,11 @@ import {
 } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 
-import { createField, duplicateField } from '../../constants/formField';
+import {
+  createField,
+  duplicateField,
+  isValidField,
+} from '../../constants/formField';
 import type { FormField, FormFieldType } from '../../types';
 
 import { FieldCard } from './FieldCard';
@@ -26,6 +30,8 @@ import { FieldCard } from './FieldCard';
 interface QnaEditorProps {
   fields: FormField[];
   onFieldsChange: (fields: FormField[]) => void;
+  /** 필수 미충족 저장 시도 후 하이라이트 — 유효하지 않은 필드에 빨간 보더 표시 */
+  showInvalid?: boolean;
 }
 
 /** 라벨/제목 텍스트를 유형 전환 시 보존하기 위해 읽는다(없으면 ''). */
@@ -39,7 +45,11 @@ function fieldText(field: FormField): string {
  * 양식 필드 에디터 — 필드 카드 목록 + 하단 + 버튼으로 추가.
  * 항목이 없으면 빈 캔버스 (저장 비활성 조건은 컨테이너에서 처리).
  */
-export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
+export function QnaEditor({
+  fields,
+  onFieldsChange,
+  showInvalid = false,
+}: QnaEditorProps) {
   // 활성(편집 중) 항목 — 초록 보더 표시
   const [activeKey, setActiveKey] = useState<string | null>(
     fields[0]?.key ?? null
@@ -124,6 +134,7 @@ export function QnaEditor({ fields, onFieldsChange }: QnaEditorProps) {
                 key={field.key}
                 field={field}
                 isActive={field.key === activeKey}
+                invalid={showInvalid && !isValidField(field)}
                 onActivate={() => setActiveKey(field.key)}
                 onChange={(updated) => replaceField(field.key, updated)}
                 onTypeChange={(type) => changeFieldType(field.key, type)}

@@ -10,6 +10,8 @@ interface RichTextEditorProps {
   initialHtml?: string;
   /** 본문 HTML 변경 콜백 (저장 시 content로 사용) */
   onContentChange: (html: string) => void;
+  /** 필수 미충족 저장 시도 후 하이라이트 — 비어 있으면 플레이스홀더를 빨강으로 표시 */
+  invalid?: boolean;
 }
 
 type FormatCommand = 'h1' | 'h2' | 'bold' | 'italic' | 'underline';
@@ -30,6 +32,7 @@ const TOOLBAR_ITEMS: { command: FormatCommand; icon: React.ReactNode }[] = [
 export function RichTextEditor({
   initialHtml,
   onContentChange,
+  invalid = false,
 }: RichTextEditorProps) {
   const [activeFormats, setActiveFormats] = useState<Set<FormatCommand>>(
     new Set()
@@ -85,10 +88,12 @@ export function RichTextEditor({
         aria-label="문서 내용"
         data-placeholder="내용을 입력해주세요."
         onInput={(e) => onContentChange(e.currentTarget.innerHTML)}
-        className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 empty:before:text-grey-60 empty:before:content-[attr(data-placeholder)] focus:outline-none [&_h1]:font-headline [&_h2]:font-headline ${
+        className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 empty:before:content-[attr(data-placeholder)] focus:outline-none [&_h1]:font-headline [&_h2]:font-headline ${
+          invalid ? 'empty:before:text-red-80' : 'empty:before:text-grey-60'
+        } ${
           isMobileView
             ? 'mt-6 min-h-[320px] pb-24 text-m [&_h1]:text-xl [&_h2]:text-l'
-            : 'mt-10 min-h-[480px] text-xl [&_h1]:text-[28px] [&_h2]:text-2xl'
+            : 'mt-10 min-h-[480px] text-l [&_h1]:text-[32px] [&_h2]:text-2xl'
         }`}
       />
 

@@ -15,6 +15,8 @@ interface FieldCardProps {
   field: FormField;
   /** 활성(편집 중) 카드 — 초록 보더 */
   isActive: boolean;
+  /** 필수 미충족 저장 시도 후 하이라이트 — 빨간 보더로 표시(활성/비활성 무관 우선) */
+  invalid?: boolean;
   onActivate: () => void;
   /** 편집된 완성 필드 — 변형별 에디터(FieldBody)가 타입 안전하게 구성해 전달. */
   onChange: (updated: FormField) => void;
@@ -32,6 +34,7 @@ interface FieldCardProps {
 export function FieldCard({
   field,
   isActive,
+  invalid = false,
   onActivate,
   onChange,
   onTypeChange,
@@ -71,7 +74,8 @@ export function FieldCard({
         ref={setNodeRef}
         style={sortableStyle}
         className={cn(
-          'rounded-2xl border border-grey-40 bg-white p-4 lg:p-7',
+          'rounded-2xl border bg-white p-4 lg:p-7',
+          invalid ? 'border-red-80' : 'border-grey-40',
           isDragging && 'relative z-50 opacity-50'
         )}
       >
@@ -89,7 +93,8 @@ export function FieldCard({
       style={sortableStyle}
       onFocusCapture={onActivate}
       className={cn(
-        'rounded-2xl border border-green-80 bg-white p-4 lg:p-7',
+        'rounded-2xl border bg-white p-4 lg:p-7',
+        invalid ? 'border-red-80' : 'border-green-80',
         isDragging && 'relative z-50 opacity-50'
       )}
     >
