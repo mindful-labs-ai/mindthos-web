@@ -22,7 +22,9 @@ export function EventBlock({
   onClick,
   selected,
 }: EventBlockProps) {
-  const style = CALENDAR_COLOR_STYLES[event.colorKey];
+  // 미확인 colorKey(서버 데이터 오염 등)여도 크래시하지 않도록 grey 폴백.
+  const style =
+    CALENDAR_COLOR_STYLES[event.colorKey] ?? CALENDAR_COLOR_STYLES.grey;
   // 선택(편집 중) 강조: 옅은 배경 → 시간 텍스트 색(진한 솔리드) 배경 + 흰 글자
   const bgClass = selected ? style.selectedBg : style.chipBg;
   const titleColor = selected ? 'text-white' : style.chipTitle;

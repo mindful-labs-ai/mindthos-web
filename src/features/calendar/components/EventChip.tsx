@@ -29,7 +29,9 @@ export function EventChip({
   selected,
   className: extraClassName,
 }: EventChipProps) {
-  const style = CALENDAR_COLOR_STYLES[event.colorKey];
+  // 미확인 colorKey(서버 데이터 오염 등)여도 크래시하지 않도록 grey 폴백.
+  const style =
+    CALENDAR_COLOR_STYLES[event.colorKey] ?? CALENDAR_COLOR_STYLES.grey;
   const centered = event.eventTimeKind === 'ALL_DAY';
   // 작성 중 더미 칩(미리보기)·공휴일은 클릭 불가.
   const isDraft = !!event.isDraft;

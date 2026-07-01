@@ -6,11 +6,31 @@ import {
 } from '@/features/document/components/DocumentSignatureFooter';
 import { FieldContent } from '@/features/document/components/FieldContent';
 import { parseFields } from '@/features/document/constants/formField';
+import type { FieldAnswer } from '@/features/document/types';
 import { MobileModalHeader } from '@/shared/ui';
 import { useAuthStore } from '@/stores/authStore';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
 import { formatSentDate } from './ClientDocumentsTab';
+
+/**
+ * D1 이전 제출 동의서 하위호환 — 예전엔 서명을 문서 레벨(response.signatureDataUrl)이 아니라
+ * 제거된 'signature' 필드의 답변(`{ signatureDataUrl }`)으로 저장했다. 현행 FieldAnswer엔 서명
+ * 답변 타입이 없으므로 unknown으로 방어적으로 접근해, signatureDataUrl 문자열을 가진 첫 답변을 반환.
+ * (없으면 undefined) — 데이터 마이그레이션 없이 과거 서명을 복원한다.
+ */
+export function findLegacyFieldSignature(
+  answers: Record<string, FieldAnswer>
+): string | undefined {
+  for (const answer of Object.values(answers)) {
+    const candidate = (answer as { signatureDataUrl?: unknown } | null)
+      ?.signatureDataUrl;
+    if (typeof candidate === 'string' && candidate.length > 0) {
+      return candidate;
+    }
+  }
+  return undefined;
+}
 
 interface SentDocumentViewProps {
   document: SentDocument;
@@ -37,6 +57,9 @@ export function SentDocumentView({
 
   // 내담자 제출 응답(완료 시) — 필드 key → FieldAnswer.
   const answers = document.response?.answers ?? {};
+  // 유효 서명 — 현행은 문서 레벨(response.signatureDataUrl), D1 이전 제출본은 필드 답변에 저장.
+  const effectiveSignature =
+    document.response?.signatureDataUrl ?? findLegacyFieldSignature(answers);
 
   const historyParts = [`${document.clientName} 내담자`];
   // 발송 실패는 알림톡이 나가지 않았으므로 "발송됨" 대신 "발송 실패"로 표기.
@@ -159,10 +182,10 @@ export function SentDocumentView({
             );
           })}
 
-          {/* 문서 레벨 최종 서명 — 완료된 동의서(requireSignature)의 제출 응답에 담긴 서명. */}
-          {document.response?.signatureDataUrl && (
+          {/* 최종 서명 — 문서 레벨 서명 우선, 없으면 D1 이전 제출본의 필드 서명으로 복원. */}
+          {effectiveSignature && (
             <DocumentSignatureFooter
-              signatureDataUrl={document.response.signatureDataUrl}
+              signatureDataUrl={effectiveSignature}
               clientName={document.clientName}
               dateLabel={
                 document.completedAt

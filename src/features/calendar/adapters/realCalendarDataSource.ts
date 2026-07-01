@@ -165,13 +165,38 @@ const COUNSEL_METHOD_FROM_SERVER: Record<ServerCounselMethod, CounselMethod> = {
   ONLINE: 'online',
 };
 
+/**
+ * 알려진 8종 색상 키. 서버 colorKey가 이 중 하나가 아니거나 누락/대소문자 불일치면
+ * 'grey'로 폴백해 렌더 크래시(예: 미확인 키로 CALENDAR_COLOR_STYLES 접근)를 막는다.
+ */
+const KNOWN_COLOR_KEYS: ReadonlySet<CalendarColorKey> = new Set([
+  'green',
+  'red',
+  'blue',
+  'grey',
+  'orange',
+  'yellow',
+  'purple',
+  'pink',
+]);
+
+/** 서버 colorKey → 소문자 정규화 + 미확인/누락은 'grey' 폴백. */
+function normalizeColorKey(
+  raw: ServerColorKey | null | undefined
+): CalendarColorKey {
+  const lower = ((raw as string | null | undefined) ?? '').toLowerCase();
+  return KNOWN_COLOR_KEYS.has(lower as CalendarColorKey)
+    ? (lower as CalendarColorKey)
+    : 'grey';
+}
+
 /** CalendarEventDto → 프론트 CalendarEvent (색은 이벤트가 직접 보관). */
 function toCalendarEvent(dto: CalendarEventDto): CalendarEvent {
   return {
     id: dto.id,
     title: dto.title,
     kind: KIND_FROM_SERVER[dto.kind],
-    colorKey: dto.colorKey.toLowerCase() as CalendarColorKey,
+    colorKey: normalizeColorKey(dto.colorKey),
     start: dto.startsAt,
     end: dto.endsAt ?? undefined,
     eventTimeKind: dto.eventTimeKind,

@@ -112,6 +112,27 @@ describe('realCalendarDataSource.listEvents — DTO 매핑', () => {
     expect(single?.repeat).toBeNull();
     expect(single?.colorKey).toBe('orange');
   });
+
+  it('미확인/누락 colorKey는 grey로 폴백하고 throw하지 않는다.', async () => {
+    req.mockResolvedValue({
+      event: [
+        // 8종에 없는 값(대소문자 무관) → grey
+        eventDto({ id: 'unknown', colorKey: 'MAGENTA' }),
+        // 누락(null/undefined) → grey (.toLowerCase() 크래시 방지)
+        eventDto({ id: 'missing', colorKey: undefined }),
+      ],
+      holiday: [],
+      category: [],
+    });
+
+    const events = await realCalendarDataSource.listEvents({
+      start: '2026-01-01T00:00:00.000Z',
+      end: '2026-01-31T23:59:59.000Z',
+    });
+
+    expect(events.find((e) => e.id === 'unknown')?.colorKey).toBe('grey');
+    expect(events.find((e) => e.id === 'missing')?.colorKey).toBe('grey');
+  });
 });
 
 describe('realCalendarDataSource.createEvent', () => {

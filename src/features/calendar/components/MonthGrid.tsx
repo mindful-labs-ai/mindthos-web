@@ -71,7 +71,11 @@ export function MonthGrid({
           const dayEvents = events
             .filter((e) => isSameDay(dayjs(e.start), day))
             .sort(sortEvents);
-          const overflow = dayEvents.length - MAX_CHIPS;
+          // 작성 중 미리보기(draft)는 실제 일정 정원(MAX_CHIPS)·"+N개" 집계에서 제외하고
+          // 별도로 항상 표시한다 — 미리보기가 실제 일정을 밀어내지 않도록.
+          const draftEvents = dayEvents.filter((e) => e.isDraft);
+          const realEvents = dayEvents.filter((e) => !e.isDraft);
+          const overflow = realEvents.length - MAX_CHIPS;
 
           return (
             <div
@@ -107,7 +111,7 @@ export function MonthGrid({
               </div>
 
               <div className="flex flex-col gap-1">
-                {dayEvents.slice(0, MAX_CHIPS).map((event) => (
+                {realEvents.slice(0, MAX_CHIPS).map((event) => (
                   <EventChip
                     key={event.id}
                     event={event}
@@ -124,6 +128,10 @@ export function MonthGrid({
                     +{overflow}개
                   </span>
                 )}
+                {/* 미리보기 draft 칩 — 정원과 무관하게 항상 마지막에 표시. */}
+                {draftEvents.map((event) => (
+                  <EventChip key={event.id} event={event} />
+                ))}
               </div>
             </div>
           );
