@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
@@ -21,6 +21,7 @@ import { useCalendarState } from '../hooks/useCalendarState';
 import type {
   AddEventDraft,
   CalendarEvent,
+  CalendarEventInput,
   CalendarEventScope,
 } from '../types';
 import { minutesToHHmm, type Dayjs } from '../utils/calendarDate';
@@ -28,6 +29,46 @@ import { buildCalendarEventInput } from '../utils/eventMutations';
 
 import { CalendarView } from './CalendarView';
 import { MobileCalendarView } from './MobileCalendarView';
+
+/** 낙관적 임시 일정 id 접두사 — 서버 재조회로 교체되기 전 캐시에 잠깐 얹는 표식. */
+const TEMP_EVENT_PREFIX = '__temp__';
+
+/** 일정 캐시 쿼리들(현재 뷰 포함)에 대한 낙관적 갱신용 필터·타입. */
+type EventsCacheEntry = [readonly unknown[], CalendarEvent[] | undefined];
+
+interface EventMutationContext {
+  previous: EventsCacheEntry[];
+}
+
+interface SubmitEventVars {
+  input: CalendarEventInput;
+  editing: CalendarEvent | null;
+  scope?: CalendarEventScope;
+  occurrenceDate: string | null;
+}
+
+interface DeleteEventVars {
+  id: string;
+  scope: CalendarEventScope;
+  occurrenceDate: string | null;
+}
+
+/** 서버 입력(CalendarEventInput) → 캐시 표시용 이벤트 필드(id 제외). 낙관적 생성/수정 공용. */
+function eventFieldsFromInput(
+  input: CalendarEventInput
+): Omit<CalendarEvent, 'id'> {
+  return {
+    title: input.title,
+    kind: input.kind,
+    colorKey: input.colorKey,
+    start: input.start,
+    end: input.end,
+    eventTimeKind: input.eventTimeKind,
+    categoryId: input.categoryId,
+    clientId: input.clientId,
+    counselMethod: input.counselMethod,
+  };
+}
 
 /**
  * 캘린더 컨테이너 — 상태/데이터/필터 로직.
@@ -64,7 +105,12 @@ export default function CalendarContainer() {
     setSelectedDate,
   } = useCalendarState();
 
-  const { data: events = [] } = useCalendarEvents(viewMode, current);
+  // isLoading = 최초 로드(캐시 없음). 낙관적 갱신을 가리지 않도록 백그라운드 refetch(isFetching)에는
+  // 스피너를 걸지 않는다 — 첫 로드에만 그리드 위 로딩 오버레이를 노출한다.
+  const { data: events = [], isLoading: isEventsLoading } = useCalendarEvents(
+    viewMode,
+    current
+  );
   const { data: categories = [] } = useCalendarCategories();
 
   // 카테고리 로드 시 기본 표시(true)로 등록
@@ -147,75 +193,163 @@ export default function CalendarContainer() {
     [openAddEvent]
   );
 
-  // 일정 추가/변경 제출: 편집 중이면 update(반복은 scope로 범위 지정), 아니면 create → 쿼리 무효화.
+  // 일정 생성/수정 낙관적 뮤테이션.
+  //  onMutate: 진행 중 refetch 취소 + 현재 뷰 포함 모든 일정 캐시를 스냅샷 → 즉시 반영
+  //    (단일 생성=임시 이벤트 추가, 수정=id 매칭 이벤트 교체). 반복 생성은 회차 전개가 서버 몫이라 스킵.
+  //  onError: 스냅샷으로 롤백 + 실패 토스트.
+  //  onSettled: 서버 진실로 재조정(invalidate) — 근사 낙관치는 여기서 정확히 교정된다.
+  const { mutate: submitEvent } = useMutation<
+    unknown,
+    unknown,
+    SubmitEventVars,
+    EventMutationContext
+  >({
+    mutationFn: ({ input, editing, scope, occurrenceDate }) => {
+      if (editing) {
+        // 편집 — 반복(시리즈)이면 scope(this/following/all). this/following은 회차(occurrenceDate)로
+        // 어느 회차인지 서버에 알린다(EXDATE+override / 분할). 단일은 scope 무시.
+        return (
+          calendarDataSource.updateEvent?.(editing.id, input, {
+            scope,
+            occurrenceDate,
+          }) ?? Promise.resolve()
+        );
+      }
+      return calendarDataSource.createEvent?.(input) ?? Promise.resolve();
+    },
+    onMutate: async ({ input, editing }) => {
+      await queryClient.cancelQueries({ queryKey: ['calendar'] });
+      const previous = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: ['calendar', 'events'],
+      });
+      if (editing) {
+        const id = editing.id;
+        queryClient.setQueriesData<CalendarEvent[]>(
+          { queryKey: ['calendar', 'events'] },
+          (old) =>
+            old?.map((e) =>
+              e.id === id ? { ...e, ...eventFieldsFromInput(input) } : e
+            )
+        );
+      } else if (!input.repeat) {
+        // 반복 생성은 회차를 클라이언트에서 전개할 수 없어 낙관 추가를 생략(onSettled 재조회에 의존).
+        const temp: CalendarEvent = {
+          id: `${TEMP_EVENT_PREFIX}${Date.now()}`,
+          ...eventFieldsFromInput(input),
+        };
+        queryClient.setQueriesData<CalendarEvent[]>(
+          { queryKey: ['calendar', 'events'] },
+          (old) => (old ? [...old, temp] : old)
+        );
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous.forEach(([key, data]) =>
+        queryClient.setQueryData(key, data)
+      );
+      toast({
+        title: '일정 저장 실패',
+        description: '잠시 후 다시 시도해 주세요.',
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
+    },
+  });
+
+  // 일정 삭제 낙관적 뮤테이션 — id 매칭 이벤트를 즉시 제거. 반복(all/following)은 한 행만 지워 근사이며,
+  // onSettled 재조회로 EXDATE/override/분할 결과를 서버에서 다시 읽어 정확히 맞춘다.
+  const { mutate: deleteEvent } = useMutation<
+    unknown,
+    unknown,
+    DeleteEventVars,
+    EventMutationContext
+  >({
+    mutationFn: ({ id, scope, occurrenceDate }) =>
+      calendarDataSource.deleteEvent?.(id, scope, occurrenceDate) ??
+      Promise.resolve(),
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: ['calendar'] });
+      const previous = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: ['calendar', 'events'],
+      });
+      queryClient.setQueriesData<CalendarEvent[]>(
+        { queryKey: ['calendar', 'events'] },
+        (old) => old?.filter((e) => e.id !== id)
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      context?.previous.forEach(([key, data]) =>
+        queryClient.setQueryData(key, data)
+      );
+      toast({
+        title: '일정 삭제 실패',
+        description: '잠시 후 다시 시도해 주세요.',
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar', 'events'] });
+    },
+  });
+
+  // 일정 추가/변경 제출: 편집 중이면 update(반복은 scope로 범위 지정), 아니면 create.
+  // 낙관 반영은 뮤테이션이 담당하고, 성공 시에만 트래킹 + 패널 닫기.
   const handleSubmitEvent = React.useCallback(
-    async (draft: AddEventDraft, scope?: CalendarEventScope) => {
+    (draft: AddEventDraft, scope?: CalendarEventScope) => {
       const date = selectedDate ?? current;
       const input = buildCalendarEventInput(draft, date);
-
-      try {
-        if (editingEvent) {
-          // 편집 — 반복(시리즈)이면 scope(this/following/all). this/following은 회차(occurrenceDate)로
-          // 어느 회차인지 서버에 알린다(EXDATE+override / 분할). 단일은 scope 무시.
-          await calendarDataSource.updateEvent?.(editingEvent.id, input, {
-            scope,
-            occurrenceDate: editingEvent.occurrenceDate ?? null,
-          });
-        } else {
-          await calendarDataSource.createEvent?.(input);
+      submitEvent(
+        {
+          input,
+          editing: editingEvent,
+          scope,
+          occurrenceDate: editingEvent?.occurrenceDate ?? null,
+        },
+        {
+          onSuccess: () => {
+            trackEvent(
+              editingEvent
+                ? MixpanelEvent.CalendarEventUpdate
+                : MixpanelEvent.CalendarEventCreate,
+              {
+                kind: draft.kind,
+                allDay: draft.eventTimeKind === 'ALL_DAY',
+                recurring: !!draft.repeat || !!editingEvent?.seriesId,
+              }
+            );
+            closePanel();
+          },
         }
-        await queryClient.invalidateQueries({
-          queryKey: ['calendar', 'events'],
-        });
-        trackEvent(
-          editingEvent
-            ? MixpanelEvent.CalendarEventUpdate
-            : MixpanelEvent.CalendarEventCreate,
-          {
-            kind: draft.kind,
-            allDay: draft.eventTimeKind === 'ALL_DAY',
-            recurring: !!draft.repeat || !!editingEvent?.seriesId,
-          }
-        );
-        closePanel();
-      } catch {
-        toast({
-          title: '일정 저장 실패',
-          description: '잠시 후 다시 시도해 주세요.',
-        });
-      }
+      );
     },
-    [selectedDate, current, editingEvent, queryClient, closePanel, toast]
+    [selectedDate, current, editingEvent, submitEvent, closePanel]
   );
 
-  // 일정 삭제(편집 모드) — scope DELETE 후 재조회. 반복은 this(EXDATE+override)/following(분할)/all.
-  // EXDATE/override/분할은 캐시 재구성이 복잡해 낙관적 제거 대신 invalidate로 서버 상태를 다시 읽는다.
+  // 일정 삭제(편집 모드) — 반복은 this(EXDATE+override)/following(분할)/all. 낙관 제거는 뮤테이션이 담당.
   const handleDeleteEvent = React.useCallback(
-    async (scope: CalendarEventScope) => {
+    (scope: CalendarEventScope) => {
       if (!editingEvent) return;
       const target = editingEvent;
       closePanel();
-      try {
-        await calendarDataSource.deleteEvent?.(
-          target.id,
+      deleteEvent(
+        {
+          id: target.id,
           scope,
-          target.occurrenceDate ?? null
-        );
-        await queryClient.invalidateQueries({
-          queryKey: ['calendar', 'events'],
-        });
-        trackEvent(MixpanelEvent.CalendarEventDelete, {
-          scope,
-          recurring: !!target.seriesId,
-        });
-      } catch {
-        toast({
-          title: '일정 삭제 실패',
-          description: '잠시 후 다시 시도해 주세요.',
-        });
-      }
+          occurrenceDate: target.occurrenceDate ?? null,
+        },
+        {
+          onSuccess: () => {
+            trackEvent(MixpanelEvent.CalendarEventDelete, {
+              scope,
+              recurring: !!target.seriesId,
+            });
+          },
+        }
+      );
     },
-    [editingEvent, queryClient, closePanel, toast]
+    [editingEvent, deleteEvent, closePanel]
   );
 
   // 카테고리 삭제(설정 팝오버) — 소속 일정도 함께 삭제(서버 CASCADE). 캘린더 전체 무효화.
@@ -280,6 +414,7 @@ export default function CalendarContainer() {
         current={current}
         viewMode={viewMode}
         events={eventsForView}
+        isEventsLoading={isEventsLoading}
         categories={categories}
         kindVisible={kindVisible}
         categoryVisible={categoryVisible}
@@ -311,6 +446,7 @@ export default function CalendarContainer() {
       current={current}
       viewMode={viewMode}
       events={eventsForView}
+      isEventsLoading={isEventsLoading}
       categories={categories}
       kindVisible={kindVisible}
       categoryVisible={categoryVisible}

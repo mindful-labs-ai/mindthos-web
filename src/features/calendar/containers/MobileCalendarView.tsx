@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Spinner } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import type { CalendarProvider } from '../adapters';
@@ -25,6 +26,8 @@ interface MobileCalendarViewProps {
   current: Dayjs;
   viewMode: CalendarViewMode;
   events: CalendarEvent[];
+  /** 최초 일정 로드 중 여부 — 그리드 영역에 로딩 오버레이 표시(백그라운드 refetch는 제외). */
+  isEventsLoading?: boolean;
   categories: CalendarCategory[];
   kindVisible: Record<CalendarEventKind, boolean>;
   categoryVisible: Record<string, boolean>;
@@ -61,6 +64,7 @@ export function MobileCalendarView({
   current,
   viewMode,
   events,
+  isEventsLoading,
   categories,
   kindVisible,
   categoryVisible,
@@ -128,7 +132,7 @@ export function MobileCalendarView({
         onOpenFilter={() => setFilterOpen(true)}
       />
 
-      <div className="min-h-0 flex-1">
+      <div className="relative min-h-0 flex-1">
         {viewMode === 'month' ? (
           <MobileMonthGrid
             current={current}
@@ -144,6 +148,11 @@ export function MobileCalendarView({
             onSelectDay={onSetCurrent}
             onEventClick={onEventClick}
           />
+        )}
+        {isEventsLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+            <Spinner size="lg" ariaLabel="일정을 불러오는 중" />
+          </div>
         )}
       </div>
 

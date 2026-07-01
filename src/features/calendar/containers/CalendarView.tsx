@@ -1,3 +1,5 @@
+import { Spinner } from '@/shared/ui';
+
 import type { CalendarProvider } from '../adapters';
 import { CalendarToolbar } from '../components/CalendarToolbar';
 import { MonthGrid } from '../components/MonthGrid';
@@ -20,6 +22,8 @@ interface CalendarViewProps {
   current: Dayjs;
   viewMode: CalendarViewMode;
   events: CalendarEvent[];
+  /** 최초 일정 로드 중 여부 — 그리드 영역에 로딩 오버레이 표시(백그라운드 refetch는 제외). */
+  isEventsLoading?: boolean;
   categories: CalendarCategory[];
   kindVisible: Record<CalendarEventKind, boolean>;
   categoryVisible: Record<string, boolean>;
@@ -62,6 +66,7 @@ export function CalendarView({
   current,
   viewMode,
   events,
+  isEventsLoading,
   categories,
   kindVisible,
   categoryVisible,
@@ -105,28 +110,35 @@ export function CalendarView({
             onNext={onNext}
             onViewModeChange={onViewModeChange}
           />
-          {viewMode === 'month' ? (
-            <MonthGrid
-              current={current}
-              events={events}
-              selectedDate={selectedDate}
-              selectedEvent={editingEvent}
-              onDateClick={onDateClick}
-              onDateDoubleClick={onDateDoubleClick}
-              onEventClick={onEventClick}
-            />
-          ) : (
-            <WeekGrid
-              current={current}
-              events={events}
-              onCreateRange={onCreateRange}
-              onEventClick={onEventClick}
-              selectedDate={selectedDate}
-              selectedEvent={editingEvent}
-              addEventTime={addEventTime}
-              showAddSelection={sidePanel === 'addEvent' && !editingEvent}
-            />
-          )}
+          <div className="relative">
+            {viewMode === 'month' ? (
+              <MonthGrid
+                current={current}
+                events={events}
+                selectedDate={selectedDate}
+                selectedEvent={editingEvent}
+                onDateClick={onDateClick}
+                onDateDoubleClick={onDateDoubleClick}
+                onEventClick={onEventClick}
+              />
+            ) : (
+              <WeekGrid
+                current={current}
+                events={events}
+                onCreateRange={onCreateRange}
+                onEventClick={onEventClick}
+                selectedDate={selectedDate}
+                selectedEvent={editingEvent}
+                addEventTime={addEventTime}
+                showAddSelection={sidePanel === 'addEvent' && !editingEvent}
+              />
+            )}
+            {isEventsLoading && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/60">
+                <Spinner size="lg" ariaLabel="일정을 불러오는 중" />
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
