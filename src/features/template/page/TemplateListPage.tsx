@@ -15,7 +15,6 @@ import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Skeleton } from '@/shared/ui/atoms/Skeleton';
-import { Title } from '@/shared/ui/atoms/Title';
 import { Card } from '@/shared/ui/composites/Card';
 import { TemplateCard } from '@/widgets/template/TemplateCard';
 
@@ -85,9 +84,9 @@ export const TemplateListPage: React.FC = () => {
     >
       {!isMobileView && (
         <div className="flex items-end justify-between">
-          <Title as="h1" className="text-2xl font-emphasize text-grey-100">
+          <h1 className="text-2xl font-emphasize text-grey-100">
             상담 노트 양식
-          </Title>
+          </h1>
           {defaultNote && (
             <p className="text-m font-medium text-grey-60">
               현재 나의 기본 노트 : {defaultNote.title}
