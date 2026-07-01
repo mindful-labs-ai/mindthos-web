@@ -15,11 +15,10 @@ interface FieldTypeDropdownProps {
   onChange: (type: FormFieldType) => void;
 }
 
-/** 셀렉터 항목 그룹 — 그룹 사이에 구분선 */
+/** 셀렉터 항목 그룹 — 그룹 사이에 구분선. 동의(consent)는 동의서 전용이라 질문지 편집기에선 미노출. */
 const TYPE_GROUPS: FormFieldType[][] = [
   ['single', 'multiple'],
   ['short', 'long', 'score'],
-  ['consent'],
   ['section', 'richtext'],
 ];
 
