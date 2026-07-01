@@ -10,7 +10,7 @@ import { useDocumentStore, type MyDocument } from '@/stores/documentStore';
 
 import {
   MY_DOCUMENT_KIND_LABEL,
-  myDocumentStatusChip,
+  getMyDocumentStatusChip,
 } from '../constants/myDocument';
 
 interface MyDocumentCardProps {
@@ -36,7 +36,7 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   // 발송 가능(완료) / 발송 불가(편집 중) 상태 칩 — validation(content 유효성) 파생
-  const statusChip = myDocumentStatusChip(document);
+  const statusChip = getMyDocumentStatusChip(document);
 
   const handleDelete = () => {
     setIsConfirmOpen(false);

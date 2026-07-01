@@ -19,7 +19,7 @@ export function isSendableDocument(
 }
 
 /** 내 문서 상태 칩 — 발송 가능(완료, 초록) / 발송 불가(편집 중, 앰버) */
-export function myDocumentStatusChip(
+export function getMyDocumentStatusChip(
   doc: Pick<MyDocument, 'status' | 'validation'>
 ): {
   label: string;

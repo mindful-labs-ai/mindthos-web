@@ -35,7 +35,8 @@ export function getNoteFormCategory(
   template: Pick<TemplateListItem, 'category'>
 ): NoteFormCategory {
   const category = template.category;
-  return (category && SERVER_CATEGORY_TO_NOTE_FORM[category]) || 'institution';
+  if (!category) return 'institution';
+  return SERVER_CATEGORY_TO_NOTE_FORM[category] ?? 'institution';
 }
 
 /** 카테고리별로 템플릿을 그룹핑 (순서는 NOTE_FORM_CATEGORY_ORDER). */
