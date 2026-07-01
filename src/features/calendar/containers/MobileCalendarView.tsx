@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { Spinner } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import type { CalendarProvider } from '../adapters';
+import { GridLoadingOverlay } from '../components/GridLoadingOverlay';
 import { CalendarFab } from '../components/mobile/CalendarFab';
 import { MobileCalendarToolbar } from '../components/mobile/MobileCalendarToolbar';
 import { MobileDayView } from '../components/mobile/MobileDayView';
@@ -149,11 +149,7 @@ export function MobileCalendarView({
             onEventClick={onEventClick}
           />
         )}
-        {isEventsLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-            <Spinner size="lg" ariaLabel="일정을 불러오는 중" />
-          </div>
-        )}
+        {isEventsLoading && <GridLoadingOverlay />}
       </div>
 
       <CalendarFab onClick={() => onOpenAddEvent('counseling', current)} />

@@ -1,7 +1,6 @@
-import { Spinner } from '@/shared/ui';
-
 import type { CalendarProvider } from '../adapters';
 import { CalendarToolbar } from '../components/CalendarToolbar';
+import { GridLoadingOverlay } from '../components/GridLoadingOverlay';
 import { MonthGrid } from '../components/MonthGrid';
 import { AddCalendarPanel } from '../components/sidebar/AddCalendarPanel';
 import { AddEventPanel } from '../components/sidebar/AddEventPanel';
@@ -133,11 +132,7 @@ export function CalendarView({
                 showAddSelection={sidePanel === 'addEvent' && !editingEvent}
               />
             )}
-            {isEventsLoading && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-white/60">
-                <Spinner size="lg" ariaLabel="일정을 불러오는 중" />
-              </div>
-            )}
+            {isEventsLoading && <GridLoadingOverlay rounded />}
           </div>
         </div>
       </section>
