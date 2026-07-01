@@ -87,7 +87,9 @@ export function RichTextEditor({
         aria-multiline="true"
         aria-label="문서 내용"
         data-placeholder="내용을 입력해주세요."
-        onInput={(e) => onContentChange(e.currentTarget.innerHTML)}
+        onInput={(e) =>
+          onContentChange(DOMPurify.sanitize(e.currentTarget.innerHTML))
+        }
         className={`mx-auto w-full max-w-[851px] font-medium leading-[150%] text-grey-100 empty:before:content-[attr(data-placeholder)] focus:outline-none [&_h1]:font-headline [&_h2]:font-headline ${
           invalid ? 'empty:before:text-red-80' : 'empty:before:text-grey-60'
         } ${
