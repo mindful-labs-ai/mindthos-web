@@ -141,7 +141,7 @@ export function DocumentContainer() {
       {/* 마음토스 기본 문서 — 고정 목록 */}
       <section className="mt-0 lg:mt-10">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-headline text-grey-100">
+          <h2 className="text-l font-headline text-grey-100">
             마음토스 기본 문서
           </h2>
           {isMobileView && sendButton}
@@ -160,7 +160,7 @@ export function DocumentContainer() {
       {/* 내 문서 — 팝오버로 추가 */}
       <section className="mt-12">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-headline text-grey-100">내 문서</h2>
+          <h2 className="text-l font-headline text-grey-100">내 문서</h2>
           {isMobileView && registerButton}
         </div>
         <div className={cardListClass}>
