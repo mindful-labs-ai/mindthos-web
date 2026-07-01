@@ -84,7 +84,7 @@ export const TemplateListPage: React.FC = () => {
     >
       {!isMobileView && (
         <div className="flex items-end justify-between">
-          <h1 className="text-2xl font-emphasize text-grey-100">
+          <h1 className="text-2xl font-headline text-grey-100">
             상담 노트 양식
           </h1>
           {defaultNote && (
