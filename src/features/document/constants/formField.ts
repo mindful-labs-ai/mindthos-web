@@ -178,8 +178,8 @@ const ALL_FIELD_TYPES: ReadonlySet<FormFieldType> = new Set<FormFieldType>([
   'consent',
 ]);
 
-/** 단일 필드 유효성 — 서버 validateFields 규칙 미러 */
-function isValidField(field: FormField): boolean {
+/** 단일 필드 유효성 — 서버 validateFields 규칙 미러. 저장 시 빨간 하이라이트 판정에도 사용. */
+export function isValidField(field: FormField): boolean {
   if (!ALL_FIELD_TYPES.has(field.type)) return false;
   if (typeof field.key !== 'string' || field.key.trim().length === 0) {
     return false;

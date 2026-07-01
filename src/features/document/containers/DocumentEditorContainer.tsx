@@ -4,13 +4,16 @@ import { ChevronLeft } from 'lucide-react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { getDocumentViewRoute, ROUTES } from '@/app/router/constants';
+import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import {
   useDocumentStore,
   type MyDocument,
   type MyDocumentKind,
+  type MyDocumentStatus,
 } from '@/stores/documentStore';
 
 import { QnaEditor } from '../components/editor/QnaEditor';
@@ -64,6 +67,10 @@ export function DocumentEditorContainer() {
   const [fields, setFields] = useState<FormField[]>(() => [createField()]);
   // 동의서(consent) 본문 — 텍스트+도구모음 에디터의 HTML 문자열.
   const [consentHtml, setConsentHtml] = useState('');
+  // 필수 미충족 저장 시도 후 하이라이트 노출 여부 (한번 켜지면 유지 — 채우면 필드별 자동 해제)
+  const [showValidation, setShowValidation] = useState(false);
+  // 발송 불가(편집 중) 상태로 저장할지 확인하는 모달
+  const [incompleteOpen, setIncompleteOpen] = useState(false);
 
   // 편집 모드: 단건 조회 후 에디터 상태(제목·본문) 채우기
   useEffect(() => {
@@ -103,42 +110,58 @@ export function DocumentEditorContainer() {
     );
   };
 
-  // 임시 QA 정책: 저장 버튼은 서버 전송 가능 상태(COMPLETED)로 저장한다.
-  // 동의서는 본문 HTML만, qna는 필드 유효성으로 판정.
-  const canSave =
-    title.trim().length > 0 &&
-    (kind === 'consent'
-      ? consentHtml.trim().length > 0
-      : validateFields(fields));
+  // 발송 가능(모든 필수 충족) 여부 — 저장 상태(completed/draft)와 하이라이트를 가른다.
+  // 제목 + 본문(동의서=본문 HTML / qna=필드 유효성).
+  const isTitleValid = title.trim().length > 0;
+  const isBodyValid =
+    kind === 'consent' ? consentHtml.trim().length > 0 : validateFields(fields);
+  const isSendable = isTitleValid && isBodyValid;
 
-  const handleSave = async () => {
-    if (!canSave) return;
+  // 실제 저장 — 발송 가능이면 completed, 아니면 draft(편집 중)로 보관. 항상 저장은 되고,
+  // draft는 발송 대상 목록에서 제외되고 카드에 '편집 중' 칩으로 표시된다.
+  const commitSave = async () => {
     const content =
       kind === 'consent'
         ? buildConsentContent(consentHtml.trim())
         : buildContent(fields);
+    const status: MyDocumentStatus = isSendable ? 'completed' : 'draft';
     try {
       if (editingDocument) {
         await updateMyDocument(editingDocument.id, {
           title: title.trim(),
           content,
-          status: 'completed',
+          status,
         });
       } else {
-        await addMyDocument({
-          title: title.trim(),
-          kind,
-          content,
-          status: 'completed',
-        });
+        await addMyDocument({ title: title.trim(), kind, content, status });
       }
       goBack();
-    } catch {
+    } catch (error) {
+      // 서버가 사유를 준 경우(예: 발송 가능 저장 400) 그 메시지를 그대로 안내, 아니면 일반 문구.
       toast({
         title: '문서 저장 실패',
-        description: '잠시 후 다시 시도해 주세요.',
+        description:
+          error instanceof ServerApiError
+            ? error.message
+            : '잠시 후 다시 시도해 주세요.',
       });
     }
+  };
+
+  // 저장 버튼 — 상시 활성. 발송 가능이면 즉시 저장, 아니면 하이라이트 + 확인 모달.
+  const handleSave = () => {
+    if (isSendable) {
+      void commitSave();
+      return;
+    }
+    setShowValidation(true);
+    setIncompleteOpen(true);
+  };
+
+  // 확인 모달에서 '이대로 저장' — 발송 불가(편집 중) 상태로 저장하고 목록/뷰로 복귀.
+  const handleSaveIncomplete = () => {
+    setIncompleteOpen(false);
+    void commitSave();
   };
 
   // 편집 모드 단건 조회 중 — 에디터가 빈 상태로 깜빡이지 않도록 로딩 표시
@@ -225,12 +248,7 @@ export function DocumentEditorContainer() {
           <button
             type="button"
             onClick={handleSave}
-            disabled={!canSave}
-            className={`h-[31px] rounded-lg px-3.5 text-m font-medium text-white transition-opacity ${
-              canSave
-                ? 'bg-green-80 lg:hover:opacity-90'
-                : 'cursor-not-allowed bg-grey-40'
-            }`}
+            className="h-[31px] rounded-lg bg-green-80 px-3.5 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
           >
             저장
           </button>
@@ -243,14 +261,20 @@ export function DocumentEditorContainer() {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="제목을 입력해주세요"
           aria-label="문서 제목"
-          className={`mx-auto block w-full max-w-[851px] bg-transparent text-center font-emphasize text-grey-100 placeholder:text-grey-60 focus:outline-none ${
+          className={`mx-auto block w-full max-w-[851px] bg-transparent text-center font-emphasize text-grey-100 focus:outline-none ${
+            showValidation && !isTitleValid
+              ? 'placeholder:text-red-80'
+              : 'placeholder:text-grey-60'
+          } ${
             isMobileView
               ? 'mt-4 text-xl leading-[29px]'
               : 'mt-12 text-[32px] leading-[38px]'
           }`}
         />
         <div
-          className={`mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}
+          className={`mx-auto w-full max-w-[851px] border-b ${
+            showValidation && !isTitleValid ? 'border-red-80' : 'border-grey-40'
+          } ${isMobileView ? 'mt-6' : 'mt-12'}`}
         />
 
         {/* 동의서: 텍스트+도구모음 본문 에디터 / 질문·응답: 필드 에디터 */}
@@ -258,11 +282,50 @@ export function DocumentEditorContainer() {
           <RichTextEditor
             initialHtml={consentHtml || undefined}
             onContentChange={setConsentHtml}
+            invalid={showValidation && !isBodyValid}
           />
         ) : (
-          <QnaEditor fields={fields} onFieldsChange={setFields} />
+          <QnaEditor
+            fields={fields}
+            onFieldsChange={setFields}
+            showInvalid={showValidation}
+          />
         )}
       </div>
+
+      {/* 발송 불가(편집 중) 저장 확인 모달 — 필수 미충족 저장 시 */}
+      <Modal
+        open={incompleteOpen}
+        onOpenChange={setIncompleteOpen}
+        className="lg:w-[400px] lg:max-w-[400px]"
+      >
+        <div className="flex flex-col items-center py-2 text-center">
+          <h2 className="text-l font-headline text-grey-100">
+            이대로 저장하면 발송할 수 없어요
+          </h2>
+          <p className="mt-3 text-m font-medium leading-[150%] text-grey-70">
+            필수 항목이 비어 있어 내담자에게 보낼 수 없어요. 지금은 &lsquo;편집
+            중&rsquo;으로 저장되고, 빨갛게 표시된 항목을 채워 다시 저장하면
+            발송할 수 있어요.
+          </p>
+          <div className="mt-7 flex w-full gap-3">
+            <button
+              type="button"
+              onClick={() => setIncompleteOpen(false)}
+              className="h-[44px] flex-1 rounded-lg border border-grey-40 bg-white text-m font-medium text-grey-100 transition-colors lg:hover:bg-grey-10"
+            >
+              돌아가서 채우기
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveIncomplete}
+              className="h-[44px] flex-1 rounded-lg bg-green-80 text-m font-emphasize text-white transition-opacity lg:hover:opacity-90"
+            >
+              이대로 저장
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

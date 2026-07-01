@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
+import { isSendableDocument } from '@/features/document/constants/myDocument';
 import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { UserIcon } from '@/shared/icons';
@@ -140,6 +141,8 @@ export function SendDocumentModal({
   const [isDeadlineOpen, setIsDeadlineOpen] = useState(false);
 
   const selectedClient = clients.find((c) => c.id === selectedClientId) ?? null;
+  // 발송 가능(완료)한 내 문서만 노출 — 편집 중(필수 항목 미완)은 발송 대상에서 제외
+  const sendableMyDocuments = myDocuments.filter(isSendableDocument);
 
   // 열릴 때마다 초기화 — 초기 발송 대상/기본 문서/기본 기한 + 문서 목록 로드
   useEffect(() => {
@@ -148,6 +151,20 @@ export function SendDocumentModal({
     setDeadline('1w');
     void loadDocuments();
   }, [open, initialClientId, loadDocuments]);
+
+  // 선택했던 문서가 더 이상 유효하지 않으면(삭제되었거나 편집 중으로 바뀌어 발송 불가) 선택 해제.
+  // 예: 완료 문서를 골라둔 채 닫고 → 그 문서를 편집해 편집 중으로 만든 뒤 재오픈한 경우.
+  // 해제되면 아래 기본 선택 효과가 발송 가능한 문서로 다시 채운다(서버 400 전에 UI에서 정리).
+  useEffect(() => {
+    if (!open || !selectedDocument) return;
+    const stillSendable =
+      selectedDocument.source === 'my'
+        ? myDocuments.some(
+            (d) => d.id === selectedDocument.id && isSendableDocument(d)
+          )
+        : templates.some((d) => d.id === selectedDocument.id);
+    if (!stillSendable) setSelectedDocument(null);
+  }, [open, selectedDocument, templates, myDocuments]);
 
   // 템플릿 로드 후 기본 선택이 비어 있으면 첫 마음토스 양식으로 채움
   useEffect(() => {
@@ -224,12 +241,12 @@ export function SendDocumentModal({
   // 문서 선택/마감 기한 목록 본문 — 데스크탑 드롭다운/모바일 바텀시트 공용
   const documentList = (
     <>
-      {myDocuments.length > 0 && (
+      {sendableMyDocuments.length > 0 && (
         <>
           <p className="px-2.5 py-1.5 text-sm font-medium text-grey-60">
             내 문서
           </p>
-          {myDocuments.map((doc) => (
+          {sendableMyDocuments.map((doc) => (
             <button
               key={doc.id}
               type="button"

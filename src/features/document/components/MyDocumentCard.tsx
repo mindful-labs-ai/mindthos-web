@@ -8,7 +8,10 @@ import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useDocumentStore, type MyDocument } from '@/stores/documentStore';
 
-import { MY_DOCUMENT_KIND_LABEL } from '../constants/myDocument';
+import {
+  MY_DOCUMENT_KIND_LABEL,
+  myDocumentStatusChip,
+} from '../constants/myDocument';
 
 interface MyDocumentCardProps {
   document: MyDocument;
@@ -32,6 +35,8 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
   // 케밥 드롭다운 열림 / 삭제 확인 모달 열림
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  // 발송 가능(완료) / 발송 불가(편집 중) 상태 칩 — validation(content 유효성) 파생
+  const statusChip = myDocumentStatusChip(document);
 
   const handleDelete = () => {
     setIsConfirmOpen(false);
@@ -60,6 +65,13 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
           {formatRegisteredDate(document.createdAt)}
         </p>
       </button>
+
+      {/* 상태 칩 — 완료(발송 가능) / 편집 중(발송 불가) */}
+      <span
+        className={`pointer-events-none absolute bottom-[18px] right-6 rounded-lg px-2.5 py-1 text-sm font-headline ${statusChip.className}`}
+      >
+        {statusChip.label}
+      </span>
 
       {/* 케밥 메뉴 — 삭제하기 */}
       <div className="absolute right-3 top-4">
