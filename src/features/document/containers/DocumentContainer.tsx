@@ -126,7 +126,7 @@ export function DocumentContainer() {
 
   return (
     // max-w 1364 = 카드 4장(297×4) + gap(16×3) + 좌우 패딩(64×2) — 한 줄 4장 보장
-    <div className="mx-auto w-full max-w-[1364px] px-4 py-6 md:px-10 lg:px-16 lg:py-[42px]">
+    <div className="mx-auto flex min-h-screen w-full max-w-[1364px] flex-col px-4 py-6 md:px-10 lg:px-16 lg:py-[42px]">
       {/* 헤더: 타이틀 + 액션 버튼 — 모바일은 숨기고 버튼을 각 섹션 제목 옆으로 이동 */}
       {!isMobileView && (
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -138,54 +138,57 @@ export function DocumentContainer() {
         </div>
       )}
 
-      {/* 마음토스 기본 문서 — 고정 목록 */}
-      <section className="mt-0 lg:mt-10">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-l font-headline text-grey-100">
-            마음토스 기본 문서
-          </h2>
-          {isMobileView && sendButton}
-        </div>
-        <div className={cardListClass}>
-          {loading
-            ? renderSkeletonCards(4)
-            : templates.map((document) => (
-                <div key={document.id} className="snap-center">
-                  <DocumentCard document={document} />
-                </div>
-              ))}
-        </div>
-      </section>
+      {/* 콘텐츠 — 상담 노트 양식 페이지 레이아웃과 통일(flex-1 py-6 + 섹션 mt-10 first:mt-0) */}
+      <div className={isMobileView ? 'flex flex-col' : 'flex-1 py-6'}>
+        {/* 마음토스 기본 문서 — 고정 목록 */}
+        <section className="mt-10 first:mt-0">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-l font-headline text-grey-100">
+              마음토스 기본 문서
+            </h2>
+            {isMobileView && sendButton}
+          </div>
+          <div className={cardListClass}>
+            {loading
+              ? renderSkeletonCards(4)
+              : templates.map((document) => (
+                  <div key={document.id} className="snap-center">
+                    <DocumentCard document={document} />
+                  </div>
+                ))}
+          </div>
+        </section>
 
-      {/* 내 문서 — 팝오버로 추가 */}
-      <section className="mt-12">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-l font-headline text-grey-100">내 문서</h2>
-          {isMobileView && registerButton}
-        </div>
-        <div className={cardListClass}>
-          {loading ? (
-            renderSkeletonCards(2)
-          ) : (
-            <>
-              {myDocuments.map((document) => (
-                <div key={document.id} className="snap-center">
-                  <MyDocumentCard document={document} />
-                </div>
-              ))}
-              {/* 추가 카드 */}
-              <button
-                type="button"
-                aria-label="내 문서 등록하기"
-                onClick={handleOpenAddPopover}
-                className="flex h-[182px] w-[297px] flex-shrink-0 snap-center items-center justify-center rounded-2xl border border-grey-40 bg-grey-20 text-grey-80 transition-colors lg:hover:bg-grey-30"
-              >
-                <Plus size={22} />
-              </button>
-            </>
-          )}
-        </div>
-      </section>
+        {/* 내 문서 — 팝오버로 추가 */}
+        <section className="mt-10 first:mt-0">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-l font-headline text-grey-100">내 문서</h2>
+            {isMobileView && registerButton}
+          </div>
+          <div className={cardListClass}>
+            {loading ? (
+              renderSkeletonCards(2)
+            ) : (
+              <>
+                {myDocuments.map((document) => (
+                  <div key={document.id} className="snap-center">
+                    <MyDocumentCard document={document} />
+                  </div>
+                ))}
+                {/* 추가 카드 */}
+                <button
+                  type="button"
+                  aria-label="내 문서 등록하기"
+                  onClick={handleOpenAddPopover}
+                  className="flex h-[182px] w-[297px] flex-shrink-0 snap-center items-center justify-center rounded-2xl border border-grey-40 bg-grey-20 text-grey-80 transition-colors lg:hover:bg-grey-30"
+                >
+                  <Plus size={22} />
+                </button>
+              </>
+            )}
+          </div>
+        </section>
+      </div>
 
       <AddDocumentPopover
         position={popoverPosition}
