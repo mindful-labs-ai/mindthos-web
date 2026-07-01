@@ -157,10 +157,16 @@ export default function CalendarContainer() {
     };
   }, [sidePanel, editingEvent, selectedDate, addEventTime, addEventKind]);
 
-  const eventsForView = React.useMemo(
-    () => (draftEvent ? [...visibleEvents, draftEvent] : visibleEvents),
-    [visibleEvents, draftEvent]
-  );
+  const eventsForView = React.useMemo(() => {
+    // 낙관적 temp(진행 중 생성)가 이미 캐시에 있으면 __draft__ 미리보기를 숨겨
+    // 같은 슬롯에 점선 칩이 둘 겹쳐 보이는 중복을 막는다.
+    const hasPendingTemp = visibleEvents.some((e) =>
+      e.id.startsWith(TEMP_EVENT_PREFIX)
+    );
+    return draftEvent && !hasPendingTemp
+      ? [...visibleEvents, draftEvent]
+      : visibleEvents;
+  }, [visibleEvents, draftEvent]);
 
   // 단일 클릭(구글 캘린더식 — 클릭으로 사이드패널 활성화):
   //  - 추가 작성 중: 선택 날짜만 갱신(작성 중 내용 유지)
@@ -236,6 +242,9 @@ export default function CalendarContainer() {
         const temp: CalendarEvent = {
           id: `${TEMP_EVENT_PREFIX}${Date.now()}`,
           ...eventFieldsFromInput(input),
+          // 진행 중 생성 — 재조회가 실제 이벤트로 대체할 때까지 read-only로 표시한다.
+          // (temp를 클릭/편집/삭제하면 존재하지 않는 temp id로 서버 호출되어 404·헛토스트가 난다.)
+          isDraft: true,
         };
         queryClient.setQueriesData<CalendarEvent[]>(
           { queryKey: ['calendar', 'events'] },
