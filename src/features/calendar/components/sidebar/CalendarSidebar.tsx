@@ -1,8 +1,11 @@
+import React from 'react';
+
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
 import type { CalendarCategory, CalendarEventKind } from '../../types';
 import type { Dayjs } from '../../utils/calendarDate';
 
 import { AddEventButtons } from './AddEventButtons';
+import { GoogleConnectButton } from './GoogleConnectButton';
 import { GoogleConnectCard } from './GoogleConnectCard';
 import { MiniCalendar } from './MiniCalendar';
 import { MyCalendars } from './MyCalendars';
@@ -46,6 +49,8 @@ export function CalendarSidebar({
   // 외부 캘린더가 하나라도 연결돼야 '나의 캘린더' 영역을 노출. 구글이 이미 연동되면 하단 연동 카드는 숨긴다.
   const hasConnectedCalendars = categories.length > 0;
   const googleConnected = categories.some((c) => c.sourceProvider === 'google');
+  // 연동 카드 X 닫힘 — 닫으면 '일정 표시' 아래 컴팩트 '캘린더 연결하기' 버튼으로 대체.
+  const [connectCardDismissed, setConnectCardDismissed] = React.useState(false);
 
   return (
     <div className="flex min-h-full flex-col gap-6 px-4 pb-6 pt-10">
@@ -61,6 +66,10 @@ export function CalendarSidebar({
         kindVisible={kindVisible}
         onToggleKind={onToggleKind}
       />
+      {/* 연동 카드 닫힘 시 대체 진입점 — '일정 표시' 바로 아래 컴팩트 버튼 */}
+      {!googleConnected && connectCardDismissed && (
+        <GoogleConnectButton onConnect={onConnectGoogle} />
+      )}
       {/* 나의 캘린더 — 외부 캘린더가 연결된 경우에만 노출(구분선 포함). */}
       {hasConnectedCalendars && (
         <>
@@ -74,10 +83,13 @@ export function CalendarSidebar({
           />
         </>
       )}
-      {/* 하단 연동 카드 — 구글이 아직 연동되지 않았을 때만 노출. */}
-      {!googleConnected && (
+      {/* 하단 연동 카드 — 구글 미연동 + 닫지 않았을 때. 닫으면 위 컴팩트 버튼으로 대체. */}
+      {!googleConnected && !connectCardDismissed && (
         <div className="mt-auto pt-4">
-          <GoogleConnectCard onConnect={onConnectGoogle} />
+          <GoogleConnectCard
+            onConnect={onConnectGoogle}
+            onDismiss={() => setConnectCardDismissed(true)}
+          />
         </div>
       )}
     </div>

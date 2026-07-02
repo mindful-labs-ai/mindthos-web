@@ -46,12 +46,12 @@ export const ICON_SIZE = 42;
 
 /* ── 외부 서비스 캘린더 아이콘 ─────────────────────────────── */
 
-export const GoogleCalendarIcon: FC = () => (
+export const GoogleCalendarIcon: FC<{ size?: number }> = ({ size = 26 }) => (
   <img
     src="/icons/google-calendar-icon.png"
     alt="구글 캘린더"
-    width={26}
-    height={26}
+    width={size}
+    height={size}
   />
 );
 

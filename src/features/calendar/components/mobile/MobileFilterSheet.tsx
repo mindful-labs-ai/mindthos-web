@@ -1,6 +1,9 @@
+import React from 'react';
+
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import type { CalendarCategory, CalendarEventKind } from '../../types';
+import { GoogleConnectButton } from '../sidebar/GoogleConnectButton';
 import { GoogleConnectCard } from '../sidebar/GoogleConnectCard';
 import { MyCalendars } from '../sidebar/MyCalendars';
 import { VisibilityToggles } from '../sidebar/VisibilityToggles';
@@ -31,6 +34,8 @@ export function MobileFilterSheet({
   // 외부 캘린더가 연결된 경우에만 '나의 캘린더' 노출. 구글 연동 시 하단 연동 카드는 숨김.
   const hasConnectedCalendars = categories.length > 0;
   const googleConnected = categories.some((c) => c.sourceProvider === 'google');
+  // 연동 카드 X 닫힘 — 닫으면 '일정 표시' 아래 컴팩트 '캘린더 연결하기' 버튼으로 대체.
+  const [connectCardDismissed, setConnectCardDismissed] = React.useState(false);
 
   return (
     <Modal
@@ -43,6 +48,10 @@ export function MobileFilterSheet({
           kindVisible={kindVisible}
           onToggleKind={onToggleKind}
         />
+        {/* 연동 카드 닫힘 시 대체 진입점 — '일정 표시' 바로 아래 컴팩트 버튼 */}
+        {!googleConnected && connectCardDismissed && (
+          <GoogleConnectButton onConnect={onOpenAddCalendar} />
+        )}
         {hasConnectedCalendars && (
           <>
             <div className="border-t border-[#ecedf3]" />
@@ -54,9 +63,12 @@ export function MobileFilterSheet({
             />
           </>
         )}
-        {/* 연동 카드 — 구글이 아직 연동되지 않았을 때만 노출. */}
-        {!googleConnected && (
-          <GoogleConnectCard onConnect={onOpenAddCalendar} />
+        {/* 연동 카드 — 구글 미연동 + 닫지 않았을 때. 닫으면 위 컴팩트 버튼으로 대체. */}
+        {!googleConnected && !connectCardDismissed && (
+          <GoogleConnectCard
+            onConnect={onOpenAddCalendar}
+            onDismiss={() => setConnectCardDismissed(true)}
+          />
         )}
       </div>
     </Modal>

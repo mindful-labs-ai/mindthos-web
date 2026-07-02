@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { X } from 'lucide-react';
 
 import { ConnectCalendarIcon } from '../../icons';
@@ -7,23 +5,26 @@ import { ConnectCalendarIcon } from '../../icons';
 interface GoogleConnectCardProps {
   /** 구글 캘린더 연동 트리거 (연결 사이드탭 오픈) */
   onConnect?: () => void;
+  /** X(닫기) — 상위가 카드를 접고 '캘린더 연결하기' 컴팩트 버튼으로 대체한다. */
+  onDismiss?: () => void;
 }
 
 /**
  * 외부 캘린더(구글) 연동 카드 — 사이드탭 하단.
  * 구글이 아직 연동되지 않았을 때만 노출한다(연동되면 상위에서 숨김).
+ * 닫으면 상위가 GoogleConnectButton(컴팩트 연결 버튼)으로 대체 노출한다.
  * 아이콘은 `features/calendar/icons`의 ConnectCalendarIcon에서 교체.
  */
-export function GoogleConnectCard({ onConnect }: GoogleConnectCardProps) {
-  const [dismissed, setDismissed] = React.useState(false);
-  if (dismissed) return null;
-
+export function GoogleConnectCard({
+  onConnect,
+  onDismiss,
+}: GoogleConnectCardProps) {
   return (
     <div className="relative flex flex-col items-center rounded-md border border-grey-40 bg-grey-10 px-4 pb-5 pt-5">
       <button
         type="button"
         aria-label="닫기"
-        onClick={() => setDismissed(true)}
+        onClick={onDismiss}
         className="absolute right-2 top-2 text-[#d9d9d9]"
       >
         <X size={24} />
