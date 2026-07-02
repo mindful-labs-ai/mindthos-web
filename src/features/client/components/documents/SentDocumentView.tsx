@@ -41,7 +41,7 @@ interface SentDocumentViewProps {
 
 /**
  * 내담자 탭 내부 발송 문서 뷰 — 발송 시점 스냅샷을 읽기 전용으로 렌더링.
- * 헤더(뒤로가기 + 문서 제목 + 발송 이력)와 캔버스(출력하기 포함)로 구성,
+ * 헤더(뒤로가기 + '문서 관리' 섹션명 + 발송 이력)와 캔버스(출력하기 포함)로 구성,
  * 출력은 .print-area 규칙을 재사용해 문서 영역만 인쇄된다.
  */
 export function SentDocumentView({
@@ -83,9 +83,10 @@ export function SentDocumentView({
       {/* 헤더 — 데스크탑: 뒤로가기+제목+이력 한 줄 / 모바일: 제목·이력 두 줄 */}
       {isMobileView ? (
         <>
-          {/* 앱 표준 모바일 풀페이지 헤더(뒤로가기 + 제목) — 래퍼 패딩 밖으로 풀블리드 */}
+          {/* 앱 표준 모바일 풀페이지 헤더(뒤로가기 + 섹션명) — 래퍼 패딩 밖으로 풀블리드.
+              문서 제목은 본문 캔버스에 있으므로 헤더는 상위 섹션('문서 관리')을 표기한다. */}
           <MobileModalHeader
-            title={document.title}
+            title="문서 관리"
             onBack={onBack}
             className="-mx-4 -mt-4"
           />
@@ -105,7 +106,7 @@ export function SentDocumentView({
               <ChevronLeft size={22} />
             </button>
             <h1 className="truncate text-2xl font-headline text-grey-100">
-              {document.title}
+              문서 관리
             </h1>
           </div>
           <p className="flex-shrink-0 text-sm text-grey-70">
