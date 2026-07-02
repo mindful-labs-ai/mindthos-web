@@ -461,7 +461,7 @@ export function AddEventPanel({
             type="button"
             disabled={busy}
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex w-fit items-center gap-1 self-center rounded-[10px] border border-grey-30 bg-white px-3.5 py-2 text-sm font-medium text-grey-70 transition-colors disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-80"
+            className="inline-flex w-fit items-center gap-1 self-center rounded-[10px] border border-grey-30 bg-white px-3.5 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-60 lg:hover:bg-grey-10 lg:hover:text-grey-80"
           >
             <Trash2 size={20} strokeWidth={1.75} />
             일정 삭제
@@ -484,8 +484,8 @@ export function AddEventPanel({
         >
           {submitting
             ? isEdit
-              ? '변경 중…'
-              : '추가 중…'
+              ? '변경 중...'
+              : '추가 중...'
             : isEdit
               ? '변경하기'
               : '일정 추가하기'}
@@ -515,7 +515,7 @@ export function AddEventPanel({
                   onClick={() => onDelete?.('this')}
                   className="h-11 w-full rounded-lg bg-red-80 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
                 >
-                  {deleting ? '삭제 중…' : '이 일정만 삭제'}
+                  {deleting ? '삭제 중...' : '이 일정만 삭제'}
                 </button>
                 <button
                   type="button"
@@ -563,7 +563,7 @@ export function AddEventPanel({
                   onClick={() => onDelete?.('all')}
                   className="h-11 flex-1 rounded-lg bg-red-80 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
                 >
-                  {deleting ? '삭제 중…' : '삭제'}
+                  {deleting ? '삭제 중...' : '삭제'}
                 </button>
               </div>
             </>
@@ -591,7 +591,7 @@ export function AddEventPanel({
               onClick={() => onSubmit(buildDraft(), 'this')}
               className="h-11 w-full rounded-lg bg-green-80 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
             >
-              {submitting ? '변경 중…' : '이 일정만 변경'}
+              {submitting ? '변경 중...' : '이 일정만 변경'}
             </button>
             <button
               type="button"
