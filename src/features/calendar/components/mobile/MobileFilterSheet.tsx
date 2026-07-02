@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { Modal } from '@/shared/ui/composites/Modal';
 
+import { useGoogleConnectState } from '../../hooks/useGoogleConnectState';
 import type { CalendarCategory, CalendarEventKind } from '../../types';
 import { GoogleConnectButton } from '../sidebar/GoogleConnectButton';
 import { GoogleConnectCard } from '../sidebar/GoogleConnectCard';
@@ -34,11 +33,13 @@ export function MobileFilterSheet({
   onDeleteCategory,
   onOpenAddCalendar,
 }: MobileFilterSheetProps) {
-  // 외부 캘린더가 연결된 경우에만 '나의 캘린더' 노출. 구글 연동 시 하단 연동 카드는 숨김.
-  const hasConnectedCalendars = categories.length > 0;
-  const googleConnected = categories.some((c) => c.sourceProvider === 'google');
-  // 연동 카드 X 닫힘 — 닫으면 '일정 표시' 아래 컴팩트 '캘린더 연결하기' 버튼으로 대체.
-  const [connectCardDismissed, setConnectCardDismissed] = React.useState(false);
+  // 연동 표시 상태(연결/구글/카드 닫힘) — 데스크탑 사이드탭과 규칙 공유.
+  const {
+    hasConnectedCalendars,
+    googleConnected,
+    connectCardDismissed,
+    dismissConnectCard,
+  } = useGoogleConnectState(categories);
 
   return (
     <Modal
@@ -71,7 +72,7 @@ export function MobileFilterSheet({
         {!googleConnected && !connectCardDismissed && (
           <GoogleConnectCard
             onConnect={onOpenAddCalendar}
-            onDismiss={() => setConnectCardDismissed(true)}
+            onDismiss={dismissConnectCard}
           />
         )}
       </div>

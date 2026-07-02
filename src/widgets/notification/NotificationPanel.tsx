@@ -139,9 +139,7 @@ function NotificationRow({
       onClick={() => {
         void onClick(notification);
       }}
-      className={`block w-full px-5 py-6 text-left transition-colors lg:hover:bg-grey-10 ${
-        resolving ? 'opacity-60' : ''
-      }`}
+      className="block w-full px-5 py-6 text-left transition-colors disabled:opacity-60 lg:hover:bg-grey-10"
     >
       <div className="flex gap-3">
         <KindIcon kind={notification.type} />

@@ -1,6 +1,5 @@
-import React from 'react';
-
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
+import { useGoogleConnectState } from '../../hooks/useGoogleConnectState';
 import type { CalendarCategory, CalendarEventKind } from '../../types';
 import type { Dayjs } from '../../utils/calendarDate';
 
@@ -46,11 +45,13 @@ export function CalendarSidebar({
   // 이벤트로 점을 찍지 않게(월간뷰와 동일 범위, react-query가 월간뷰일 땐 dedup).
   const { data: monthEvents = [] } = useCalendarEvents('month', current);
 
-  // 외부 캘린더가 하나라도 연결돼야 '나의 캘린더' 영역을 노출. 구글이 이미 연동되면 하단 연동 카드는 숨긴다.
-  const hasConnectedCalendars = categories.length > 0;
-  const googleConnected = categories.some((c) => c.sourceProvider === 'google');
-  // 연동 카드 X 닫힘 — 닫으면 '일정 표시' 아래 컴팩트 '캘린더 연결하기' 버튼으로 대체.
-  const [connectCardDismissed, setConnectCardDismissed] = React.useState(false);
+  // 연동 표시 상태(연결/구글/카드 닫힘) — 모바일 필터 시트와 규칙 공유.
+  const {
+    hasConnectedCalendars,
+    googleConnected,
+    connectCardDismissed,
+    dismissConnectCard,
+  } = useGoogleConnectState(categories);
 
   return (
     <div className="flex min-h-full flex-col gap-6 px-4 pb-6 pt-10">
@@ -88,7 +89,7 @@ export function CalendarSidebar({
         <div className="mt-auto pt-4">
           <GoogleConnectCard
             onConnect={onConnectGoogle}
-            onDismiss={() => setConnectCardDismissed(true)}
+            onDismiss={dismissConnectCard}
           />
         </div>
       )}

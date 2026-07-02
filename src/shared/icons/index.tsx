@@ -18,7 +18,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CloudUpload,
-  Edit3,
   FileSearch,
   FileText,
   Filter,
@@ -71,7 +70,6 @@ export const ChevronRightIcon: IconComponent = (props) => (
 export const CloudUploadIcon: IconComponent = (props) => (
   <CloudUpload {...props} />
 );
-export const Edit3Icon: IconComponent = (props) => <Edit3 {...props} />;
 export const FileSearchIcon: IconComponent = (props) => (
   <FileSearch {...props} />
 );
@@ -129,9 +127,6 @@ export const ChevronRightIconSolid: IconComponent = (props) => (
 );
 export const CloudUploadIconSolid: IconComponent = (props) => (
   <CloudUpload {...props} fill="currentColor" />
-);
-export const Edit3IconSolid: IconComponent = (props) => (
-  <Edit3 {...props} fill="currentColor" />
 );
 export const FileSearchIconSolid: IconComponent = (props) => (
   <FileSearch {...props} fill="currentColor" />
@@ -311,37 +306,6 @@ export const TitleEdit: React.FC<CustomIconProps> = ({
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-  </svg>
-);
-
-/** Pen 아이콘 - 색칠 된 펜 */
-export const PenIcon: React.FC<CustomIconProps> = ({
-  size = 16,
-  className,
-}) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 16 16"
-    fill="currentColor"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <g clipPath="url(#clip0_6810_10510)">
-      <path
-        d="M0.781333 12.7469C0.281202 13.2469 0.000151033 13.925 0 14.6322L0 16.0009H1.36867C2.07585 16.0007 2.75402 15.7197 3.254 15.2195L12.1493 6.32422L9.67667 3.85156L0.781333 12.7469Z"
-        fill="currentColor"
-      />
-      <path
-        d="M15.4298 0.571216C15.2675 0.408706 15.0747 0.279786 14.8625 0.191827C14.6503 0.103867 14.4228 0.0585938 14.1931 0.0585938C13.9634 0.0585937 13.736 0.103867 13.5238 0.191827C13.3116 0.279786 13.1188 0.408706 12.9565 0.571216L10.6191 2.90922L13.0918 5.38188L15.4298 3.04455C15.5923 2.88221 15.7212 2.68943 15.8092 2.47723C15.8972 2.26504 15.9424 2.03759 15.9424 1.80788C15.9424 1.57818 15.8972 1.35073 15.8092 1.13853C15.7212 0.926335 15.5923 0.733556 15.4298 0.571216Z"
-        fill="currentColor"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_6810_10510">
-        <rect width="16" height="16" fill="white" />
-      </clipPath>
-    </defs>
   </svg>
 );
 
@@ -1758,7 +1722,6 @@ export const Icons = {
   ChevronLeft: ChevronLeftIcon,
   ChevronRight: ChevronRightIcon,
   CloudUpload: CloudUploadIcon,
-  Edit3: Edit3Icon,
   FileSearch: FileSearchIcon,
   FileText: FileTextIcon,
   Filter: FilterIcon,
@@ -1793,7 +1756,6 @@ export const Icons = {
   ChevronLeftSolid: ChevronLeftIconSolid,
   ChevronRightSolid: ChevronRightIconSolid,
   CloudUploadSolid: CloudUploadIconSolid,
-  Edit3Solid: Edit3IconSolid,
   FileSearchSolid: FileSearchIconSolid,
   FileTextSolid: FileTextIconSolid,
   FilterSolid: FilterIconSolid,

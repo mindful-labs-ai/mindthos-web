@@ -29,7 +29,7 @@ const PROVIDER_LABEL: Record<string, string> = {
   apple: '애플 캘린더',
 };
 
-function calendarLabel(category: CalendarCategory): string {
+function getCalendarLabel(category: CalendarCategory): string {
   return PROVIDER_LABEL[category.sourceProvider ?? ''] ?? category.name;
 }
 
@@ -67,7 +67,7 @@ export function MyCalendars({
             <div key={category.id} className="flex items-center gap-1">
               <div className="min-w-0 flex-1">
                 <CategoryToggleItem
-                  label={calendarLabel(category)}
+                  label={getCalendarLabel(category)}
                   colorKey={PROVIDER_COLOR[category.sourceProvider ?? '']}
                   checked={categoryVisible[category.id] ?? true}
                   onToggle={() => onToggleCategory(category.id)}
@@ -75,7 +75,7 @@ export function MyCalendars({
               </div>
               {onDeleteCategory && (
                 <CategorySettingsMenu
-                  categoryName={calendarLabel(category)}
+                  categoryName={getCalendarLabel(category)}
                   onDelete={() => onDeleteCategory(category.id)}
                 />
               )}
