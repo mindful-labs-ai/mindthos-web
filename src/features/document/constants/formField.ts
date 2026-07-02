@@ -130,24 +130,15 @@ export function buildContent(fields: FormField[]): DocumentContent {
 }
 
 /**
- * 동의서(kind=consent) content 빌드 — 본문(richtext) + 표준 동의 항목 + 문서 레벨 서명.
- * 동의서 에디터는 본문 HTML만 작성하고, 동의 항목은 자동 부착한다. 서명은 더 이상 필드가 아니라
- * requireSignature=true로 표시 — 내담자가 제출 직전 1회 서명하면 모든 동의에 적용되어 문서 하단에 렌더된다.
+ * 동의서(kind=consent) content 빌드 — 본문(richtext) + 문서 레벨 서명.
+ * 동의서 에디터는 본문 HTML만 작성한다. 별도 동의 체크 항목 없이 내담자가 제출 직전 1회
+ * 서명(requireSignature=true)하는 것으로 동의를 표시한다(마음토스 기본 동의서 3종과 동일 구조).
  */
 export function buildConsentContent(html: string): DocumentContent {
   return {
     version: FORM_CONTENT_VERSION,
     requireSignature: true,
-    fields: [
-      { key: nextFieldKey(), type: 'richtext', html },
-      {
-        key: nextFieldKey(),
-        type: 'consent',
-        label: '위 내용을 모두 확인하였으며 이에 동의합니다.',
-        required: true,
-        sensitive: false,
-      },
-    ],
+    fields: [{ key: nextFieldKey(), type: 'richtext', html }],
   };
 }
 
