@@ -1,3 +1,5 @@
+import { Plus } from 'lucide-react';
+
 import type { CalendarCategory, CalendarColorKey } from '../../types';
 
 import { CategorySettingsMenu } from './CategorySettingsMenu';
@@ -7,6 +9,8 @@ interface MyCalendarsProps {
   categories: CalendarCategory[];
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
+  /** 헤더 + 버튼 — 구글 캘린더 연결하기 사이드탭(캘린더 추가하기 패널) 열기. */
+  onConnect?: () => void;
   /** 연동 해제(설정 메뉴) — 카테고리와 소속(연동) 일정 함께 삭제. */
   onDeleteCategory?: (categoryId: string) => void;
 }
@@ -32,17 +36,30 @@ function calendarLabel(category: CalendarCategory): string {
 /**
  * '나의 캘린더' — 연동된 외부 캘린더(구글 등) 목록.
  * 카테고리는 외부 캘린더 연동 전용 도메인이라(일정에서 직접 지정 불가), 여기서 표시 on/off만 한다.
- * 색 스와치는 provider 기본색(구글=파랑)으로 서버 import 색과 맞춘다. 연동/재연동은 하단 연동 카드에서.
+ * 색 스와치는 provider 기본색(구글=파랑)으로 서버 import 색과 맞춘다. 헤더 + 버튼으로 연결 사이드탭을 연다.
  */
 export function MyCalendars({
   categories,
   categoryVisible,
   onToggleCategory,
+  onConnect,
   onDeleteCategory,
 }: MyCalendarsProps) {
   return (
     <div>
-      <h3 className="text-m font-medium text-grey-100">나의 캘린더</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-m font-medium text-grey-100">나의 캘린더</h3>
+        {onConnect && (
+          <button
+            type="button"
+            aria-label="구글 캘린더 연결하기"
+            onClick={onConnect}
+            className="flex h-6 w-6 items-center justify-center text-grey-100 lg:hover:text-grey-80"
+          >
+            <Plus size={16} strokeWidth={2} />
+          </button>
+        )}
+      </div>
 
       {categories.length > 0 && (
         <div className="mt-5 flex flex-col gap-3">

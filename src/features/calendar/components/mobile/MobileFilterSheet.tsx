@@ -28,6 +28,10 @@ export function MobileFilterSheet({
   onToggleCategory,
   onOpenAddCalendar,
 }: MobileFilterSheetProps) {
+  // 외부 캘린더가 연결된 경우에만 '나의 캘린더' 노출. 구글 연동 시 하단 연동 카드는 숨김.
+  const hasConnectedCalendars = categories.length > 0;
+  const googleConnected = categories.some((c) => c.sourceProvider === 'google');
+
   return (
     <Modal
       open={open}
@@ -39,17 +43,21 @@ export function MobileFilterSheet({
           kindVisible={kindVisible}
           onToggleKind={onToggleKind}
         />
-        <div className="border-t border-[#ecedf3]" />
-        <MyCalendars
-          categories={categories}
-          categoryVisible={categoryVisible}
-          onToggleCategory={onToggleCategory}
-        />
-        {/* 연동/재연동 진입점 — 데스크탑 사이드탭과 동일하게 하단 카드 하나로 통일. */}
-        <GoogleConnectCard
-          onConnect={onOpenAddCalendar}
-          disabled={categories.some((c) => c.sourceProvider === 'google')}
-        />
+        {hasConnectedCalendars && (
+          <>
+            <div className="border-t border-[#ecedf3]" />
+            <MyCalendars
+              categories={categories}
+              categoryVisible={categoryVisible}
+              onToggleCategory={onToggleCategory}
+              onConnect={onOpenAddCalendar}
+            />
+          </>
+        )}
+        {/* 연동 카드 — 구글이 아직 연동되지 않았을 때만 노출. */}
+        {!googleConnected && (
+          <GoogleConnectCard onConnect={onOpenAddCalendar} />
+        )}
       </div>
     </Modal>
   );

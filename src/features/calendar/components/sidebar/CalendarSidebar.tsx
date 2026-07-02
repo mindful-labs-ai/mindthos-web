@@ -43,6 +43,10 @@ export function CalendarSidebar({
   // 이벤트로 점을 찍지 않게(월간뷰와 동일 범위, react-query가 월간뷰일 땐 dedup).
   const { data: monthEvents = [] } = useCalendarEvents('month', current);
 
+  // 외부 캘린더가 하나라도 연결돼야 '나의 캘린더' 영역을 노출. 구글이 이미 연동되면 하단 연동 카드는 숨긴다.
+  const hasConnectedCalendars = categories.length > 0;
+  const googleConnected = categories.some((c) => c.sourceProvider === 'google');
+
   return (
     <div className="flex min-h-full flex-col gap-6 px-4 pb-6 pt-10">
       <AddEventButtons onAdd={onAddEvent} />
@@ -57,20 +61,25 @@ export function CalendarSidebar({
         kindVisible={kindVisible}
         onToggleKind={onToggleKind}
       />
-      <Divider />
-      <MyCalendars
-        categories={categories}
-        categoryVisible={categoryVisible}
-        onToggleCategory={onToggleCategory}
-        onDeleteCategory={onDeleteCategory}
-      />
-      {/* 하단 연동 카드 — 유일한 연동/재연동 진입점. 구글이 이미 연동돼 있으면 비활성화(연동 해제 후 재연결). */}
-      <div className="mt-auto pt-4">
-        <GoogleConnectCard
-          onConnect={onConnectGoogle}
-          disabled={categories.some((c) => c.sourceProvider === 'google')}
-        />
-      </div>
+      {/* 나의 캘린더 — 외부 캘린더가 연결된 경우에만 노출(구분선 포함). */}
+      {hasConnectedCalendars && (
+        <>
+          <Divider />
+          <MyCalendars
+            categories={categories}
+            categoryVisible={categoryVisible}
+            onToggleCategory={onToggleCategory}
+            onConnect={onConnectGoogle}
+            onDeleteCategory={onDeleteCategory}
+          />
+        </>
+      )}
+      {/* 하단 연동 카드 — 구글이 아직 연동되지 않았을 때만 노출. */}
+      {!googleConnected && (
+        <div className="mt-auto pt-4">
+          <GoogleConnectCard onConnect={onConnectGoogle} />
+        </div>
+      )}
     </div>
   );
 }
