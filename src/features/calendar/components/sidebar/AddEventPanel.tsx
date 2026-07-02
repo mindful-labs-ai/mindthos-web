@@ -461,7 +461,7 @@ export function AddEventPanel({
             type="button"
             disabled={busy}
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex w-fit items-center gap-1 self-center rounded-[10px] border border-grey-30 bg-white px-3.5 py-2 text-m font-medium text-grey-70 transition-colors disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-80"
+            className="inline-flex w-fit items-center gap-1 self-center rounded-[10px] border border-grey-30 bg-white px-3.5 py-2 text-sm font-medium text-grey-70 transition-colors disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-80"
           >
             <Trash2 size={20} strokeWidth={1.75} />
             일정 삭제
