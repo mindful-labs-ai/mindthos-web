@@ -29,7 +29,7 @@ export function DocumentCard({ document }: DocumentCardProps) {
         {document.description}
       </p>
       <span
-        className={`absolute bottom-6 left-7 rounded-lg px-2.5 py-1.5 text-sm font-headline ${category.chipClass}`}
+        className={`absolute bottom-6 left-7 rounded-md px-2.5 py-1.5 text-sm font-headline ${category.chipClass}`}
       >
         {category.label}
       </span>
