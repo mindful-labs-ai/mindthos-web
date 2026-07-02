@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChevronLeft } from 'lucide-react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { getDocumentViewRoute, ROUTES } from '@/app/router/constants';
 import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { useUnsavedChangesGuard } from '@/shared/hooks/useUnsavedChangesGuard';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import {
@@ -72,6 +73,12 @@ export function DocumentEditorContainer() {
   // 발송 불가(편집 중) 상태로 저장할지 확인하는 모달
   const [incompleteOpen, setIncompleteOpen] = useState(false);
 
+  // 미저장 이탈 가드 기준 스냅샷 — 생성은 마운트 직후, 편집은 문서 로드 직후의 상태.
+  // null이면 아직 기준이 없어(로딩 중) 가드를 걸지 않는다.
+  const baselineRef = useRef<string | null>(null);
+  // 저장 성공 직후의 의도된 복귀(goBack)는 경고 없이 통과시키는 플래그.
+  const skipGuardRef = useRef(false);
+
   // 편집 모드: 단건 조회 후 에디터 상태(제목·본문) 채우기
   useEffect(() => {
     if (!documentId) return;
@@ -81,14 +88,24 @@ export function DocumentEditorContainer() {
         if (!active) return;
         setEditingDocument(doc);
         setTitle(doc.title);
+        let loadedHtml = '';
+        let loadedFields: FormField[] | null = null;
         if (doc.kind === 'consent') {
           // 동의서는 본문 richtext 필드의 HTML만 에디터로 로드한다.
-          setConsentHtml(extractConsentHtml(doc.content));
+          loadedHtml = extractConsentHtml(doc.content);
+          setConsentHtml(loadedHtml);
         } else {
           // qna: content → 필드. 구/빈 content면 빈 목록으로 시작.
           const loaded = parseFields(doc.content);
-          setFields(loaded.length > 0 ? loaded : [createField()]);
+          loadedFields = loaded.length > 0 ? loaded : [createField()];
+          setFields(loadedFields);
         }
+        // 이탈 가드 기준 = 로드 직후 상태 (state 세팅 값과 동일하게 구성)
+        baselineRef.current = JSON.stringify({
+          title: doc.title,
+          consentHtml: loadedHtml,
+          fields: loadedFields ?? [],
+        });
       })
       .catch(() => {
         if (active) setEditNotFound(true);
@@ -100,6 +117,33 @@ export function DocumentEditorContainer() {
       active = false;
     };
   }, [documentId, getMyDocument]);
+
+  // 생성 모드: 마운트 직후 초기 상태를 이탈 가드 기준으로.
+  useEffect(() => {
+    if (documentId) return;
+    baselineRef.current = JSON.stringify({
+      title: '',
+      consentHtml: '',
+      // qna 초기 필드 1개는 마운트 시 생성된 그 인스턴스를 그대로 기준으로 쓴다.
+      fields: kind === 'qna' ? fields : [],
+    });
+    // 마운트 1회 — 초기 상태 기준 고정 (이후 입력은 dirty로 판정되어야 함)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 미저장 이탈 경고 — 뒤로가기/라우팅/새로고침 시 작성 내용 유실 가능성 안내 (가계도 가드 패턴).
+  useUnsavedChangesGuard(
+    () =>
+      !skipGuardRef.current &&
+      baselineRef.current !== null &&
+      baselineRef.current !==
+        JSON.stringify({
+          title,
+          consentHtml,
+          fields: kind === 'qna' ? fields : [],
+        }),
+    '저장하지 않은 변경사항이 있어요. 페이지를 떠나면 작성 중인 내용이 사라져요. 나가시겠어요?'
+  );
 
   // 뒤로가기/취소 — 편집은 뷰 페이지로, 생성은 목록으로
   const goBack = () => {
@@ -135,6 +179,8 @@ export function DocumentEditorContainer() {
       } else {
         await addMyDocument({ title: title.trim(), kind, content, status });
       }
+      // 저장 완료 — 유실될 내용이 없으므로 복귀 내비게이션은 이탈 경고 없이 통과.
+      skipGuardRef.current = true;
       goBack();
     } catch (error) {
       // 서버가 사유를 준 경우(예: 발송 가능 저장 400) 그 메시지를 그대로 안내, 아니면 일반 문구.
