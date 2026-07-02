@@ -17,15 +17,7 @@ export function AddEventButtons({ onAdd }: AddEventButtonsProps) {
         className="flex h-[39px] flex-1 items-center justify-center gap-1.5 rounded-md bg-green-80 text-sm font-medium text-white"
       >
         <Plus size={14} strokeWidth={2.5} />
-        상담 일정 추가
-      </button>
-      <button
-        type="button"
-        onClick={() => onAdd?.('personal')}
-        className="flex h-[39px] flex-1 items-center justify-center gap-1.5 rounded-md border border-grey-40 bg-white text-sm font-medium text-grey-100"
-      >
-        <Plus size={14} strokeWidth={2.5} />
-        개인 일정 추가
+        일정 추가하기
       </button>
     </div>
   );
