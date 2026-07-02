@@ -2,7 +2,9 @@ import React from 'react';
 
 import { MoreVertical, Trash2 } from 'lucide-react';
 
+import { cn } from '@/lib/cn';
 import { useClickOutside } from '@/shared/hooks/useClickOutside';
+import { useDropdownPosition } from '@/shared/hooks/useDropdownPosition';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 interface CategorySettingsMenuProps {
@@ -25,6 +27,12 @@ export function CategorySettingsMenu({
 
   useClickOutside(ref, () => setOpen(false), open);
 
+  // 목록 하단에서 열면 스크롤 밖(아래)으로 넘어가므로, 가시 영역을 감지해 위/아래로 플립 + 침범 보정.
+  const menuRef = React.useRef<HTMLDivElement>(null);
+  const { direction, offset } = useDropdownPosition(ref, menuRef, open, {
+    estimatedHeight: 60,
+  });
+
   return (
     <div ref={ref} className="relative shrink-0">
       <button
@@ -37,7 +45,18 @@ export function CategorySettingsMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-[140px] rounded-lg border border-grey-40 bg-white p-2 shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+        <div
+          ref={menuRef}
+          style={
+            offset.x || offset.y
+              ? { transform: `translate(${offset.x}px, ${offset.y}px)` }
+              : undefined
+          }
+          className={cn(
+            'absolute right-0 z-30 w-[140px] rounded-lg border border-grey-40 bg-white p-2 shadow-[0_4px_16px_rgba(0,0,0,0.1)]',
+            direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}
+        >
           <button
             type="button"
             onClick={() => {
