@@ -125,17 +125,23 @@ function FilterChip({
 function NotificationRow({
   notification,
   onClick,
+  resolving = false,
 }: {
   notification: AppNotification;
   onClick: (notification: AppNotification) => void | Promise<void>;
+  /** 딥링크 해석 진행 중 — 행 잠금 + 흐림 표시 */
+  resolving?: boolean;
 }) {
   return (
     <button
       type="button"
+      disabled={resolving}
       onClick={() => {
         void onClick(notification);
       }}
-      className="block w-full px-5 py-6 text-left transition-colors lg:hover:bg-grey-10"
+      className={`block w-full px-5 py-6 text-left transition-colors lg:hover:bg-grey-10 ${
+        resolving ? 'opacity-60' : ''
+      }`}
     >
       <div className="flex gap-3">
         <KindIcon kind={notification.type} />
@@ -166,6 +172,8 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
     useNotifications();
   const { navigateWithUtm } = useNavigateWithUtm();
   const [filter, setFilter] = useState<NotificationFilter>('all');
+  // 딥링크 해석 중인 알림 id — 해석 동안 행 잠금(이중 클릭/이중 이동 방지)
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
 
   // 슬라이드 인/아웃 — isVisible은 애니메이션 상태, 닫힐 때는 끝난 뒤 언마운트
   const [isVisible, setIsVisible] = useState(false);
@@ -185,15 +193,22 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
 
   if (!open && !isVisible) return null;
 
-  // 행 클릭: 읽음 처리 + 딥링크 이동(있으면 패널 닫고 이동)
+  // 행 클릭: 읽음 처리 + 딥링크 이동(있으면 패널 닫고 이동).
+  // resolveDeepLink await 동안 행을 잠가(이중 클릭 방지) 흐림으로 진행 중임을 보여준다.
   const handleRowClick = async (notification: AppNotification) => {
+    if (resolvingId) return;
     if (!notification.read) {
       markRead(notification.id);
     }
-    const path = await resolveDeepLink(notification);
-    if (path) {
-      onClose();
-      navigateWithUtm(path);
+    setResolvingId(notification.id);
+    try {
+      const path = await resolveDeepLink(notification);
+      if (path) {
+        onClose();
+        navigateWithUtm(path);
+      }
+    } finally {
+      setResolvingId(null);
     }
   };
 
@@ -272,6 +287,7 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
                 <NotificationRow
                   notification={notification}
                   onClick={handleRowClick}
+                  resolving={resolvingId === notification.id}
                 />
               </Fragment>
             ))
