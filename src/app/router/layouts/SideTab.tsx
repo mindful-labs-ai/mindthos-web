@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 import { cn } from '@/lib/cn';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { Edit3Icon, PlusIcon, SideLockIcon, UploadIcon } from '@/shared/icons';
+import { PlusIcon, SideLockIcon, TitleEdit, UploadIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useModalStore } from '@/stores/modalStore';
@@ -174,7 +174,7 @@ export const SideTab: React.FC<SideTabProps> = ({
                   onClick={handleDirectInputClick}
                   className="transition-default flex w-full items-center gap-3 rounded-lg px-4 py-3 lg:hover:bg-nav-hover-bg"
                 >
-                  <Edit3Icon size={18} className="" />
+                  <TitleEdit size={18} />
                   <Text>직접 입력하기</Text>
                 </button>
               </div>

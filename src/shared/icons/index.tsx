@@ -291,7 +291,7 @@ export const CopyIcon: React.FC<CustomIconProps> = ({
 /** Retry 아이콘 - 원형 화살표 (채팅 응답 재시도) */
 export const RetryIcon: IconComponent = (props) => <RotateCw {...props} />;
 
-/** Edit 아이콘 - 세션 카드 제목 편집 펜 */
+/** Edit 아이콘 - 편집 버튼 공용 펜(세션 카드 제목 편집에서 시작). 색은 currentColor — 사용처 텍스트 색을 따른다. */
 export const TitleEdit: React.FC<CustomIconProps> = ({
   size = 20,
   className,
@@ -306,7 +306,7 @@ export const TitleEdit: React.FC<CustomIconProps> = ({
   >
     <path
       d="M3.33594 16.6681H16.6693M3.33594 16.6681V13.3347L10.0026 6.66807M3.33594 16.6681L6.66927 16.668L13.3359 10.0014M10.0026 6.66807L12.3931 4.27752L12.3946 4.2761C12.7236 3.94703 12.8885 3.78221 13.0785 3.72047C13.2458 3.66609 13.4261 3.66609 13.5935 3.72047C13.7834 3.78216 13.948 3.9468 14.2766 4.27541L15.7264 5.72524C16.0565 6.05525 16.2215 6.22033 16.2834 6.41061C16.3377 6.57798 16.3377 6.75826 16.2833 6.92563C16.2216 7.11577 16.0567 7.2806 15.7272 7.61015L15.7265 7.61085L13.3359 10.0014M10.0026 6.66807L13.3359 10.0014"
-      stroke="#BABCC7"
+      stroke="currentColor"
       strokeWidth="1.25"
       strokeLinecap="round"
       strokeLinejoin="round"

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-import { ChevronDown, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import type {
@@ -9,6 +9,7 @@ import type {
 } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { TitleEdit } from '@/shared/icons';
 import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 
@@ -626,7 +627,7 @@ export function FamilyMemberCard({
             onClick={() => setIsEditing(true)}
             className="p-1 text-fg-muted lg:hover:text-fg"
           >
-            <Pencil className="h-5 w-5" />
+            <TitleEdit size={20} />
           </button>
         )}
       </div>

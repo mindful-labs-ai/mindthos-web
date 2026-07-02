@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import type {
@@ -9,6 +9,7 @@ import type {
 } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { TitleEdit } from '@/shared/icons';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import {
@@ -968,7 +969,7 @@ export function RelationCard({
             aria-label="관계 편집"
             className="p-1 text-fg-muted lg:hover:text-fg"
           >
-            <Pencil className="h-5 w-5" />
+            <TitleEdit size={20} />
           </button>
         )}
       </div>
