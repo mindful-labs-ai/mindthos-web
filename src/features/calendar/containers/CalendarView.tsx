@@ -157,9 +157,11 @@ export function CalendarView({
         />
       </aside>
 
-      {/* 슬라이드오버 패널 (일정 추가 / 캘린더 추가) */}
+      {/* 슬라이드오버 패널 (일정 추가 / 캘린더 추가)
+          z-[1050]: 알림 패널(z-modal=1000) 위로 올리되, 패널 내부 내담자 선택 포털
+          드롭다운(z-1100)보다는 아래로 둬 그 목록이 패널에 가리지 않게 한다. */}
       {sidePanel !== 'default' && (
-        <div className="absolute right-0 top-0 z-20 h-full w-[363px] bg-white shadow-[-10px_-10px_40px_rgba(60,60,60,0.15)]">
+        <div className="absolute right-0 top-0 z-[1050] h-full w-[363px] bg-white shadow-[-10px_-10px_40px_rgba(60,60,60,0.15)]">
           {sidePanel === 'addEvent' ? (
             <AddEventPanel
               key={openSeq}
