@@ -71,7 +71,7 @@ interface DocumentListItem {
   title: string;
   kind: ServerKind;
   category: ServerCategory | null;
-  description: string | null;
+  description: string;
   status: ServerStatus | null;
   validation: ServerValidation | null;
   createdAt: string;
@@ -86,7 +86,7 @@ interface GetDocumentsResponse {
 interface DocumentTemplateDto {
   id: string;
   title: string;
-  description: string | null;
+  description: string;
   category: ServerCategory;
   kind: ServerKind;
   content: unknown | null;
@@ -209,7 +209,7 @@ function listItemToCounselDocument(item: DocumentListItem): CounselDocument {
   return {
     id: item.id,
     title: item.title,
-    description: item.description ?? '',
+    description: item.description,
     category: item.category ? CATEGORY_FROM_SERVER[item.category] : 'ethics',
     kind: KIND_FROM_SERVER[item.kind],
     content: null,
@@ -236,7 +236,7 @@ function templateToCounselDocument(dto: DocumentTemplateDto): CounselDocument {
   return {
     id: dto.id,
     title: dto.title,
-    description: dto.description ?? '',
+    description: dto.description,
     category: CATEGORY_FROM_SERVER[dto.category],
     kind: KIND_FROM_SERVER[dto.kind],
     content: fromServerContent(dto.content),

@@ -172,25 +172,31 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     const prev = get().myDocuments;
     const index = prev.findIndex((d) => d.id === id);
     const removed = index >= 0 ? prev[index] : null;
+    // 원위치 복원 기준은 index가 아니라 '바로 뒤 이웃 id' — 그 사이 목록이 추가/삭제로
+    // 밀려도 이웃 앞에 넣으면 원래 순서가 유지된다(이웃도 사라졌으면 index로 근사).
+    const nextId =
+      index >= 0 && index + 1 < prev.length ? prev[index + 1].id : null;
     set({ myDocuments: prev.filter((d) => d.id !== id) });
     try {
       await documentDataSource.deleteMyDocument(id);
       trackEvent(MixpanelEvent.DocumentDelete);
     } catch (error) {
-      // 전체 스냅샷 복원 대신 제거 항목만 원위치 삽입 — 그 사이 추가/삭제된 다른
+      // 전체 스냅샷 복원 대신 제거 항목만 재삽입 — 그 사이 추가/삭제된 다른
       // 항목을 덮어쓰지 않아 동시 삭제 시 clobber를 피한다.
       if (removed) {
-        set((state) =>
-          state.myDocuments.some((d) => d.id === id)
-            ? state
-            : {
-                myDocuments: [
-                  ...state.myDocuments.slice(0, index),
-                  removed,
-                  ...state.myDocuments.slice(index),
-                ],
-              }
-        );
+        set((state) => {
+          if (state.myDocuments.some((d) => d.id === id)) return state;
+          const docs = [...state.myDocuments];
+          const anchor = nextId ? docs.findIndex((d) => d.id === nextId) : -1;
+          if (anchor >= 0) {
+            docs.splice(anchor, 0, removed);
+          } else if (nextId === null) {
+            docs.push(removed); // 원래 마지막 항목
+          } else {
+            docs.splice(Math.min(index, docs.length), 0, removed);
+          }
+          return { myDocuments: docs };
+        });
       }
       throw error;
     }

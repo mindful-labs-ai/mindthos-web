@@ -92,14 +92,6 @@ export function createField(type: FormFieldType = 'single'): FormField {
   }
 }
 
-/** 선택형 필드에 빈 옵션(공백 value/label)이 있는지 — 있으면 저장 비활성 */
-export function hasEmptyOption(field: FormField): boolean {
-  if (field.type !== 'single' && field.type !== 'multiple') return false;
-  return field.options.some(
-    (o) => o.value.trim().length === 0 || o.label.trim().length === 0
-  );
-}
-
 /** 새 옵션 — 충돌 없는 안정 value 부여(개수 비의존) */
 export function createOption(): FormFieldOption {
   return newOption();
@@ -209,7 +201,10 @@ export function isValidField(field: FormField): boolean {
     case 'score':
       return field.label.trim().length > 0 && field.min < field.max;
     case 'consent':
-      return field.label.trim().length > 0;
+      // sensitive는 서버 필수 검증 항목 — 파싱된 구 content에 빠져 있으면 저장 400 전에 UI에서 거른다.
+      return (
+        field.label.trim().length > 0 && typeof field.sensitive === 'boolean'
+      );
     default:
       return false;
   }
