@@ -28,6 +28,9 @@ let createdSeq = 0;
 /** 일정 수정 오버라이드 (id → 변경 필드). 생성/샘플 일정 모두 적용. */
 const eventOverrides: Record<string, Partial<CalendarEvent>> = {};
 
+// 삭제된 일정 id — 생성분은 배열에서 빼고, 월별 생성 더미는 매 호출 재생성되므로 필터로 가린다.
+const deletedEventIds = new Set<string>();
+
 /** (year-month 기준) day/hour/minute로 ISO 생성 */
 function at(monthStart: dayjs.Dayjs, day: number, hour: number, min = 0) {
   return monthStart.date(day).hour(hour).minute(min).second(0).toISOString();
@@ -96,6 +99,7 @@ export const mockCalendarDataSource: CalendarDataSource = {
     const applyOverride = (e: CalendarEvent): CalendarEvent =>
       eventOverrides[e.id] ? { ...e, ...eventOverrides[e.id] } : e;
     return [...buildMonthEvents(monthStart), ...createdEvents]
+      .filter((e) => !deletedEventIds.has(e.id))
       .map(applyOverride)
       .filter(inRange);
   },
@@ -113,6 +117,13 @@ export const mockCalendarDataSource: CalendarDataSource = {
   ): Promise<CalendarEvent> {
     eventOverrides[id] = { ...input };
     return { ...input, id };
+  },
+
+  // mock은 반복 회차 전개가 없어 scope 구분 없이 그 행만 지운다(낙관 제거가 재조회로 되돌아오지 않게).
+  async deleteEvent(id: string): Promise<void> {
+    deletedEventIds.add(id);
+    const index = createdEvents.findIndex((e) => e.id === id);
+    if (index >= 0) createdEvents.splice(index, 1);
   },
 
   async listCategories(): Promise<CalendarCategory[]> {
