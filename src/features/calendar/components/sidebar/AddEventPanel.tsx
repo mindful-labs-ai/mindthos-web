@@ -47,7 +47,7 @@ interface AddEventPanelProps {
   onClose: () => void;
   /** 저장. 반복(시리즈) 일정 편집이면 scope(this/following/all)를 함께 넘긴다(신규·단일은 생략). */
   onSubmit: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
-  /** 편집 모드 삭제 — 있으면 헤더 쓰레기통 아이콘 노출. 반복 일정은 this/following/all 구분 */
+  /** 편집 모드 삭제 — 있으면 본문 최하단 '일정 삭제' 버튼 노출. 반복 일정은 this/following/all 구분 */
   onDelete?: (mode: CalendarEventScope) => void;
   /** 저장(추가·변경) 진행 중 — CTA·범위 선택 버튼 disable(중복 제출 방지). */
   submitting?: boolean;
@@ -261,43 +261,17 @@ export function AddEventPanel({
   return (
     <div className="flex h-full flex-col">
       {/* 헤더 — 모바일은 녹음 업로드 모달과 동일한 고정 헤더, 데스크탑은 슬라이드오버 헤더.
-          편집 모드면 제목 옆에 삭제(쓰레기통) — 반복 일정은 확인 다이얼로그에서 scope 선택. */}
+          편집 모드 삭제는 본문 최하단 '일정 삭제' 버튼 — 반복 일정은 확인 다이얼로그에서 scope 선택. */}
       {isMobileView ? (
         <MobileModalHeader
           title={isEdit ? '일정 변경하기' : '일정 추가하기'}
           onBack={onClose}
-          right={
-            isEdit && onDelete ? (
-              <button
-                type="button"
-                aria-label="일정 삭제"
-                disabled={busy}
-                onClick={() => setConfirmDelete(true)}
-                className="text-red-80 transition-colors disabled:opacity-40 lg:hover:text-red-50"
-              >
-                <Trash2 size={20} strokeWidth={1.75} />
-              </button>
-            ) : undefined
-          }
         />
       ) : (
         <div className="flex items-center justify-between px-5 pb-4 pt-7">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-emphasize text-[#222121]">
-              {isEdit ? '일정 변경하기' : '일정 추가하기'}
-            </h2>
-            {isEdit && onDelete && (
-              <button
-                type="button"
-                aria-label="일정 삭제"
-                disabled={busy}
-                onClick={() => setConfirmDelete(true)}
-                className="text-red-80 transition-colors disabled:opacity-40 lg:hover:text-red-50"
-              >
-                <Trash2 size={16} strokeWidth={1.75} />
-              </button>
-            )}
-          </div>
+          <h2 className="text-sm font-emphasize text-[#222121]">
+            {isEdit ? '일정 변경하기' : '일정 추가하기'}
+          </h2>
           <button
             type="button"
             aria-label="닫기"
@@ -479,6 +453,19 @@ export function AddEventPanel({
             value={counselMethod}
             onChange={setCounselMethod}
           />
+        )}
+
+        {/* 일정 삭제 — 항목 최하단 버튼(편집 모드). 반복이면 확인 다이얼로그에서 범위 선택 */}
+        {isEdit && onDelete && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setConfirmDelete(true)}
+            className="inline-flex w-fit items-center gap-1.5 self-start rounded-[10px] border border-[#ecedf3] bg-white px-3.5 py-2 text-sm font-medium text-[#abaebe] transition-colors disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-80"
+          >
+            <Trash2 size={16} strokeWidth={1.75} />
+            일정 삭제
+          </button>
         )}
       </div>
 
