@@ -455,15 +455,15 @@ export function AddEventPanel({
           />
         )}
 
-        {/* 일정 삭제 — 항목 최하단 버튼(편집 모드). 반복이면 확인 다이얼로그에서 범위 선택 */}
+        {/* 일정 삭제 — 항목 최하단 중앙 버튼(편집 모드). 반복이면 확인 다이얼로그에서 범위 선택 */}
         {isEdit && onDelete && (
           <button
             type="button"
             disabled={busy}
             onClick={() => setConfirmDelete(true)}
-            className="inline-flex w-fit items-center gap-1.5 self-start rounded-[10px] border border-[#ecedf3] bg-white px-3.5 py-2 text-sm font-medium text-[#abaebe] transition-colors disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-80"
+            className="inline-flex w-fit items-center gap-1 self-center rounded-[10px] border border-grey-30 bg-white px-3.5 py-2 text-m font-medium text-grey-70 transition-colors disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-80"
           >
-            <Trash2 size={16} strokeWidth={1.75} />
+            <Trash2 size={20} strokeWidth={1.75} />
             일정 삭제
           </button>
         )}
