@@ -87,7 +87,11 @@ function SharedSignatureSheetContent({
   const clear = () => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
-    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (canvas && ctx) {
+      // ctx는 dpr 스케일 좌표계 — CSS 픽셀 크기로 지운다(물리 크기도 클리핑돼 동작은 같지만 의미를 맞춤).
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+    }
     setHasInk(false);
   };
 
