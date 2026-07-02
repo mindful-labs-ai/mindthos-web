@@ -73,6 +73,8 @@ export function DocumentEditorContainer() {
   const [showValidation, setShowValidation] = useState(false);
   // 발송 불가(편집 중) 상태로 저장할지 확인하는 모달
   const [incompleteOpen, setIncompleteOpen] = useState(false);
+  // 저장 진행 중 — 버튼 disable로 중복 제출(문서 이중 생성) 방지
+  const [saving, setSaving] = useState(false);
 
   // 미저장 이탈 가드 기준 스냅샷 — 생성은 마운트 직후, 편집은 문서 로드 직후의 상태.
   // null이면 아직 기준이 없어(로딩 중) 가드를 걸지 않는다.
@@ -166,6 +168,8 @@ export function DocumentEditorContainer() {
   // 실제 저장 — 발송 가능이면 completed, 아니면 draft(편집 중)로 보관. 항상 저장은 되고,
   // draft는 발송 대상 목록에서 제외되고 카드에 '편집 중' 칩으로 표시된다.
   const commitSave = async () => {
+    if (saving) return;
+    setSaving(true);
     const content =
       kind === 'consent'
         ? buildConsentContent(consentHtml.trim())
@@ -193,6 +197,8 @@ export function DocumentEditorContainer() {
             ? error.message
             : '잠시 후 다시 시도해 주세요.',
       });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -296,9 +302,10 @@ export function DocumentEditorContainer() {
           <button
             type="button"
             onClick={handleSave}
-            className="h-[31px] rounded-lg bg-green-80 px-3.5 text-m font-medium text-white transition-opacity lg:hover:opacity-90"
+            disabled={saving}
+            className="h-[31px] rounded-lg bg-green-80 px-3.5 text-m font-medium text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60 lg:hover:opacity-90"
           >
-            저장
+            {saving ? '저장 중...' : '저장'}
           </button>
         </div>
 
