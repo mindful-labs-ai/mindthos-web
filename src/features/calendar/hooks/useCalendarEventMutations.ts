@@ -56,6 +56,87 @@ function eventFieldsFromInput(
   };
 }
 
+/**
+ * 수정 낙관 반영 — scope에 맞춰 즉시 갱신할 회차를 고른다.
+ * 마스터의 가상 회차들은 행 id(마스터 id)를 공유하므로 id만으로 매칭하면 시리즈 전체가
+ * 통째로 바뀌어 보인다. this=그 회차만 전체 필드, all/following=시리즈에 비시간 필드만
+ * (시각은 회차별 계산값 — 시각 변경·분할·override 생성은 onSettled 재조회가 확정).
+ */
+function applyEditForScope(
+  events: CalendarEvent[],
+  editing: CalendarEvent,
+  input: CalendarEventInput,
+  scope: CalendarEventScope | undefined,
+  occurrenceDate: string | null
+): CalendarEvent[] {
+  const fields = eventFieldsFromInput(input);
+  const seriesId = editing.seriesId ?? null;
+  // 단일 일정 — 기존처럼 id 매칭 행 전체 교체.
+  if (!seriesId) {
+    return events.map((e) => (e.id === editing.id ? { ...e, ...fields } : e));
+  }
+  if (scope === 'this') {
+    return events.map((e) =>
+      e.id === editing.id && (e.occurrenceDate ?? null) === occurrenceDate
+        ? { ...e, ...fields }
+        : e
+    );
+  }
+  const sharedFields = {
+    title: fields.title,
+    kind: fields.kind,
+    colorKey: fields.colorKey,
+    categoryId: fields.categoryId,
+    clientId: fields.clientId,
+    counselMethod: fields.counselMethod,
+  };
+  if (scope === 'following' && occurrenceDate) {
+    return events.map((e) =>
+      e.seriesId === seriesId && (e.occurrenceDate ?? '') >= occurrenceDate
+        ? { ...e, ...sharedFields }
+        : e
+    );
+  }
+  // all (또는 occurrenceDate 없는 following 방어) — 시리즈 전체.
+  return events.map((e) =>
+    e.seriesId === seriesId ? { ...e, ...sharedFields } : e
+  );
+}
+
+/**
+ * 삭제 낙관 반영 — scope에 맞춰 즉시 제거할 회차를 고른다(수정과 동일한 id 공유 전제).
+ * this=그 회차 하나, following=그 회차부터 같은 시리즈, all=시리즈 전체, 단일=그 행.
+ */
+function removeEventsForScope(
+  events: CalendarEvent[],
+  id: string,
+  scope: CalendarEventScope,
+  occurrenceDate: string | null
+): CalendarEvent[] {
+  const target =
+    events.find(
+      (e) =>
+        e.id === id &&
+        (occurrenceDate === null || e.occurrenceDate === occurrenceDate)
+    ) ?? events.find((e) => e.id === id);
+  const seriesId = target?.seriesId ?? null;
+  // 단일 일정(시리즈 없음) — 그 행만.
+  if (!seriesId) return events.filter((e) => e.id !== id);
+  if (scope === 'all') return events.filter((e) => e.seriesId !== seriesId);
+  if (scope === 'following') {
+    // 회차 날짜가 없으면(방어) 시리즈 전체로 근사 — onSettled 재조회가 확정.
+    if (!occurrenceDate) return events.filter((e) => e.seriesId !== seriesId);
+    return events.filter(
+      (e) =>
+        !(e.seriesId === seriesId && (e.occurrenceDate ?? '') >= occurrenceDate)
+    );
+  }
+  // this — 그 회차 하나(마스터 인스턴스는 id+회차날짜, override는 고유 id로 특정).
+  return events.filter(
+    (e) => !(e.id === id && (e.occurrenceDate ?? null) === occurrenceDate)
+  );
+}
+
 /** 진행 중 refetch 취소 + 현재 events 캐시 스냅샷(롤백용). cancel은 상위 키(['calendar'])까지 안전하게 취소. */
 async function snapshotEvents(
   queryClient: QueryClient
@@ -83,8 +164,8 @@ function invalidateEvents(queryClient: QueryClient): void {
 
 /**
  * 일정 생성/수정·삭제 낙관적 뮤테이션.
- *  onMutate: refetch 취소 + 캐시 스냅샷 → 즉시 반영(생성=temp 추가 / 수정=id 매칭 교체 / 삭제=id 제거).
- *    반복 생성은 회차 전개가 서버 몫이라 낙관 추가를 스킵(onSettled 재조회에 의존).
+ *  onMutate: refetch 취소 + 캐시 스냅샷 → 즉시 반영(생성=temp 추가 / 수정·삭제=scope별 회차 매칭 —
+ *    applyEditForScope/removeEventsForScope). 반복 생성은 회차 전개가 서버 몫이라 낙관 추가를 스킵.
  *  onError: 스냅샷 롤백 + 실패 토스트. onSettled: invalidate로 서버 진실 재조정.
  * 반환한 mutate 함수는 호출부에서 per-call onSuccess(트래킹·패널 닫기)를 넘겨 오케스트레이션한다.
  */
@@ -111,16 +192,13 @@ export function useCalendarEventMutations() {
       }
       return calendarDataSource.createEvent?.(input) ?? Promise.resolve();
     },
-    onMutate: async ({ input, editing }) => {
+    onMutate: async ({ input, editing, scope, occurrenceDate }) => {
       const previous = await snapshotEvents(queryClient);
       if (editing) {
-        const id = editing.id;
         queryClient.setQueriesData<CalendarEvent[]>(
           { queryKey: EVENTS_QUERY_KEY },
           (old) =>
-            old?.map((e) =>
-              e.id === id ? { ...e, ...eventFieldsFromInput(input) } : e
-            )
+            old && applyEditForScope(old, editing, input, scope, occurrenceDate)
         );
       } else if (!input.repeat) {
         const temp: CalendarEvent = {
@@ -156,12 +234,12 @@ export function useCalendarEventMutations() {
     mutationFn: ({ id, scope, occurrenceDate }) =>
       calendarDataSource.deleteEvent?.(id, scope, occurrenceDate) ??
       Promise.resolve(),
-    onMutate: async ({ id }) => {
+    onMutate: async ({ id, scope, occurrenceDate }) => {
       const previous = await snapshotEvents(queryClient);
-      // 반복(all/following)은 한 행만 지워 근사 — onSettled 재조회로 EXDATE/override/분할을 정확히 맞춘다.
+      // scope에 맞춰 즉시 제거(EXDATE/override/분할의 정확한 결과는 onSettled 재조회가 확정).
       queryClient.setQueriesData<CalendarEvent[]>(
         { queryKey: EVENTS_QUERY_KEY },
-        (old) => old?.filter((e) => e.id !== id)
+        (old) => old && removeEventsForScope(old, id, scope, occurrenceDate)
       );
       return { previous };
     },
