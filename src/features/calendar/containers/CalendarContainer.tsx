@@ -287,6 +287,7 @@ export default function CalendarContainer() {
         onSetCurrent={setCurrent}
         onToggleKind={toggleKind}
         onToggleCategory={toggleCategory}
+        onDeleteCategory={handleDeleteCategory}
         onEventClick={openEditEvent}
         onOpenAddEvent={openAddEvent}
         onOpenAddCalendar={openAddCalendar}

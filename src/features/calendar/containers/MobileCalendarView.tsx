@@ -41,6 +41,8 @@ interface MobileCalendarViewProps {
   onSetCurrent: (date: Dayjs) => void;
   onToggleKind: (kind: CalendarEventKind) => void;
   onToggleCategory: (categoryId: string) => void;
+  /** 연동 캘린더(카테고리) 해제 — 데스크탑 사이드탭과 동일하게 설정 메뉴에서 삭제 */
+  onDeleteCategory?: (categoryId: string) => void;
   onEventClick: (event: CalendarEvent) => void;
   onOpenAddEvent: (
     kind: CalendarEventKind,
@@ -82,6 +84,7 @@ export function MobileCalendarView({
   onSetCurrent,
   onToggleKind,
   onToggleCategory,
+  onDeleteCategory,
   onEventClick,
   onOpenAddEvent,
   onOpenAddCalendar,
@@ -206,6 +209,7 @@ export function MobileCalendarView({
         categories={categories}
         categoryVisible={categoryVisible}
         onToggleCategory={onToggleCategory}
+        onDeleteCategory={onDeleteCategory}
         onOpenAddCalendar={handleConnect}
       />
     </div>

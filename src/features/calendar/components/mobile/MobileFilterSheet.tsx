@@ -16,6 +16,8 @@ interface MobileFilterSheetProps {
   categories: CalendarCategory[];
   categoryVisible: Record<string, boolean>;
   onToggleCategory: (categoryId: string) => void;
+  /** 연동 캘린더(카테고리) 해제 — 설정 메뉴에서 삭제(소속 일정 포함) */
+  onDeleteCategory?: (categoryId: string) => void;
   /** 카테고리 추가 / 외부 캘린더 연동 (시트 닫고 패널 오픈) */
   onOpenAddCalendar: () => void;
 }
@@ -29,6 +31,7 @@ export function MobileFilterSheet({
   categories,
   categoryVisible,
   onToggleCategory,
+  onDeleteCategory,
   onOpenAddCalendar,
 }: MobileFilterSheetProps) {
   // 외부 캘린더가 연결된 경우에만 '나의 캘린더' 노출. 구글 연동 시 하단 연동 카드는 숨김.
@@ -60,6 +63,7 @@ export function MobileFilterSheet({
               categoryVisible={categoryVisible}
               onToggleCategory={onToggleCategory}
               onConnect={onOpenAddCalendar}
+              onDeleteCategory={onDeleteCategory}
             />
           </>
         )}
