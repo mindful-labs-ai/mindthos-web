@@ -35,8 +35,9 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
   // 케밥 드롭다운 열림 / 삭제 확인 모달 열림
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  // 발송 가능(완료) / 발송 불가(편집 중) 상태 칩 — validation(content 유효성) 파생
+  // 상태 칩 — 발송 불가(편집 중)만 표시(발송 가능은 칩 없음). validation(content 유효성) 파생
   const statusChip = getMyDocumentStatusChip(document);
+  const hasTitle = document.title.trim().length > 0;
 
   const handleDelete = () => {
     setIsConfirmOpen(false);
@@ -55,8 +56,12 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
         onClick={() => navigateWithUtm(getDocumentViewRoute(document.id))}
         className="flex h-full w-full flex-col px-7 py-6 text-left"
       >
-        <h3 className="truncate pr-6 text-l font-headline leading-[24px] text-grey-100">
-          {document.title}
+        <h3
+          className={`truncate pr-6 text-l font-headline leading-[24px] ${
+            hasTitle ? 'text-grey-100' : 'text-grey-60'
+          }`}
+        >
+          {hasTitle ? document.title : '제목 없음'}
         </h3>
         <p className="mt-3 text-m font-medium leading-[140%] text-grey-100">
           {MY_DOCUMENT_KIND_LABEL[document.kind]}
@@ -66,12 +71,14 @@ export function MyDocumentCard({ document }: MyDocumentCardProps) {
         </p>
       </button>
 
-      {/* 상태 칩 — 완료(발송 가능) / 편집 중(발송 불가) */}
-      <span
-        className={`pointer-events-none absolute bottom-[18px] right-6 rounded-lg px-2.5 py-1 text-sm font-headline ${statusChip.className}`}
-      >
-        {statusChip.label}
-      </span>
+      {/* 상태 칩 — 발송 불가(편집 중)일 때만 표시 */}
+      {statusChip && (
+        <span
+          className={`pointer-events-none absolute bottom-[18px] right-6 rounded-md px-2.5 py-1 text-sm font-headline ${statusChip.className}`}
+        >
+          {statusChip.label}
+        </span>
+      )}
 
       {/* 케밥 메뉴 — 삭제하기 */}
       <div className="absolute right-3 top-4">

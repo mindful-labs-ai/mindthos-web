@@ -163,15 +163,17 @@ export function DocumentViewContainer() {
             )}
           </div>
 
-          {/* 제목 */}
+          {/* 제목 — 제목 없이 저장된 문서(편집 중 draft)는 '제목 없음' placeholder */}
           <h2
-            className={`print-doc-title mx-auto w-full max-w-[851px] text-center font-emphasize text-grey-100 ${
+            className={`print-doc-title mx-auto w-full max-w-[851px] text-center font-emphasize ${
+              document.title.trim() ? 'text-grey-100' : 'text-grey-60'
+            } ${
               isMobileView
                 ? 'mt-4 text-xl leading-[29px]'
                 : 'mt-12 text-[32px] leading-[38px]'
             }`}
           >
-            {document.title}
+            {document.title.trim() ? document.title : '제목 없음'}
           </h2>
           <div
             className={`print-doc-divider mx-auto w-full max-w-[851px] border-b border-grey-40 ${isMobileView ? 'mt-6' : 'mt-12'}`}

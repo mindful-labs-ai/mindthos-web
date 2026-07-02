@@ -18,14 +18,14 @@ export function isSendableDocument(
   return doc.status === 'completed' && doc.validation === 'valid';
 }
 
-/** 내 문서 상태 칩 — 발송 가능(완료, 초록) / 발송 불가(편집 중, 앰버) */
+/** 내 문서 상태 칩 — 발송 가능이면 칩 없음(null), 발송 불가만 '편집 중'(앰버)으로 표시. */
 export function getMyDocumentStatusChip(
   doc: Pick<MyDocument, 'status' | 'validation'>
 ): {
   label: string;
   className: string;
-} {
+} | null {
   return isSendableDocument(doc)
-    ? { label: '완료', className: 'bg-green-20 text-green-80' }
+    ? null
     : { label: '편집 중', className: 'bg-yellow-20 text-yellow-80' };
 }
