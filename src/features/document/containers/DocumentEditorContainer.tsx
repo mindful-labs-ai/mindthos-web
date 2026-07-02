@@ -8,6 +8,7 @@ import { ServerApiError } from '@/shared/api/server/serverClient';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useUnsavedChangesGuard } from '@/shared/hooks/useUnsavedChangesGuard';
+import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useToast } from '@/shared/ui/composites/Toast';
 import {
@@ -131,8 +132,9 @@ export function DocumentEditorContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 미저장 이탈 경고 — 뒤로가기/라우팅/새로고침 시 작성 내용 유실 가능성 안내 (가계도 가드 패턴).
-  useUnsavedChangesGuard(
+  // 미저장 이탈 경고 — 앱 내 이동(취소/뒤로가기 버튼 등)은 내부 모달로, 브라우저
+  // 뒤로가기는 confirm, 새로고침/탭 닫기는 beforeunload로 막는다 (가계도 가드 패턴).
+  const leaveGuard = useUnsavedChangesGuard(
     () =>
       !skipGuardRef.current &&
       baselineRef.current !== null &&
@@ -368,6 +370,39 @@ export function DocumentEditorContainer() {
               className="h-[44px] flex-1 rounded-lg bg-green-80 text-m font-emphasize text-white transition-opacity lg:hover:opacity-90"
             >
               이대로 저장
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 미저장 이탈 확인 모달 — 앱 내 이동(취소/뒤로가기 버튼 등) 차단 시 (축어록 편집 플로우 UI 참조) */}
+      <Modal
+        open={leaveGuard.confirmOpen}
+        onOpenChange={(open) => !open && leaveGuard.cancel()}
+        title="편집 취소"
+        className="max-w-sm"
+      >
+        <div className="space-y-4">
+          <Text className="typo-m text-fg">
+            작성 중인 내용이 있어요. 저장하지 않고 나가시겠습니까?
+          </Text>
+          <Text className="typo-sm text-fg-muted">
+            지금 나가면 작성 중인 내용이 모두 사라집니다.
+          </Text>
+          <div className="flex justify-center gap-2 pt-2">
+            <button
+              type="button"
+              onClick={leaveGuard.cancel}
+              className="lg:hover:bg-surface-hover typo-sm w-full rounded-lg border border-border bg-surface px-4 py-2 font-medium text-fg transition-colors"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={leaveGuard.confirm}
+              className="lg:hover:bg-primary/90 typo-sm w-full rounded-lg bg-primary px-4 py-2 font-medium text-primary-fg transition-colors"
+            >
+              확인
             </button>
           </div>
         </div>
