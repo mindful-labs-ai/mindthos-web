@@ -144,10 +144,12 @@ export function SendDocumentModal({
   // 발송 가능(완료)한 내 문서만 노출 — 편집 중(필수 항목 미완)은 발송 대상에서 제외
   const sendableMyDocuments = myDocuments.filter(isSendableDocument);
 
-  // 열릴 때마다 초기화 — 초기 발송 대상/기본 문서/기본 기한 + 문서 목록 로드
+  // 열릴 때마다 초기화 — 발송 대상/선택 문서/기한 전부 리셋(이전 세션 선택 잔존 방지) + 문서 목록 로드.
+  // 문서는 해제 후 아래 기본 선택 효과가 첫 마음토스 양식으로 다시 채운다.
   useEffect(() => {
     if (!open) return;
     setSelectedClientId(initialClientId ?? null);
+    setSelectedDocument(null);
     setDeadline('1w');
     void loadDocuments();
   }, [open, initialClientId, loadDocuments]);
