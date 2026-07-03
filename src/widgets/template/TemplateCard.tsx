@@ -18,6 +18,8 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   onTogglePin,
   onSetDefault,
 }) => {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   const handlePinClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     trackEvent(MixpanelEvent.TemplatePinToggle, {
@@ -27,9 +29,8 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
     onTogglePin?.(template);
   };
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
-  const handleDefaultClick = () => {
+  const handleDefaultClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!template.is_default) {
       setIsConfirmOpen(true);
     }
@@ -44,45 +45,46 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   };
 
   return (
-    <div className="h-[219px] rounded-lg border border-grey-40 bg-white">
-      <div className="flex h-full flex-col space-y-4 p-6 text-left">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="line-clamp-2 flex-1 text-l font-headline text-grey-100">
-            {template.title}
-          </h3>
+    <div className="relative h-[219px] rounded-2xl border border-grey-40 bg-white p-7 text-left">
+      {/* 즐겨찾기(별) — 우상단 */}
+      <button
+        type="button"
+        onClick={handlePinClick}
+        aria-label={template.pin ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+        className="absolute right-4 top-4 transition-colors"
+      >
+        <StarIcon
+          size={24}
+          fill={template.pin ? 'currentColor' : 'none'}
+          className={template.pin ? 'text-green-80' : 'text-grey-40'}
+        />
+      </button>
+
+      <h3 className="line-clamp-1 pr-8 text-l font-headline text-grey-100">
+        {template.title}
+      </h3>
+      {/* 설명 — 생략(...) 대신 스크롤로 전체 내용을 볼 수 있게. 하단 배지(absolute)와 겹치지 않도록 높이 제한. */}
+      <p className="mt-4 max-h-[64px] overflow-y-auto whitespace-pre-line pr-1 text-m font-medium text-grey-100">
+        {template.description}
+      </p>
+
+      {/* 기본 노트 상태 — 배지(기본) 또는 변경 버튼 — 좌하단 */}
+      <div className="absolute bottom-6 left-7">
+        {template.is_default ? (
+          <span className="inline-flex items-center rounded-md bg-green-20 px-[19px] py-1.5 text-m font-headline text-green-80">
+            기본 노트
+          </span>
+        ) : (
           <button
             type="button"
-            onClick={handlePinClick}
-            className="flex-shrink-0 text-grey-60 transition-colors lg:hover:text-green-80"
-            aria-label={template.pin ? '즐겨찾기 해제' : '즐겨찾기 추가'}
-          >
-            <StarIcon
-              size={20}
-              fill={template.pin ? 'currentColor' : 'none'}
-              className={template.pin ? 'text-green-80' : ''}
-            />
-          </button>
-        </div>
-
-        <p className="flex-1 overflow-y-auto text-left text-m font-medium text-grey-100">
-          {template.description}
-        </p>
-
-        {template.is_default ? (
-          <div className="inline-flex h-8 w-fit select-none items-center justify-center rounded-sm bg-green-80 px-3 text-sm font-medium text-white">
-            기본 노트로 설정됨
-          </div>
-        ) : (
-          <Button
-            tone="neutral"
-            size="sm"
             onClick={handleDefaultClick}
-            className="w-fit bg-grey-40"
+            className="inline-flex items-center rounded-md bg-grey-20 px-[19px] py-1.5 text-m font-headline text-grey-80 transition-colors lg:hover:bg-grey-40"
           >
             기본 노트로 변경하기
-          </Button>
+          </button>
         )}
       </div>
+
       <Modal
         open={isConfirmOpen}
         onOpenChange={setIsConfirmOpen}

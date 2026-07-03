@@ -1,0 +1,217 @@
+import React from 'react';
+
+import { Modal } from '@/shared/ui/composites/Modal';
+
+import type { CalendarProvider } from '../adapters';
+import { GridLoadingOverlay } from '../components/GridLoadingOverlay';
+import { CalendarFab } from '../components/mobile/CalendarFab';
+import { MobileCalendarToolbar } from '../components/mobile/MobileCalendarToolbar';
+import { MobileDayView } from '../components/mobile/MobileDayView';
+import { MobileFilterSheet } from '../components/mobile/MobileFilterSheet';
+import { MobileMonthGrid } from '../components/mobile/MobileMonthGrid';
+import { AddCalendarPanel } from '../components/sidebar/AddCalendarPanel';
+import { AddEventPanel } from '../components/sidebar/AddEventPanel';
+import type { CalendarSidePanel } from '../hooks/useCalendarState';
+import type {
+  AddEventDraft,
+  CalendarCategory,
+  CalendarEvent,
+  CalendarEventKind,
+  CalendarEventScope,
+  CalendarViewMode,
+} from '../types';
+import type { Dayjs } from '../utils/calendarDate';
+
+interface MobileCalendarViewProps {
+  current: Dayjs;
+  viewMode: CalendarViewMode;
+  events: CalendarEvent[];
+  /** 최초 일정 로드 중 여부 — 그리드 영역에 로딩 오버레이 표시(백그라운드 refetch는 제외). */
+  isEventsLoading?: boolean;
+  categories: CalendarCategory[];
+  kindVisible: Record<CalendarEventKind, boolean>;
+  categoryVisible: Record<string, boolean>;
+  sidePanel: CalendarSidePanel;
+  addEventKind: CalendarEventKind;
+  addEventTime: { start: string; end: string };
+  editingEvent: CalendarEvent | null;
+  openSeq: number;
+  selectedDate: Dayjs | null;
+  onViewModeChange: (mode: CalendarViewMode) => void;
+  onSetCurrent: (date: Dayjs) => void;
+  onToggleKind: (kind: CalendarEventKind) => void;
+  onToggleCategory: (categoryId: string) => void;
+  /** 연동 캘린더(카테고리) 해제 — 데스크탑 사이드탭과 동일하게 설정 메뉴에서 삭제 */
+  onDeleteCategory?: (categoryId: string) => void;
+  onEventClick: (event: CalendarEvent) => void;
+  onOpenAddEvent: (
+    kind: CalendarEventKind,
+    date?: Dayjs,
+    time?: { start: string; end: string }
+  ) => void;
+  onOpenAddCalendar: () => void;
+  onConnectProvider: (provider: CalendarProvider) => void;
+  onClosePanel: () => void;
+  onSelectDate: (day: Dayjs) => void;
+  onTimeChange: (time: { start: string; end: string }) => void;
+  onSubmitEvent: (draft: AddEventDraft, scope?: CalendarEventScope) => void;
+  onDeleteEvent?: (mode: CalendarEventScope) => void;
+  /** 일정 저장(추가·변경) 진행 중 — 패널 CTA·범위 선택 버튼 disable */
+  submitting?: boolean;
+  /** 일정 삭제 진행 중 — 패널 삭제 버튼 disable */
+  deleting?: boolean;
+}
+
+/**
+ * 모바일/태블릿 캘린더 뷰 (<1024px).
+ * 상단 툴바 + 월간(미니칩)/일간 타임라인 + 우하단 FAB + 패널(fullScreen Modal)/필터(bottomSheet).
+ */
+export function MobileCalendarView({
+  current,
+  viewMode,
+  events,
+  isEventsLoading,
+  categories,
+  kindVisible,
+  categoryVisible,
+  sidePanel,
+  addEventKind,
+  addEventTime,
+  editingEvent,
+  openSeq,
+  selectedDate,
+  onViewModeChange,
+  onSetCurrent,
+  onToggleKind,
+  onToggleCategory,
+  onDeleteCategory,
+  onEventClick,
+  onOpenAddEvent,
+  onOpenAddCalendar,
+  onConnectProvider,
+  onClosePanel,
+  onSelectDate,
+  onTimeChange,
+  onSubmitEvent,
+  onDeleteEvent,
+  submitting,
+  deleting,
+}: MobileCalendarViewProps) {
+  const [filterOpen, setFilterOpen] = React.useState(false);
+  // 월간에서 탭으로 선택한 날짜 (없으면 null → 하이라이트/FAB 없음)
+  const [selectedDay, setSelectedDay] = React.useState<Dayjs | null>(null);
+
+  // 월간=월 단위, 일간=주 단위 이동(요일 선택은 상단 주간 스트립이 담당)
+  const goPrev = () => {
+    if (viewMode === 'month') {
+      setSelectedDay(null);
+      onSetCurrent(current.subtract(1, 'month'));
+    } else {
+      onSetCurrent(current.subtract(1, 'week'));
+    }
+  };
+  const goNext = () => {
+    if (viewMode === 'month') {
+      setSelectedDay(null);
+      onSetCurrent(current.add(1, 'month'));
+    } else {
+      onSetCurrent(current.add(1, 'week'));
+    }
+  };
+
+  // 월간 날짜 탭 → 선택(하이라이트+FAB) + current 이동(일간 토글 시 그 날짜 표시)
+  const handleMonthSelectDay = (day: Dayjs) => {
+    setSelectedDay(day);
+    onSetCurrent(day);
+  };
+
+  const handleConnect = () => {
+    setFilterOpen(false);
+    onOpenAddCalendar();
+  };
+
+  return (
+    <div className="flex h-full flex-col bg-white">
+      <MobileCalendarToolbar
+        current={current}
+        viewMode={viewMode}
+        onPrev={goPrev}
+        onNext={goNext}
+        onViewModeChange={onViewModeChange}
+        onOpenFilter={() => setFilterOpen(true)}
+      />
+
+      <div className="relative min-h-0 flex-1">
+        {viewMode === 'month' ? (
+          <MobileMonthGrid
+            current={current}
+            events={events}
+            selectedDate={selectedDay}
+            onSelectDay={handleMonthSelectDay}
+            onEventClick={onEventClick}
+          />
+        ) : (
+          <MobileDayView
+            current={current}
+            events={events}
+            onSelectDay={onSetCurrent}
+            onEventClick={onEventClick}
+          />
+        )}
+        {isEventsLoading && <GridLoadingOverlay />}
+      </div>
+
+      <CalendarFab onClick={() => onOpenAddEvent('counseling', current)} />
+
+      {/* 일정 추가/변경 (전체 화면) */}
+      <Modal
+        open={sidePanel === 'addEvent'}
+        onOpenChange={(o) => !o && onClosePanel()}
+        mobileVariant="fullScreen"
+        hideCloseButton
+      >
+        <AddEventPanel
+          key={openSeq}
+          initialKind={addEventKind}
+          selectedDate={selectedDate}
+          initialStartTime={addEventTime.start}
+          initialEndTime={addEventTime.end}
+          editingEvent={editingEvent}
+          onSelectDate={onSelectDate}
+          onTimeChange={onTimeChange}
+          onClose={onClosePanel}
+          onSubmit={onSubmitEvent}
+          onDelete={onDeleteEvent}
+          submitting={submitting}
+          deleting={deleting}
+        />
+      </Modal>
+
+      {/* 캘린더 추가 (전체 화면) */}
+      <Modal
+        open={sidePanel === 'addCalendar'}
+        onOpenChange={(o) => !o && onClosePanel()}
+        mobileVariant="fullScreen"
+        hideCloseButton
+      >
+        <AddCalendarPanel
+          onClose={onClosePanel}
+          onConnect={onConnectProvider}
+        />
+      </Modal>
+
+      {/* 필터(일정 표시/나의 캘린더) bottomSheet */}
+      <MobileFilterSheet
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        kindVisible={kindVisible}
+        onToggleKind={onToggleKind}
+        categories={categories}
+        categoryVisible={categoryVisible}
+        onToggleCategory={onToggleCategory}
+        onDeleteCategory={onDeleteCategory}
+        onOpenAddCalendar={handleConnect}
+      />
+    </div>
+  );
+}

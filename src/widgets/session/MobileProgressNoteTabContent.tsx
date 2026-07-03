@@ -7,7 +7,6 @@ import React from 'react';
 
 import type { ProgressNote } from '@/features/session/types';
 import { CREDIT_COST } from '@/shared/constants/credit';
-import { useDevice } from '@/shared/hooks/useDevice';
 import { CreditIcon } from '@/shared/icons';
 import { Title } from '@/shared/ui';
 
@@ -67,7 +66,6 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
       onSaveSummary,
       onNoteEditStateChange,
     }) => {
-      const { isTablet } = useDevice();
       // 생성 중 또는 템플릿 선택 탭인 경우
       if (activeTab.startsWith('create-note-') || activeCreatingTab) {
         if (activeCreatingTab?.isProcessing) {
@@ -95,7 +93,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
           return (
             <div className="flex h-full flex-col px-4 md:px-10">
               <div className="sticky top-0 z-10 flex items-center justify-between bg-white py-3">
-                <p className="text-sm text-grey-60 md:text-m">상담노트 양식</p>
+                <p className="text-sm text-grey-60 md:text-m">상담 노트 양식</p>
                 <button
                   onClick={onCreateProgressNote}
                   disabled={isReadOnly || !isTemplateSelected}
@@ -105,7 +103,7 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                       : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
-                  상담노트 만들기
+                  상담 노트 만들기
                   <span className="flex items-center gap-0.5">
                     {PROGRESS_NOTE_CREDIT}
                     <CreditIcon size={14} color="currentColor" />
@@ -124,7 +122,6 @@ export const MobileProgressNoteTabContent: React.FC<MobileProgressNoteTabContent
                     )}
                   selectedTemplateId={creatingTabs[activeTab] || null}
                   onTemplateSelect={onTemplateSelect}
-                  columns={isTablet ? 2 : 1}
                 />
               </div>
             </div>

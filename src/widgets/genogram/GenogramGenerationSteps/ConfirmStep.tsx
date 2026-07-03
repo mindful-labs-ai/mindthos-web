@@ -65,7 +65,7 @@ export function ConfirmStep({
     return (
       <>
         {/* 스크롤 가능 콘텐츠 */}
-        <div className="flex flex-1 flex-col items-center overflow-y-auto px-4 pt-4 md:px-10">
+        <div className="flex flex-1 flex-col items-center overflow-y-auto overscroll-contain px-4 pt-4 md:px-10">
           <div className="mb-6 w-full max-w-[480px]">
             <img
               src="/genogram/genogram-intro.png"

@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 
 import type { Client } from '@/features/client/types';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
-import { BackButton } from '@/shared/ui';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { FilterMenu } from '@/widgets/session/FilterMenu';
@@ -80,12 +80,7 @@ export const MobileSessionHistoryView: React.FC<
               hideCloseButton
               className="flex flex-col"
             >
-              <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-                <BackButton onClick={() => setIsClientFilterOpen(false)} />
-                <p className="text-m font-medium text-grey-100">
-                  내담자 선택하기
-                </p>
-              </div>
+              <MobileModalHeader title="내담자 선택하기" onBack={() => setIsClientFilterOpen(false)} />
               <div className="flex-1 overflow-y-auto px-4 py-4">
                 <FilterMenu
                   sortOrder={sortOrder}

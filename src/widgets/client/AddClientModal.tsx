@@ -5,7 +5,7 @@ import type { Client } from '@/features/client/types';
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Input } from '@/shared/ui/atoms/Input';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -104,12 +104,10 @@ export const AddClientModal: React.FC<AddClientModalProps> = ({
         className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}
       >
         {isMobileView ? (
-          <div className="flex h-[67px] items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={handleClose} />
-            <p className="text-m font-medium text-grey-100">
-              {isEditMode ? '내담자 정보 수정' : '내담자 추가하기'}
-            </p>
-          </div>
+          <MobileModalHeader
+            title={isEditMode ? '내담자 정보 수정' : '내담자 추가하기'}
+            onBack={handleClose}
+          />
         ) : (
           <div className="flex items-start justify-between">
             <Title as="h2" className="typo-xl px-6 font-headline">

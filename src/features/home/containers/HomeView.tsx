@@ -14,7 +14,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   sessionSection,
 }) => {
   return (
-    <div className="mx-auto w-full max-w-[1332px] p-16 text-left">
+    <div className="mx-auto w-full max-w-[1332px] p-16 pt-6 text-left">
       {onboardingSection}
 
       {greetingSection}

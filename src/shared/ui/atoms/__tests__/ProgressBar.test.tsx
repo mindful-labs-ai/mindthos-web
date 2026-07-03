@@ -32,7 +32,7 @@ describe('ProgressBar', () => {
   });
 
   it('does not show aria-valuenow when indeterminate', () => {
-    render(<ProgressBar indeterminate />);
+    render(<ProgressBar indeterminate value={0} />);
     expect(screen.getByRole('progressbar')).not.toHaveAttribute(
       'aria-valuenow'
     );

@@ -31,8 +31,12 @@ export const FormField: React.FC<FormFieldProps> = ({
   const helperId = helperText ? `${fieldId}-helper` : undefined;
 
   // Clone child element to add IDs for a11y
-  const childElement = React.isValidElement(children)
-    ? React.cloneElement(children as React.ReactElement, {
+  const childElement = React.isValidElement<{
+    id?: string;
+    'aria-describedby'?: string;
+    'aria-invalid'?: boolean;
+  }>(children)
+    ? React.cloneElement(children, {
         id: fieldId,
         'aria-describedby': cn(errorId, helperId).trim() || undefined,
         'aria-invalid': error ? true : undefined,

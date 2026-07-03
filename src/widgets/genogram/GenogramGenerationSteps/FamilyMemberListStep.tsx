@@ -434,7 +434,7 @@ export function FamilyMemberListStep({
       {/* 스크롤 가능한 컨텐츠 영역 */}
       <div
         ref={scrollContainerRef}
-        className={`relative min-h-0 flex-1 overflow-y-auto ${
+        className={`relative min-h-0 flex-1 overflow-y-auto overscroll-contain ${
           isMobileView
             ? 'bg-grey-20 px-4 md:px-10'
             : 'rounded-lg bg-surface-contrast pl-6 pr-[18px]'

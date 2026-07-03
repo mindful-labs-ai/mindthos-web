@@ -11,6 +11,8 @@ import {
   type BreadCrumbItem,
 } from '@/shared/ui/composites/BreadCrumb';
 import { useAuthStore } from '@/stores/authStore';
+import { DEFAULT_DOCUMENTS, useDocumentStore } from '@/stores/documentStore';
+import { NotificationBell } from '@/widgets/notification';
 import { ProfileMenu } from '@/widgets/profile';
 
 import { routeNameMap } from '../navigationConfig';
@@ -20,6 +22,8 @@ export const Header: React.FC = () => {
   const [searchParams] = useSearchParams();
   const userId = useAuthStore((state) => state.userId);
   const { clients } = useClientList();
+  const myDocuments = useDocumentStore((state) => state.myDocuments);
+  const templates = useDocumentStore((state) => state.templates);
   const pathnames = location.pathname.split('/').filter((x) => x);
   const currentSessionId =
     pathnames.length >= 2 && pathnames[pathnames.length - 2] === 'sessions'
@@ -77,6 +81,28 @@ export const Header: React.FC = () => {
           href: currentPath,
         });
       }
+      // /documents/:documentId(/edit) 경로인 경우 문서 제목 사용 (/documents/new는 제작 뷰)
+      // 내 문서뿐 아니라 기본 문서(서버 templates·DEFAULT_DOCUMENTS)도 조회해야 제목이 빠지지 않는다.
+      else if (pathnames[index - 1] === 'documents') {
+        const label =
+          name === 'new'
+            ? '빈 문서'
+            : myDocuments.find((d) => d.id === name)?.title ||
+              templates.find((d) => d.id === name)?.title ||
+              DEFAULT_DOCUMENTS.find((d) => d.id === name)?.title ||
+              '제목 없음';
+        items.push({
+          label,
+          href: currentPath,
+        });
+      }
+      // /documents/:documentId/edit의 edit 세그먼트
+      else if (pathnames[index - 2] === 'documents' && name === 'edit') {
+        items.push({
+          label: '편집',
+          href: currentPath,
+        });
+      }
       // /genogram 경로에서 쿼리스트링 clientId로 내담자 이름 표시
       else if (name === 'genogram') {
         const label = routeNameMap[currentPath] || '가계도';
@@ -110,7 +136,10 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-header hidden h-header items-center justify-between gap-4 border-b border-header-border bg-header-bg px-8 py-4 sm:flex">
       <BreadCrumb items={breadcrumbItems} />
-      <ProfileMenu surface="dropdown" />
+      <div className="flex items-center gap-3">
+        <NotificationBell />
+        <ProfileMenu surface="dropdown" />
+      </div>
     </header>
   );
 };

@@ -12,15 +12,11 @@ import {
   UndoIcon,
 } from '@/shared/icons';
 
-import { ClientDropdown } from './ClientDropdown';
-
 /** 우측 속성 패널 너비 (GenogramPropertyPanel과 동일) */
 const PANEL_WIDTH = 320;
 
 interface GenogramPageHeaderProps {
-  clients: Client[];
   selectedClient: Client | null;
-  onClientSelect: (client: Client | null) => void;
   onUndo: () => void;
   onRedo: () => void;
   onExport: () => void;
@@ -31,8 +27,6 @@ interface GenogramPageHeaderProps {
   isPanelOpen?: boolean;
   isSaving?: boolean;
   lastSavedAt?: Date | null;
-  /** 내담자 추가 핸들러 */
-  onAddClient?: () => void;
   /** 내담자 없이 임시 캔버스 모드 */
   isTemporaryMode?: boolean;
   /** 가계도 초기화 핸들러 */
@@ -46,9 +40,7 @@ interface GenogramPageHeaderProps {
 }
 
 export function GenogramPageHeader({
-  clients,
   selectedClient,
-  onClientSelect,
   onUndo,
   onRedo,
   onExport,
@@ -59,7 +51,6 @@ export function GenogramPageHeader({
   isPanelOpen = false,
   isSaving = false,
   lastSavedAt = null,
-  onAddClient,
   isTemporaryMode = false,
   onReset,
   isResetting = false,
@@ -94,15 +85,8 @@ export function GenogramPageHeader({
 
   return (
     <>
-      {/* 좌측 상단: 내담자 드롭다운 + 기본 정보 버튼 */}
+      {/* 좌측 상단: 기본 정보/보고서 버튼 (내담자 선택은 좌측 사이드바) */}
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
-        <ClientDropdown
-          clients={clients}
-          selectedClient={selectedClient}
-          onSelect={onClientSelect}
-          onAddClient={onAddClient}
-          isTemporaryMode={isTemporaryMode}
-        />
         {onShowBasicInfo && selectedClient && (
           <button
             onClick={onShowBasicInfo}

@@ -1,9 +1,9 @@
 import type { Client } from '@/features/client/types';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
+import { ClientAvatar } from '@/widgets/client/ClientAvatar';
 
 import { AnalysisStatusChip, type AnalysisStatus } from './AnalysisStatusChip';
-import { ClientAvatar } from './ClientAvatar';
 
 interface ClientProfileHeaderProps {
   client: Client;
@@ -26,13 +26,15 @@ interface ClientProfileHeaderProps {
 const isEmptyMetaValue = (value: string | null | undefined) =>
   !value || value.trim() === '-';
 
-const formatGenderMeta = (gender: string | null | undefined) =>
-  isEmptyMetaValue(gender) ? undefined : gender.trim();
+const formatGenderMeta = (gender: string | null | undefined) => {
+  const value = gender?.trim();
+  return !value || value === '-' ? undefined : value;
+};
 
 const formatAgeMeta = (age: number | string | null | undefined) => {
   if (typeof age === 'number') return age > 0 ? `${age}세` : undefined;
-  if (isEmptyMetaValue(age)) return undefined;
-  return age.trim();
+  const value = age?.trim();
+  return !value || value === '-' ? undefined : value;
 };
 
 const formatSessionCountMeta = (sessionCount: number) =>

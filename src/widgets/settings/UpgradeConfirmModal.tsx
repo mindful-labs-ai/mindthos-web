@@ -11,7 +11,7 @@ import {
 } from '@/shared/constants/mixpanelEvents';
 import { getPlanDisplayName } from '@/shared/constants/planNames';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
@@ -53,10 +53,7 @@ const MobileCouponSelectModal: React.FC<{
       hideCloseButton
       className="flex flex-col"
     >
-      <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-        <BackButton onClick={() => onOpenChange(false)} />
-        <p className="text-m font-medium text-grey-100">사용 가능한 쿠폰</p>
-      </div>
+      <MobileModalHeader title="사용 가능한 쿠폰" onBack={() => onOpenChange(false)} />
       <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10">
         <div className="space-y-3">
           {isLoading ? (
@@ -473,12 +470,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-m font-medium text-grey-100">
-              {title || '마음토스 플랜 변경'}
-            </p>
-          </div>
+          <MobileModalHeader title={title || '마음토스 플랜 변경'} onBack={() => onOpenChange(false)} />
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             {paymentContent}
           </div>

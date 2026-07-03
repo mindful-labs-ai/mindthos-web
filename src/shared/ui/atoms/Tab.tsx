@@ -348,7 +348,7 @@ export const Tab: React.FC<TabProps> = ({
                   : cn(
                       'relative rounded-t-lg border border-transparent',
                       isSelected
-                        ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-primary shadow-subtle'
+                        ? 'border-b-0 border-l-border border-r-border border-t-border bg-surface text-grey-100 font-bold shadow-subtle'
                         : 'border-b-0 border-l-border border-r-border border-t-border text-fg-muted lg:hover:text-fg'
                     )
               )}

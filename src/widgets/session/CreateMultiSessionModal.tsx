@@ -32,8 +32,7 @@ import {
   SecurityShieldIcon,
   UserIcon,
 } from '@/shared/icons';
-import { Title } from '@/shared/ui';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -463,7 +462,7 @@ export const CreateMultiSessionModal: React.FC<
         'bg-surface-contrast p-4 transition-colors',
         isMobile && 'h-[28vh] min-h-[160px]',
         isTablet && 'h-[24vh] min-h-[160px]',
-        !isMobileView && 'min-h-[180px] flex-1 rounded-lg',
+        !isMobileView && 'h-[313px] rounded-lg',
         isDragging
           ? 'border-primary bg-primary-subtle'
           : 'border-surface-strong'
@@ -473,7 +472,7 @@ export const CreateMultiSessionModal: React.FC<
         <div
           className={cn(
             'flex h-full flex-col items-center justify-center gap-4 break-keep',
-            !isMobileView && 'max-h-[300px] min-h-[160px]'
+            !isMobileView && 'min-h-[160px]'
           )}
         >
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-contrast">
@@ -496,8 +495,8 @@ export const CreateMultiSessionModal: React.FC<
       ) : (
         <div
           className={cn(
-            'h-full w-full space-y-2 overflow-y-auto',
-            !isMobileView && 'max-h-[431px] max-w-[488px]'
+            'h-full w-full space-y-2 overflow-y-auto overscroll-contain',
+            !isMobileView && 'max-w-[488px]'
           )}
         >
           {effectiveFiles.map((file) => (
@@ -538,7 +537,7 @@ export const CreateMultiSessionModal: React.FC<
   const configList = (
     <div
       className={cn(
-        'space-y-2 overflow-y-auto',
+        'space-y-2 overflow-y-auto overscroll-contain',
         isMobileView ? 'flex-1' : 'max-h-[400px]'
       )}
     >
@@ -621,12 +620,7 @@ export const CreateMultiSessionModal: React.FC<
     >
       {/* 헤더 */}
       {isMobileView ? (
-        <div className="flex h-[67px] items-center gap-3 border-b border-border px-4 py-3">
-          <BackButton onClick={() => handleClose(false)} />
-          <p className="text-m font-medium text-grey-100">
-            녹음 파일 업로드하기
-          </p>
-        </div>
+        <MobileModalHeader title="녹음 파일 업로드하기" onBack={() => handleClose(false)} />
       ) : (
         <div className="pt-4 text-center">
           <Title as="h3" className="font-headline">
@@ -639,7 +633,7 @@ export const CreateMultiSessionModal: React.FC<
       {isMobileView ? (
         /* 모바일/태블릿 레이아웃 */
         step === 'upload' ? (
-          <div className="flex flex-1 flex-col overflow-y-auto">
+          <div className="flex flex-1 flex-col overflow-y-auto overscroll-contain">
             {fileInput}
             <AiGuardNotice className="mx-4 mt-4 shrink-0 md:mx-12" />
             {fileDropArea}
@@ -704,7 +698,7 @@ export const CreateMultiSessionModal: React.FC<
         )
       ) : /* 데스크탑 레이아웃 */
       step === 'upload' ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-12 md:flex-row">
+        <div className="flex flex-1 flex-col items-stretch justify-center gap-6 px-12 py-8 md:flex-row">
           {/* 왼쪽: 파일 목록 */}
           <div className="flex h-full w-full max-w-[488px] flex-1 flex-col gap-4">
             {fileInput}

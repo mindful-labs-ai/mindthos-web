@@ -50,16 +50,20 @@ async function authHeader(): Promise<Record<string, string>> {
   return { Authorization: `Bearer ${token}` };
 }
 
-export async function serverRequest<T>(
+interface RequestOptions {
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  body?: unknown;
+}
+
+/** 공통 요청 코어 — 봉투 언랩 + 에러 정규화. extraHeaders로 인증 헤더 주입 여부를 가른다. */
+async function requestCore<T>(
   path: string,
-  options: {
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-    body?: unknown;
-  } = {}
+  options: RequestOptions,
+  extraHeaders: Record<string, string>
 ): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(await authHeader()),
+    ...extraHeaders,
   };
 
   const res = await fetch(`${API_BASE}${BASE_PATH}${path}`, {
@@ -91,4 +95,23 @@ export async function serverRequest<T>(
   }
 
   return (payload as ServerEnvelope<T>).data;
+}
+
+/** 인증(Bearer) 첨부 요청 — 상담사용 일반 API. */
+export async function serverRequest<T>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<T> {
+  return requestCore<T>(path, options, await authHeader());
+}
+
+/**
+ * 비인증 공개 요청 — @Public 엔드포인트(예: 내담자 공유 링크)용. Bearer 없이 호출한다.
+ * 인증은 URL의 토큰 가드(SharedDocumentTokenGuard)가 담당.
+ */
+export async function serverRequestPublic<T>(
+  path: string,
+  options: RequestOptions = {}
+): Promise<T> {
+  return requestCore<T>(path, options, {});
 }

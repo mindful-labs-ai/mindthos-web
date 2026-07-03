@@ -903,7 +903,7 @@ export const createMockSessionData = ({
   // 1. Session 생성
   const session: Session = {
     id: sessionId,
-    user_id: userId,
+    user_id: Number(userId),
     client_id: clientId, // 내담자 ID (uuid)
     title: file.name,
     description: `${file.name} 상담 세션`,
@@ -922,10 +922,13 @@ export const createMockSessionData = ({
   const transcribe: Transcribe = {
     id: generateId(),
     session_id: sessionId,
-    user_id: userId,
+    user_id: Number(userId),
     title: file.name,
     counsel_date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
     contents: createMockTranscribeContents(),
+    stt_model: 'gemini-3',
+    parsed_text: null,
+    preview: null,
     created_at: now,
   };
 
@@ -934,9 +937,11 @@ export const createMockSessionData = ({
     {
       id: generateId(),
       session_id: sessionId,
-      user_id: userId,
+      user_id: Number(userId),
       title: 'SOAP 노트',
       template_id: 1, // SOAP 템플릿 ID
+      processing_status: 'succeeded',
+      error_message: null,
       summary: `
 S (Subjective): 내담자는 최근 건강 상태가 좋다고 보고함. 식사와 수면이 규칙적이며, 운동도 꾸준히 하고 있음.
 
@@ -951,9 +956,11 @@ P (Plan): 현재의 건강한 생활 습관 유지를 격려. 다음 세션에�
     {
       id: generateId(),
       session_id: sessionId,
-      user_id: userId,
+      user_id: Number(userId),
       title: '마음토스 상담노트',
       template_id: 2, // 마음토스 템플릿 ID
+      processing_status: 'succeeded',
+      error_message: null,
       summary: `
 ## 주요 주제
 - 건강 관리 및 생활 습관

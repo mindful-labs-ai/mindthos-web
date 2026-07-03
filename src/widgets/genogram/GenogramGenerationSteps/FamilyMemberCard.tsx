@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
-import { ChevronDown, Pencil, Plus, Trash2, X } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 import type {
@@ -9,7 +9,8 @@ import type {
 } from '@/features/genogram/utils/aiJsonConverter';
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { TitleEdit } from '@/shared/icons';
+import { MobileModalHeader } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 
 import {
@@ -300,10 +301,10 @@ export function FamilyMemberCard({
             disableHistory
             className="flex flex-col"
           >
-            <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
-              <BackButton onClick={() => setShowAddPopover(false)} />
-              <p className="text-m font-medium text-grey-100">관계 추가하기</p>
-            </div>
+            <MobileModalHeader
+              title="관계 추가하기"
+              onBack={() => setShowAddPopover(false)}
+            />
             <div className="flex-1 px-4 py-6 md:px-10">
               <div className="flex items-center justify-between py-4">
                 <span className="text-m font-medium text-grey-100">대상</span>
@@ -519,7 +520,7 @@ export function FamilyMemberCard({
         {/* 우측 레이아웃 (나머지 공간, 스크롤 가능) */}
         <div
           ref={internalScrollRef}
-          className="relative min-w-0 flex-1 overflow-y-auto pt-[3px]"
+          className="relative min-w-0 flex-1 overflow-y-auto overscroll-contain pt-[3px]"
         >
           <div className="space-y-2">
             {/* 나이 */}
@@ -626,7 +627,7 @@ export function FamilyMemberCard({
             onClick={() => setIsEditing(true)}
             className="p-1 text-fg-muted lg:hover:text-fg"
           >
-            <Pencil className="h-5 w-5" />
+            <TitleEdit size={20} />
           </button>
         )}
       </div>
