@@ -205,7 +205,7 @@ export const TutorialGuideModal: React.FC = () => {
       navigateWithUtm('/sessions/dummy_session_1');
     } else if (level === 2) {
       if (email) completeNextStep(email);
-      navigateWithUtm('/clients/dummy_client_1?tab=analyze');
+      navigateWithUtm('/ai-supervision?clientId=dummy_client_1');
     } else if (level === 3 && email) {
       // L3→L4 (업로드 준비 단계)
       await completeNextStep(email);

@@ -33,5 +33,7 @@
       "@app/*": ["./src/app/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "//": "스토리는 dev 전용(Storybook 자체 빌드/test-storybook가 검사) — 앱 타입체크에서 제외.",
+  "exclude": ["src/**/*.stories.tsx"]
 }

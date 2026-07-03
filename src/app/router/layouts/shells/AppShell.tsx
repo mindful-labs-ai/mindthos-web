@@ -36,8 +36,8 @@ export const AppShell = ({
       {/* Desktop Header - 데스크톱에서만 표시 */}
       {!isMobileView && header}
 
-      {/* Page Content */}
-      <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+      {/* Page Content — scrollbar-gutter로 스크롤바 유무와 무관하게 폭 고정(탭 전환 시 흔들림 방지) */}
+      <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]">
         {children}
       </main>
     </div>

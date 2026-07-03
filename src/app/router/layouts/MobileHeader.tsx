@@ -33,12 +33,13 @@ import {
   MenuIcon,
   PlusIcon,
 } from '@/shared/icons';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { useAuthStore } from '@/stores/authStore';
 import { useClientListScrollStore } from '@/stores/clientListScrollStore';
 import { useModalStore } from '@/stores/modalStore';
+import { NotificationBell } from '@/widgets/notification';
 import { ProfileMenu } from '@/widgets/profile';
 
 import { getRouteLabel } from '../navigationConfig';
@@ -64,6 +65,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const isGenogram = location.pathname === '/genogram';
   const isPsychologyAssessments =
     location.pathname === '/psychology-assessments';
+  const isAiSupervision = location.pathname === '/ai-supervision';
 
   const pageTitle = React.useMemo(() => {
     const pathname = location.pathname;
@@ -78,12 +80,17 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   const psychologyRightSlot = isPsychologyAssessments ? (
     <PsychologyHeaderControls />
   ) : null;
+  // AI 슈퍼비전: 내담자 선택 트리거 (데스크탑 ClientSidebar 대체)
+  const aiSupervisionRightSlot = isAiSupervision ? (
+    <HeaderClientSelectButton />
+  ) : null;
 
   const rightSlot = (() => {
     // 홈: 프로필 메뉴(상담사 정보·크레딧·설정) 진입점
     if (location.pathname === '/') return <ProfileMenu surface="sheet" />;
     if (genogramRightSlot) return genogramRightSlot;
     if (psychologyRightSlot) return psychologyRightSlot;
+    if (aiSupervisionRightSlot) return aiSupervisionRightSlot;
     if (location.pathname === '/clients') {
       return (
         <Button
@@ -133,7 +140,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         <span className="text-m font-medium text-grey-100">{pageTitle}</span>
       </div>
 
-      {rightSlot}
+      <div className="flex items-center gap-2">
+        <NotificationBell />
+        {rightSlot}
+      </div>
     </header>
   );
 };
@@ -193,10 +203,7 @@ function GenogramClientButton() {
         hideCloseButton
         className="flex flex-col"
       >
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
-          <BackButton onClick={() => setIsOpen(false)} />
-          <p className="text-m font-medium text-grey-100">내담자 선택</p>
-        </div>
+        <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <MobileAddClientButton
             onClick={handleOpenAddClient}
@@ -252,16 +259,16 @@ function PsychologyHeaderControls() {
   return (
     <div className="flex min-w-0 items-center gap-2">
       <PsychologyAssessmentPopoverButton />
-      <PsychologyClientButton />
+      <HeaderClientSelectButton />
     </div>
   );
 }
 
 /**
- * 심리검사 해석 MobileHeader 우측 내담자 선택 버튼.
- * 데스크탑의 좌측 ClientSidebar를 모바일에서 대체.
+ * MobileHeader 우측 내담자 선택 버튼 (심리검사 해석·AI 슈퍼비전 공용).
+ * 데스크탑의 좌측 ClientSidebar를 모바일에서 대체 — ?clientId= 쿼리로 동기화.
  */
-function PsychologyClientButton() {
+function HeaderClientSelectButton() {
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
   const { clients } = useClientList();
@@ -313,10 +320,7 @@ function PsychologyClientButton() {
         hideCloseButton
         className="flex flex-col"
       >
-        <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4">
-          <BackButton onClick={() => setIsOpen(false)} />
-          <p className="text-m font-medium text-grey-100">내담자 선택</p>
-        </div>
+        <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <MobileAddClientButton
             onClick={handleOpenAddClient}

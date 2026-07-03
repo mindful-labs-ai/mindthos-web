@@ -7,7 +7,7 @@ import { trackEvent } from '@/lib/mixpanel';
 import type { CreditLog } from '@/shared/api/supabase/creditQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
-import { BackButton } from '@/shared/ui/atoms/BackButton';
+import { MobileModalHeader } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -159,10 +159,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <div className="flex h-[67px] flex-shrink-0 items-center gap-3 border-b border-grey-30 px-4 py-3">
-            <BackButton onClick={() => onOpenChange(false)} />
-            <p className="text-m font-medium text-grey-100">크레딧 사용 내역</p>
-          </div>
+          <MobileModalHeader title="크레딧 사용 내역" onBack={() => onOpenChange(false)} />
           <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">
             <div className="overflow-x-auto rounded-xl bg-grey-10 p-4 md:p-6">
               <div className="min-w-[480px]">

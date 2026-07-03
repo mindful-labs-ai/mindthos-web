@@ -267,7 +267,7 @@ export function GroupedCustomSelect({
               minWidth: position.width,
               zIndex: 1100,
             }}
-            className="max-h-[300px] overflow-y-auto rounded-xl bg-surface py-2 shadow-elevated"
+            className="max-h-[300px] overflow-y-auto overscroll-contain rounded-xl bg-surface py-2 shadow-elevated"
           >
             {options.map((group) => (
               <div key={group.group}>

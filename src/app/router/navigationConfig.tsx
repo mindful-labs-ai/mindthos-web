@@ -2,14 +2,16 @@ import React from 'react';
 
 import {
   // SideAnalysisIcon,
-  // SideCalendarIcon,
+  SideCalendarIcon,
   SideClientIcon,
+  SideDocumentIcon,
   SideGenogramIcon,
   SideHelpIcon,
   SideHomeIcon,
   SidePsychologyAssessmentIcon,
   SideSessionIcon,
   SideSettingsIcon,
+  SideSupervisionIcon,
   SideTemplateIcon,
 } from '@/shared/icons';
 
@@ -31,20 +33,19 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     value: 'home',
     icon: <SideHomeIcon size={24} />,
   },
-  // {
-  //   path: ROUTES.CALENDAR,
-  //   label: '일정',
-  //   value: 'calendar',
-  //   icon: <SideCalendarIcon size={24} />,
-  //   badge: 'comingSoon',
-  //   disabled: true,
-  // },
   {
     path: ROUTES.CLIENTS,
     label: '내담자',
     value: 'client',
     icon: <SideClientIcon size={24} />,
   },
+  {
+    path: ROUTES.CALENDAR,
+    label: '일정',
+    value: 'calendar',
+    icon: <SideCalendarIcon size={24} />,
+  },
+
   {
     path: ROUTES.SESSIONS,
     label: '상담 기록',
@@ -53,9 +54,21 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   },
   {
     path: ROUTES.TEMPLATE,
-    label: '노트 양식',
+    label: '상담 노트 양식',
     value: 'template',
     icon: <SideTemplateIcon size={24} />,
+  },
+  {
+    path: ROUTES.DOCUMENTS,
+    label: '문서 관리',
+    value: 'documents',
+    icon: <SideDocumentIcon size={24} />,
+  },
+  {
+    path: ROUTES.AI_SUPERVISION,
+    label: 'AI 슈퍼비전',
+    value: 'ai-supervision',
+    icon: <SideSupervisionIcon size={24} />,
   },
   {
     path: ROUTES.GENOGRAM,
@@ -130,7 +143,9 @@ export const MAIN_NAV_ITEMS = NAVIGATION_ITEMS.filter((item) =>
 }));
 
 export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['home', 'calendar', 'client', 'sessions', 'template'].includes(item.value)
+  ['home', 'calendar', 'client', 'sessions', 'template', 'documents'].includes(
+    item.value
+  )
 ).map((item) => ({
   icon: item.icon,
   label: item.label,
@@ -140,7 +155,9 @@ export const SESSION_MANAGEMENT_ITEMS = NAVIGATION_ITEMS.filter((item) =>
 }));
 
 export const AI_ANALYSIS_ITEMS = NAVIGATION_ITEMS.filter((item) =>
-  ['genogram', 'psychology-assessments', 'analysis'].includes(item.value)
+  ['ai-supervision', 'genogram', 'psychology-assessments', 'analysis'].includes(
+    item.value
+  )
 ).map((item) => ({
   icon: item.icon,
   label: item.label,

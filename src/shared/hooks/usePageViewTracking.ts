@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
-import { trackPageView } from '@/lib/mixpanel';
+import { SENSITIVE_PATH_PREFIX, trackPageView } from '@/lib/mixpanel';
 
 const getPageDomain = (pathname: string): string => {
   if (pathname === ROUTES.ROOT) return 'home';
@@ -28,6 +28,12 @@ export const usePageViewTracking = () => {
   const prevPathRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // 민감 공유문서 화면은 페이지뷰 트래킹 제외 — 경로에 bearer 토큰이 들어 있어
+    // to/다음 페이지 from에 남으면 링크 권한이 유출된다. prevPath도 갱신하지 않아
+    // 이후 이동의 from에도 토큰이 새지 않게 한다.
+    if (location.pathname.toLowerCase().startsWith(SENSITIVE_PATH_PREFIX))
+      return;
+
     const domain = getPageDomain(location.pathname);
     const from = prevPathRef.current ?? 'direct';
 

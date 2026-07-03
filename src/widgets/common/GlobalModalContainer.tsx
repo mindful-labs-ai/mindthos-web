@@ -45,6 +45,11 @@ const UserEditModal = lazy(() =>
     default: m.UserEditModal,
   }))
 );
+const SendDocumentModal = lazy(() =>
+  import('@/widgets/document/SendDocumentModal').then((m) => ({
+    default: m.SendDocumentModal,
+  }))
+);
 
 /**
  * 전역 모달 컨테이너
@@ -87,6 +92,15 @@ export const GlobalModalContainer = () => {
     (state) =>
       state.modalData.addClient as
         | { onClientCreated?: (clientId: string, clientName?: string) => void }
+        | undefined
+  );
+  const isSendDocumentOpen = useModalStore((state) =>
+    state.openModals.includes('sendDocument')
+  );
+  const sendDocumentData = useModalStore(
+    (state) =>
+      state.modalData.sendDocument as
+        | { source?: string; clientId?: string }
         | undefined
   );
 
@@ -147,6 +161,10 @@ export const GlobalModalContainer = () => {
     if (!open) closeModal('addClient');
   };
 
+  const handleCloseSendDocument = (open: boolean) => {
+    if (!open) closeModal('sendDocument');
+  };
+
   const handleClientCreated = (clientId: string, clientName?: string) => {
     queryClient.invalidateQueries({ queryKey: clientQueryKeys.lists() });
     addClientData?.onClientCreated?.(clientId, clientName);
@@ -199,6 +217,13 @@ export const GlobalModalContainer = () => {
         open={isAddClientOpen}
         onOpenChange={handleCloseAddClient}
         onClientCreated={handleClientCreated}
+      />
+
+      {/* 문서 발송 모달 */}
+      <SendDocumentModal
+        open={isSendDocumentOpen}
+        onOpenChange={handleCloseSendDocument}
+        initialClientId={sendDocumentData?.clientId}
       />
 
       {/* 쿠폰함 모달 */}

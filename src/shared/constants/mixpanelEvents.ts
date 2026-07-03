@@ -84,6 +84,7 @@ export const MixpanelEvent = {
   AnalysisEditComplete: 'analysis_edit_complete',
   AnalysisEditCancel: 'analysis_edit_cancel',
   AnalysisTabChange: 'analysis_tab_change',
+  AnalysisPdfExport: 'analysis_pdf_export',
   SupervisionRetry: 'supervision_retry',
 
   // ─── Client ────────────────────────────────────────
@@ -188,6 +189,15 @@ export const MixpanelEvent = {
   TutorialGuideModalOpen: 'tutorial_guide_modal_open',
   TutorialGuideStepChange: 'tutorial_guide_step_change',
   TutorialGuideComplete: 'tutorial_guide_complete',
+
+  // ─── Calendar ──────────────────────────────────────
+  CalendarEventCreate: 'calendar_event_create',
+  CalendarEventUpdate: 'calendar_event_update',
+  CalendarEventDelete: 'calendar_event_delete',
+  CalendarGoogleConnect: 'calendar_google_connect',
+
+  // ─── Document ──────────────────────────────────────
+  DocumentDelete: 'document_delete',
 
   // ─── Common ────────────────────────────────────────
   ComingSoonModalOpened: 'coming_soon_modal_opened',

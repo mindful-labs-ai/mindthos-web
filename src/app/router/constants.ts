@@ -20,13 +20,33 @@ export const ROUTES = {
   NOT_FOUND: '*',
   GENOGRAM: '/genogram',
   CALENDAR: '/calendar',
+  CALENDAR_OAUTH_CALLBACK: '/calendar/oauth/callback',
+  DOCUMENTS: '/documents',
+  DOCUMENT_NEW: '/documents/new',
+  DOCUMENT_VIEW: '/documents/:documentId',
+  DOCUMENT_EDIT: '/documents/:documentId/edit',
   ANALYSIS: '/analysis',
+  AI_SUPERVISION: '/ai-supervision',
   PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
   UNSUBSCRIBE: '/unsubscribe',
+  /** 내담자 공유 링크(@Public, 로그인 불필요) — 알림톡 링크 진입점 */
+  SHARED_DOCUMENT: '/shared-documents/:clientId/:sentRowId/:accessToken',
 } as const;
 
 export const getGenogramRoute = (clientId?: string) =>
   clientId ? `/genogram?clientId=${clientId}` : '/genogram';
+
+export const getAiSupervisionRoute = (clientId?: string) =>
+  clientId ? `/ai-supervision?clientId=${clientId}` : '/ai-supervision';
+
+export const getDocumentEditorRoute = (kind: 'consent' | 'qna') =>
+  `/documents/new?kind=${kind}`;
+
+export const getDocumentViewRoute = (documentId: string) =>
+  `/documents/${documentId}`;
+
+export const getDocumentEditRoute = (documentId: string) =>
+  `/documents/${documentId}/edit`;
 
 export const TERMS_TYPES = {
   SERVICE: 'service',

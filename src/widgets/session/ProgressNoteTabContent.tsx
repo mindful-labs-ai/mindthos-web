@@ -100,7 +100,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
             <div className="relative flex h-full flex-col">
               {/* 상단 헤더 */}
               <div className="flex items-center justify-between px-8 py-4">
-                <p className="text-m text-grey-60">상담노트 양식</p>
+                <p className="text-m text-grey-60">상담 노트 양식</p>
                 <button
                   onClick={onCreateProgressNote}
                   disabled={isReadOnly || !isTemplateSelected}
@@ -110,7 +110,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                       : 'bg-green-80 text-white lg:hover:opacity-90'
                   }`}
                 >
-                  상담노트 만들기
+                  상담 노트 만들기
                 </button>
               </div>
               {/* CreateProgressNoteView */}
@@ -129,7 +129,6 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                     )}
                   selectedTemplateId={creatingTabs[activeTab] || null}
                   onTemplateSelect={onTemplateSelect}
-                  columns={2}
                 />
               </div>
               {/* 하단 배너 (템플릿 선택 시) */}
@@ -152,7 +151,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
                       disabled={isReadOnly}
                       className="rounded-lg border border-grey-40 bg-white px-4 py-2 text-sm font-headline text-grey-100 transition-colors lg:hover:bg-grey-10"
                     >
-                      상담노트 만들기
+                      상담 노트 만들기
                     </button>
                   </div>
                 </div>
