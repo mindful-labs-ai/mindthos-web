@@ -181,7 +181,12 @@ export function renderTextWithNonverbal(
   sttModel: string | null | undefined
 ): React.ReactNode {
   // 비언어 태그 렌더링이 필요한 모델만 칩으로 표시
-  if (sttModel !== 'gemini-3' && sttModel !== 'advanced') {
+  // (basic = 벤더 STT 기본 티어. 침묵 nv를 내므로 advanced와 동일하게 칩 렌더)
+  if (
+    sttModel !== 'gemini-3' &&
+    sttModel !== 'advanced' &&
+    sttModel !== 'basic'
+  ) {
     return parts.map((p) => p.content).join('');
   }
 
