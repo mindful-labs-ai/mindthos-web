@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { Redo2, Undo2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { TitleEdit } from '@/shared/icons';
@@ -11,6 +12,11 @@ export interface EditActions {
   onSave: () => void;
   onCancel: () => void;
   isSaving?: boolean;
+  /** 구조적 편집 되돌리기/다시 실행 (축어록 편집에서만 제공) */
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export interface TitleEditState {
@@ -180,6 +186,28 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
         ) : (
           actions && (
             <div className="flex flex-shrink-0 items-center gap-2">
+              {actions.onUndo && (
+                <div className="flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={actions.onUndo}
+                    disabled={!actions.canUndo}
+                    aria-label="되돌리기"
+                    className="rounded-lg p-1.5 text-grey-70 transition-colors disabled:opacity-40 lg:hover:bg-grey-10"
+                  >
+                    <Undo2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={actions.onRedo}
+                    disabled={!actions.canRedo}
+                    aria-label="다시 실행"
+                    className="rounded-lg p-1.5 text-grey-70 transition-colors disabled:opacity-40 lg:hover:bg-grey-10"
+                  >
+                    <Redo2 className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={actions.onSave}
