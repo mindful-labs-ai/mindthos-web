@@ -30,6 +30,10 @@ interface TranscriptTabContentProps {
   isReadOnly: boolean;
   /** 편집 중 여부 */
   isEditing: boolean;
+  /** 세그먼트 편집기 강제 remount 버전 (찾기바꾸기/undo/redo 반영) */
+  editorVersion?: number;
+  /** 찾기·바꾸기 바 (편집 모드에서 열렸을 때) */
+  findReplaceSlot?: React.ReactNode;
   /** 익명화 모드 여부 */
   isAnonymized: boolean;
   /** 비식별화 표시 여부 */
@@ -71,6 +75,8 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       clientId,
       isReadOnly,
       isEditing,
+      editorVersion = 0,
+      findReplaceSlot,
       isAnonymized,
       showDeid = false,
       enableTimestampFeatures,
@@ -122,6 +128,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
             ref={contentScrollRef}
             className="h-full overflow-y-auto rounded-lg px-8 py-6 transition-colors"
           >
+            {findReplaceSlot}
             {segments.length > 0 ? (
               <>
                 {(() => {
@@ -134,7 +141,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
 
                     return (
                       <TranscriptSegment
-                        key={segment.id}
+                        key={`${segment.id}-${editorVersion}`}
                         segment={segment}
                         speakers={speakers}
                         isActive={
