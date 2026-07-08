@@ -7,6 +7,7 @@ import React from 'react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
+import { formatTime } from '@/features/session/utils/formatTime';
 import { getSpeakerDisplayName } from '@/features/session/utils/getSpeakerInfo';
 import type { SpeakerRangeOption } from '@/features/session/utils/segmentRangeUtils';
 import {
@@ -19,9 +20,11 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { RadioGroup } from '@/shared/ui/atoms/Radio';
 import { Text } from '@/shared/ui/atoms/Text';
+import { Combobox } from '@/shared/ui/composites/Combobox';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useToast } from '@/shared/ui/composites/Toast';
+import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 
 interface SpeakerEditPopupProps {
   open: boolean;
@@ -52,11 +55,30 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   const { clients } = useClientList();
   const { toast } = useToast();
   const [range, setRange] = React.useState<SpeakerRangeOption>('single');
+  const [endSegmentId, setEndSegmentId] = React.useState<number | null>(null);
   const [selectionType, setSelectionType] = React.useState<
     'client' | 'custom' | string
   >('default_counselor');
   const [customName, setCustomName] = React.useState('');
   const [isApplying, setIsApplying] = React.useState(false);
+
+  // range 모드 끝 세그먼트 선택 옵션 (현재 세그먼트부터 이후 전체)
+  const currentIndex = React.useMemo(
+    () => allSegments.findIndex((s) => s.id === segment.id),
+    [allSegments, segment.id]
+  );
+  const endSegmentOptions = React.useMemo(() => {
+    if (currentIndex === -1) return [];
+    return allSegments.slice(currentIndex).map((seg, i) => {
+      const preview =
+        removeNonverbalTags(seg.text).trim().slice(0, 24) || '(빈 발화)';
+      const timeLabel =
+        seg.start != null && seg.start > 0
+          ? `[${formatTime(seg.start)}]`
+          : `${currentIndex + i + 1}.`;
+      return { value: String(seg.id), label: `${timeLabel} ${preview}` };
+    });
+  }, [allSegments, currentIndex]);
 
   // session과 연결된 client 찾기
   const sessionClient = React.useMemo(
@@ -89,9 +111,10 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
 
       // 상태 초기화
       setRange('single');
+      setEndSegmentId(segment.id);
       setCustomName('');
     }
-  }, [open, segment.speaker, speakers, speakerOptions]);
+  }, [open, segment.id, segment.speaker, speakers, speakerOptions]);
 
   const handleApply = async () => {
     // 유효성 검사: custom 입력 시 이름 필수
@@ -112,7 +135,8 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         segment.id,
         segment.speaker,
         range,
-        allSegments
+        allSegments,
+        range === 'range' ? (endSegmentId ?? segment.id) : undefined
       );
 
       // 2. 대상 speaker 이름 및 ID 결정
@@ -271,12 +295,27 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
               label: '전체 구간',
               description: '같은 화자의 모든 구간',
             },
+            {
+              value: 'range',
+              label: '구간 지정',
+              description: '이 발화부터 선택한 발화까지 (화자 무관)',
+            },
           ]}
           value={range}
           onChange={(value) => setRange(value as SpeakerRangeOption)}
           orientation="vertical"
           size="sm"
         />
+        {range === 'range' && (
+          <div className="mt-2">
+            <Combobox
+              items={endSegmentOptions}
+              value={endSegmentId != null ? String(endSegmentId) : undefined}
+              onChange={(value) => setEndSegmentId(Number(value))}
+              placeholder="끝 발화 선택"
+            />
+          </div>
+        )}
       </div>
 
       {/* 적용 버튼 */}
