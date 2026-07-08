@@ -5,6 +5,8 @@
 
 import React from 'react';
 
+import { Redo2, Undo2 } from 'lucide-react';
+
 import { CopyIcon, DeidentificationIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { PopUp } from '@/shared/ui/composites/PopUp';
@@ -39,6 +41,14 @@ interface TranscriptToolbarProps {
   showDeid?: boolean;
   /** 비식별화 최초 실행 여부 */
   hasActivatedDeid?: boolean;
+  /** 되돌리기 가능 여부 (구조적 편집: 화자·추가·삭제) */
+  canUndo?: boolean;
+  /** 다시 실행 가능 여부 */
+  canRedo?: boolean;
+  /** 되돌리기 핸들러 */
+  onUndo?: () => void;
+  /** 다시 실행 핸들러 */
+  onRedo?: () => void;
 }
 
 export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
@@ -57,6 +67,10 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     onDeidentify,
     showDeid = false,
     hasActivatedDeid = false,
+    canUndo = false,
+    canRedo = false,
+    onUndo,
+    onRedo,
   }) => {
     const sharedMenuItems = (
       <>
@@ -185,6 +199,31 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                   비식별화 되어 있는 항목은 주황색으로 표시돼요.{' '}
                 </span>
               )}
+              {/* 편집 완료 왼쪽: 구조적 편집 되돌리기/다시 실행 */}
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={onUndo}
+                  disabled={!canUndo}
+                  title="되돌리기 (화자 변경·추가·삭제)"
+                  aria-label="되돌리기"
+                  className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                >
+                  <Undo2 className="h-4 w-4" />
+                  되돌리기
+                </button>
+                <button
+                  type="button"
+                  onClick={onRedo}
+                  disabled={!canRedo}
+                  title="다시 실행"
+                  aria-label="다시 실행"
+                  className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                >
+                  <Redo2 className="h-4 w-4" />
+                  다시 실행
+                </button>
+              </div>
               <button
                 type="button"
                 className="rounded-lg bg-primary px-4 py-2 text-m font-medium text-primary-fg transition-colors lg:hover:opacity-80"
