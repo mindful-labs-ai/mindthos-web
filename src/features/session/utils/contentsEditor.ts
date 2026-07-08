@@ -169,6 +169,102 @@ export function deepCloneContents(contents: Contents): Contents {
   return JSON.parse(JSON.stringify(contents));
 }
 
+// ── 찾기 · 바꾸기 (태그 안전) ──
+
+export interface ReplaceOptions {
+  /** 대소문자 구분 (기본 false) */
+  caseSensitive?: boolean;
+}
+
+/** 정규식 특수문자 이스케이프 */
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * 태그 토큰: 신규 nv(⟪nv:...⟫), deid(⟪deid:...⟫), 레거시 비언어({%S%} 등)
+ * 이 토큰 "안"은 절대 치환하지 않음 — 태그 키·deid 원문 보호
+ */
+const TAG_TOKEN_REGEX =
+  /⟪nv:[^⟫]+⟫|⟪deid:[^⟫]+⟫|\{%[SAEO]%(?:[^%]+%)?}/g;
+
+/**
+ * 저장 텍스트에서 태그 토큰을 건너뛰고 일반 텍스트 구간만 치환
+ * @returns 치환된 텍스트와 치환 횟수
+ */
+export function replaceInStoredText(
+  text: string,
+  find: string,
+  replaceWith: string,
+  opts: ReplaceOptions = {}
+): { text: string; count: number } {
+  if (!find) return { text, count: 0 };
+
+  const flags = opts.caseSensitive ? 'g' : 'gi';
+  let count = 0;
+  const replaceGap = (gap: string): string => {
+    if (!gap) return gap;
+    const re = new RegExp(escapeRegExp(find), flags);
+    return gap.replace(re, () => {
+      count += 1;
+      return replaceWith;
+    });
+  };
+
+  let result = '';
+  let lastIndex = 0;
+  for (const match of text.matchAll(TAG_TOKEN_REGEX)) {
+    const idx = match.index ?? 0;
+    result += replaceGap(text.slice(lastIndex, idx)); // 토큰 앞 일반 구간
+    result += match[0]; // 토큰은 그대로
+    lastIndex = idx + match[0].length;
+  }
+  result += replaceGap(text.slice(lastIndex)); // 마지막 토큰 이후 구간
+
+  return { text: result, count };
+}
+
+/**
+ * 전체 세그먼트에 찾기·바꾸기 적용
+ * @returns 변경된 세그먼트별 새 텍스트(edits)와 총 치환 횟수
+ */
+export function findReplaceAllSegments(
+  segments: TranscribeSegment[],
+  find: string,
+  replaceWith: string,
+  opts: ReplaceOptions = {}
+): { edits: Record<number, string>; totalCount: number } {
+  const edits: Record<number, string> = {};
+  let totalCount = 0;
+  for (const seg of segments) {
+    const { text, count } = replaceInStoredText(
+      seg.text,
+      find,
+      replaceWith,
+      opts
+    );
+    if (count > 0) {
+      edits[seg.id] = text;
+      totalCount += count;
+    }
+  }
+  return { edits, totalCount };
+}
+
+/** 전체 세그먼트에서 태그 밖 매치 개수만 계산 */
+export function countMatchesInSegments(
+  segments: TranscribeSegment[],
+  find: string,
+  opts: ReplaceOptions = {}
+): number {
+  if (!find) return 0;
+  let total = 0;
+  for (const seg of segments) {
+    total += replaceInStoredText(seg.text, find, find, opts).count;
+  }
+  return total;
+}
+
 // ── 내부 헬퍼 ──
 
 /** 모든 세그먼트에 mapper 적용 (듀얼 포맷 지원) */
