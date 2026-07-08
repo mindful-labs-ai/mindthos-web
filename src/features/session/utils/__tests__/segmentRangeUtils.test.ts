@@ -41,10 +41,11 @@ describe('calculateAffectedSegments', () => {
     expect(calculateAffectedSegments(999, 0, 'all', segments)).toEqual([]);
   });
 
-  describe('range (구간 지정 — 화자 무관)', () => {
-    it('현재부터 끝 세그먼트까지 구간 전체를 화자 무관하게 반환한다', () => {
+  describe('range (구간 지정 — 같은 화자만)', () => {
+    it('구간 내에서 현재 화자와 같은 세그먼트만 반환한다', () => {
+      // 11(spk1), 12(spk0), 13(spk1) 중 spk1만 → [11, 13]
       expect(calculateAffectedSegments(11, 1, 'range', segments, 13)).toEqual([
-        11, 12, 13,
+        11, 13,
       ]);
     });
 
@@ -58,9 +59,9 @@ describe('calculateAffectedSegments', () => {
       ).toEqual([11]);
     });
 
-    it('끝이 시작보다 앞이면 구간을 정규화(swap)해 반환한다', () => {
+    it('끝이 시작보다 앞이어도 정규화하고 같은 화자만 반환한다', () => {
       expect(calculateAffectedSegments(13, 1, 'range', segments, 11)).toEqual([
-        11, 12, 13,
+        11, 13,
       ]);
     });
   });

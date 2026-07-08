@@ -51,7 +51,7 @@ export const calculateAffectedSegments = (
         .map((seg) => seg.id);
 
     case 'range': {
-      // 현재 세그먼트부터 지정한 끝 세그먼트까지 구간 전체 (화자 무관)
+      // 현재 세그먼트부터 지정한 끝 세그먼트까지 구간 중 동일 화자만
       if (endSegmentId === undefined) {
         return [currentSegmentId];
       }
@@ -61,7 +61,10 @@ export const calculateAffectedSegments = (
       }
       const from = Math.min(currentIndex, endIndex);
       const to = Math.max(currentIndex, endIndex);
-      return allSegments.slice(from, to + 1).map((seg) => seg.id);
+      return allSegments
+        .slice(from, to + 1)
+        .filter((seg) => seg.speaker === currentSpeakerId)
+        .map((seg) => seg.id);
     }
 
     default:
