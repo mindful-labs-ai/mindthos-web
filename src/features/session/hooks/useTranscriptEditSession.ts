@@ -72,6 +72,11 @@ interface UseTranscriptEditSessionReturn {
   handleSpeakerChange: (updates: SpeakerChangeUpdate) => Promise<void>;
   handleAddSegment: (afterSegmentId: number, speaker: number) => void;
   handleDeleteSegment: (segmentId: number) => void;
+  /** 구조적 편집(화자·추가·삭제) 되돌리기/다시 실행 */
+  canUndo: boolean;
+  canRedo: boolean;
+  handleUndo: () => void;
+  handleRedo: () => void;
   /** 편집 중이면 스냅샷 기반 contents, 아니면 null */
   editingContents: Contents | null;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
@@ -109,6 +114,37 @@ export function useTranscriptEditSession({
   const nvEditsRef = React.useRef<Record<number, string[]>>({});
   const deidEditsRef = React.useRef<Record<number, Record<string, string>>>({});
 
+  // 편집 undo/redo 히스토리 (구조적 편집: 화자 변경·세그먼트 추가/삭제)
+  // 텍스트/nv/deid 타이핑은 대상 아님(브라우저 기본 undo 사용)
+  const editingContentsRef = React.useRef<Contents | null>(null);
+  const pastRef = React.useRef<Contents[]>([]);
+  const futureRef = React.useRef<Contents[]>([]);
+  const [canUndo, setCanUndo] = React.useState(false);
+  const [canRedo, setCanRedo] = React.useState(false);
+
+  // editingContents를 ref에 동기화 (히스토리 스냅샷 소스)
+  React.useEffect(() => {
+    editingContentsRef.current = editingContents;
+  }, [editingContents]);
+
+  const resetHistory = React.useCallback(() => {
+    pastRef.current = [];
+    futureRef.current = [];
+    setCanUndo(false);
+    setCanRedo(false);
+  }, []);
+
+  // 구조적 편집 직전, 현재 스냅샷을 past에 저장하고 redo 스택 비움
+  // (contents 편집은 순수함수로 항상 새 객체를 반환하므로 참조 저장으로 충분)
+  const pushHistory = React.useCallback(() => {
+    const current = editingContentsRef.current;
+    if (!current) return;
+    pastRef.current = [...pastRef.current, current];
+    futureRef.current = [];
+    setCanUndo(true);
+    setCanRedo(false);
+  }, []);
+
   const sessionQueryKey = React.useMemo(
     () => sessionQueryKeys.detail(sessionId, isDummySession),
     [sessionId, isDummySession]
@@ -140,10 +176,13 @@ export function useTranscriptEditSession({
     trackEvent(MixpanelEvent.TranscriptEditStart, { session_id: sessionId });
 
     // 스냅샷 생성
-    setEditingContents(deepCloneContents(contents));
+    const snapshot = deepCloneContents(contents);
+    setEditingContents(snapshot);
+    editingContentsRef.current = snapshot;
     textEditsRef.current = {};
     nvEditsRef.current = {};
     deidEditsRef.current = {};
+    resetHistory();
     setHasEdits(false);
     setIsEditing(true);
 
@@ -158,6 +197,7 @@ export function useTranscriptEditSession({
     checkIsGuideLevel,
     nextGuideLevel,
     toast,
+    resetHistory,
   ]);
 
   // ── 편집 취소 ──
@@ -167,14 +207,16 @@ export function useTranscriptEditSession({
 
     // 스냅샷 폐기
     setEditingContents(null);
+    editingContentsRef.current = null;
     textEditsRef.current = {};
+    resetHistory();
     setHasEdits(false);
     setIsEditing(false);
 
     // 서버 원본으로 복원 — 상세 + 리스트(paginated/allByClient 등) 모두 무효화
     queryClient.invalidateQueries({ queryKey: sessionQueryKey });
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
-  }, [sessionId, queryClient, sessionQueryKey]);
+  }, [sessionId, queryClient, sessionQueryKey, resetHistory]);
 
   // ── 텍스트 편집 (편집 모드 전용, ref 기반) ──
 
@@ -236,6 +278,7 @@ export function useTranscriptEditSession({
 
       if (isEditing) {
         // ── 편집 모드: 스냅샷에만 적용 ──
+        pushHistory();
         setEditingContents((prev) => {
           if (!prev) return prev;
           return applyBulkSpeakerChanges(
@@ -313,6 +356,7 @@ export function useTranscriptEditSession({
       queryClient,
       sessionQueryKey,
       toast,
+      pushHistory,
     ]
   );
 
@@ -322,6 +366,7 @@ export function useTranscriptEditSession({
     (afterSegmentId: number, speaker: number) => {
       if (isReadOnly || !isEditing) return;
 
+      pushHistory();
       setEditingContents((prev) => {
         if (!prev) return prev;
         const segments = getSegments(prev);
@@ -337,7 +382,7 @@ export function useTranscriptEditSession({
       });
       setHasEdits(true);
     },
-    [isReadOnly, isEditing]
+    [isReadOnly, isEditing, pushHistory]
   );
 
   // ── 세그먼트 삭제 (편집 모드 전용) ──
@@ -346,6 +391,7 @@ export function useTranscriptEditSession({
     (segmentId: number) => {
       if (isReadOnly || !isEditing) return;
 
+      pushHistory();
       setEditingContents((prev) => {
         if (!prev) return prev;
         return removeSegment(prev, segmentId);
@@ -355,8 +401,38 @@ export function useTranscriptEditSession({
       delete textEditsRef.current[segmentId];
       setHasEdits(true);
     },
-    [isReadOnly, isEditing]
+    [isReadOnly, isEditing, pushHistory]
   );
+
+  // ── 되돌리기 (undo) ──
+
+  const handleUndo = React.useCallback(() => {
+    if (pastRef.current.length === 0) return;
+    const previous = pastRef.current[pastRef.current.length - 1];
+    const current = editingContentsRef.current;
+    pastRef.current = pastRef.current.slice(0, -1);
+    if (current) futureRef.current = [...futureRef.current, current];
+    editingContentsRef.current = previous;
+    setEditingContents(previous);
+    setCanUndo(pastRef.current.length > 0);
+    setCanRedo(futureRef.current.length > 0);
+    setHasEdits(true);
+  }, []);
+
+  // ── 다시 실행 (redo) ──
+
+  const handleRedo = React.useCallback(() => {
+    if (futureRef.current.length === 0) return;
+    const next = futureRef.current[futureRef.current.length - 1];
+    const current = editingContentsRef.current;
+    futureRef.current = futureRef.current.slice(0, -1);
+    if (current) pastRef.current = [...pastRef.current, current];
+    editingContentsRef.current = next;
+    setEditingContents(next);
+    setCanUndo(pastRef.current.length > 0);
+    setCanRedo(futureRef.current.length > 0);
+    setHasEdits(true);
+  }, []);
 
   // ── 모든 편집 저장 ──
 
@@ -415,9 +491,11 @@ export function useTranscriptEditSession({
 
       // 편집 상태 초기화
       setEditingContents(null);
+      editingContentsRef.current = null;
       textEditsRef.current = {};
       nvEditsRef.current = {};
       deidEditsRef.current = {};
+      resetHistory();
       setHasEdits(false);
       setIsEditing(false);
 
@@ -465,6 +543,7 @@ export function useTranscriptEditSession({
     queryClient,
     sessionQueryKey,
     toast,
+    resetHistory,
   ]);
 
   return {
@@ -479,6 +558,10 @@ export function useTranscriptEditSession({
     handleSpeakerChange,
     handleAddSegment,
     handleDeleteSegment,
+    canUndo,
+    canRedo,
+    handleUndo,
+    handleRedo,
     editingContents,
     setIsEditing,
     setHasEdits,

@@ -191,6 +191,10 @@ export const SessionDetailContainer: React.FC = () => {
     handleSpeakerChange,
     handleAddSegment,
     handleDeleteSegment,
+    canUndo,
+    canRedo,
+    handleUndo,
+    handleRedo,
   } = useTranscriptEditSession({
     sessionId: sessionId || '',
     transcribeId: transcribe?.id,
@@ -664,6 +668,10 @@ export const SessionDetailContainer: React.FC = () => {
           }
           showDeid={showDeid}
           hasActivatedDeid={isDeidApplied}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
         />
       )
     ) : null;
