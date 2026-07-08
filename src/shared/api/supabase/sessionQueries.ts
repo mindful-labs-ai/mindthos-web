@@ -10,7 +10,6 @@ import type {
   Session,
   SessionDnaListItem,
   SessionListItem,
-  SessionProcessingStatus,
   Speaker,
   Transcribe,
   TranscribeListItem,
@@ -18,25 +17,11 @@ import type {
 import { formatSegmentText } from '@/features/session/utils/formatSegmentText';
 import { supabase } from '@/lib/supabase';
 import { sttBackend } from '@/shared/api/adapters/stt';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
-
-export interface SessionStatusResponse {
-  success: boolean;
-  session_id: string;
-  processing_status: SessionProcessingStatus;
-  transcribe_id?: string;
-  progress_note_id?: string;
-  error_message?: string;
-  progress_percentage?: number;
-  current_step?: string;
-  estimated_completion_time?: string;
-}
+import type { SessionStatusResult } from '@/shared/api/adapters/stt/sttBackendPort';
 
 /** 잔액 부족(402) 분기 식별용 에러 — 포트로 이동, instanceof 호환을 위해 재-export. */
 export { InsufficientCreditError } from '@/shared/api/adapters/stt';
+export type { SessionStatusResult } from '@/shared/api/adapters/stt';
 
 /**
  * 백그라운드 세션 생성 API 호출.
@@ -50,27 +35,13 @@ export async function createSessionBackground(
 }
 
 /**
- * 세션 처리 상태 확인 API 호출
+ * 세션 처리 상태 조회 — STT 백엔드 포트로 위임.
+ * 플래그(VITE_USE_SERVER_STT)에 따라 서버(소유권 검사 포함) 또는 EF 경로 사용.
  */
 export async function getSessionStatus(
   sessionId: string
-): Promise<SessionStatusResponse> {
-  try {
-    const data = await callEdgeFunction<SessionStatusResponse>(
-      EDGE_FUNCTION_ENDPOINTS.SESSION.STATUS(sessionId),
-      null,
-      {
-        method: 'GET',
-      }
-    );
-
-    return data;
-  } catch (error: unknown) {
-    const err = error as { message?: string; statusText?: string };
-    throw new Error(
-      err.message || `세션 상태 확인 실패: ${err.statusText || ''}`
-    );
-  }
+): Promise<SessionStatusResult> {
+  return sttBackend.getSessionStatus(sessionId);
 }
 
 // ============================================================================

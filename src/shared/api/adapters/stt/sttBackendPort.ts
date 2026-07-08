@@ -3,6 +3,7 @@ import type {
   CreateHandWrittenSessionResponse,
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,
+  SessionProcessingStatus,
 } from '@/features/session/types';
 
 /**
@@ -32,6 +33,18 @@ export interface CreateProgressNoteResult {
   success: boolean;
   progress_note_id: string;
   message?: string;
+}
+
+export interface SessionStatusResult {
+  success: boolean;
+  session_id: string;
+  processing_status: SessionProcessingStatus;
+  transcribe_id?: string;
+  progress_note_id?: string;
+  error_message?: string;
+  progress_percentage?: number;
+  current_step?: string;
+  estimated_completion_time?: string;
 }
 
 /** 잔액 부족(402) 분기 식별용 에러. UI 레이어에서 instanceof 로 분기. */
@@ -67,4 +80,7 @@ export interface SttBackendPort {
   createProgressNote(
     params: CreateProgressNoteParams
   ): Promise<CreateProgressNoteResult>;
+
+  /** 세션 처리 상태 조회 — 서버: GET /v1/sessions/:id/status (소유권 검사 포함). */
+  getSessionStatus(sessionId: string): Promise<SessionStatusResult>;
 }

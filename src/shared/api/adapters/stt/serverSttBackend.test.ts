@@ -164,4 +164,201 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
       { method: 'POST', body: { templateId: 3 } }
     );
   });
+
+  // ── 에러 / 엣지 경로 ──────────────────────────────────────────────────────
+
+  it('getUploadUrl: 에러 message가 있으면 그대로 던진다', async () => {
+    serverRequestMock.mockRejectedValue(new Error('네트워크 오류'));
+    await expect(
+      serverSttBackend.getUploadUrl(1, 'rec.mp3', 'audio/mpeg')
+    ).rejects.toThrow('네트워크 오류');
+  });
+
+  it('getUploadUrl: message 없는 에러는 기본 메시지로 폴백한다', async () => {
+    serverRequestMock.mockRejectedValue({});
+    await expect(
+      serverSttBackend.getUploadUrl(1, 'rec.mp3', 'audio/mpeg')
+    ).rejects.toThrow('Presigned URL 생성 실패');
+  });
+
+  it('createAudioSession: 402 아닌 에러는 Error(message)로 던진다', async () => {
+    serverRequestMock.mockRejectedValue(
+      new ServerApiErrorClass(500, 'INTERNAL', '서버 내부 오류')
+    );
+    await expect(
+      serverSttBackend.createAudioSession({
+        user_id: 1,
+        title: '상담 녹음',
+        s3_key: 'audio/x.mp3',
+        file_size_mb: 12.5,
+        duration_seconds: 600,
+        client_id: null,
+        stt_model: 'basic',
+        template_id: 3,
+      })
+    ).rejects.toThrow('서버 내부 오류');
+  });
+
+  it('createAudioSession: 50자 초과 title은 slice(0,50)으로 잘린다', async () => {
+    serverRequestMock.mockResolvedValue({ sessionId: 'sess-x', sttModel: 'basic' });
+    const longTitle = 'A'.repeat(60);
+    await serverSttBackend.createAudioSession({
+      user_id: 1,
+      title: longTitle,
+      s3_key: 'audio/x.mp3',
+      file_size_mb: 1,
+      duration_seconds: 60,
+      client_id: null,
+      stt_model: 'basic',
+      template_id: 1,
+    });
+    const calledBody = serverRequestMock.mock.calls[0][1].body as { title: string };
+    expect(calledBody.title).toBe('A'.repeat(50));
+  });
+
+  it('createHandWrittenSession: camelCase 요청 바디 매핑을 검증한다 (counselDate/contents/clientId)', async () => {
+    serverRequestMock.mockResolvedValue({
+      sessionId: 'session-3',
+      progressNoteId: 'note-2',
+    });
+
+    await serverSttBackend.createHandWrittenSession({
+      user_id: 1,
+      title: '직접입력 테스트',
+      counsel_date: '2026-07-04',
+      contents: '축어록 내용',
+      template_id: 5,
+      client_id: undefined,
+    });
+
+    expect(serverRequestMock).toHaveBeenCalledWith('/sessions/hand-written', {
+      method: 'POST',
+      body: {
+        title: '직접입력 테스트',
+        counselDate: '2026-07-04',
+        contents: '축어록 내용',
+        clientId: undefined,
+        templateId: 5,
+      },
+    });
+  });
+
+  it('createHandWrittenSession: 50자 초과 title은 slice(0,50)으로 잘린다', async () => {
+    serverRequestMock.mockResolvedValue({ sessionId: 'sess-y', progressNoteId: 'note-y' });
+    const longTitle = '가'.repeat(60);
+    await serverSttBackend.createHandWrittenSession({
+      user_id: 1,
+      title: longTitle,
+      counsel_date: '2026-07-04',
+      contents: '내용',
+      template_id: 1,
+    });
+    const calledBody = serverRequestMock.mock.calls[0][1].body as { title: string };
+    expect(calledBody.title).toBe('가'.repeat(50));
+  });
+
+  it('createHandWrittenSession: non-ServerApiError는 {status:500, message} shape로 던진다', async () => {
+    serverRequestMock.mockRejectedValue(new Error('DB 연결 실패'));
+    await expect(
+      serverSttBackend.createHandWrittenSession({
+        user_id: 1,
+        title: '직접입력',
+        counsel_date: '2026-07-04',
+        contents: '내용',
+        template_id: 3,
+      })
+    ).rejects.toMatchObject({ status: 500, message: 'DB 연결 실패' });
+  });
+
+  it('createHandWrittenSession: message 없는 non-ServerApiError는 기본 메시지로 폴백한다', async () => {
+    serverRequestMock.mockRejectedValue({});
+    await expect(
+      serverSttBackend.createHandWrittenSession({
+        user_id: 1,
+        title: '직접입력',
+        counsel_date: '2026-07-04',
+        contents: '내용',
+        template_id: 3,
+      })
+    ).rejects.toMatchObject({ status: 500, message: '직접 입력 세션 생성 중 오류가 생겼어요.' });
+  });
+
+  it('getAudioPlaybackUrl: audioUrl이 빈 문자열이면 에러를 던진다', async () => {
+    serverRequestMock.mockResolvedValue({ audioUrl: '' });
+    await expect(
+      serverSttBackend.getAudioPlaybackUrl('session-1')
+    ).rejects.toThrow('Presigned URL을 가져올 수 없어요.');
+  });
+
+  it('getAudioPlaybackUrl: serverRequest 실패 시 폴백 메시지로 던진다', async () => {
+    serverRequestMock.mockRejectedValue({});
+    await expect(
+      serverSttBackend.getAudioPlaybackUrl('session-1')
+    ).rejects.toThrow('Presigned URL 생성 실패');
+  });
+
+  it('createProgressNote: 에러 발생 시 err.message로 던진다', async () => {
+    serverRequestMock.mockRejectedValue(new Error('노트 생성 실패'));
+    await expect(
+      serverSttBackend.createProgressNote({
+        sessionId: 'session-1',
+        userId: 1,
+        templateId: 3,
+      })
+    ).rejects.toThrow('노트 생성 실패');
+  });
+
+  it('createProgressNote: message 없는 에러는 기본 메시지로 폴백한다', async () => {
+    serverRequestMock.mockRejectedValue({});
+    await expect(
+      serverSttBackend.createProgressNote({
+        sessionId: 'session-1',
+        userId: 1,
+        templateId: 3,
+      })
+    ).rejects.toThrow('상담노트 추가 중 오류가 생겼어요.');
+  });
+
+  it('getSessionStatus: camelCase 서버 응답을 snake_case SessionStatusResult로 매핑하고 success:true를 합성한다', async () => {
+    serverRequestMock.mockResolvedValue({
+      sessionId: 'session-1',
+      processingStatus: 'transcribing',
+      transcribeId: 'transcribe-1',
+      progressNoteId: null,
+      errorMessage: null,
+      progressPercentage: 45,
+      currentStep: 'STT 진행 중',
+      estimatedCompletionTime: null,
+    });
+
+    const result = await serverSttBackend.getSessionStatus('session-1');
+
+    expect(serverRequestMock).toHaveBeenCalledWith('/sessions/session-1/status');
+    expect(result).toEqual({
+      success: true,
+      session_id: 'session-1',
+      processing_status: 'transcribing',
+      transcribe_id: 'transcribe-1',
+      progress_percentage: 45,
+      current_step: 'STT 진행 중',
+    });
+    // null 필드는 optional이므로 키 자체가 없어야 한다
+    expect(result).not.toHaveProperty('progress_note_id');
+    expect(result).not.toHaveProperty('error_message');
+    expect(result).not.toHaveProperty('estimated_completion_time');
+  });
+
+  it('getSessionStatus: 에러 발생 시 err.message로 던진다', async () => {
+    serverRequestMock.mockRejectedValue(new Error('세션 없음'));
+    await expect(
+      serverSttBackend.getSessionStatus('session-99')
+    ).rejects.toThrow('세션 없음');
+  });
+
+  it('getSessionStatus: message 없는 에러는 기본 메시지로 폴백한다', async () => {
+    serverRequestMock.mockRejectedValue({});
+    await expect(
+      serverSttBackend.getSessionStatus('session-99')
+    ).rejects.toThrow('세션 상태 조회 중 오류가 생겼어요.');
+  });
 });

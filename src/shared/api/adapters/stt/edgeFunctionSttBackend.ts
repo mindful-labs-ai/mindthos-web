@@ -14,6 +14,7 @@ import {
   InsufficientCreditError,
   type CreateProgressNoteParams,
   type CreateProgressNoteResult,
+  type SessionStatusResult,
   type SttBackendPort,
   type UploadUrlResult,
 } from './sttBackendPort';
@@ -160,6 +161,21 @@ export const edgeFunctionSttBackend: SttBackendPort = {
       const err = error as { message?: string; statusText?: string };
       throw new Error(
         err.message || `상담노트 추가 실패: ${err.statusText || ''}`
+      );
+    }
+  },
+
+  async getSessionStatus(sessionId: string): Promise<SessionStatusResult> {
+    try {
+      return await callEdgeFunction<SessionStatusResult>(
+        EDGE_FUNCTION_ENDPOINTS.SESSION.STATUS(sessionId),
+        null,
+        { method: 'GET' }
+      );
+    } catch (error: unknown) {
+      const err = error as { message?: string; statusText?: string };
+      throw new Error(
+        err.message || `세션 상태 조회 실패: ${err.statusText || ''}`
       );
     }
   },

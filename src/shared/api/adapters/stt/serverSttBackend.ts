@@ -3,6 +3,7 @@ import type {
   CreateHandWrittenSessionResponse,
   CreateSessionBackgroundRequest,
   CreateSessionBackgroundResponse,
+  SessionProcessingStatus,
 } from '@/features/session/types';
 import { ServerApiError, serverRequest } from '@/shared/api/server/serverClient';
 
@@ -10,6 +11,7 @@ import {
   InsufficientCreditError,
   type CreateProgressNoteParams,
   type CreateProgressNoteResult,
+  type SessionStatusResult,
   type SttBackendPort,
   type UploadUrlResult,
 } from './sttBackendPort';
@@ -148,6 +150,41 @@ export const serverSttBackend: SttBackendPort = {
     } catch (error: unknown) {
       const err = error as { message?: string };
       throw new Error(err.message || '상담노트 추가 중 오류가 생겼어요.');
+    }
+  },
+
+  async getSessionStatus(sessionId: string): Promise<SessionStatusResult> {
+    try {
+      const data = await serverRequest<{
+        sessionId: string;
+        processingStatus: SessionProcessingStatus;
+        transcribeId: string | null;
+        progressNoteId: string | null;
+        errorMessage: string | null;
+        progressPercentage: number | null;
+        currentStep: string | null;
+        estimatedCompletionTime: string | null;
+      }>(`/sessions/${sessionId}/status`);
+      return {
+        success: true,
+        session_id: data.sessionId,
+        processing_status: data.processingStatus,
+        ...(data.transcribeId !== null && { transcribe_id: data.transcribeId }),
+        ...(data.progressNoteId !== null && {
+          progress_note_id: data.progressNoteId,
+        }),
+        ...(data.errorMessage !== null && { error_message: data.errorMessage }),
+        ...(data.progressPercentage !== null && {
+          progress_percentage: data.progressPercentage,
+        }),
+        ...(data.currentStep !== null && { current_step: data.currentStep }),
+        ...(data.estimatedCompletionTime !== null && {
+          estimated_completion_time: data.estimatedCompletionTime,
+        }),
+      };
+    } catch (error: unknown) {
+      const err = error as { message?: string };
+      throw new Error(err.message || '세션 상태 조회 중 오류가 생겼어요.');
     }
   },
 };

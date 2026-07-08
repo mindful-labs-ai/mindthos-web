@@ -18,6 +18,7 @@ export {
   InsufficientCreditError,
   type CreateProgressNoteParams,
   type CreateProgressNoteResult,
+  type SessionStatusResult,
   type SttBackendPort,
   type UploadUrlResult,
 } from './sttBackendPort';
