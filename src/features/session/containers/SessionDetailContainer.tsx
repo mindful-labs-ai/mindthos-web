@@ -668,6 +668,8 @@ export const SessionDetailContainer: React.FC = () => {
           }
           showDeid={showDeid}
           hasActivatedDeid={isDeidApplied}
+          isFindReplaceOpen={isFindReplaceOpen}
+          onToggleFindReplace={() => setIsFindReplaceOpen((v) => !v)}
         />
       ) : (
         <TranscriptToolbar
@@ -866,6 +868,7 @@ export const SessionDetailContainer: React.FC = () => {
         mobileHeader={mobileHeader}
         tab={tab}
         toolbar={toolbar}
+        findReplace={findReplaceBar}
         tabContent={tabContent}
         audioPlayer={audioPlayer}
         tabChangeModal={
