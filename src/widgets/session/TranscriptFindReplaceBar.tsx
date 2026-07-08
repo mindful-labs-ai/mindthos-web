@@ -136,7 +136,7 @@ export const TranscriptFindReplaceBar: React.FC<
         : `${count}개`;
 
   return (
-    <div className="sticky top-0 z-20 mb-3 flex flex-col gap-2 rounded-lg border border-grey-30 bg-white px-3 py-2 shadow-sm">
+    <div className="flex flex-col gap-2 rounded-lg border border-grey-30 bg-white px-3 py-2 shadow-sm">
       {/* 1행: 찾기 */}
       <div className="flex flex-wrap items-center gap-2">
         <Input
