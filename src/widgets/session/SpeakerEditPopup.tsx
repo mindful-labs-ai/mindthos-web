@@ -62,23 +62,30 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   const [customName, setCustomName] = React.useState('');
   const [isApplying, setIsApplying] = React.useState(false);
 
-  // range 모드 끝 세그먼트 선택 옵션 (현재 세그먼트부터 이후 전체)
+  // range 모드 끝 세그먼트 선택 옵션
+  // 현재 세그먼트부터 이후 중 "같은 화자"의 발화만 (range가 동일 화자만 변경하므로)
   const currentIndex = React.useMemo(
     () => allSegments.findIndex((s) => s.id === segment.id),
     [allSegments, segment.id]
   );
   const endSegmentOptions = React.useMemo(() => {
     if (currentIndex === -1) return [];
-    return allSegments.slice(currentIndex).map((seg, i) => {
-      const preview =
-        removeNonverbalTags(seg.text).trim().slice(0, 24) || '(빈 발화)';
-      const timeLabel =
-        seg.start != null && seg.start > 0
-          ? `[${formatTime(seg.start)}]`
-          : `${currentIndex + i + 1}.`;
-      return { value: String(seg.id), label: `${timeLabel} ${preview}` };
-    });
-  }, [allSegments, currentIndex]);
+    return allSegments
+      .map((seg, idx) => ({ seg, idx }))
+      .filter(
+        ({ seg, idx }) =>
+          idx >= currentIndex && seg.speaker === segment.speaker
+      )
+      .map(({ seg, idx }) => {
+        const preview =
+          removeNonverbalTags(seg.text).trim().slice(0, 24) || '(빈 발화)';
+        const timeLabel =
+          seg.start != null && seg.start > 0
+            ? `[${formatTime(seg.start)}]`
+            : `${idx + 1}.`;
+        return { value: String(seg.id), label: `${timeLabel} ${preview}` };
+      });
+  }, [allSegments, currentIndex, segment.speaker]);
 
   // session과 연결된 client 찾기
   const sessionClient = React.useMemo(
