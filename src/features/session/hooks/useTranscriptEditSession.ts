@@ -75,7 +75,7 @@ interface UseTranscriptEditSessionReturn {
   handleSpeakerChange: (updates: SpeakerChangeUpdate) => Promise<void>;
   handleAddSegment: (afterSegmentId: number, speaker: number) => void;
   handleDeleteSegment: (segmentId: number) => void;
-  /** 구조적 편집(화자·추가·삭제·찾기바꾸기) 되돌리기/다시 실행 */
+  /** 편집 되돌리기/다시 실행 (화자·추가·삭제·찾기바꾸기·텍스트/태그) */
   canUndo: boolean;
   canRedo: boolean;
   handleUndo: () => void;
@@ -129,10 +129,12 @@ export function useTranscriptEditSession({
 
   // 편집 undo/redo 히스토리 + 편집기 remount 버전
   // 스냅샷은 버퍼(텍스트/nv/deid)를 병합(materialize)한 contents를 저장하므로
-  // 구조적 편집(화자/추가/삭제)과 찾기·바꾸기 모두 되돌릴 수 있다.
+  // 구조적 편집(화자/추가/삭제)·찾기바꾸기·텍스트/태그 편집 모두 되돌릴 수 있다.
   const editingContentsRef = React.useRef<Contents | null>(null);
   const pastRef = React.useRef<Contents[]>([]);
   const futureRef = React.useRef<Contents[]>([]);
+  // 텍스트/nv/deid 편집 버스트 추적 — 같은 세그먼트 연속 편집을 하나의 undo 단위로 묶음
+  const lastEditBurstSegmentRef = React.useRef<number | null>(null);
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
   // 세그먼트 편집기(contentEditable)를 밖에서 강제 rebuild할 때 증가
@@ -156,6 +158,7 @@ export function useTranscriptEditSession({
     textEditsRef.current = {};
     nvEditsRef.current = {};
     deidEditsRef.current = {};
+    lastEditBurstSegmentRef.current = null;
   }, []);
 
   // ref + state 동시 갱신
@@ -178,6 +181,18 @@ export function useTranscriptEditSession({
     setCanUndo(true);
     setCanRedo(false);
   }, []);
+
+  // 텍스트/nv/deid 편집 버스트 시작 시 체크포인트 저장
+  // (같은 세그먼트 연속 편집은 하나의 undo 단위. 세그먼트가 바뀌면 새 체크포인트)
+  const startEditBurst = React.useCallback(
+    (segmentId: number) => {
+      if (lastEditBurstSegmentRef.current === segmentId) return;
+      const base = editingContentsRef.current;
+      if (base) pushHistorySnapshot(materializeBuffers(base));
+      lastEditBurstSegmentRef.current = segmentId;
+    },
+    [materializeBuffers, pushHistorySnapshot]
+  );
 
   // 구조적 편집 공통 처리:
   // 버퍼 병합 → 스냅샷 저장 → 버퍼 비움 → 변경 적용 (편집기 remount 불필요)
@@ -277,12 +292,13 @@ export function useTranscriptEditSession({
     (segmentId: number, newText: string) => {
       if (isReadOnly || !isEditing) return;
 
+      startEditBurst(segmentId);
       textEditsRef.current[segmentId] = newText;
       if (!hasEdits) {
         setHasEdits(true);
       }
     },
-    [isReadOnly, isEditing, hasEdits]
+    [isReadOnly, isEditing, hasEdits, startEditBurst]
   );
 
   // ── nv 편집 (편집 모드 전용, ref 기반) ──
@@ -290,10 +306,11 @@ export function useTranscriptEditSession({
   const handleNvEdit = React.useCallback(
     (segmentId: number, nv: string[]) => {
       if (isReadOnly || !isEditing) return;
+      startEditBurst(segmentId);
       nvEditsRef.current[segmentId] = nv;
       if (!hasEdits) setHasEdits(true);
     },
-    [isReadOnly, isEditing, hasEdits]
+    [isReadOnly, isEditing, hasEdits, startEditBurst]
   );
 
   // ── deid 편집 (편집 모드 전용, ref 기반) ──
@@ -301,10 +318,11 @@ export function useTranscriptEditSession({
   const handleDeidEdit = React.useCallback(
     (segmentId: number, deid: Record<string, string>) => {
       if (isReadOnly || !isEditing) return;
+      startEditBurst(segmentId);
       deidEditsRef.current[segmentId] = deid;
       if (!hasEdits) setHasEdits(true);
     },
-    [isReadOnly, isEditing, hasEdits]
+    [isReadOnly, isEditing, hasEdits, startEditBurst]
   );
 
   // ── 화자 변경 (듀얼 모드) ──
