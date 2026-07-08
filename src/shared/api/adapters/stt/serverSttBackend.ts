@@ -5,7 +5,10 @@ import type {
   CreateSessionBackgroundResponse,
   SessionProcessingStatus,
 } from '@/features/session/types';
-import { ServerApiError, serverRequest } from '@/shared/api/server/serverClient';
+import {
+  ServerApiError,
+  serverRequest,
+} from '@/shared/api/server/serverClient';
 
 import {
   InsufficientCreditError,

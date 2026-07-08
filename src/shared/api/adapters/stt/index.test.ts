@@ -23,40 +23,46 @@ describe('sttBackend 플래그 선택 (VITE_USE_SERVER_STT)', () => {
 
   it('VITE_USE_SERVER_STT==="true" → serverSttBackend 선택', async () => {
     vi.stubEnv('VITE_USE_SERVER_STT', 'true');
-    vi.doMock('./serverSttBackend', () => ({ serverSttBackend: SERVER_FIXTURE }));
+    vi.doMock('./serverSttBackend', () => ({
+      serverSttBackend: SERVER_FIXTURE,
+    }));
     vi.doMock('./edgeFunctionSttBackend', () => ({
       edgeFunctionSttBackend: EDGE_FIXTURE,
     }));
 
     const { sttBackend } = await import('./index');
     expect((sttBackend as unknown as typeof SERVER_FIXTURE)._fixture).toBe(
-      'server',
+      'server'
     );
   });
 
   it('VITE_USE_SERVER_STT 미설정 → edgeFunctionSttBackend 선택', async () => {
     vi.stubEnv('VITE_USE_SERVER_STT', '');
-    vi.doMock('./serverSttBackend', () => ({ serverSttBackend: SERVER_FIXTURE }));
+    vi.doMock('./serverSttBackend', () => ({
+      serverSttBackend: SERVER_FIXTURE,
+    }));
     vi.doMock('./edgeFunctionSttBackend', () => ({
       edgeFunctionSttBackend: EDGE_FIXTURE,
     }));
 
     const { sttBackend } = await import('./index');
     expect((sttBackend as unknown as typeof EDGE_FIXTURE)._fixture).toBe(
-      'edge',
+      'edge'
     );
   });
 
   it('VITE_USE_SERVER_STT==="false" → edgeFunctionSttBackend 선택', async () => {
     vi.stubEnv('VITE_USE_SERVER_STT', 'false');
-    vi.doMock('./serverSttBackend', () => ({ serverSttBackend: SERVER_FIXTURE }));
+    vi.doMock('./serverSttBackend', () => ({
+      serverSttBackend: SERVER_FIXTURE,
+    }));
     vi.doMock('./edgeFunctionSttBackend', () => ({
       edgeFunctionSttBackend: EDGE_FIXTURE,
     }));
 
     const { sttBackend } = await import('./index');
     expect((sttBackend as unknown as typeof EDGE_FIXTURE)._fixture).toBe(
-      'edge',
+      'edge'
     );
   });
 });

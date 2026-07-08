@@ -77,7 +77,11 @@ describe('renderTextWithNonverbal — 칩 렌더링', () => {
   it('sttModel==="basic": 침묵(S) → 회색 칩으로 렌더된다', () => {
     const parts = parseNvTagText('⟪nv:s1⟫', ['s1:침묵 3초']);
     const { container } = render(
-      React.createElement(React.Fragment, null, renderTextWithNonverbal(parts, 'basic'))
+      React.createElement(
+        React.Fragment,
+        null,
+        renderTextWithNonverbal(parts, 'basic')
+      )
     );
     const chip = container.querySelector('span');
     expect(chip).not.toBeNull();
@@ -88,7 +92,11 @@ describe('renderTextWithNonverbal — 칩 렌더링', () => {
   it('sttModel==="basic": 감정(E) → 주황 칩으로 렌더된다', () => {
     const parts = parseNvTagText('⟪nv:e1⟫', ['e1:웃음']);
     const { container } = render(
-      React.createElement(React.Fragment, null, renderTextWithNonverbal(parts, 'basic'))
+      React.createElement(
+        React.Fragment,
+        null,
+        renderTextWithNonverbal(parts, 'basic')
+      )
     );
     const chip = container.querySelector('span');
     expect(chip).not.toBeNull();
@@ -99,7 +107,11 @@ describe('renderTextWithNonverbal — 칩 렌더링', () => {
   it('sttModel==="basic": 액션(A) → 파란 칩으로 렌더된다', () => {
     const parts = parseNvTagText('⟪nv:a1⟫', ['a1:박수']);
     const { container } = render(
-      React.createElement(React.Fragment, null, renderTextWithNonverbal(parts, 'basic'))
+      React.createElement(
+        React.Fragment,
+        null,
+        renderTextWithNonverbal(parts, 'basic')
+      )
     );
     const chip = container.querySelector('span');
     expect(chip).not.toBeNull();
@@ -110,7 +122,11 @@ describe('renderTextWithNonverbal — 칩 렌더링', () => {
   it('sttModel==="advanced"도 칩으로 렌더된다', () => {
     const parts = parseNvTagText('⟪nv:s1⟫', ['s1:침묵 5초']);
     const { container } = render(
-      React.createElement(React.Fragment, null, renderTextWithNonverbal(parts, 'advanced'))
+      React.createElement(
+        React.Fragment,
+        null,
+        renderTextWithNonverbal(parts, 'advanced')
+      )
     );
     expect(container.querySelector('span')).not.toBeNull();
   });
@@ -128,10 +144,9 @@ describe('extractTextOnly', () => {
   });
 
   it('⟪nv:...⟫와 ⟪deid:...⟫가 혼합된 경우 모두 처리된다', () => {
-    const result = extractTextOnly(
-      '⟪nv:s1⟫⟪deid:n1|박영희⟫에게 전화했다.',
-      ['s1:침묵 1초']
-    );
+    const result = extractTextOnly('⟪nv:s1⟫⟪deid:n1|박영희⟫에게 전화했다.', [
+      's1:침묵 1초',
+    ]);
     expect(result).toBe('박영희에게 전화했다.');
   });
 });

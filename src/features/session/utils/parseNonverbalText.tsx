@@ -116,11 +116,7 @@ export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
     if (colonIdx === -1) continue;
     const key = entry.slice(0, colonIdx);
     const label = entry.slice(colonIdx + 1);
-    const tagType = key.startsWith('e')
-      ? 'E'
-      : key.startsWith('s')
-        ? 'S'
-        : 'A';
+    const tagType = key.startsWith('e') ? 'E' : key.startsWith('s') ? 'S' : 'A';
     nvMap.set(key, { tagType, label });
   }
 

@@ -200,7 +200,10 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
   });
 
   it('createAudioSession: 50자 초과 title은 slice(0,50)으로 잘린다', async () => {
-    serverRequestMock.mockResolvedValue({ sessionId: 'sess-x', sttModel: 'basic' });
+    serverRequestMock.mockResolvedValue({
+      sessionId: 'sess-x',
+      sttModel: 'basic',
+    });
     const longTitle = 'A'.repeat(60);
     await serverSttBackend.createAudioSession({
       user_id: 1,
@@ -212,7 +215,9 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
       stt_model: 'basic',
       template_id: 1,
     });
-    const calledBody = serverRequestMock.mock.calls[0][1].body as { title: string };
+    const calledBody = serverRequestMock.mock.calls[0][1].body as {
+      title: string;
+    };
     expect(calledBody.title).toBe('A'.repeat(50));
   });
 
@@ -244,7 +249,10 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
   });
 
   it('createHandWrittenSession: 50자 초과 title은 slice(0,50)으로 잘린다', async () => {
-    serverRequestMock.mockResolvedValue({ sessionId: 'sess-y', progressNoteId: 'note-y' });
+    serverRequestMock.mockResolvedValue({
+      sessionId: 'sess-y',
+      progressNoteId: 'note-y',
+    });
     const longTitle = '가'.repeat(60);
     await serverSttBackend.createHandWrittenSession({
       user_id: 1,
@@ -253,7 +261,9 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
       contents: '내용',
       template_id: 1,
     });
-    const calledBody = serverRequestMock.mock.calls[0][1].body as { title: string };
+    const calledBody = serverRequestMock.mock.calls[0][1].body as {
+      title: string;
+    };
     expect(calledBody.title).toBe('가'.repeat(50));
   });
 
@@ -280,7 +290,10 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
         contents: '내용',
         template_id: 3,
       })
-    ).rejects.toMatchObject({ status: 500, message: '직접 입력 세션 생성 중 오류가 생겼어요.' });
+    ).rejects.toMatchObject({
+      status: 500,
+      message: '직접 입력 세션 생성 중 오류가 생겼어요.',
+    });
   });
 
   it('getAudioPlaybackUrl: audioUrl이 빈 문자열이면 에러를 던진다', async () => {
@@ -333,7 +346,9 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
 
     const result = await serverSttBackend.getSessionStatus('session-1');
 
-    expect(serverRequestMock).toHaveBeenCalledWith('/sessions/session-1/status');
+    expect(serverRequestMock).toHaveBeenCalledWith(
+      '/sessions/session-1/status'
+    );
     expect(result).toEqual({
       success: true,
       session_id: 'session-1',
