@@ -4,7 +4,9 @@ import type { TranscribeSegment } from '../../types';
 import {
   countMatchesInSegments,
   findReplaceAllSegments,
+  listMatchesInSegments,
   replaceInStoredText,
+  replaceNthInStoredText,
 } from '../contentsEditor';
 
 const seg = (id: number, text: string): TranscribeSegment => ({
@@ -94,5 +96,43 @@ describe('countMatchesInSegments', () => {
   it('치환 없이 매치 개수만 센다', () => {
     const segments = [seg(1, '정민 정민'), seg(2, '⟪nv:s1⟫정민')];
     expect(countMatchesInSegments(segments, '정민')).toBe(3);
+  });
+});
+
+describe('replaceNthInStoredText (하나씩 치환)', () => {
+  it('n번째 매치 하나만 치환한다', () => {
+    expect(replaceNthInStoredText('정민 정민 정민', '정민', '경민', 1)).toEqual({
+      text: '정민 경민 정민',
+      replaced: true,
+    });
+    expect(replaceNthInStoredText('정민 정민 정민', '정민', '경민', 0).text).toBe(
+      '경민 정민 정민'
+    );
+  });
+
+  it('태그 밖 기준으로 카운트하며 토큰은 보호한다', () => {
+    const input = '정민 ⟪nv:s1⟫ 정민';
+    expect(replaceNthInStoredText(input, '정민', '경민', 1)).toEqual({
+      text: '정민 ⟪nv:s1⟫ 경민',
+      replaced: true,
+    });
+  });
+
+  it('범위를 벗어난 n은 치환하지 않는다', () => {
+    expect(replaceNthInStoredText('정민', '정민', '경민', 5)).toEqual({
+      text: '정민',
+      replaced: false,
+    });
+  });
+});
+
+describe('listMatchesInSegments', () => {
+  it('세그먼트별 occ를 순서대로 나열한다', () => {
+    const segments = [seg(1, '정민 정민'), seg(2, '없음'), seg(3, '정민')];
+    expect(listMatchesInSegments(segments, '정민')).toEqual([
+      { segmentId: 1, occ: 0 },
+      { segmentId: 1, occ: 1 },
+      { segmentId: 3, occ: 0 },
+    ]);
   });
 });

@@ -175,6 +175,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   return (
     <div
       ref={segmentRef}
+      data-segment-id={segment.id}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       className={`group/segment group relative flex gap-4 rounded-lg px-4 py-2.5 text-left transition-all duration-normal md:py-4 ${

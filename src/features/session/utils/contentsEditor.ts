@@ -265,6 +265,69 @@ export function countMatchesInSegments(
   return total;
 }
 
+/**
+ * 태그 밖 n번째(0-based) 매치 하나만 치환 (하나씩 바꾸기용)
+ */
+export function replaceNthInStoredText(
+  text: string,
+  find: string,
+  replaceWith: string,
+  n: number,
+  opts: ReplaceOptions = {}
+): { text: string; replaced: boolean } {
+  if (!find || n < 0) return { text, replaced: false };
+
+  const flags = opts.caseSensitive ? 'g' : 'gi';
+  let counter = 0;
+  let replaced = false;
+  const replaceGap = (gap: string): string => {
+    if (!gap || replaced) return gap;
+    const re = new RegExp(escapeRegExp(find), flags);
+    return gap.replace(re, (m) => {
+      if (replaced) return m;
+      if (counter === n) {
+        counter += 1;
+        replaced = true;
+        return replaceWith;
+      }
+      counter += 1;
+      return m;
+    });
+  };
+
+  let result = '';
+  let lastIndex = 0;
+  for (const match of text.matchAll(TAG_TOKEN_REGEX)) {
+    const idx = match.index ?? 0;
+    result += replaceGap(text.slice(lastIndex, idx));
+    result += match[0];
+    lastIndex = idx + match[0].length;
+  }
+  result += replaceGap(text.slice(lastIndex));
+
+  return { text: result, replaced };
+}
+
+/**
+ * 전체 세그먼트의 태그 밖 매치를 순서대로 나열
+ * occ = 해당 세그먼트 내 몇 번째 매치인지(0-based)
+ */
+export function listMatchesInSegments(
+  segments: TranscribeSegment[],
+  find: string,
+  opts: ReplaceOptions = {}
+): { segmentId: number; occ: number }[] {
+  if (!find) return [];
+  const result: { segmentId: number; occ: number }[] = [];
+  for (const seg of segments) {
+    const count = replaceInStoredText(seg.text, find, find, opts).count;
+    for (let occ = 0; occ < count; occ += 1) {
+      result.push({ segmentId: seg.id, occ });
+    }
+  }
+  return result;
+}
+
 // ── 내부 헬퍼 ──
 
 /** 모든 세그먼트에 mapper 적용 (듀얼 포맷 지원) */
