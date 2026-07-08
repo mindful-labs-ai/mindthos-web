@@ -23,6 +23,10 @@ interface MobileTranscriptTabContentProps {
   clientId: string | null;
   isReadOnly: boolean;
   isEditing: boolean;
+  /** 세그먼트 편집기 강제 remount 버전 (찾기바꾸기/undo/redo 반영) */
+  editorVersion?: number;
+  /** 찾기·바꾸기 바 (편집 모드에서 열렸을 때) */
+  findReplaceSlot?: React.ReactNode;
   isAnonymized: boolean;
   showDeid?: boolean;
   enableTimestampFeatures: boolean;
@@ -51,6 +55,8 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       clientId,
       isReadOnly,
       isEditing,
+      editorVersion = 0,
+      findReplaceSlot,
       isAnonymized,
       showDeid = false,
       enableTimestampFeatures,
@@ -102,6 +108,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
             ref={contentScrollRef}
             className="rounded-lg py-4 transition-colors md:px-2"
           >
+            {findReplaceSlot}
             {segments.length > 0 ? (
               <>
                 {(() => {
@@ -114,7 +121,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
 
                     return (
                       <TranscriptSegment
-                        key={segment.id}
+                        key={`${segment.id}-${editorVersion}`}
                         segment={segment}
                         speakers={speakers}
                         isActive={
