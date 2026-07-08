@@ -29,7 +29,9 @@ describe('sttBackend 플래그 선택 (VITE_USE_SERVER_STT)', () => {
     }));
 
     const { sttBackend } = await import('./index');
-    expect((sttBackend as typeof SERVER_FIXTURE)._fixture).toBe('server');
+    expect((sttBackend as unknown as typeof SERVER_FIXTURE)._fixture).toBe(
+      'server',
+    );
   });
 
   it('VITE_USE_SERVER_STT 미설정 → edgeFunctionSttBackend 선택', async () => {
@@ -40,7 +42,9 @@ describe('sttBackend 플래그 선택 (VITE_USE_SERVER_STT)', () => {
     }));
 
     const { sttBackend } = await import('./index');
-    expect((sttBackend as typeof EDGE_FIXTURE)._fixture).toBe('edge');
+    expect((sttBackend as unknown as typeof EDGE_FIXTURE)._fixture).toBe(
+      'edge',
+    );
   });
 
   it('VITE_USE_SERVER_STT==="false" → edgeFunctionSttBackend 선택', async () => {
@@ -51,6 +55,8 @@ describe('sttBackend 플래그 선택 (VITE_USE_SERVER_STT)', () => {
     }));
 
     const { sttBackend } = await import('./index');
-    expect((sttBackend as typeof EDGE_FIXTURE)._fixture).toBe('edge');
+    expect((sttBackend as unknown as typeof EDGE_FIXTURE)._fixture).toBe(
+      'edge',
+    );
   });
 });
