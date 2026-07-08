@@ -5,6 +5,8 @@
 
 import React from 'react';
 
+import { Search } from 'lucide-react';
+
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
@@ -29,6 +31,10 @@ interface MobileTranscriptToolbarProps {
   onDeidentify?: () => void;
   showDeid?: boolean;
   hasActivatedDeid?: boolean;
+  /** 찾기·바꾸기 바 열림 여부 */
+  isFindReplaceOpen?: boolean;
+  /** 찾기·바꾸기 토글 (편집 모드) */
+  onToggleFindReplace?: () => void;
 }
 
 export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
@@ -46,6 +52,8 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
       onDeidentify,
       showDeid = false,
       hasActivatedDeid = false,
+      isFindReplaceOpen = false,
+      onToggleFindReplace,
     }) => {
       const { isTablet } = useDevice();
       const showUtteranceIndex = useSessionStore(
@@ -294,11 +302,31 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                     </div>
                   </Modal>
                 </>
-              ) : hasActivatedDeid ? (
-                <span className="rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
-                  비식별화 되어 있는 항목은 주황색으로 표시돼요.
-                </span>
-              ) : null /* 편집 모드: 버튼 숨기되 wrapper 유지 */
+              ) : (
+                /* 편집 모드: 찾기·바꾸기 토글 (+비식별화 안내) */
+                <>
+                  {hasActivatedDeid && (
+                    <span className="rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
+                      비식별화 되어 있는 항목은 주황색으로 표시돼요.
+                    </span>
+                  )}
+                  {onToggleFindReplace && (
+                    <button
+                      type="button"
+                      onClick={onToggleFindReplace}
+                      aria-label="찾기 바꾸기"
+                      className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                        isFindReplaceOpen
+                          ? 'border-primary bg-white text-primary'
+                          : 'border-grey-30 bg-white text-grey-70'
+                      }`}
+                    >
+                      <Search className="h-4 w-4" />
+                      찾기·바꾸기
+                    </button>
+                  )}
+                </>
+              )
             }
           </div>
         </div>

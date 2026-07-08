@@ -7,6 +7,8 @@ export interface MobileSessionDetailViewProps {
   mobileHeader: React.ReactNode;
   tab: React.ReactNode;
   toolbar: React.ReactNode;
+  /** 찾기·바꾸기 바 (툴바 아래 고정) */
+  findReplace?: React.ReactNode;
   tabContent: React.ReactNode;
   audioPlayer: React.ReactNode;
   tabChangeModal: React.ReactNode;
@@ -21,6 +23,7 @@ export const MobileSessionDetailView: React.FC<
   mobileHeader,
   tab,
   toolbar,
+  findReplace,
   tabContent,
   audioPlayer,
   tabChangeModal,
@@ -41,6 +44,11 @@ export const MobileSessionDetailView: React.FC<
           className={`relative mx-0 mb-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-grey-40 ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'bg-white'}`}
         >
           {toolbar}
+          {findReplace && (
+            <div className="sticky top-0 z-20 bg-white px-2 pb-2">
+              {findReplace}
+            </div>
+          )}
           <div className="my-auto h-full md:overflow-auto">{tabContent}</div>
         </div>
       </div>
