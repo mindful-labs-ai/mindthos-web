@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Plus, Trash2 } from 'lucide-react';
+import { Play, Plus, Trash2 } from 'lucide-react';
 
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
 import { formatTime } from '@/features/session/utils/formatTime';
@@ -92,6 +92,15 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
 
   const handleContainerClick = () => {
     if (isClickable && segment.start !== null) {
+      onClick(segment.start);
+    }
+  };
+
+  // 세그먼트별 재생 버튼: 편집 모드에서도 해당 시작 시간으로 이동·재생
+  // (행 전체 클릭 seek는 편집 중 비활성이므로 전용 버튼으로 제공)
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (segment.start !== null) {
       onClick(segment.start);
     }
   };
@@ -239,6 +248,16 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             <span className="text-sm text-grey-70 md:text-m">
               #{speakerUtteranceIndex}
             </span>
+          )}
+          {isEditable && segment.start !== null && (
+            <button
+              type="button"
+              onClick={handlePlayClick}
+              aria-label="이 발화 재생"
+              className="pointer-events-none flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-grey-70 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 lg:hover:bg-grey-30 lg:hover:text-primary"
+            >
+              <Play className="h-3.5 w-3.5" fill="currentColor" />
+            </button>
           )}
         </div>
         {isEditable ? (
