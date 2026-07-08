@@ -507,6 +507,10 @@ export const SessionDetailContainer: React.FC = () => {
         label: '편집 완료',
         onSave: handleSaveAllEdits,
         onCancel: handleCancelEdit,
+        canUndo,
+        canRedo,
+        onUndo: handleUndo,
+        onRedo: handleRedo,
       };
     }
     if (isEditingHandwritten) {
@@ -537,6 +541,10 @@ export const SessionDetailContainer: React.FC = () => {
     handleCancelHandwrittenEdit,
     isSavingHandwritten,
     noteEditState,
+    canUndo,
+    canRedo,
+    handleUndo,
+    handleRedo,
   ]);
 
   // 세션 변경 시 오디오 정지
