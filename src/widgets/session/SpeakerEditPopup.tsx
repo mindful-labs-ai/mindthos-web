@@ -298,7 +298,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
             {
               value: 'range',
               label: '구간 지정',
-              description: '이 발화부터 선택한 발화까지 (화자 무관)',
+              description: '이 발화부터 선택한 발화까지 (같은 화자)',
             },
           ]}
           value={range}
