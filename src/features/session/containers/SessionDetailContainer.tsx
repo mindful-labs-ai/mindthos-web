@@ -198,7 +198,8 @@ export const SessionDetailContainer: React.FC = () => {
     handleUndo,
     handleRedo,
     handleReplaceAll,
-    getMatchCount,
+    getMatchList,
+    replaceOne,
     editorVersion,
   } = useTranscriptEditSession({
     sessionId: sessionId || '',
@@ -699,8 +700,9 @@ export const SessionDetailContainer: React.FC = () => {
   const findReplaceBar =
     isEditing && isFindReplaceOpen ? (
       <TranscriptFindReplaceBar
+        getMatchList={getMatchList}
+        onReplaceOne={replaceOne}
         onReplaceAll={handleReplaceAll}
-        getMatchCount={getMatchCount}
         matchRefreshKey={editorVersion}
         onClose={() => setIsFindReplaceOpen(false)}
       />

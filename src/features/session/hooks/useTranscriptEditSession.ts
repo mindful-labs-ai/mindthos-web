@@ -42,7 +42,9 @@ import {
   deepCloneContents,
   findReplaceAllSegments,
   getSegments,
+  listMatchesInSegments,
   removeSegment,
+  replaceNthInStoredText,
   type ReplaceOptions,
 } from '../utils/contentsEditor';
 
@@ -88,6 +90,19 @@ interface UseTranscriptEditSessionReturn {
   ) => number;
   /** 현재 검색어의 태그 밖 매치 개수 */
   getMatchCount: (find: string, opts?: ReplaceOptions) => number;
+  /** 매치 목록(세그먼트+occ) — 찾기 이동/하나씩 바꾸기용 */
+  getMatchList: (
+    find: string,
+    opts?: ReplaceOptions
+  ) => { segmentId: number; occ: number }[];
+  /** occ번째 매치 하나만 치환 — 성공 여부 반환 */
+  replaceOne: (
+    segmentId: number,
+    occ: number,
+    find: string,
+    replaceWith: string,
+    opts?: ReplaceOptions
+  ) => boolean;
   /** 세그먼트 편집기 강제 remount 버전 (텍스트가 밖에서 바뀔 때 증가) */
   editorVersion: number;
   /** 편집 중이면 스냅샷 기반 contents, 아니면 null */
@@ -540,6 +555,60 @@ export function useTranscriptEditSession({
     [materializeBuffers]
   );
 
+  // 매치 목록(세그먼트+occ) — 찾기 이동/하나씩 바꾸기용. editingContents 변경 즉시 반영
+  const getMatchList = React.useCallback(
+    (find: string, opts?: ReplaceOptions) => {
+      const base = editingContentsRef.current;
+      if (!base || !find) return [];
+      return listMatchesInSegments(
+        getSegments(materializeBuffers(base)),
+        find,
+        opts
+      );
+    },
+    [materializeBuffers]
+  );
+
+  // 특정 세그먼트의 occ번째 매치 하나만 치환 (하나씩 바꾸기)
+  const replaceOne = React.useCallback(
+    (
+      segmentId: number,
+      occ: number,
+      find: string,
+      replaceWith: string,
+      opts?: ReplaceOptions
+    ): boolean => {
+      if (isReadOnly || !isEditing) return false;
+      const base = editingContentsRef.current;
+      if (!base || !find) return false;
+      const materialized = materializeBuffers(base);
+      const seg = getSegments(materialized).find((s) => s.id === segmentId);
+      if (!seg) return false;
+      const { text, replaced } = replaceNthInStoredText(
+        seg.text,
+        find,
+        replaceWith,
+        occ,
+        opts
+      );
+      if (!replaced) return false;
+      pushHistorySnapshot(materialized); // 되돌리기용
+      clearBuffers();
+      setEditing(applyBulkTextEdits(materialized, { [segmentId]: text }));
+      setEditorVersion((v) => v + 1);
+      setHasEdits(true);
+      return true;
+    },
+    [
+      isReadOnly,
+      isEditing,
+      materializeBuffers,
+      pushHistorySnapshot,
+      clearBuffers,
+      setEditing,
+    ]
+  );
+
   // ── 모든 편집 저장 ──
 
   const handleSaveAllEdits = React.useCallback(async () => {
@@ -669,6 +738,8 @@ export function useTranscriptEditSession({
     handleRedo,
     handleReplaceAll,
     getMatchCount,
+    getMatchList,
+    replaceOne,
     editorVersion,
     editingContents,
     setIsEditing,
