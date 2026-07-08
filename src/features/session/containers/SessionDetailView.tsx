@@ -7,6 +7,8 @@ export interface SessionDetailViewProps {
   header: React.ReactNode;
   tab: React.ReactNode;
   toolbar: React.ReactNode;
+  /** 찾기·바꾸기 바 (툴바 아래 고정 헤더) */
+  findReplace?: React.ReactNode;
   tabContent: React.ReactNode;
   audioPlayer: React.ReactNode;
   tabChangeModal: React.ReactNode;
@@ -22,6 +24,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
   header,
   tab,
   toolbar,
+  findReplace,
   tabContent,
   audioPlayer,
   tabChangeModal,
@@ -39,6 +42,9 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
           className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'border-grey-40 bg-white'}`}
         >
           {toolbar}
+          {findReplace && (
+            <div className="flex-shrink-0 px-6 pt-16">{findReplace}</div>
+          )}
           {tabContent}
         </div>
       </div>

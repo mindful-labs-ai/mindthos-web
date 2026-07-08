@@ -740,7 +740,6 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           editorVersion={editorVersion}
-          findReplaceSlot={findReplaceBar}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
@@ -764,7 +763,6 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           editorVersion={editorVersion}
-          findReplaceSlot={findReplaceBar}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
@@ -887,6 +885,7 @@ export const SessionDetailContainer: React.FC = () => {
       header={header}
       tab={tab}
       toolbar={toolbar}
+      findReplace={findReplaceBar}
       tabContent={tabContent}
       audioPlayer={audioPlayer}
       tabChangeModal={
