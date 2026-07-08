@@ -5,7 +5,7 @@
 
 import React from 'react';
 
-import { Redo2, Undo2 } from 'lucide-react';
+import { Redo2, Search, Undo2 } from 'lucide-react';
 
 import { CopyIcon, DeidentificationIcon } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
@@ -49,6 +49,10 @@ interface TranscriptToolbarProps {
   onUndo?: () => void;
   /** 다시 실행 핸들러 */
   onRedo?: () => void;
+  /** 찾기·바꾸기 바 열림 여부 */
+  isFindReplaceOpen?: boolean;
+  /** 찾기·바꾸기 토글 핸들러 */
+  onToggleFindReplace?: () => void;
 }
 
 export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
@@ -71,6 +75,8 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     canRedo = false,
     onUndo,
     onRedo,
+    isFindReplaceOpen = false,
+    onToggleFindReplace,
   }) => {
     const sharedMenuItems = (
       <>
@@ -198,6 +204,23 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                 <span className="mr-2 rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
                   비식별화 되어 있는 항목은 주황색으로 표시돼요.{' '}
                 </span>
+              )}
+              {/* 찾기·바꾸기 토글 */}
+              {onToggleFindReplace && (
+                <button
+                  type="button"
+                  onClick={onToggleFindReplace}
+                  aria-label="찾기 바꾸기"
+                  title="찾기·바꾸기 (단어 교정)"
+                  className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    isFindReplaceOpen
+                      ? 'border-primary text-primary'
+                      : 'border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                  }`}
+                >
+                  <Search className="h-4 w-4" />
+                  찾기·바꾸기
+                </button>
               )}
               {/* 편집 완료 왼쪽: 구조적 편집 되돌리기/다시 실행 */}
               <div className="flex items-center gap-1">

@@ -32,6 +32,7 @@ import { MobileTranscriptToolbar } from '@/widgets/session/MobileTranscriptToolb
 import { ProgressNoteTabContent } from '@/widgets/session/ProgressNoteTabContent';
 import { SessionHeader } from '@/widgets/session/SessionHeader';
 import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
+import { TranscriptFindReplaceBar } from '@/widgets/session/TranscriptFindReplaceBar';
 import { TranscriptTabContent } from '@/widgets/session/TranscriptTabContent';
 import { TranscriptToolbar } from '@/widgets/session/TranscriptToolbar';
 
@@ -67,6 +68,7 @@ export const SessionDetailContainer: React.FC = () => {
 
   const [isAnonymized, setIsAnonymized] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = React.useState(false);
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
@@ -195,12 +197,20 @@ export const SessionDetailContainer: React.FC = () => {
     canRedo,
     handleUndo,
     handleRedo,
+    handleReplaceAll,
+    getMatchCount,
+    editorVersion,
   } = useTranscriptEditSession({
     sessionId: sessionId || '',
     transcribeId: transcribe?.id,
     isDummySession,
     isReadOnly,
   });
+
+  // 편집이 끝나면 찾기·바꾸기 바 닫기
+  React.useEffect(() => {
+    if (!isEditing) setIsFindReplaceOpen(false);
+  }, [isEditing]);
 
   const segments = React.useMemo(
     () =>
@@ -680,8 +690,20 @@ export const SessionDetailContainer: React.FC = () => {
           canRedo={canRedo}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          isFindReplaceOpen={isFindReplaceOpen}
+          onToggleFindReplace={() => setIsFindReplaceOpen((v) => !v)}
         />
       )
+    ) : null;
+
+  const findReplaceBar =
+    isEditing && isFindReplaceOpen ? (
+      <TranscriptFindReplaceBar
+        onReplaceAll={handleReplaceAll}
+        getMatchCount={getMatchCount}
+        matchRefreshKey={editorVersion}
+        onClose={() => setIsFindReplaceOpen(false)}
+      />
     ) : null;
 
   const tabContent =
@@ -715,6 +737,8 @@ export const SessionDetailContainer: React.FC = () => {
           clientId={session?.client_id || null}
           isReadOnly={isReadOnly}
           isEditing={isEditing}
+          editorVersion={editorVersion}
+          findReplaceSlot={findReplaceBar}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
@@ -737,6 +761,8 @@ export const SessionDetailContainer: React.FC = () => {
           clientId={session?.client_id || null}
           isReadOnly={isReadOnly}
           isEditing={isEditing}
+          editorVersion={editorVersion}
+          findReplaceSlot={findReplaceBar}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
