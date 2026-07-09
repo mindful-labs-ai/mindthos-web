@@ -8,7 +8,11 @@ import React from 'react';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
 import { formatTime } from '@/features/session/utils/formatTime';
-import { getSpeakerDisplayName } from '@/features/session/utils/getSpeakerInfo';
+import {
+  getSpeakerDisplayName,
+  resolveSpeakerSelection,
+  type SpeakerSelection,
+} from '@/features/session/utils/getSpeakerInfo';
 import type { SpeakerRangeOption } from '@/features/session/utils/segmentRangeUtils';
 import {
   calculateAffectedSegments,
@@ -146,65 +150,21 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         range === 'range' ? (endSegmentId ?? segment.id) : undefined
       );
 
-      // 2. 대상 speaker 이름 및 ID 결정
-      let targetName: string;
-      let targetSpeakerId: number | undefined;
-
-      if (selectionType.startsWith('speaker_')) {
-        // 기존 speaker 선택 (예: "speaker_1", "speaker_2")
-        const speakerId = parseInt(selectionType.replace('speaker_', ''), 10);
-        const existingSpeaker = speakers.find((s) => s.id === speakerId);
-        if (existingSpeaker) {
-          targetName = getSpeakerDisplayName(existingSpeaker);
-          targetSpeakerId = speakerId;
-        } else {
-          targetName = '';
-        }
-      } else if (selectionType === 'client') {
-        // session client 선택 (speakers에 없는 경우)
-        targetName = sessionClient?.name || '';
-      } else if (selectionType === 'custom') {
-        // 직접 입력
-        targetName = customName.trim();
-      } else {
-        targetName = '';
-      }
-
-      // 3. speaker ID 찾기 또는 생성
-      let updatedSpeakers: Speaker[];
-      let finalSpeakerId: number;
-
-      if (targetSpeakerId !== undefined) {
-        // speaker_ 선택으로 이미 ID가 결정된 경우 (기존 speaker 재사용)
-        finalSpeakerId = targetSpeakerId;
-        updatedSpeakers = speakers;
-      } else {
-        // client 또는 custom 선택 시 - 새 speaker 생성 또는 기존 speaker 재사용
-        // customName 또는 displayName이 일치하는 speaker 찾기
-        const existingSpeaker = speakers.find(
-          (s) =>
-            s.customName === targetName ||
-            getSpeakerDisplayName(s) === targetName
-        );
-
-        if (existingSpeaker) {
-          // 기존 speaker 재사용 (customName 또는 displayName 일치)
-          finalSpeakerId = existingSpeaker.id;
-          updatedSpeakers = speakers;
-        } else {
-          // 새로운 speaker 생성
-          const maxId = Math.max(...speakers.map((s) => s.id), 0);
-          finalSpeakerId = maxId + 1;
-          updatedSpeakers = [
-            ...speakers,
-            {
-              id: finalSpeakerId,
-              role: `custom_${finalSpeakerId}`,
-              customName: targetName,
-            },
-          ];
-        }
-      }
+      // 2~3. 화자 선택 → speaker ID 결정/생성 (공용 헬퍼)
+      const selection: SpeakerSelection = selectionType.startsWith('speaker_')
+        ? {
+            kind: 'existing',
+            id: parseInt(selectionType.replace('speaker_', ''), 10),
+          }
+        : {
+            kind: 'name',
+            name:
+              selectionType === 'client'
+                ? sessionClient?.name || ''
+                : customName.trim(),
+          };
+      const { speakerId: finalSpeakerId, speakers: updatedSpeakers } =
+        resolveSpeakerSelection(speakers, selection);
 
       // 4. 업데이트 payload 구성
       const speakerChanges: Record<number, number> = {};

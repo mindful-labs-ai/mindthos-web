@@ -69,6 +69,40 @@ export const getSpeakerDisplayName = (speaker: Speaker): string => {
   return `참석자 ${alphaLabel}`;
 };
 
+/** 화자 선택 입력: 기존 speaker id 또는 이름(내담자/직접입력) */
+export type SpeakerSelection =
+  | { kind: 'existing'; id: number }
+  | { kind: 'name'; name: string };
+
+/**
+ * 화자 선택을 speaker id로 해석. 기존 화자는 재사용, 이름은 customName/표시이름으로
+ * 매칭하고 없으면 새 speaker(maxId+1, role custom_N)를 생성해 목록에 추가한다.
+ * @returns 결정된 speakerId와 (필요 시 새 화자가 추가된) speakers 목록
+ */
+export const resolveSpeakerSelection = (
+  speakers: Speaker[],
+  sel: SpeakerSelection
+): { speakerId: number; speakers: Speaker[] } => {
+  if (sel.kind === 'existing') {
+    return { speakerId: sel.id, speakers };
+  }
+
+  const name = sel.name.trim();
+  const existing = speakers.find(
+    (s) => s.customName === name || getSpeakerDisplayName(s) === name
+  );
+  if (existing) {
+    return { speakerId: existing.id, speakers };
+  }
+
+  const maxId = Math.max(0, ...speakers.map((s) => s.id));
+  const id = maxId + 1;
+  return {
+    speakerId: id,
+    speakers: [...speakers, { id, role: `custom_${id}`, customName: name }],
+  };
+};
+
 /**
  * Speaker 객체에서 아바타 라벨(짧은 표시)을 반환
  * @param speaker - Speaker 객체
