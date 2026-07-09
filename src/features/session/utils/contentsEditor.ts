@@ -131,6 +131,87 @@ export function removeSegment(contents: Contents, segmentId: number): Contents {
   );
 }
 
+/** 저장텍스트의 특정 슬라이스에 속한 nv만 추출 (완전 토큰 매칭 → 키 충돌 방지) */
+function partitionNv(
+  nv: string[] | undefined,
+  sliceText: string
+): string[] | undefined {
+  if (!nv || nv.length === 0) return undefined;
+  const part = nv.filter((entry) => {
+    const key = entry.slice(0, entry.indexOf(':'));
+    return sliceText.includes(`⟪nv:${key}⟫`);
+  });
+  return part.length > 0 ? part : undefined;
+}
+
+/** 저장텍스트의 특정 슬라이스에 속한 deid만 추출 (⟪deid:key| 완전 매칭) */
+function partitionDeid(
+  deid: Record<string, string> | undefined,
+  sliceText: string
+): Record<string, string> | undefined {
+  if (!deid) return undefined;
+  const part: Record<string, string> = {};
+  for (const key of Object.keys(deid)) {
+    if (sliceText.includes(`⟪deid:${key}|`)) part[key] = deid[key];
+  }
+  return Object.keys(part).length > 0 ? part : undefined;
+}
+
+/**
+ * 세그먼트를 경계(offset)들로 분리하고 각 조각에 화자를 배정
+ * - boundaries: 저장텍스트 기준 정렬된 분리 지점들 (N개 → N+1 조각)
+ * - sliceSpeakers: 각 조각의 화자 id (길이 = N+1)
+ * 첫 비어있지 않은 조각은 원본 id/start/end 유지, 나머지는 maxId+1.. / start·end=null.
+ * nv/deid는 조각별로 파티션. 유효 조각이 2개 미만이면 no-op.
+ */
+export function splitSegmentByBoundaries(
+  contents: Contents,
+  segmentId: number,
+  boundaries: number[],
+  sliceSpeakers: number[]
+): Contents {
+  return transformSegments(contents, (segments) => {
+    const idx = segments.findIndex((s) => s.id === segmentId);
+    if (idx === -1) return segments;
+    const seg = segments[idx];
+
+    const points = [0, ...boundaries, seg.text.length];
+    const rawSlices = [];
+    for (let i = 0; i < points.length - 1; i += 1) {
+      rawSlices.push({
+        text: seg.text.slice(points[i], points[i + 1]).trim(),
+        speaker: sliceSpeakers[i] ?? seg.speaker,
+      });
+    }
+    const slices = rawSlices.filter((s) => s.text.length > 0);
+    if (slices.length <= 1) return segments; // 분리 불가
+
+    const maxId = segments.reduce((m, s) => Math.max(m, s.id), 0);
+    let nextId = maxId + 1;
+    const newSegs: TranscribeSegment[] = slices.map((slc, i) => {
+      const nv = partitionNv(seg.nv, slc.text);
+      const deid = partitionDeid(seg.deid, slc.text);
+      if (i === 0) {
+        // 첫 조각: 원본 id/start/end 유지
+        return { ...seg, text: slc.text, speaker: slc.speaker, nv, deid };
+      }
+      return {
+        id: nextId++,
+        start: null as null,
+        end: null as null,
+        text: slc.text,
+        speaker: slc.speaker,
+        nv,
+        deid,
+      };
+    });
+
+    const updated = [...segments];
+    updated.splice(idx, 1, ...newSegs);
+    return updated;
+  });
+}
+
 /** 다수 텍스트 편집 일괄 적용 */
 export function applyBulkTextEdits(
   contents: Contents,
