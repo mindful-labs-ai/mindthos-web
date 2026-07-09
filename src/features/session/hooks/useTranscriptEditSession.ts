@@ -46,7 +46,9 @@ import {
   removeSegment,
   replaceNthInStoredText,
   type ReplaceOptions,
+  splitSegmentByBoundaries,
   updateSegmentTime,
+  updateSpeakerDefinitions,
 } from '../utils/contentsEditor';
 
 // ── 타입 ──
@@ -83,6 +85,13 @@ interface UseTranscriptEditSessionReturn {
     segmentId: number,
     start: number,
     end: number
+  ) => void;
+  /** 세그먼트 분리/화자 전환 (boundaries로 나누고 조각별 화자 배정) */
+  handleSplitSegment: (
+    segmentId: number,
+    boundaries: number[],
+    sliceSpeakers: number[],
+    speakerDefinitions?: Speaker[]
   ) => void;
   /** 편집 되돌리기/다시 실행 (화자·추가·삭제·찾기바꾸기·텍스트/태그) */
   canUndo: boolean;
@@ -217,15 +226,20 @@ export function useTranscriptEditSession({
   );
 
   // 구조적 편집 공통 처리:
-  // 버퍼 병합 → 스냅샷 저장 → 버퍼 비움 → 변경 적용 (편집기 remount 불필요)
+  // 버퍼 병합 → 스냅샷 저장 → 버퍼 비움 → 변경 적용
+  // opts.remount=true면 편집기 강제 remount(기존 세그먼트 텍스트가 밖에서 바뀔 때, 예: 분리)
   const applyStructuralEdit = React.useCallback(
-    (transform: (materialized: Contents) => Contents) => {
+    (
+      transform: (materialized: Contents) => Contents,
+      opts?: { remount?: boolean }
+    ) => {
       const base = editingContentsRef.current;
       if (!base) return;
       const materialized = materializeBuffers(base);
       pushHistorySnapshot(materialized);
       clearBuffers();
       setEditing(transform(materialized));
+      if (opts?.remount) setEditorVersion((v) => v + 1);
       setHasEdits(true);
     },
     [materializeBuffers, pushHistorySnapshot, clearBuffers, setEditing]
@@ -493,6 +507,35 @@ export function useTranscriptEditSession({
     [isReadOnly, isEditing, applyStructuralEdit]
   );
 
+  // ── 세그먼트 분리 / 화자 전환 (편집 모드 전용) ──
+  // boundaries=분리 지점(offset)들, sliceSpeakers=각 조각 화자. 텍스트가 잘리므로 remount.
+  const handleSplitSegment = React.useCallback(
+    (
+      segmentId: number,
+      boundaries: number[],
+      sliceSpeakers: number[],
+      speakerDefinitions?: Speaker[]
+    ) => {
+      if (isReadOnly || !isEditing) return;
+      applyStructuralEdit(
+        (c) => {
+          let next = splitSegmentByBoundaries(
+            c,
+            segmentId,
+            boundaries,
+            sliceSpeakers
+          );
+          if (speakerDefinitions) {
+            next = updateSpeakerDefinitions(next, speakerDefinitions);
+          }
+          return next;
+        },
+        { remount: true }
+      );
+    },
+    [isReadOnly, isEditing, applyStructuralEdit]
+  );
+
   // ── 되돌리기 (undo) ──
 
   const handleUndo = React.useCallback(() => {
@@ -750,6 +793,7 @@ export function useTranscriptEditSession({
     handleAddSegment,
     handleDeleteSegment,
     handleSegmentTimeChange,
+    handleSplitSegment,
     canUndo,
     canRedo,
     handleUndo,
