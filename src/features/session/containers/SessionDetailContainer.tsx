@@ -74,6 +74,8 @@ export const SessionDetailContainer: React.FC = () => {
   >(null);
   const [hasUserInteracted, setHasUserInteracted] = React.useState(false);
   const contentScrollRef = React.useRef<HTMLDivElement>(null);
+  // editorVersion 변경(분리/치환/undo)으로 세그먼트 remount 시 스크롤 튐 방지용
+  const savedScrollTopRef = React.useRef(0);
 
   const { data: sessionDetail, isLoading } = useSessionDetail({
     sessionId: sessionId || '',
@@ -214,6 +216,23 @@ export const SessionDetailContainer: React.FC = () => {
   React.useEffect(() => {
     if (!isEditing) setIsFindReplaceOpen(false);
   }, [isEditing]);
+
+  // 스크롤 위치 저장 (세그먼트 remount 대비)
+  React.useEffect(() => {
+    const el = contentScrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      savedScrollTopRef.current = el.scrollTop;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [activeTab]);
+
+  // editorVersion 변경(분리/치환/undo)으로 세그먼트가 remount되면 스크롤 복원
+  React.useLayoutEffect(() => {
+    const el = contentScrollRef.current;
+    if (el) el.scrollTop = savedScrollTopRef.current;
+  }, [editorVersion]);
 
   const segments = React.useMemo(
     () =>
