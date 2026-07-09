@@ -192,7 +192,13 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     );
 
     return (
-      <div className="absolute inset-x-0 right-4 top-0 z-10 flex w-full select-none justify-end">
+      <div
+        className={
+          isFindReplaceOpen
+            ? 'relative z-10 flex w-full select-none justify-end pr-4'
+            : 'absolute inset-x-0 right-4 top-0 z-10 flex w-full select-none justify-end'
+        }
+      >
         <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-4">
           {isReadOnly ? (
             <Badge tone="warning" variant="soft" size="sm">

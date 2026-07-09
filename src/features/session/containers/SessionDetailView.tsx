@@ -41,9 +41,14 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
         <div
           className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'border-grey-40 bg-white'}`}
         >
-          {toolbar}
-          {findReplace && (
-            <div className="flex-shrink-0 px-6 pt-16">{findReplace}</div>
+          {findReplace ? (
+            // 찾기 열림: 찾기 바가 맨 위(전체폭), 편집 툴바는 그 아래(흐름 배치)
+            <>
+              <div className="flex-shrink-0 px-6 pt-2">{findReplace}</div>
+              {toolbar}
+            </>
+          ) : (
+            toolbar
           )}
           {tabContent}
         </div>
