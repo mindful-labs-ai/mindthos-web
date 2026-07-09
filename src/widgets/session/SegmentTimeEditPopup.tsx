@@ -106,9 +106,9 @@ export const SegmentTimeEditPopup: React.FC<SegmentTimeEditPopupProps> = ({
       />
       <input
         type="range"
-        min={Math.floor(bounds.min)}
+        min={bounds.min}
         max={bounds.max}
-        step={1}
+        step="any"
         value={seconds}
         onChange={(e) => {
           const clamped = Math.min(
