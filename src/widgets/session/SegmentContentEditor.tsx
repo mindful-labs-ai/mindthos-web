@@ -299,9 +299,16 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       // 비언어 태그 삽입/이동
       const savedRangeRef = useRef<Range | null>(null);
       const nvLabelInputRef = useRef<HTMLInputElement>(null);
+      // 캐럿 위치(에디터 기준) — 비언어 추가 트리거/피커 위치
+      const [caretPos, setCaretPos] = useState<{
+        top: number;
+        left: number;
+      } | null>(null);
       const [nvAdd, setNvAdd] = useState<{
         type: 'S' | 'E' | 'A';
         label: string;
+        top: number;
+        left: number;
       } | null>(null);
       const [placingChip, setPlacingChip] = useState<HTMLSpanElement | null>(
         null
@@ -344,22 +351,41 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         emitChanges();
       }, [emitChanges]);
 
-      // 편집기 내 캐럿 위치 저장 (비언어 삽입 위치용)
+      // 편집기 내 캐럿 위치 저장 + 트리거 위치 계산
       const saveSelection = useCallback(() => {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0 && editorRef.current) {
           const range = sel.getRangeAt(0);
           if (editorRef.current.contains(range.commonAncestorContainer)) {
             savedRangeRef.current = range.cloneRange();
+            if (range.collapsed) {
+              const rects = range.getClientRects();
+              const rect =
+                rects.length > 0 ? rects[0] : range.getBoundingClientRect();
+              const editorRect = editorRef.current.getBoundingClientRect();
+              setCaretPos({
+                top: rect.bottom - editorRect.top,
+                left: Math.max(0, rect.left - editorRect.left),
+              });
+            } else {
+              setCaretPos(null);
+            }
+            return;
           }
         }
+        setCaretPos(null);
       }, []);
 
-      // 비언어 태그 추가 피커 열기 (현재 캐럿 저장)
+      // 비언어 태그 추가 피커 열기 (캐럿 위치에 표시)
       const openNvAdd = useCallback(() => {
         saveSelection();
-        setNvAdd({ type: 'S', label: '' });
-      }, [saveSelection]);
+        setNvAdd({
+          type: 'S',
+          label: '',
+          top: caretPos?.top ?? 0,
+          left: caretPos?.left ?? 0,
+        });
+      }, [saveSelection, caretPos]);
 
       // 비언어 태그 삽입 확정
       const confirmNvAdd = useCallback(() => {
@@ -554,6 +580,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             onKeyUp={saveSelection}
             onMouseUp={saveSelection}
             onClick={handleClick}
+            onBlur={() => setCaretPos(null)}
             className={`m-0 w-full border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none md:text-m ${
               isActive ? 'font-emphasize' : ''
             }`}
@@ -608,8 +635,8 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             </div>
           )}
 
-          {/* 비언어 태그 추가 / 이동 배치 안내 */}
-          {placingChip ? (
+          {/* 이동 배치 안내 */}
+          {placingChip && (
             <div className="mt-1 flex items-center gap-2 text-xs text-primary">
               <span>표시할 위치를 클릭하세요</span>
               <button
@@ -620,20 +647,29 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                 취소
               </button>
             </div>
-          ) : (
+          )}
+
+          {/* 캐럿 위치에 뜨는 비언어 추가 트리거 */}
+          {caretPos && !nvAdd && !placingChip && (
             <button
               type="button"
               onMouseDown={(e) => e.preventDefault()}
               onClick={openNvAdd}
-              className="mt-1 inline-flex items-center gap-0.5 rounded-md border border-grey-30 px-2 py-0.5 text-xs text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+              aria-label="비언어 태그 추가"
+              title="비언어 태그 추가"
+              className="absolute z-10 flex h-5 w-5 items-center justify-center rounded-full border border-grey-30 bg-white text-grey-60 shadow-sm transition-colors lg:hover:border-primary lg:hover:text-primary"
+              style={{ top: caretPos.top + 2, left: caretPos.left }}
             >
-              <Plus size={12} /> 비언어
+              <Plus size={12} />
             </button>
           )}
 
-          {/* 비언어 태그 추가 피커 */}
+          {/* 비언어 태그 추가 피커 (캐럿 위치) */}
           {nvAdd && (
-            <div className="absolute left-0 top-full z-20 mt-1 flex flex-wrap items-center gap-1 rounded-lg border border-grey-30 bg-white p-2 shadow-lg">
+            <div
+              className="absolute z-20 mt-1 flex flex-wrap items-center gap-1 rounded-lg border border-grey-30 bg-white p-2 shadow-lg"
+              style={{ top: nvAdd.top + 8, left: Math.max(0, nvAdd.left) }}
+            >
               {(['S', 'E', 'A'] as const).map((t) => (
                 <button
                   key={t}
