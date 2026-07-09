@@ -46,6 +46,7 @@ import {
   removeSegment,
   replaceNthInStoredText,
   type ReplaceOptions,
+  updateSegmentTime,
 } from '../utils/contentsEditor';
 
 // ── 타입 ──
@@ -77,6 +78,12 @@ interface UseTranscriptEditSessionReturn {
   handleSpeakerChange: (updates: SpeakerChangeUpdate) => Promise<void>;
   handleAddSegment: (afterSegmentId: number, speaker: number) => void;
   handleDeleteSegment: (segmentId: number) => void;
+  /** 세그먼트 시간(start/end) 수정 */
+  handleSegmentTimeChange: (
+    segmentId: number,
+    start: number,
+    end: number
+  ) => void;
   /** 편집 되돌리기/다시 실행 (화자·추가·삭제·찾기바꾸기·텍스트/태그) */
   canUndo: boolean;
   canRedo: boolean;
@@ -476,6 +483,16 @@ export function useTranscriptEditSession({
     [isReadOnly, isEditing, applyStructuralEdit]
   );
 
+  // ── 세그먼트 시간 수정 (편집 모드 전용) ──
+
+  const handleSegmentTimeChange = React.useCallback(
+    (segmentId: number, start: number, end: number) => {
+      if (isReadOnly || !isEditing) return;
+      applyStructuralEdit((c) => updateSegmentTime(c, segmentId, start, end));
+    },
+    [isReadOnly, isEditing, applyStructuralEdit]
+  );
+
   // ── 되돌리기 (undo) ──
 
   const handleUndo = React.useCallback(() => {
@@ -732,6 +749,7 @@ export function useTranscriptEditSession({
     handleSpeakerChange,
     handleAddSegment,
     handleDeleteSegment,
+    handleSegmentTimeChange,
     canUndo,
     canRedo,
     handleUndo,
