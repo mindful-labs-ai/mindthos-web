@@ -8,6 +8,7 @@ import type {
   TranscribeContents,
   TranscribeSegment,
   TranscriptJson,
+  WhisperSegment,
 } from '../types';
 
 /** DB에 저장되는 contents 타입 */
@@ -65,6 +66,18 @@ export function updateSegmentText(
 ): Contents {
   return mapSegments(contents, (seg) =>
     seg.id === segmentId ? { ...seg, text: newText } : seg
+  );
+}
+
+/** 특정 세그먼트의 시간(start/end) 수정 — null 타임 세그먼트도 유효 타임 부여 */
+export function updateSegmentTime(
+  contents: Contents,
+  segmentId: number,
+  start: number,
+  end: number
+): Contents {
+  return mapSegments(contents, (seg) =>
+    seg.id === segmentId ? ({ ...seg, start, end } as WhisperSegment) : seg
   );
 }
 
