@@ -5,9 +5,10 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Trash2 } from 'lucide-react';
+import { Move, Plus, Trash2 } from 'lucide-react';
 
 import type { TranscribeSegment } from '@/features/session/types';
+import { generateNvKey } from '@/features/session/utils/contentsEditor';
 
 // ── 칩 스타일 ──
 
@@ -91,6 +92,70 @@ function buildSegmentHtml(
   return html;
 }
 
+// ── 칩 DOM 노드 생성 (삽입/이동용) ──
+
+const NV_CHIP_CLASS =
+  'mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium';
+
+/** nv 키 접두로 태그 타입 결정 (뷰 렌더와 동일 매핑) */
+function nvTagTypeFromKey(key: string): 'S' | 'E' | 'A' {
+  return key.startsWith('e') ? 'E' : key.startsWith('s') ? 'S' : 'A';
+}
+
+/** 신규 nv 칩 노드 (extractFromDom 호환: data-chip=nv + data-nv-key) */
+function createNvChipElement(key: string, label: string): HTMLSpanElement {
+  const tagType = nvTagTypeFromKey(key);
+  const span = document.createElement('span');
+  span.dataset.chip = 'nv';
+  span.dataset.nvKey = key;
+  span.dataset.tagType = tagType;
+  span.setAttribute('contenteditable', 'false');
+  span.className = `${NV_CHIP_CLASS} ${NV_CHIP_STYLES[tagType] || NV_CHIP_STYLES.A}`;
+  span.textContent = label;
+  return span;
+}
+
+/** 클릭 좌표의 caret Range (Chrome/Safari + Firefox 폴백) */
+function caretRangeAtPoint(x: number, y: number): Range | null {
+  const doc = document as Document & {
+    caretRangeFromPoint?: (x: number, y: number) => Range | null;
+    caretPositionFromPoint?: (
+      x: number,
+      y: number
+    ) => { offsetNode: Node; offset: number } | null;
+  };
+  if (typeof doc.caretRangeFromPoint === 'function') {
+    return doc.caretRangeFromPoint(x, y);
+  }
+  const pos = doc.caretPositionFromPoint?.(x, y);
+  if (pos) {
+    const range = document.createRange();
+    range.setStart(pos.offsetNode, pos.offset);
+    range.collapse(true);
+    return range;
+  }
+  return null;
+}
+
+/** 칩 노드를 Range 위치에 삽입하고 캐럿을 칩 뒤로 이동 (범위 없으면 끝에 append) */
+function insertChipAtRange(
+  chip: HTMLElement,
+  range: Range | null,
+  editor: HTMLElement
+): void {
+  if (range && editor.contains(range.startContainer)) {
+    range.collapse(true);
+    range.insertNode(chip);
+    range.setStartAfter(chip);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  } else {
+    editor.appendChild(chip);
+  }
+}
+
 // ── DOM → 데이터 추출 ──
 
 interface ExtractedData {
@@ -170,27 +235,19 @@ function extractFromDom(
 
   container.childNodes.forEach(walk);
 
-  // nv 배열 업데이트 (삭제된 칩은 text에 키가 없으므로 필터링)
+  // nv 배열을 DOM에 실제 존재하는 칩 기준으로 재구성
+  // (라벨 갱신·삭제뿐 아니라 신규 삽입/이동도 반영. 순서 = DOM 등장 순)
   let updatedNv: string[] | undefined;
-  if (originalNv) {
-    const survivingKeys = new Set(nvUpdates.keys());
-    const filtered = originalNv
-      .filter((entry) => {
-        const key = entry.slice(0, entry.indexOf(':'));
-        return survivingKeys.has(key);
-      })
-      .map((entry) => {
-        const colonIdx = entry.indexOf(':');
-        const key = entry.slice(0, colonIdx);
-        const newLabel = nvUpdates.get(key);
-        return newLabel !== undefined ? `${key}:${newLabel}` : entry;
-      });
-
+  const orig = originalNv ?? [];
+  if (orig.length > 0 || nvUpdates.size > 0) {
+    const rebuilt = Array.from(nvUpdates.entries()).map(
+      ([key, label]) => `${key}:${label}`
+    );
     if (
-      filtered.length !== originalNv.length ||
-      filtered.some((e, i) => e !== originalNv[i])
+      rebuilt.length !== orig.length ||
+      rebuilt.some((e, i) => e !== orig[i])
     ) {
-      updatedNv = filtered;
+      updatedNv = rebuilt;
     }
   }
 
@@ -239,6 +296,16 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       const initializedRef = useRef(false);
       const [chipEdit, setChipEdit] = useState<ChipEditState | null>(null);
       const chipInputRef = useRef<HTMLInputElement>(null);
+      // 비언어 태그 삽입/이동
+      const savedRangeRef = useRef<Range | null>(null);
+      const nvLabelInputRef = useRef<HTMLInputElement>(null);
+      const [nvAdd, setNvAdd] = useState<{
+        type: 'S' | 'E' | 'A';
+        label: string;
+      } | null>(null);
+      const [placingChip, setPlacingChip] = useState<HTMLSpanElement | null>(
+        null
+      );
 
       // 편집 모드 진입 시 한 번만 HTML 빌드
       useEffect(() => {
@@ -277,6 +344,52 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         emitChanges();
       }, [emitChanges]);
 
+      // 편집기 내 캐럿 위치 저장 (비언어 삽입 위치용)
+      const saveSelection = useCallback(() => {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0 && editorRef.current) {
+          const range = sel.getRangeAt(0);
+          if (editorRef.current.contains(range.commonAncestorContainer)) {
+            savedRangeRef.current = range.cloneRange();
+          }
+        }
+      }, []);
+
+      // 비언어 태그 추가 피커 열기 (현재 캐럿 저장)
+      const openNvAdd = useCallback(() => {
+        saveSelection();
+        setNvAdd({ type: 'S', label: '' });
+      }, [saveSelection]);
+
+      // 비언어 태그 삽입 확정
+      const confirmNvAdd = useCallback(() => {
+        if (!nvAdd || !editorRef.current) return;
+        const label = nvAdd.label.trim() || (nvAdd.type === 'S' ? '침묵' : '');
+        if (!label) {
+          setNvAdd(null);
+          return;
+        }
+        const { nv: liveNv } = extractFromDom(
+          editorRef.current,
+          segment.nv,
+          segment.deid,
+          showDeid
+        );
+        const key = generateNvKey(liveNv ?? segment.nv, nvAdd.type);
+        const chip = createNvChipElement(key, label);
+        insertChipAtRange(chip, savedRangeRef.current, editorRef.current);
+        savedRangeRef.current = null;
+        setNvAdd(null);
+        emitChanges();
+      }, [nvAdd, segment.nv, segment.deid, showDeid, emitChanges]);
+
+      // 비언어 태그 추가 피커 열리면 라벨 입력에 포커스
+      useEffect(() => {
+        if (nvAdd && nvLabelInputRef.current) {
+          nvLabelInputRef.current.focus();
+        }
+      }, [nvAdd]);
+
       // 한글 IME 조합 처리
       const handleCompositionStart = useCallback(() => {
         isComposingRef.current = true;
@@ -302,13 +415,31 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         }
       }, []);
 
-      // 칩 클릭 → 편집 팝오버
-      const handleClick = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
+      // 칩 클릭 → 편집 팝오버 (이동 배치 모드면 클릭 위치로 칩 이동)
+      const handleClick = useCallback(
+        (e: React.MouseEvent) => {
+          e.stopPropagation();
+          if (!editorRef.current) return;
 
-        const target = e.target as HTMLElement;
-        const chip = target.closest<HTMLSpanElement>('[data-chip]');
-        if (!chip || !editorRef.current) return;
+          if (placingChip) {
+            const range = caretRangeAtPoint(e.clientX, e.clientY);
+            if (
+              range &&
+              editorRef.current.contains(range.startContainer) &&
+              !placingChip.contains(range.startContainer)
+            ) {
+              placingChip.remove();
+              range.collapse(true);
+              range.insertNode(placingChip);
+            }
+            setPlacingChip(null);
+            emitChanges();
+            return;
+          }
+
+          const target = e.target as HTMLElement;
+          const chip = target.closest<HTMLSpanElement>('[data-chip]');
+          if (!chip) return;
 
         const chipType = chip.dataset.chip as 'nv' | 'deid' | 'legacy-nv';
         const key =
@@ -338,7 +469,9 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           },
           chipEl: chip,
         });
-      }, []);
+        },
+        [placingChip, emitChanges]
+      );
 
       // 칩 편집 확인
       const handleChipEditConfirm = useCallback(() => {
@@ -376,6 +509,13 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         emitChanges();
       }, [chipEdit, emitChanges]);
 
+      // 칩 이동: 배치 모드 진입 (다음 클릭 위치로 칩 노드 이동)
+      const handleMoveChip = useCallback(() => {
+        if (!chipEdit) return;
+        setPlacingChip(chipEdit.chipEl);
+        setChipEdit(null);
+      }, [chipEdit]);
+
       // 칩 편집 input 키보드
       const handleChipInputKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
@@ -411,6 +551,8 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             onCompositionEnd={handleCompositionEnd}
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
+            onKeyUp={saveSelection}
+            onMouseUp={saveSelection}
             onClick={handleClick}
             className={`m-0 w-full border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none md:text-m ${
               isActive ? 'font-emphasize' : ''
@@ -440,17 +582,106 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                   : '비식별화'}
               </span>
               {(chipEdit.type === 'nv' || chipEdit.type === 'legacy-nv') && (
+                <>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleMoveChip}
+                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-grey-70 transition-colors hover:bg-grey-10"
+                    aria-label="태그 이동"
+                    title="이동"
+                  >
+                    <Move size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={handleChipDelete}
+                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-red-500 transition-colors hover:bg-red-50"
+                    aria-label="태그 삭제"
+                    title="삭제"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 비언어 태그 추가 / 이동 배치 안내 */}
+          {placingChip ? (
+            <div className="mt-1 flex items-center gap-2 text-xs text-primary">
+              <span>표시할 위치를 클릭하세요</span>
+              <button
+                type="button"
+                onClick={() => setPlacingChip(null)}
+                className="rounded px-1 text-grey-60 lg:hover:text-grey-100"
+              >
+                취소
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={openNvAdd}
+              className="mt-1 inline-flex items-center gap-0.5 rounded-md border border-grey-30 px-2 py-0.5 text-xs text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+            >
+              <Plus size={12} /> 비언어
+            </button>
+          )}
+
+          {/* 비언어 태그 추가 피커 */}
+          {nvAdd && (
+            <div className="absolute left-0 top-full z-20 mt-1 flex flex-wrap items-center gap-1 rounded-lg border border-grey-30 bg-white p-2 shadow-lg">
+              {(['S', 'E', 'A'] as const).map((t) => (
                 <button
+                  key={t}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={handleChipDelete}
-                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-red-500 transition-colors hover:bg-red-50"
-                  aria-label="태그 삭제"
-                  title="삭제"
+                  onClick={() => setNvAdd((prev) => (prev ? { ...prev, type: t } : prev))}
+                  className={`rounded border px-2 py-1 text-xs font-medium transition-colors ${
+                    nvAdd.type === t
+                      ? 'border-primary text-primary'
+                      : 'border-grey-30 text-grey-70'
+                  }`}
                 >
-                  <Trash2 size={14} />
+                  {t === 'S' ? '침묵' : t === 'E' ? '감정' : '행동'}
                 </button>
-              )}
+              ))}
+              <input
+                ref={nvLabelInputRef}
+                type="text"
+                value={nvAdd.label}
+                onChange={(e) =>
+                  setNvAdd((prev) => (prev ? { ...prev, label: e.target.value } : prev))
+                }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmNvAdd();
+                  }
+                  if (e.key === 'Escape') setNvAdd(null);
+                }}
+                placeholder={nvAdd.type === 'S' ? '침묵(기본)' : '예: 한숨'}
+                className="w-[100px] rounded border border-grey-30 bg-white px-2 py-1 text-sm text-fg outline-none focus:border-primary"
+              />
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={confirmNvAdd}
+                className="rounded bg-primary px-2 py-1 text-xs font-medium text-primary-fg lg:hover:opacity-80"
+              >
+                추가
+              </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => setNvAdd(null)}
+                className="rounded px-1 py-1 text-xs text-grey-60 lg:hover:text-grey-100"
+              >
+                취소
+              </button>
             </div>
           )}
         </div>
