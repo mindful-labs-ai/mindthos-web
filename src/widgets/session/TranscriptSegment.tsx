@@ -16,6 +16,7 @@ import {
 } from '@/features/session/utils/parseNonverbalText';
 
 import { SegmentContentEditor } from './SegmentContentEditor';
+import { SegmentTimeEditPopup } from './SegmentTimeEditPopup';
 import { SpeakerEditPopup } from './SpeakerEditPopup';
 
 interface TranscriptSegmentProps {
@@ -44,6 +45,12 @@ interface TranscriptSegmentProps {
   onAddSegment?: (afterSegmentId: number, speaker: number) => void;
   /** 세그먼트 삭제 콜백 (편집 모드에서만) */
   onDeleteSegment?: (segmentId: number) => void;
+  /** 타임스탬프 기능 활성 여부 (시간 편집 노출 조건) */
+  enableTimestampFeatures?: boolean;
+  /** 오디오 총 길이(초) — 시간 편집 범위 계산용 */
+  audioDuration?: number;
+  /** 세그먼트 시간 수정 콜백 (편집 모드에서만) */
+  onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
 }
 
 const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
@@ -66,8 +73,29 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   onSpeakerChange,
   onAddSegment,
   onDeleteSegment,
+  enableTimestampFeatures = false,
+  audioDuration = 0,
+  onSegmentTimeChange,
 }) => {
   const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
+  const [isTimePopupOpen, setIsTimePopupOpen] = React.useState(false);
+
+  // 편집 모드 + 타임스탬프 기능 활성 시 시간 편집 가능
+  const canEditTime =
+    isEditable && enableTimestampFeatures && !!onSegmentTimeChange;
+
+  const handleTimeTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsTimePopupOpen(true);
+  };
+
+  const handleTimeTriggerKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsTimePopupOpen(true);
+    }
+  };
 
   const { name, label, bgColor, textColor } = getSpeakerInfo(segment, speakers);
 
@@ -238,17 +266,48 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               {name}
             </span>
           )}
-          {showTimestampDisplay &&
-            segment.start != null &&
-            segment.start > 0 && (
-              <span className="text-sm text-grey-70 md:text-m">
-                {formatTime(segment.start)}
-              </span>
-            )}
-          {!showTimestamp && speakerUtteranceIndex !== undefined && (
-            <span className="text-sm text-grey-70 md:text-m">
-              #{speakerUtteranceIndex}
-            </span>
+          {canEditTime ? (
+            <SegmentTimeEditPopup
+              open={isTimePopupOpen}
+              onOpenChange={setIsTimePopupOpen}
+              segment={segment}
+              allSegments={allSegments}
+              audioDuration={audioDuration}
+              onApply={onSegmentTimeChange!}
+              triggerElement={
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleTimeTriggerClick}
+                  onKeyDown={handleTimeTriggerKeyDown}
+                  aria-label="시간 편집"
+                  className={`cursor-pointer rounded px-1 text-sm md:text-m lg:hover:bg-grey-20 lg:hover:text-primary ${
+                    segment.start != null
+                      ? 'text-grey-70'
+                      : 'font-medium text-primary'
+                  }`}
+                >
+                  {segment.start != null
+                    ? formatTime(segment.start)
+                    : '시간 설정'}
+                </span>
+              }
+            />
+          ) : (
+            <>
+              {showTimestampDisplay &&
+                segment.start != null &&
+                segment.start > 0 && (
+                  <span className="text-sm text-grey-70 md:text-m">
+                    {formatTime(segment.start)}
+                  </span>
+                )}
+              {!showTimestamp && speakerUtteranceIndex !== undefined && (
+                <span className="text-sm text-grey-70 md:text-m">
+                  #{speakerUtteranceIndex}
+                </span>
+              )}
+            </>
           )}
           {isEditable && segment.start !== null && (
             <button

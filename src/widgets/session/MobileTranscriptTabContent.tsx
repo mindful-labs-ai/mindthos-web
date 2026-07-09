@@ -41,6 +41,8 @@ interface MobileTranscriptTabContentProps {
   }) => Promise<void>;
   onAddSegment?: (afterSegmentId: number, speaker: number) => void;
   onDeleteSegment?: (segmentId: number) => void;
+  audioDuration?: number;
+  onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
 }
 
 export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProps> =
@@ -67,6 +69,8 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
+      audioDuration,
+      onSegmentTimeChange,
     }) => {
       const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(
         null
@@ -153,6 +157,13 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         onDeleteSegment={
                           isEditing && !isReadOnly
                             ? handleDeleteRequest
+                            : undefined
+                        }
+                        enableTimestampFeatures={enableTimestampFeatures}
+                        audioDuration={audioDuration}
+                        onSegmentTimeChange={
+                          isEditing && !isReadOnly
+                            ? onSegmentTimeChange
                             : undefined
                         }
                       />

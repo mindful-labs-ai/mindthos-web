@@ -61,6 +61,10 @@ interface TranscriptTabContentProps {
   onAddSegment?: (afterSegmentId: number, speaker: number) => void;
   /** 세그먼트 삭제 핸들러 */
   onDeleteSegment?: (segmentId: number) => void;
+  /** 오디오 총 길이(초) — 시간 편집 범위 계산용 */
+  audioDuration?: number;
+  /** 세그먼트 시간 수정 핸들러 */
+  onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
 }
 
 export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
@@ -87,6 +91,8 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
+      audioDuration,
+      onSegmentTimeChange,
     }) => {
       const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(
         null
@@ -173,6 +179,13 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         onDeleteSegment={
                           isEditing && !isReadOnly
                             ? handleDeleteRequest
+                            : undefined
+                        }
+                        enableTimestampFeatures={enableTimestampFeatures}
+                        audioDuration={audioDuration}
+                        onSegmentTimeChange={
+                          isEditing && !isReadOnly
+                            ? onSegmentTimeChange
                             : undefined
                         }
                       />
