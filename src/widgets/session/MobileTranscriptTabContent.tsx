@@ -43,6 +43,12 @@ interface MobileTranscriptTabContentProps {
   onDeleteSegment?: (segmentId: number) => void;
   audioDuration?: number;
   onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
+  onSplitSegment?: (
+    segmentId: number,
+    boundaries: number[],
+    sliceSpeakers: number[],
+    speakerDefinitions?: Speaker[]
+  ) => void;
 }
 
 export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProps> =
@@ -71,6 +77,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       onDeleteSegment,
       audioDuration,
       onSegmentTimeChange,
+      onSplitSegment,
     }) => {
       const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(
         null
@@ -165,6 +172,9 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                           isEditing && !isReadOnly
                             ? onSegmentTimeChange
                             : undefined
+                        }
+                        onSplitSegment={
+                          isEditing && !isReadOnly ? onSplitSegment : undefined
                         }
                       />
                     );
