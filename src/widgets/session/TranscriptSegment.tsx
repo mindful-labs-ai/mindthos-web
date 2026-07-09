@@ -353,15 +353,19 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
         )}
       </div>
 
-      {/* 편집 모드 세그먼트 추가 버튼 (중앙 하단) */}
+      {/* 편집 모드 세그먼트 추가 (중앙 하단, green-80 가로선 위에 + 버튼) */}
       {isEditable && onAddSegment && (
-        <button
-          onClick={handleAddSegment}
-          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-subtle p-2 text-primary opacity-0 shadow-sm transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:scale-105 lg:hover:border-primary"
-          aria-label="발화 추가"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-1/2 items-center justify-center opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100">
+          {/* 버튼 뒤로 가로지르는 선 (전체 너비의 2/5, 중앙) */}
+          <div className="absolute left-1/2 top-1/2 h-px w-2/5 -translate-x-1/2 -translate-y-1/2 bg-green-80" />
+          <button
+            onClick={handleAddSegment}
+            className="relative flex items-center rounded-md border border-green-80 bg-primary-subtle p-1.5 text-primary shadow-sm transition-all lg:hover:scale-105"
+            aria-label="발화 추가"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
     </div>
   );
