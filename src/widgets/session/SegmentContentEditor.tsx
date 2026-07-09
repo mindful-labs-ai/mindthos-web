@@ -723,7 +723,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           {/* 칩 편집 팝오버 */}
           {chipEdit && (
             <div
-              className="absolute z-20 flex items-center gap-1 rounded-lg border border-grey-30 bg-white p-1.5 shadow-lg"
+              className="absolute z-30 flex items-center gap-1 rounded-lg border border-grey-30 bg-white p-1.5 shadow-lg"
               style={{
                 top: chipEdit.rect.top,
                 left: chipEdit.rect.left,
@@ -790,7 +790,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             !speakerPick &&
             (!hasSelection || canSplit) && (
               <div
-                className="absolute z-10 flex flex-col overflow-hidden rounded-lg border border-grey-30 bg-white text-xs shadow-md"
+                className="absolute z-30 flex flex-col overflow-hidden rounded-lg border border-grey-30 bg-white text-xs shadow-md"
                 style={{ top: caretPos.top + 6, left: caretPos.left }}
               >
                 {!hasSelection && (
@@ -835,7 +835,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           {/* 화자 전환 인라인 목록 */}
           {speakerPick && !nvAdd && !placingChip && speakers && (
             <div
-              className="absolute z-20 flex max-h-[200px] flex-col overflow-y-auto rounded-lg border border-grey-30 bg-white text-xs shadow-lg"
+              className="absolute z-30 flex max-h-[200px] flex-col overflow-y-auto rounded-lg border border-grey-30 bg-white text-xs shadow-lg"
               style={{ top: speakerPick.top + 6, left: speakerPick.left }}
             >
               {speakers.map((s) => (
@@ -902,7 +902,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           {/* 비언어 태그 추가 피커 (캐럿 위치) */}
           {nvAdd && (
             <div
-              className="absolute z-20 mt-1 flex flex-wrap items-center gap-1 rounded-lg border border-grey-30 bg-white p-2 shadow-lg"
+              className="absolute z-30 mt-1 flex flex-wrap items-center gap-1 rounded-lg border border-grey-30 bg-white p-2 shadow-lg"
               style={{ top: nvAdd.top + 8, left: Math.max(0, nvAdd.left) }}
             >
               {(['S', 'E', 'A'] as const).map((t) => (
