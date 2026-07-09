@@ -951,7 +951,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                   }
                   if (e.key === 'Escape') setNvAdd(null);
                 }}
-                placeholder={nvAdd.type === 'S' ? '침묵(기본)' : '예: 한숨'}
+                placeholder={nvAdd.type === 'S' ? '침묵(기본)' : '예: 슬픔'}
                 className="w-[100px] rounded border border-grey-30 bg-white px-2 py-1 text-sm text-fg outline-none focus:border-primary"
               />
               <button
