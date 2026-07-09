@@ -362,12 +362,13 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         top: number;
         left: number;
       } | null>(null);
-      // 화자 전환 인라인 목록
+      // 화자 분리 인라인 목록
       const [speakerPick, setSpeakerPick] = useState<{
         customName: string;
         top: number;
         left: number;
       } | null>(null);
+      const speakerPickRef = useRef<HTMLDivElement>(null);
       const [placingChip, setPlacingChip] = useState<HTMLSpanElement | null>(
         null
       );
@@ -546,6 +547,21 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           nvLabelInputRef.current.focus();
         }
       }, [nvAdd]);
+
+      // 화자 분리 목록: 바깥 클릭 시 닫기
+      useEffect(() => {
+        if (!speakerPick) return;
+        const handler = (e: MouseEvent) => {
+          if (
+            speakerPickRef.current &&
+            !speakerPickRef.current.contains(e.target as Node)
+          ) {
+            setSpeakerPick(null);
+          }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+      }, [speakerPick]);
 
       // 한글 IME 조합 처리
       const handleCompositionStart = useCallback(() => {
@@ -810,7 +826,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                     onClick={doSplitSame}
                     className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
-                    세그먼트 분리
+                    발화 분리
                   </button>
                 )}
                 {canSplit && (
@@ -826,15 +842,16 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                     }
                     className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
-                    화자 전환
+                    화자 분리
                   </button>
                 )}
               </div>
             )}
 
-          {/* 화자 전환 인라인 목록 */}
+          {/* 화자 분리 인라인 목록 */}
           {speakerPick && !nvAdd && !placingChip && speakers && (
             <div
+              ref={speakerPickRef}
               className="absolute z-30 flex max-h-[200px] flex-col overflow-y-auto rounded-lg border border-grey-30 bg-white text-xs shadow-lg"
               style={{ top: speakerPick.top + 6, left: speakerPick.left }}
             >
