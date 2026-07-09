@@ -281,10 +281,10 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
                   onClick={handleTimeTriggerClick}
                   onKeyDown={handleTimeTriggerKeyDown}
                   aria-label="시간 편집"
-                  className={`cursor-pointer rounded px-1 text-sm md:text-m lg:hover:bg-grey-20 lg:hover:text-primary ${
+                  className={`cursor-pointer rounded px-1 text-grey-70 lg:hover:bg-grey-20 lg:hover:text-primary ${
                     segment.start != null
-                      ? 'text-grey-70'
-                      : 'font-medium text-primary'
+                      ? 'text-sm md:text-m'
+                      : 'text-xs md:text-sm'
                   }`}
                 >
                   {segment.start != null
