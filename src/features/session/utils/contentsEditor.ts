@@ -166,6 +166,23 @@ export function applyBulkNvEdits(
   );
 }
 
+/** 세그먼트 내 유일한 새 nv 키 생성 (타입별 접두 s/e/a + 다음 번호) */
+export function generateNvKey(
+  existingNv: string[] | undefined,
+  type: 'S' | 'E' | 'A'
+): string {
+  const prefix = type === 'S' ? 's' : type === 'E' ? 'e' : 'a';
+  let maxNum = 0;
+  for (const entry of existingNv ?? []) {
+    const key = entry.slice(0, entry.indexOf(':'));
+    if (key.startsWith(prefix)) {
+      const num = parseInt(key.slice(prefix.length), 10);
+      if (Number.isFinite(num) && num > maxNum) maxNum = num;
+    }
+  }
+  return `${prefix}${maxNum + 1}`;
+}
+
 /** 다수 deid 편집 일괄 적용 */
 export function applyBulkDeidEdits(
   contents: Contents,
