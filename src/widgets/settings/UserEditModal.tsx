@@ -358,7 +358,10 @@ export const UserEditModal: React.FC<UserEditModalProps> = ({
         className={isMobileView ? 'flex flex-1 flex-col' : 'space-y-6 py-4'}
       >
         {isMobileView ? (
-          <MobileModalHeader title="회원 정보 수정하기" onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title="회원 정보 수정하기"
+            onBack={() => onOpenChange(false)}
+          />
         ) : (
           <div className="px-6">
             <Title as="h2" className="typo-xl font-headline">
