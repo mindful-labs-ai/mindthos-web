@@ -194,6 +194,7 @@ export const SessionDetailContainer: React.FC = () => {
     handleAddSegment,
     handleDeleteSegment,
     handleSegmentTimeChange,
+    handleSplitSegment,
     canUndo,
     canRedo,
     handleUndo,
@@ -757,6 +758,7 @@ export const SessionDetailContainer: React.FC = () => {
           onDeleteSegment={handleDeleteSegment}
           audioDuration={audioDuration}
           onSegmentTimeChange={handleSegmentTimeChange}
+          onSplitSegment={handleSplitSegment}
         />
       ) : (
         <TranscriptTabContent
@@ -782,6 +784,7 @@ export const SessionDetailContainer: React.FC = () => {
           onDeleteSegment={handleDeleteSegment}
           audioDuration={audioDuration}
           onSegmentTimeChange={handleSegmentTimeChange}
+          onSplitSegment={handleSplitSegment}
         />
       )
     ) : isMobileView ? (

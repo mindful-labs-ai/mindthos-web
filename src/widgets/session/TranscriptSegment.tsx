@@ -51,6 +51,13 @@ interface TranscriptSegmentProps {
   audioDuration?: number;
   /** 세그먼트 시간 수정 콜백 (편집 모드에서만) */
   onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
+  /** 세그먼트 분리/화자 전환 콜백 (편집 모드에서만) */
+  onSplitSegment?: (
+    segmentId: number,
+    boundaries: number[],
+    sliceSpeakers: number[],
+    speakerDefinitions?: Speaker[]
+  ) => void;
 }
 
 const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
@@ -76,6 +83,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   enableTimestampFeatures = false,
   audioDuration = 0,
   onSegmentTimeChange,
+  onSplitSegment,
 }) => {
   const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
   const [isTimePopupOpen, setIsTimePopupOpen] = React.useState(false);
@@ -328,6 +336,8 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             onTextChange={handleEditorTextChange}
             onNvChange={handleEditorNvChange}
             onDeidChange={handleEditorDeidChange}
+            speakers={speakers}
+            onSplitSegment={onSplitSegment}
           />
         ) : (
           <p

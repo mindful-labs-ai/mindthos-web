@@ -7,8 +7,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Move, Trash2 } from 'lucide-react';
 
-import type { TranscribeSegment } from '@/features/session/types';
+import type { Speaker, TranscribeSegment } from '@/features/session/types';
 import { generateNvKey } from '@/features/session/utils/contentsEditor';
+import {
+  getSpeakerDisplayName,
+  resolveSpeakerSelection,
+  type SpeakerSelection,
+} from '@/features/session/utils/getSpeakerInfo';
 
 // ── 칩 스타일 ──
 
@@ -260,6 +265,41 @@ function extractFromDom(
   return { text, nv: updatedNv, deid: updatedDeid };
 }
 
+// ── 캐럿 → 저장텍스트 오프셋 (분리용) ──
+
+/** deid-inline(showDeid OFF에서 편집가능한 deid 원문) 안이면 그 span 뒤 경계로 스냅 */
+function snapPastDeid(node: Node, offset: number): { node: Node; offset: number } {
+  const el =
+    node.nodeType === Node.TEXT_NODE
+      ? node.parentElement
+      : (node as Element);
+  const host = el?.closest<HTMLElement>('[data-deid-inline],[data-deid-key]');
+  if (host && host.parentNode) {
+    const parent = host.parentNode;
+    const idx = Array.prototype.indexOf.call(parent.childNodes, host);
+    return { node: parent, offset: idx + 1 };
+  }
+  return { node, offset };
+}
+
+/**
+ * (node,offset)까지의 저장텍스트 오프셋 = [container start..caret] clone에 extractFromDom
+ * 재사용 → 토큰 공간 오프셋 정합 보장(중첩/BR/경계/deid 자동 처리)
+ */
+function getStoredOffset(
+  container: HTMLElement,
+  node: Node,
+  offset: number
+): number {
+  const snapped = snapPastDeid(node, offset);
+  const pre = document.createRange();
+  pre.setStart(container, 0);
+  pre.setEnd(snapped.node, snapped.offset);
+  const tmp = document.createElement('div');
+  tmp.appendChild(pre.cloneContents());
+  return extractFromDom(tmp).text.length;
+}
+
 // ── 칩 편집 팝오버 ──
 
 interface ChipEditState {
@@ -279,6 +319,15 @@ interface SegmentContentEditorProps {
   onTextChange: (text: string) => void;
   onNvChange?: (nv: string[]) => void;
   onDeidChange?: (deid: Record<string, string>) => void;
+  /** 화자 목록 (화자 전환 인라인 선택용) */
+  speakers?: Speaker[];
+  /** 세그먼트 분리/화자 전환 콜백 */
+  onSplitSegment?: (
+    segmentId: number,
+    boundaries: number[],
+    sliceSpeakers: number[],
+    speakerDefinitions?: Speaker[]
+  ) => void;
 }
 
 export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
@@ -290,29 +339,39 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       onTextChange,
       onNvChange,
       onDeidChange,
+      speakers,
+      onSplitSegment,
     }) => {
       const editorRef = useRef<HTMLDivElement>(null);
       const isComposingRef = useRef(false);
       const initializedRef = useRef(false);
       const [chipEdit, setChipEdit] = useState<ChipEditState | null>(null);
       const chipInputRef = useRef<HTMLInputElement>(null);
-      // 비언어 태그 삽입/이동
+      // 비언어 태그 삽입/이동 + 캐럿 메뉴
       const savedRangeRef = useRef<Range | null>(null);
       const nvLabelInputRef = useRef<HTMLInputElement>(null);
-      // 캐럿 위치(에디터 기준) — 비언어 추가 트리거/피커 위치
+      // 캐럿/선택 위치(에디터 기준) — 액션 메뉴 앵커
       const [caretPos, setCaretPos] = useState<{
         top: number;
         left: number;
       } | null>(null);
+      const [hasSelection, setHasSelection] = useState(false);
       const [nvAdd, setNvAdd] = useState<{
         type: 'S' | 'E' | 'A';
         label: string;
         top: number;
         left: number;
       } | null>(null);
+      // 화자 전환 인라인 목록
+      const [speakerPick, setSpeakerPick] = useState<{
+        customName: string;
+        top: number;
+        left: number;
+      } | null>(null);
       const [placingChip, setPlacingChip] = useState<HTMLSpanElement | null>(
         null
       );
+      const canSplit = !!onSplitSegment && !!speakers;
 
       // 편집 모드 진입 시 한 번만 HTML 빌드
       useEffect(() => {
@@ -351,30 +410,102 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         emitChanges();
       }, [emitChanges]);
 
-      // 편집기 내 캐럿 위치 저장 + 트리거 위치 계산
+      // 편집기 내 캐럿/선택 저장 + 메뉴 앵커 계산
       const saveSelection = useCallback(() => {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0 && editorRef.current) {
           const range = sel.getRangeAt(0);
           if (editorRef.current.contains(range.commonAncestorContainer)) {
             savedRangeRef.current = range.cloneRange();
-            if (range.collapsed) {
-              const rects = range.getClientRects();
-              const rect =
-                rects.length > 0 ? rects[0] : range.getBoundingClientRect();
-              const editorRect = editorRef.current.getBoundingClientRect();
-              setCaretPos({
-                top: rect.bottom - editorRect.top,
-                left: Math.max(0, rect.left - editorRect.left),
-              });
-            } else {
-              setCaretPos(null);
-            }
+            const rects = range.getClientRects();
+            const rect =
+              rects.length > 0
+                ? rects[rects.length - 1]
+                : range.getBoundingClientRect();
+            const editorRect = editorRef.current.getBoundingClientRect();
+            setCaretPos({
+              top: rect.bottom - editorRect.top,
+              left: Math.max(0, rect.left - editorRect.left),
+            });
+            setHasSelection(!range.collapsed);
             return;
           }
         }
         setCaretPos(null);
+        setHasSelection(false);
       }, []);
+
+      // 저장된 range → 저장텍스트 분리 경계 계산
+      const computeOffsets = useCallback((): {
+        boundaries: number[];
+        isSelection: boolean;
+      } | null => {
+        const range = savedRangeRef.current;
+        const editor = editorRef.current;
+        if (
+          !range ||
+          !editor ||
+          isComposingRef.current ||
+          !editor.contains(range.startContainer)
+        )
+          return null;
+        const start = getStoredOffset(
+          editor,
+          range.startContainer,
+          range.startOffset
+        );
+        if (range.collapsed) return { boundaries: [start], isSelection: false };
+        const end = getStoredOffset(
+          editor,
+          range.endContainer,
+          range.endOffset
+        );
+        return { boundaries: [start, end], isSelection: true };
+      }, []);
+
+      const resetMenu = useCallback(() => {
+        setCaretPos(null);
+        setHasSelection(false);
+        setSpeakerPick(null);
+      }, []);
+
+      // 세그먼트 분리 (같은 화자)
+      const doSplitSame = useCallback(() => {
+        const o = computeOffsets();
+        if (!o) return;
+        onSplitSegment?.(
+          segment.id,
+          [o.boundaries[0]],
+          [segment.speaker, segment.speaker]
+        );
+        resetMenu();
+      }, [computeOffsets, onSplitSegment, segment.id, segment.speaker, resetMenu]);
+
+      // 화자 전환 (선택=[A,B,A] 3분할 / 캐럿=[A,B] 2분할)
+      const doSpeakerSwitch = useCallback(
+        (sel: SpeakerSelection) => {
+          const o = computeOffsets();
+          if (!o || !speakers) return;
+          const { speakerId: b, speakers: updated } = resolveSpeakerSelection(
+            speakers,
+            sel
+          );
+          const defs = updated !== speakers ? updated : undefined;
+          const A = segment.speaker;
+          if (o.isSelection) {
+            onSplitSegment?.(
+              segment.id,
+              [o.boundaries[0], o.boundaries[1]],
+              [A, b, A],
+              defs
+            );
+          } else {
+            onSplitSegment?.(segment.id, [o.boundaries[0]], [A, b], defs);
+          }
+          resetMenu();
+        },
+        [computeOffsets, speakers, onSplitSegment, segment.id, segment.speaker, resetMenu]
+      );
 
       // 비언어 태그 추가 피커 열기 (캐럿 위치에 표시)
       const openNvAdd = useCallback(() => {
@@ -580,7 +711,10 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             onKeyUp={saveSelection}
             onMouseUp={saveSelection}
             onClick={handleClick}
-            onBlur={() => setCaretPos(null)}
+            onBlur={() => {
+              setCaretPos(null);
+              setHasSelection(false);
+            }}
             className={`m-0 w-full border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none md:text-m ${
               isActive ? 'font-emphasize' : ''
             }`}
@@ -649,21 +783,119 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             </div>
           )}
 
-          {/* 캐럿 위치 액션 메뉴 (비언어적 표현 / 향후: 화자 전환·세그먼트 분리) */}
-          {caretPos && !nvAdd && !placingChip && (
+          {/* 캐럿/선택 액션 메뉴 */}
+          {caretPos &&
+            !nvAdd &&
+            !placingChip &&
+            !speakerPick &&
+            (!hasSelection || canSplit) && (
+              <div
+                className="absolute z-10 flex flex-col overflow-hidden rounded-lg border border-grey-30 bg-white text-xs shadow-md"
+                style={{ top: caretPos.top + 6, left: caretPos.left }}
+              >
+                {!hasSelection && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={openNvAdd}
+                    className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  >
+                    비언어적 표현
+                  </button>
+                )}
+                {canSplit && !hasSelection && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={doSplitSame}
+                    className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  >
+                    세그먼트 분리
+                  </button>
+                )}
+                {canSplit && (
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      setSpeakerPick({
+                        customName: '',
+                        top: caretPos.top,
+                        left: caretPos.left,
+                      })
+                    }
+                    className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  >
+                    화자 전환
+                  </button>
+                )}
+              </div>
+            )}
+
+          {/* 화자 전환 인라인 목록 */}
+          {speakerPick && !nvAdd && !placingChip && speakers && (
             <div
-              className="absolute z-10 flex flex-col overflow-hidden rounded-lg border border-grey-30 bg-white text-xs shadow-md"
-              style={{ top: caretPos.top + 6, left: caretPos.left }}
+              className="absolute z-20 flex max-h-[200px] flex-col overflow-y-auto rounded-lg border border-grey-30 bg-white text-xs shadow-lg"
+              style={{ top: speakerPick.top + 6, left: speakerPick.left }}
             >
+              {speakers.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() =>
+                    doSpeakerSwitch({ kind: 'existing', id: s.id })
+                  }
+                  className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                >
+                  {getSpeakerDisplayName(s)}
+                </button>
+              ))}
+              <div className="flex items-center gap-1 border-t border-grey-20 px-2 py-1">
+                <input
+                  type="text"
+                  value={speakerPick.customName}
+                  onChange={(e) =>
+                    setSpeakerPick((p) =>
+                      p ? { ...p, customName: e.target.value } : p
+                    )
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && speakerPick.customName.trim()) {
+                      e.preventDefault();
+                      doSpeakerSwitch({
+                        kind: 'name',
+                        name: speakerPick.customName,
+                      });
+                    }
+                    if (e.key === 'Escape') setSpeakerPick(null);
+                  }}
+                  placeholder="직접 입력"
+                  className="w-[84px] rounded border border-grey-30 bg-white px-2 py-1 text-xs text-fg outline-none focus:border-primary"
+                />
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() =>
+                    speakerPick.customName.trim() &&
+                    doSpeakerSwitch({
+                      kind: 'name',
+                      name: speakerPick.customName,
+                    })
+                  }
+                  className="rounded bg-primary px-2 py-1 text-xs font-medium text-primary-fg lg:hover:opacity-80"
+                >
+                  추가
+                </button>
+              </div>
               <button
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={openNvAdd}
-                className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                onClick={() => setSpeakerPick(null)}
+                className="whitespace-nowrap px-3 py-1 text-left text-grey-60 transition-colors lg:hover:bg-grey-10"
               >
-                비언어적 표현
+                취소
               </button>
-              {/* 향후: 화자 전환 / 세그먼트 분리 항목이 여기 추가됨 */}
             </div>
           )}
 
