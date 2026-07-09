@@ -5,7 +5,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Move, Plus, Trash2 } from 'lucide-react';
+import { Move, Trash2 } from 'lucide-react';
 
 import type { TranscribeSegment } from '@/features/session/types';
 import { generateNvKey } from '@/features/session/utils/contentsEditor';
@@ -649,19 +649,22 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             </div>
           )}
 
-          {/* 캐럿 위치에 뜨는 비언어 추가 트리거 */}
+          {/* 캐럿 위치 액션 메뉴 (비언어적 표현 / 향후: 화자 전환·세그먼트 분리) */}
           {caretPos && !nvAdd && !placingChip && (
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={openNvAdd}
-              aria-label="비언어 태그 추가"
-              title="비언어 태그 추가"
-              className="absolute z-10 flex h-5 w-5 items-center justify-center rounded-full border border-grey-30 bg-white text-grey-60 shadow-sm transition-colors lg:hover:border-primary lg:hover:text-primary"
-              style={{ top: caretPos.top + 2, left: caretPos.left }}
+            <div
+              className="absolute z-10 flex flex-col overflow-hidden rounded-lg border border-grey-30 bg-white text-xs shadow-md"
+              style={{ top: caretPos.top + 6, left: caretPos.left }}
             >
-              <Plus size={12} />
-            </button>
+              <button
+                type="button"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={openNvAdd}
+                className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+              >
+                비언어적 표현
+              </button>
+              {/* 향후: 화자 전환 / 세그먼트 분리 항목이 여기 추가됨 */}
+            </div>
           )}
 
           {/* 비언어 태그 추가 피커 (캐럿 위치) */}
