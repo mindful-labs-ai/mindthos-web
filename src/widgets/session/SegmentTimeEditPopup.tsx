@@ -47,20 +47,20 @@ export const SegmentTimeEditPopup: React.FC<SegmentTimeEditPopupProps> = ({
     [allSegments, segment.id, audioDuration]
   );
 
-  const [inputValue, setInputValue] = React.useState('');
+  const noRoom = bounds.max <= bounds.min;
+  // seconds가 단일 소스 (슬라이더가 직접 읽고 씀 → 왕복 손실 없음)
+  const [seconds, setSeconds] = React.useState(0);
+  const [inputText, setInputText] = React.useState('');
 
   // 팝업 열릴 때 현재 시간 또는 범위 시작으로 초기화
   React.useEffect(() => {
     if (open) {
-      const initial =
-        segment.start != null ? segment.start : bounds.min;
-      setInputValue(formatTime(initial));
+      const initial = segment.start != null ? segment.start : bounds.min;
+      const clamped = Math.min(Math.max(initial, bounds.min), bounds.max);
+      setSeconds(clamped);
+      setInputText(formatTime(clamped));
     }
-  }, [open, segment.start, bounds.min]);
-
-  const parsed = parseTimeInput(inputValue, bounds);
-  const sliderValue = parsed ?? bounds.min;
-  const noRoom = bounds.max <= bounds.min;
+  }, [open, segment.start, bounds.min, bounds.max]);
 
   const handleApply = () => {
     if (noRoom) {
@@ -71,7 +71,7 @@ export const SegmentTimeEditPopup: React.FC<SegmentTimeEditPopupProps> = ({
       });
       return;
     }
-    const start = parseTimeInput(inputValue, bounds);
+    const start = parseTimeInput(inputText, bounds);
     if (start == null) {
       toast({
         title: '시간 형식 오류',
@@ -93,8 +93,12 @@ export const SegmentTimeEditPopup: React.FC<SegmentTimeEditPopupProps> = ({
       </Text>
       <Input
         size="sm"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
+        value={inputText}
+        onChange={(e) => {
+          setInputText(e.target.value);
+          const p = parseTimeInput(e.target.value, bounds);
+          if (p != null) setSeconds(p);
+        }}
         placeholder="MM:SS"
         className="w-full"
         // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -103,10 +107,17 @@ export const SegmentTimeEditPopup: React.FC<SegmentTimeEditPopupProps> = ({
       <input
         type="range"
         min={Math.floor(bounds.min)}
-        max={Math.ceil(bounds.max)}
+        max={bounds.max}
         step={1}
-        value={Math.round(sliderValue)}
-        onChange={(e) => setInputValue(formatTime(Number(e.target.value)))}
+        value={seconds}
+        onChange={(e) => {
+          const clamped = Math.min(
+            Math.max(Number(e.target.value), bounds.min),
+            bounds.max
+          );
+          setSeconds(clamped);
+          setInputText(formatTime(clamped));
+        }}
         disabled={noRoom}
         className="w-full accent-primary"
         aria-label="시간 슬라이더"
