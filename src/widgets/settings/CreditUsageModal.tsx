@@ -159,7 +159,10 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <MobileModalHeader title="크레딧 사용 내역" onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title="크레딧 사용 내역"
+            onBack={() => onOpenChange(false)}
+          />
           <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">
             <div className="overflow-x-auto rounded-xl bg-grey-10 p-4 md:p-6">
               <div className="min-w-[480px]">

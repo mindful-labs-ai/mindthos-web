@@ -80,7 +80,10 @@ export const MobileSessionHistoryView: React.FC<
               hideCloseButton
               className="flex flex-col"
             >
-              <MobileModalHeader title="내담자 선택하기" onBack={() => setIsClientFilterOpen(false)} />
+              <MobileModalHeader
+                title="내담자 선택하기"
+                onBack={() => setIsClientFilterOpen(false)}
+              />
               <div className="flex-1 overflow-y-auto px-4 py-4">
                 <FilterMenu
                   sortOrder={sortOrder}

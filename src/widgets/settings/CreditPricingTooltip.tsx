@@ -73,7 +73,9 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           </Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">상담노트 추가 작성</Text>
+              <Text className="text-sm font-normal text-fg">
+                상담노트 추가 작성
+              </Text>
               <Text className="text-sm font-semibold text-fg">10크레딧</Text>
             </div>
             <div className="flex gap-2">
@@ -88,7 +90,9 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
           <Text className="text-sm font-normal text-grey-80">가계도</Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">가계도 자동 생성</Text>
+              <Text className="text-sm font-normal text-fg">
+                가계도 자동 생성
+              </Text>
               <div>
                 <Text className="text-sm font-semibold text-fg">
                   {CREDIT_COST.GENOGRAM}크레딧
@@ -108,9 +112,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* 심리검사해석 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">
-            심리검사해석
-          </Text>
+          <Text className="text-sm font-normal text-grey-80">심리검사해석</Text>
           <div className="space-y-2">
             <div className="flex gap-2">
               <Text className="text-sm font-normal text-fg">결과지 분석</Text>
@@ -134,7 +136,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
         </div>
       </div>
 
-      <Text className="text-sm shrink-0 text-center text-grey-80">
+      <Text className="shrink-0 text-center text-sm text-grey-80">
         크레딧은 구독 날짜를 기준으로 매월 초기화돼요.
       </Text>
     </div>

@@ -53,7 +53,10 @@ const MobileCouponSelectModal: React.FC<{
       hideCloseButton
       className="flex flex-col"
     >
-      <MobileModalHeader title="사용 가능한 쿠폰" onBack={() => onOpenChange(false)} />
+      <MobileModalHeader
+        title="사용 가능한 쿠폰"
+        onBack={() => onOpenChange(false)}
+      />
       <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10">
         <div className="space-y-3">
           {isLoading ? (
@@ -470,7 +473,10 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <MobileModalHeader title={title || '마음토스 플랜 변경'} onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title={title || '마음토스 플랜 변경'}
+            onBack={() => onOpenChange(false)}
+          />
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             {paymentContent}
           </div>

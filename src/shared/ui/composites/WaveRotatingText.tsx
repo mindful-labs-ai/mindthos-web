@@ -67,7 +67,10 @@ export const WaveRotatingText = ({
   );
 
   return (
-    <div className={cn('relative overflow-hidden', className)} aria-live="polite">
+    <div
+      className={cn('relative overflow-hidden', className)}
+      aria-live="polite"
+    >
       {/* 레이아웃 높이/너비 확보용(보이지 않음) */}
       <p
         className="invisible whitespace-nowrap text-center text-m font-medium"
@@ -79,7 +82,7 @@ export const WaveRotatingText = ({
       {/* 들어오는 현재 문구: 아래 → 위 */}
       <div
         key={`in-${index}`}
-        className="animate-slideUpFull absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0 flex animate-slideUpFull items-center justify-center"
       >
         {waveText(texts[index % count])}
       </div>

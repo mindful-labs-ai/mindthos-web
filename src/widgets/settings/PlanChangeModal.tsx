@@ -402,7 +402,10 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       closeOnOverlay={!upgradeModalOpen && !downgradeModalOpen}
     >
       {isMobileView && (
-        <MobileModalHeader title="마음토스 플랜 변경" onBack={() => onOpenChange(false)} />
+        <MobileModalHeader
+          title="마음토스 플랜 변경"
+          onBack={() => onOpenChange(false)}
+        />
       )}
 
       <div
