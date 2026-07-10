@@ -652,6 +652,17 @@ export const SessionDetailContainer: React.FC = () => {
     />
   );
 
+  const findReplaceBar =
+    isEditing && isFindReplaceOpen ? (
+      <TranscriptFindReplaceBar
+        getMatchList={getMatchList}
+        onReplaceOne={replaceOne}
+        onReplaceAll={handleReplaceAll}
+        matchRefreshKey={editorVersion}
+        onClose={() => setIsFindReplaceOpen(false)}
+      />
+    ) : null;
+
   const toolbar =
     activeTab === 'transcript' ? (
       isHandwrittenSession ? (
@@ -716,19 +727,9 @@ export const SessionDetailContainer: React.FC = () => {
           onRedo={handleRedo}
           isFindReplaceOpen={isFindReplaceOpen}
           onToggleFindReplace={() => setIsFindReplaceOpen((v) => !v)}
+          findReplaceSlot={findReplaceBar}
         />
       )
-    ) : null;
-
-  const findReplaceBar =
-    isEditing && isFindReplaceOpen ? (
-      <TranscriptFindReplaceBar
-        getMatchList={getMatchList}
-        onReplaceOne={replaceOne}
-        onReplaceAll={handleReplaceAll}
-        matchRefreshKey={editorVersion}
-        onClose={() => setIsFindReplaceOpen(false)}
-      />
     ) : null;
 
   const tabContent =
@@ -915,7 +916,6 @@ export const SessionDetailContainer: React.FC = () => {
       header={header}
       tab={tab}
       toolbar={toolbar}
-      findReplace={findReplaceBar}
       tabContent={tabContent}
       audioPlayer={audioPlayer}
       tabChangeModal={
