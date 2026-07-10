@@ -625,13 +625,18 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       }, []);
 
       // Enter 키: 발화 분리(같은 화자, 캐럿 위치에서 2분할)
-      // 연속 Enter로 여러 번 분리되는 걸 막기 위해 쓰로틀(400ms)
+      // Shift+Enter: 줄바꿈. 연속 Enter로 여러 번 분리되는 건 쓰로틀(400ms)로 방지
       const handleKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
           if (e.key !== 'Enter') return;
           // IME 조합 확정 Enter는 무시
           if (e.nativeEvent.isComposing || isComposingRef.current) return;
           e.preventDefault();
+          // Shift+Enter: 줄바꿈
+          if (e.shiftKey) {
+            document.execCommand('insertLineBreak');
+            return;
+          }
           if (!canSplit) return;
           const now = e.timeStamp;
           if (now - lastSplitAtRef.current < 400) return;
