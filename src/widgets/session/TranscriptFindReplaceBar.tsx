@@ -283,7 +283,7 @@ export const TranscriptFindReplaceBar: React.FC<
       </div>
 
       {/* 2행: 바꾸기 (항상 표시 — 포커스된 input이 찾기/바꾸기 모드를 결정) */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 rounded-lg bg-grey-10 p-2">
         <Input
           size="sm"
           value={replaceWith}
@@ -295,7 +295,7 @@ export const TranscriptFindReplaceBar: React.FC<
             }
           }}
           placeholder="바꾸기 (예: 경민)"
-          className="w-40"
+          className="w-40 bg-white"
         />
         <Button
           size="sm"
