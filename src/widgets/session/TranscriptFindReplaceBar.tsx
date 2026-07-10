@@ -77,6 +77,70 @@ export const TranscriptFindReplaceBar: React.FC<
     setScrollNonce((n) => n + 1);
   };
 
+  // 하이라이트 스타일 1회 주입
+  React.useEffect(() => {
+    const id = 'transcript-find-highlight-style';
+    if (document.getElementById(id)) return;
+    const style = document.createElement('style');
+    style.id = id;
+    style.textContent =
+      '::highlight(transcript-find){background-color:#fde047;color:inherit;}';
+    document.head.appendChild(style);
+  }, []);
+
+  // 찾은 단어를 전부 하이라이트 (CSS Custom Highlight API, 미지원 브라우저는 무시)
+  React.useEffect(() => {
+    void matchRefreshKey; // 치환/undo 후 재계산
+    const cssHighlights = (
+      window.CSS as unknown as {
+        highlights?: {
+          set: (name: string, h: unknown) => void;
+          delete: (name: string) => void;
+        };
+      }
+    )?.highlights;
+    const HighlightCtor = (
+      window as unknown as { Highlight?: new (...ranges: Range[]) => unknown }
+    ).Highlight;
+    if (!cssHighlights || !HighlightCtor) return;
+    if (!find) {
+      cssHighlights.delete('transcript-find');
+      return;
+    }
+
+    const ranges: Range[] = [];
+    const lc = find.toLowerCase();
+    document.querySelectorAll('[data-segment-id]').forEach((seg) => {
+      const walker = document.createTreeWalker(seg, NodeFilter.SHOW_TEXT, {
+        // 칩(비언어/비식별) 내부 텍스트는 제외 (저장 텍스트 검색과 정합)
+        acceptNode: (n) =>
+          (n as Text).parentElement?.closest('[contenteditable="false"]')
+            ? NodeFilter.FILTER_REJECT
+            : NodeFilter.FILTER_ACCEPT,
+      });
+      let node = walker.nextNode();
+      while (node) {
+        const lower = (node.textContent || '').toLowerCase();
+        let idx = lower.indexOf(lc);
+        while (idx !== -1) {
+          const r = document.createRange();
+          r.setStart(node, idx);
+          r.setEnd(node, idx + find.length);
+          ranges.push(r);
+          idx = lower.indexOf(lc, idx + find.length);
+        }
+        node = walker.nextNode();
+      }
+    });
+
+    if (ranges.length > 0) {
+      cssHighlights.set('transcript-find', new HighlightCtor(...ranges));
+    } else {
+      cssHighlights.delete('transcript-find');
+    }
+    return () => cssHighlights.delete('transcript-find');
+  }, [find, matchRefreshKey]);
+
   // 다음 매치로 이동 (Enter)
   const goToNext = () => {
     const list = getMatchList(find);
