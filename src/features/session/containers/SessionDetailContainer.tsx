@@ -913,7 +913,6 @@ export const SessionDetailContainer: React.FC = () => {
     <SessionDetailView
       isContentEditing={isContentEditing}
       audioElement={audioElement}
-      header={header}
       tab={tab}
       toolbar={toolbar}
       tabContent={tabContent}
