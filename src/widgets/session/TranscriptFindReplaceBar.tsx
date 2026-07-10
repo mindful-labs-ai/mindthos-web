@@ -235,7 +235,7 @@ export const TranscriptFindReplaceBar: React.FC<
   return (
     <div className="flex flex-col overflow-hidden rounded-lg border border-grey-30 bg-white shadow-sm">
       {/* 1행: 찾기 */}
-      <div className="flex flex-wrap items-center gap-2 p-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-grey-40 p-3">
         <Input
           size="sm"
           value={find}
@@ -283,7 +283,7 @@ export const TranscriptFindReplaceBar: React.FC<
       </div>
 
       {/* 2행: 바꾸기 (항상 표시 — 포커스된 input이 찾기/바꾸기 모드를 결정) */}
-      <div className="flex flex-wrap items-center gap-2 bg-grey-10 p-2">
+      <div className="flex flex-wrap items-center gap-2 bg-grey-10 p-3">
         <Input
           size="sm"
           value={replaceWith}
