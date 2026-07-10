@@ -53,9 +53,10 @@ export const MobileSessionDetailView: React.FC<
             // h-0 → 세그먼트 위로 떠서 칸을 차지하지 않고, 스크롤을 따라옴
             <div className="pointer-events-none sticky top-0 z-30 h-0">
               {toolbar}
+              {/* 찾기 바: 버튼 아래로 밀지 않고 위로 덮음(absolute, 상위 레이어) */}
               {findReplace && (
-                <div className="flex justify-end px-2">
-                  <div className="pointer-events-auto">{findReplace}</div>
+                <div className="pointer-events-auto absolute right-2 top-0 z-10">
+                  {findReplace}
                 </div>
               )}
             </div>
