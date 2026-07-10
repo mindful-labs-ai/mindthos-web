@@ -17,8 +17,12 @@ import type {
   TranscribeListItem,
 } from '@/features/session/types';
 import { formatPreviewText } from '@/features/session/utils/formatPreview';
+import { updateSessionTitle } from '@/shared/api/supabase/sessionQueries';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
-import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
@@ -293,11 +297,37 @@ export const SessionHistoryContainer: React.FC = () => {
     setSelectedClientIds([]);
   };
 
+  // 사이드탭 활성(현재) 세션 제목 수정 — updateSessionTitle 후 목록/상세 캐시 갱신
+  const handleSessionTitleUpdate = React.useCallback(
+    async (newTitle: string) => {
+      if (!sessionId || isDummyFlow) return;
+      try {
+        await updateSessionTitle(sessionId, newTitle);
+        await queryClient.invalidateQueries({
+          queryKey: sessionQueryKeys.all(userIdNum),
+        });
+        // 상세 캐시(['session', sessionId, isDummy]) 프리픽스 매칭
+        await queryClient.invalidateQueries({
+          queryKey: ['session', sessionId],
+        });
+      } catch (error) {
+        toast({
+          title: '제목 수정 실패',
+          description: '제목을 저장하지 못했어요.',
+          duration: 3000,
+        });
+        throw error; // 아이템이 편집값을 원복하도록 전파
+      }
+    },
+    [sessionId, isDummyFlow, queryClient, userIdNum, toast]
+  );
+
   const sideList = sessionId ? (
     <SessionSideList
       sessions={sessionListData}
       activeSessionId={sessionId}
       onSessionClick={handleSessionClick}
+      onActiveTitleUpdate={handleSessionTitleUpdate}
       sortOrder={sortOrder}
       selectedClientId={selectedClientIds}
       clients={effectiveClients}
