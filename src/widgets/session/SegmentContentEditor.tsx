@@ -417,6 +417,24 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       }, [emitChanges]);
 
       // 편집기 내 캐럿/선택 저장 + 메뉴 앵커 계산
+      // 이 range에서 분리가 의미 있는지: 선택은 항상, 캐럿은 앞뒤 모두 내용이 있을 때만
+      // (맨 앞/맨 끝 분리는 빈 세그먼트만 생겨 무의미)
+      const rangeCanSplit = useCallback((range: Range | null): boolean => {
+        const editor = editorRef.current;
+        if (!range || !editor || !editor.contains(range.startContainer))
+          return false;
+        if (!range.collapsed) return true;
+        const before = document.createRange();
+        before.selectNodeContents(editor);
+        before.setEnd(range.startContainer, range.startOffset);
+        const after = document.createRange();
+        after.selectNodeContents(editor);
+        after.setStart(range.startContainer, range.startOffset);
+        return (
+          before.toString().trim() !== '' && after.toString().trim() !== ''
+        );
+      }, []);
+
       const saveSelection = useCallback(() => {
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0 && editorRef.current) {
@@ -434,28 +452,14 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
               left: Math.max(0, rect.left - editorRect.left),
             });
             setHasSelection(!range.collapsed);
-            // 분리가 의미 있는 위치인지: 선택은 항상, 캐럿은 양끝이 아닐 때만
-            // (맨 끝/맨 앞 분리는 빈 세그먼트만 생겨 무의미 → 화자 분리 숨김)
-            let splitHere = !range.collapsed;
-            if (range.collapsed) {
-              const before = document.createRange();
-              before.selectNodeContents(editorRef.current);
-              before.setEnd(range.startContainer, range.startOffset);
-              const after = document.createRange();
-              after.selectNodeContents(editorRef.current);
-              after.setStart(range.startContainer, range.startOffset);
-              splitHere =
-                before.toString().trim() !== '' &&
-                after.toString().trim() !== '';
-            }
-            setCanSplitHere(splitHere);
+            setCanSplitHere(rangeCanSplit(range));
             return;
           }
         }
         setCaretPos(null);
         setHasSelection(false);
         setCanSplitHere(false);
-      }, []);
+      }, [rangeCanSplit]);
 
       // 저장된 range → 저장텍스트 분리 경계 계산
       const computeOffsets = useCallback((): {
@@ -640,11 +644,13 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           if (!canSplit) return;
           const now = e.timeStamp;
           if (now - lastSplitAtRef.current < 400) return;
-          lastSplitAtRef.current = now;
           saveSelection(); // 현재 캐럿을 savedRangeRef에 반영
+          // 맨 끝/맨 앞 등 분리가 no-op이면 remount(포커스 유실)만 남으므로 건너뜀
+          if (!rangeCanSplit(savedRangeRef.current)) return;
+          lastSplitAtRef.current = now;
           doSplitSame();
         },
-        [canSplit, saveSelection, doSplitSame]
+        [canSplit, saveSelection, rangeCanSplit, doSplitSame]
       );
 
       // 칩 클릭 → 편집 팝오버 (이동 배치 모드면 클릭 위치로 칩 이동)
