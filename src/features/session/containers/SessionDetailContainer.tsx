@@ -891,6 +891,7 @@ export const SessionDetailContainer: React.FC = () => {
     return (
       <MobileSessionDetailView
         isContentEditing={isContentEditing}
+        isHandwritten={isHandwrittenSession}
         audioElement={audioElement}
         header={header}
         mobileHeader={mobileHeader}

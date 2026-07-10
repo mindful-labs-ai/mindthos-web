@@ -2,6 +2,8 @@ import React from 'react';
 
 export interface MobileSessionDetailViewProps {
   isContentEditing: boolean;
+  /** 직접 입력 세션 여부 (축어록 편집 오버레이는 비-handwritten에만 적용) */
+  isHandwritten?: boolean;
   audioElement: React.ReactNode;
   header: React.ReactNode;
   mobileHeader: React.ReactNode;
@@ -18,6 +20,7 @@ export const MobileSessionDetailView: React.FC<
   MobileSessionDetailViewProps
 > = ({
   isContentEditing,
+  isHandwritten = false,
   audioElement,
   header,
   mobileHeader,
@@ -28,6 +31,8 @@ export const MobileSessionDetailView: React.FC<
   audioPlayer,
   tabChangeModal,
 }) => {
+  // 축어록 편집 시에만 sticky h-0 오버레이(handwritten은 자체 툴바 위치 유지)
+  const useEditOverlay = isContentEditing && !isHandwritten;
   return (
     <div className="mx-auto flex h-full w-full max-w-full flex-col overflow-hidden bg-grey-20">
       {audioElement}
@@ -43,11 +48,19 @@ export const MobileSessionDetailView: React.FC<
         <div
           className={`relative mx-0 mb-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-grey-40 ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'bg-white'}`}
         >
-          {toolbar}
-          {/* 찾기 바: 뷰포트 고정(fixed) — 고정 툴바(top-67px) 버튼 아래 우측.
-              스크롤을 따라오되 세그먼트는 밀지 않음 */}
-          {findReplace && (
-            <div className="fixed right-2 top-[120px] z-30">{findReplace}</div>
+          {useEditOverlay ? (
+            // 축어록 편집: 툴바+찾기 바를 축어록 스크롤에 붙는 sticky 오버레이로.
+            // h-0 → 세그먼트 위로 떠서 칸을 차지하지 않고, 스크롤을 따라옴
+            <div className="pointer-events-none sticky top-0 z-30 h-0">
+              {toolbar}
+              {findReplace && (
+                <div className="flex justify-end px-2">
+                  <div className="pointer-events-auto">{findReplace}</div>
+                </div>
+              )}
+            </div>
+          ) : (
+            toolbar
           )}
           <div className="my-auto h-full md:overflow-auto">{tabContent}</div>
         </div>
