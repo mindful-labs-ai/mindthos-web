@@ -44,9 +44,10 @@ export const MobileSessionDetailView: React.FC<
           className={`relative mx-0 mb-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-grey-40 ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'bg-white'}`}
         >
           {toolbar}
-          {/* 찾기 바: 뷰포트 고정(fixed) — 상단 헤더(h-67px) 아래 우측에 떠 있음 */}
+          {/* 찾기 바: 뷰포트 고정(fixed) — 고정 툴바(top-67px) 버튼 아래 우측.
+              스크롤을 따라오되 세그먼트는 밀지 않음 */}
           {findReplace && (
-            <div className="fixed right-2 top-[75px] z-30">{findReplace}</div>
+            <div className="fixed right-2 top-[120px] z-30">{findReplace}</div>
           )}
           <div className="my-auto h-full md:overflow-auto">{tabContent}</div>
         </div>
