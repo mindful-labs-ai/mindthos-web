@@ -53,6 +53,8 @@ interface TranscriptToolbarProps {
   isFindReplaceOpen?: boolean;
   /** 찾기·바꾸기 토글 핸들러 */
   onToggleFindReplace?: () => void;
+  /** 찾기·바꾸기 팝오버 내용 (편집+열림 시 툴바 버튼 그룹 아래에 렌더) */
+  findReplaceSlot?: React.ReactNode;
 }
 
 export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
@@ -77,6 +79,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
     onRedo,
     isFindReplaceOpen = false,
     onToggleFindReplace,
+    findReplaceSlot,
   }) => {
     const sharedMenuItems = (
       <>
@@ -193,147 +196,154 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
 
     return (
       <div className="absolute inset-x-0 right-4 top-0 z-10 flex w-full select-none justify-end">
-        <div className="flex select-none items-center gap-2 overflow-hidden px-2 pt-4">
-          {isReadOnly ? (
-            <Badge tone="warning" variant="soft" size="sm">
-              예시 - 읽기 전용
-            </Badge>
-          ) : isEditing ? (
-            <>
-              {hasActivatedDeid && (
-                <span className="mr-2 rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
-                  비식별화 되어 있는 항목은 주황색으로 표시돼요.{' '}
-                </span>
-              )}
-              {/* 찾기·바꾸기 토글 */}
-              {onToggleFindReplace && (
+        {/* 우측 앵커 컬럼: 버튼 행(위) + 찾기 팝오버(아래) — 팝오버 왼쪽 끝이
+            버튼 그룹 왼쪽 끝과 정렬(self-start). 컬럼은 콘텐츠 너비로 축소 */}
+        <div className="flex flex-col px-2 pt-4">
+          <div className="flex select-none items-center justify-end gap-2 overflow-hidden">
+            {isReadOnly ? (
+              <Badge tone="warning" variant="soft" size="sm">
+                예시 - 읽기 전용
+              </Badge>
+            ) : isEditing ? (
+              <>
+                {hasActivatedDeid && (
+                  <span className="mr-2 rounded-md bg-white px-1 py-0.5 text-red-50 opacity-75">
+                    비식별화 되어 있는 항목은 주황색으로 표시돼요.{' '}
+                  </span>
+                )}
+                {/* 찾기·바꾸기 토글 */}
+                {onToggleFindReplace && (
+                  <button
+                    type="button"
+                    onClick={onToggleFindReplace}
+                    aria-label="찾기 바꾸기"
+                    title="찾기·바꾸기 (단어 교정)"
+                    className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                      isFindReplaceOpen
+                        ? 'border-primary text-primary'
+                        : 'border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                    }`}
+                  >
+                    <Search className="h-4 w-4" />
+                    찾기·바꾸기
+                  </button>
+                )}
+                {/* 편집 완료 왼쪽: 구조적 편집 되돌리기/다시 실행 */}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={onUndo}
+                    disabled={!canUndo}
+                    title="되돌리기 (화자 변경·추가·삭제)"
+                    aria-label="되돌리기"
+                    className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  >
+                    <Undo2 className="h-4 w-4" />
+                    되돌리기
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onRedo}
+                    disabled={!canRedo}
+                    title="다시 실행"
+                    aria-label="다시 실행"
+                    className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  >
+                    <Redo2 className="h-4 w-4" />
+                    다시 실행
+                  </button>
+                </div>
                 <button
                   type="button"
-                  onClick={onToggleFindReplace}
-                  aria-label="찾기 바꾸기"
-                  title="찾기·바꾸기 (단어 교정)"
-                  className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                    isFindReplaceOpen
-                      ? 'border-primary text-primary'
-                      : 'border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
-                  }`}
+                  className="rounded-lg bg-primary px-4 py-2 text-m font-medium text-primary-fg transition-colors lg:hover:opacity-80"
+                  onClick={onSaveEdit}
                 >
-                  <Search className="h-4 w-4" />
-                  찾기·바꾸기
+                  편집 완료
                 </button>
-              )}
-              {/* 편집 완료 왼쪽: 구조적 편집 되돌리기/다시 실행 */}
-              <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={onUndo}
-                  disabled={!canUndo}
-                  title="되돌리기 (화자 변경·추가·삭제)"
-                  aria-label="되돌리기"
-                  className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  className="lg:hover:bg-surface-hover typo-sm rounded-lg bg-surface px-4 py-2 font-medium text-fg transition-colors"
+                  onClick={onCancelEdit}
                 >
-                  <Undo2 className="h-4 w-4" />
-                  되돌리기
+                  취소
                 </button>
+              </>
+            ) : (
+              <>
                 <button
                   type="button"
-                  onClick={onRedo}
-                  disabled={!canRedo}
-                  title="다시 실행"
-                  aria-label="다시 실행"
-                  className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  onClick={onEditStart}
+                  title="편집"
                 >
-                  <Redo2 className="h-4 w-4" />
-                  다시 실행
+                  편집
                 </button>
-              </div>
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-m font-medium text-primary-fg transition-colors lg:hover:opacity-80"
-                onClick={onSaveEdit}
-              >
-                편집 완료
-              </button>
-              <button
-                type="button"
-                className="lg:hover:bg-surface-hover typo-sm rounded-lg bg-surface px-4 py-2 font-medium text-fg transition-colors"
-                onClick={onCancelEdit}
-              >
-                취소
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
-                onClick={onEditStart}
-                title="편집"
-              >
-                편집
-              </button>
-              <button
-                type="button"
-                className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
-                onClick={onCopy}
-                title="복사"
-                aria-label="축어록 복사"
-              >
-                <CopyIcon size={20} /> 복사하기
-              </button>
-              {onDeidentify && (
                 <button
                   type="button"
-                  className={`flex items-center gap-1.5 rounded-md border bg-white px-3.5 py-1 text-m font-medium transition-colors ${
-                    !hasActivatedDeid
-                      ? 'border-green-80 text-green-80 lg:hover:opacity-80'
+                  className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  onClick={onCopy}
+                  title="복사"
+                  aria-label="축어록 복사"
+                >
+                  <CopyIcon size={20} /> 복사하기
+                </button>
+                {onDeidentify && (
+                  <button
+                    type="button"
+                    className={`flex items-center gap-1.5 rounded-md border bg-white px-3.5 py-1 text-m font-medium transition-colors ${
+                      !hasActivatedDeid
+                        ? 'border-green-80 text-green-80 lg:hover:opacity-80'
+                        : showDeid
+                          ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
+                          : 'border border-grey-30 text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                    }`}
+                    onClick={onDeidentify}
+                    aria-label="축어록 비식별화"
+                  >
+                    <DeidentificationIcon />
+                    {!hasActivatedDeid
+                      ? '비식별화 하기'
                       : showDeid
-                        ? 'border-orange-100 text-orange-100 lg:hover:opacity-80'
-                        : 'border border-grey-30 text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
-                  }`}
-                  onClick={onDeidentify}
-                  aria-label="축어록 비식별화"
-                >
-                  <DeidentificationIcon />
-                  {!hasActivatedDeid
-                    ? '비식별화 하기'
-                    : showDeid
-                      ? '비식별화 ON'
-                      : '비식별화 OFF'}
-                </button>
-              )}
-              <div className="inline-block">
-                <PopUp
-                  open={isMenuOpen}
-                  onOpenChange={setIsMenuOpen}
-                  placement="bottom-left"
-                  trigger={
-                    <button
-                      type="button"
-                      className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
-                      title="메뉴"
-                      aria-label="추가 메뉴"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        ? '비식별화 ON'
+                        : '비식별화 OFF'}
+                  </button>
+                )}
+                <div className="inline-block">
+                  <PopUp
+                    open={isMenuOpen}
+                    onOpenChange={setIsMenuOpen}
+                    placement="bottom-left"
+                    trigger={
+                      <button
+                        type="button"
+                        className="rounded-lg p-2 text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
+                        title="메뉴"
+                        aria-label="추가 메뉴"
                       >
-                        <circle cx="12" cy="12" r="1" />
-                        <circle cx="12" cy="5" r="1" />
-                        <circle cx="12" cy="19" r="1" />
-                      </svg>
-                    </button>
-                  }
-                  content={<div className="w-[200px]">{menuContent}</div>}
-                />
-              </div>
-            </>
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="1" />
+                          <circle cx="12" cy="5" r="1" />
+                          <circle cx="12" cy="19" r="1" />
+                        </svg>
+                      </button>
+                    }
+                    content={<div className="w-[200px]">{menuContent}</div>}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          {isEditing && isFindReplaceOpen && findReplaceSlot && (
+            <div className="mt-2 self-start">{findReplaceSlot}</div>
           )}
         </div>
       </div>
