@@ -29,7 +29,7 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
       {audioElement}
 
       {/* 상단 헤더(제목·날짜) 제거 → 제목 편집은 사이드탭으로 이동. 콘텐츠 영역 확장 */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-2">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-4">
         <div className="flex-shrink-0 select-none px-6 pt-2">{tab}</div>
 
         <div
