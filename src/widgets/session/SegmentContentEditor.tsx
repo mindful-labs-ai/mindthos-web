@@ -356,6 +356,10 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         left: number;
       } | null>(null);
       const [hasSelection, setHasSelection] = useState(false);
+      // 현재 위치에서 분리가 의미 있는지 (선택 or 캐럿이 양끝 아님)
+      const [canSplitHere, setCanSplitHere] = useState(false);
+      // Enter 분리 쓰로틀 (연속 Enter 방지)
+      const lastSplitAtRef = useRef(0);
       const [nvAdd, setNvAdd] = useState<{
         type: 'S' | 'E' | 'A';
         label: string;
@@ -430,11 +434,27 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
               left: Math.max(0, rect.left - editorRect.left),
             });
             setHasSelection(!range.collapsed);
+            // 분리가 의미 있는 위치인지: 선택은 항상, 캐럿은 양끝이 아닐 때만
+            // (맨 끝/맨 앞 분리는 빈 세그먼트만 생겨 무의미 → 화자 분리 숨김)
+            let splitHere = !range.collapsed;
+            if (range.collapsed) {
+              const before = document.createRange();
+              before.selectNodeContents(editorRef.current);
+              before.setEnd(range.startContainer, range.startOffset);
+              const after = document.createRange();
+              after.selectNodeContents(editorRef.current);
+              after.setStart(range.startContainer, range.startOffset);
+              splitHere =
+                before.toString().trim() !== '' &&
+                after.toString().trim() !== '';
+            }
+            setCanSplitHere(splitHere);
             return;
           }
         }
         setCaretPos(null);
         setHasSelection(false);
+        setCanSplitHere(false);
       }, []);
 
       // 저장된 range → 저장텍스트 분리 경계 계산
@@ -604,13 +624,23 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         document.execCommand('insertText', false, text);
       }, []);
 
-      // Enter 키: <br> 삽입 통일
-      const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
+      // Enter 키: 발화 분리(같은 화자, 캐럿 위치에서 2분할)
+      // 연속 Enter로 여러 번 분리되는 걸 막기 위해 쓰로틀(400ms)
+      const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+          if (e.key !== 'Enter') return;
+          // IME 조합 확정 Enter는 무시
+          if (e.nativeEvent.isComposing || isComposingRef.current) return;
           e.preventDefault();
-          document.execCommand('insertLineBreak');
-        }
-      }, []);
+          if (!canSplit) return;
+          const now = e.timeStamp;
+          if (now - lastSplitAtRef.current < 400) return;
+          lastSplitAtRef.current = now;
+          saveSelection(); // 현재 캐럿을 savedRangeRef에 반영
+          doSplitSame();
+        },
+        [canSplit, saveSelection, doSplitSame]
+      );
 
       // 칩 클릭 → 편집 팝오버 (이동 배치 모드면 클릭 위치로 칩 이동)
       const handleClick = useCallback(
@@ -843,17 +873,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                     비언어적 표현
                   </button>
                 )}
-                {canSplit && !hasSelection && (
-                  <button
-                    type="button"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={doSplitSame}
-                    className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
-                  >
-                    발화 분리
-                  </button>
-                )}
-                {canSplit && (
+                {canSplit && canSplitHere && (
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
