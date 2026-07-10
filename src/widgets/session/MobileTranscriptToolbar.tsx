@@ -84,10 +84,12 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
       return (
         <div
           className={cn(
-            'pointer-events-none z-10 flex w-full select-none justify-end',
-            // 편집 모드: absolute 오버레이 → 세그먼트를 밀지 않음
-            // 비편집: 기존 sticky + 음수 마진(오버레이) 유지
-            isEditing ? 'absolute right-0 top-0' : 'sticky top-0',
+            'pointer-events-none z-30 flex select-none justify-end',
+            // 편집 모드: 뷰포트 fixed → 스크롤 따라오면서 세그먼트는 안 밀림
+            //           (헤더 h-67px 아래 우측). 비편집: 기존 sticky + 음수 마진
+            isEditing
+              ? 'fixed right-2 top-[67px]'
+              : 'sticky top-0 w-full',
             !isEditing && !isReadOnly && '-mb-[38px]'
           )}
         >
