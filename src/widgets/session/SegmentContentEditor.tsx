@@ -362,6 +362,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         top: number;
         left: number;
       } | null>(null);
+      const nvAddRef = useRef<HTMLDivElement>(null);
       // 화자 분리 인라인 목록
       const [speakerPick, setSpeakerPick] = useState<{
         customName: string;
@@ -522,10 +523,18 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       // 비언어 태그 삽입 확정
       const confirmNvAdd = useCallback(() => {
         if (!nvAdd || !editorRef.current) return;
-        const label = nvAdd.label.trim() || (nvAdd.type === 'S' ? '침묵' : '');
-        if (!label) {
-          setNvAdd(null);
-          return;
+        const raw = nvAdd.label.trim();
+        let label: string;
+        if (nvAdd.type === 'S') {
+          // 침묵: 숫자(초)만 입력 → "침묵 N초"로 칩화
+          const n = parseInt(raw, 10);
+          label = Number.isFinite(n) && n > 0 ? `침묵 ${n}초` : '침묵';
+        } else {
+          label = raw;
+          if (!label) {
+            setNvAdd(null);
+            return;
+          }
         }
         const { nv: liveNv } = extractFromDom(
           editorRef.current,
@@ -546,6 +555,21 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         if (nvAdd && nvLabelInputRef.current) {
           nvLabelInputRef.current.focus();
         }
+      }, [nvAdd]);
+
+      // 비언어 추가 피커: 바깥 클릭 시 닫기
+      useEffect(() => {
+        if (!nvAdd) return;
+        const handler = (e: MouseEvent) => {
+          if (
+            nvAddRef.current &&
+            !nvAddRef.current.contains(e.target as Node)
+          ) {
+            setNvAdd(null);
+          }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
       }, [nvAdd]);
 
       // 화자 분리 목록: 바깥 클릭 시 닫기
@@ -919,31 +943,41 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           {/* 비언어 태그 추가 피커 (캐럿 위치) */}
           {nvAdd && (
             <div
+              ref={nvAddRef}
               className="absolute z-30 mt-1 flex flex-wrap items-center gap-1 rounded-lg border border-grey-30 bg-white p-2 shadow-lg"
               style={{ top: nvAdd.top + 8, left: Math.max(0, nvAdd.left) }}
             >
-              {(['S', 'E', 'A'] as const).map((t) => (
+              {(['S', 'A'] as const).map((t) => (
                 <button
                   key={t}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => setNvAdd((prev) => (prev ? { ...prev, type: t } : prev))}
+                  onClick={() =>
+                    setNvAdd((prev) =>
+                      prev ? { ...prev, type: t, label: '' } : prev
+                    )
+                  }
                   className={`rounded border px-2 py-1 text-xs font-medium transition-colors ${
                     nvAdd.type === t
                       ? 'border-primary text-primary'
                       : 'border-grey-30 text-grey-70'
                   }`}
                 >
-                  {t === 'S' ? '침묵' : t === 'E' ? '감정' : '행동'}
+                  {t === 'S' ? '침묵' : '행동'}
                 </button>
               ))}
               <input
                 ref={nvLabelInputRef}
                 type="text"
+                inputMode={nvAdd.type === 'S' ? 'numeric' : 'text'}
                 value={nvAdd.label}
-                onChange={(e) =>
-                  setNvAdd((prev) => (prev ? { ...prev, label: e.target.value } : prev))
-                }
+                onChange={(e) => {
+                  const v =
+                    nvAdd.type === 'S'
+                      ? e.target.value.replace(/[^0-9]/g, '')
+                      : e.target.value;
+                  setNvAdd((prev) => (prev ? { ...prev, label: v } : prev));
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -951,8 +985,8 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                   }
                   if (e.key === 'Escape') setNvAdd(null);
                 }}
-                placeholder={nvAdd.type === 'S' ? '침묵(기본)' : '예: 슬픔'}
-                className="w-[100px] rounded border border-grey-30 bg-white px-2 py-1 text-sm text-fg outline-none focus:border-primary"
+                placeholder={nvAdd.type === 'S' ? '초 (숫자)' : '예: 웃음'}
+                className="w-[90px] rounded border border-grey-30 bg-white px-2 py-1 text-sm text-fg outline-none focus:border-primary"
               />
               <button
                 type="button"
