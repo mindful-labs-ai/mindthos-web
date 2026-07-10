@@ -218,10 +218,10 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                     onClick={onToggleFindReplace}
                     aria-label="찾기 바꾸기"
                     title="찾기·바꾸기 (단어 교정)"
-                    className={`flex items-center gap-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1 rounded-lg border bg-white px-3 py-2 text-sm font-medium transition-colors ${
                       isFindReplaceOpen
                         ? 'border-primary text-primary'
-                        : 'border-grey-30 bg-white text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
+                        : 'border-grey-30 text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
                     }`}
                   >
                     <Search className="h-4 w-4" />
@@ -236,7 +236,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                     disabled={!canUndo}
                     title="되돌리기 (화자 변경·추가·삭제)"
                     aria-label="되돌리기"
-                    className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                    className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:border-grey-20 disabled:bg-white disabled:text-grey-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
                     <Undo2 className="h-4 w-4" />
                     되돌리기
@@ -247,7 +247,7 @@ export const TranscriptToolbar: React.FC<TranscriptToolbarProps> = React.memo(
                     disabled={!canRedo}
                     title="다시 실행"
                     aria-label="다시 실행"
-                    className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:opacity-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                    className="flex items-center gap-1 rounded-lg border border-grey-30 bg-white px-3 py-2 text-sm font-medium text-grey-70 transition-colors disabled:cursor-not-allowed disabled:border-grey-20 disabled:bg-white disabled:text-grey-40 lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
                     <Redo2 className="h-4 w-4" />
                     다시 실행
