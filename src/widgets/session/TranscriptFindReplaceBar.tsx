@@ -1,7 +1,8 @@
 /**
  * 축어록 찾기·바꾸기 바 (편집 모드 전용)
- * - 기본은 찾기 모드: 매치 개수 표시, Enter로 다음 위치로 이동
- * - '바꾸기'를 켜면 바꿀 단어 입력이 열리고, Enter로 하나씩 치환
+ * - 찾기/바꾸기 입력을 항상 함께 표시. 포커스된 input이 모드를 결정:
+ *   찾기 input에서 Enter=다음 매치로 이동, 바꾸기 input에서 Enter=하나씩 치환
+ * - 매치 개수 표시(N/총계), 화살표로 이동, '모두 바꾸기'로 일괄 치환
  * 이 축어록 텍스트에서만 치환하며 태그(비언어/비식별) 안은 보호한다.
  */
 import React from 'react';
@@ -38,11 +39,16 @@ const HIGHLIGHT_CLASSES = ['ring-2', 'ring-primary', 'ring-offset-2'];
 
 export const TranscriptFindReplaceBar: React.FC<
   TranscriptFindReplaceBarProps
-> = ({ getMatchList, onReplaceOne, onReplaceAll, matchRefreshKey, onClose }) => {
+> = ({
+  getMatchList,
+  onReplaceOne,
+  onReplaceAll,
+  matchRefreshKey,
+  onClose,
+}) => {
   const { toast } = useToast();
   const [find, setFind] = React.useState('');
   const [replaceWith, setReplaceWith] = React.useState('');
-  const [replaceMode, setReplaceMode] = React.useState(false);
   const [currentIndex, setCurrentIndex] = React.useState(-1);
   const [scrollNonce, setScrollNonce] = React.useState(0);
   const scrollTargetRef = React.useRef<number | null>(null);
@@ -244,7 +250,9 @@ export const TranscriptFindReplaceBar: React.FC<
           // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
         />
-        <span className="typo-sm min-w-[3.5rem] text-grey-70">{countLabel}</span>
+        <span className="typo-sm min-w-[3.5rem] text-grey-70">
+          {countLabel}
+        </span>
         <button
           type="button"
           onClick={goToPrev}
@@ -265,18 +273,6 @@ export const TranscriptFindReplaceBar: React.FC<
         </button>
         <button
           type="button"
-          onClick={() => setReplaceMode((v) => !v)}
-          aria-label="바꾸기 열기"
-          className={`typo-sm rounded-lg border px-3 py-1.5 font-medium transition-colors ${
-            replaceMode
-              ? 'border-primary text-primary'
-              : 'border-grey-30 text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
-          }`}
-        >
-          바꾸기
-        </button>
-        <button
-          type="button"
           onClick={onClose}
           aria-label="찾기 바꾸기 닫기"
           className="ml-auto rounded-md p-1 text-grey-60 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
@@ -285,42 +281,40 @@ export const TranscriptFindReplaceBar: React.FC<
         </button>
       </div>
 
-      {/* 2행: 바꾸기 (한 칸 더 들어감) */}
-      {replaceMode && (
-        <div className="flex flex-wrap items-center gap-2 pl-2">
-          <Input
-            size="sm"
-            value={replaceWith}
-            onChange={(e) => setReplaceWith(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleReplaceOne();
-              }
-            }}
-            placeholder="바꾸기 (예: 경민)"
-            className="w-40"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            tone="primary"
-            onClick={handleReplaceOne}
-            disabled={count === 0}
-          >
-            바꾸기
-          </Button>
-          <Button
-            size="sm"
-            variant="solid"
-            tone="primary"
-            onClick={handleReplaceAll}
-            disabled={count === 0}
-          >
-            모두 바꾸기
-          </Button>
-        </div>
-      )}
+      {/* 2행: 바꾸기 (항상 표시 — 포커스된 input이 찾기/바꾸기 모드를 결정) */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          size="sm"
+          value={replaceWith}
+          onChange={(e) => setReplaceWith(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              handleReplaceOne();
+            }
+          }}
+          placeholder="바꾸기 (예: 경민)"
+          className="w-40"
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          tone="primary"
+          onClick={handleReplaceOne}
+          disabled={count === 0}
+        >
+          바꾸기
+        </Button>
+        <Button
+          size="sm"
+          variant="solid"
+          tone="primary"
+          onClick={handleReplaceAll}
+          disabled={count === 0}
+        >
+          모두 바꾸기
+        </Button>
+      </div>
     </div>
   );
 };
