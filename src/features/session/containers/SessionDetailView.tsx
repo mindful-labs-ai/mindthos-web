@@ -41,17 +41,11 @@ export const SessionDetailView: React.FC<SessionDetailViewProps> = ({
         <div
           className={`relative mx-6 mb-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'border-grey-40 bg-white'}`}
         >
-          {findReplace ? (
-            // 찾기 열림: 찾기 바가 맨 위 별도 행(우측 정렬 컴팩트 박스),
-            // 편집 툴바는 그 아래(흐름 배치) — 겹침 없음
-            <>
-              <div className="flex flex-shrink-0 justify-end px-6 pt-2">
-                {findReplace}
-              </div>
-              {toolbar}
-            </>
-          ) : (
-            toolbar
+          {toolbar}
+          {/* 찾기 바: 떠 있는 팝오버(absolute) — 레이아웃 공간을 먹지 않음.
+              툴바(top-0) 아래로 오프셋해 겹치지 않게 우측 상단 배치 */}
+          {findReplace && (
+            <div className="absolute right-6 top-16 z-20">{findReplace}</div>
           )}
           {tabContent}
         </div>
