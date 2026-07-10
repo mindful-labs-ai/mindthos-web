@@ -77,18 +77,28 @@ export const TranscriptFindReplaceBar: React.FC<
     setScrollNonce((n) => n + 1);
   };
 
-  // 하이라이트 스타일 1회 주입
+  // 하이라이트 스타일 주입: 나머지=green-40, 현재 매치=green-80
+  // 팔레트 hex 하드코딩 회피 위해 런타임에 CSS 토큰값을 읽음.
+  // HMR로 <style>이 남아 있어도 매번 textContent를 갱신(예전 색 잔존 방지).
   React.useEffect(() => {
     const id = 'transcript-find-highlight-style';
-    if (document.getElementById(id)) return;
-    const style = document.createElement('style');
-    style.id = id;
+    let style = document.getElementById(id) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = id;
+      document.head.appendChild(style);
+    }
+    const root = getComputedStyle(document.documentElement);
+    const other = root.getPropertyValue('--color-green-40').trim() || '#cfe5d0';
+    const current =
+      root.getPropertyValue('--color-green-80').trim() || '#44ce4b';
     style.textContent =
-      '::highlight(transcript-find){background-color:#fde047;color:inherit;}';
-    document.head.appendChild(style);
+      `::highlight(transcript-find){background-color:${other};color:inherit;}` +
+      `::highlight(transcript-find-current){background-color:${current};color:inherit;}`;
   }, []);
 
-  // 찾은 단어를 전부 하이라이트 (CSS Custom Highlight API, 미지원 브라우저는 무시)
+  // 찾은 단어 하이라이트 (CSS Custom Highlight API, 미지원 브라우저는 무시)
+  // 나머지 매치=transcript-find(green-40), 현재 매치(currentIndex)=transcript-find-current(green-80)
   React.useEffect(() => {
     void matchRefreshKey; // 치환/undo 후 재계산
     const cssHighlights = (
@@ -103,18 +113,27 @@ export const TranscriptFindReplaceBar: React.FC<
       window as unknown as { Highlight?: new (...ranges: Range[]) => unknown }
     ).Highlight;
     if (!cssHighlights || !HighlightCtor) return;
-    if (!find) {
+    const clear = () => {
       cssHighlights.delete('transcript-find');
+      cssHighlights.delete('transcript-find-current');
+    };
+    if (!find) {
+      clear();
       return;
     }
 
-    const ranges: Range[] = [];
+    const otherRanges: Range[] = [];
+    const currentRanges: Range[] = [];
     const lc = find.toLowerCase();
+    // 전역 매치 순번 = matches 리스트 인덱스와 정합(세그먼트·occ 순서 동일)
+    let globalIdx = 0;
     document.querySelectorAll('[data-segment-id]').forEach((seg) => {
       const walker = document.createTreeWalker(seg, NodeFilter.SHOW_TEXT, {
-        // 칩(비언어/비식별) 내부 텍스트는 제외 (저장 텍스트 검색과 정합)
+        // 칩(nv/deid ON) + deid 인라인(showDeid OFF) 텍스트는 제외 → 저장 검색과 정합
         acceptNode: (n) =>
-          (n as Text).parentElement?.closest('[contenteditable="false"]')
+          (n as Text).parentElement?.closest(
+            '[contenteditable="false"],[data-deid-inline]'
+          )
             ? NodeFilter.FILTER_REJECT
             : NodeFilter.FILTER_ACCEPT,
       });
@@ -126,20 +145,27 @@ export const TranscriptFindReplaceBar: React.FC<
           const r = document.createRange();
           r.setStart(node, idx);
           r.setEnd(node, idx + find.length);
-          ranges.push(r);
+          if (globalIdx === currentIndex) currentRanges.push(r);
+          else otherRanges.push(r);
+          globalIdx += 1;
           idx = lower.indexOf(lc, idx + find.length);
         }
         node = walker.nextNode();
       }
     });
 
-    if (ranges.length > 0) {
-      cssHighlights.set('transcript-find', new HighlightCtor(...ranges));
-    } else {
-      cssHighlights.delete('transcript-find');
-    }
-    return () => cssHighlights.delete('transcript-find');
-  }, [find, matchRefreshKey]);
+    if (otherRanges.length > 0)
+      cssHighlights.set('transcript-find', new HighlightCtor(...otherRanges));
+    else cssHighlights.delete('transcript-find');
+    if (currentRanges.length > 0)
+      cssHighlights.set(
+        'transcript-find-current',
+        new HighlightCtor(...currentRanges)
+      );
+    else cssHighlights.delete('transcript-find-current');
+
+    return clear;
+  }, [find, matchRefreshKey, currentIndex]);
 
   // 다음 매치로 이동 (Enter)
   const goToNext = () => {
