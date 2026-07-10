@@ -100,7 +100,8 @@ export const TranscriptFindReplaceBar: React.FC<
       root.getPropertyValue('--color-green-80').trim() || '#44ce4b';
     style.textContent =
       `::highlight(transcript-find){background-color:${other};color:inherit;}` +
-      `::highlight(transcript-find-current){background-color:${current};color:inherit;}`;
+      // 현재(포커싱된) 매치: 진한 초록 배경 위 흰 텍스트로 강조
+      `::highlight(transcript-find-current){background-color:${current};color:#fff;}`;
   }, []);
 
   // 찾은 단어 하이라이트 (CSS Custom Highlight API, 미지원 브라우저는 무시)
@@ -299,9 +300,10 @@ export const TranscriptFindReplaceBar: React.FC<
         <Button
           size="sm"
           variant="outline"
-          tone="primary"
+          tone="neutral"
           onClick={handleReplaceOne}
           disabled={count === 0}
+          className="border-grey-100 bg-white text-grey-100 lg:hover:bg-grey-10"
         >
           바꾸기
         </Button>
