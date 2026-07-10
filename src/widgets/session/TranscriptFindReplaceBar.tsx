@@ -303,7 +303,7 @@ export const TranscriptFindReplaceBar: React.FC<
           tone="neutral"
           onClick={handleReplaceOne}
           disabled={count === 0}
-          className="border-grey-100 bg-white text-grey-100 lg:hover:bg-grey-10"
+          className="border-grey-100 bg-white text-grey-100 disabled:border-grey-40 disabled:bg-white disabled:text-grey-40 lg:hover:bg-grey-10"
         >
           바꾸기
         </Button>
