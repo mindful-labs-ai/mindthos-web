@@ -66,6 +66,9 @@ interface UseTranscriptEditSessionOptions {
   checkIsGuideLevel?: (level: number) => boolean;
   nextGuideLevel?: () => void;
   scrollToTop?: () => void;
+  /** 편집기 remount(분리/치환/undo 등) 직전 호출 — DOM이 아직 이전 상태일 때
+   *  스크롤 앵커 캡처용 */
+  onBeforeEditorRemount?: () => void;
 }
 
 interface UseTranscriptEditSessionReturn {
@@ -143,6 +146,7 @@ export function useTranscriptEditSession({
   checkIsGuideLevel,
   nextGuideLevel,
   scrollToTop,
+  onBeforeEditorRemount,
 }: UseTranscriptEditSessionOptions): UseTranscriptEditSessionReturn {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -171,6 +175,12 @@ export function useTranscriptEditSession({
   // 세그먼트 편집기(contentEditable)를 밖에서 강제 rebuild할 때 증가
   // (찾기·바꾸기/undo/redo로 텍스트가 바뀌면 편집기를 remount해 반영)
   const [editorVersion, setEditorVersion] = React.useState(0);
+
+  // remount 직전 훅(스크롤 앵커 캡처)을 태우고 버전 증가 — 모든 bump는 이걸 경유
+  const bumpEditorVersion = React.useCallback(() => {
+    onBeforeEditorRemount?.();
+    setEditorVersion((v) => v + 1);
+  }, [onBeforeEditorRemount]);
 
   // editingContents를 ref에 동기화 (히스토리 스냅샷 소스)
   React.useEffect(() => {
@@ -239,10 +249,16 @@ export function useTranscriptEditSession({
       pushHistorySnapshot(materialized);
       clearBuffers();
       setEditing(transform(materialized));
-      if (opts?.remount) setEditorVersion((v) => v + 1);
+      if (opts?.remount) bumpEditorVersion();
       setHasEdits(true);
     },
-    [materializeBuffers, pushHistorySnapshot, clearBuffers, setEditing]
+    [
+      materializeBuffers,
+      pushHistorySnapshot,
+      clearBuffers,
+      setEditing,
+      bumpEditorVersion,
+    ]
   );
 
   const sessionQueryKey = React.useMemo(
@@ -547,11 +563,11 @@ export function useTranscriptEditSession({
     if (current) futureRef.current = [...futureRef.current, current];
     clearBuffers();
     setEditing(previous);
-    setEditorVersion((v) => v + 1); // 편집기 rebuild로 텍스트 변화 반영
+    bumpEditorVersion(); // 편집기 rebuild로 텍스트 변화 반영
     setCanUndo(pastRef.current.length > 0);
     setCanRedo(futureRef.current.length > 0);
     setHasEdits(true);
-  }, [materializeBuffers, clearBuffers, setEditing]);
+  }, [materializeBuffers, clearBuffers, setEditing, bumpEditorVersion]);
 
   // ── 다시 실행 (redo) ──
 
@@ -564,11 +580,11 @@ export function useTranscriptEditSession({
     if (current) pastRef.current = [...pastRef.current, current];
     clearBuffers();
     setEditing(next);
-    setEditorVersion((v) => v + 1);
+    bumpEditorVersion();
     setCanUndo(pastRef.current.length > 0);
     setCanRedo(futureRef.current.length > 0);
     setHasEdits(true);
-  }, [materializeBuffers, clearBuffers, setEditing]);
+  }, [materializeBuffers, clearBuffers, setEditing, bumpEditorVersion]);
 
   // ── 찾기 · 바꾸기 (이 축어록 한정, 편집 모드) ──
 
@@ -588,7 +604,7 @@ export function useTranscriptEditSession({
       pushHistorySnapshot(materialized); // 되돌리기용 (치환 직전 상태)
       clearBuffers();
       setEditing(applyBulkTextEdits(materialized, edits));
-      setEditorVersion((v) => v + 1); // 편집기 rebuild로 치환 결과 반영
+      bumpEditorVersion(); // 편집기 rebuild로 치환 결과 반영
       setHasEdits(true);
       return totalCount;
     },
@@ -599,6 +615,7 @@ export function useTranscriptEditSession({
       pushHistorySnapshot,
       clearBuffers,
       setEditing,
+      bumpEditorVersion,
     ]
   );
 
@@ -655,7 +672,7 @@ export function useTranscriptEditSession({
       pushHistorySnapshot(materialized); // 되돌리기용
       clearBuffers();
       setEditing(applyBulkTextEdits(materialized, { [segmentId]: text }));
-      setEditorVersion((v) => v + 1);
+      bumpEditorVersion();
       setHasEdits(true);
       return true;
     },
@@ -666,6 +683,7 @@ export function useTranscriptEditSession({
       pushHistorySnapshot,
       clearBuffers,
       setEditing,
+      bumpEditorVersion,
     ]
   );
 

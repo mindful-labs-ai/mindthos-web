@@ -76,6 +76,31 @@ export const SessionDetailContainer: React.FC = () => {
   const contentScrollRef = React.useRef<HTMLDivElement>(null);
   // editorVersion 변경(분리/치환/undo)으로 세그먼트 remount 시 스크롤 튐 방지용
   const savedScrollTopRef = React.useRef(0);
+  // remount 직전 화면 상단에 걸쳐 있던 세그먼트(앵커) — 복원 시 같은 위치로 고정
+  const scrollAnchorRef = React.useRef<{ id: string; offset: number } | null>(
+    null
+  );
+
+  // remount 직전(DOM이 아직 이전 상태일 때) 호출 — 컨테이너 상단에 걸친
+  // 첫 세그먼트와 그 화면상 오프셋을 앵커로 저장
+  const captureScrollAnchor = React.useCallback(() => {
+    const el = contentScrollRef.current;
+    if (!el) return;
+    savedScrollTopRef.current = el.scrollTop;
+    const containerTop = el.getBoundingClientRect().top;
+    scrollAnchorRef.current = null;
+    const segs = el.querySelectorAll<HTMLElement>('[data-segment-id]');
+    for (const seg of segs) {
+      const rect = seg.getBoundingClientRect();
+      if (rect.bottom - containerTop > 0) {
+        scrollAnchorRef.current = {
+          id: seg.dataset.segmentId || '',
+          offset: rect.top - containerTop,
+        };
+        break;
+      }
+    }
+  }, []);
 
   const { data: sessionDetail, isLoading } = useSessionDetail({
     sessionId: sessionId || '',
@@ -210,6 +235,7 @@ export const SessionDetailContainer: React.FC = () => {
     transcribeId: transcribe?.id,
     isDummySession,
     isReadOnly,
+    onBeforeEditorRemount: captureScrollAnchor,
   });
 
   // 편집이 끝나면 찾기·바꾸기 바 닫기
@@ -228,10 +254,29 @@ export const SessionDetailContainer: React.FC = () => {
     return () => el.removeEventListener('scroll', onScroll);
   }, [activeTab]);
 
-  // editorVersion 변경(분리/치환/undo)으로 세그먼트가 remount되면 스크롤 복원
+  // editorVersion 변경(분리/치환/undo)으로 세그먼트가 remount되면 스크롤 복원.
+  // remount 직전 캡처한 앵커 세그먼트를 같은 화면 위치에 고정 — 세그먼트가
+  // 추가/분리돼 콘텐츠 높이가 변해도 보고 있던 세그먼트 기준으로 유지된다.
   React.useLayoutEffect(() => {
     const el = contentScrollRef.current;
-    if (el) el.scrollTop = savedScrollTopRef.current;
+    if (!el) return;
+    const anchor = scrollAnchorRef.current;
+    scrollAnchorRef.current = null;
+    if (anchor) {
+      const seg = el.querySelector<HTMLElement>(
+        `[data-segment-id="${CSS.escape(anchor.id)}"]`
+      );
+      if (seg) {
+        const containerTop = el.getBoundingClientRect().top;
+        const delta =
+          seg.getBoundingClientRect().top - containerTop - anchor.offset;
+        el.scrollTop += delta;
+        savedScrollTopRef.current = el.scrollTop;
+        return;
+      }
+    }
+    // 앵커가 없거나(삭제 등) 못 찾으면 raw scrollTop으로 폴백
+    el.scrollTop = savedScrollTopRef.current;
   }, [editorVersion]);
 
   const segments = React.useMemo(
