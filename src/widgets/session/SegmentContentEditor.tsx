@@ -910,19 +910,22 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
               className="absolute z-30 flex max-h-[200px] flex-col overflow-y-auto rounded-lg border border-grey-30 bg-white text-xs shadow-lg"
               style={{ top: speakerPick.top + 6, left: speakerPick.left }}
             >
-              {speakers.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() =>
-                    doSpeakerSwitch({ kind: 'existing', id: s.id })
-                  }
-                  className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
-                >
-                  {getSpeakerDisplayName(s)}
-                </button>
-              ))}
+              {/* 본인(현재 세그먼트) 화자는 제외 — 같은 화자 분리는 Enter(발화 분리) */}
+              {speakers
+                .filter((s) => s.id !== segment.speaker)
+                .map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() =>
+                      doSpeakerSwitch({ kind: 'existing', id: s.id })
+                    }
+                    className="whitespace-nowrap px-3 py-1.5 text-left text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                  >
+                    {getSpeakerDisplayName(s)}
+                  </button>
+                ))}
               <div className="flex items-center gap-1 border-t border-grey-20 px-2 py-1">
                 <input
                   type="text"
