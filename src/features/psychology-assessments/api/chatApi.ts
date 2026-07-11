@@ -31,10 +31,10 @@ interface CursorPage<T> {
 /** 채팅 이력 조회 — GET /clients/:clientId/chat-messages (최신 limit개). */
 export async function getChatHistory(
   clientId: string,
-  limit = 20,
+  limit = 20
 ): Promise<ClientChatMessageDto[]> {
   const page = await serverRequest<CursorPage<ClientChatMessageDto>>(
-    `/clients/${clientId}/chat-messages?limit=${limit}`,
+    `/clients/${clientId}/chat-messages?limit=${limit}`
   );
   return page.items ?? [];
 }
@@ -42,11 +42,11 @@ export async function getChatHistory(
 /** 채팅 메시지 전송 (동기 — 서버가 머신 응답까지 받아 완료 turn 반환). */
 export async function sendChatMessage(
   clientId: string,
-  userMessage: string,
+  userMessage: string
 ): Promise<ChatReply> {
   const dto = await serverRequest<ClientChatMessageDto>(
     `/clients/${clientId}/chat-messages`,
-    { method: 'POST', body: { message: userMessage } },
+    { method: 'POST', body: { message: userMessage } }
   );
   return {
     messageId: dto.id,
@@ -62,11 +62,11 @@ export async function sendChatMessage(
  */
 export async function retryChatMessage(
   clientId: string,
-  messageId: string,
+  messageId: string
 ): Promise<ChatReply> {
   const dto = await serverRequest<ClientChatMessageDto>(
     `/clients/${clientId}/chat-messages/${messageId}/retry`,
-    { method: 'POST' },
+    { method: 'POST' }
   );
   return {
     messageId: dto.id,

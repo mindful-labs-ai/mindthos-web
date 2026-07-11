@@ -14,7 +14,7 @@ export const FieldSection = ({
   className,
 }: FieldSectionProps) => (
   <div className={cn('flex flex-col gap-4', className)}>
-    <p className="font-sub text-m text-grey-80">{label}</p>
+    <p className="text-m font-sub text-grey-80">{label}</p>
     <div className="flex flex-col gap-4">{children}</div>
   </div>
 );

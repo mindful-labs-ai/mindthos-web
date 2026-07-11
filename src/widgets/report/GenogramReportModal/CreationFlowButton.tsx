@@ -1,4 +1,7 @@
-import { CHECKLIST } from '@/shared/constants/genogramReport';
+import {
+  CHECKLIST,
+  REPORT_CREDIT_COST,
+} from '@/shared/constants/genogramReport';
 import { CreditIcon } from '@/shared/icons';
 
 import type { ModalStep, ReportFormData } from './types';
@@ -34,8 +37,9 @@ export function CreationFlowButton({
     <div className="flex flex-col items-center">
       {isInput && (
         <div className="mb-2 flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
-          <span className="typo-sm text-primary line-through">100</span>
-          <span className="typo-sm font-headline text-primary">10</span>
+          <span className="typo-sm font-headline text-primary">
+            {REPORT_CREDIT_COST}
+          </span>
           <CreditIcon size={14} />
           <span className="typo-sm text-primary">사용</span>
         </div>
@@ -48,11 +52,6 @@ export function CreationFlowButton({
       >
         {isInput ? '보고서 생성하기' : '이어서 진행하기'}
       </button>
-      {isInput && (
-        <p className="typo-sm mt-2 font-medium text-primary">
-          출시 기념 90% 크레딧 할인
-        </p>
-      )}
     </div>
   );
 }

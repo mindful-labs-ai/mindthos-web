@@ -115,8 +115,8 @@ const AuthPage = () => {
           <div className="w-full max-w-md">
             {/* Title Section */}
             <div className="mb-9 flex flex-col gap-3 text-left">
-              <h1 className="text-2xl font-emphasize leading-snug text-grey-100 md:text-4xl">
-                늘 곁에있는 AI 슈퍼바이저,
+              <h1 className="text-xl font-emphasize leading-snug text-grey-100 md:text-3xl">
+                상담사를 위한 안전한 AI 에이전트,
                 <br />
                 <span className="font-headline text-green-80">마음토스</span>
               </h1>

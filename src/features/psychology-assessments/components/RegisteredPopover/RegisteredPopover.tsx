@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { cn } from '@/lib/cn';
 import { useDevice } from '@/shared/hooks/useDevice';
@@ -17,17 +17,8 @@ interface RegisteredPopoverProps {
   transcripts: TranscriptEntry[];
   assessments: RegisteredAssessmentEntry[];
 
-  /** 선택된 ID set (assessment 기준) */
-  selectedIds: Set<string>;
-  onToggleSelect: (id: string) => void;
-
   /** 초기화 버튼 클릭 (확인 모달 트리거) */
   onReset: () => void;
-
-  /** 결과지 항목별 삭제 (서버 DELETE). 있으면 각 항목에 삭제 버튼 노출. */
-  onDeleteAssessment?: (id: string) => void;
-  /** 삭제 진행 중인 항목 id */
-  deletingAssessmentId?: string | null;
 
   className?: string;
 }
@@ -38,11 +29,7 @@ export const RegisteredPopover = ({
   triggerRef,
   transcripts,
   assessments,
-  selectedIds,
-  onToggleSelect,
   onReset,
-  onDeleteAssessment,
-  deletingAssessmentId,
   className,
 }: RegisteredPopoverProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -70,25 +57,17 @@ export const RegisteredPopover = ({
     };
   }, [open, onClose, triggerRef]);
 
-  // 라벨: 선택이 있으면 "선택 초기화", 없으면 "결과지 초기화"
-  const resetLabel = useMemo(
-    () => (selectedIds.size > 0 ? '선택 초기화' : '결과지 초기화'),
-    [selectedIds.size]
-  );
-
   if (!open) return null;
 
   const body = (
     <>
       {transcripts.length > 0 && (
-        <PopoverSection title="축어록 및 분석">
+        <PopoverSection title="축어록">
           {transcripts.map((t) => (
             <PopoverEntryCard
               key={t.id}
               title={t.title}
               metaLabel={t.metaLabel}
-              selected={selectedIds.has(t.id)}
-              onToggle={() => onToggleSelect(t.id)}
             />
           ))}
         </PopoverSection>
@@ -104,22 +83,12 @@ export const RegisteredPopover = ({
                 a.metaLabel ??
                 `${a.testDate}  |  ${a.pageCount}p  |  ${a.categoryLabel}`
               }
-              selected={selectedIds.has(a.id)}
-              onToggle={
-                onDeleteAssessment ? undefined : () => onToggleSelect(a.id)
-              }
-              onDelete={
-                onDeleteAssessment
-                  ? () => onDeleteAssessment(a.id)
-                  : undefined
-              }
-              deleting={deletingAssessmentId === a.id}
             />
           ))}
         </PopoverSection>
       )}
 
-      <PopoverResetButton label={resetLabel} onClick={onReset} />
+      <PopoverResetButton label="결과지 초기화" onClick={onReset} />
     </>
   );
 

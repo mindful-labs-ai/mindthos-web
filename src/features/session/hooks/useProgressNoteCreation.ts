@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { addProgressNote } from '@/shared/api/supabase/progressNoteQueries';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -22,7 +23,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 import type { ProgressNote } from '../types';
 
-const PROGRESS_NOTE_CREDIT = 10; // 상담노트 생성 크레딧
+const PROGRESS_NOTE_CREDIT = CREDIT_COST.PROGRESS_NOTE; // 상담노트 생성 크레딧
 
 interface UseProgressNoteCreationOptions {
   sessionId: string;

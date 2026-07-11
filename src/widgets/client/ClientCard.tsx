@@ -274,7 +274,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({
                 onAnalyzeClick?.(client);
               }}
             >
-              다회기 분석 가능
+              AI 슈퍼비전 받기
             </Badge>
           )}
         </div>

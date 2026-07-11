@@ -8,8 +8,8 @@ import type { ClientsPageItem } from '@/shared/api/supabase/clientQueries';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { useAuthStore } from '@/stores/authStore';
+import { ClientSidebar } from '@/widgets/client/ClientSidebar';
 
-import { ClientSidebar } from '../components/ClientSidebar';
 import { PsychologyAssessmentsMain } from '../components/PsychologyAssessmentsMain';
 
 const toClient = (item: ClientsPageItem, counselorId: string): Client => ({

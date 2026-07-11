@@ -209,7 +209,7 @@ export const useAddClientForm = (initialData?: Client | null) => {
       // 생성 모드일 때 내담자 ID 반환
       if (!isEditMode && 'client' in response) {
         const createResponse = response as CreateClientResponse;
-        return createResponse.client?.id || true;
+        return createResponse.client || true;
       }
       return true;
     } catch {

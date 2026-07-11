@@ -10,6 +10,6 @@ export interface RegisteredAssessmentEntry {
 
 export interface TranscriptEntry {
   id: string;
-  title: string; // e.g. '홍길동 축어록'
+  title: string; // e.g. '내담자 축어록'
   metaLabel: string; // e.g. '총 8회기 상담 기록'
 }

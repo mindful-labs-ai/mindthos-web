@@ -3,6 +3,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
+import { useInterpolatedProgress } from '@/features/session/hooks/useInterpolatedProgress';
 import type { SessionRecord } from '@/features/session/types';
 import { extractTextOnly } from '@/features/session/utils/parseNonverbalText';
 import { cn } from '@/lib/cn';
@@ -303,28 +304,30 @@ interface ProgressBarProps {
   stepLabel: string;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ percentage, stepLabel }) => (
-  <div className="space-y-1.5">
-    <div className="flex items-center justify-between">
-      <Text className="typo-xs text-grey-70">{stepLabel}</Text>
-      <Text className="typo-xs text-primary-700 font-medium">
-        {percentage}%
-      </Text>
+const ProgressBar: React.FC<ProgressBarProps> = ({ percentage, stepLabel }) => {
+  // 서버 체크포인트 사이를 트리클+스냅으로 보간해 바가 끊기지 않게 한다.
+  const display = useInterpolatedProgress(percentage, percentage < 100);
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <Text className="typo-xs text-grey-70">{stepLabel}</Text>
+        <Text className="typo-xs text-primary-700 font-medium">{display}%</Text>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
+        <div
+          className="h-full bg-green-80 transition-all duration-slow ease-out"
+          style={{
+            width: `${display}%`,
+            background:
+              'linear-gradient(90deg, var(--color-green-80) 30%, var(--color-green-40) 50%, var(--color-green-80) 90%)',
+            backgroundSize: '200% 100%',
+            animation: 'progress-flow 2.5s linear infinite',
+          }}
+        />
+      </div>
     </div>
-    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-strong">
-      <div
-        className="h-full bg-green-80 transition-all duration-slow ease-out"
-        style={{
-          width: `${percentage}%`,
-          background:
-            'linear-gradient(90deg, var(--color-green-80) 30%, var(--color-green-40) 50%, var(--color-green-80) 90%)',
-          backgroundSize: '200% 100%',
-          animation: 'progress-flow 2.5s linear infinite',
-        }}
-      />
-    </div>
-  </div>
-);
+  );
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Presenter: DeleteConfirmModal

@@ -40,7 +40,6 @@ import type {
   ReportFormData,
   UseReportModalReturn,
 } from './types';
-import { useReportDebugPanel } from './useReportDebugPanel';
 
 export function useReportModal({
   open,
@@ -498,25 +497,6 @@ export function useReportModal({
     }
   }, [open]);
 
-  // ── 디버그 패널 ──
-
-  const debugPanel = useReportDebugPanel({
-    step,
-    setStep,
-    hasAccess,
-    setHasAccess: () => {},
-    generatingStatus,
-    setGeneratingStatus,
-    generatingError,
-    setGeneratingError,
-    isLoadingReports,
-    setIsLoadingReports: () => {},
-    isLoadingPreview,
-    setIsLoadingPreview,
-    reports,
-    setReports,
-  });
-
   // ── Return ──
 
   return {
@@ -548,7 +528,6 @@ export function useReportModal({
     handleSuccessProceed,
     handleBackToList,
     handleClose,
-    debugPanel,
     setAnswer,
     setFormField,
     setPreviewTitle,

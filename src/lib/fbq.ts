@@ -25,7 +25,9 @@ export interface MetaTrackOptions {
  * to E.164 format ("+821012345678") for Meta Advanced Matching.
  * Returns undefined if the input cannot be normalized.
  */
-export const toE164KR = (phone: string | null | undefined): string | undefined => {
+export const toE164KR = (
+  phone: string | null | undefined
+): string | undefined => {
   if (!phone) return undefined;
   const digits = phone.replace(/\D/g, '');
   if (digits.length < 9) return undefined;
@@ -76,7 +78,10 @@ export const trackFBEvent = (
  * Falls back to a timestamp-based ID on platforms without crypto.randomUUID.
  */
 export const generateMetaEventId = (): string => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
     return crypto.randomUUID();
   }
   return `meta-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;

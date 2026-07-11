@@ -10,7 +10,7 @@ interface AnalyzeCtaSectionProps {
 }
 
 export const AnalyzeCtaSection = ({
-  helperText = '심리검사 결과지가 등록되었습니다.\n이어서 분석을 진행해주세요.',
+  helperText = '심리검사 결과지를 등록했어요.\n이어서 분석을 시작해 주세요.',
   creditCost,
   disabled,
   onClick,

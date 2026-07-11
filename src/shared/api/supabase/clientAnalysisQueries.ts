@@ -16,10 +16,7 @@ import type {
   GetClientAnalysisStatusResponse,
 } from '@/features/client/types/clientAnalysisApi.types';
 import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { createSupervisionAnalysis } from '@/shared/api/server/clientAnalysisServerApi';
 
 export const clientAnalysisService = {
   /**
@@ -94,36 +91,87 @@ export const clientAnalysisService = {
   },
 
   /**
-   * 분석 생성
+   * 분석 생성 — mindthos-server REST API로 위임.
+   * 서버가 크레딧 예약·DB row 생성·머신 큐 publish를 담당한다.
+   * user_id는 서버가 Bearer JWT에서 도출하므로 body로 보내지 않는다.
    */
   async createAnalysis(
     request: CreateClientAnalysisRequest
   ): Promise<CreateClientAnalysisResponse> {
-    return await callEdgeFunction<CreateClientAnalysisResponse>(
-      EDGE_FUNCTION_ENDPOINTS.CLIENT_ANALYSIS.CREATE,
-      request
-    );
+    try {
+      const { analysisId, version } = await createSupervisionAnalysis(
+        request.client_id,
+        {
+          sessionIds: request.session_ids,
+          aiSupervisionTemplateId: request.ai_supervision_template_id,
+        }
+      );
+
+      return {
+        success: true,
+        version,
+        analysis_ids: { ai_supervision: analysisId },
+      };
+    } catch (error) {
+      const apiError = error as Partial<ClientAnalysisApiError>;
+      throw {
+        status: apiError.status || 500,
+        success: false,
+        error: apiError.error || 'CREATE_ERROR',
+        message: apiError.message || '분석을 만들지 못했어요.',
+      } as ClientAnalysisApiError;
+    }
   },
 
   /**
-   * 분석 상태 조회
+   * 분석 상태 조회 — Supabase client_analyses 직접 폴링.
+   * 서버가 결과를 비동기로 기록하므로, EF 대신 DB row를 직접 조회한다.
    */
   async getAnalysisStatus(
     clientId: string,
     version: number
   ): Promise<GetClientAnalysisStatusResponse> {
     try {
-      const response = await callEdgeFunction<GetClientAnalysisStatusResponse>(
-        EDGE_FUNCTION_ENDPOINTS.CLIENT_ANALYSIS.STATUS(clientId, version),
-        null,
-        {
-          method: 'GET',
-        }
-      );
+      const { data, error } = await supabase
+        .from('client_analyses')
+        .select('id, status, content, error_message')
+        .eq('client_id', clientId)
+        .eq('version', version)
+        .eq('type', 'ai_supervision')
+        .maybeSingle();
 
-      return response;
+      if (error) {
+        throw {
+          status: 500,
+          success: false,
+          error: 'DATABASE_ERROR',
+          message: error.message || '상태 조회 중 오류가 생겼어요.',
+        } as ClientAnalysisApiError;
+      }
+
+      if (!data) {
+        throw {
+          status: 404,
+          success: false,
+          error: 'NOT_FOUND',
+          message: '분석 결과를 찾을 수 없어요.',
+        } as ClientAnalysisApiError;
+      }
+
+      return {
+        success: true,
+        version,
+        analyses: {
+          ai_supervision: {
+            id: data.id,
+            status: data.status,
+            content: data.content ?? undefined,
+            error_message: data.error_message ?? undefined,
+          },
+        },
+      };
     } catch (error) {
-      const apiError = error as ClientAnalysisApiError;
+      const apiError = error as Partial<ClientAnalysisApiError>;
       throw {
         status: apiError.status || 500,
         success: false,

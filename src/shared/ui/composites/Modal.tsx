@@ -15,11 +15,21 @@ export interface ModalProps {
   closeOnOverlay?: boolean;
   hideCloseButton?: boolean;
   children: React.ReactNode;
+  /** 하단 고정 푸터(버튼 등). 지정하면 스크롤 영역 밖에 고정되어 항상 보인다. */
+  footer?: React.ReactNode;
+  /**
+   * Modal이 children을 스크롤 본문(flex-1 overflow-y-auto)으로 감쌀지 여부. 기본 true.
+   * 모달이 자체 flex 레이아웃(고정 헤더/푸터 + 내부 스크롤)을 직접 관리하면 false로 끈다 —
+   * 이 경우 children이 셸(flex-col, overflow-hidden)의 직접 자식으로 렌더된다.
+   */
+  scrollableBody?: boolean;
   className?: string;
   /** 모바일(<sm)에서의 모달 형태. 기본값 'center' */
   mobileVariant?: ModalMobileVariant;
   /** fullScreen에서 history 관리 비활성화 (중첩 모달에서 history 충돌 방지) */
   disableHistory?: boolean;
+  /** 오버레이(딤 + 래퍼) className 오버라이드 — 팝오버 위에 띄우는 등 z-index 조정용 */
+  overlayClassName?: string;
 }
 
 const FOCUSABLE_SELECTOR =
@@ -55,9 +65,12 @@ export const Modal: React.FC<ModalProps> = ({
   closeOnOverlay = true,
   hideCloseButton = false,
   children,
+  footer,
+  scrollableBody = true,
   className,
   mobileVariant = 'center',
   disableHistory = false,
+  overlayClassName,
 }) => {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const previousFocusRef = React.useRef<HTMLElement | null>(null);
@@ -220,16 +233,17 @@ export const Modal: React.FC<ModalProps> = ({
       'flex items-end lg:items-center lg:justify-center lg:p-4',
     // fullScreen: 모바일/태블릿에서 전체 화면, lg 이상에서는 center
     mobileVariant === 'fullScreen' &&
-      'flex items-stretch lg:items-center lg:justify-center lg:p-4'
+      'flex items-stretch lg:items-center lg:justify-center lg:p-4',
+    overlayClassName
   );
 
   const contentClass = cn(
-    'relative z-10',
-    'bg-surface',
+    // 공통: 고정 셸(flex-col + overflow-hidden) — 셸 자체는 스크롤하지 않고 내부 본문(아래 Body)만 스크롤한다.
+    // 모달 전체가 오버스크롤/바운스되어 뒷배경이 드러나는 문제를 원천 차단한다(맥 트랙패드 포함).
+    'relative z-10 flex flex-col overflow-hidden bg-surface',
 
     // center: 항상 센터 팝업
     mobileVariant === 'center' && [
-      'overflow-auto',
       'max-h-[80vh] w-full',
       'border-default rounded-lg shadow-prominent',
       'animate-scaleIn',
@@ -239,14 +253,12 @@ export const Modal: React.FC<ModalProps> = ({
     // bottomSheet: 모바일/태블릿에서 바텀시트(콘텐츠 높이, 최대 80vh), lg+ 에서 center
     mobileVariant === 'bottomSheet' && [
       // 모바일/태블릿: 하단 시트 - 콘텐츠에 맞게 높이 조정, 최대 80vh
-      'flex flex-col overflow-hidden',
       'max-h-[80vh] w-full',
       'rounded-t-2xl border-x-2 border-t-2 border-border shadow-prominent',
       'animate-slideUpFull',
-      'px-6 pt-4',
-      // lg+: 센터 팝업 (overflow-auto로 복원)
+      'px-6 pb-6 pt-4',
+      // lg+: 센터 팝업
       'lg:max-h-[90vh] lg:max-w-lg',
-      'lg:overflow-auto',
       'lg:rounded-lg lg:border-2',
       'lg:animate-scaleIn',
       'lg:pb-4',
@@ -254,8 +266,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     // fullScreen: 모바일/태블릿에서 전체 화면(좌측 슬라이드), lg+ 에서 center
     mobileVariant === 'fullScreen' && [
-      // 모바일/태블릿: 풀스크린 - 좌측에서 슬라이드
-      'overflow-auto',
+      // 모바일/태블릿: 풀스크린 - 좌측에서 슬라이드 (모바일은 풀블리드, 패딩 없음)
       'h-full w-full',
       'animate-slideInFromLeft',
       // lg+: 센터 팝업
@@ -304,7 +315,7 @@ export const Modal: React.FC<ModalProps> = ({
         {mobileVariant === 'bottomSheet' && (
           <div
             role="presentation"
-            className="mb-3 flex cursor-grab justify-center py-1 active:cursor-grabbing lg:hidden"
+            className="mb-3 flex shrink-0 cursor-grab justify-center py-1 active:cursor-grabbing lg:hidden"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleDragEnd}
@@ -316,7 +327,7 @@ export const Modal: React.FC<ModalProps> = ({
 
         {/* fullScreen 모바일 닫기 버튼 */}
         {mobileVariant === 'fullScreen' && !hideCloseButton && (
-          <div className="mb-4 flex items-center lg:hidden">
+          <div className="mb-4 flex shrink-0 items-center lg:hidden">
             <button
               onClick={() => onOpenChange(false)}
               aria-label="닫기"
@@ -340,9 +351,9 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         )}
 
-        {/* Header */}
+        {/* Header — 스크롤 밖 고정 */}
         {(title || description) && (
-          <>
+          <div className="shrink-0">
             {title && (
               <h2 id="modal-title" className="typo-xl-emphasize text-fg">
                 {title}
@@ -354,17 +365,21 @@ export const Modal: React.FC<ModalProps> = ({
               </p>
             )}
             <div className="mb-3 border-b border-border pt-3" />
-          </>
+          </div>
         )}
 
-        {/* Body */}
-        {mobileVariant === 'bottomSheet' ? (
-          <div className="flex-1 overflow-y-auto overscroll-contain pb-6 lg:overflow-visible lg:pb-0">
+        {/* Body — 고정 셸 안에서 내부 본문만 스크롤(flex-1). overscroll-contain + 셸 bg-surface로 오버스크롤 시에도 뒷배경이 드러나지 않는다.
+            scrollableBody=false면 자체 레이아웃 모달이 children을 직접 관리(고정 헤더/푸터 + 내부 스크롤). */}
+        {scrollableBody ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
             {children}
           </div>
         ) : (
           children
         )}
+
+        {/* Footer — 스크롤 밖 고정 */}
+        {footer && <div className="shrink-0">{footer}</div>}
 
         {/* Close button (bottomSheet는 핸들 드래그로 닫기 지원하므로 숨김) */}
         {!hideCloseButton && mobileVariant !== 'bottomSheet' && (

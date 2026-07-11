@@ -1,7 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
 
-import { Edit3 } from 'lucide-react';
-
 import type { Subject } from '@/genogram/core/models/person';
 import type {
   Connection,
@@ -12,6 +10,7 @@ import type {
 } from '@/genogram/core/models/relationship';
 import { getPartnerDateVisibility } from '@/genogram/core/models/relationship';
 import { ConnectionType, SubjectType } from '@/genogram/core/types/enums';
+import { TitleEdit } from '@/shared/icons';
 
 import {
   CONNECTION_TYPE_LABELS,
@@ -525,7 +524,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             onClick={() => setIsEditingName(true)}
           >
             {displayName || '이름 없음'}
-            <Edit3 size={16} className="text-grey-70" />
+            <TitleEdit size={16} className="text-grey-70" />
           </button>
         )}
       </div>

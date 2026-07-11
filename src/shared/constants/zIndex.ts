@@ -15,5 +15,4 @@ export const Z_INDEX = {
   tooltip: 1200,
   toast: 1300,
   spotlight: 1400,
-  debug: 1500,
 } as const;

@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 
+import { FileText } from 'lucide-react';
+
 import { useClientTemplates } from '@/features/client/hooks/useClientAnalysis';
 import type {
   ClientAnalysis,
@@ -9,7 +11,12 @@ import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useMarkdownEditSession } from '@/shared/hooks/useMarkdownEditSession';
-import { CheckIcon, ChevronRightIcon, CopyIcon } from '@/shared/icons';
+import {
+  CheckIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  CreditIcon,
+} from '@/shared/icons';
 import { Modal } from '@/shared/ui';
 import type { TabItem } from '@/shared/ui/atoms/Tab';
 import { Tab } from '@/shared/ui/atoms/Tab';
@@ -22,6 +29,15 @@ import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 import { stripMarkdown } from '@/shared/utils/stripMarkdown';
 
 import { LockedFeatureModal } from './LockedFeatureModal';
+import {
+  getTemplateConfig,
+  supervisionReportToPlainText,
+  useSupervisionEditSession,
+} from './supervision';
+import {
+  parseSupervisionReport,
+  SupervisionReportRenderer,
+} from './SupervisionReportRenderer';
 
 interface ClientAnalysisTabProps {
   analyses: ClientAnalysisVersion[];
@@ -33,6 +49,8 @@ interface ClientAnalysisTabProps {
   isReadOnly?: boolean;
   /** 분석 내용 저장 핸들러 */
   onSaveContent?: (analysisId: string, content: string) => Promise<void>;
+  /** 선택된 내담자의 상담 기록이 0개인지 — true면 빈 상태에서 생성 CTA 대신 안내문구 표시 */
+  hasNoSessionRecords?: boolean;
   isMobileView?: boolean;
 }
 
@@ -43,6 +61,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   pollingVersion,
   isReadOnly = false,
   onSaveContent,
+  hasNoSessionRecords = false,
   isMobileView = false,
 }) => {
   const { toast } = useToast();
@@ -56,6 +75,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   const [activeTab, setActiveTab] = useState<string>('ai_supervision');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isLockedModalOpen, setIsLockedModalOpen] = useState(false);
+  const [isPdfExporting, setIsPdfExporting] = useState(false);
 
   const handleDisabledTabClick = useCallback(() => {
     setIsLockedModalOpen(true);
@@ -96,7 +116,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   const currentAnalysis = analyses.find((a) => a.version === selectedVersion);
   const currentAnalysisData = currentAnalysis?.ai_supervision ?? null;
 
-  // 전체 문서 편집 훅
+  // 전체 문서 편집 훅 (legacy 마크다운 보고서용)
   const {
     isEditing,
     hasEdits,
@@ -125,14 +145,52 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     },
   });
 
+  // 고정 구조(V2) JSON 보고서 필드 단위 편집 세션
+  const structuredSession = useSupervisionEditSession({
+    onSave: async (content) => {
+      if (onSaveContent && currentAnalysisData?.id) {
+        await onSaveContent(currentAnalysisData.id, content);
+      }
+    },
+    trackingMeta: {
+      analysis_id: currentAnalysisData?.id,
+      version: currentAnalysis?.version,
+    },
+  });
+  const {
+    isEditing: isStructuredEditing,
+    handleCancelEdit: handleStructuredCancel,
+  } = structuredSession;
+
   // 버전 변경 시 편집 상태 리셋
   const prevVersionRef = React.useRef(selectedVersion);
   React.useEffect(() => {
-    if (prevVersionRef.current !== selectedVersion && isEditing) {
-      handleCancelEdit();
+    if (prevVersionRef.current !== selectedVersion) {
+      if (isEditing) handleCancelEdit();
+      if (isStructuredEditing) handleStructuredCancel();
     }
     prevVersionRef.current = selectedVersion;
-  }, [selectedVersion, isEditing, handleCancelEdit]);
+  }, [
+    selectedVersion,
+    isEditing,
+    handleCancelEdit,
+    isStructuredEditing,
+    handleStructuredCancel,
+  ]);
+
+  // 미저장 편집 중 새로고침/탭 닫기 방지 — draft는 메모리에만 있어 이탈 시 유실됨
+  const hasUnsavedEdits =
+    (isEditing && hasEdits) ||
+    (structuredSession.isEditing && structuredSession.hasEdits);
+  React.useEffect(() => {
+    if (!hasUnsavedEdits) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedEdits]);
 
   // 템플릿 이름 조회 헬퍼
   const getTemplateName = (templateId: number | undefined): string => {
@@ -177,9 +235,14 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
   });
 
   // 클립보드 복사
-  const handleCopy = async (content: string) => {
+  const handleCopy = async (content: string, templateId?: number) => {
     try {
-      await navigator.clipboard.writeText(stripMarkdown(content));
+      // V2(고정 구조 JSON)면 읽기 좋은 평문으로, 아니면(legacy 마크다운) 기존대로.
+      const report = parseSupervisionReport(content);
+      const text = report
+        ? supervisionReportToPlainText(report, getTemplateConfig(templateId))
+        : stripMarkdown(content);
+      await navigator.clipboard.writeText(text);
       setCopiedKey('ai_supervision');
 
       trackEvent(MixpanelEvent.AnalysisCopy, { tab: activeTab });
@@ -200,6 +263,52 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
         description: '내용을 복사하지 못했어요.',
         duration: 3000,
       });
+    }
+  };
+
+  // PDF 출력 — V2(고정 구조 JSON) 보고서만 지원. react-pdf는 클릭 시 동적 로드.
+  const handlePdfExport = async (analysis: ClientAnalysis) => {
+    const report = parseSupervisionReport(analysis.content);
+    if (!report || isPdfExporting) return;
+    setIsPdfExporting(true);
+    try {
+      const { buildSupervisionReportPdfBlob } = await import(
+        './supervision/SupervisionReportPDF'
+      );
+      const title = getTemplateName(analysis.template_id);
+      const blob = await buildSupervisionReportPdfBlob({
+        report,
+        config: getTemplateConfig(analysis.template_id),
+        title,
+        dateStr: analysis.created_at ? formatDate(analysis.created_at) : '',
+      });
+
+      const dateForFile = analysis.created_at
+        ? new Date(analysis.created_at)
+            .toISOString()
+            .slice(2, 10)
+            .replace(/-/g, '')
+        : '';
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `${title}${dateForFile ? `_${dateForFile}` : ''}.pdf`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+
+      trackEvent(MixpanelEvent.AnalysisPdfExport, {
+        analysis_id: analysis.id,
+        version: analysis.version,
+      });
+    } catch (error) {
+      console.error('PDF 출력 실패:', error);
+      toast({
+        title: 'PDF 출력 실패',
+        description: 'PDF를 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
+        duration: 3000,
+      });
+    } finally {
+      setIsPdfExporting(false);
     }
   };
 
@@ -232,6 +341,27 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       const dateStr = analysis.created_at
         ? formatDate(analysis.created_at)
         : '';
+      const report = parseSupervisionReport(analysis.content);
+      const canEdit = !!onSaveContent && !isReadOnly;
+
+      // 보고서 형식별 편집 세션 선택 (V2 JSON → 필드 단위 / legacy 마크다운 → 인라인)
+      const activeEdit = report
+        ? {
+            isEditing: structuredSession.isEditing,
+            hasEdits: structuredSession.hasEdits,
+            isSaving: structuredSession.isSaving,
+            start: () => structuredSession.handleEditStart(report),
+            cancel: structuredSession.handleCancelEdit,
+            save: structuredSession.handleSaveEdit,
+          }
+        : {
+            isEditing,
+            hasEdits,
+            isSaving,
+            start: handleEditStart,
+            cancel: handleCancelEdit,
+            save: handleSaveEdit,
+          };
 
       return (
         <div className="relative">
@@ -247,15 +377,15 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               {title}
             </h2>
             <div className="flex flex-shrink-0 items-center gap-2">
-              {!isEditing && (
+              {!activeEdit.isEditing && (
                 <>
                   {/* 데스크탑: 모든 버튼 인라인 */}
                   {!isMobileView && (
                     <>
-                      {onSaveContent && !isReadOnly && (
+                      {canEdit && (
                         <button
                           type="button"
-                          onClick={handleEditStart}
+                          onClick={activeEdit.start}
                           className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                         >
                           편집
@@ -263,7 +393,12 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => handleCopy(analysis.content || '')}
+                        onClick={() =>
+                          handleCopy(
+                            analysis.content || '',
+                            analysis.template_id
+                          )
+                        }
                         className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         {copiedKey === 'ai_supervision' ? (
@@ -277,6 +412,17 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                           </>
                         )}
                       </button>
+                      {report && (
+                        <button
+                          type="button"
+                          onClick={() => handlePdfExport(analysis)}
+                          disabled={isPdfExporting}
+                          className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors disabled:opacity-50 lg:hover:bg-grey-10 lg:hover:text-grey-100"
+                        >
+                          <FileText size={18} />
+                          {isPdfExporting ? '생성 중...' : 'PDF 출력하기'}
+                        </button>
+                      )}
                       {onCreateAnalysis && (
                         <button
                           type="button"
@@ -294,10 +440,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                   {/* 태블릿: 편집/복사 인라인 + ⋮ */}
                   {isMobileView && isTablet && (
                     <>
-                      {onSaveContent && !isReadOnly && (
+                      {canEdit && (
                         <button
                           type="button"
-                          onClick={handleEditStart}
+                          onClick={activeEdit.start}
                           className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                         >
                           편집
@@ -305,7 +451,12 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                       )}
                       <button
                         type="button"
-                        onClick={() => handleCopy(analysis.content || '')}
+                        onClick={() =>
+                          handleCopy(
+                            analysis.content || '',
+                            analysis.template_id
+                          )
+                        }
                         className="flex items-center gap-1 rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                       >
                         <CopyIcon size={20} /> 복사하기
@@ -342,10 +493,10 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                         mobileVariant="bottomSheet"
                       >
                         <div className="mb-16 w-full space-y-1">
-                          {!isTablet && onSaveContent && !isReadOnly && (
+                          {!isTablet && canEdit && (
                             <button
                               onClick={() => {
-                                handleEditStart();
+                                activeEdit.start();
                                 setIsMenuOpen(false);
                               }}
                               className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
@@ -360,13 +511,33 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
                           {!isTablet && (
                             <button
                               onClick={() => {
-                                handleCopy(analysis.content || '');
+                                handleCopy(
+                                  analysis.content || '',
+                                  analysis.template_id
+                                );
                                 setIsMenuOpen(false);
                               }}
                               className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                             >
                               <span className="text-l text-grey-100">
                                 복사하기
+                              </span>
+                              <ChevronRightIcon
+                                size={20}
+                                className="text-grey-70"
+                              />
+                            </button>
+                          )}
+                          {report && (
+                            <button
+                              onClick={() => {
+                                handlePdfExport(analysis);
+                                setIsMenuOpen(false);
+                              }}
+                              className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
+                            >
+                              <span className="text-l text-grey-100">
+                                PDF 출력하기
                               </span>
                               <ChevronRightIcon
                                 size={20}
@@ -400,27 +571,27 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
               )}
 
               {/* 편집 중 */}
-              {isEditing && (
+              {activeEdit.isEditing && (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={handleCancelEdit}
-                    disabled={isSaving}
+                    onClick={activeEdit.cancel}
+                    disabled={activeEdit.isSaving}
                     className="rounded-md border border-grey-30 px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10"
                   >
                     취소
                   </button>
                   <button
                     type="button"
-                    onClick={handleSaveEdit}
-                    disabled={!hasEdits || isSaving}
+                    onClick={activeEdit.save}
+                    disabled={!activeEdit.hasEdits || activeEdit.isSaving}
                     className={`rounded-md px-3.5 py-1 text-m font-medium transition-colors ${
-                      hasEdits && !isSaving
+                      activeEdit.hasEdits && !activeEdit.isSaving
                         ? 'bg-green-80 text-white lg:hover:opacity-90'
                         : 'cursor-not-allowed bg-grey-20 text-grey-60'
                     }`}
                   >
-                    {isSaving ? '저장 중...' : '저장'}
+                    {activeEdit.isSaving ? '저장 중...' : '저장'}
                   </button>
                 </div>
               )}
@@ -435,13 +606,23 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
           {/* 모바일: 구분선 */}
           {isMobileView && <div className="mb-6 border-b border-grey-30" />}
 
-          {/* 마크다운 렌더링 */}
-          <MarkdownRenderer
-            ref={isEditing ? markdownRef : undefined}
-            content={removeNonverbalTags(analysis.content)}
-            className="text-start"
-            editable={isEditing}
-          />
+          {/* 본문: JSON(section/block) 보고서면 전용 렌더러, 아니면 구 Markdown 하위호환 */}
+          {report ? (
+            <SupervisionReportRenderer
+              content={analysis.content}
+              templateId={analysis.template_id}
+              editable={structuredSession.isEditing}
+              draftReport={structuredSession.draft}
+              onDraftChange={structuredSession.updateDraft}
+            />
+          ) : (
+            <MarkdownRenderer
+              ref={isEditing ? markdownRef : undefined}
+              content={removeNonverbalTags(analysis.content)}
+              className="text-start"
+              editable={isEditing}
+            />
+          )}
         </div>
       );
     }
@@ -529,18 +710,34 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
         {/* 분석 내용 */}
         <div
           className={`flex h-full min-h-[400px] flex-col items-center justify-center bg-white p-6 ${
-            isMobileView && !isTablet ? '' : 'rounded-lg border border-grey-30'
+            isMobileView && !isTablet ? '' : 'rounded-lg border border-grey-40'
           }`}
         >
-          <p className="mb-4 text-m text-grey-60">아직 분석 기록이 없어요.</p>
-          {onCreateAnalysis && (
-            <button
-              type="button"
-              onClick={onCreateAnalysis}
-              className="rounded-lg bg-green-80 px-8 py-3 text-m font-medium text-white transition-colors lg:hover:opacity-90"
-            >
-              AI 슈퍼비전 받기
-            </button>
+          {hasNoSessionRecords ? (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <p className="text-l font-medium text-grey-70">
+                아직 등록된 상담 기록이 없어요. <br /> 슈퍼비전을 위해서는 상담
+                기록을 <br /> 1회기 이상 등록해주세요.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="mb-6 text-center text-l font-medium text-grey-100">
+                다회기의 상담기록을 기반으로 <br /> 슈퍼비전을 받아보세요.
+              </p>
+              {onCreateAnalysis && (
+                <button
+                  type="button"
+                  onClick={onCreateAnalysis}
+                  className="flex gap-2 rounded-md border border-green-80 bg-green-20 px-3.5 py-1.5 text-m font-medium text-green-80 transition-colors lg:hover:opacity-90"
+                >
+                  AI 슈퍼비전 받기{' '}
+                  <span className="flex items-center justify-center gap-0.5 text-center">
+                    50 <CreditIcon size={14} className="text-green-80" />
+                  </span>
+                </button>
+              )}
+            </>
           )}
         </div>
         <LockedFeatureModal

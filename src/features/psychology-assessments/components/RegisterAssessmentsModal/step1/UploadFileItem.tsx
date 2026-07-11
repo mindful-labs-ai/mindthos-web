@@ -32,25 +32,23 @@ export const UploadFileItem = ({
   return (
     <div
       className={cn(
-        'relative flex items-center justify-between gap-5 rounded-xl bg-surface px-5 py-4',
+        'flex h-[82px] items-center gap-3 rounded-lg bg-surface px-4 py-3',
         className
       )}
     >
       <div className="flex flex-shrink-0 items-center">
         {isMissingType ? (
-          <StatusCircle tone="warning" symbol="exclaim" size={28} />
+          <StatusCircle tone="warning" symbol="exclaim" size={20} />
         ) : (
-          <StatusCircle tone="success" symbol="check" size={28} />
+          <StatusCircle tone="success" symbol="check" size={20} />
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <p className="truncate text-l font-emphasize text-grey-100">
-          {file.fileName}
-        </p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-medium text-fg">{file.fileName}</p>
 
         {/* 메타 줄 — 사이즈/페이지수 + 검사 종류 dropdown (상태 무관 항상 노출) */}
-        <div className="flex items-center gap-2 text-sm font-sub text-grey-80">
+        <div className="typo-sm flex items-center gap-2 text-fg-muted">
           {hasSize && (
             <>
               <span>{file.sizeMB.toFixed(1)}MB</span>
@@ -74,10 +72,10 @@ export const UploadFileItem = ({
       <button
         type="button"
         onClick={() => onRemove(file.id)}
-        className="absolute right-3 top-2.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-grey-40 transition-colors lg:hover:bg-grey-20 lg:hover:text-grey-100"
+        className="flex-shrink-0 p-1 text-fg-muted transition-colors lg:hover:text-fg"
         aria-label="파일 제거"
       >
-        <XIcon size={24} />
+        <XIcon size={16} />
       </button>
     </div>
   );

@@ -14,8 +14,8 @@ export const NoClientSelectedView = ({
 
   // 모바일: 내담자 선택 트리거가 헤더 우측 상단에 있음
   const guideText = isMobileView
-    ? '우측 상단에서 분석할 내담자를 선택하면\n심리검사 결과지를 등록하고 해석을 받을 수 있어요.'
-    : '좌측에서 분석할 내담자를 선택하면\n심리검사 결과지를 등록하고 해석을 받을 수 있어요.';
+    ? '우측 상단에서 해석할 내담자를 선택하면\n심리검사 결과지를 등록하고 해석을 받을 수 있어요.'
+    : '좌측에서 해석할 내담자를 선택하면\n심리검사 결과지를 등록하고 해석을 받을 수 있어요.';
 
   return (
     <div
@@ -29,7 +29,7 @@ export const NoClientSelectedView = ({
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-l font-emphasize text-grey-100">
-          내담자를 선택해주세요
+          내담자를 선택해 주세요
         </p>
         <p className="whitespace-pre-line text-sm text-grey-60">{guideText}</p>
       </div>

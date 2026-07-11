@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { PenIcon } from '@/shared/icons';
+import { TitleEdit } from '@/shared/icons';
 import { BackButton } from '@/shared/ui';
 import { formatDuration, formatKoreanDateTime } from '@/shared/utils/date';
 
@@ -154,7 +154,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
               {title}
             </h1>
             {onTitleUpdate && (
-              <PenIcon size={14} className="flex-shrink-0 text-grey-60" />
+              <TitleEdit size={14} className="flex-shrink-0 text-grey-60" />
             )}
           </button>
         )}
@@ -258,7 +258,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
                   className="text-fg-muted lg:hover:text-fg"
                   aria-label="제목 수정"
                 >
-                  <PenIcon size={16} className="text-grey-60" />
+                  <TitleEdit size={16} className="text-grey-60" />
                 </button>
               )}
             </>

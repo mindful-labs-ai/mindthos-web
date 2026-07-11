@@ -2,7 +2,11 @@ import React from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { ROUTES, getSessionDetailRoute } from '@/app/router/constants';
+import {
+  ROUTES,
+  getAiSupervisionRoute,
+  getSessionDetailRoute,
+} from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import {
   dummyClient,
@@ -16,7 +20,6 @@ import type {
 } from '@/features/session/types';
 import { formatPreviewText } from '@/features/session/utils/formatPreview';
 import { trackEvent } from '@/lib/mixpanel';
-import { GUIDE_URL } from '@/shared/constants/externalUrls';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
@@ -24,18 +27,21 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import {
   AddClientActionIcon,
+  GenogramActionIcon,
+  ScheduleActionIcon,
   SessionHistoryActionIcon,
+  SuperVisionActionIcon,
   UploadActionIcon,
 } from '@/shared/icons';
 import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
-import { WelcomeBanner } from '@/shared/ui/composites/WelcomeBanner';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 import { useQuestStore } from '@/stores/questStore';
 import { ActionCard } from '@/widgets/home/ActionCard';
 import { GreetingSection } from '@/widgets/home/GreetingSection';
+import { HomeEventBanner } from '@/widgets/home/HomeEventBanner';
 import { QuestStep } from '@/widgets/onboarding/QuestStep';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
@@ -49,8 +55,6 @@ const HomeContainer = () => {
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
   const user = useAuthStore((state) => state.user);
-  const [isWelcomeBannerVisible, setIsWelcomeBannerVisible] =
-    React.useState(true);
 
   const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
     useQuestStore();
@@ -182,17 +186,6 @@ const HomeContainer = () => {
   };
   const remainingDays = calculateRemainingDays(startedAt);
 
-  React.useEffect(() => {
-    if (isWelcomeBannerVisible && isChecked && !shouldShowOnboarding) {
-      trackEvent(MixpanelEvent.WelcomeBannerView);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isChecked, shouldShowOnboarding]);
-
-  const handleGuideClick = () => {
-    window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
-  };
-
   const handleUploadClick = () => {
     openModal('createMultiSession');
   };
@@ -203,6 +196,18 @@ const HomeContainer = () => {
 
   const handleViewAllRecordsClick = () => {
     navigateWithUtm(ROUTES.SESSIONS);
+  };
+
+  const handleGenogramClick = () => {
+    navigateWithUtm(ROUTES.GENOGRAM);
+  };
+
+  const handleCalendarClick = () => {
+    navigateWithUtm(ROUTES.CALENDAR);
+  };
+
+  const handleSupervisionClick = () => {
+    navigateWithUtm(getAiSupervisionRoute());
   };
 
   const handleSessionClick = (record: SessionRecord) => {
@@ -221,6 +226,8 @@ const HomeContainer = () => {
   const hasSession = sessionItems.length > 0;
   const hasMoreSessions = sessionsWithTranscribes.length > 5;
 
+  // 워크숍 이벤트 배너 — 추가 기획 전까지 유저에게 노출하지 않는다(QA). 재개 시 true로.
+  const SHOW_HOME_EVENT_BANNER: boolean = false;
   const onboardingSection = isChecked ? (
     <div className="max-w-[1200px]">
       {shouldShowOnboarding ? (
@@ -231,20 +238,10 @@ const HomeContainer = () => {
           hasSession={hasSession}
           onCompleteQuest3={handleCompleteQuest3}
         />
-      ) : (
-        isWelcomeBannerVisible && (
-          <WelcomeBanner
-            title="마음토스 시작하기"
-            description="아직 마음토스 사용법이 어렵다면, 가이드를 확인해보세요."
-            buttonText="더 알아보기"
-            onButtonClick={handleGuideClick}
-            onClose={() => {
-              trackEvent(MixpanelEvent.WelcomeBannerDismiss);
-              setIsWelcomeBannerVisible(false);
-            }}
-          />
-        )
-      )}
+      ) : SHOW_HOME_EVENT_BANNER ? (
+        // 웰컴 배너 대체 — 이벤트 배너 띠 (닫음 상태는 위젯이 localStorage로 관리)
+        <HomeEventBanner />
+      ) : null}
     </div>
   ) : null;
 
@@ -252,25 +249,45 @@ const HomeContainer = () => {
     <GreetingSection userName={userName!} date={formatKoreanDate()} />
   );
 
+  // 액션 카드 — grid로 배치해 모든 행의 카드 width가 동일하게(셀 폭 = w-full). 6장 = lg 4+2 / md 3+3 / 모바일 2씩.
+  const actionCardClass = 'h-[136px] w-full md:h-40';
   const actionCards = (
-    <div className="mb-8 flex max-w-[1200px] flex-wrap gap-3 md:justify-start md:gap-5 lg:flex-nowrap lg:gap-6">
+    <div className="mb-8 grid max-w-[1200px] grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 xl:grid-cols-4 xl:gap-6">
       <ActionCard
         icon={<UploadActionIcon size={24} />}
         title="녹음 파일 업로드하기"
         onClick={handleUploadClick}
-        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
+        className={actionCardClass}
       />
       <ActionCard
         icon={<AddClientActionIcon size={24} className="text-danger" />}
         title="내담자 추가하기"
         onClick={handleAddCustomerClick}
-        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
+        className={actionCardClass}
       />
       <ActionCard
         icon={<SessionHistoryActionIcon size={24} className="text-warn" />}
         title="상담 기록 전체보기"
         onClick={handleViewAllRecordsClick}
-        className="h-[136px] max-w-[157px] md:h-40 md:max-w-[277px]"
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<GenogramActionIcon size={24} />}
+        title="가계도 그리기"
+        onClick={handleGenogramClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<ScheduleActionIcon size={24} />}
+        title="상담 일정 추가하기"
+        onClick={handleCalendarClick}
+        className={actionCardClass}
+      />
+      <ActionCard
+        icon={<SuperVisionActionIcon size={24} />}
+        title="AI 슈퍼비전 받기"
+        onClick={handleSupervisionClick}
+        className={actionCardClass}
       />
     </div>
   );

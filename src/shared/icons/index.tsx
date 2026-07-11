@@ -18,7 +18,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CloudUpload,
-  Edit3,
   FileSearch,
   FileText,
   Filter,
@@ -49,6 +48,8 @@ import {
   type LucideProps,
 } from 'lucide-react';
 
+import type { FormFieldType } from '@/features/document/types';
+
 // 아이콘 타입 정의
 type IconComponent = React.FC<LucideProps>;
 
@@ -69,7 +70,6 @@ export const ChevronRightIcon: IconComponent = (props) => (
 export const CloudUploadIcon: IconComponent = (props) => (
   <CloudUpload {...props} />
 );
-export const Edit3Icon: IconComponent = (props) => <Edit3 {...props} />;
 export const FileSearchIcon: IconComponent = (props) => (
   <FileSearch {...props} />
 );
@@ -127,9 +127,6 @@ export const ChevronRightIconSolid: IconComponent = (props) => (
 );
 export const CloudUploadIconSolid: IconComponent = (props) => (
   <CloudUpload {...props} fill="currentColor" />
-);
-export const Edit3IconSolid: IconComponent = (props) => (
-  <Edit3 {...props} fill="currentColor" />
 );
 export const FileSearchIconSolid: IconComponent = (props) => (
   <FileSearch {...props} fill="currentColor" />
@@ -289,7 +286,7 @@ export const CopyIcon: React.FC<CustomIconProps> = ({
 /** Retry 아이콘 - 원형 화살표 (채팅 응답 재시도) */
 export const RetryIcon: IconComponent = (props) => <RotateCw {...props} />;
 
-/** Edit 아이콘 - 세션 카드 제목 편집 펜 */
+/** Edit 아이콘 - 편집 버튼 공용 펜(세션 카드 제목 편집에서 시작). 색은 currentColor — 사용처 텍스트 색을 따른다. */
 export const TitleEdit: React.FC<CustomIconProps> = ({
   size = 20,
   className,
@@ -304,7 +301,7 @@ export const TitleEdit: React.FC<CustomIconProps> = ({
   >
     <path
       d="M3.33594 16.6681H16.6693M3.33594 16.6681V13.3347L10.0026 6.66807M3.33594 16.6681L6.66927 16.668L13.3359 10.0014M10.0026 6.66807L12.3931 4.27752L12.3946 4.2761C12.7236 3.94703 12.8885 3.78221 13.0785 3.72047C13.2458 3.66609 13.4261 3.66609 13.5935 3.72047C13.7834 3.78216 13.948 3.9468 14.2766 4.27541L15.7264 5.72524C16.0565 6.05525 16.2215 6.22033 16.2834 6.41061C16.3377 6.57798 16.3377 6.75826 16.2833 6.92563C16.2216 7.11577 16.0567 7.2806 15.7272 7.61015L15.7265 7.61085L13.3359 10.0014M10.0026 6.66807L13.3359 10.0014"
-      stroke="#BABCC7"
+      stroke="currentColor"
       strokeWidth="1.25"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -312,32 +309,77 @@ export const TitleEdit: React.FC<CustomIconProps> = ({
   </svg>
 );
 
-/** Pen 아이콘 - 색칠 된 펜 */
-export const PenIcon: React.FC<CustomIconProps> = ({
-  size = 16,
+/** 드래그 핸들 아이콘 - 2x2 점 */
+export const DragHandleIcon: React.FC<CustomIconProps> = ({
+  size = 24,
   className,
 }) => (
   <svg
     width={size}
     height={size}
-    viewBox="0 0 16 16"
-    fill="currentColor"
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M14 15C14 15.5523 14.4477 16 15 16C15.5523 16 16 15.5523 16 15C16 14.4477 15.5523 14 15 14C14.4477 14 14 14.4477 14 15Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8 15C8 15.5523 8.44772 16 9 16C9.55228 16 10 15.5523 10 15C10 14.4477 9.55228 14 9 14C8.44772 14 8 14.4477 8 15Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M14 9C14 9.55228 14.4477 10 15 10C15.5523 10 16 9.55228 16 9C16 8.44772 15.5523 8 15 8C14.4477 8 14 8.44772 14 9Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8 9C8 9.55228 8.44772 10 9 10C9.55228 10 10 9.55228 10 9C10 8.44772 9.55228 8 9 8C8.44772 8 8 8.44772 8 9Z"
+      stroke="#3C3C3C"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+export const ClientIcon: React.FC<CustomIconProps> = ({
+  size = 18,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 18 18"
+    fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <g clipPath="url(#clip0_6810_10510)">
+    <g clip-path="url(#clip0_8805_82918)">
       <path
-        d="M0.781333 12.7469C0.281202 13.2469 0.000151033 13.925 0 14.6322L0 16.0009H1.36867C2.07585 16.0007 2.75402 15.7197 3.254 15.2195L12.1493 6.32422L9.67667 3.85156L0.781333 12.7469Z"
-        fill="currentColor"
+        d="M9.11133 1.57715C11.0993 1.57738 12.7109 3.18968 12.7109 5.17773C12.7107 7.16559 11.0992 8.77711 9.11133 8.77734C7.12327 8.77734 5.51098 7.16574 5.51074 5.17773C5.51074 3.18953 7.12313 1.57715 9.11133 1.57715Z"
+        stroke="#BABCC7"
+        stroke-width="1.35"
       />
       <path
-        d="M15.4298 0.571216C15.2675 0.408706 15.0747 0.279786 14.8625 0.191827C14.6503 0.103867 14.4228 0.0585938 14.1931 0.0585938C13.9634 0.0585937 13.736 0.103867 13.5238 0.191827C13.3116 0.279786 13.1188 0.408706 12.9565 0.571216L10.6191 2.90922L13.0918 5.38188L15.4298 3.04455C15.5923 2.88221 15.7212 2.68943 15.8092 2.47723C15.8972 2.26504 15.9424 2.03759 15.9424 1.80788C15.9424 1.57818 15.8972 1.35073 15.8092 1.13853C15.7212 0.926335 15.5923 0.733556 15.4298 0.571216Z"
-        fill="currentColor"
+        d="M8.99805 11.4756C13.2313 11.4794 16.3982 14.1915 16.4229 17.252C16.4202 17.2545 16.4178 17.259 16.4131 17.2627C16.378 17.2907 16.3042 17.3262 16.1982 17.3262H1.79883C1.69294 17.3262 1.61908 17.2907 1.58398 17.2627C1.57935 17.259 1.57593 17.2555 1.57324 17.2529C1.59723 14.1923 4.76471 11.4798 8.99805 11.4756Z"
+        stroke="#BABCC7"
+        stroke-width="1.35"
       />
     </g>
     <defs>
-      <clipPath id="clip0_6810_10510">
-        <rect width="16" height="16" fill="white" />
+      <clipPath id="clip0_8805_82918">
+        <rect width="18" height="18" fill="white" />
       </clipPath>
     </defs>
   </svg>
@@ -429,7 +471,28 @@ export const SideCalendarIcon: React.FC<CustomIconProps> = ({
     className={className}
   >
     <path
-      d="M4 8H20M4 8V16.8002C4 17.9203 4 18.4801 4.21799 18.9079C4.40973 19.2842 4.71547 19.5905 5.0918 19.7822C5.5192 20 6.07899 20 7.19691 20H16.8031C17.921 20 18.48 20 18.9074 19.7822C19.2837 19.5905 19.5905 19.2842 19.7822 18.9079C20 18.4805 20 17.9215 20 16.8036V8M4 8V7.2002C4 6.08009 4 5.51962 4.21799 5.0918C4.40973 4.71547 4.71547 4.40973 5.0918 4.21799C5.51962 4 6.08009 4 7.2002 4H8M20 8V7.19691C20 6.07899 20 5.5192 19.7822 5.0918C19.5905 4.71547 19.2837 4.40973 18.9074 4.21799C18.4796 4 17.9203 4 16.8002 4H16M8 4H16M8 4V2M16 4V2M16 12H8"
+      d="M18.2222 4H5.77778C4.79594 4 4 4.79594 4 5.77778V18.2222C4 19.2041 4.79594 20 5.77778 20H18.2222C19.2041 20 20 19.2041 20 18.2222V5.77778C20 4.79594 19.2041 4 18.2222 4Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M4 10H20"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M16 2V6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8 2V6"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
@@ -585,15 +648,64 @@ export const SidePsychologyAssessmentIcon: React.FC<CustomIconProps> = ({
     height={size}
     viewBox="0 0 24 24"
     fill="none"
-    xmlns="http://www.w3.org/2000/svg"
     className={className}
+    xmlns="http://www.w3.org/2000/svg"
   >
     <path
-      d="M3 15.0002V16.8C3 17.9201 3 18.4798 3.21799 18.9076C3.40973 19.2839 3.71547 19.5905 4.0918 19.7822C4.5192 20 5.07899 20 6.19691 20H21.0002M3 15.0002V5M3 15.0002L6.8534 11.7891L6.85658 11.7865C7.55366 11.2056 7.90288 10.9146 8.28154 10.7964C8.72887 10.6567 9.21071 10.6788 9.64355 10.8584C10.0105 11.0106 10.3323 11.3324 10.9758 11.9759L10.9822 11.9823C11.6357 12.6358 11.9633 12.9635 12.3362 13.1153C12.7774 13.2951 13.2685 13.3106 13.7207 13.1606C14.1041 13.0334 14.4542 12.7275 15.1543 12.115L21 7"
+      d="M15 15L21 21M10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 13.866 13.866 17 10 17Z"
       stroke="currentColor"
       stroke-width="1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
+    />
+  </svg>
+);
+
+/** AI 슈퍼비전 - 사이드 네비게이션 아이콘 (book open) */
+export const SideSupervisionIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M12 9.7998V19.9998M12 19.9998L11.4185 19.1277C10.9017 18.3526 10.6426 17.9638 10.2998 17.6821C9.99512 17.4317 9.64306 17.2441 9.26569 17.1295C8.83942 17 8.36994 17 7.43073 17H4.59797C4.03901 17 3.7596 17 3.5459 16.8911C3.35774 16.7952 3.20487 16.6419 3.10899 16.4537C3 16.2398 3 15.9601 3 15.4001V6.6001C3 6.04004 3 5.75981 3.10899 5.5459C3.20487 5.35774 3.35774 5.20487 3.5459 5.10899C3.75981 5 4.03956 5 4.59961 5H7.19961C8.87977 5 9.72004 5 10.3618 5.32698C10.9263 5.6146 11.3852 6.0737 11.6729 6.63818C11.9998 7.27992 12 8.11965 12 9.7998C12 8.11965 12 7.27992 12.327 6.63818C12.6146 6.0737 13.0732 5.6146 13.6377 5.32698C14.2794 5 15.1196 5 16.7998 5H19.3998C19.9599 5 20.2401 5 20.454 5.10899C20.6422 5.20487 20.7948 5.35774 20.8906 5.5459C20.9996 5.75981 21 6.04004 21 6.6001V15.4001C21 15.9601 20.9996 16.2398 20.8906 16.4537C20.7948 16.6419 20.6425 16.7952 20.4543 16.8911C20.2406 17 19.961 17 19.402 17H16.5693C15.6301 17 15.1597 17 14.7334 17.1295C14.356 17.2441 14.0057 17.4317 13.701 17.6821C13.3568 17.965 13.096 18.3557 12.575 19.1372L12 19.9998Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+/**
+ * 문서 관리 - 사이드 네비게이션 아이콘 (placeholder).
+ * 교체 시 아래 <path>만 새 SVG로 바꾸면 됨 — viewBox 24, stroke currentColor 유지.
+ */
+export const SideDocumentIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M3 6V16.8C3 17.9201 3 18.4798 3.21799 18.9076C3.40973 19.2839 3.71547 19.5905 4.0918 19.7822C4.5192 20 5.07899 20 6.19691 20H17.8031C18.921 20 19.48 20 19.9074 19.7822C20.2837 19.5905 20.5905 19.2841 20.7822 18.9078C21.0002 18.48 21.0002 17.9199 21.0002 16.7998L21.0002 9.19978C21.0002 8.07967 21.0002 7.51962 20.7822 7.0918C20.5905 6.71547 20.2839 6.40973 19.9076 6.21799C19.4798 6 18.9201 6 17.8 6H12M3 6H12M3 6C3 4.89543 3.89543 4 5 4H8.67452C9.1637 4 9.40886 4 9.63904 4.05526C9.84311 4.10425 10.0379 4.18526 10.2168 4.29492C10.4186 4.41857 10.5918 4.59182 10.9375 4.9375L12 6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -1111,21 +1223,13 @@ export const UploadActionIcon: React.FC<CustomIconProps> = ({
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <g clipPath="url(#clip0_6043_83411)">
-      <path
-        d="M8.08145 5.50529L11.0074 2.57832L11.0004 18.0161C11.0004 18.5683 11.4481 19.016 12.0004 19.016C12.5526 19.016 13.0003 18.5683 13.0003 18.0161L13.0073 2.59533L15.9193 5.50829C16.3166 5.89195 16.9496 5.88099 17.3333 5.48373C17.7076 5.09622 17.7076 4.48184 17.3333 4.09433L14.1223 0.879361C12.9511 -0.292589 11.0517 -0.293198 9.87973 0.878002C9.87927 0.878471 9.87884 0.878893 9.87838 0.879361L6.66744 4.09133C6.28377 4.48859 6.29474 5.12162 6.692 5.50529C7.07951 5.87958 7.69389 5.87958 8.08145 5.50529Z"
-        fill="#44CE4B"
-      />
-      <path
-        d="M22.9996 16C22.4473 16 21.9996 16.4477 21.9996 17V20.9999C21.9996 21.5522 21.5519 21.9999 20.9996 21.9999H2.99991C2.44763 21.9999 1.99994 21.5522 1.99994 20.9999V17C1.99994 16.4477 1.55224 16 0.999969 16C0.447696 16 0 16.4477 0 17V20.9999C0 22.6567 1.34314 23.9999 2.99995 23.9999H20.9997C22.6565 23.9999 23.9996 22.6567 23.9996 20.9999V17C23.9995 16.4477 23.5518 16 22.9996 16Z"
-        fill="#44CE4B"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_6043_83411">
-        <rect width="24" height="24" fill="white" />
-      </clipPath>
-    </defs>
+    <path
+      d="M9 12L12 9L15 12M12 9L12 20M7.24859 15L7.2002 15C6.08009 15 5.51962 15 5.0918 14.782C4.71547 14.5903 4.40973 14.2845 4.21799 13.9082C4 13.4804 4 12.9199 4 11.7998L4 7.19981C4 6.0797 4 5.52043 4.21799 5.09261C4.40973 4.71628 4.71547 4.40952 5.0918 4.21777C5.5192 4 6.07899 4 7.19691 4L16.8036 4C17.9215 4 18.4805 4 18.9079 4.21777C19.2842 4.40952 19.5905 4.71628 19.7822 5.09261C20 5.52001 20 6.079 20 7.19691L20 11.8031C20 12.921 20 13.4808 19.7822 13.9082C19.5905 14.2845 19.2839 14.5903 18.9076 14.782C18.4798 15 17.9201 15 16.8 15L16.75 15"
+      stroke="#44CE4B"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
   </svg>
 );
 
@@ -1141,25 +1245,13 @@ export const AddClientActionIcon: React.FC<CustomIconProps> = ({
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    <g clipPath="url(#clip0_6043_83415)">
-      <path
-        d="M23 11H21V8.99998C21 8.4477 20.5523 8 20 8C19.4477 8 19 8.4477 19 8.99998V11H17C16.4477 11 16 11.4477 16 12C16 12.5523 16.4477 13 17 13H19V15C19 15.5523 19.4477 16 20 16C20.5523 16 21 15.5523 21 15V13H23C23.5523 13 24 12.5523 24 12C24 11.4477 23.5523 11 23 11Z"
-        fill="#D54036"
-      />
-      <path
-        d="M9 12C12.3137 12 15 9.31371 15 6C15 2.68629 12.3137 0 9 0C5.68629 0 3 2.68629 3 6C3 9.31371 5.68629 12 9 12Z"
-        fill="#D54036"
-      />
-      <path
-        d="M9 14C4.03172 14.0055 0.00553125 18.0317 0 23C0 23.5523 0.447703 24 0.999984 24H17C17.5522 24 18 23.5523 18 23C17.9945 18.0317 13.9683 14.0055 9 14Z"
-        fill="#D54036"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_6043_83415">
-        <rect width="24" height="24" fill="white" />
-      </clipPath>
-    </defs>
+    <path
+      d="M15 19C15 16.7909 12.3137 15 9 15C5.68629 15 3 16.7909 3 19M19 16V13M19 13V10M19 13H16M19 13H22M9 12C6.79086 12 5 10.2091 5 8C5 5.79086 6.79086 4 9 4C11.2091 4 13 5.79086 13 8C13 10.2091 11.2091 12 9 12Z"
+      stroke="#D54036"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
   </svg>
 );
 
@@ -1176,20 +1268,124 @@ export const SessionHistoryActionIcon: React.FC<CustomIconProps> = ({
     className={className}
   >
     <path
-      d="M12 20.9982C8.1358 20.9938 5.00441 17.8624 5 13.9982V4.99823C5 4.79822 5.01298 4.59825 5.03 4.40625C3.194 5.19497 2.003 6.99998 2 8.99821V18.9982C2.00328 21.7582 4.23992 23.9949 6.99997 23.9982H13C14.9982 23.9952 16.8032 22.8041 17.592 20.9682C17.392 20.9852 17.2 20.9982 17 20.9982H12Z"
-      fill="#EBAE43"
+      d="M9 6H9.33687C9.58146 6 9.70385 6 9.81893 6.02763C9.92097 6.05213 10.0189 6.09263 10.1084 6.14746C10.2093 6.20928 10.2959 6.29591 10.4688 6.46875L13.5315 9.53149C13.7044 9.70444 13.7904 9.79044 13.8523 9.89135C13.9071 9.98082 13.9482 10.0786 13.9727 10.1807C14 10.2946 14 10.4155 14 10.6552V18M9 6H4.59961C4.03956 6 3.75981 6 3.5459 6.10899C3.35774 6.20487 3.20487 6.35774 3.10899 6.5459C3 6.75981 3 7.04004 3 7.6001V19.4001C3 19.9601 3 20.2398 3.10899 20.4537C3.20487 20.6419 3.35774 20.7952 3.5459 20.8911C3.7596 21 4.03902 21 4.598 21L12.4011 21C12.96 21 13.2405 21 13.4542 20.8911C13.6423 20.7952 13.7948 20.6421 13.8906 20.4539C13.9996 20.24 14 19.9599 14 19.3999V18M9 6V9.4C9 9.96005 9 10.2399 9.10899 10.4538C9.20487 10.642 9.35774 10.7952 9.5459 10.8911C9.7596 11 10.039 11 10.598 11H13.9996M10 6.0001V4.6001C10 4.04005 10 3.75981 10.109 3.5459C10.2049 3.35774 10.3577 3.20487 10.5459 3.10899C10.7598 3 11.0396 3 11.5996 3H16M16 3H16.3369C16.5815 3 16.7038 3 16.8189 3.02763C16.921 3.05213 17.0189 3.09263 17.1084 3.14746C17.2093 3.20928 17.2959 3.29592 17.4688 3.46875L20.5315 6.53149C20.7044 6.70444 20.7904 6.79044 20.8523 6.89135C20.9071 6.98082 20.9482 7.07863 20.9727 7.18066C21 7.29458 21 7.41552 21 7.65515V16.3999C21 16.9599 20.9996 17.24 20.8906 17.4539C20.7948 17.6421 20.6429 17.7952 20.4548 17.8911C20.2411 18 19.961 18 19.402 18H14M16 3V6.4C16 6.96005 16 7.23988 16.109 7.4538C16.2049 7.64196 16.3577 7.79524 16.5459 7.89111C16.7596 8 17.039 8 17.598 8H20.9996"
+      stroke="#EBAE43"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+export const GenogramActionIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <mask id="path-1-inside-1_9059_26087" fill="white">
+      <rect x="1" y="1" width="8.88889" height="8.88889" rx="1.11111" />
+    </mask>
+    <rect
+      x="1"
+      y="1"
+      width="8.88889"
+      height="8.88889"
+      rx="1.11111"
+      stroke="#CACA2A"
+      stroke-width="4"
+      mask="url(#path-1-inside-1_9059_26087)"
+    />
+    <circle
+      cx="18.9444"
+      cy="5.44444"
+      r="3.44444"
+      stroke="#CACA2A"
+      stroke-width="2"
+    />
+    <circle
+      cx="11.9444"
+      cy="18.4444"
+      r="3.44444"
+      stroke="#CACA2A"
+      stroke-width="2"
     />
     <path
-      d="M21.155 3.26889L18.871 0.909906C18.6195 0.655234 18.3246 0.447625 18 0.296875V3.99686H21.66C21.5288 3.73047 21.3586 3.48508 21.155 3.26889Z"
-      fill="#EBAE43"
+      d="M5.5 9C5.5 10 5.5 12 5.5 12H19V9"
+      stroke="#CACA2A"
+      stroke-width="2"
+    />
+    <path d="M12 12.1094V14.3316" stroke="#CACA2A" stroke-width="2" />
+  </svg>
+);
+
+export const ScheduleActionIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M18.2222 4H5.77778C4.79594 4 4 4.79594 4 5.77778V18.2222C4 19.2041 4.79594 20 5.77778 20H18.2222C19.2041 20 20 19.2041 20 18.2222V5.77778C20 4.79594 19.2041 4 18.2222 4Z"
+      stroke="#6E81EA"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
     <path
-      d="M17 4.00227C17 4.55455 17.4477 5.00225 18 5.00225H21.966C21.8923 4.35294 21.6074 3.74577 21.155 3.27425L18.871 0.915266C18.3714 0.408828 17.7085 0.0956562 17 0.03125V4.00227Z"
-      fill="#EBAE43"
+      d="M4 10H20"
+      stroke="#6E81EA"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
     <path
-      d="M15 3.99998V0H12C9.23997 0.00332812 7.00333 2.23997 7 5.00002V14C7.00333 16.7601 9.23997 18.9967 12 19H17C19.7601 18.9967 21.9967 16.7601 22 14V6.99998H18C16.3432 6.99998 15 5.65688 15 3.99998Z"
-      fill="#EBAE43"
+      d="M16 2V6"
+      stroke="#6E81EA"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M8 2V6"
+      stroke="#6E81EA"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
+export const SuperVisionActionIcon: React.FC<CustomIconProps> = ({
+  size = 24,
+  className,
+}) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M12 9.7998V19.9998M12 19.9998L11.4185 19.1277C10.9017 18.3526 10.6426 17.9638 10.2998 17.6821C9.99512 17.4317 9.64306 17.2441 9.26569 17.1295C8.83942 17 8.36994 17 7.43073 17H4.59797C4.03901 17 3.7596 17 3.5459 16.8911C3.35774 16.7952 3.20487 16.6419 3.10899 16.4537C3 16.2398 3 15.9601 3 15.4001V6.6001C3 6.04004 3 5.75981 3.10899 5.5459C3.20487 5.35774 3.35774 5.20487 3.5459 5.10899C3.75981 5 4.03956 5 4.59961 5H7.19961C8.87977 5 9.72004 5 10.3618 5.32698C10.9263 5.6146 11.3852 6.0737 11.6729 6.63818C11.9998 7.27992 12 8.11965 12 9.7998C12 8.11965 12 7.27992 12.327 6.63818C12.6146 6.0737 13.0732 5.6146 13.6377 5.32698C14.2794 5 15.1196 5 16.7998 5H19.3998C19.9599 5 20.2401 5 20.454 5.10899C20.6422 5.20487 20.7948 5.35774 20.8906 5.5459C20.9996 5.75981 21 6.04004 21 6.6001V15.4001C21 15.9601 20.9996 16.2398 20.8906 16.4537C20.7948 16.6419 20.6425 16.7952 20.4543 16.8911C20.2406 17 19.961 17 19.402 17H16.5693C15.6301 17 15.1597 17 14.7334 17.1295C14.356 17.2441 14.0057 17.4317 13.701 17.6821C13.3568 17.965 13.096 18.3557 12.575 19.1372L12 19.9998Z"
+      stroke="#B065E5"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
     />
   </svg>
 );
@@ -1332,6 +1528,191 @@ export const KakaoIcon: React.FC<CustomIconProps> = ({
   </svg>
 );
 
+/**
+ * 문서 관리 — 통합 양식(FormField) 에디터 전용 아이콘 묶음.
+ * 필드 유형(FormFieldType) 값을 키로 하며, 유형 드롭다운 등
+ * 문서 제작 에디터 영역에서만 사용한다.
+ */
+export const FormFieldTypeIcons = {
+  single: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <g clip-path="url(#clip0_8830_85545)">
+          <path
+            d="M18.3307 9.23355V10.0002C18.3297 11.7972 17.7478 13.5458 16.6718 14.9851C15.5959 16.4244 14.0835 17.4773 12.3602 17.9868C10.6369 18.4963 8.79511 18.4351 7.10945 17.8124C5.4238 17.1896 3.98461 16.0386 3.00653 14.5311C2.02845 13.0236 1.56389 11.2403 1.68213 9.44714C1.80036 7.65402 2.49507 5.94715 3.66263 4.58111C4.83019 3.21506 6.40805 2.26303 8.16089 1.867C9.91372 1.47097 11.7476 1.65216 13.3891 2.38355"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M18.3333 3.33398L10 11.6757L7.5 9.17565"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </g>
+        <defs>
+          <clipPath id="clip0_8830_85545">
+            <rect width={size} height={size} fill="white" />
+          </clipPath>
+        </defs>
+      </svg>
+    </>
+  ),
+  multiple: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M7.5 9.16732L10 11.6673L18.3333 3.33398"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M17.5 10V15.8333C17.5 16.2754 17.3244 16.6993 17.0118 17.0118C16.6993 17.3244 16.2754 17.5 15.8333 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H13.3333"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  short: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M3.33594 11.3333H11.6693M3.33594 8H16.6693"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  long: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M3.33594 15H11.6693M3.33594 11.6667H16.6693M3.33594 8.33333H11.6693M3.33594 5H16.6693"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  score: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M6.76777 13.2322C6.31536 12.7798 5.69036 12.5 5 12.5C3.61929 12.5 2.5 13.6193 2.5 15C2.5 16.3807 3.61929 17.5 5 17.5C6.38071 17.5 7.5 16.3807 7.5 15C7.5 14.3096 7.22018 13.6846 6.76777 13.2322ZM6.76777 13.2322L13.2322 6.76777M13.2322 6.76777C13.6846 7.22018 14.3096 7.5 15 7.5C16.3807 7.5 17.5 6.38071 17.5 5C17.5 3.61929 16.3807 2.5 15 2.5C13.6193 2.5 12.5 3.61929 12.5 5C12.5 5.69036 12.7798 6.31536 13.2322 6.76777ZM13.2322 6.76777L13.2357 6.76432"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  section: ({ size = 20, className }) => (
+    <>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className={className}
+      >
+        <path
+          d="M11.6641 10.0007V12.834C11.6641 13.3007 11.6641 13.5339 11.7549 13.7121C11.8348 13.8689 11.9622 13.9967 12.119 14.0766C12.2971 14.1673 12.5303 14.1673 12.9961 14.1673H14.4987C14.9645 14.1673 15.1974 14.1673 15.3755 14.0766C15.5323 13.9967 15.6601 13.8689 15.74 13.7121C15.8307 13.534 15.8307 13.3011 15.8307 12.8353V11.3327C15.8307 10.8669 15.8307 10.6337 15.74 10.4556C15.6601 10.2988 15.5324 10.1714 15.3756 10.0915C15.1973 10.0007 14.9641 10.0007 14.4974 10.0007H11.6641ZM11.6641 10.0007V8.33398C11.6641 6.95327 12.7834 5.83398 14.1641 5.83398M4.16406 10.0007V12.834C4.16406 13.3007 4.16406 13.5339 4.25489 13.7121C4.33478 13.8689 4.46218 13.9967 4.61898 14.0766C4.79706 14.1673 5.03031 14.1673 5.49611 14.1673H6.99868C7.46448 14.1673 7.69739 14.1673 7.87548 14.0766C8.03228 13.9967 8.1601 13.8689 8.23999 13.7121C8.33073 13.534 8.33073 13.3011 8.33073 12.8353V11.3327C8.33073 10.8669 8.33073 10.6337 8.23999 10.4556C8.1601 10.2988 8.03236 10.1714 7.87556 10.0915C7.6973 10.0007 7.46411 10.0007 6.9974 10.0007H4.16406ZM4.16406 10.0007V8.33398C4.16406 6.95327 5.28335 5.83398 6.66406 5.83398"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </>
+  ),
+  richtext: ({ size = 20, className }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M3.33594 5H16.6693M3.33594 8.33333H16.6693M3.33594 11.6667H13.3359M3.33594 15H10.0026"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+  consent: ({ size = 20, className }) => (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <path
+        d="M7.08594 10.0007L9.16927 12.084L13.3359 7.91732M2.5 10.0007C2.5 5.85852 5.85785 2.50065 10 2.50065C14.1421 2.50065 17.5 5.85852 17.5 10.0007C17.5 14.1428 14.1421 17.5007 10 17.5007C5.85785 17.5007 2.5 14.1428 2.5 10.0007Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
+} as const satisfies Record<FormFieldType, React.FC<CustomIconProps>>;
+
 // 편의를 위한 네임스페이스 export
 export const Icons = {
   // Stroke 버전
@@ -1341,7 +1722,6 @@ export const Icons = {
   ChevronLeft: ChevronLeftIcon,
   ChevronRight: ChevronRightIcon,
   CloudUpload: CloudUploadIcon,
-  Edit3: Edit3Icon,
   FileSearch: FileSearchIcon,
   FileText: FileTextIcon,
   Filter: FilterIcon,
@@ -1376,7 +1756,6 @@ export const Icons = {
   ChevronLeftSolid: ChevronLeftIconSolid,
   ChevronRightSolid: ChevronRightIconSolid,
   CloudUploadSolid: CloudUploadIconSolid,
-  Edit3Solid: Edit3IconSolid,
   FileSearchSolid: FileSearchIconSolid,
   FileTextSolid: FileTextIconSolid,
   FilterSolid: FilterIconSolid,

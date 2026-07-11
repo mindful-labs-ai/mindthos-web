@@ -18,7 +18,7 @@ export const ReviewLoadingAnimation = ({
       viewBox="0 0 144 128"
       className={cn('h-32 w-36', className)}
       role="img"
-      aria-label="결과지를 검토하는 중"
+      aria-label="결과지를 확인하는 중"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -54,8 +54,26 @@ export const ReviewLoadingAnimation = ({
       <rect x="0" y="0" width="144" height="128" rx="24" fill="#E8F5EC" />
 
       {/* 기준선 + 보조 그리드 */}
-      <line x1="18" y1="104" x2="126" y2="104" stroke="#CFE5D0" strokeWidth="2" strokeLinecap="round" />
-      <line x1="18" y1="80" x2="126" y2="80" stroke="#CFE5D0" strokeWidth="1.5" strokeDasharray="3 5" strokeLinecap="round" opacity="0.7" />
+      <line
+        x1="18"
+        y1="104"
+        x2="126"
+        y2="104"
+        stroke="#CFE5D0"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <line
+        x1="18"
+        y1="80"
+        x2="126"
+        y2="80"
+        stroke="#CFE5D0"
+        strokeWidth="1.5"
+        strokeDasharray="3 5"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
 
       {/* 돋보기 이동 경로 — 차트 영역을 자유롭게 떠도는 폐곡선 (비표시, seamless loop) */}
       <path
@@ -86,11 +104,34 @@ export const ReviewLoadingAnimation = ({
         </animateMotion>
         <g className="rla-bob">
           {/* 손잡이 */}
-          <line x1="8" y1="8" x2="15" y2="15" stroke="#1A1A1A" strokeWidth="3.5" strokeLinecap="round" />
+          <line
+            x1="8"
+            y1="8"
+            x2="15"
+            y2="15"
+            stroke="#1A1A1A"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
           {/* 렌즈 */}
-          <circle cx="0" cy="0" r="11" fill="#FFFFFF" fillOpacity="0.55" stroke="#1A1A1A" strokeWidth="3" />
+          <circle
+            cx="0"
+            cy="0"
+            r="11"
+            fill="#FFFFFF"
+            fillOpacity="0.55"
+            stroke="#1A1A1A"
+            strokeWidth="3"
+          />
           {/* 글린트 */}
-          <path className="rla-glint" d="M-4 -6 A8 8 0 0 1 6 -4" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+          <path
+            className="rla-glint"
+            d="M-4 -6 A8 8 0 0 1 6 -4"
+            stroke="#FFFFFF"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+          />
         </g>
       </g>
     </svg>

@@ -1,0 +1,142 @@
+import { cn } from '@/lib/cn';
+
+import { WEEKDAYS_KO, weekdayColorClass } from '../constants';
+import type { CalendarEvent } from '../types';
+import { dayjs, getMonthMatrix, isSameDay } from '../utils/calendarDate';
+import type { Dayjs } from '../utils/calendarDate';
+
+import { EventChip } from './EventChip';
+
+interface MonthGridProps {
+  current: Dayjs;
+  events: CalendarEvent[];
+  /** 일정 추가 시 선택된 날짜 (초록 테두리 하이라이트) */
+  selectedDate?: Dayjs | null;
+  /** 편집 중 일정 — 그리드 칩 색 반전 강조 */
+  selectedEvent?: CalendarEvent | null;
+  /** 날짜 셀 단일 클릭 — 추가 모드일 때만 선택 날짜 갱신 */
+  onDateClick?: (day: Dayjs) => void;
+  /** 날짜 셀 더블 클릭 (데스크탑) — 일정 추가 패널 오픈 */
+  onDateDoubleClick?: (day: Dayjs) => void;
+  /** 일정 칩 클릭 — 일정 변경 패널 오픈 */
+  onEventClick?: (event: CalendarEvent) => void;
+}
+
+const MAX_CHIPS = 3;
+
+/** 일정 정렬: 종일 먼저, 그 다음 시작 시간순 */
+function sortEvents(a: CalendarEvent, b: CalendarEvent) {
+  const aAllDay = a.eventTimeKind === 'ALL_DAY';
+  const bAllDay = b.eventTimeKind === 'ALL_DAY';
+  if (aAllDay !== bAllDay) return aAllDay ? -1 : 1;
+  return a.start.localeCompare(b.start);
+}
+
+/** 월간 7×6 그리드 */
+export function MonthGrid({
+  current,
+  events,
+  selectedDate,
+  selectedEvent,
+  onDateClick,
+  onDateDoubleClick,
+  onEventClick,
+}: MonthGridProps) {
+  const weeks = getMonthMatrix(current);
+  const today = dayjs();
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-grey-40 bg-white">
+      {/* 요일 헤더 */}
+      <div className="grid grid-cols-7 border-b border-grey-40 bg-[#fcfcfe]">
+        {WEEKDAYS_KO.map((label, i) => (
+          <div
+            key={label}
+            className={cn(
+              'flex h-[49px] items-center justify-center text-[18px] font-medium',
+              weekdayColorClass(i)
+            )}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+
+      {/* 날짜 셀 */}
+      <div className="grid grid-cols-7">
+        {weeks.flat().map((day) => {
+          const inMonth = day.isSame(current, 'month');
+          const isToday = isSameDay(day, today);
+          const isSelected = !!selectedDate && isSameDay(day, selectedDate);
+          const dayEvents = events
+            .filter((e) => isSameDay(dayjs(e.start), day))
+            .sort(sortEvents);
+          // 작성 중 미리보기(draft)는 실제 일정 정원(MAX_CHIPS)·"+N개" 집계에서 제외하고
+          // 별도로 항상 표시한다 — 미리보기가 실제 일정을 밀어내지 않도록.
+          const draftEvents = dayEvents.filter((e) => e.isDraft);
+          const realEvents = dayEvents.filter((e) => !e.isDraft);
+          const overflow = realEvents.length - MAX_CHIPS;
+
+          return (
+            <div
+              key={day.toISOString()}
+              role="button"
+              tabIndex={0}
+              onClick={() => onDateClick?.(day)}
+              onDoubleClick={() => onDateDoubleClick?.(day)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') onDateDoubleClick?.(day);
+              }}
+              className={cn(
+                'flex min-h-[136px] cursor-pointer flex-col gap-1 border-b border-r border-grey-40 p-2 text-left [&:nth-child(7n)]:border-r-0',
+                isSelected && 'relative z-10 ring-2 ring-inset ring-green-80'
+              )}
+            >
+              <div className="flex h-[30px] items-center">
+                {isToday ? (
+                  <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-green-80 text-m font-emphasize text-white">
+                    {day.date()}
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      'pl-1 text-m font-medium',
+                      // 날짜 숫자도 요일 헤더와 같은 주말 색(일 빨강/토 파랑). 다른 달 날짜는 흐리게 유지.
+                      inMonth ? weekdayColorClass(day.day()) : 'text-grey-60'
+                    )}
+                  >
+                    {day.date()}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1">
+                {realEvents.slice(0, MAX_CHIPS).map((event) => (
+                  <EventChip
+                    key={event.id}
+                    event={event}
+                    onClick={onEventClick}
+                    selected={
+                      !!selectedEvent &&
+                      event.id === selectedEvent.id &&
+                      event.start === selectedEvent.start
+                    }
+                  />
+                ))}
+                {overflow > 0 && (
+                  <span className="pl-1 text-xs font-medium text-grey-60">
+                    +{overflow}개
+                  </span>
+                )}
+                {/* 미리보기 draft 칩 — 정원과 무관하게 항상 마지막에 표시. */}
+                {draftEvents.map((event) => (
+                  <EventChip key={event.id} event={event} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

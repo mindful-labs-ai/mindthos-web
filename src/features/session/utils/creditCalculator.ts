@@ -3,10 +3,17 @@
  * 백엔드 로직과 동일한 계산식 사용
  */
 
+import {
+  SESSION_CREATE_NOTE_CREDIT,
+  STT_CREDIT,
+} from '@/shared/constants/credit';
+
 /**
- * 상담노트 생성 크레딧 (고정값)
+ * 세션 자동 생성 흐름에 포함되는 상담노트 크레딧 (고정값, 정책상 무료 0).
+ * 중앙 상수(SESSION_CREATE_NOTE_CREDIT)에서 가져온다. 단독 상담노트 생성·재생성
+ * 비용(CREDIT_COST.PROGRESS_NOTE=10)과 다른 것은 의도된 정책이다.
  */
-export const PROGRESS_NOTE_CREDIT = 0;
+export const PROGRESS_NOTE_CREDIT = SESSION_CREATE_NOTE_CREDIT;
 
 /**
  * STT 크레딧 계산
@@ -18,15 +25,19 @@ export function calculateSTTCredit(
   transcribeType: 'basic' | 'advanced'
 ): number {
   const durationMinutes = Math.ceil(durationSeconds / 60);
-  const MIN_MINUTES = 30;
+  const MIN_MINUTES = STT_CREDIT.MIN_MINUTES;
+  const ADVANCED_MULTIPLIER = STT_CREDIT.ADVANCED_MULTIPLIER;
 
   if (transcribeType === 'basic') {
     // basic: 최소 30 크레딧, 31분부터 1분당 1 크레딧
     return Math.max(durationMinutes, MIN_MINUTES);
   } else {
     // advanced: 최소 45 크레딧 (30분 * 1.5), 31분부터 1분당 1.5 크레딧 (반내림)
-    const minCredit = Math.floor(MIN_MINUTES * 1.5);
-    return Math.max(Math.floor(durationMinutes * 1.5), minCredit);
+    const minCredit = Math.floor(MIN_MINUTES * ADVANCED_MULTIPLIER);
+    return Math.max(
+      Math.floor(durationMinutes * ADVANCED_MULTIPLIER),
+      minCredit
+    );
   }
 }
 

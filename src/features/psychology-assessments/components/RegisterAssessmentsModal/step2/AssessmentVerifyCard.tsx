@@ -20,8 +20,8 @@ const statusBorderClass: Record<VerificationResult['status'], string> = {
 
 const statusLabelText: Record<VerificationResult['status'], string> = {
   complete: '확인 완료',
-  missing: '항목 누락됨',
-  invalid: '등록 불가',
+  missing: '확인 필요',
+  invalid: '등록할 수 없음',
 };
 
 const statusLabelColor: Record<VerificationResult['status'], string> = {
@@ -38,10 +38,20 @@ export const AssessmentVerifyCard = ({
 }: AssessmentVerifyCardProps) => {
   const { status, itemsVerified, itemsTotal } = result;
 
+  // 누락 항목 수(MISSING_FIELD). itemsTotal - itemsVerified.
+  const missingCount =
+    itemsTotal !== null && itemsVerified !== null
+      ? Math.max(0, itemsTotal - itemsVerified)
+      : 0;
+
+  // 카드 우측 요약 문구.
+  // - missing(MISSING_FIELD): 더 필요한 내용 개수 안내
+  // - complete(valid): 확인 완료 안내
+  // - invalid는 아래 분기에서 invalidReason을 별도로 표시한다.
   const itemSummary =
-    itemsTotal === null || itemsVerified === null
-      ? '결과지 확인됨'
-      : `${itemsVerified}/${itemsTotal} 항목 확인됨`;
+    status === 'missing'
+      ? `${missingCount}개의 내용이 더 필요해요`
+      : '결과지 내용을 확인했어요';
 
   const isInvalid = status === 'invalid';
 
@@ -84,7 +94,7 @@ export const AssessmentVerifyCard = ({
           className={cn('text-sm', isInvalid ? 'text-red-80' : 'text-grey-100')}
         >
           {isInvalid
-            ? (result.invalidReason ?? '알 수 없는 검사 종류')
+            ? (result.invalidReason ?? '지원하는 결과지인지 확인해 주세요')
             : itemSummary}
         </span>
         {isInvalid && onDelete && (
@@ -93,7 +103,7 @@ export const AssessmentVerifyCard = ({
             onClick={onDelete}
             disabled={deleting}
             className={cn(
-              'ml-2 rounded-md border border-red-80 px-2 py-1 text-xs font-medium text-red-80 transition-colors lg:hover:bg-red-10',
+              'lg:hover:bg-red-10 ml-2 rounded-md border border-red-80 px-2 py-1 text-xs font-medium text-red-80 transition-colors',
               deleting && 'cursor-not-allowed opacity-50'
             )}
           >

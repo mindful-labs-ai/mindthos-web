@@ -70,6 +70,7 @@ export const dummyTranscribe: Transcribe[] = [
     user_id: 0,
     title: '홍길동 1회기',
     counsel_date: '2025-12-08 05:04:37.824526+00',
+    parsed_text: null,
     contents: {
       language: 'ko',
       segments: [
@@ -1066,6 +1067,7 @@ export const dummyTranscribe: Transcribe[] = [
     user_id: 0,
     title: '홍길동 2회기',
     counsel_date: '2025-12-10 05:40:17.959886+00',
+    parsed_text: null,
     contents: {
       language: 'ko',
       segments: [
@@ -1579,6 +1581,7 @@ export const dummyTranscribe: Transcribe[] = [
     user_id: 0,
     title: '홍길동 2회기',
     counsel_date: '2025-12-11 05:40:17.959886+00',
+    parsed_text: null,
     contents: {
       language: 'ko',
       segments: [

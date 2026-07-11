@@ -1,5 +1,7 @@
+import { CREDIT_COST } from './credit';
+
 export const GENOGRAM_REPORT_TEMPLATE_KEY = 'GENOGRAM_ANALYSIS';
-export const REPORT_CREDIT_COST = 10;
+export const REPORT_CREDIT_COST = CREDIT_COST.GENOGRAM_REPORT;
 
 export const CHECKLIST = [
   {

@@ -1,8 +1,7 @@
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
 import { cn } from '@/lib/cn';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { Text } from '@/shared/ui';
-
-import { CREDIT_COST } from './types';
 
 interface ConfirmStepProps {
   onConfirm: () => void;
@@ -15,11 +14,13 @@ export function ConfirmStep({
 }: ConfirmStepProps) {
   const { creditInfo, isLoading: isLoadingCredits } = useCreditInfo();
   const remainingCredits = creditInfo?.plan?.remaining ?? 0;
-  const hasEnoughCredits = remainingCredits >= CREDIT_COST;
+  const hasEnoughCredits = remainingCredits >= CREDIT_COST.GENOGRAM;
 
   const creditBadge = (
     <div className="flex items-center gap-1 rounded-md bg-green-20 px-2 py-1">
-      <Text className="font-headline text-green-80">50</Text>
+      <Text className="font-headline text-green-80">
+        {CREDIT_COST.GENOGRAM}
+      </Text>
       <svg
         width="14"
         height="14"
@@ -66,7 +67,7 @@ export function ConfirmStep({
     return (
       <>
         {/* 스크롤 가능 콘텐츠 */}
-        <div className="flex flex-1 flex-col items-center overflow-y-auto px-4 pt-4 md:px-10">
+        <div className="flex flex-1 flex-col items-center overflow-y-auto overscroll-contain px-4 pt-4 md:px-10">
           <div className="mb-6 w-full max-w-[480px]">
             <img
               src="/genogram/genogram-intro.png"

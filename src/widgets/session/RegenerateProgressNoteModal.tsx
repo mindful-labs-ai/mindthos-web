@@ -6,13 +6,14 @@
 import React from 'react';
 
 import { trackEvent } from '@/lib/mixpanel';
+import { CREDIT_COST } from '@/shared/constants/credit';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { CreditIcon } from '@/shared/icons';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Title } from '@/shared/ui/atoms/Title';
 import { Modal } from '@/shared/ui/composites/Modal';
 
-const REGENERATE_CREDIT = 10;
+const REGENERATE_CREDIT = CREDIT_COST.PROGRESS_NOTE;
 
 interface RegenerateProgressNoteModalProps {
   /** 모달 열림 상태 */

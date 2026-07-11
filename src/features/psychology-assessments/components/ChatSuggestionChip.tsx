@@ -32,7 +32,7 @@ export const ChatSuggestionChip = ({
         className={cn(
           'rounded-md border border-grey-30 px-3 py-2 text-m text-grey-70 transition-colors lg:hover:bg-grey-10',
           isMobileView
-            ? 'flex-1 whitespace-normal text-left text-sm'
+            ? 'flex-1 whitespace-normal text-left'
             : 'whitespace-nowrap'
         )}
       >

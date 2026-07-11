@@ -16,8 +16,6 @@ export const GENERATION_STEPS = [
   { label: '가계도 그리기' },
 ];
 
-export const CREDIT_COST = 50;
-
 export function stepToIndex(step: GenogramStep): number {
   switch (step) {
     case 'confirm':
