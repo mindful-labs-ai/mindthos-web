@@ -16,13 +16,13 @@ import { isLegacySttModel } from './sttModel';
 /**
  * Type guard to check if contents is TranscriptJson
  */
-function isTranscriptJson(contents: any): contents is TranscriptJson {
+function isTranscriptJson(contents: unknown): contents is TranscriptJson {
   return (
-    contents &&
     typeof contents === 'object' &&
+    contents !== null &&
     'stt_model' in contents &&
     'segments' in contents &&
-    Array.isArray(contents.segments)
+    Array.isArray((contents as TranscriptJson).segments)
   );
 }
 
