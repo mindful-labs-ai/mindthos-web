@@ -66,10 +66,10 @@ export const MissingFieldsForm = ({
             )}
           </div>
         ) : (
-          <p className="flex items-center gap-1.5 text-sm text-[#F59E0B]">
+          <p className="flex items-center gap-1.5 text-sm text-warn">
             <span
               aria-hidden
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F59E0B] text-xs text-white"
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-warn text-xs text-white"
             >
               !
             </span>

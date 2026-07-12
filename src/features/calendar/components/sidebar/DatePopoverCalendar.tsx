@@ -58,7 +58,7 @@ export const DatePopoverCalendar = React.forwardRef<
           : undefined
       }
       className={cn(
-        'absolute left-0 z-30 w-[311px] rounded-md border border-[#ecedf3] bg-white p-6 shadow-modal',
+        'absolute left-0 z-30 w-[311px] rounded-md border border-grey-30 bg-white p-6 shadow-modal',
         direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
       )}
     >
@@ -75,7 +75,7 @@ export const DatePopoverCalendar = React.forwardRef<
               canGoPrev && setViewMonth((m) => m.subtract(1, 'month'))
             }
             className={cn(
-              'flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-[#a1a2a8]',
+              'flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-70',
               !canGoPrev && 'cursor-not-allowed opacity-40'
             )}
           >
@@ -87,7 +87,7 @@ export const DatePopoverCalendar = React.forwardRef<
             disabled={!canGoNext}
             onClick={() => canGoNext && setViewMonth((m) => m.add(1, 'month'))}
             className={cn(
-              'flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-[#a1a2a8]',
+              'flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-70',
               !canGoNext && 'cursor-not-allowed opacity-40'
             )}
           >

@@ -46,7 +46,7 @@ export const MobileSessionDetailView: React.FC<
         {mobileHeader && <div className="flex-shrink-0">{mobileHeader}</div>}
 
         <div
-          className={`relative mx-0 mb-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-grey-40 ${isContentEditing ? 'border-green-80 bg-[#FDFFFE]' : 'bg-white'}`}
+          className={`relative mx-0 mb-0 flex-1 md:overflow-hidden md:rounded-2xl md:border md:border-grey-40 ${isContentEditing ? 'border-green-80 bg-green-10' : 'bg-white'}`}
         >
           {useEditOverlay ? (
             // 축어록 편집: 툴바+찾기 바를 축어록 스크롤에 붙는 sticky 오버레이로.

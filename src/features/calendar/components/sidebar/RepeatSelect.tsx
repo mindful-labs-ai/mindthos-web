@@ -178,8 +178,8 @@ export function RepeatSelect({
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
             className={cn(
-              'flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm',
-              value ? 'text-grey-100' : 'text-[#abaebe]'
+              'flex h-[35px] items-center gap-1.5 rounded-md border border-grey-30 bg-white px-2.5 text-sm',
+              value ? 'text-grey-100' : 'text-grey-60'
             )}
           >
             {CYCLE_LABEL[cycleKey]}
@@ -195,7 +195,7 @@ export function RepeatSelect({
                     : undefined,
               }}
               className={cn(
-                'absolute right-0 z-30 w-[120px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-modal',
+                'absolute right-0 z-30 w-[120px] rounded-md border border-grey-30 bg-white p-1.5 shadow-modal',
                 cycleDirection === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
               )}
             >
@@ -236,7 +236,7 @@ export function RepeatSelect({
                       'h-[30px] rounded-md border px-2.5 text-sm font-medium',
                       active
                         ? 'bg-green-80/5 border-green-80 text-green-80'
-                        : 'border-[#ecedf3] bg-white text-[#abaebe]'
+                        : 'border-grey-30 bg-white text-grey-60'
                     )}
                   >
                     {o.label}
@@ -279,7 +279,7 @@ export function RepeatSelect({
                 <Calendar
                   size={18}
                   strokeWidth={1.5}
-                  className="shrink-0 text-[#a1a2a8]"
+                  className="shrink-0 text-grey-70"
                 />
               </button>
               {datePickerOpen && (

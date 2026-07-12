@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn';
 
-import { getClientAvatarPalette } from './clientAvatarPalette';
+import { getClientAvatarPalette } from '@/shared/constants/clientAvatarPalette';
 
 interface ClientAvatarProps {
   paletteKey: string;

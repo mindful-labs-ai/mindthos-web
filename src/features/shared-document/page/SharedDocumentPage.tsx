@@ -69,7 +69,7 @@ function CenterNotice({
  */
 function SharedScreenFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="lg:flex lg:min-h-dvh lg:justify-center lg:bg-[#E9EAF0]">
+    <div className="lg:flex lg:min-h-dvh lg:justify-center lg:bg-grey-30">
       <div className="w-full lg:max-w-[460px] lg:shadow-[0_0_40px_rgba(0,0,0,0.08)]">
         {children}
       </div>

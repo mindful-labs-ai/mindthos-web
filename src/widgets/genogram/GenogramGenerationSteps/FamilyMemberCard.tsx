@@ -436,7 +436,7 @@ export function FamilyMemberCard({
          ───────────────────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 justify-between px-3 pt-3">
         {/* 순서 배지 */}
-        <div className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-[#BABAC0] font-headline text-primary-fg">
+        <div className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-grey-60 font-headline text-primary-fg">
           {index + 1}
         </div>
 

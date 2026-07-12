@@ -52,8 +52,8 @@ export function CounselMethodSelect({
           type="button"
           onClick={() => setOpen((o) => !o)}
           className={cn(
-            'flex h-[35px] items-center gap-1.5 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm',
-            value ? 'text-grey-100' : 'text-[#abaebe]'
+            'flex h-[35px] items-center gap-1.5 rounded-md border border-grey-30 bg-white px-2.5 text-sm',
+            value ? 'text-grey-100' : 'text-grey-60'
           )}
         >
           {LABEL[currentKey]}
@@ -69,7 +69,7 @@ export function CounselMethodSelect({
                   : undefined,
             }}
             className={cn(
-              'absolute right-0 z-30 w-[110px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-modal',
+              'absolute right-0 z-30 w-[110px] rounded-md border border-grey-30 bg-white p-1.5 shadow-modal',
               direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
             )}
           >

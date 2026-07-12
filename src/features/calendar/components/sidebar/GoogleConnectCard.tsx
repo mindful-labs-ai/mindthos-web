@@ -25,7 +25,7 @@ export function GoogleConnectCard({
         type="button"
         aria-label="닫기"
         onClick={onDismiss}
-        className="absolute right-2 top-2 text-[#d9d9d9]"
+        className="absolute right-2 top-2 text-grey-40"
       >
         <X size={24} />
       </button>

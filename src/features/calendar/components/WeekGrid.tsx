@@ -185,7 +185,7 @@ export function WeekGrid({
         {/* 헤더: 요일 + 날짜 (스크롤 시 상단 고정) */}
         <div
           ref={headerRef}
-          className="sticky top-0 z-10 flex border-b border-grey-40 bg-[#fcfcfe]"
+          className="sticky top-0 z-10 flex border-b border-grey-40 bg-grey-10"
         >
           <div className="shrink-0" style={{ width: GUTTER_PX }} />
           {days.map((day, i) => {
@@ -394,7 +394,7 @@ export function WeekGrid({
                   {/* 호버 셀 하이라이트 — 누르면 선택될 시간 영역(드래그 중엔 선택 박스가 우선) */}
                   {!dragHere && hoverCell?.dayKey === day.toISOString() && (
                     <div
-                      className="pointer-events-none absolute inset-x-0.5 rounded-sm bg-[#44ce4b14]"
+                      className="bg-green-80/[0.08] pointer-events-none absolute inset-x-0.5 rounded-sm"
                       style={{
                         top: (hoverCell.startMin / 60) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT,
@@ -404,7 +404,7 @@ export function WeekGrid({
 
                   {dragHere && (
                     <div
-                      className="pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80 bg-[#44ce4b1a]"
+                      className="bg-green-80/10 pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80"
                       style={{
                         top:
                           (Math.min(drag.startMin, drag.endMin) / 60) *
@@ -425,7 +425,7 @@ export function WeekGrid({
                     isSameDay(selectedDate, day) &&
                     selEnd > selStart && (
                       <div
-                        className="pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80 bg-[#44ce4b1a]"
+                        className="bg-green-80/10 pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80"
                         style={{
                           top: (selStart / 60) * HOUR_HEIGHT,
                           height: ((selEnd - selStart) / 60) * HOUR_HEIGHT,
