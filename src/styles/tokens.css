@@ -36,6 +36,7 @@
   --primitive-orange-100: #ff8059;
 
   /* Red */
+  --primitive-red-10: #fff5f5; /* 역산 신설 — danger surface 단계 (기존 raw bg-red-50 의도값) */
   --primitive-red-20: #ffc8c8;
   --primitive-red-50: #f77575;
   --primitive-red-80: #d54036;
@@ -93,6 +94,9 @@
   --color-danger-active: var(--primitive-red-20);
   --color-danger-fg: var(--primitive-white);
   --color-danger-subtle: var(--primitive-red-20);
+  --color-danger-surface: var(
+    --primitive-red-10
+  ); /* primary-surface와 대칭 (에러 카드 배경·삭제 hover) */
 
   /* Neutral (Grey): idle → hover → active */
   --color-neutral: var(--primitive-grey-40);
@@ -103,8 +107,16 @@
   /* --- Status --- */
   --color-warn: #f59e0b;
   --color-info: #3b82f6;
+  --color-info-subtle: #eff6ff; /* 안내 박스 배경 (기존 raw bg-blue-50 역산) */
+  --color-info-strong: #1e40af; /* 안내 박스 본문 (기존 raw text-blue-800 역산) */
   --color-success: var(--primitive-green-80);
   --color-accent: var(--primitive-green-80);
+
+  /* --- External Brand (소셜 로그인 표기·카카오 미리보기 목업) --- */
+  --color-brand-google: #4285f4;
+  --color-brand-kakao: #fee500;
+  --color-brand-kakao-button: #ffe412; /* 카톡 메시지 목업 버튼 */
+  --color-brand-kakao-chat: #a5c2d3; /* 카톡 채팅방 배경 */
 
   /* ========================================
    * 3. ROLE TOKENS — 컴포넌트/레이아웃 역할별 매핑
@@ -193,9 +205,11 @@
   /* ========================================
    * 3. RADIUS
    * ======================================== */
+  --radius-xs: 0.25rem; /* rounded (역산 편입) */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
+  --radius-2xl: 1rem; /* rounded-2xl (역산 편입) */
 
   /* ========================================
    * 4. Z-INDEX SCALE
@@ -237,6 +251,7 @@
     0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-prominent:
     0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-modal: 0 4px 24px rgb(0 0 0 / 0.1); /* 반복 임의값에서 역산 편입 */
 
   /* ========================================
    * 7. TRANSITION
@@ -289,6 +304,7 @@
   --color-danger-active: var(--primitive-red-20);
   --color-danger-fg: var(--primitive-white);
   --color-danger-subtle: var(--primitive-red-20);
+  --color-danger-surface: var(--primitive-red-10);
 
   /* Neutral (Grey) */
   --color-neutral: var(--primitive-grey-40);
@@ -299,6 +315,8 @@
   /* --- Status --- */
   --color-warn: #f59e0b;
   --color-info: #60a5fa;
+  --color-info-subtle: #eff6ff;
+  --color-info-strong: #1e40af;
   --color-success: var(--primitive-green-80);
   --color-accent: var(--primitive-green-80);
 
