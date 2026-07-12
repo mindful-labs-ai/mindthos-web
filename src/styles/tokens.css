@@ -126,7 +126,7 @@
 
   /* --- Nav Item --- */
   --color-nav-active-bg: var(--primitive-grey-20);
-  --color-nav-active-text: var(--color-default);
+  --color-nav-active-text: var(--color-fg);
   --color-nav-inactive-text: var(--primitive-grey-60);
   --color-nav-hover-bg: var(--primitive-grey-20);
   --color-nav-click-bg: var(--primitive-grey-40);
@@ -236,7 +236,7 @@
  * ======================================== */
 .dark {
   /* --- Text --- */
-  --color-default: var(--primitive-grey-100);
+  --color-fg: var(--primitive-grey-100);
   --color-fg-muted: var(--primitive-grey-70);
   --color-fg-subtle: var(--primitive-grey-60);
   --color-fg-disabled: var(--primitive-grey-60);

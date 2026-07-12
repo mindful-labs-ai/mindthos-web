@@ -17,7 +17,7 @@ export default {
         },
         /* Foreground (text) */
         fg: {
-          DEFAULT: 'var(--color-default)',
+          DEFAULT: 'var(--color-fg)',
           muted: 'var(--color-fg-muted)',
           subtle: 'var(--color-fg-subtle)',
           disabled: 'var(--color-fg-disabled)',
