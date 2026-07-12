@@ -42,7 +42,7 @@ const CouponCard: React.FC<CouponCardProps> = ({
       role={selectable ? 'button' : undefined}
       tabIndex={selectable ? 0 : undefined}
       className={cn(
-        'relative rounded-xl border border-[#E0E0E0] bg-[#F5F5F5] px-4 py-5',
+        'relative rounded-lg border border-[#E0E0E0] bg-[#F5F5F5] px-4 py-5',
         size === 'lg' ? 'h-[117px] w-full' : '',
         selectable && 'cursor-pointer transition-colors lg:hover:bg-[#ECECEC]',
         selectable &&
@@ -289,7 +289,7 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
   return (
     <div
       className={cn(
-        'border-default w-[320px] rounded-xl bg-surface p-5 shadow-prominent',
+        'border-default w-[320px] rounded-lg bg-surface p-5 shadow-prominent',
         'animate-[scaleIn_0.15s_ease-out]'
       )}
     >

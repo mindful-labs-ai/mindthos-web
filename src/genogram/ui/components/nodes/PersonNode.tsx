@@ -775,7 +775,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {age != null && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
           <span
-            className="font-bold"
+            className="font-headline"
             style={{
               fontSize: fDetail,
               color: textColor,
@@ -791,7 +791,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 오른쪽: 상세정보 (수직 중앙 고정) */}
       {hasDetail && (
         <div
-          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-normal italic text-grey-100"
+          className="absolute top-1/2 -translate-y-1/2 whitespace-nowrap font-sub italic text-grey-100"
           style={{
             left: S + 8 + fsGrow * 0.8,
             color: textColor,
@@ -810,7 +810,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
       {/* 오른쪽 하단: 짧은 메모 (상세정보 아래로 확장) */}
       {shortNote && (
         <div
-          className="absolute whitespace-normal font-normal italic text-grey-100"
+          className="absolute whitespace-normal font-sub italic text-grey-100"
           style={{
             left: S + 8 + fsGrow * 0.8,
             top: hasDetail
@@ -830,7 +830,7 @@ export const PersonNode = memo(({ id, data, selected }: NodeProps) => {
 
       {/* 아래: 이름 */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-semibold text-grey-100"
+        className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-center font-emphasize text-grey-100"
         style={{
           fontSize: fName,
           top: S + 4 + fsGrow * 0.5,

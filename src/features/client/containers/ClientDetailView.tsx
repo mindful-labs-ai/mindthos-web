@@ -172,7 +172,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
           ) : (
             <div className="px-4 py-4 md:px-10 md:py-6">
               {/* 아코디언 내담자 정보 */}
-              <div className="mb-6 rounded-xl border border-grey-30 bg-white">
+              <div className="mb-6 rounded-lg border border-grey-30 bg-white">
                 <button
                   type="button"
                   onClick={() => setIsInfoOpen(!isInfoOpen)}

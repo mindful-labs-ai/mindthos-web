@@ -158,7 +158,7 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
   return (
     <div
       className={cn(
-        'flex w-full items-center gap-2 overflow-hidden rounded-xl border-2 bg-surface p-4',
+        'flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 bg-surface p-4',
         isFailed ? 'border-red-300 bg-red-50' : 'border-border'
       )}
     >

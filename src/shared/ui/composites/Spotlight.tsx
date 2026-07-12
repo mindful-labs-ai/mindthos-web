@@ -317,7 +317,7 @@ const SpotlightPortal: React.FC<Omit<SpotlightProps, 'children'>> = ({
           ref={tooltipRef}
           style={finalTooltipStyles}
           className={cn(
-            'animate-in fade-in zoom-in relative min-w-48 max-w-xs rounded-xl border border-border bg-surface p-4 shadow-prominent duration-slow',
+            'animate-in fade-in zoom-in relative min-w-48 max-w-xs rounded-lg border border-border bg-surface p-4 shadow-prominent duration-slow',
             className
           )}
         >

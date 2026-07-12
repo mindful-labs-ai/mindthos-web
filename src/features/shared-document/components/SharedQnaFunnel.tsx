@@ -92,7 +92,7 @@ export function SharedQnaFunnel({
     return (
       <div className="flex h-dvh flex-col bg-white">
         <SharedHeader title={doc.documentTitle} onBack={onBack} />
-        <p className="px-6 pt-10 text-base font-medium text-grey-80">
+        <p className="px-6 pt-10 text-m font-medium text-grey-80">
           표시할 문항이 없어요.
         </p>
       </div>
@@ -131,7 +131,7 @@ export function SharedQnaFunnel({
         <button
           type="button"
           onClick={goPrev}
-          className="h-[50px] w-[71px] flex-shrink-0 rounded-lg border border-grey-40 text-base font-medium text-grey-70 transition-colors active:bg-grey-10"
+          className="h-[50px] w-[71px] flex-shrink-0 rounded-lg border border-grey-40 text-m font-medium text-grey-70 transition-colors active:bg-grey-10"
         >
           이전
         </button>
@@ -140,7 +140,7 @@ export function SharedQnaFunnel({
           disabled={!answered || submitting}
           onClick={goNext}
           className={cn(
-            'h-[50px] flex-1 rounded-lg text-base font-medium transition-colors',
+            'h-[50px] flex-1 rounded-lg text-m font-medium transition-colors',
             answered && !submitting
               ? 'bg-green-80 text-white'
               : 'cursor-not-allowed bg-grey-20 text-grey-70'

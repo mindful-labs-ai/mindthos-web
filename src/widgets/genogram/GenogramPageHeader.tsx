@@ -138,7 +138,7 @@ export function GenogramPageHeader({
           )}
 
           {/* 액션 버튼들 — 임시 모드에서는 undo/redo만 노출 */}
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 shadow-subtle">
             <button
               onClick={onUndo}
               title="실행 취소"

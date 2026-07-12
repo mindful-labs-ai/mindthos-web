@@ -344,7 +344,7 @@ function PersonCard({
             left: dropdownPosition.left,
             zIndex: 1100,
           }}
-          className="max-h-[200px] min-w-[140px] overflow-y-auto overscroll-contain rounded-xl bg-surface py-2 shadow-elevated"
+          className="max-h-[200px] min-w-[140px] overflow-y-auto overscroll-contain rounded-lg bg-surface py-2 shadow-elevated"
         >
           {personOptions.map((s) => (
             <button
@@ -870,7 +870,7 @@ export function RelationCard({
   return (
     <div
       className={cn(
-        'relative flex w-full flex-col gap-4 rounded-xl border bg-white p-4 transition-colors md:h-[169px] md:flex-row md:justify-center',
+        'relative flex w-full flex-col gap-4 rounded-lg border bg-white p-4 transition-colors md:h-[169px] md:flex-row md:justify-center',
         showWarning ? 'animate-shake border-2 border-danger' : 'border-border'
       )}
     >

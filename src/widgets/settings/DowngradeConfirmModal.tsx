@@ -106,7 +106,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
 
   // 공통: 현재 플랜 카드
   const currentPlanCard = (
-    <div className="rounded-xl border border-grey-30 px-4 py-6">
+    <div className="rounded-lg border border-grey-30 px-4 py-6">
       <p className="mb-6 px-4 text-l font-emphasize text-grey-100">
         {getPlanDisplayName(currentPlanType)} 플랜 이용 중
       </p>
@@ -136,7 +136,7 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
 
   // 공통: 변경 플랜 카드
   const newPlanCard = (
-    <div className="rounded-xl border border-grey-30 px-4 py-6">
+    <div className="rounded-lg border border-grey-30 px-4 py-6">
       <p className="mb-6 px-4 text-l font-emphasize text-grey-100">
         {getPlanDisplayName(newPlanType)} 플랜{isMobile ? '' : '으로'} 변경 후
       </p>

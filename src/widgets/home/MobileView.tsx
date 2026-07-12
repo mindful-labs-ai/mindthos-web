@@ -616,7 +616,7 @@ const MobileView = () => {
               onClick={handleButtonClick}
               className="flex flex-col items-center justify-center gap-3 text-fg-muted"
             >
-              <div className="flex flex-col items-center justify-center gap-3 rounded-xl border p-6">
+              <div className="flex flex-col items-center justify-center gap-3 rounded-lg border p-6">
                 <UploadIcon size={32} />
                 <Text>파일을 선택해 주세요</Text>
                 <Text className="typo-sm text-fg-muted">
@@ -639,7 +639,7 @@ const MobileView = () => {
               {canAddMore && (
                 <button
                   onClick={handleButtonClick}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-surface py-6 text-fg-muted"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface py-6 text-fg-muted"
                 >
                   <PlusIcon size={20} />
                 </button>

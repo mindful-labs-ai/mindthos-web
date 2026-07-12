@@ -35,7 +35,7 @@ export function ReportListStep({
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="flex animate-pulse items-center justify-between rounded-xl border border-border px-5 py-4"
+            className="flex animate-pulse items-center justify-between rounded-lg border border-border px-5 py-4"
           >
             <div className="min-w-0 flex-1">
               <div className="h-4 w-40 rounded bg-surface-contrast" />
@@ -61,7 +61,7 @@ export function ReportListStep({
       {reports.map((report) => (
         <div
           key={report.id}
-          className="flex w-full items-center justify-between rounded-xl border border-border px-5 py-4"
+          className="flex w-full items-center justify-between rounded-lg border border-border px-5 py-4"
         >
           <div className="min-w-0 flex-1">
             <p className="typo-m truncate font-medium text-fg">

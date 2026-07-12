@@ -93,7 +93,7 @@ export const ConnectionCursor: React.FC<ConnectionCursorProps> = ({
         top: pos.y + 14,
       }}
     >
-      <div className="flex items-center justify-center rounded-md bg-white/90 p-1 shadow-sm ring-1 ring-grey-30">
+      <div className="flex items-center justify-center rounded-md bg-white/90 p-1 shadow-subtle ring-1 ring-grey-30">
         {renderIcon()}
       </div>
     </div>

@@ -117,7 +117,7 @@ function SharedSignatureSheetContent({
       >
         <h3
           id="shared-signature-title"
-          className="px-6 text-sm font-bold text-grey-100"
+          className="px-6 text-sm font-headline text-grey-100"
         >
           서명하기
         </h3>
@@ -147,7 +147,7 @@ function SharedSignatureSheetContent({
             disabled={!hasInk}
             onClick={confirm}
             className={cn(
-              'h-[41px] flex-1 rounded-lg text-base font-semibold transition-colors',
+              'h-[41px] flex-1 rounded-lg text-m font-emphasize transition-colors',
               hasInk
                 ? 'bg-green-80 text-white'
                 : 'cursor-not-allowed bg-grey-20 text-grey-70'

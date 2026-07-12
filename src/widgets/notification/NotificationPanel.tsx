@@ -145,7 +145,7 @@ function NotificationRow({
         <KindIcon kind={notification.type} />
         <div className="min-w-0 flex-1">
           {/* 강조줄(title) + 본문(body) 2줄 */}
-          <p className="break-keep text-m font-semibold leading-snug text-grey-100">
+          <p className="break-keep text-m font-emphasize leading-snug text-grey-100">
             {notification.title}
           </p>
           <p className="mt-1 break-keep text-m font-medium leading-snug text-grey-70">

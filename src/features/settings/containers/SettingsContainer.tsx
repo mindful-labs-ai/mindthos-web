@@ -464,7 +464,7 @@ export const SettingsContainer: React.FC = () => {
   );
 
   const usageInfoCard = isMobileView ? (
-    <div className="bg-white p-4 md:rounded-xl md:border md:border-grey-30 md:p-6">
+    <div className="bg-white p-4 md:rounded-lg md:border md:border-grey-30 md:p-6">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-m font-emphasize text-grey-70 md:text-l">
           사용 정보
@@ -542,7 +542,7 @@ export const SettingsContainer: React.FC = () => {
       <div className="mt-3 flex flex-col space-y-4">{usageContent}</div>
     </div>
   ) : (
-    <div className="rounded-xl border border-grey-30 bg-white p-6">
+    <div className="rounded-lg border border-grey-30 bg-white p-6">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-l font-emphasize text-grey-70">사용 정보</h2>
         <div className="flex gap-4">
@@ -660,8 +660,8 @@ export const SettingsContainer: React.FC = () => {
     <div
       className={
         isMobileView
-          ? 'bg-white p-4 md:rounded-xl md:border md:border-grey-30 md:p-6'
-          : 'rounded-xl border border-grey-30 bg-white p-6'
+          ? 'bg-white p-4 md:rounded-lg md:border md:border-grey-30 md:p-6'
+          : 'rounded-lg border border-grey-30 bg-white p-6'
       }
     >
       <div className="flex items-center justify-between">

@@ -116,7 +116,7 @@ export const Accordion: React.FC<AccordionProps> = ({
                 id={`accordion-content-${item.value}`}
                 role="region"
                 aria-labelledby={`accordion-header-${item.value}`}
-                className="bg-surface-contrast/30 px-6 py-4 text-base text-fg-muted"
+                className="bg-surface-contrast/30 px-6 py-4 text-m text-fg-muted"
               >
                 {item.content}
               </div>

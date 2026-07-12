@@ -87,7 +87,7 @@ export function SharedConsentRead({
         onScroll={checkBottom}
         className="flex-1 overflow-y-auto px-5 pb-10 pt-6"
       >
-        <h2 className="text-center text-xl font-bold leading-[150%] text-grey-100">
+        <h2 className="text-center text-xl font-headline leading-[150%] text-grey-100">
           {doc.documentTitle}
         </h2>
         <div className="mx-auto mt-3 border-b border-grey-40" />
@@ -98,7 +98,7 @@ export function SharedConsentRead({
             field.type === 'richtext' ? (
               <div
                 key={field.key}
-                className="whitespace-pre-line text-sm font-medium leading-[150%] text-grey-100 [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-base [&_h2]:font-headline"
+                className="whitespace-pre-line text-sm font-medium leading-[150%] text-grey-100 [&_h1]:text-lg [&_h1]:font-headline [&_h2]:text-m [&_h2]:font-headline"
                 // 상담사가 작성한 HTML 스냅샷 — 클라이언트에서 DOMPurify로 sanitize.
                 dangerouslySetInnerHTML={{
                   __html: DOMPurify.sanitize(field.html),
@@ -106,7 +106,7 @@ export function SharedConsentRead({
               />
             ) : (
               <div key={field.key}>
-                <p className="text-base font-bold leading-[150%] text-grey-100">
+                <p className="text-m font-headline leading-[150%] text-grey-100">
                   {field.title}
                 </p>
                 {field.description && (
@@ -140,7 +140,7 @@ export function SharedConsentRead({
             disabled={submitting}
             onClick={onCta}
             className={cn(
-              'h-[50px] w-full rounded-lg bg-green-80 text-base font-medium text-white transition-opacity active:opacity-90',
+              'h-[50px] w-full rounded-lg bg-green-80 text-m font-medium text-white transition-opacity active:opacity-90',
               submitting && 'opacity-70'
             )}
           >

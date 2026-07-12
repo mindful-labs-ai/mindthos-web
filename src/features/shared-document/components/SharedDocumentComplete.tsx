@@ -25,12 +25,14 @@ export function SharedDocumentComplete({ doc }: SharedDocumentCompleteProps) {
       {/* 중앙보다 살짝 위(상단 3 : 하단 4 = 상단에서 3/7 지점)에 카드를 둔다 */}
       <div className="flex w-full flex-1 flex-col items-center">
         <div className="flex-[3]" aria-hidden />
-        <div className="w-full max-w-[319px] rounded-xl bg-white px-6 py-7 text-center">
+        <div className="w-full max-w-[319px] rounded-lg bg-white px-6 py-7 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-20">
             <Check size={26} strokeWidth={3} className="text-green-80" />
           </div>
-          <p className="mt-4 text-xl font-bold text-grey-100">문서 작성 완료</p>
-          <p className="mt-3 whitespace-pre-line text-base font-medium leading-[150%] text-grey-100">
+          <p className="mt-4 text-xl font-headline text-grey-100">
+            문서 작성 완료
+          </p>
+          <p className="mt-3 whitespace-pre-line text-m font-medium leading-[150%] text-grey-100">
             {`${doc.documentTitle}${particle}\n${doc.counselorName} 상담사님에게 전달했어요.`}
           </p>
         </div>

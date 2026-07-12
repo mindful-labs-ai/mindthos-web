@@ -285,7 +285,7 @@ export default function SharedDocumentPage() {
       />
       {submitError && (
         <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
-          <div className="mx-auto max-w-[480px] rounded-lg bg-red-80 px-4 py-3 text-sm font-medium text-white shadow-lg">
+          <div className="mx-auto max-w-[480px] rounded-lg bg-red-80 px-4 py-3 text-sm font-medium text-white shadow-elevated">
             {submitError}
           </div>
         </div>

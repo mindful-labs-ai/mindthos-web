@@ -181,7 +181,7 @@ export const ClientSidebar = ({
                           className={cn(
                             'flex items-center transition-colors',
                             collapsed
-                              ? 'justify-center rounded-xl p-1.5'
+                              ? 'justify-center rounded-lg p-1.5'
                               : 'w-full gap-2.5 rounded-lg px-2 py-2 text-left',
                             isActive ? 'bg-grey-20' : 'lg:hover:bg-nav-hover-bg'
                           )}

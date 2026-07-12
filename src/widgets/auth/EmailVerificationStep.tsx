@@ -46,7 +46,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
   };
 
   return (
-    <div className="rounded-xl bg-white p-8 text-center">
+    <div className="rounded-lg bg-white p-8 text-center">
       <div className="mb-6 flex justify-center">
         <div className="rounded-full bg-green-20 p-6">
           <MailIcon className="h-10 w-10 text-green-80" />

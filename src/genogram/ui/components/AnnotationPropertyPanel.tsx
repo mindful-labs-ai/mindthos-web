@@ -69,10 +69,10 @@ export const AnnotationPropertyPanel: React.FC<
   );
 
   return (
-    <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-grey-40 bg-white shadow-lg">
+    <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-grey-40 bg-white shadow-elevated">
       {/* 헤더 */}
       <div className="px-5 pt-5">
-        <h2 className="text-lg font-bold text-grey-100">텍스트</h2>
+        <h2 className="text-lg font-headline text-grey-100">텍스트</h2>
       </div>
 
       <hr className="mx-5 mt-3 border-grey-40" />
@@ -80,7 +80,7 @@ export const AnnotationPropertyPanel: React.FC<
       <div className="flex flex-col gap-5 px-5 py-5">
         {/* 내용 */}
         <section>
-          <h3 className="mb-2 text-base font-medium text-grey-100">내용</h3>
+          <h3 className="mb-2 text-m font-medium text-grey-100">내용</h3>
           <textarea
             ref={textareaRef}
             value={annotation.text}
@@ -93,7 +93,7 @@ export const AnnotationPropertyPanel: React.FC<
 
         {/* 글씨 크기 */}
         <section className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-grey-100">글씨 크기</h3>
+          <h3 className="text-m font-medium text-grey-100">글씨 크기</h3>
           <InlineDropdown
             items={FONT_SIZE_OPTIONS}
             value={String(
@@ -107,7 +107,7 @@ export const AnnotationPropertyPanel: React.FC<
 
         {/* 배경 색상 */}
         <section className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-grey-100">배경 색상</h3>
+          <h3 className="text-m font-medium text-grey-100">배경 색상</h3>
           <ColorPicker
             value={annotation.layout.style.bgColor}
             onChange={(v) => handleStyleChange('bgColor', v)}
@@ -116,7 +116,7 @@ export const AnnotationPropertyPanel: React.FC<
 
         {/* 선 색상 */}
         <section className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-grey-100">선 색상</h3>
+          <h3 className="text-m font-medium text-grey-100">선 색상</h3>
           <ColorPicker
             value={annotation.layout.style.borderColor}
             onChange={(v) => handleStyleChange('borderColor', v)}
@@ -125,7 +125,7 @@ export const AnnotationPropertyPanel: React.FC<
 
         {/* 텍스트 색상 */}
         <section className="flex items-center justify-between">
-          <h3 className="text-base font-medium text-grey-100">텍스트 색상</h3>
+          <h3 className="text-m font-medium text-grey-100">텍스트 색상</h3>
           <ColorPicker
             value={annotation.layout.style.textColor}
             onChange={(v) => handleStyleChange('textColor', v)}

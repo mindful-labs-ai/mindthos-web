@@ -108,7 +108,7 @@ export function GenogramGenerationSteps({
 
     return (
       <div className="flex h-full flex-col items-center justify-center overflow-hidden md:p-8">
-        <div className="flex h-full w-full flex-col border border-border bg-surface shadow-elevated md:h-[90%] md:max-w-[min(90%,1018px)] md:rounded-xl md:p-6">
+        <div className="flex h-full w-full flex-col border border-border bg-surface shadow-elevated md:h-[90%] md:max-w-[min(90%,1018px)] md:rounded-lg md:p-6">
           {/* 콘텐츠 (스테퍼 없음) */}
           <div className="min-h-0 flex-1 overflow-hidden">
             {renderEditContent()}
@@ -122,7 +122,7 @@ export function GenogramGenerationSteps({
   if (currentStep === 'render') {
     return (
       <div className="flex h-full flex-col items-center justify-center overflow-hidden md:p-8">
-        <div className="flex w-full max-w-md flex-col border border-border bg-surface shadow-elevated md:rounded-xl md:p-8">
+        <div className="flex w-full max-w-md flex-col border border-border bg-surface shadow-elevated md:rounded-lg md:p-8">
           <RenderStep
             error={error}
             isPending={isRenderPending}
@@ -269,7 +269,7 @@ export function GenogramGenerationSteps({
 
   return (
     <div className="flex h-full flex-col items-center justify-center overflow-hidden p-8">
-      <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-xl border border-grey-30 bg-white p-6 shadow-lg">
+      <div className="flex h-[90%] w-full max-w-[min(90%,1018px)] flex-col rounded-lg border border-grey-30 bg-white p-6 shadow-elevated">
         <h2 className="mb-4 shrink-0 text-xl font-emphasize text-grey-100">
           {clientName
             ? `${clientName}님의 상담기록으로 자동 생성하기`

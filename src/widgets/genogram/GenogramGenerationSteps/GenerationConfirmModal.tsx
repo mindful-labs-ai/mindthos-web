@@ -50,7 +50,7 @@ export function GenerationConfirmModal({
             </p>
             <button
               onClick={onClose}
-              className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+              className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-lg bg-primary font-medium text-primary-fg transition-colors"
             >
               확인
             </button>
@@ -67,7 +67,7 @@ export function GenerationConfirmModal({
             </p>
             <button
               onClick={onConfirm}
-              className="typo-m h-14 w-full rounded-xl bg-green-80 font-medium text-primary-fg transition-colors lg:hover:bg-green-40"
+              className="typo-m h-14 w-full rounded-lg bg-green-80 font-medium text-primary-fg transition-colors lg:hover:bg-green-40"
             >
               생성 시작하기
             </button>

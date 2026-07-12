@@ -58,7 +58,7 @@ export function CalendarColorPicker({
 
       {/* 팔레트 팝오버 */}
       {open && (
-        <div className="absolute right-0 top-10 z-30 flex flex-col gap-2 rounded-2xl border border-grey-40 bg-white p-3 shadow-lg">
+        <div className="absolute right-0 top-10 z-30 flex flex-col gap-2 rounded-2xl border border-grey-40 bg-white p-3 shadow-elevated">
           {[CALENDAR_PALETTE.slice(0, 4), CALENDAR_PALETTE.slice(4)].map(
             (row, ri) => (
               <div key={ri} className="flex gap-2">
@@ -76,7 +76,7 @@ export function CalendarColorPicker({
                         'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border-2 transition-shadow',
                         style.swatchBg,
                         isSelected
-                          ? 'border-fg shadow-sm'
+                          ? 'border-fg shadow-subtle'
                           : 'border-grey-40 lg:hover:border-grey-70'
                       )}
                     >

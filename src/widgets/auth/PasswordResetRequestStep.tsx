@@ -191,7 +191,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
 
   if (state.status === 'sent') {
     return (
-      <div className="rounded-xl bg-white p-8 text-center">
+      <div className="rounded-lg bg-white p-8 text-center">
         <div className="mb-6 flex justify-center">
           <div className="rounded-full bg-green-20 p-6">
             <MailIcon className="h-10 w-10 text-green-80" />
@@ -269,7 +269,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
     };
 
     return (
-      <div className="rounded-xl bg-white p-8 text-center">
+      <div className="rounded-lg bg-white p-8 text-center">
         <h2 className="mb-3 text-xl font-emphasize text-grey-100">
           <span className={providerColor()}>{state.providerLabel}</span>{' '}
           계정으로 가입된 이메일입니다
@@ -333,7 +333,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
 
   if (state.status === 'notFound') {
     return (
-      <div className="rounded-xl bg-white p-8 text-center">
+      <div className="rounded-lg bg-white p-8 text-center">
         <h2 className="mb-3 text-xl font-emphasize text-grey-100">
           가입되지 않은 이메일입니다
         </h2>

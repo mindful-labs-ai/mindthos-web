@@ -85,7 +85,7 @@ export const CardInfo: React.FC<CardInfoProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 border-grey-30 bg-white p-3 md:rounded-xl md:border">
+    <div className="flex items-center justify-between gap-3 border-grey-30 bg-white p-3 md:rounded-lg md:border">
       <div className="flex flex-1 items-center gap-3">
         <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-md">
           <svg

@@ -100,7 +100,7 @@ const ScrollFadeWrapper: React.FC<{ children: React.ReactNode }> = ({
 const AiGuardNotice = ({ className }: { className?: string }) => (
   <div
     className={cn(
-      'flex flex-col items-center gap-3 rounded-xl bg-grey-100 py-5 text-center text-white',
+      'flex flex-col items-center gap-3 rounded-lg bg-grey-100 py-5 text-center text-white',
       className
     )}
   >

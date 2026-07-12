@@ -33,7 +33,7 @@ function ContentBlockItem({ block }: { block: ContentBlock }) {
           alt={block.alt}
           width={block.width}
           height={block.height}
-          className="rounded-xl border object-cover"
+          className="rounded-lg border object-cover"
           loading="lazy"
         />
       );

@@ -798,7 +798,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           {/* 칩 편집 팝오버 */}
           {chipEdit && (
             <div
-              className="absolute z-30 flex items-center gap-1 rounded-lg border border-grey-30 bg-white p-1.5 shadow-lg"
+              className="absolute z-30 flex items-center gap-1 rounded-lg border border-grey-30 bg-white p-1.5 shadow-elevated"
               style={{
                 top: chipEdit.rect.top,
                 left: chipEdit.rect.left,

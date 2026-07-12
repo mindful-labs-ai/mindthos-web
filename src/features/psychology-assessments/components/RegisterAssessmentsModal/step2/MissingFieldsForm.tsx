@@ -37,7 +37,7 @@ export const MissingFieldsForm = ({
   return (
     <div
       className={cn(
-        'rounded-xl border bg-surface p-5',
+        'rounded-lg border bg-surface p-5',
         validated ? 'border-primary' : 'border-yellow-80',
         className
       )}

@@ -43,7 +43,7 @@ export function SharedDocumentIntro({
 
       {/* 히어로 — 상담사가 요청한 문서 안내 + 흐린 문서 아이콘 */}
       <div className="relative px-6 pb-6 pt-8">
-        <h2 className="max-w-[260px] text-2xl font-bold leading-[150%] text-grey-100">
+        <h2 className="max-w-[260px] text-2xl font-headline leading-[150%] text-grey-100">
           {doc.counselorName} 상담사님이 요청한 {title}
           {particle} 확인해주세요.
         </h2>
@@ -57,10 +57,10 @@ export function SharedDocumentIntro({
       {/* 흰 패널 — 안내 문구 + 동의 + CTA */}
       <div className="flex flex-1 flex-col bg-white px-6 pb-7 pt-6">
         <div className="flex flex-col gap-5">
-          <p className="whitespace-pre-line text-base font-medium leading-[150%] text-grey-100">
+          <p className="whitespace-pre-line text-m font-medium leading-[150%] text-grey-100">
             {`${doc.clientName}님, 안녕하세요.\n${doc.counselorName} 상담사입니다.\n상담 진행을 위해서 ${doc.clientName}님의 ${needWord}이 필요합니다.`}
           </p>
-          <p className="whitespace-pre-line text-base font-medium leading-[150%] text-grey-100">
+          <p className="whitespace-pre-line text-m font-medium leading-[150%] text-grey-100">
             {`문서 내용을 확인한 뒤에\n${title}${particle} 작성해주세요.`}
           </p>
         </div>
@@ -89,7 +89,7 @@ export function SharedDocumentIntro({
             onClick={onOpenDetail}
             className="flex flex-1 items-center justify-between text-left"
           >
-            <span className="text-base font-medium text-grey-80">
+            <span className="text-m font-medium text-grey-80">
               [필수] 민감정보수집 및 이용 동의
             </span>
             <ChevronRight
@@ -106,7 +106,7 @@ export function SharedDocumentIntro({
           disabled={!consent}
           onClick={onNext}
           className={cn(
-            'mt-4 h-[50px] w-full rounded-lg text-base font-medium transition-colors',
+            'mt-4 h-[50px] w-full rounded-lg text-m font-medium transition-colors',
             consent
               ? 'bg-green-80 text-white'
               : 'cursor-not-allowed bg-grey-20 text-grey-70'
