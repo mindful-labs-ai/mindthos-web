@@ -4,6 +4,7 @@
  */
 
 import type { TranscribeSegment } from '../types';
+
 import { isLegacySttModel } from './sttModel';
 
 /**
