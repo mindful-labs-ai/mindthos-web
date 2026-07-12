@@ -394,7 +394,7 @@ export function WeekGrid({
                   {/* 호버 셀 하이라이트 — 누르면 선택될 시간 영역(드래그 중엔 선택 박스가 우선) */}
                   {!dragHere && hoverCell?.dayKey === day.toISOString() && (
                     <div
-                      className="bg-green-80/[0.08] pointer-events-none absolute inset-x-0.5 rounded-sm"
+                      className="pointer-events-none absolute inset-x-0.5 rounded-sm bg-primary-tint-weak"
                       style={{
                         top: (hoverCell.startMin / 60) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT,
@@ -404,7 +404,7 @@ export function WeekGrid({
 
                   {dragHere && (
                     <div
-                      className="bg-green-80/10 pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80"
+                      className="pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80 bg-primary-tint"
                       style={{
                         top:
                           (Math.min(drag.startMin, drag.endMin) / 60) *
@@ -425,7 +425,7 @@ export function WeekGrid({
                     isSameDay(selectedDate, day) &&
                     selEnd > selStart && (
                       <div
-                        className="bg-green-80/10 pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80"
+                        className="pointer-events-none absolute inset-x-0.5 rounded-sm border border-green-80 bg-primary-tint"
                         style={{
                           top: (selStart / 60) * HOUR_HEIGHT,
                           height: ((selEnd - selStart) / 60) * HOUR_HEIGHT,

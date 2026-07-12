@@ -43,6 +43,8 @@ export default {
           active: 'var(--color-primary-active)',
           subtle: 'var(--color-primary-subtle)',
           surface: 'var(--color-primary-surface)',
+          tint: 'var(--color-primary-tint)',
+          'tint-weak': 'var(--color-primary-tint-weak)',
         },
         /* Danger (red): idle → hover → active */
         danger: {

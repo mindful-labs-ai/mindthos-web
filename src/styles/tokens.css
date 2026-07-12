@@ -87,6 +87,9 @@
   --color-primary-fg: var(--primitive-white);
   --color-primary-subtle: var(--primitive-green-20);
   --color-primary-surface: var(--primitive-green-10);
+  /* 반투명 하이라이트 — Tailwind v3는 var() 색상에 /알파 수정자를 못 쓰므로 알파를 토큰에 포함 */
+  --color-primary-tint: rgb(68 206 75 / 0.1); /* green-80 10% (캘린더 선택) */
+  --color-primary-tint-weak: rgb(68 206 75 / 0.08); /* green-80 8% */
 
   /* Danger (Red): idle → hover → active */
   --color-danger: var(--primitive-red-80);
@@ -297,6 +300,8 @@
   --color-primary-fg: var(--primitive-white);
   --color-primary-subtle: var(--primitive-green-20);
   --color-primary-surface: var(--primitive-green-10);
+  --color-primary-tint: rgb(68 206 75 / 0.1);
+  --color-primary-tint-weak: rgb(68 206 75 / 0.08);
 
   /* Danger (Red) */
   --color-danger: var(--primitive-red-80);
