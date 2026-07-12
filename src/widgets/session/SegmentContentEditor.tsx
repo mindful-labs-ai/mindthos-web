@@ -43,7 +43,8 @@ function escapeHtml(str: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function buildSegmentHtml(
+/** segment 데이터 → 편집기 HTML (테스트를 위해 export) */
+export function buildSegmentHtml(
   text: string,
   nv?: string[],
   deid?: Record<string, string>,
@@ -69,8 +70,9 @@ function buildSegmentHtml(
       const label =
         content || NONVERBAL_DEFAULT_LABELS[tagType as NonverbalTagType];
       if (!label) return '';
-      const chipTagType = tagType === 'E' ? 'E' : 'A';
-      const style = NV_CHIP_COLORS[chipTagType] || NV_CHIP_COLORS.A;
+      // 뷰(TranscriptText)와 동일한 유형별 색: S=회색, A=파랑, E=주황, O=보라
+      const style =
+        NV_CHIP_COLORS[tagType as NonverbalTagType] || NV_CHIP_COLORS.A;
       return `<span data-chip="legacy-nv" data-legacy-tag="${tagType}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium ${style}">${escapeHtml(label)}</span>`;
     }
   );
@@ -167,7 +169,8 @@ interface ExtractedData {
   deid?: Record<string, string>;
 }
 
-function extractFromDom(
+/** 편집기 DOM → segment 데이터 복원 (테스트를 위해 export) */
+export function extractFromDom(
   container: HTMLElement,
   originalNv?: string[],
   originalDeid?: Record<string, string>,
