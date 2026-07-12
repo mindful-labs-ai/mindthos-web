@@ -17,6 +17,7 @@ import type {
   TranscribeListItem,
 } from '@/features/session/types';
 import { formatPreviewText } from '@/features/session/utils/formatPreview';
+import { isAdvancedTranscriptModel } from '@/features/session/utils/sttModel';
 import { updateSessionTitle } from '@/shared/api/supabase/sessionQueries';
 import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMapping';
 import {
@@ -235,8 +236,7 @@ export const SessionHistoryContainer: React.FC = () => {
           createdAt: session.created_at,
           isAdvancedTranscript:
             transcribe && 'stt_model' in transcribe
-              ? transcribe.stt_model === 'gemini-3' ||
-                transcribe.stt_model === 'advanced'
+              ? isAdvancedTranscriptModel(transcribe.stt_model)
               : false,
           isHandwritten: session.audio_meta_data === null,
         };

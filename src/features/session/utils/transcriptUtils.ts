@@ -4,6 +4,7 @@
  */
 
 import type { TranscribeSegment } from '../types';
+import { isLegacySttModel } from './sttModel';
 
 /**
  * 세그먼트가 유효한 타임스탬프를 가지고 있는지 확인
@@ -36,7 +37,7 @@ export function shouldEnableTimestampFeatures(
   segments?: TranscribeSegment[]
 ): boolean {
   // gemini-3 모델은 타임스탬프 기능 비활성화
-  if (sttModel === 'gemini-3') return false;
+  if (isLegacySttModel(sttModel)) return false;
 
   // 세그먼트가 없으면 비활성화
   if (!segments || segments.length === 0) return false;

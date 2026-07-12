@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { rendersNonverbalChips } from './sttModel';
 import {
   createAdvancedNvRegex,
   createDeidRegex,
@@ -166,11 +167,7 @@ export function renderTextWithNonverbal(
 ): React.ReactNode {
   // 비언어 태그 렌더링이 필요한 모델만 칩으로 표시
   // (basic = 벤더 STT 기본 티어. 침묵 nv를 내므로 advanced와 동일하게 칩 렌더)
-  if (
-    sttModel !== 'gemini-3' &&
-    sttModel !== 'advanced' &&
-    sttModel !== 'basic'
-  ) {
+  if (!rendersNonverbalChips(sttModel)) {
     return parts.map((p) => p.content).join('');
   }
 

@@ -9,6 +9,7 @@ import type {
   TranscribeSegment,
   TranscriptJson,
 } from '../types';
+import { isLegacySttModel } from './sttModel';
 
 /**
  * 숫자 ID를 역할 문자열로 변환
@@ -60,7 +61,7 @@ export function getTranscriptData(transcribe: Transcribe | null): {
     const processedSegments: TranscribeSegment[] = rawSegments.map((seg) => {
       const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
 
-      if (sttModel === 'gemini-3') {
+      if (isLegacySttModel(sttModel)) {
         // Gemini (레거시): start/end는 null
         return {
           id: seg.id,

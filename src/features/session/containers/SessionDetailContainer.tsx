@@ -52,6 +52,10 @@ import {
   getSegments as getSnapshotSegments,
   getSpeakers as getSnapshotSpeakers,
 } from '../utils/contentsEditor';
+import {
+  isAdvancedTranscriptModel,
+  supportsDeid as sttSupportsDeid,
+} from '../utils/sttModel';
 import { getTranscriptData } from '../utils/transcriptParser';
 import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
@@ -118,7 +122,7 @@ export const SessionDetailContainer: React.FC = () => {
   const session = sessionDetail?.session;
   const transcribe = sessionDetail?.transcribe;
   const sttModel = (transcribe as Transcribe | null)?.stt_model;
-  const supportsDeid = sttModel === 'basic' || sttModel === 'advanced';
+  const supportsDeid = sttSupportsDeid(sttModel);
   const sessionProgressNotes = React.useMemo(
     () => sessionDetail?.progressNotes || [],
     [sessionDetail?.progressNotes]
@@ -148,8 +152,9 @@ export const SessionDetailContainer: React.FC = () => {
 
   const transcriptLabel = isHandwrittenSession ? (
     '입력된 텍스트'
-  ) : (transcribe as Transcribe | null)?.stt_model === 'gemini-3' ||
-    (transcribe as Transcribe | null)?.stt_model === 'advanced' ? (
+  ) : isAdvancedTranscriptModel(
+      (transcribe as Transcribe | null)?.stt_model
+    ) ? (
     <span className="flex items-center justify-center gap-1.5">
       고급 축어록
       <svg
