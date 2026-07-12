@@ -24,7 +24,7 @@ describe('TranscriptText — 비언어 칩 렌더링', () => {
     const chip = container.querySelector('span');
     expect(chip).not.toBeNull();
     expect(chip!.textContent).toBe('침묵 3초');
-    expect(chip!.className).toMatch(/bg-gray/);
+    expect(chip!.className).toMatch(/bg-chip-silence/);
   });
 
   it('basic: 감정(E) → 주황 칩으로 렌더된다', () => {
@@ -35,7 +35,7 @@ describe('TranscriptText — 비언어 칩 렌더링', () => {
     const chip = container.querySelector('span');
     expect(chip).not.toBeNull();
     expect(chip!.textContent).toBe('웃음');
-    expect(chip!.className).toMatch(/bg-amber/);
+    expect(chip!.className).toMatch(/bg-chip-emotion/);
   });
 
   it('basic: 액션(A) → 파란 칩으로 렌더된다', () => {
@@ -46,7 +46,7 @@ describe('TranscriptText — 비언어 칩 렌더링', () => {
     const chip = container.querySelector('span');
     expect(chip).not.toBeNull();
     expect(chip!.textContent).toBe('박수');
-    expect(chip!.className).toMatch(/bg-blue/);
+    expect(chip!.className).toMatch(/bg-chip-action/);
   });
 
   it('advanced도 칩으로 렌더된다', () => {

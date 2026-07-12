@@ -145,6 +145,22 @@
   --color-modal-border: var(--color-border);
   --color-overlay-bg: rgb(0 0 0 / 0.5);
 
+  /* --- Transcript tag chip (축어록 비언어 태그 칩) ---
+   * 구현에서 역산한 값 (Tailwind gray/blue/amber/purple 팔레트).
+   * 기획 primitive에 해당 스케일이 없어 semantic 층에 직접 정의 (--color-warn 방식). */
+  --color-chip-silence-bg: #f3f4f6; /* gray-100 */
+  --color-chip-silence-fg: #374151; /* gray-700 */
+  --color-chip-silence-border: #d1d5db; /* gray-300 */
+  --color-chip-action-bg: #dbeafe; /* blue-100 */
+  --color-chip-action-fg: #1d4ed8; /* blue-700 */
+  --color-chip-action-border: #93c5fd; /* blue-300 */
+  --color-chip-emotion-bg: #fef3c7; /* amber-100 */
+  --color-chip-emotion-fg: #b45309; /* amber-700 */
+  --color-chip-emotion-border: #fcd34d; /* amber-300 */
+  --color-chip-overlap-bg: #f3e8ff; /* purple-100 */
+  --color-chip-overlap-fg: #7e22ce; /* purple-700 */
+  --color-chip-overlap-border: #d8b4fe; /* purple-300 */
+
   /* --- Grey palette (Tailwind 유틸리티용) --- */
   --color-grey-10: var(--primitive-grey-10);
   --color-grey-20: var(--primitive-grey-20);
@@ -304,4 +320,18 @@
   --color-modal-bg: var(--color-surface);
   --color-modal-border: var(--color-border);
   --color-overlay-bg: rgb(0 0 0 / 0.5);
+
+  /* --- Transcript tag chip (기존 dark: 유틸리티 값에서 역산) --- */
+  --color-chip-silence-bg: #1f2937; /* gray-800 */
+  --color-chip-silence-fg: #d1d5db; /* gray-300 */
+  --color-chip-silence-border: #4b5563; /* gray-600 */
+  --color-chip-action-bg: rgb(30 58 138 / 0.3); /* blue-900/30 */
+  --color-chip-action-fg: #93c5fd; /* blue-300 */
+  --color-chip-action-border: #2563eb; /* blue-600 */
+  --color-chip-emotion-bg: rgb(120 53 15 / 0.3); /* amber-900/30 */
+  --color-chip-emotion-fg: #fcd34d; /* amber-300 */
+  --color-chip-emotion-border: #d97706; /* amber-600 */
+  --color-chip-overlap-bg: rgb(88 28 135 / 0.3); /* purple-900/30 */
+  --color-chip-overlap-fg: #d8b4fe; /* purple-300 */
+  --color-chip-overlap-border: #9333ea; /* purple-600 */
 }

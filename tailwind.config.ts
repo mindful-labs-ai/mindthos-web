@@ -99,6 +99,29 @@ export default {
         overlay: {
           bg: 'var(--color-overlay-bg)',
         },
+        /* Transcript tag chip (축어록 비언어 태그 칩) */
+        chip: {
+          silence: {
+            bg: 'var(--color-chip-silence-bg)',
+            fg: 'var(--color-chip-silence-fg)',
+            border: 'var(--color-chip-silence-border)',
+          },
+          action: {
+            bg: 'var(--color-chip-action-bg)',
+            fg: 'var(--color-chip-action-fg)',
+            border: 'var(--color-chip-action-border)',
+          },
+          emotion: {
+            bg: 'var(--color-chip-emotion-bg)',
+            fg: 'var(--color-chip-emotion-fg)',
+            border: 'var(--color-chip-emotion-border)',
+          },
+          overlap: {
+            bg: 'var(--color-chip-overlap-bg)',
+            fg: 'var(--color-chip-overlap-fg)',
+            border: 'var(--color-chip-overlap-border)',
+          },
+        },
         /* Primitive palettes (직접 참조 필요 시) */
         grey: {
           10: 'var(--color-grey-10)',
