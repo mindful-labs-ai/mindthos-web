@@ -27,17 +27,11 @@ import {
   type NonverbalTagType,
 } from '@/features/session/utils/transcriptTags';
 
-// ── 칩 스타일 ──
-
-const NV_CHIP_STYLES: Record<string, string> = {
-  S: 'bg-gray-100 text-gray-700 border-gray-300', // 침묵 - 회색
-  A: 'bg-blue-100 text-blue-700 border-blue-300',
-  E: 'bg-amber-100 text-amber-700 border-amber-300',
-};
-
-const DEID_CHIP_STYLE = 'bg-orange-100/10 text-orange-100 border-orange-100/30';
-const DEID_INLINE_STYLE =
-  'border-b border-dashed border-orange-100/50 text-orange-100';
+import {
+  DEID_CHIP_CLASS,
+  DEID_INLINE_CLASS,
+  NV_CHIP_COLORS,
+} from './transcriptChipStyles';
 
 // ── HTML 빌드 ──
 
@@ -63,7 +57,7 @@ function buildSegmentHtml(
     html = html.replace(createAdvancedNvRegex(), (_, key: string) => {
       const label = nvMap.get(key)?.label || key;
       const tagType = nvKeyToTagType(key);
-      const style = NV_CHIP_STYLES[tagType] || NV_CHIP_STYLES.A;
+      const style = NV_CHIP_COLORS[tagType] || NV_CHIP_COLORS.A;
       return `<span data-chip="nv" data-nv-key="${escapeHtml(key)}" data-tag-type="${tagType}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium ${style}">${escapeHtml(label)}</span>`;
     });
   }
@@ -76,7 +70,7 @@ function buildSegmentHtml(
         content || NONVERBAL_DEFAULT_LABELS[tagType as NonverbalTagType];
       if (!label) return '';
       const chipTagType = tagType === 'E' ? 'E' : 'A';
-      const style = NV_CHIP_STYLES[chipTagType] || NV_CHIP_STYLES.A;
+      const style = NV_CHIP_COLORS[chipTagType] || NV_CHIP_COLORS.A;
       return `<span data-chip="legacy-nv" data-legacy-tag="${tagType}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium ${style}">${escapeHtml(label)}</span>`;
     }
   );
@@ -89,10 +83,10 @@ function buildSegmentHtml(
         if (showDeid) {
           // ON: 라벨 칩 (contenteditable=false, 클릭으로 편집)
           const label = deid[key] || key;
-          return `<span data-chip="deid" data-deid-key="${escapeHtml(key)}" data-deid-original="${escapeHtml(original)}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-headline ${DEID_CHIP_STYLE}">${escapeHtml(label)}</span>`;
+          return `<span data-chip="deid" data-deid-key="${escapeHtml(key)}" data-deid-original="${escapeHtml(original)}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-headline ${DEID_CHIP_CLASS}">${escapeHtml(label)}</span>`;
         } else {
           // OFF: 원본 텍스트 인라인 편집 가능
-          return `<span data-deid-key="${escapeHtml(key)}" data-deid-inline="" class="${DEID_INLINE_STYLE}">${escapeHtml(original)}</span>`;
+          return `<span data-deid-key="${escapeHtml(key)}" data-deid-inline="" class="${DEID_INLINE_CLASS}">${escapeHtml(original)}</span>`;
         }
       }
     );

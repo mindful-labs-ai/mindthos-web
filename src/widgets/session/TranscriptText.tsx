@@ -11,37 +11,9 @@ import { rendersNonverbalChips } from '@/features/session/utils/sttModel';
 import {
   createDeidRegex,
   NONVERBAL_DEFAULT_LABELS,
-  type NonverbalTagType,
 } from '@/features/session/utils/transcriptTags';
 
-/**
- * 비언어 태그 유형별 스타일 (배경색 + 텍스트 색상)
- */
-const TAG_STYLES: Record<
-  NonverbalTagType,
-  { bg: string; text: string; border: string }
-> = {
-  S: {
-    bg: 'bg-gray-100 dark:bg-gray-800',
-    text: 'text-gray-700 dark:text-gray-300',
-    border: 'border-gray-300 dark:border-gray-600',
-  }, // 침묵 - 회색
-  A: {
-    bg: 'bg-blue-100 dark:bg-blue-900/30',
-    text: 'text-blue-700 dark:text-blue-300',
-    border: 'border-blue-300 dark:border-blue-600',
-  }, // 행동 - 파란색
-  E: {
-    bg: 'bg-amber-100 dark:bg-amber-900/30',
-    text: 'text-amber-700 dark:text-amber-300',
-    border: 'border-amber-300 dark:border-amber-600',
-  }, // 감정/강조 - 주황색
-  O: {
-    bg: 'bg-purple-100 dark:bg-purple-900/30',
-    text: 'text-purple-700 dark:text-purple-300',
-    border: 'border-purple-300 dark:border-purple-600',
-  }, // 겹침 - 보라색
-};
+import { DEID_LABEL_TEXT_CLASS, NV_CHIP_COLORS } from './transcriptChipStyles';
 
 /**
  * TextPart 배열을 React 엘리먼트로 렌더링
@@ -70,12 +42,12 @@ function renderTextWithNonverbal(
       return null;
     }
 
-    const styles = TAG_STYLES[part.tagType || 'S'] || TAG_STYLES.S;
+    const colors = NV_CHIP_COLORS[part.tagType || 'S'] || NV_CHIP_COLORS.S;
 
     return (
       <span
         key={index}
-        className={`typo-xs mx-1 inline-flex items-center rounded-md border px-2 py-0.5 align-middle font-medium ${styles.bg} ${styles.text} ${styles.border}`}
+        className={`typo-xs mx-1 inline-flex items-center rounded-md border px-2 py-0.5 align-middle font-medium ${colors}`}
       >
         {label}
       </span>
@@ -108,10 +80,7 @@ function applyDeidStyling(
       const deidKey = match[1];
       const label = deid[deidKey] || deidKey;
       parts.push(
-        <span
-          key={`deid-${keyIdx++}`}
-          className="font-headline text-orange-100"
-        >
+        <span key={`deid-${keyIdx++}`} className={DEID_LABEL_TEXT_CLASS}>
           {label}
         </span>
       );
