@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildAdvancedNvTag,
+  buildDeidTag,
+  buildLegacyNvTag,
   createAdvancedNvRegex,
   createDeidRegex,
   createLegacyNvRegex,
@@ -91,5 +94,31 @@ describe('NONVERBAL_DEFAULT_LABELS', () => {
     expect(NONVERBAL_DEFAULT_LABELS.O).toBe('겹침');
     expect(NONVERBAL_DEFAULT_LABELS.A).toBe('');
     expect(NONVERBAL_DEFAULT_LABELS.E).toBe('');
+  });
+});
+
+describe('태그 빌더 — 직렬화와 파싱 왕복', () => {
+  it('buildAdvancedNvTag / buildLegacyNvTag / buildDeidTag 형식', () => {
+    expect(buildAdvancedNvTag('a1')).toBe('⟪nv:a1⟫');
+    expect(buildLegacyNvTag('A', '한숨')).toBe('{%A%한숨%}');
+    expect(buildLegacyNvTag('S')).toBe('{%S%}');
+    expect(buildDeidTag('d1', '홍길동')).toBe('⟪deid:d1|홍길동⟫');
+  });
+
+  it('빌더 출력이 대응 정규식으로 원형 파싱된다 (roundtrip)', () => {
+    const legacy = createLegacyNvRegex().exec(buildLegacyNvTag('E', '웃음'));
+    expect(legacy?.[1]).toBe('E');
+    expect(legacy?.[2]).toBe('웃음');
+
+    const legacyEmpty = createLegacyNvRegex().exec(buildLegacyNvTag('O'));
+    expect(legacyEmpty?.[1]).toBe('O');
+    expect(legacyEmpty?.[2]).toBeUndefined();
+
+    const adv = createAdvancedNvRegex().exec(buildAdvancedNvTag('s9'));
+    expect(adv?.[1]).toBe('s9');
+
+    const deid = createDeidRegex().exec(buildDeidTag('d2', '40만 원 (송금)'));
+    expect(deid?.[1]).toBe('d2');
+    expect(deid?.[2]).toBe('40만 원 (송금)');
   });
 });

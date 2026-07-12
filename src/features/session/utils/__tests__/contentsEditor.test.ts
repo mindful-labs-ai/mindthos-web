@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { TranscribeContents, TranscriptJson } from '../../types';
 import {
   addSegmentAfter,
+  deepCloneContents,
   applyBulkDeidEdits,
   applyBulkNvEdits,
   applyBulkSpeakerChanges,
@@ -13,6 +14,7 @@ import {
   removeSegment,
   updateSegmentSpeaker,
   updateSegmentText,
+  updateSpeakerDefinitions,
 } from '../contentsEditor';
 
 const transcriptJson: TranscriptJson = {
@@ -146,5 +148,41 @@ describe('일괄 편집', () => {
       1: { d1: '인물1' },
     });
     expect(getSegments(withDeid)[1].deid).toEqual({ d1: '인물1' });
+  });
+});
+
+describe('레거시(result) 포맷 편집 경로', () => {
+  it('addSegmentAfter: 레거시 구조에서도 삽입된다', () => {
+    const updated = addSegmentAfter(legacyContents, 0, {
+      id: 99,
+      start: 1,
+      end: 2,
+      speaker: 1,
+      text: '레거시 삽입',
+    });
+    expect(getSegments(updated).map((s) => s.id)).toEqual([0, 99]);
+  });
+
+  it('removeSegment: 레거시 구조에서도 삭제된다', () => {
+    expect(getSegments(removeSegment(legacyContents, 0))).toEqual([]);
+  });
+
+  it('updateSpeakerDefinitions: 두 포맷 모두 speakers를 교체한다', () => {
+    const speakers = [{ id: 0, role: 'counselor', customName: '김상담' }];
+    expect(
+      getSpeakers(updateSpeakerDefinitions(transcriptJson, speakers))
+    ).toEqual(speakers);
+    expect(
+      getSpeakers(updateSpeakerDefinitions(legacyContents, speakers))
+    ).toEqual(speakers);
+  });
+});
+
+describe('deepCloneContents', () => {
+  it('내용은 동일하고 참조는 분리된 사본을 만든다', () => {
+    const clone = deepCloneContents(transcriptJson);
+    expect(clone).toEqual(transcriptJson);
+    expect(clone).not.toBe(transcriptJson);
+    expect(getSegments(clone)[0]).not.toBe(getSegments(transcriptJson)[0]);
   });
 });

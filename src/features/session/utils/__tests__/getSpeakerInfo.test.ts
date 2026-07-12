@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Speaker } from '../../types';
+import type { Speaker, TranscribeSegment } from '../../types';
 import {
   getSpeakerCopyName,
   getSpeakerDisplayName,
+  getSpeakerInfo,
   getSpeakerLabel,
 } from '../getSpeakerInfo';
+
+const segmentOf = (speaker: number): TranscribeSegment => ({
+  id: 0,
+  start: 0,
+  end: 1,
+  speaker,
+  text: '',
+});
 
 const speakers: Speaker[] = [
   { id: 0, role: 'counselor' },
@@ -65,5 +74,54 @@ describe('getSpeakerCopyName (복사 출력 전용 — UI 표시명과 규칙이
     expect(getSpeakerCopyName(1, [{ id: 1, role: 'custom_abc' }])).toBe(
       '내담자'
     );
+  });
+});
+
+describe('getSpeakerInfo (아바타 색상·fallback)', () => {
+  it('상담사는 빨강, 내담자1은 초록, 내담자2 이상은 파랑 계열', () => {
+    expect(getSpeakerInfo(segmentOf(0), speakers)).toEqual({
+      name: '상담사',
+      label: '상',
+      bgColor: 'bg-red-100',
+      textColor: 'text-red-600',
+    });
+    expect(getSpeakerInfo(segmentOf(1), speakers)).toMatchObject({
+      bgColor: 'bg-green-100',
+      textColor: 'text-green-600',
+    });
+    expect(getSpeakerInfo(segmentOf(2), speakers)).toMatchObject({
+      bgColor: 'bg-blue-100',
+      textColor: 'text-blue-600',
+    });
+  });
+
+  it('customName이 있으면 ID 기반 로테이션 색을 쓴다 (id % 팔레트 길이)', () => {
+    const custom: Speaker[] = [
+      { id: 1, role: 'client1', customName: '김민지' },
+    ];
+    expect(getSpeakerInfo(segmentOf(1), custom)).toEqual({
+      name: '김민지',
+      label: '김',
+      bgColor: 'bg-pink-100', // 팔레트 index 1
+      textColor: 'text-pink-600',
+    });
+  });
+
+  it('counselor/client 외 기타 role도 ID 기반 로테이션 색을 쓴다', () => {
+    const etc: Speaker[] = [{ id: 3, role: 'custom_guest' }];
+    expect(getSpeakerInfo(segmentOf(3), etc)).toMatchObject({
+      name: '참석자 C',
+      bgColor: 'bg-cyan-100', // 팔레트 index 3
+      textColor: 'text-cyan-600',
+    });
+  });
+
+  it('speakers에 없는 ID는 알 수 없음 fallback을 반환한다', () => {
+    expect(getSpeakerInfo(segmentOf(9), speakers)).toEqual({
+      name: '알 수 없음',
+      label: '?',
+      bgColor: 'bg-gray-100',
+      textColor: 'text-gray-600',
+    });
   });
 });
