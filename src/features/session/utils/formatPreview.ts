@@ -16,14 +16,13 @@
  * `formatSegmentText`(AI 소비용 — deid 원본 복원)와 다르게 list 표시용은 원본을 노출하지 않음.
  */
 
-const DEID_REGEX = /⟪deid:\w+\|[^⟫]+⟫/g;
-const ADVANCED_NV_REGEX = /⟪nv:[^⟫]+⟫/g;
-const LEGACY_NV_REGEX = /\{%([SAEO])%(?:([^%]+)%)?\}/g;
-
-const LEGACY_SILENT_LABELS: Record<string, string> = {
-  S: '침묵',
-  O: '겹침',
-};
+import {
+  createAdvancedNvRegex,
+  createDeidRegex,
+  createLegacyNvRegex,
+  NONVERBAL_DEFAULT_LABELS,
+  type NonverbalTagType,
+} from './transcriptTags';
 
 export function formatPreviewText(
   raw: string | null | undefined
@@ -32,17 +31,20 @@ export function formatPreviewText(
   let text = raw;
 
   // 1. 비식별화 → 안전한 placeholder
-  text = text.replace(DEID_REGEX, '(비식별)');
+  text = text.replace(createDeidRegex(), '(비식별)');
 
   // 2. advanced 비언어 → 제거 (라벨 맵 없음)
-  text = text.replace(ADVANCED_NV_REGEX, '');
+  text = text.replace(createAdvancedNvRegex(), '');
 
   // 3. legacy 비언어 → (라벨) / (침묵)·(겹침) / 제거
-  text = text.replace(LEGACY_NV_REGEX, (_, type: string, content?: string) => {
-    if (content) return `(${content})`;
-    const fallback = LEGACY_SILENT_LABELS[type];
-    return fallback ? `(${fallback})` : '';
-  });
+  text = text.replace(
+    createLegacyNvRegex(),
+    (_, type: string, content?: string) => {
+      if (content) return `(${content})`;
+      const fallback = NONVERBAL_DEFAULT_LABELS[type as NonverbalTagType];
+      return fallback ? `(${fallback})` : '';
+    }
+  );
 
   // 4. 공백 정리
   text = text.replace(/[ \t]{2,}/g, ' ').trim();

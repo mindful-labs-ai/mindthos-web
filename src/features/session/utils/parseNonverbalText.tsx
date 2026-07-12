@@ -1,9 +1,18 @@
 import React from 'react';
 
+import {
+  createAdvancedNvRegex,
+  createDeidRegex,
+  createLegacyNvRegex,
+  NONVERBAL_DEFAULT_LABELS,
+  parseNvEntries,
+  type NonverbalTagType,
+} from './transcriptTags';
+
 export interface TextPart {
   type: 'text' | 'nonverbal';
   content: string;
-  tagType?: 'S' | 'A' | 'E' | 'O'; // Silence, Action, Emotion, Overlap
+  tagType?: NonverbalTagType; // Silence, Action, Emotion, Overlap
 }
 
 /**
@@ -15,8 +24,7 @@ export interface TextPart {
  */
 export function parseNonverbalText(text: string): TextPart[] {
   const parts: TextPart[] = [];
-  // 수정된 정규식: {%X%내용%} 또는 {%X%} 형태를 매칭
-  const regex = /\{%([SAEO])%(?:([^%]+)%)?}/g;
+  const regex = createLegacyNvRegex();
 
   let lastIndex = 0;
   let match;
@@ -34,7 +42,7 @@ export function parseNonverbalText(text: string): TextPart[] {
     }
 
     // 비언어 태그
-    const tagType = match[1] as 'S' | 'A' | 'E' | 'O';
+    const tagType = match[1] as NonverbalTagType;
     const tagContent = match[2] || ''; // match[2]는 내용 부분 (없으면 빈 문자열)
 
     parts.push({
@@ -59,16 +67,6 @@ export function parseNonverbalText(text: string): TextPart[] {
 
   return parts;
 }
-
-/**
- * 비언어 태그 표시 레이블
- */
-const TAG_LABELS: Record<string, string> = {
-  S: '침묵',
-  A: '', // Action은 내용만 표시
-  E: '', // Emotion은 내용만 표시
-  O: '겹침',
-};
 
 /**
  * 비언어 태그 유형별 스타일 (배경색 + 텍스트 색상)
@@ -108,20 +106,10 @@ export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
     return [{ type: 'text', content: text }];
   }
 
-  // nv 배열에서 KEY→{tagType, label} 매핑 생성.
-  // key 접두: e→감정(E), s→침묵(S), 그 외→액션(A). (벤더 STT가 침묵을 s 접두로 냄)
-  const nvMap = new Map<string, { tagType: 'S' | 'A' | 'E'; label: string }>();
-  for (const entry of nv) {
-    const colonIdx = entry.indexOf(':');
-    if (colonIdx === -1) continue;
-    const key = entry.slice(0, colonIdx);
-    const label = entry.slice(colonIdx + 1);
-    const tagType = key.startsWith('e') ? 'E' : key.startsWith('s') ? 'S' : 'A';
-    nvMap.set(key, { tagType, label });
-  }
+  const nvMap = parseNvEntries(nv);
 
   const parts: TextPart[] = [];
-  const regex = /⟪nv:([^⟫]+)⟫/g;
+  const regex = createAdvancedNvRegex();
   let lastIndex = 0;
   let match;
 
@@ -156,8 +144,8 @@ export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
 export function extractTextOnly(text: string, nv?: string[]): string {
   // 먼저 ⟪nv:KEY⟫, ⟪deid:KEY|원본⟫ 태그를 제거/치환
   const cleaned = text
-    .replace(/⟪nv:[^⟫]+⟫/g, '')
-    .replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1');
+    .replace(createAdvancedNvRegex(), '')
+    .replace(createDeidRegex(), '$2');
 
   const parts =
     nv && nv.length > 0
@@ -192,9 +180,9 @@ export function renderTextWithNonverbal(
     }
 
     // 비언어 태그를 Chip으로 렌더링
-    const label = part.content
-      ? part.content
-      : TAG_LABELS[part.tagType || ''] || '';
+    const label =
+      part.content ||
+      (part.tagType ? NONVERBAL_DEFAULT_LABELS[part.tagType] : '');
 
     if (!label) {
       return null;

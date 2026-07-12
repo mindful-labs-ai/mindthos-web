@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { createDeidRegex } from './transcriptTags';
+
 export interface DeidPart {
   type: 'text' | 'deid';
   content: string; // text: 일반 텍스트, deid: 원본 텍스트
@@ -23,7 +25,7 @@ export function parseDeidText(
   }
 
   const parts: DeidPart[] = [];
-  const regex = /⟪deid:(\w+)\|([^⟫]+)⟫/g;
+  const regex = createDeidRegex();
   let lastIndex = 0;
   let match;
 
@@ -99,7 +101,7 @@ export function extractDeidText(
 ): string {
   if (!deid || Object.keys(deid).length === 0) return text;
 
-  return text.replace(/⟪deid:(\w+)\|([^⟫]+)⟫/g, (_, key, original) => {
+  return text.replace(createDeidRegex(), (_, key, original) => {
     if (showDeid) {
       return `[${deid[key] || key}]`;
     }
@@ -116,7 +118,7 @@ export function applyDeidStyling(
   deid: Record<string, string>
 ): React.ReactNode {
   if (typeof node === 'string') {
-    const regex = /⟪deid:(\w+)\|([^⟫]+)⟫/g;
+    const regex = createDeidRegex();
     if (!regex.test(node)) return node;
 
     regex.lastIndex = 0;
