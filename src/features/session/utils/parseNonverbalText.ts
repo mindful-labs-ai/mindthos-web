@@ -1,11 +1,7 @@
-import React from 'react';
-
-import { rendersNonverbalChips } from './sttModel';
 import {
   createAdvancedNvRegex,
   createDeidRegex,
   createLegacyNvRegex,
-  NONVERBAL_DEFAULT_LABELS,
   parseNvEntries,
   type NonverbalTagType,
 } from './transcriptTags';
@@ -70,33 +66,6 @@ export function parseNonverbalText(text: string): TextPart[] {
 }
 
 /**
- * 비언어 태그 유형별 스타일 (배경색 + 텍스트 색상)
- */
-const TAG_STYLES: Record<string, { bg: string; text: string; border: string }> =
-  {
-    S: {
-      bg: 'bg-gray-100 dark:bg-gray-800',
-      text: 'text-gray-700 dark:text-gray-300',
-      border: 'border-gray-300 dark:border-gray-600',
-    }, // 침묵 - 회색
-    A: {
-      bg: 'bg-blue-100 dark:bg-blue-900/30',
-      text: 'text-blue-700 dark:text-blue-300',
-      border: 'border-blue-300 dark:border-blue-600',
-    }, // 행동 - 파란색
-    E: {
-      bg: 'bg-amber-100 dark:bg-amber-900/30',
-      text: 'text-amber-700 dark:text-amber-300',
-      border: 'border-amber-300 dark:border-amber-600',
-    }, // 감정/강조 - 주황색
-    O: {
-      bg: 'bg-purple-100 dark:bg-purple-900/30',
-      text: 'text-purple-700 dark:text-purple-300',
-      border: 'border-purple-300 dark:border-purple-600',
-    }, // 겹침 - 보라색
-  };
-
-/**
  * ⟪nv:KEY⟫ + nv[] 배열을 파싱하여 텍스트와 비언어 태그로 분리 (advanced 포맷)
  * 예시:
  * - text: "⟪nv:a1⟫ 저는 그냥 답답해요.", nv: ["a1:한숨"]
@@ -156,45 +125,4 @@ export function extractTextOnly(text: string, nv?: string[]): string {
     .filter((part) => part.type === 'text')
     .map((part) => part.content)
     .join('');
-}
-
-/**
- * TextPart 배열을 React 엘리먼트로 렌더링
- */
-export function renderTextWithNonverbal(
-  parts: TextPart[],
-  sttModel: string | null | undefined
-): React.ReactNode {
-  // 비언어 태그 렌더링이 필요한 모델만 칩으로 표시
-  // (basic = 벤더 STT 기본 티어. 침묵 nv를 내므로 advanced와 동일하게 칩 렌더)
-  if (!rendersNonverbalChips(sttModel)) {
-    return parts.map((p) => p.content).join('');
-  }
-
-  return parts.map((part, index) => {
-    if (part.type === 'text') {
-      return <React.Fragment key={index}>{part.content}</React.Fragment>;
-    }
-
-    // 비언어 태그를 Chip으로 렌더링
-    const label =
-      part.content ||
-      (part.tagType ? NONVERBAL_DEFAULT_LABELS[part.tagType] : '');
-
-    if (!label) {
-      return null;
-    }
-
-    const tagType = part.tagType || 'S';
-    const styles = TAG_STYLES[tagType] || TAG_STYLES.S;
-
-    return (
-      <span
-        key={index}
-        className={`typo-xs mx-1 inline-flex items-center rounded-md border px-2 py-0.5 align-middle font-medium ${styles.bg} ${styles.text} ${styles.border}`}
-      >
-        {label}
-      </span>
-    );
-  });
 }

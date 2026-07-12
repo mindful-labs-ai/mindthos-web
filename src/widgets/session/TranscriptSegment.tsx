@@ -3,21 +3,18 @@ import React from 'react';
 import { Play, Plus, Trash2 } from 'lucide-react';
 
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
+import { extractDeidText } from '@/features/session/utils/extractDeidText';
 import { formatTime } from '@/features/session/utils/formatTime';
 import { getSpeakerInfo } from '@/features/session/utils/getSpeakerInfo';
 import {
-  applyDeidStyling,
-  extractDeidText,
-} from '@/features/session/utils/parseDeidText';
-import {
   parseNonverbalText,
   parseNvTagText,
-  renderTextWithNonverbal,
 } from '@/features/session/utils/parseNonverbalText';
 
 import { SegmentContentEditor } from './SegmentContentEditor';
 import { SegmentTimeEditPopup } from './SegmentTimeEditPopup';
 import { SpeakerEditPopup } from './SpeakerEditPopup';
+import { TranscriptText } from './TranscriptText';
 
 interface TranscriptSegmentProps {
   segment: TranscribeSegment;
@@ -343,12 +340,11 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
           <p
             className={`m-0 text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
           >
-            {hasDeid && showDeid && segment.deid
-              ? applyDeidStyling(
-                  renderTextWithNonverbal(textParts, sttModel),
-                  segment.deid
-                )
-              : renderTextWithNonverbal(textParts, sttModel)}
+            <TranscriptText
+              parts={textParts}
+              sttModel={sttModel}
+              deid={hasDeid && showDeid ? segment.deid : undefined}
+            />
           </p>
         )}
       </div>
