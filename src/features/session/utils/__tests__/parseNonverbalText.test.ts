@@ -1,6 +1,36 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractTextOnly, parseNvTagText } from '../parseNonverbalText';
+import {
+  extractTextOnly,
+  parseNonverbalText,
+  parseNvTagText,
+} from '../parseNonverbalText';
+
+describe('parseNonverbalText — legacy {%...%} 파싱', () => {
+  it('내용 있는 태그를 유형·라벨과 함께 분리한다', () => {
+    expect(parseNonverbalText('네 {%A%한숨%} 그래요')).toEqual([
+      { type: 'text', content: '네 ' },
+      { type: 'nonverbal', tagType: 'A', content: '한숨' },
+      { type: 'text', content: ' 그래요' },
+    ]);
+  });
+
+  it('내용 없는 태그({%S%}, {%O%})는 빈 content로 분리한다', () => {
+    expect(parseNonverbalText('{%S%}네')).toEqual([
+      { type: 'nonverbal', tagType: 'S', content: '' },
+      { type: 'text', content: '네' },
+    ]);
+    expect(parseNonverbalText('{%O%}')).toEqual([
+      { type: 'nonverbal', tagType: 'O', content: '' },
+    ]);
+  });
+
+  it('태그가 없으면 텍스트 단일 파트를 반환한다', () => {
+    expect(parseNonverbalText('평문')).toEqual([
+      { type: 'text', content: '평문' },
+    ]);
+  });
+});
 
 describe('parseNvTagText — 접두 key → tagType 매핑', () => {
   it('s→침묵(S), e→감정(E), 그 외→액션(A)로 분기하고 라벨을 보존한다', () => {
