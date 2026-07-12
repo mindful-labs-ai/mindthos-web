@@ -833,7 +833,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={handleChipDelete}
-                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-red-500 transition-colors hover:bg-red-50"
+                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-danger transition-colors hover:bg-danger-surface"
                     aria-label="태그 삭제"
                     title="삭제"
                   >

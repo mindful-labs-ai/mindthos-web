@@ -355,7 +355,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       {/* + 버튼 */}
       <button
         type="button"
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white shadow-default transition-transform active:scale-95 lg:hover:scale-110 lg:hover:bg-green-600"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-green-80 text-white shadow-default transition-transform active:scale-95 lg:hover:scale-110 lg:hover:bg-green-80"
         onClick={handleToggle}
       >
         <Plus

@@ -87,7 +87,7 @@ export const MultiFileItem: React.FC<MultiFileItemProps> = ({
         {isPending ? (
           <Text className="typo-sm text-fg-muted">파일 업로드 중</Text>
         ) : isError ? (
-          <Text className="typo-sm text-red-500">{file.errorMessage}</Text>
+          <Text className="typo-sm text-danger">{file.errorMessage}</Text>
         ) : (
           <Text className="typo-sm text-fg-muted">
             {formatFileSize(file.size)}

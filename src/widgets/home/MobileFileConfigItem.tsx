@@ -159,18 +159,18 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
     <div
       className={cn(
         'flex w-full items-center gap-2 overflow-hidden rounded-lg border-2 bg-surface p-4',
-        isFailed ? 'border-red-300 bg-red-50' : 'border-border'
+        isFailed ? 'border-danger-subtle bg-danger-surface' : 'border-border'
       )}
     >
       <div className="flex items-center justify-center">
         {/* 순서 번호 또는 진행 상태 */}
         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center">
           {isCompleted ? (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-80">
               <CheckIcon size={16} className="text-white" />
             </div>
           ) : isFailed ? (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-danger">
               <XIcon size={16} className="text-white" />
             </div>
           ) : isProcessing ? (
@@ -200,9 +200,7 @@ export const MobileFileConfigItem: React.FC<MobileFileConfigItemProps> = ({
               )}
             </Text>
             {isFailed && result?.errorMessage && (
-              <Text className="typo-sm text-red-500">
-                {result.errorMessage}
-              </Text>
+              <Text className="typo-sm text-danger">{result.errorMessage}</Text>
             )}
           </div>
 

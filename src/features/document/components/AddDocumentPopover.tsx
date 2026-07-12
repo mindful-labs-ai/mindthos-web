@@ -40,7 +40,7 @@ export function AddDocumentMenu({
 
       <div
         role="menu"
-        className={`z-modal w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)] ${className ?? ''}`}
+        className={`z-modal w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-modal ${className ?? ''}`}
         style={style}
       >
         {items.map(({ kind, icon }) => (

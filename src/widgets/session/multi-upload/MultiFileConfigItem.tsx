@@ -197,11 +197,11 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
   const statusBadge = (
     <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center">
       {isCompleted ? (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-80">
           <CheckIcon size={16} className="text-primary-fg" />
         </div>
       ) : isFailed ? (
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-danger">
           <XIcon size={16} className="text-primary-fg" />
         </div>
       ) : isProcessing ? (
@@ -223,7 +223,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
           <> | {formatDurationInTime(file.duration)}</>
         )}
         {isFailed && result?.errorMessage && (
-          <span className="ml-2 text-red-500">({result.errorMessage})</span>
+          <span className="ml-2 text-danger">({result.errorMessage})</span>
         )}
       </Text>
     </div>
@@ -250,7 +250,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
       <div
         className={cn(
           'flex h-[138px] w-full flex-col justify-between rounded-lg border-2 bg-surface px-4 py-3',
-          isFailed ? 'border-red-300 bg-red-50' : 'border-border'
+          isFailed ? 'border-danger-subtle bg-danger-surface' : 'border-border'
         )}
       >
         {/* 1줄: 번호 | 파일명+정보 | X */}
@@ -293,7 +293,7 @@ export const MultiFileConfigItem: React.FC<MultiFileConfigItemProps> = ({
     <div
       className={cn(
         'flex h-[106px] w-full max-w-[843px] items-center gap-4 rounded-lg border-2 bg-surface px-4 py-3',
-        isFailed ? 'border-red-300 bg-red-50' : 'border-border'
+        isFailed ? 'border-danger-subtle bg-danger-surface' : 'border-border'
       )}
     >
       {statusBadge}

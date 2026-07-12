@@ -78,7 +78,7 @@ export function ReportListStep({
                 </span>
               )}
               {report.status === 'FAILED' && (
-                <span className="typo-xs flex items-center gap-1 text-red-500">
+                <span className="typo-xs flex items-center gap-1 text-danger">
                   <AlertCircle className="h-3 w-3" />
                   실패
                 </span>
@@ -114,7 +114,7 @@ export function ReportListStep({
               type="button"
               onClick={() => onRetryReport(report.id)}
               disabled={retryingId === report.id}
-              className="shrink-0 rounded-lg p-2 text-red-500 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
+              className="shrink-0 rounded-lg p-2 text-danger transition-colors disabled:opacity-50 lg:hover:bg-danger-surface"
             >
               {retryingId === report.id ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

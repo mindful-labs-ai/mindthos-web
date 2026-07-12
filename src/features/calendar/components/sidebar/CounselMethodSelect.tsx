@@ -69,7 +69,7 @@ export function CounselMethodSelect({
                   : undefined,
             }}
             className={cn(
-              'absolute right-0 z-30 w-[110px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]',
+              'absolute right-0 z-30 w-[110px] rounded-md border border-[#ecedf3] bg-white p-1.5 shadow-modal',
               direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
             )}
           >

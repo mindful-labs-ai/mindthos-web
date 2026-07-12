@@ -215,7 +215,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
               'mb-4 rounded-md p-3 text-sm font-medium',
               state.resendError
                 ? 'bg-red-20 text-red-80'
-                : 'bg-green-50 text-green-80'
+                : 'bg-green-20 text-green-80'
             )}
           >
             {state.resendError || state.resendInfo}
@@ -263,9 +263,9 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
       if (hasGoogle && hasKakao)
         return 'text-green-80 drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
       if (hasGoogle)
-        return 'text-[#4285f4] drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
+        return 'text-brand-google drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
       if (hasKakao)
-        return 'text-[#FEE500] drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
+        return 'text-brand-kakao drop-shadow-[0_0.5px_0.5px_rgba(0,0,0,0.2)]';
     };
 
     return (
@@ -297,7 +297,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
           )}
           {hasKakao && (
             <button
-              className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity disabled:opacity-60 lg:hover:opacity-60"
+              className="flex h-12 w-full items-center justify-center rounded-md bg-brand-kakao text-m font-headline transition-opacity disabled:opacity-60 lg:hover:opacity-60"
               onClick={() => handleOAuthLogin('kakao')}
               disabled={isOAuthBusy}
             >

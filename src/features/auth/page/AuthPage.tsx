@@ -166,7 +166,7 @@ const AuthPage = () => {
                         : 'Google로 계속하기'}
                     </button>
                     <button
-                      className="flex h-12 w-full items-center justify-center rounded-md bg-[#FEE500] text-m font-headline transition-opacity lg:hover:opacity-60"
+                      className="flex h-12 w-full items-center justify-center rounded-md bg-brand-kakao text-m font-headline transition-opacity lg:hover:opacity-60"
                       onClick={handleKakaoLogin}
                       disabled={isKakaoLoading}
                     >

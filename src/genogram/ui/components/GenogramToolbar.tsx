@@ -536,7 +536,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
         <SimpleTooltip content="삭제">
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-red-50"
+            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-danger transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-danger-surface"
             onClick={onDelete}
             disabled={!hasSelection}
           >

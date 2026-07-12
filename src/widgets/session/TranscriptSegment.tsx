@@ -227,7 +227,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       {isEditable && onDeleteSegment && (
         <button
           onClick={handleDeleteSegment}
-          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-red-500 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:text-red-600"
+          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-danger opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:text-danger-hover"
           aria-label="발화 삭제"
         >
           <Trash2 className="h-4 w-4" />

@@ -69,7 +69,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
           className={cn(
             'mb-4 rounded-md p-3 text-sm font-medium',
             resendState.status === 'success'
-              ? 'bg-green-50 text-green-80'
+              ? 'bg-green-20 text-green-80'
               : 'bg-red-20 text-red-80'
           )}
         >

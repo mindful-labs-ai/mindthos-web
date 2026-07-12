@@ -61,7 +61,7 @@ export function GenogramGenerationSteps({
       if (error) {
         return (
           <div className="flex flex-col items-center justify-center py-12">
-            <AlertCircle className="h-12 w-12 text-red-500" />
+            <AlertCircle className="h-12 w-12 text-danger" />
             <p className="typo-l mt-4 text-center font-medium text-fg">
               오류가 생겼어요
             </p>
@@ -141,7 +141,7 @@ export function GenogramGenerationSteps({
     if (error) {
       return (
         <div className="flex flex-col items-center justify-center py-12">
-          <AlertCircle className="h-12 w-12 text-red-500" />
+          <AlertCircle className="h-12 w-12 text-danger" />
           <p className="typo-l mt-4 text-center font-medium text-fg">
             오류가 생겼어요
           </p>

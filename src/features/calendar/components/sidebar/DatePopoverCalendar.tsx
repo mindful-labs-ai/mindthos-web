@@ -58,7 +58,7 @@ export const DatePopoverCalendar = React.forwardRef<
           : undefined
       }
       className={cn(
-        'absolute left-0 z-30 w-[311px] rounded-md border border-[#ecedf3] bg-white p-6 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]',
+        'absolute left-0 z-30 w-[311px] rounded-md border border-[#ecedf3] bg-white p-6 shadow-modal',
         direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
       )}
     >

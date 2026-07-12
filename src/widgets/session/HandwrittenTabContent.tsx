@@ -57,7 +57,7 @@ export const HandwrittenTabContent: React.FC<HandwrittenTabContentProps> =
               />
               <Text
                 className={`typo-sm mt-2 flex-shrink-0 text-right ${
-                  isOverLimit || isUnderLimit ? 'text-red-500' : 'text-fg-muted'
+                  isOverLimit || isUnderLimit ? 'text-danger' : 'text-fg-muted'
                 }`}
               >
                 {contentLength.toLocaleString()}자 (최소{' '}

@@ -338,8 +338,8 @@ function ProcessingAnimation() {
 function SuccessState({ onProceed }: { onProceed?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-        <Check className="h-8 w-8 text-green-600" />
+      <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-20">
+        <Check className="h-8 w-8 text-green-80" />
       </div>
       <h3 className="typo-l font-emphasize text-fg">보고서를 만들었어요!</h3>
       <p className="typo-sm text-fg-muted">

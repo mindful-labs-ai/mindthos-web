@@ -71,7 +71,7 @@ export function TimeSelect({
                 : undefined,
           }}
           className={cn(
-            'absolute left-0 z-30 max-h-[200px] w-full overflow-auto rounded-md border border-[#ecedf3] bg-white py-1 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]',
+            'absolute left-0 z-30 max-h-[200px] w-full overflow-auto rounded-md border border-[#ecedf3] bg-white py-1 shadow-modal',
             direction === 'up' ? 'bottom-full mb-1' : 'top-full mt-1'
           )}
         >

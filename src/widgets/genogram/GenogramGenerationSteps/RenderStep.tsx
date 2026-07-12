@@ -89,8 +89,8 @@ export function RenderStep({
 
       {showSuccessUI && (
         <div className="flex flex-col items-center justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <Check className="h-8 w-8 text-green-600" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-20">
+            <Check className="h-8 w-8 text-green-80" />
           </div>
           <h3 className="typo-l mt-4 font-emphasize text-fg">
             가계도를 만들었어요!

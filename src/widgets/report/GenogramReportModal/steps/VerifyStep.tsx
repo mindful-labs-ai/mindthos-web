@@ -109,7 +109,7 @@ export function VerifyStep({
               })}
             </div>
             {isWrong && (
-              <p className="typo-sm mt-2 px-4 text-red-500">{item.warning}</p>
+              <p className="typo-sm mt-2 px-4 text-danger">{item.warning}</p>
             )}
           </div>
         );

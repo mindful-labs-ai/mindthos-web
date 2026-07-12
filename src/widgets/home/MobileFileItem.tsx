@@ -116,7 +116,7 @@ export const MobileFileItem: React.FC<MobileFileItemProps> = ({
     <div
       className={cn(
         'flex w-full items-center gap-3 overflow-hidden rounded-lg bg-surface px-4 py-4',
-        isError && 'border border-red-300 bg-red-50'
+        isError && 'border border-danger-subtle bg-danger-surface'
       )}
     >
       <div className="flex-shrink-0">
@@ -128,7 +128,7 @@ export const MobileFileItem: React.FC<MobileFileItemProps> = ({
         {isPending ? (
           <Text className="typo-sm text-fg-muted">파일 업로드 중</Text>
         ) : isError ? (
-          <Text className="typo-sm text-red-500">{file.errorMessage}</Text>
+          <Text className="typo-sm text-danger">{file.errorMessage}</Text>
         ) : (
           <Text className="typo-sm text-fg-muted">
             {formatFileSize(file.size)}

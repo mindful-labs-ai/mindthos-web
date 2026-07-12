@@ -22,7 +22,7 @@ export const FormField = ({
     <div className={cn('flex flex-col gap-1.5', className)}>
       <label className="text-sm font-emphasize text-grey-100">
         {label}
-        {required && <span className="text-[#EF4444]">*</span>}
+        {required && <span className="text-danger">*</span>}
       </label>
       {helperText && <p className="text-xs text-grey-60">{helperText}</p>}
       <div className="flex items-center gap-2">
