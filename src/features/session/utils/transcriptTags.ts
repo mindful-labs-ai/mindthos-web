@@ -70,3 +70,18 @@ export const parseNvEntries = (
   }
   return map;
 };
+
+// ── 태그 직렬화 (편집기 저장 경로에서 사용) ──
+
+/** advanced 비언어 태그 문자열 생성: `⟪nv:KEY⟫` */
+export const buildAdvancedNvTag = (key: string): string => `⟪nv:${key}⟫`;
+
+/** legacy 비언어 태그 문자열 생성: 라벨이 있으면 `{%A%라벨%}`, 없으면 `{%S%}` */
+export const buildLegacyNvTag = (
+  tagType: NonverbalTagType,
+  label?: string
+): string => (label ? `{%${tagType}%${label}%}` : `{%${tagType}%}`);
+
+/** 비식별화 태그 문자열 생성: `⟪deid:KEY|원본⟫` */
+export const buildDeidTag = (key: string, original: string): string =>
+  `⟪deid:${key}|${original}⟫`;

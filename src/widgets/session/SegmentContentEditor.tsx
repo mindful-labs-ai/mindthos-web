@@ -14,6 +14,18 @@ import {
   resolveSpeakerSelection,
   type SpeakerSelection,
 } from '@/features/session/utils/getSpeakerInfo';
+import {
+  buildAdvancedNvTag,
+  buildDeidTag,
+  buildLegacyNvTag,
+  createAdvancedNvRegex,
+  createDeidRegex,
+  createLegacyNvRegex,
+  NONVERBAL_DEFAULT_LABELS,
+  nvKeyToTagType,
+  parseNvEntries,
+  type NonverbalTagType,
+} from '@/features/session/utils/transcriptTags';
 
 // ── 칩 스타일 ──
 
@@ -47,32 +59,21 @@ function buildSegmentHtml(
 
   // 신규 nv 태그 (advanced) → 칩
   if (nv && nv.length > 0) {
-    const nvMap = new Map<string, string>();
-    for (const entry of nv) {
-      const colonIdx = entry.indexOf(':');
-      if (colonIdx !== -1) {
-        nvMap.set(entry.slice(0, colonIdx), entry.slice(colonIdx + 1));
-      }
-    }
-    html = html.replace(/⟪nv:([^⟫]+)⟫/g, (_, key) => {
-      const label = nvMap.get(key) || key;
-      // 접두: e→감정(E), s→침묵(S), 그 외→액션(A) (뷰 렌더와 동일 매핑)
-      const tagType = key.startsWith('e')
-        ? 'E'
-        : key.startsWith('s')
-          ? 'S'
-          : 'A';
+    const nvMap = parseNvEntries(nv);
+    html = html.replace(createAdvancedNvRegex(), (_, key: string) => {
+      const label = nvMap.get(key)?.label || key;
+      const tagType = nvKeyToTagType(key);
       const style = NV_CHIP_STYLES[tagType] || NV_CHIP_STYLES.A;
       return `<span data-chip="nv" data-nv-key="${escapeHtml(key)}" data-tag-type="${tagType}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium ${style}">${escapeHtml(label)}</span>`;
     });
   }
 
   // 레거시 nv 태그 (gemini-3) → 칩: {%A%한숨%}, {%E%화남%}, {%S%}, {%O%}
-  const LEGACY_TAG_LABELS: Record<string, string> = { S: '침묵', O: '겹침' };
   html = html.replace(
-    /\{%([SAEO])%(?:([^%]+)%)?}/g,
+    createLegacyNvRegex(),
     (_, tagType: string, content?: string) => {
-      const label = content || LEGACY_TAG_LABELS[tagType] || '';
+      const label =
+        content || NONVERBAL_DEFAULT_LABELS[tagType as NonverbalTagType];
       if (!label) return '';
       const chipTagType = tagType === 'E' ? 'E' : 'A';
       const style = NV_CHIP_STYLES[chipTagType] || NV_CHIP_STYLES.A;
@@ -82,16 +83,19 @@ function buildSegmentHtml(
 
   // deid 태그
   if (deid) {
-    html = html.replace(/⟪deid:(\w+)\|([^⟫]+)⟫/g, (_, key, original) => {
-      if (showDeid) {
-        // ON: 라벨 칩 (contenteditable=false, 클릭으로 편집)
-        const label = deid[key] || key;
-        return `<span data-chip="deid" data-deid-key="${escapeHtml(key)}" data-deid-original="${escapeHtml(original)}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-headline ${DEID_CHIP_STYLE}">${escapeHtml(label)}</span>`;
-      } else {
-        // OFF: 원본 텍스트 인라인 편집 가능
-        return `<span data-deid-key="${escapeHtml(key)}" data-deid-inline="" class="${DEID_INLINE_STYLE}">${escapeHtml(original)}</span>`;
+    html = html.replace(
+      createDeidRegex(),
+      (_, key: string, original: string) => {
+        if (showDeid) {
+          // ON: 라벨 칩 (contenteditable=false, 클릭으로 편집)
+          const label = deid[key] || key;
+          return `<span data-chip="deid" data-deid-key="${escapeHtml(key)}" data-deid-original="${escapeHtml(original)}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-headline ${DEID_CHIP_STYLE}">${escapeHtml(label)}</span>`;
+        } else {
+          // OFF: 원본 텍스트 인라인 편집 가능
+          return `<span data-deid-key="${escapeHtml(key)}" data-deid-inline="" class="${DEID_INLINE_STYLE}">${escapeHtml(original)}</span>`;
+        }
       }
-    });
+    );
   }
 
   return html;
@@ -191,23 +195,19 @@ function extractFromDom(
     if (el.dataset.chip === 'nv') {
       const key = el.dataset.nvKey!;
       const label = el.textContent || '';
-      text += `⟪nv:${key}⟫`;
+      text += buildAdvancedNvTag(key);
       nvUpdates.set(key, label);
       return;
     }
 
     if (el.dataset.chip === 'legacy-nv') {
-      const tagType = el.dataset.legacyTag || 'A';
+      const tagType = (el.dataset.legacyTag || 'A') as NonverbalTagType;
       const label = el.textContent || '';
       // S, O는 내용 없는 형태, A/E는 내용 있는 형태로 복원
-      if (
+      const isDefaultLabel =
         (tagType === 'S' || tagType === 'O') &&
-        (label === '침묵' || label === '겹침')
-      ) {
-        text += `{%${tagType}%}`;
-      } else {
-        text += `{%${tagType}%${label}%}`;
-      }
+        (label === '침묵' || label === '겹침');
+      text += buildLegacyNvTag(tagType, isDefaultLabel ? undefined : label);
       return;
     }
 
@@ -216,7 +216,7 @@ function extractFromDom(
       const key = el.dataset.deidKey!;
       const original = el.dataset.deidOriginal || '';
       const label = el.textContent || '';
-      text += `⟪deid:${key}|${original}⟫`;
+      text += buildDeidTag(key, original);
       deidMapUpdates[key] = label;
       return;
     }
@@ -225,7 +225,7 @@ function extractFromDom(
       // OFF 모드 인라인 - textContent가 수정된 원본
       const key = el.dataset.deidKey!;
       const newOriginal = el.textContent || '';
-      text += `⟪deid:${key}|${newOriginal}⟫`;
+      text += buildDeidTag(key, newOriginal);
       return;
     }
 
