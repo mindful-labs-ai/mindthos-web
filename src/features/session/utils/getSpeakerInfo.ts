@@ -134,6 +134,41 @@ export const getSpeakerLabel = (speaker: Speaker): string => {
   return String.fromCharCode(64 + speaker.id);
 };
 
+/**
+ * 복사(클립보드) 출력 전용 화자 이름을 ID로 해석
+ *
+ * UI 표시명(getSpeakerDisplayName)과 규칙이 다름에 주의:
+ * - client1 → '내담자' (UI는 '내담자 A'), client2 → '내담자2' (UI는 '내담자 B')
+ * - 복사 텍스트 형식의 하위 호환을 위해 별도 규칙을 유지한다.
+ */
+export const getSpeakerCopyName = (
+  speakerId: number,
+  speakers: Speaker[]
+): string => {
+  // 기본 화자명 (speakers 정보가 없거나 매칭되지 않을 때)
+  const defaultNames: Record<number, string> = {
+    0: '상담사',
+    1: '내담자',
+  };
+  const defaultName = defaultNames[speakerId] ?? `화자 ${speakerId + 1}`;
+
+  const speaker = speakers.find((s) => s.id === speakerId);
+  if (!speaker) return defaultName;
+
+  // customName이 있으면 우선 사용
+  if (speaker.customName) return speaker.customName;
+
+  // role 기반 이름
+  if (speaker.role === 'counselor') return '상담사';
+  if (speaker.role === 'client1') return '내담자';
+  if (speaker.role === 'client2') return '내담자2';
+
+  // custom_ prefix role은 기본값으로 대체
+  if (speaker.role?.startsWith('custom_')) return defaultName;
+
+  return speaker.role || defaultName;
+};
+
 export const getSpeakerInfo = (
   segment: TranscribeSegment,
   speakers: Speaker[]

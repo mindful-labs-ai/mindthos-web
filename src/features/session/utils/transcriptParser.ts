@@ -9,21 +9,9 @@ import type {
   TranscribeSegment,
   TranscriptJson,
 } from '../types';
-import { isLegacySttModel } from './sttModel';
 
-/**
- * 숫자 ID를 역할 문자열로 변환
- * @param id - 화자 ID (0, 1, 2, ...)
- * @returns 역할 문자열
- */
-function mapSpeakerIdToRole(
-  id: number
-): 'counselor' | 'client1' | 'client2' | string {
-  if (id === 0) return 'counselor';
-  if (id === 1) return 'client1';
-  if (id === 2) return 'client2';
-  return `client${id}`;
-}
+import { generateSpeakersFromSegments } from './contentsEditor';
+import { isLegacySttModel } from './sttModel';
 
 /**
  * Type guard to check if contents is TranscriptJson
@@ -87,21 +75,7 @@ export function getTranscriptData(transcribe: Transcribe | null): {
     // 화자 목록 생성
     // contents.speakers가 있으면 사용 (customName 보존), 없으면 자동 생성
     const speakers: Speaker[] =
-      contents.speakers ||
-      (() => {
-        const speakerSet = new Set<number>();
-        rawSegments.forEach((seg) => {
-          const speakerId = typeof seg.speaker === 'number' ? seg.speaker : 0;
-          speakerSet.add(speakerId);
-        });
-
-        return Array.from(speakerSet)
-          .sort((a, b) => a - b)
-          .map((id) => ({
-            id,
-            role: mapSpeakerIdToRole(id),
-          }));
-      })();
+      contents.speakers || generateSpeakersFromSegments(rawSegments);
 
     return { segments: processedSegments, speakers };
   }

@@ -5,7 +5,7 @@
 import { useToast } from '@/shared/ui/composites/Toast';
 
 import type { Speaker, TranscribeSegment } from '../types';
-import { getSpeakerDisplayName } from '../utils/speakerUtils';
+import { getSpeakerCopyName } from '../utils/getSpeakerInfo';
 import {
   createAdvancedNvRegex,
   createDeidRegex,
@@ -108,10 +108,7 @@ export function useTranscriptCopy({
           if (isAnonymized) {
             return `#${speakerIndex} : ${cleanedText}`;
           } else {
-            const speakerName = getSpeakerDisplayName(
-              segment.speaker,
-              speakers
-            );
+            const speakerName = getSpeakerCopyName(segment.speaker, speakers);
             return `${speakerName} #${speakerIndex} : ${cleanedText}`;
           }
         })

@@ -42,8 +42,8 @@ export function getSpeakers(contents: Contents): Speaker[] {
   return [];
 }
 
-/** 세그먼트에서 화자 목록 자동 생성 */
-function generateSpeakersFromSegments(
+/** 세그먼트에서 화자 목록 자동 생성 (0→상담사, 1부터 내담자) */
+export function generateSpeakersFromSegments(
   segments: TranscribeSegment[]
 ): Speaker[] {
   const speakerIds = new Set<number>();
