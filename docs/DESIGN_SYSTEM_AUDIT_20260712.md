@@ -66,41 +66,43 @@ Primitive (기획 원본 hex) → Semantic (역할 매핑) → Tailwind 유틸�
 | `fix(styles)` | `fg.DEFAULT`가 미정의 변수 `--color-default` 참조 → 라이트 모드 본문·`text-fg`(395곳)가 UA 폴백 `#000`으로 렌더되던 버그. `--color-fg`로 통일 | **의도적 변화**: fg 텍스트 `#000` → 설계값 `#3c3c3c` |
 | `refactor(styles)` | 동값 이중 표기 정규화 214건: `text-base→text-m`, `font-normal/semibold/bold→sub/emphasize/headline`, `rounded-xl→rounded-lg`(둘 다 0.75rem), `shadow-sm/md/lg→subtle/default/elevated` | 없음 (동값) |
 | `refactor(styles)` | 축어록 칩 색상 12종을 `--color-chip-*` 시맨틱 토큰으로 승격, `dark:` 유틸리티 제거 | 없음 (동값) |
+| `feat(styles)` | 토큰 인프라 확장: `danger-surface`·`info-subtle/strong`·`brand.*` 신설, radius `xs/2xl` 편입 + `xl`→`lg` 별칭, shadow `modal` 신설 + `sm/md/lg/xl` 토큰 별칭(재유입 차단) | 없음 (동값·신설) |
+| `refactor(styles)` | raw 팔레트 41개 파일 토큰 이행: red-500/600→`danger`, bg-red-50→`danger-surface`, green/gray/blue raw→토큰, 브랜드 hex→`brand.*`, 반복 그림자→`shadow-modal` | **통일 변화**: 에러/성공 색이 danger/green 토큰으로 통일. bg-red-50이 red-50 오버라이드(#f77575)에 걸려 과하게 진했던 버그가 의도값(연분홍)으로 복원 |
+| `refactor(styles)` | 임의 색상 hex 클래스 61건 → **0건** (동값+드리프트 스냅), `clientAvatarPalette` 복제 2본 → `shared/constants` 단일화 | 드리프트 스냅부만 미세 변화 |
 | `docs` | 본 문서 | — |
+
+**중앙화 달성 상태**: 색상·라디우스·그림자·z-index·전환의 수정 지점은
+`src/styles/tokens.css`(값) + `tailwind.config.ts`(매핑) 2개 파일.
+예외(의도적 분산): 아바타 로테이션 팔레트 2종은 각각 단일 모듈이 소스 —
+`shared/constants/clientAvatarPalette.ts`(내담자), `features/session/utils/getSpeakerInfo.ts`(화자).
 
 ---
 
 ## 3. 남은 갭 (우선순위)
 
-### P1 — 일관성 깨짐 (사용자 눈에 보이는 이중 시스템)
+~~P1-1 red 이중 스케일~~ → **해소** (danger 계열 이행 완료)
+~~P1-2 hex 드리프트~~ → **해소** (임의 hex 클래스 0건)
+~~P2-4 라디우스 갭~~ → **해소** (xs/2xl 편입, 전 스케일 토큰 참조)
+~~P3-8 반복 그림자~~ → **해소** (`shadow-modal` 토큰)
 
-1. **red 이중 스케일**: 토큰 `red-20/50/80` vs raw `red-500(17)·600(8)·100·300` 혼용.
-   삭제 버튼류가 파일마다 다른 빨강. → `danger`(hover/active 포함)로 이행 권장.
-   주 위치: genogram 툴바, payment, home 위젯, TranscriptSegment 삭제 버튼.
-2. **hex 드리프트**: `border-[#ecedf3]`(13) ≈ grey-30 `#edeff6`, `text-[#a1a2a8]`(7) ≈ grey-70,
-   `text-[#abaebe]`(6) ≈ grey-60 — 토큰과 **미묘하게 다른** 눈대중 값. calendar 피처에 집중.
-   → 디자인 확인 후 토큰으로 스냅 권장 (픽셀 미세 변화 수반).
+### P2 — 시스템 편입 후보 (판단 필요)
 
-### P2 — 시스템 편입 대상
-
-3. **화자 아바타 팔레트**: `getSpeakerInfo.ts`의 10색 로테이션(purple/pink/indigo/… `-100/-600`) +
-   역할색(상담사 red, 내담자 green/blue)이 raw 팔레트. 칩과 같은 방식(`--color-avatar-*`)으로 승격 가능.
-4. **라디우스 갭**: `rounded`(0.25rem, 54회)·`rounded-2xl`(1rem, 68회)이 토큰 스케일 밖.
-   → `--radius-xs(0.25)`·`--radius-xl(1rem)` 추가 후 흡수 권장.
-5. **오프스케일 타이포 잔여**: `text-lg`(6)·`text-3xl`(3) — 동값 토큰 없음(20px 대비 18px/30px).
+1. **화자 아바타 팔레트**: `getSpeakerInfo.ts`의 10색 로테이션 + 역할색이 raw 팔레트 클래스.
+   단일 모듈에 이미 중앙화되어 있어 유지 — CSS 토큰(`--color-avatar-*`) 승격은 선택 사항.
+2. **오프스케일 타이포 잔여**: `text-lg`(6)·`text-3xl`(3) — 동값 토큰 없음(18px/30px).
    개별 확인 후 `text-l`/`text-2xl`로 스냅 여부 결정.
-6. **레시피 저채택**: `interact-*`(idle→hover→active 묶음)·`card-base`·`dialog-panel`이
-   정의만 있고 거의 미사용. 신규 코드 가이드에 명시하거나 제거 결정 필요.
+3. **레시피 저채택**: `interact-*`·`card-base`·`dialog-panel`이 정의만 있고 거의 미사용.
+   신규 코드 가이드에 명시하거나 제거 결정 필요.
 
-### P3 — 후보/기록
+### P3 — 기록
 
-7. **모달 고정폭**: `w-[400px]`(45)·`w-[600px]`(30)·`w-[500px]`(14)·`w-[300px]`(25) —
-   사실상 모달 사이즈 스케일. `--width-modal-{sm,md,lg}` 토큰 후보.
-8. **반복 그림자**: `shadow-[0px_4px_24px_rgba(0,0,0,0.1)]`(11) — 기존 4단과 다른 값. 토큰 승격 후보.
-9. **전역 border 기본색**: `tailwind.css`의 `* { border-color: rgb(100 116 139 / 0.2) }` —
+4. **고정폭 임의값**: `w-[400px]` 등은 상당수가 Storybook 래퍼·문서 캔버스 폭.
+   제품 모달 폭 표준화는 모달 컴포넌트 정비와 함께 검토 (토큰만 먼저 만들면 semantics가 어긋남).
+5. **전역 border 기본색**: `tailwind.css`의 `* { border-color: rgb(100 116 139 / 0.2) }` —
    slate 하드코딩. `--color-border-subtle` 참조로 교체 후보 (전역 영향이라 신중히).
-10. **다크모드**: `.dark` 토큰이 라이트와 동일 값(구조만 준비 상태). 기획 확정 시 tokens.css만 교체하면 됨 —
-    이번 정리로 `dark:` 유틸리티 의존은 제거됨.
+6. **다크모드**: `.dark` 토큰이 라이트와 동일 값(구조만 준비 상태). 기획 확정 시 tokens.css만 교체하면 됨 —
+   이번 정리로 `dark:` 유틸리티 의존은 제거됨.
+7. **미세 크기 임의값**: `h-[41px]`·`px-[19px]` 등 일회성 치수는 컴포넌트 국소 값으로 유지 (토큰화 비대상).
 
 ---
 
