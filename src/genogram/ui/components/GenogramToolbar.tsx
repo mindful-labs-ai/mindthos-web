@@ -361,7 +361,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
     <div ref={toolbarRef} className="flex flex-col items-center gap-2">
       {/* CreateSubject 서브 메뉴 */}
       {openMenu === 'subject' && (
-        <div className="rounded-xl border border-grey-40 bg-white shadow-md">
+        <div className="rounded-lg border border-grey-40 bg-white shadow-default">
           {subjectDepth === 'primary' ? (
             <div className="flex items-center gap-1 px-2 py-1.5">
               {SUBJECT_PRIMARY_ITEMS.map((item) => (
@@ -414,7 +414,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
 
       {/* CreateConnection 서브 메뉴 */}
       {openMenu === 'connection' && (
-        <div className="rounded-xl border border-grey-40 bg-white shadow-md">
+        <div className="rounded-lg border border-grey-40 bg-white shadow-default">
           {connectionDepth === 'primary' ? (
             <div className="flex items-center gap-1 px-2 py-1.5">
               {CONNECTION_PRIMARY_ITEMS.map((item) => (
@@ -463,7 +463,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
 
       {/* Visibility 토글 팝오버 */}
       {openMenu === 'visibility' && (
-        <div className="rounded-xl border border-grey-40 bg-white px-3 py-3 shadow-md">
+        <div className="rounded-lg border border-grey-40 bg-white px-3 py-3 shadow-default">
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             {VISIBILITY_ITEMS.map((item) => (
               <label
@@ -474,7 +474,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
                   type="checkbox"
                   checked={visibility[item.key]}
                   onChange={() => onToggleVisibility(item.key)}
-                  className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
+                  className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-m after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
                 />
                 {item.label}
               </label>
@@ -484,7 +484,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
       )}
 
       {/* 메인 툴바 */}
-      <div className="flex items-center gap-1 rounded-xl border border-grey-40 bg-white px-4 py-3 shadow-md">
+      <div className="flex items-center gap-1 rounded-lg border border-grey-40 bg-white px-4 py-3 shadow-default">
         {TOOL_GROUPS.map((group, gi) => (
           <React.Fragment key={gi}>
             {gi > 0 && <div className="mx-1 h-12 w-px bg-border" />}
@@ -536,7 +536,7 @@ export const GenogramToolbar: React.FC<GenogramToolbarProps> = ({
         <SimpleTooltip content="삭제">
           <button
             type="button"
-            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-red-500 transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-red-50"
+            className="inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-danger transition-colors disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-danger-surface"
             onClick={onDelete}
             disabled={!hasSelection}
           >

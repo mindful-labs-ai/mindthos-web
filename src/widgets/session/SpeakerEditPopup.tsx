@@ -7,7 +7,12 @@ import React from 'react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
-import { getSpeakerDisplayName } from '@/features/session/utils/getSpeakerInfo';
+import { formatTime } from '@/features/session/utils/formatTime';
+import {
+  getSpeakerDisplayName,
+  resolveSpeakerSelection,
+  type SpeakerSelection,
+} from '@/features/session/utils/getSpeakerInfo';
 import type { SpeakerRangeOption } from '@/features/session/utils/segmentRangeUtils';
 import {
   calculateAffectedSegments,
@@ -19,9 +24,11 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { Button } from '@/shared/ui/atoms/Button';
 import { RadioGroup } from '@/shared/ui/atoms/Radio';
 import { Text } from '@/shared/ui/atoms/Text';
+import { Combobox } from '@/shared/ui/composites/Combobox';
 import { Modal } from '@/shared/ui/composites/Modal';
 import { PopUp } from '@/shared/ui/composites/PopUp';
 import { useToast } from '@/shared/ui/composites/Toast';
+import { removeNonverbalTags } from '@/shared/utils/removeNonverbalTag';
 
 interface SpeakerEditPopupProps {
   open: boolean;
@@ -52,11 +59,37 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
   const { clients } = useClientList();
   const { toast } = useToast();
   const [range, setRange] = React.useState<SpeakerRangeOption>('single');
+  const [endSegmentId, setEndSegmentId] = React.useState<number | null>(null);
   const [selectionType, setSelectionType] = React.useState<
     'client' | 'custom' | string
   >('default_counselor');
   const [customName, setCustomName] = React.useState('');
   const [isApplying, setIsApplying] = React.useState(false);
+
+  // range 모드 끝 세그먼트 선택 옵션
+  // 현재 세그먼트부터 이후 중 "같은 화자"의 발화만 (range가 동일 화자만 변경하므로)
+  const currentIndex = React.useMemo(
+    () => allSegments.findIndex((s) => s.id === segment.id),
+    [allSegments, segment.id]
+  );
+  const endSegmentOptions = React.useMemo(() => {
+    if (currentIndex === -1) return [];
+    return allSegments
+      .map((seg, idx) => ({ seg, idx }))
+      .filter(
+        ({ seg, idx }) =>
+          idx >= currentIndex && seg.speaker === segment.speaker
+      )
+      .map(({ seg, idx }) => {
+        const preview =
+          removeNonverbalTags(seg.text).trim().slice(0, 24) || '(빈 발화)';
+        const timeLabel =
+          seg.start != null && seg.start > 0
+            ? `[${formatTime(seg.start)}]`
+            : `${idx + 1}.`;
+        return { value: String(seg.id), label: `${timeLabel} ${preview}` };
+      });
+  }, [allSegments, currentIndex, segment.speaker]);
 
   // session과 연결된 client 찾기
   const sessionClient = React.useMemo(
@@ -89,9 +122,10 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
 
       // 상태 초기화
       setRange('single');
+      setEndSegmentId(segment.id);
       setCustomName('');
     }
-  }, [open, segment.speaker, speakers, speakerOptions]);
+  }, [open, segment.id, segment.speaker, speakers, speakerOptions]);
 
   const handleApply = async () => {
     // 유효성 검사: custom 입력 시 이름 필수
@@ -112,68 +146,25 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
         segment.id,
         segment.speaker,
         range,
-        allSegments
+        allSegments,
+        range === 'range' ? (endSegmentId ?? segment.id) : undefined
       );
 
-      // 2. 대상 speaker 이름 및 ID 결정
-      let targetName: string;
-      let targetSpeakerId: number | undefined;
-
-      if (selectionType.startsWith('speaker_')) {
-        // 기존 speaker 선택 (예: "speaker_1", "speaker_2")
-        const speakerId = parseInt(selectionType.replace('speaker_', ''), 10);
-        const existingSpeaker = speakers.find((s) => s.id === speakerId);
-        if (existingSpeaker) {
-          targetName = getSpeakerDisplayName(existingSpeaker);
-          targetSpeakerId = speakerId;
-        } else {
-          targetName = '';
-        }
-      } else if (selectionType === 'client') {
-        // session client 선택 (speakers에 없는 경우)
-        targetName = sessionClient?.name || '';
-      } else if (selectionType === 'custom') {
-        // 직접 입력
-        targetName = customName.trim();
-      } else {
-        targetName = '';
-      }
-
-      // 3. speaker ID 찾기 또는 생성
-      let updatedSpeakers: Speaker[];
-      let finalSpeakerId: number;
-
-      if (targetSpeakerId !== undefined) {
-        // speaker_ 선택으로 이미 ID가 결정된 경우 (기존 speaker 재사용)
-        finalSpeakerId = targetSpeakerId;
-        updatedSpeakers = speakers;
-      } else {
-        // client 또는 custom 선택 시 - 새 speaker 생성 또는 기존 speaker 재사용
-        // customName 또는 displayName이 일치하는 speaker 찾기
-        const existingSpeaker = speakers.find(
-          (s) =>
-            s.customName === targetName ||
-            getSpeakerDisplayName(s) === targetName
-        );
-
-        if (existingSpeaker) {
-          // 기존 speaker 재사용 (customName 또는 displayName 일치)
-          finalSpeakerId = existingSpeaker.id;
-          updatedSpeakers = speakers;
-        } else {
-          // 새로운 speaker 생성
-          const maxId = Math.max(...speakers.map((s) => s.id), 0);
-          finalSpeakerId = maxId + 1;
-          updatedSpeakers = [
-            ...speakers,
-            {
-              id: finalSpeakerId,
-              role: `custom_${finalSpeakerId}`,
-              customName: targetName,
-            },
-          ];
-        }
-      }
+      // 2~3. 화자 선택 → speaker ID 결정/생성 (공용 헬퍼)
+      const selection: SpeakerSelection = selectionType.startsWith('speaker_')
+        ? {
+            kind: 'existing',
+            id: parseInt(selectionType.replace('speaker_', ''), 10),
+          }
+        : {
+            kind: 'name',
+            name:
+              selectionType === 'client'
+                ? sessionClient?.name || ''
+                : customName.trim(),
+          };
+      const { speakerId: finalSpeakerId, speakers: updatedSpeakers } =
+        resolveSpeakerSelection(speakers, selection);
 
       // 4. 업데이트 payload 구성
       const speakerChanges: Record<number, number> = {};
@@ -209,6 +200,32 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
       });
 
       // 7. 성공 시 PopUp 닫기
+      onOpenChange(false);
+    } catch {
+      // 에러는 부모 컴포넌트에서 처리 (toast 표시)
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  // 화자가 정확히 둘일 때(예: 상담사·내담자) 전체 맞바꾸기 (A↔B)
+  const canSwap = speakers.length === 2;
+  const handleSwapSpeakers = async () => {
+    if (!canSwap) return;
+    const [a, b] = speakers;
+    setIsApplying(true);
+    try {
+      const speakerChanges: Record<number, number> = {};
+      allSegments.forEach((seg) => {
+        if (seg.speaker === a.id) speakerChanges[seg.id] = b.id;
+        else if (seg.speaker === b.id) speakerChanges[seg.id] = a.id;
+      });
+      await onApply({ speakerChanges, speakerDefinitions: speakers });
+      trackEvent(MixpanelEvent.SpeakerEditApply, {
+        range: 'swap',
+        selection_type: 'swap',
+        affected_segments_count: Object.keys(speakerChanges).length,
+      });
       onOpenChange(false);
     } catch {
       // 에러는 부모 컴포넌트에서 처리 (toast 표시)
@@ -271,13 +288,47 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
               label: '전체 구간',
               description: '같은 화자의 모든 구간',
             },
+            {
+              value: 'range',
+              label: '구간 지정',
+              description: '이 발화부터 선택한 발화까지 (같은 화자)',
+            },
           ]}
           value={range}
           onChange={(value) => setRange(value as SpeakerRangeOption)}
           orientation="vertical"
           size="sm"
         />
+        {range === 'range' && (
+          <div className="mt-2">
+            <Combobox
+              items={endSegmentOptions}
+              value={endSegmentId != null ? String(endSegmentId) : undefined}
+              onChange={(value) => setEndSegmentId(Number(value))}
+              placeholder="끝 발화 선택"
+            />
+          </div>
+        )}
       </div>
+
+      {/* Section 3: 화자 맞바꾸기 (화자가 둘일 때만) */}
+      {canSwap && (
+        <div className="border-t border-grey-20 pt-3">
+          <Text className="typo-sm mb-2 font-emphasize text-fg">
+            화자 맞바꾸기
+          </Text>
+          <Button
+            variant="outline"
+            tone="neutral"
+            onClick={handleSwapSpeakers}
+            disabled={isApplying}
+            className="w-full"
+          >
+            {getSpeakerDisplayName(speakers[0])} ↔{' '}
+            {getSpeakerDisplayName(speakers[1])} 전체 전환
+          </Button>
+        </div>
+      )}
 
       {/* 적용 버튼 */}
       <Button

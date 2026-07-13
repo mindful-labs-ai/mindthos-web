@@ -121,7 +121,7 @@ const SttModelSelector = ({ sttModel, setSttModel }: SttModelSelectorProps) => {
                       <Text className="typo-m font-medium text-fg">
                         고급 축어록
                       </Text>
-                      <div className="flex aspect-video items-center justify-center rounded-lg bg-gray-200 text-6xl font-headline text-red-600">
+                      <div className="flex aspect-video items-center justify-center rounded-lg bg-grey-30 text-6xl font-headline text-danger">
                         <img
                           src="/example_image/advanced_STT_image.png"
                           alt="고급 축어록 툴팁"

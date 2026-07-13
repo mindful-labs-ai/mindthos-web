@@ -65,7 +65,7 @@ export function MobileCalendarToolbar({
                 onClick={() => onViewModeChange(opt.value)}
                 className={cn(
                   'flex h-7 w-9 items-center justify-center rounded text-sm font-medium',
-                  active ? 'bg-white text-grey-100' : 'text-[#b7b7b7]'
+                  active ? 'bg-white text-grey-100' : 'text-grey-60'
                 )}
               >
                 {opt.label}

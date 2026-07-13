@@ -289,7 +289,7 @@ export function ClientDocumentsTab({
                     />
                     <div
                       role="menu"
-                      className="absolute right-0 top-full z-modal mt-1 w-[140px] rounded-lg border border-grey-30 bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
+                      className="absolute right-0 top-full z-modal mt-1 w-[140px] rounded-lg border border-grey-30 bg-white p-1.5 shadow-modal"
                     >
                       {document.status === 'pending' ? (
                         <button

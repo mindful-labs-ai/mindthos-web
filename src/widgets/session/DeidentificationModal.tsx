@@ -234,7 +234,7 @@ export const DeidentificationModal: React.FC<DeidentificationModalProps> = ({
         {/* ─── 에러 단계 ─── */}
         {phase === 'error' && (
           <>
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-red-100/10">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-danger-surface">
               <svg
                 width="28"
                 height="28"

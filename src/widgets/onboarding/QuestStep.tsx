@@ -149,7 +149,7 @@ const RewardBanner: React.FC<{
         <span className="text-2xl">🎁</span>
       </div>
       {!isAllCompleted && (
-        <span className="text-sm font-emphasize text-[#C62828]">
+        <span className="text-sm font-emphasize text-danger">
           남은 기간 {remainingDays}일
         </span>
       )}
@@ -197,7 +197,7 @@ const RewardCard: React.FC<{
     </div>
     <div className="flex w-full flex-col gap-y-2 text-center">
       {!isAllCompleted && (
-        <p className="text-sm font-emphasize text-[#C62828]">
+        <p className="text-sm font-emphasize text-danger">
           남은 기간 {remainingDays}일
         </p>
       )}

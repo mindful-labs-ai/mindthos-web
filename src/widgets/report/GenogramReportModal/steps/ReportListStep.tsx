@@ -35,7 +35,7 @@ export function ReportListStep({
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="flex animate-pulse items-center justify-between rounded-xl border border-border px-5 py-4"
+            className="flex animate-pulse items-center justify-between rounded-lg border border-border px-5 py-4"
           >
             <div className="min-w-0 flex-1">
               <div className="h-4 w-40 rounded bg-surface-contrast" />
@@ -61,7 +61,7 @@ export function ReportListStep({
       {reports.map((report) => (
         <div
           key={report.id}
-          className="flex w-full items-center justify-between rounded-xl border border-border px-5 py-4"
+          className="flex w-full items-center justify-between rounded-lg border border-border px-5 py-4"
         >
           <div className="min-w-0 flex-1">
             <p className="typo-m truncate font-medium text-fg">
@@ -78,7 +78,7 @@ export function ReportListStep({
                 </span>
               )}
               {report.status === 'FAILED' && (
-                <span className="typo-xs flex items-center gap-1 text-red-500">
+                <span className="typo-xs flex items-center gap-1 text-danger">
                   <AlertCircle className="h-3 w-3" />
                   실패
                 </span>
@@ -114,7 +114,7 @@ export function ReportListStep({
               type="button"
               onClick={() => onRetryReport(report.id)}
               disabled={retryingId === report.id}
-              className="shrink-0 rounded-lg p-2 text-red-500 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
+              className="shrink-0 rounded-lg p-2 text-danger transition-colors disabled:opacity-50 lg:hover:bg-danger-surface"
             >
               {retryingId === report.id ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

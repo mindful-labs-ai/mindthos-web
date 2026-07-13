@@ -80,7 +80,7 @@ const UnsubscribePage = () => {
                 </span>
               </p>
 
-              <div className="mb-3 rounded-lg bg-green-50 px-5 py-4 text-center">
+              <div className="mb-3 rounded-lg bg-green-20 px-5 py-4 text-center">
                 <p className="m-0 text-sm font-emphasize leading-[1.5] text-green-80">
                   💡 마음토스를 더 써보신 적 없다면
                   <br />

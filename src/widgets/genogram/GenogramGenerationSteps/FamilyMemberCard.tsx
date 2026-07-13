@@ -352,7 +352,7 @@ export function FamilyMemberCard({
                 left: popoverPosition.left,
                 zIndex: 50,
               }}
-              className="w-[260px] rounded-xl border border-border bg-surface p-4 shadow-elevated"
+              className="w-[260px] rounded-lg border border-border bg-surface p-4 shadow-elevated"
             >
               <h4 className="typo-sm mb-3 font-medium text-fg-muted">
                 관계 추가하기
@@ -428,7 +428,7 @@ export function FamilyMemberCard({
   return (
     <div
       className={cn(
-        'relative flex h-[276px] flex-col rounded-xl border border-grey-30 bg-white'
+        'relative flex h-[276px] flex-col rounded-lg border border-grey-30 bg-white'
       )}
     >
       {/* ─────────────────────────────────────────────────────────────────────
@@ -436,7 +436,7 @@ export function FamilyMemberCard({
          ───────────────────────────────────────────────────────────────────── */}
       <div className="flex shrink-0 justify-between px-3 pt-3">
         {/* 순서 배지 */}
-        <div className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-[#BABAC0] font-headline text-primary-fg">
+        <div className="typo-xs flex h-5 w-5 items-center justify-center rounded-full bg-grey-60 font-headline text-primary-fg">
           {index + 1}
         </div>
 

@@ -338,8 +338,8 @@ function ProcessingAnimation() {
 function SuccessState({ onProceed }: { onProceed?: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4">
-      <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-        <Check className="h-8 w-8 text-green-600" />
+      <div className="rpt-success-pop flex h-16 w-16 items-center justify-center rounded-full bg-green-20">
+        <Check className="h-8 w-8 text-green-80" />
       </div>
       <h3 className="typo-l font-emphasize text-fg">보고서를 만들었어요!</h3>
       <p className="typo-sm text-fg-muted">
@@ -349,7 +349,7 @@ function SuccessState({ onProceed }: { onProceed?: () => void }) {
         <button
           type="button"
           onClick={onProceed}
-          className="typo-m lg:hover:bg-primary-400 mt-2 w-full max-w-[240px] rounded-xl bg-primary py-3 font-emphasize text-primary-fg transition-colors"
+          className="typo-m lg:hover:bg-primary-400 mt-2 w-full max-w-[240px] rounded-lg bg-primary py-3 font-emphasize text-primary-fg transition-colors"
         >
           보고서 확인하기
         </button>
@@ -384,7 +384,7 @@ function ErrorState() {
         href={KAKAO_INQUIRY_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="typo-m mt-2 rounded-xl border border-border px-6 py-3 font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
+        className="typo-m mt-2 rounded-lg border border-border px-6 py-3 font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
       >
         마음토스 오류 문의
       </a>

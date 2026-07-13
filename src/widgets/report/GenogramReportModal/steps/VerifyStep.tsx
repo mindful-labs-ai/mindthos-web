@@ -34,7 +34,7 @@ export function VerifyStep({
   return (
     <div className="flex flex-col gap-6">
       {/* 상단 배너 */}
-      <div className="rounded-xl bg-primary-subtle px-6 py-5 text-center">
+      <div className="rounded-lg bg-primary-subtle px-6 py-5 text-center">
         <p className="typo-m font-headline text-fg">
           모든 검수가 끝난 후에
           <br />
@@ -54,10 +54,10 @@ export function VerifyStep({
           <img
             src={snapshotImage}
             alt="가계도 스냅샷"
-            className="w-full rounded-xl border border-border object-contain"
+            className="w-full rounded-lg border border-border object-contain"
           />
         ) : (
-          <div className="h-48 w-full rounded-xl border border-border bg-surface-contrast" />
+          <div className="h-48 w-full rounded-lg border border-border bg-surface-contrast" />
         )}
       </div>
 
@@ -109,7 +109,7 @@ export function VerifyStep({
               })}
             </div>
             {isWrong && (
-              <p className="typo-sm mt-2 px-4 text-red-500">{item.warning}</p>
+              <p className="typo-sm mt-2 px-4 text-danger">{item.warning}</p>
             )}
           </div>
         );

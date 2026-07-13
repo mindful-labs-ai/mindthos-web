@@ -1,13 +1,36 @@
-import React from 'react';
-
-import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import {
   extractTextOnly,
+  parseNonverbalText,
   parseNvTagText,
-  renderTextWithNonverbal,
 } from '../parseNonverbalText';
+
+describe('parseNonverbalText — legacy {%...%} 파싱', () => {
+  it('내용 있는 태그를 유형·라벨과 함께 분리한다', () => {
+    expect(parseNonverbalText('네 {%A%한숨%} 그래요')).toEqual([
+      { type: 'text', content: '네 ' },
+      { type: 'nonverbal', tagType: 'A', content: '한숨' },
+      { type: 'text', content: ' 그래요' },
+    ]);
+  });
+
+  it('내용 없는 태그({%S%}, {%O%})는 빈 content로 분리한다', () => {
+    expect(parseNonverbalText('{%S%}네')).toEqual([
+      { type: 'nonverbal', tagType: 'S', content: '' },
+      { type: 'text', content: '네' },
+    ]);
+    expect(parseNonverbalText('{%O%}')).toEqual([
+      { type: 'nonverbal', tagType: 'O', content: '' },
+    ]);
+  });
+
+  it('태그가 없으면 텍스트 단일 파트를 반환한다', () => {
+    expect(parseNonverbalText('평문')).toEqual([
+      { type: 'text', content: '평문' },
+    ]);
+  });
+});
 
 describe('parseNvTagText — 접두 key → tagType 매핑', () => {
   it('s→침묵(S), e→감정(E), 그 외→액션(A)로 분기하고 라벨을 보존한다', () => {
@@ -62,73 +85,6 @@ describe('parseNvTagText — 엣지 케이스', () => {
       { type: 'text', content: '앞' },
       { type: 'text', content: '뒤' },
     ]);
-  });
-});
-
-describe('renderTextWithNonverbal — 칩 렌더링', () => {
-  it('sttModel이 basic/advanced/gemini-3 아닌 경우 평문 문자열을 반환한다', () => {
-    const parts = parseNvTagText('안녕⟪nv:s1⟫하세요', ['s1:침묵 3초']);
-    const result = renderTextWithNonverbal(parts, null);
-    expect(typeof result).toBe('string');
-    expect(result as string).toContain('안녕');
-    expect(result as string).toContain('하세요');
-  });
-
-  it('sttModel==="basic": 침묵(S) → 회색 칩으로 렌더된다', () => {
-    const parts = parseNvTagText('⟪nv:s1⟫', ['s1:침묵 3초']);
-    const { container } = render(
-      React.createElement(
-        React.Fragment,
-        null,
-        renderTextWithNonverbal(parts, 'basic')
-      )
-    );
-    const chip = container.querySelector('span');
-    expect(chip).not.toBeNull();
-    expect(chip!.textContent).toBe('침묵 3초');
-    expect(chip!.className).toMatch(/bg-gray/);
-  });
-
-  it('sttModel==="basic": 감정(E) → 주황 칩으로 렌더된다', () => {
-    const parts = parseNvTagText('⟪nv:e1⟫', ['e1:웃음']);
-    const { container } = render(
-      React.createElement(
-        React.Fragment,
-        null,
-        renderTextWithNonverbal(parts, 'basic')
-      )
-    );
-    const chip = container.querySelector('span');
-    expect(chip).not.toBeNull();
-    expect(chip!.textContent).toBe('웃음');
-    expect(chip!.className).toMatch(/bg-amber/);
-  });
-
-  it('sttModel==="basic": 액션(A) → 파란 칩으로 렌더된다', () => {
-    const parts = parseNvTagText('⟪nv:a1⟫', ['a1:박수']);
-    const { container } = render(
-      React.createElement(
-        React.Fragment,
-        null,
-        renderTextWithNonverbal(parts, 'basic')
-      )
-    );
-    const chip = container.querySelector('span');
-    expect(chip).not.toBeNull();
-    expect(chip!.textContent).toBe('박수');
-    expect(chip!.className).toMatch(/bg-blue/);
-  });
-
-  it('sttModel==="advanced"도 칩으로 렌더된다', () => {
-    const parts = parseNvTagText('⟪nv:s1⟫', ['s1:침묵 5초']);
-    const { container } = render(
-      React.createElement(
-        React.Fragment,
-        null,
-        renderTextWithNonverbal(parts, 'advanced')
-      )
-    );
-    expect(container.querySelector('span')).not.toBeNull();
   });
 });
 

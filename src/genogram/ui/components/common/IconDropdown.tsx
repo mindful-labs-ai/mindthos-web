@@ -45,7 +45,7 @@ export const IconDropdown: React.FC<IconDropdownProps> = ({
         </span>
       </button>
       {open && (
-        <ul className="absolute z-50 mt-1 flex max-h-60 w-full flex-col gap-1 overflow-auto rounded-md border-2 border-grey-40 bg-white px-2 py-1 shadow-lg">
+        <ul className="absolute z-50 mt-1 flex max-h-60 w-full flex-col gap-1 overflow-auto rounded-md border-2 border-grey-40 bg-white px-2 py-1 shadow-elevated">
           {items.map((item) => (
             <li
               key={item.value}

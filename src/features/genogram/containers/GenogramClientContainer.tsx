@@ -440,13 +440,13 @@ export function GenogramClientContainer() {
       <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-3">
         <button
           onClick={handleShowBasicInfo}
-          className="flex h-10 items-center rounded-md border border-grey-30 bg-white px-4 text-sm text-grey-60 shadow-sm transition-colors lg:hover:bg-grey-10"
+          className="flex h-10 items-center rounded-md border border-grey-30 bg-white px-4 text-sm text-grey-60 shadow-subtle transition-colors lg:hover:bg-grey-10"
         >
           가계도 기본 정보
         </button>
         <button
           onClick={handleExport}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-grey-30 bg-white shadow-sm transition-colors lg:hover:bg-grey-10"
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-grey-30 bg-white shadow-subtle transition-colors lg:hover:bg-grey-10"
           aria-label="가계도 내보내기"
         >
           <Download className="h-5 w-5 text-grey-80" />

@@ -451,7 +451,7 @@ const UserVerifyPage: React.FC = () => {
   return (
     <>
       <div className="flex min-h-screen flex-col items-center justify-center bg-surface-contrast px-6 py-10">
-        <div className="max-h-[947px] w-full max-w-[706px] rounded-2xl bg-surface p-10 shadow-sm">
+        <div className="max-h-[947px] w-full max-w-[706px] rounded-2xl bg-surface p-10 shadow-subtle">
           <form
             onSubmit={handleSubmit}
             className="flex flex-col gap-6 px-36 pb-8 pt-12"

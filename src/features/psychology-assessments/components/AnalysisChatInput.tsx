@@ -233,7 +233,7 @@ export const AnalysisChatInput = ({
           onClick={onSubmit}
           disabled={isSendDisabled}
           className={cn(
-            'flex flex-shrink-0 items-center justify-center self-start rounded-xl border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20',
+            'flex flex-shrink-0 items-center justify-center self-start rounded-lg border border-grey-40 bg-white text-grey-80 transition-colors disabled:cursor-not-allowed disabled:border-grey-40 disabled:bg-grey-40 disabled:text-grey-20',
             !isSendDisabled && 'lg:hover:bg-grey-10'
           )}
           style={{

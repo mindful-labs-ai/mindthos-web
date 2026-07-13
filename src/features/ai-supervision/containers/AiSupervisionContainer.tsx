@@ -250,8 +250,8 @@ export function AiSupervisionContainer() {
                     </Badge>
                   )}
                 </div>
-                <div className="flex h-10 flex-shrink-0 items-center gap-2 rounded-lg border border-[#D6D8E1] bg-white px-3">
-                  <File size={24} className="text-[#BABCC7]" />
+                <div className="flex h-10 flex-shrink-0 items-center gap-2 rounded-lg border border-grey-40 bg-white px-3">
+                  <File size={24} className="text-grey-60" />
                   <span className="text-m font-medium text-grey-100">
                     {sessionRecordCount}개의 상담 기록
                   </span>

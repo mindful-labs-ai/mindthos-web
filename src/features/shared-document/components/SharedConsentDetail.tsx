@@ -19,9 +19,9 @@ export function SharedConsentDetail({
       <SharedHeader title="민감정보수집 및 이용 동의" onBack={onBack} />
 
       <div className="flex-1 overflow-y-auto px-5 pb-10 pt-6 text-sm font-medium leading-[150%] text-grey-100">
-        <p className="font-bold">민감정보수집 및 이용동의</p>
+        <p className="font-headline">민감정보수집 및 이용동의</p>
 
-        <p className="mt-5 font-bold">1. 비회원 이용자의 개인정보처리</p>
+        <p className="mt-5 font-headline">1. 비회원 이용자의 개인정보처리</p>
         <p className="mt-3">
           1) 비회원 이용자도 상담사의 요청으로 심리검사 및 상담서비스에 응할 수
           있으나, 비회원 이용자 자신의 심리검사 및 상담서비스 내용 확인할 수
@@ -64,7 +64,7 @@ export function SharedConsentDetail({
           <button
             type="button"
             onClick={onConfirm}
-            className="h-[50px] w-full rounded-lg bg-green-80 text-base font-medium text-white transition-opacity active:opacity-90"
+            className="h-[50px] w-full rounded-lg bg-green-80 text-m font-medium text-white transition-opacity active:opacity-90"
           >
             확인
           </button>

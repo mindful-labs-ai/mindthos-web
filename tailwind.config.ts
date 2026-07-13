@@ -17,7 +17,7 @@ export default {
         },
         /* Foreground (text) */
         fg: {
-          DEFAULT: 'var(--color-default)',
+          DEFAULT: 'var(--color-fg)',
           muted: 'var(--color-fg-muted)',
           subtle: 'var(--color-fg-subtle)',
           disabled: 'var(--color-fg-disabled)',
@@ -43,6 +43,8 @@ export default {
           active: 'var(--color-primary-active)',
           subtle: 'var(--color-primary-subtle)',
           surface: 'var(--color-primary-surface)',
+          tint: 'var(--color-primary-tint)',
+          'tint-weak': 'var(--color-primary-tint-weak)',
         },
         /* Danger (red): idle → hover → active */
         danger: {
@@ -51,6 +53,7 @@ export default {
           active: 'var(--color-danger-active)',
           fg: 'var(--color-danger-fg)',
           subtle: 'var(--color-danger-subtle)',
+          surface: 'var(--color-danger-surface)',
         },
         /* Neutral (grey): idle → hover → active */
         neutral: {
@@ -61,9 +64,20 @@ export default {
         },
         /* Status */
         warn: 'var(--color-warn)',
-        info: 'var(--color-info)',
+        info: {
+          DEFAULT: 'var(--color-info)',
+          subtle: 'var(--color-info-subtle)',
+          strong: 'var(--color-info-strong)',
+        },
         success: 'var(--color-success)',
         accent: 'var(--color-accent)',
+        /* External Brand */
+        brand: {
+          google: 'var(--color-brand-google)',
+          kakao: 'var(--color-brand-kakao)',
+          'kakao-button': 'var(--color-brand-kakao-button)',
+          'kakao-chat': 'var(--color-brand-kakao-chat)',
+        },
         /* Role-based tokens — 컴포넌트/레이아웃 역할별 */
         app: {
           bg: 'var(--color-app-bg)',
@@ -98,6 +112,29 @@ export default {
         },
         overlay: {
           bg: 'var(--color-overlay-bg)',
+        },
+        /* Transcript tag chip (축어록 비언어 태그 칩) */
+        chip: {
+          silence: {
+            bg: 'var(--color-chip-silence-bg)',
+            fg: 'var(--color-chip-silence-fg)',
+            border: 'var(--color-chip-silence-border)',
+          },
+          action: {
+            bg: 'var(--color-chip-action-bg)',
+            fg: 'var(--color-chip-action-fg)',
+            border: 'var(--color-chip-action-border)',
+          },
+          emotion: {
+            bg: 'var(--color-chip-emotion-bg)',
+            fg: 'var(--color-chip-emotion-fg)',
+            border: 'var(--color-chip-emotion-border)',
+          },
+          overlap: {
+            bg: 'var(--color-chip-overlap-bg)',
+            fg: 'var(--color-chip-overlap-fg)',
+            border: 'var(--color-chip-overlap-border)',
+          },
         },
         /* Primitive palettes (직접 참조 필요 시) */
         grey: {
@@ -195,22 +232,32 @@ export default {
       },
 
       /* ========================================
-       * BORDER RADIUS
+       * BORDER RADIUS — 전 스케일 토큰 참조
+       * (xl은 lg와 동값 별칭: rounded-xl 재유입 시에도 토큰을 따르도록)
        * ======================================== */
       borderRadius: {
+        DEFAULT: 'var(--radius-xs)',
         sm: 'var(--radius-sm)',
         md: 'var(--radius-md)',
         lg: 'var(--radius-lg)',
+        xl: 'var(--radius-lg)',
+        '2xl': 'var(--radius-2xl)',
       },
 
       /* ========================================
        * SHADOW — 시맨틱 elevation
+       * (sm/md/lg/xl은 동값 별칭: raw 표기 재유입 시에도 토큰을 따르도록)
        * ======================================== */
       boxShadow: {
         subtle: 'var(--shadow-subtle)',
         default: 'var(--shadow-default)',
         elevated: 'var(--shadow-elevated)',
         prominent: 'var(--shadow-prominent)',
+        modal: 'var(--shadow-modal)',
+        sm: 'var(--shadow-subtle)',
+        md: 'var(--shadow-default)',
+        lg: 'var(--shadow-elevated)',
+        xl: 'var(--shadow-prominent)',
       },
 
       /* ========================================

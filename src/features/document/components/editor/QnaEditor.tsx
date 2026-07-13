@@ -151,7 +151,7 @@ export function QnaEditor({
         type="button"
         aria-label="항목 추가"
         onClick={handleAdd}
-        className="mx-auto mt-6 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-green-80 text-white shadow-sm transition-opacity lg:hover:opacity-90"
+        className="mx-auto mt-6 flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-green-80 text-white shadow-subtle transition-opacity lg:hover:opacity-90"
       >
         <Plus size={20} />
       </button>

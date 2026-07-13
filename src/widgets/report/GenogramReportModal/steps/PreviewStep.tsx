@@ -30,7 +30,7 @@ export function PreviewStep({
           type="text"
           value={previewTitle}
           onChange={(e) => onTitleChange(e.target.value)}
-          className="typo-m w-full rounded-xl border border-border bg-surface-contrast px-4 py-3 text-fg outline-none transition-colors focus:border-primary"
+          className="typo-m w-full rounded-lg border border-border bg-surface-contrast px-4 py-3 text-fg outline-none transition-colors focus:border-primary"
         />
       </div>
 
@@ -39,7 +39,7 @@ export function PreviewStep({
         <p className="typo-sm mb-2 font-medium text-fg">PDF 미리보기</p>
 
         {showLoading || isRendering ? (
-          <div className="flex h-[360px] items-center justify-center rounded-xl border border-border bg-surface-contrast">
+          <div className="flex h-[360px] items-center justify-center rounded-lg border border-border bg-surface-contrast">
             <div className="flex items-center gap-3 text-fg-muted">
               <Loader2 className="h-5 w-5 animate-spin" />
               <span>
@@ -52,7 +52,7 @@ export function PreviewStep({
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-border p-4">
+          <div className="overflow-x-auto rounded-lg border border-border p-4">
             <div className="flex gap-4">
               {pages.map((src, i) => (
                 <div key={i} className="shrink-0">

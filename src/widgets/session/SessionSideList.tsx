@@ -28,6 +28,8 @@ interface SessionSideListProps {
   sessions: SessionItem[];
   activeSessionId?: string;
   onSessionClick: (sessionId: string) => void;
+  /** 활성(현재) 세션 제목 수정 */
+  onActiveTitleUpdate?: (newTitle: string) => Promise<void>;
   // 필터 관련 props
   sortOrder: 'newest' | 'oldest';
   selectedClientId: string[];
@@ -46,6 +48,7 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
   sessions,
   activeSessionId,
   onSessionClick,
+  onActiveTitleUpdate,
   sortOrder,
   selectedClientId,
   clients,
@@ -154,6 +157,11 @@ export const SessionSideList: React.FC<SessionSideListProps> = ({
                       isAdvancedTranscript={session.isAdvancedTranscript}
                       isHandwritten={session.isHandwritten}
                       onClick={onSessionClick}
+                      onTitleUpdate={
+                        session.sessionId === activeSessionId
+                          ? onActiveTitleUpdate
+                          : undefined
+                      }
                     />
                   ))}
                 </div>

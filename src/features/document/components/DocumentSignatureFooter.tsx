@@ -38,7 +38,9 @@ export function DocumentSignatureFooter({
     : counselorName;
   return (
     <div className="flex flex-col items-end gap-3 text-sm text-grey-100">
-      {counselorName && <p className="font-bold">{counselorLabel} 상담사</p>}
+      {counselorName && (
+        <p className="font-headline">{counselorLabel} 상담사</p>
+      )}
       {dateLabel && <p>{dateLabel}</p>}
       <div className="flex items-end gap-3">
         <span>{clientName || 'OOO'}</span>

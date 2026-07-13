@@ -30,7 +30,7 @@ export function GuideStep({
         {children}
       </div>
 
-      {error && <p className="typo-sm text-red-600">{error}</p>}
+      {error && <p className="typo-sm text-danger">{error}</p>}
 
       <Button
         onClick={onNext}
@@ -63,7 +63,7 @@ export function CompleteStep({
         <div className="mt-6 text-4xl">🎉</div>
       </div>
 
-      {error && <p className="typo-sm text-red-600">{error}</p>}
+      {error && <p className="typo-sm text-danger">{error}</p>}
 
       <Button
         onClick={onComplete}

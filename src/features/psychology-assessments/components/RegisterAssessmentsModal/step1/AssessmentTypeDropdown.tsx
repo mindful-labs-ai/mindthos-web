@@ -73,7 +73,7 @@ export const AssessmentTypeDropdown = ({
           selected
             ? 'text-fg-muted'
             : emphasizeMissing
-              ? 'text-[#F59E0B]'
+              ? 'text-warn'
               : 'text-fg-muted'
         )}
       >

@@ -32,7 +32,7 @@ function NavButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-[#a1a2a8]"
+      className="flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-70"
     >
       {children}
     </button>
@@ -73,7 +73,7 @@ export function CalendarToolbar({
                 'flex h-[42px] w-[87px] items-center justify-center rounded-md text-m font-medium transition-colors',
                 active
                   ? 'border border-grey-40 bg-white text-grey-100'
-                  : 'text-[#b7b7b7]'
+                  : 'text-grey-60'
               )}
             >
               {opt.label}

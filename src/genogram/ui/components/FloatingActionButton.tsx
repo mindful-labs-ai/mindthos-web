@@ -355,7 +355,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       {/* + 버튼 */}
       <button
         type="button"
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white shadow-md transition-transform active:scale-95 lg:hover:scale-110 lg:hover:bg-green-600"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-green-80 text-white shadow-default transition-transform active:scale-95 lg:hover:scale-110 lg:hover:bg-green-80"
         onClick={handleToggle}
       >
         <Plus
@@ -367,7 +367,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
       {/* 드롭다운 (우측에 펼침) */}
       {isOpen && (
         <div
-          className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-xl border border-grey-40 bg-white p-2 py-1.5 shadow-lg"
+          className="absolute left-full top-1/2 ml-2 -translate-y-1/2 rounded-lg border border-grey-40 bg-white p-2 py-1.5 shadow-elevated"
           style={{ minWidth: 'max-content' }}
         >
           {showChildSub ? (

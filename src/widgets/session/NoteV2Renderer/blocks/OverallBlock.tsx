@@ -14,7 +14,7 @@ export function OverallBlock({ value, editable }: OverallBlockProps) {
   const isEmpty = lines.length === 0;
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-green-40 bg-gradient-to-br from-green-20 via-green-10 to-white p-5 shadow-sm sm:p-6">
+    <div className="group relative overflow-hidden rounded-lg border border-green-40 bg-gradient-to-br from-green-20 via-green-10 to-white p-5 shadow-subtle sm:p-6">
       <div className="absolute left-0 top-0 h-full w-1.5 bg-green-80" />
       <div
         className={cn(

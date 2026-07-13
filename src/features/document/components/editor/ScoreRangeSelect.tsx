@@ -100,7 +100,7 @@ export function ScoreRangeSelect({
                     ? `translate(${offset.x}px, ${offset.y}px)`
                     : undefined,
               }}
-              className={`absolute left-0 z-modal max-h-[240px] w-16 overflow-y-auto rounded-lg border border-grey-30 bg-white p-1.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)] ${
+              className={`absolute left-0 z-modal max-h-[240px] w-16 overflow-y-auto rounded-lg border border-grey-30 bg-white p-1.5 shadow-modal ${
                 direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
               }`}
             >

@@ -269,14 +269,14 @@ export function AddEventPanel({
         />
       ) : (
         <div className="flex items-center justify-between px-5 pb-4 pt-7">
-          <h2 className="text-sm font-emphasize text-[#222121]">
+          <h2 className="text-sm font-emphasize text-grey-100">
             {isEdit ? '일정 변경하기' : '일정 추가하기'}
           </h2>
           <button
             type="button"
             aria-label="닫기"
             onClick={onClose}
-            className="text-[#8b8c93]"
+            className="text-grey-70"
           >
             <X size={24} strokeWidth={2} />
           </button>
@@ -300,7 +300,7 @@ export function AddEventPanel({
                     'h-[35px] w-[60px] rounded-md border text-sm font-medium',
                     active
                       ? 'bg-green-80/5 border-green-80 text-green-80'
-                      : 'border-[#ecedf3] bg-white text-[#abaebe]'
+                      : 'border-grey-30 bg-white text-grey-60'
                   )}
                 >
                   {opt.label}
@@ -329,15 +329,15 @@ export function AddEventPanel({
               onOpenChange={setClientSelectOpen}
               placement="bottom-right"
               trigger={
-                <div className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-[#ecedf3] bg-white px-2.5 text-sm">
+                <div className="flex h-9 cursor-pointer items-center gap-2 rounded-md border border-grey-30 bg-white px-2.5 text-sm">
                   <User
                     size={18}
                     strokeWidth={1.5}
-                    className="shrink-0 text-[#abaebe]"
+                    className="shrink-0 text-grey-60"
                   />
                   <span
                     className={
-                      selectedClient ? 'text-grey-100' : 'text-[#abaebe]'
+                      selectedClient ? 'text-grey-100' : 'text-grey-60'
                     }
                   >
                     {selectedClient ? selectedClient.name : '고객 선택 안됨'}
@@ -359,7 +359,7 @@ export function AddEventPanel({
           />
         </div>
 
-        <div className="border-t border-[#ecedf3]" />
+        <div className="border-t border-grey-30" />
 
         {/* 날짜 및 시간 */}
         <div className="flex flex-col gap-4">
@@ -379,7 +379,7 @@ export function AddEventPanel({
                 <Calendar
                   size={20}
                   strokeWidth={1.5}
-                  className="shrink-0 text-[#a1a2a8]"
+                  className="shrink-0 text-grey-70"
                 />
               </button>
               {datePickerOpen && (
@@ -406,7 +406,7 @@ export function AddEventPanel({
                 onClick={() => setAllDay((v) => !v)}
                 className={cn(
                   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-                  allDay ? 'bg-green-80' : 'bg-[#dfe1ea]'
+                  allDay ? 'bg-green-80' : 'bg-grey-40'
                 )}
               >
                 <span

@@ -42,9 +42,9 @@ const CouponCard: React.FC<CouponCardProps> = ({
       role={selectable ? 'button' : undefined}
       tabIndex={selectable ? 0 : undefined}
       className={cn(
-        'relative rounded-xl border border-[#E0E0E0] bg-[#F5F5F5] px-4 py-5',
+        'relative rounded-lg border border-grey-40 bg-grey-20 px-4 py-5',
         size === 'lg' ? 'h-[117px] w-full' : '',
-        selectable && 'cursor-pointer transition-colors lg:hover:bg-[#ECECEC]',
+        selectable && 'cursor-pointer transition-colors lg:hover:bg-grey-30',
         selectable &&
           selected &&
           'lg:hover:bg-primary-10 border border-primary bg-primary-subtle'
@@ -65,7 +65,7 @@ const CouponCard: React.FC<CouponCardProps> = ({
         <div className="items flex flex-1 flex-col">
           <Text
             className={cn(
-              'font-emphasize leading-relaxed text-[#333]',
+              'font-emphasize leading-relaxed text-grey-100',
               size === 'lg' ? 'typo-l' : 'typo-m'
             )}
           >
@@ -84,7 +84,7 @@ const CouponCard: React.FC<CouponCardProps> = ({
           <div className="absolute bottom-3 right-3">
             <svg
               className={cn(
-                selected ? 'text-primary' : 'text-[#C8C8C8]',
+                selected ? 'text-primary' : 'text-grey-60',
                 size === 'lg' ? 'h-6 w-6' : 'h-5 w-5'
               )}
               viewBox="0 0 24 24"
@@ -289,7 +289,7 @@ const CouponBoxDropdown: React.FC<CouponBoxDropdownProps> = ({
   return (
     <div
       className={cn(
-        'border-default w-[320px] rounded-xl bg-surface p-5 shadow-prominent',
+        'border-default w-[320px] rounded-lg bg-surface p-5 shadow-prominent',
         'animate-[scaleIn_0.15s_ease-out]'
       )}
     >

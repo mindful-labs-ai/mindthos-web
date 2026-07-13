@@ -32,6 +32,7 @@ import { MobileTranscriptToolbar } from '@/widgets/session/MobileTranscriptToolb
 import { ProgressNoteTabContent } from '@/widgets/session/ProgressNoteTabContent';
 import { SessionHeader } from '@/widgets/session/SessionHeader';
 import { TabChangeConfirmModal } from '@/widgets/session/TabChangeConfirmModal';
+import { TranscriptFindReplaceBar } from '@/widgets/session/TranscriptFindReplaceBar';
 import { TranscriptTabContent } from '@/widgets/session/TranscriptTabContent';
 import { TranscriptToolbar } from '@/widgets/session/TranscriptToolbar';
 
@@ -51,6 +52,10 @@ import {
   getSegments as getSnapshotSegments,
   getSpeakers as getSnapshotSpeakers,
 } from '../utils/contentsEditor';
+import {
+  isAdvancedTranscriptModel,
+  supportsDeid as sttSupportsDeid,
+} from '../utils/sttModel';
 import { getTranscriptData } from '../utils/transcriptParser';
 import { shouldEnableTimestampFeatures } from '../utils/transcriptUtils';
 
@@ -67,11 +72,39 @@ export const SessionDetailContainer: React.FC = () => {
 
   const [isAnonymized, setIsAnonymized] = React.useState(false);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = React.useState(false);
   const [presignedAudioUrl, setPresignedAudioUrl] = React.useState<
     string | null
   >(null);
   const [hasUserInteracted, setHasUserInteracted] = React.useState(false);
   const contentScrollRef = React.useRef<HTMLDivElement>(null);
+  // editorVersion 변경(분리/치환/undo)으로 세그먼트 remount 시 스크롤 튐 방지용
+  const savedScrollTopRef = React.useRef(0);
+  // remount 직전 화면 상단에 걸쳐 있던 세그먼트(앵커) — 복원 시 같은 위치로 고정
+  const scrollAnchorRef = React.useRef<{ id: string; offset: number } | null>(
+    null
+  );
+
+  // remount 직전(DOM이 아직 이전 상태일 때) 호출 — 컨테이너 상단에 걸친
+  // 첫 세그먼트와 그 화면상 오프셋을 앵커로 저장
+  const captureScrollAnchor = React.useCallback(() => {
+    const el = contentScrollRef.current;
+    if (!el) return;
+    savedScrollTopRef.current = el.scrollTop;
+    const containerTop = el.getBoundingClientRect().top;
+    scrollAnchorRef.current = null;
+    const segs = el.querySelectorAll<HTMLElement>('[data-segment-id]');
+    for (const seg of segs) {
+      const rect = seg.getBoundingClientRect();
+      if (rect.bottom - containerTop > 0) {
+        scrollAnchorRef.current = {
+          id: seg.dataset.segmentId || '',
+          offset: rect.top - containerTop,
+        };
+        break;
+      }
+    }
+  }, []);
 
   const { data: sessionDetail, isLoading } = useSessionDetail({
     sessionId: sessionId || '',
@@ -89,7 +122,7 @@ export const SessionDetailContainer: React.FC = () => {
   const session = sessionDetail?.session;
   const transcribe = sessionDetail?.transcribe;
   const sttModel = (transcribe as Transcribe | null)?.stt_model;
-  const supportsDeid = sttModel === 'basic' || sttModel === 'advanced';
+  const supportsDeid = sttSupportsDeid(sttModel);
   const sessionProgressNotes = React.useMemo(
     () => sessionDetail?.progressNotes || [],
     [sessionDetail?.progressNotes]
@@ -119,8 +152,9 @@ export const SessionDetailContainer: React.FC = () => {
 
   const transcriptLabel = isHandwrittenSession ? (
     '입력된 텍스트'
-  ) : (transcribe as Transcribe | null)?.stt_model === 'gemini-3' ||
-    (transcribe as Transcribe | null)?.stt_model === 'advanced' ? (
+  ) : isAdvancedTranscriptModel(
+      (transcribe as Transcribe | null)?.stt_model
+    ) ? (
     <span className="flex items-center justify-center gap-1.5">
       고급 축어록
       <svg
@@ -191,12 +225,64 @@ export const SessionDetailContainer: React.FC = () => {
     handleSpeakerChange,
     handleAddSegment,
     handleDeleteSegment,
+    handleSegmentTimeChange,
+    handleSplitSegment,
+    canUndo,
+    canRedo,
+    handleUndo,
+    handleRedo,
+    handleReplaceAll,
+    getMatchList,
+    replaceOne,
+    editorVersion,
   } = useTranscriptEditSession({
     sessionId: sessionId || '',
     transcribeId: transcribe?.id,
     isDummySession,
     isReadOnly,
+    onBeforeEditorRemount: captureScrollAnchor,
   });
+
+  // 편집이 끝나면 찾기·바꾸기 바 닫기
+  React.useEffect(() => {
+    if (!isEditing) setIsFindReplaceOpen(false);
+  }, [isEditing]);
+
+  // 스크롤 위치 저장 (세그먼트 remount 대비)
+  React.useEffect(() => {
+    const el = contentScrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      savedScrollTopRef.current = el.scrollTop;
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [activeTab]);
+
+  // editorVersion 변경(분리/치환/undo)으로 세그먼트가 remount되면 스크롤 복원.
+  // remount 직전 캡처한 앵커 세그먼트를 같은 화면 위치에 고정 — 세그먼트가
+  // 추가/분리돼 콘텐츠 높이가 변해도 보고 있던 세그먼트 기준으로 유지된다.
+  React.useLayoutEffect(() => {
+    const el = contentScrollRef.current;
+    if (!el) return;
+    const anchor = scrollAnchorRef.current;
+    scrollAnchorRef.current = null;
+    if (anchor) {
+      const seg = el.querySelector<HTMLElement>(
+        `[data-segment-id="${CSS.escape(anchor.id)}"]`
+      );
+      if (seg) {
+        const containerTop = el.getBoundingClientRect().top;
+        const delta =
+          seg.getBoundingClientRect().top - containerTop - anchor.offset;
+        el.scrollTop += delta;
+        savedScrollTopRef.current = el.scrollTop;
+        return;
+      }
+    }
+    // 앵커가 없거나(삭제 등) 못 찾으면 raw scrollTop으로 폴백
+    el.scrollTop = savedScrollTopRef.current;
+  }, [editorVersion]);
 
   const segments = React.useMemo(
     () =>
@@ -503,6 +589,10 @@ export const SessionDetailContainer: React.FC = () => {
         label: '편집 완료',
         onSave: handleSaveAllEdits,
         onCancel: handleCancelEdit,
+        canUndo,
+        canRedo,
+        onUndo: handleUndo,
+        onRedo: handleRedo,
       };
     }
     if (isEditingHandwritten) {
@@ -533,6 +623,10 @@ export const SessionDetailContainer: React.FC = () => {
     handleCancelHandwrittenEdit,
     isSavingHandwritten,
     noteEditState,
+    canUndo,
+    canRedo,
+    handleUndo,
+    handleRedo,
   ]);
 
   // 세션 변경 시 오디오 정지
@@ -608,6 +702,17 @@ export const SessionDetailContainer: React.FC = () => {
     />
   );
 
+  const findReplaceBar =
+    isEditing && isFindReplaceOpen ? (
+      <TranscriptFindReplaceBar
+        getMatchList={getMatchList}
+        onReplaceOne={replaceOne}
+        onReplaceAll={handleReplaceAll}
+        matchRefreshKey={editorVersion}
+        onClose={() => setIsFindReplaceOpen(false)}
+      />
+    ) : null;
+
   const toolbar =
     activeTab === 'transcript' ? (
       isHandwrittenSession ? (
@@ -645,6 +750,8 @@ export const SessionDetailContainer: React.FC = () => {
           }
           showDeid={showDeid}
           hasActivatedDeid={isDeidApplied}
+          isFindReplaceOpen={isFindReplaceOpen}
+          onToggleFindReplace={() => setIsFindReplaceOpen((v) => !v)}
         />
       ) : (
         <TranscriptToolbar
@@ -664,6 +771,13 @@ export const SessionDetailContainer: React.FC = () => {
           }
           showDeid={showDeid}
           hasActivatedDeid={isDeidApplied}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          isFindReplaceOpen={isFindReplaceOpen}
+          onToggleFindReplace={() => setIsFindReplaceOpen((v) => !v)}
+          findReplaceSlot={findReplaceBar}
         />
       )
     ) : null;
@@ -699,6 +813,7 @@ export const SessionDetailContainer: React.FC = () => {
           clientId={session?.client_id || null}
           isReadOnly={isReadOnly}
           isEditing={isEditing}
+          editorVersion={editorVersion}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
@@ -711,6 +826,9 @@ export const SessionDetailContainer: React.FC = () => {
           onSpeakerChange={handleSpeakerChange}
           onAddSegment={handleAddSegment}
           onDeleteSegment={handleDeleteSegment}
+          audioDuration={audioDuration}
+          onSegmentTimeChange={handleSegmentTimeChange}
+          onSplitSegment={handleSplitSegment}
         />
       ) : (
         <TranscriptTabContent
@@ -721,6 +839,7 @@ export const SessionDetailContainer: React.FC = () => {
           clientId={session?.client_id || null}
           isReadOnly={isReadOnly}
           isEditing={isEditing}
+          editorVersion={editorVersion}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
@@ -733,6 +852,9 @@ export const SessionDetailContainer: React.FC = () => {
           onSpeakerChange={handleSpeakerChange}
           onAddSegment={handleAddSegment}
           onDeleteSegment={handleDeleteSegment}
+          audioDuration={audioDuration}
+          onSegmentTimeChange={handleSegmentTimeChange}
+          onSplitSegment={handleSplitSegment}
         />
       )
     ) : isMobileView ? (
@@ -819,11 +941,13 @@ export const SessionDetailContainer: React.FC = () => {
     return (
       <MobileSessionDetailView
         isContentEditing={isContentEditing}
+        isHandwritten={isHandwrittenSession}
         audioElement={audioElement}
         header={header}
         mobileHeader={mobileHeader}
         tab={tab}
         toolbar={toolbar}
+        findReplace={findReplaceBar}
         tabContent={tabContent}
         audioPlayer={audioPlayer}
         tabChangeModal={
@@ -840,7 +964,6 @@ export const SessionDetailContainer: React.FC = () => {
     <SessionDetailView
       isContentEditing={isContentEditing}
       audioElement={audioElement}
-      header={header}
       tab={tab}
       toolbar={toolbar}
       tabContent={tabContent}

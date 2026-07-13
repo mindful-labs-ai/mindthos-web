@@ -28,7 +28,7 @@ function MiniNavButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-[#a1a2a8]"
+      className="flex h-6 w-6 items-center justify-center rounded-md border border-grey-40 bg-grey-10 text-grey-70"
     >
       {children}
     </button>

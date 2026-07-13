@@ -46,7 +46,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
   };
 
   return (
-    <div className="rounded-xl bg-white p-8 text-center">
+    <div className="rounded-lg bg-white p-8 text-center">
       <div className="mb-6 flex justify-center">
         <div className="rounded-full bg-green-20 p-6">
           <MailIcon className="h-10 w-10 text-green-80" />
@@ -69,7 +69,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
           className={cn(
             'mb-4 rounded-md p-3 text-sm font-medium',
             resendState.status === 'success'
-              ? 'bg-green-50 text-green-80'
+              ? 'bg-green-20 text-green-80'
               : 'bg-red-20 text-red-80'
           )}
         >

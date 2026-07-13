@@ -717,7 +717,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
           tone="error"
           variant="soft"
           size="md"
-          className="cursor-pointer border border-danger transition-all lg:hover:bg-red-300"
+          className="cursor-pointer border border-danger transition-all lg:hover:bg-danger-subtle"
         >
           내담자 미정
         </Badge>

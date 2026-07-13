@@ -141,7 +141,7 @@ export function CalendarView({
         </div>
       </section>
 
-      <aside className="h-full w-[295px] shrink-0 overflow-y-auto border-l border-[#ecedf3] bg-white">
+      <aside className="h-full w-[295px] shrink-0 overflow-y-auto border-l border-grey-30 bg-white">
         <CalendarSidebar
           current={current}
           onPrevMonth={onPrevMonth}

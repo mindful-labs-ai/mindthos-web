@@ -5,22 +5,24 @@
 
 import type { Speaker, TranscribeSegment } from '../types';
 
-export type SpeakerRangeOption = 'single' | 'onwards' | 'all';
+export type SpeakerRangeOption = 'single' | 'onwards' | 'all' | 'range';
 
 /**
  * speaker 변경을 적용할 세그먼트 ID 목록 계산
  *
  * @param currentSegmentId - 현재 선택된 세그먼트 ID
  * @param currentSpeakerId - 현재 speaker ID
- * @param range - 적용 범위 ('single' | 'onwards' | 'all')
+ * @param range - 적용 범위 ('single' | 'onwards' | 'all' | 'range')
  * @param allSegments - 전체 세그먼트 배열
+ * @param endSegmentId - range 모드에서 끝 세그먼트 ID (그 외 모드에서는 무시)
  * @returns 영향받을 세그먼트 ID 배열
  */
 export const calculateAffectedSegments = (
   currentSegmentId: number,
   currentSpeakerId: number,
   range: SpeakerRangeOption,
-  allSegments: TranscribeSegment[]
+  allSegments: TranscribeSegment[],
+  endSegmentId?: number
 ): number[] => {
   const currentIndex = allSegments.findIndex(
     (seg) => seg.id === currentSegmentId
@@ -47,6 +49,23 @@ export const calculateAffectedSegments = (
       return allSegments
         .filter((seg) => seg.speaker === currentSpeakerId)
         .map((seg) => seg.id);
+
+    case 'range': {
+      // 현재 세그먼트부터 지정한 끝 세그먼트까지 구간 중 동일 화자만
+      if (endSegmentId === undefined) {
+        return [currentSegmentId];
+      }
+      const endIndex = allSegments.findIndex((seg) => seg.id === endSegmentId);
+      if (endIndex === -1) {
+        return [currentSegmentId];
+      }
+      const from = Math.min(currentIndex, endIndex);
+      const to = Math.max(currentIndex, endIndex);
+      return allSegments
+        .slice(from, to + 1)
+        .filter((seg) => seg.speaker === currentSpeakerId)
+        .map((seg) => seg.id);
+    }
 
     default:
       return [];

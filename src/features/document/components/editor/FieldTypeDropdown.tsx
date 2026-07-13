@@ -119,7 +119,7 @@ export function FieldTypeDropdown({ type, onChange }: FieldTypeDropdownProps) {
                     ? `translate(${offset.x}px, ${offset.y}px)`
                     : undefined,
               }}
-              className={`absolute right-0 z-modal w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)] ${
+              className={`absolute right-0 z-modal w-[234px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-modal ${
                 direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
               }`}
             >

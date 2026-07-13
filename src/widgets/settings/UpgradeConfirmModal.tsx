@@ -492,7 +492,7 @@ export const UpgradeConfirmModal: React.FC<UpgradeConfirmModalProps> = ({
               {title || '마음토스 플랜 변경'}
             </Title>
           </div>
-          <div className="w-full rounded-xl border border-grey-30 p-6">
+          <div className="w-full rounded-lg border border-grey-30 p-6">
             {paymentContent}
           </div>
           <div className="flex w-full flex-col items-center gap-4">

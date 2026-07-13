@@ -142,7 +142,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                 <button
                   type="button"
                   onClick={modal.handleClose}
-                  className="typo-m flex-1 rounded-xl border border-border py-3.5 text-center font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
+                  className="typo-m flex-1 rounded-lg border border-border py-3.5 text-center font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
                 >
                   확인
                 </button>
@@ -152,7 +152,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
                     trackEvent(MixpanelEvent.GenogramReportSeminarButtonClick);
                     window.open(GENOGRAM_SEMINAR_URL, '_blank');
                   }}
-                  className="typo-m lg:hover:bg-primary-400 flex-1 rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
+                  className="typo-m lg:hover:bg-primary-400 flex-1 rounded-lg bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
                 >
                   세미나 신청하기
                 </button>
@@ -176,7 +176,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <button
                 type="button"
                 onClick={modal.handleBackToList}
-                className="typo-m lg:hover:bg-primary-400 w-full rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
+                className="typo-m lg:hover:bg-primary-400 w-full rounded-lg bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
               >
                 확인
               </button>
@@ -184,7 +184,7 @@ export function GenogramReportModal(props: GenogramReportModalProps) {
               <button
                 type="button"
                 onClick={modal.handleClose}
-                className="typo-m lg:hover:bg-primary-400 w-full rounded-xl bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
+                className="typo-m lg:hover:bg-primary-400 w-full rounded-lg bg-primary py-3.5 text-center font-emphasize text-primary-fg transition-colors"
               >
                 확인
               </button>

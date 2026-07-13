@@ -89,7 +89,7 @@ const PasswordResetPage = () => {
             )}
 
             {status === 'invalid' && (
-              <div className="rounded-xl bg-white p-8 text-center">
+              <div className="rounded-lg bg-white p-8 text-center">
                 <h2 className="mb-3 text-xl font-emphasize text-grey-100">
                   링크가 만료됐거나 유효하지 않아요
                 </h2>
@@ -110,7 +110,7 @@ const PasswordResetPage = () => {
             )}
 
             {status === 'succeeded' && (
-              <div className="rounded-xl bg-white p-8 text-center">
+              <div className="rounded-lg bg-white p-8 text-center">
                 <h2 className="mb-3 text-xl font-emphasize text-grey-100">
                   비밀번호를 변경했어요
                 </h2>
