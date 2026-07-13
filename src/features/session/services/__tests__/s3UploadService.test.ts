@@ -188,4 +188,48 @@ describe('uploadAudioToS3', () => {
     expect(mockGetUploadUrl).not.toHaveBeenCalled();
     expect(xhrSendCount).toBe(0);
   });
+
+  describe('파일명 정규화', () => {
+    it('NFD(자모 분해) 파일명을 NFC로 정규화해 presign에 보낸다', async () => {
+      const nfdName = '상담녹음.mp3'.normalize('NFD');
+      expect(nfdName.length).toBeGreaterThan('상담녹음.mp3'.length); // 전제 확인
+
+      const promise = uploadAudioToS3({ file: makeFile(nfdName), user_id: 1 });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(promise).resolves.toMatchObject({ success: true });
+
+      expect(mockGetUploadUrl).toHaveBeenCalledWith(
+        1,
+        '상담녹음.mp3',
+        'audio/mpeg'
+      );
+    });
+
+    it('255자 초과 파일명은 확장자를 보존한 채 잘라 서버 400을 예방한다', async () => {
+      const longName = `${'가'.repeat(300)}.mp3`;
+
+      const promise = uploadAudioToS3({ file: makeFile(longName), user_id: 1 });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(promise).resolves.toMatchObject({ success: true });
+
+      const sentFilename = mockGetUploadUrl.mock.calls[0][1];
+      expect(sentFilename.length).toBeLessThanOrEqual(255);
+      expect(sentFilename.endsWith('.mp3')).toBe(true);
+    });
+
+    it('앞뒤 공백·제어문자를 제거하고 보낸다', async () => {
+      const promise = uploadAudioToS3({
+        file: makeFile(' 회기\u0000녹음.mp3 '),
+        user_id: 1,
+      });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(promise).resolves.toMatchObject({ success: true });
+
+      expect(mockGetUploadUrl).toHaveBeenCalledWith(
+        1,
+        '회기녹음.mp3',
+        'audio/mpeg'
+      );
+    });
+  });
 });
