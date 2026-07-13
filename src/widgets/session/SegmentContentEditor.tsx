@@ -433,11 +433,33 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           const range = sel.getRangeAt(0);
           if (editorRef.current.contains(range.commonAncestorContainer)) {
             savedRangeRef.current = range.cloneRange();
-            const rects = range.getClientRects();
-            const rect =
-              rects.length > 0
-                ? rects[rects.length - 1]
-                : range.getBoundingClientRect();
+            // 드래그 선택이면 마지막 커서(focus, 드래그를 놓은 지점) 기준으로
+            // 메뉴 위치 측정 — 선택 영역의 최좌측이 아니라 커서 아래에 뜨게
+            let rect: DOMRect | null = null;
+            if (!range.collapsed && sel.focusNode) {
+              try {
+                const focusRange = document.createRange();
+                focusRange.setStart(sel.focusNode, sel.focusOffset);
+                focusRange.collapse(true);
+                const focusRects = focusRange.getClientRects();
+                const r =
+                  focusRects.length > 0
+                    ? focusRects[0]
+                    : focusRange.getBoundingClientRect();
+                if (r && (r.top !== 0 || r.left !== 0 || r.height !== 0)) {
+                  rect = r;
+                }
+              } catch {
+                // focus 측정 실패 시 아래 기존 로직으로 폴백
+              }
+            }
+            if (!rect) {
+              const rects = range.getClientRects();
+              rect =
+                rects.length > 0
+                  ? rects[rects.length - 1]
+                  : range.getBoundingClientRect();
+            }
             const editorRect = editorRef.current.getBoundingClientRect();
             setCaretPos({
               top: rect.bottom - editorRect.top,
