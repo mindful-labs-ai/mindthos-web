@@ -102,20 +102,15 @@ export function buildSegmentHtml(
 const NV_CHIP_CLASS =
   'mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium';
 
-/** nv 키 접두로 태그 타입 결정 (뷰 렌더와 동일 매핑) */
-function nvTagTypeFromKey(key: string): 'S' | 'E' | 'A' {
-  return key.startsWith('e') ? 'E' : key.startsWith('s') ? 'S' : 'A';
-}
-
 /** 신규 nv 칩 노드 (extractFromDom 호환: data-chip=nv + data-nv-key) */
 function createNvChipElement(key: string, label: string): HTMLSpanElement {
-  const tagType = nvTagTypeFromKey(key);
+  const tagType = nvKeyToTagType(key);
   const span = document.createElement('span');
   span.dataset.chip = 'nv';
   span.dataset.nvKey = key;
   span.dataset.tagType = tagType;
   span.setAttribute('contenteditable', 'false');
-  span.className = `${NV_CHIP_CLASS} ${NV_CHIP_STYLES[tagType] || NV_CHIP_STYLES.A}`;
+  span.className = `${NV_CHIP_CLASS} ${NV_CHIP_COLORS[tagType] || NV_CHIP_COLORS.A}`;
   span.textContent = label;
   return span;
 }
