@@ -48,7 +48,7 @@ export function MonthGrid({
   return (
     <div className="overflow-hidden rounded-2xl border border-grey-40 bg-white">
       {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 border-b border-grey-40 bg-[#fcfcfe]">
+      <div className="grid grid-cols-7 border-b border-grey-40 bg-grey-10">
         {WEEKDAYS_KO.map((label, i) => (
           <div
             key={label}

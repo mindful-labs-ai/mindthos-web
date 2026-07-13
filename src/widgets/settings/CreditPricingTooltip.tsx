@@ -18,7 +18,7 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
     <div className="flex flex-col gap-8 p-2 lg:min-h-0 lg:flex-1">
       <Title
         as="h4"
-        className="shrink-0 text-center text-2xl font-semibold text-fg"
+        className="shrink-0 text-center text-2xl font-emphasize text-fg"
       >
         마음토스 크레딧 안내
       </Title>
@@ -26,26 +26,26 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
       <div className="space-y-5 rounded-lg border border-grey-40 bg-surface-contrast p-8 lg:min-h-0 lg:w-[420px] lg:flex-1 lg:self-center lg:overflow-y-auto">
         {/* 녹음 변환 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">음성 변환</Text>
+          <Text className="text-sm font-sub text-grey-80">음성 변환</Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">일반 축어록</Text>
+              <Text className="text-sm font-sub text-fg">일반 축어록</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-sm font-emphasize text-fg">
                   30분 까지 - 30크레딧 (고정)
                 </Text>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-sm font-emphasize text-fg">
                   30분 초과 - 분당 1크레딧
                 </Text>
               </div>
             </div>
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">고급 축어록</Text>
+              <Text className="text-sm font-sub text-fg">고급 축어록</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-sm font-emphasize text-fg">
                   30분 까지 - 45크레딧 (고정)
                 </Text>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-sm font-emphasize text-fg">
                   30분 초과 - 분당 1.5크레딧
                 </Text>
               </div>
@@ -55,12 +55,12 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* 직접 입력 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">직접 입력</Text>
+          <Text className="text-sm font-sub text-grey-80">직접 입력</Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">직접 입력</Text>
+              <Text className="text-sm font-sub text-fg">직접 입력</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">30크레딧</Text>
+                <Text className="text-sm font-emphasize text-fg">30크레딧</Text>
               </div>
             </div>
           </div>
@@ -68,41 +68,39 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* AI 상담노트 및 분석 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">
+          <Text className="text-sm font-sub text-grey-80">
             AI 상담노트 및 분석
           </Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">
+              <Text className="text-sm font-sub text-fg">
                 상담노트 추가 작성
               </Text>
-              <Text className="text-sm font-semibold text-fg">10크레딧</Text>
+              <Text className="text-sm font-emphasize text-fg">10크레딧</Text>
             </div>
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">다회기 분석</Text>
-              <Text className="text-sm font-semibold text-fg">50크레딧</Text>
+              <Text className="text-sm font-sub text-fg">다회기 분석</Text>
+              <Text className="text-sm font-emphasize text-fg">50크레딧</Text>
             </div>
           </div>
         </div>
 
         {/* 가계도 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">가계도</Text>
+          <Text className="text-sm font-sub text-grey-80">가계도</Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">
-                가계도 자동 생성
-              </Text>
+              <Text className="text-sm font-sub text-fg">가계도 자동 생성</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-sm font-emphasize text-fg">
                   {CREDIT_COST.GENOGRAM}크레딧
                 </Text>
               </div>
             </div>
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">가계도 보고서</Text>
+              <Text className="text-sm font-sub text-fg">가계도 보고서</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">
+                <Text className="text-sm font-emphasize text-fg">
                   {CREDIT_COST.GENOGRAM_REPORT}크레딧
                 </Text>
               </div>
@@ -112,25 +110,25 @@ export const CreditPricingTooltip: React.FC<CreditPricingTooltipProps> = ({
 
         {/* 심리검사해석 */}
         <div className="space-y-2">
-          <Text className="text-sm font-normal text-grey-80">심리검사해석</Text>
+          <Text className="text-sm font-sub text-grey-80">심리검사해석</Text>
           <div className="space-y-2">
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">결과지 분석</Text>
+              <Text className="text-sm font-sub text-fg">결과지 분석</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">50크레딧</Text>
+                <Text className="text-sm font-emphasize text-fg">50크레딧</Text>
               </div>
             </div>
             <div className="flex gap-2">
-              <Text className="text-sm font-normal text-fg">에이전트 질문</Text>
+              <Text className="text-sm font-sub text-fg">에이전트 질문</Text>
               <div>
-                <Text className="text-sm font-semibold text-fg">5크레딧</Text>
+                <Text className="text-sm font-emphasize text-fg">5크레딧</Text>
               </div>
             </div>
           </div>
         </div>
 
         <div>
-          <Text className="text-sm font-normal text-fg">
+          <Text className="text-sm font-sub text-fg">
             기본 상담 노트는 음성 변환 기본료에 포함돼요.
           </Text>
         </div>

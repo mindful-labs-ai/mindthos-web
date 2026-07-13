@@ -111,7 +111,7 @@ export function GenogramGuideModal({
         </div>
 
         {/* 이미지 영역 */}
-        <div className="mb-6 w-full max-w-[428px] overflow-hidden rounded-xl border border-border bg-surface-contrast">
+        <div className="mb-6 w-full max-w-[428px] overflow-hidden rounded-lg border border-border bg-surface-contrast">
           <img
             src={currentStep.imageSrc}
             alt={currentStep.imageAlt}
@@ -135,14 +135,14 @@ export function GenogramGuideModal({
             <button
               type="button"
               onClick={handleDontShowAgain}
-              className="typo-m flex-1 rounded-xl border border-border bg-surface py-4 font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
+              className="typo-m flex-1 rounded-lg border border-border bg-surface py-4 font-emphasize text-fg transition-colors lg:hover:bg-surface-contrast"
             >
               다시 보지 않기
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="typo-m lg:hover:bg-primary-400 flex-1 rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
+              className="typo-m lg:hover:bg-primary-400 flex-1 rounded-lg bg-primary py-4 font-emphasize text-primary-fg transition-colors"
             >
               확인
             </button>
@@ -151,7 +151,7 @@ export function GenogramGuideModal({
           <button
             type="button"
             onClick={handleNext}
-            className="typo-m lg:hover:bg-primary-400 w-full rounded-xl bg-primary py-4 font-emphasize text-primary-fg transition-colors"
+            className="typo-m lg:hover:bg-primary-400 w-full rounded-lg bg-primary py-4 font-emphasize text-primary-fg transition-colors"
           >
             다음
           </button>

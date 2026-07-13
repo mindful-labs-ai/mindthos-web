@@ -77,7 +77,7 @@ export const QuestMissionModal = () => {
 
             <div className="absolute left-1/2 top-3 flex w-full -translate-x-1/2 flex-col items-center text-white"></div>
             <div className="flex flex-col gap-2 text-center">
-              <span className="typo-m font-normal text-surface">
+              <span className="typo-m font-sub text-surface">
                 마음토스 스타터 플랜
               </span>
               <p className="text-2xl font-extrabold text-white drop-shadow-sm">

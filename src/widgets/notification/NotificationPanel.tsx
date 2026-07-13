@@ -114,7 +114,7 @@ function FilterChip({
       className={`flex h-[35px] w-[68px] items-center justify-center rounded-lg border px-2.5 text-m font-medium transition-colors ${
         active
           ? 'border-green-80 bg-green-10 text-green-80'
-          : 'border-[#ECEDF3] bg-white text-[#ABAEBE] lg:hover:text-grey-80'
+          : 'border-grey-30 bg-white text-grey-60 lg:hover:text-grey-80'
       }`}
     >
       {label}
@@ -145,7 +145,7 @@ function NotificationRow({
         <KindIcon kind={notification.type} />
         <div className="min-w-0 flex-1">
           {/* 강조줄(title) + 본문(body) 2줄 */}
-          <p className="break-keep text-m font-semibold leading-snug text-grey-100">
+          <p className="break-keep text-m font-emphasize leading-snug text-grey-100">
             {notification.title}
           </p>
           <p className="mt-1 break-keep text-m font-medium leading-snug text-grey-70">
@@ -238,7 +238,7 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
             type="button"
             aria-label="알림 패널 닫기"
             onClick={onClose}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-[#8B8C93] transition-colors lg:hover:bg-grey-20"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-grey-70 transition-colors lg:hover:bg-grey-20"
           >
             <ChevronRight size={24} />
           </button>
@@ -257,7 +257,7 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
           <button
             type="button"
             onClick={() => markAllRead()}
-            className="ml-auto h-[35px] w-[80px] text-m font-medium text-[#ABAEBE] transition-colors lg:hover:text-grey-80"
+            className="ml-auto h-[35px] w-[80px] text-m font-medium text-grey-60 transition-colors lg:hover:text-grey-80"
           >
             모두 읽기
           </button>
@@ -279,9 +279,7 @@ export function NotificationPanel({ open, onClose }: NotificationPanelProps) {
             filtered.map((notification, index) => (
               <Fragment key={notification.id}>
                 {/* 항목 사이에만 구분선 */}
-                {index > 0 && (
-                  <div className="mx-4 border-b border-[#ECEDF3]" />
-                )}
+                {index > 0 && <div className="mx-4 border-b border-grey-30" />}
                 <NotificationRow
                   notification={notification}
                   onClick={handleRowClick}

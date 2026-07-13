@@ -138,7 +138,7 @@ export function GenogramPageHeader({
           )}
 
           {/* 액션 버튼들 — 임시 모드에서는 undo/redo만 노출 */}
-          <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 shadow-sm">
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-surface p-3 shadow-subtle">
             <button
               onClick={onUndo}
               title="실행 취소"
@@ -204,7 +204,7 @@ export function GenogramPageHeader({
                               onReset();
                             }}
                             disabled={isResetting}
-                            className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-red-600 transition-colors disabled:opacity-50 lg:hover:bg-red-50"
+                            className="typo-sm flex w-full items-center gap-2 px-3 py-2 text-left text-danger transition-colors disabled:opacity-50 lg:hover:bg-danger-surface"
                           >
                             <span>가계도 초기화</span>
                           </button>

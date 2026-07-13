@@ -69,6 +69,40 @@ export const getSpeakerDisplayName = (speaker: Speaker): string => {
   return `참석자 ${alphaLabel}`;
 };
 
+/** 화자 선택 입력: 기존 speaker id 또는 이름(내담자/직접입력) */
+export type SpeakerSelection =
+  | { kind: 'existing'; id: number }
+  | { kind: 'name'; name: string };
+
+/**
+ * 화자 선택을 speaker id로 해석. 기존 화자는 재사용, 이름은 customName/표시이름으로
+ * 매칭하고 없으면 새 speaker(maxId+1, role custom_N)를 생성해 목록에 추가한다.
+ * @returns 결정된 speakerId와 (필요 시 새 화자가 추가된) speakers 목록
+ */
+export const resolveSpeakerSelection = (
+  speakers: Speaker[],
+  sel: SpeakerSelection
+): { speakerId: number; speakers: Speaker[] } => {
+  if (sel.kind === 'existing') {
+    return { speakerId: sel.id, speakers };
+  }
+
+  const name = sel.name.trim();
+  const existing = speakers.find(
+    (s) => s.customName === name || getSpeakerDisplayName(s) === name
+  );
+  if (existing) {
+    return { speakerId: existing.id, speakers };
+  }
+
+  const maxId = Math.max(0, ...speakers.map((s) => s.id));
+  const id = maxId + 1;
+  return {
+    speakerId: id,
+    speakers: [...speakers, { id, role: `custom_${id}`, customName: name }],
+  };
+};
+
 /**
  * Speaker 객체에서 아바타 라벨(짧은 표시)을 반환
  * @param speaker - Speaker 객체
@@ -98,6 +132,41 @@ export const getSpeakerLabel = (speaker: Speaker): string => {
 
   // 그 외 - 알파벳 라벨
   return String.fromCharCode(64 + speaker.id);
+};
+
+/**
+ * 복사(클립보드) 출력 전용 화자 이름을 ID로 해석
+ *
+ * UI 표시명(getSpeakerDisplayName)과 규칙이 다름에 주의:
+ * - client1 → '내담자' (UI는 '내담자 A'), client2 → '내담자2' (UI는 '내담자 B')
+ * - 복사 텍스트 형식의 하위 호환을 위해 별도 규칙을 유지한다.
+ */
+export const getSpeakerCopyName = (
+  speakerId: number,
+  speakers: Speaker[]
+): string => {
+  // 기본 화자명 (speakers 정보가 없거나 매칭되지 않을 때)
+  const defaultNames: Record<number, string> = {
+    0: '상담사',
+    1: '내담자',
+  };
+  const defaultName = defaultNames[speakerId] ?? `화자 ${speakerId + 1}`;
+
+  const speaker = speakers.find((s) => s.id === speakerId);
+  if (!speaker) return defaultName;
+
+  // customName이 있으면 우선 사용
+  if (speaker.customName) return speaker.customName;
+
+  // role 기반 이름
+  if (speaker.role === 'counselor') return '상담사';
+  if (speaker.role === 'client1') return '내담자';
+  if (speaker.role === 'client2') return '내담자2';
+
+  // custom_ prefix role은 기본값으로 대체
+  if (speaker.role?.startsWith('custom_')) return defaultName;
+
+  return speaker.role || defaultName;
 };
 
 export const getSpeakerInfo = (

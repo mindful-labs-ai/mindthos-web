@@ -338,7 +338,7 @@ function ScoreBody({
   const scoreRatio = (s: number) =>
     scoreMax > scoreMin ? (s - scoreMin) / (scoreMax - scoreMin) : 0;
   const scoreCircleClass =
-    'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-grey-40 bg-white text-l font-bold text-grey-100';
+    'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border-2 border-grey-40 bg-white text-l font-headline text-grey-100';
 
   return (
     <div className="mt-6">
@@ -361,7 +361,7 @@ function ScoreBody({
           </span>
           {score !== undefined && (
             <span
-              className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-bold text-white"
+              className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-headline text-white"
               style={{
                 left: `calc((100% - 36px) * ${scoreRatio(score)})`,
               }}
@@ -403,7 +403,7 @@ function ScoreBody({
             {scoreMax}
           </span>
           <span
-            className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-bold text-white"
+            className="absolute top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-green-80 text-l font-headline text-white"
             style={{
               left: `calc((100% - 36px) * ${scoreRatio(score)})`,
             }}

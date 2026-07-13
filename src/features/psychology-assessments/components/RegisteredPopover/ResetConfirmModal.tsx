@@ -62,7 +62,7 @@ export const ResetConfirmModal = ({
         </button>
 
         <div className="flex items-center gap-2">
-          <DangerExclamationIcon size={24} className="text-[#EF4444]" />
+          <DangerExclamationIcon size={24} className="text-danger" />
           <h2 className="text-m font-emphasize text-grey-100">{title}</h2>
         </div>
 

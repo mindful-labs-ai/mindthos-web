@@ -86,7 +86,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
   return (
     <div
-      className={`h-full w-full select-none rounded-xl bg-white text-left transition-all lg:w-72 ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'} ${getBorderClass()}`}
+      className={`h-full w-full select-none rounded-lg bg-white text-left transition-all lg:w-72 ${isCurrent ? 'cursor-not-allowed' : 'cursor-pointer'} ${getBorderClass()}`}
     >
       <div className="flex h-full flex-col justify-between space-y-6 p-6">
         <div
@@ -110,7 +110,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
                     {name}
                   </h3>
                   {name === '플러스' && (
-                    <span className="rounded-xl bg-green-80 px-3 py-0.5 text-xs font-medium text-white">
+                    <span className="rounded-lg bg-green-80 px-3 py-0.5 text-xs font-medium text-white">
                       인기
                     </span>
                   )}

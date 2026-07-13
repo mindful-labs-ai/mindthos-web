@@ -23,6 +23,8 @@ interface MobileTranscriptTabContentProps {
   clientId: string | null;
   isReadOnly: boolean;
   isEditing: boolean;
+  /** 세그먼트 편집기 강제 remount 버전 (찾기바꾸기/undo/redo 반영) */
+  editorVersion?: number;
   isAnonymized: boolean;
   showDeid?: boolean;
   enableTimestampFeatures: boolean;
@@ -39,6 +41,14 @@ interface MobileTranscriptTabContentProps {
   }) => Promise<void>;
   onAddSegment?: (afterSegmentId: number, speaker: number) => void;
   onDeleteSegment?: (segmentId: number) => void;
+  audioDuration?: number;
+  onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
+  onSplitSegment?: (
+    segmentId: number,
+    boundaries: number[],
+    sliceSpeakers: number[],
+    speakerDefinitions?: Speaker[]
+  ) => void;
 }
 
 export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProps> =
@@ -51,6 +61,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       clientId,
       isReadOnly,
       isEditing,
+      editorVersion = 0,
       isAnonymized,
       showDeid = false,
       enableTimestampFeatures,
@@ -64,6 +75,9 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       onSpeakerChange,
       onAddSegment,
       onDeleteSegment,
+      audioDuration,
+      onSegmentTimeChange,
+      onSplitSegment,
     }) => {
       const [deleteTargetId, setDeleteTargetId] = React.useState<number | null>(
         null
@@ -114,7 +128,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
 
                     return (
                       <TranscriptSegment
-                        key={segment.id}
+                        key={`${segment.id}-${editorVersion}`}
                         segment={segment}
                         speakers={speakers}
                         isActive={
@@ -151,6 +165,16 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                           isEditing && !isReadOnly
                             ? handleDeleteRequest
                             : undefined
+                        }
+                        enableTimestampFeatures={enableTimestampFeatures}
+                        audioDuration={audioDuration}
+                        onSegmentTimeChange={
+                          isEditing && !isReadOnly
+                            ? onSegmentTimeChange
+                            : undefined
+                        }
+                        onSplitSegment={
+                          isEditing && !isReadOnly ? onSplitSegment : undefined
                         }
                       />
                     );

@@ -161,7 +161,7 @@ export function GenogramExportModal({
 
           {/* 업그레이드 팝업 */}
           {showUpgradeTooltip && !canRemoveWatermark && !isMobileView && (
-            <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-surface p-4 shadow-md">
+            <div className="absolute bottom-full right-1 z-20 mb-3 w-fit rounded-lg border border-border bg-surface p-4 shadow-default">
               <button
                 type="button"
                 className="absolute right-2 top-2 text-fg-muted lg:hover:text-fg"

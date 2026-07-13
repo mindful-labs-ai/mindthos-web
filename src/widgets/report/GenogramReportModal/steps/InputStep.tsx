@@ -11,7 +11,7 @@ export function InputStep({ formData, onFormChange }: InputStepProps) {
   return (
     <div className="mb-24 flex flex-col gap-6">
       {/* 상단 배너 */}
-      <div className="rounded-xl bg-primary-subtle px-6 py-5 text-center">
+      <div className="rounded-lg bg-primary-subtle px-6 py-5 text-center">
         <p className="typo-m font-headline text-fg">
           아래 정보가 보고서 표지에 반영돼요.
         </p>

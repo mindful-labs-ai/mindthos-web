@@ -51,7 +51,7 @@ export function CategoryToggleItem({
           />
         )}
       </span>
-      <span className="text-sm font-medium text-[#a2a2a2]">{label}</span>
+      <span className="text-sm font-medium text-grey-70">{label}</span>
     </button>
   );
 }

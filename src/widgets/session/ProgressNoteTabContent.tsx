@@ -134,7 +134,7 @@ export const ProgressNoteTabContent: React.FC<ProgressNoteTabContentProps> =
               {/* 하단 배너 (템플릿 선택 시) */}
               {isTemplateSelected && (
                 <div className="absolute inset-x-0 bottom-4 flex justify-center px-8">
-                  <div className="relative flex w-full max-w-[570px] items-center justify-between rounded-md border border-grey-30 bg-grey-10 py-6 pl-9 pr-11 shadow-lg">
+                  <div className="relative flex w-full max-w-[570px] items-center justify-between rounded-md border border-grey-30 bg-grey-10 py-6 pl-9 pr-11 shadow-elevated">
                     <button
                       type="button"
                       onClick={() => onTemplateSelect(null)}

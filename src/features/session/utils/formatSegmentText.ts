@@ -13,14 +13,14 @@
  * 편집기에 쓰이는 `segment.text` 는 그대로 두고, 이 함수는 **단방향**(forward-only) 변환만 한다.
  */
 
-const DEID_REGEX = /⟪deid:\w+\|([^⟫]+)⟫/g;
-const ADVANCED_NV_REGEX = /⟪nv:([^⟫]+)⟫/g;
-const LEGACY_NV_REGEX = /\{%([SAEO])%(?:([^%]+)%)?\}/g;
-
-const LEGACY_SILENT_LABELS: Record<string, string> = {
-  S: '침묵',
-  O: '겹침',
-};
+import {
+  createAdvancedNvRegex,
+  createDeidRegex,
+  createLegacyNvRegex,
+  NONVERBAL_DEFAULT_LABELS,
+  parseNvEntries,
+  type NonverbalTagType,
+} from './transcriptTags';
 
 interface SegmentLike {
   text: string;
@@ -28,38 +28,28 @@ interface SegmentLike {
   // deid 라벨 맵은 사용하지 않음 — 원본이 태그 안에 들어있어서 그대로 복원 가능.
 }
 
-const buildNvLookup = (nv: string[] | undefined): Map<string, string> => {
-  const map = new Map<string, string>();
-  if (!nv) return map;
-  for (const entry of nv) {
-    const colonIdx = entry.indexOf(':');
-    if (colonIdx === -1) continue;
-    const key = entry.slice(0, colonIdx);
-    const label = entry.slice(colonIdx + 1);
-    if (key && label) map.set(key, label);
-  }
-  return map;
-};
-
 export const formatSegmentText = (segment: SegmentLike): string => {
   let text = segment.text ?? '';
 
   // 1. 비식별화 → 원본
-  text = text.replace(DEID_REGEX, (_, original: string) => original);
+  text = text.replace(
+    createDeidRegex(),
+    (_, _key: string, original: string) => original
+  );
 
   // 2. advanced 비언어 → (라벨). 매핑이 없으면 제거.
-  const nvLookup = buildNvLookup(segment.nv);
-  text = text.replace(ADVANCED_NV_REGEX, (_, key: string) => {
-    const label = nvLookup.get(key);
+  const nvLookup = parseNvEntries(segment.nv);
+  text = text.replace(createAdvancedNvRegex(), (_, key: string) => {
+    const label = nvLookup.get(key)?.label;
     return label ? `(${label})` : '';
   });
 
   // 3. legacy 비언어 → (라벨). 내용이 있으면 그대로, 없으면 S/O 기본값, 나머지는 제거.
   text = text.replace(
-    LEGACY_NV_REGEX,
+    createLegacyNvRegex(),
     (_, tagType: string, content?: string) => {
       if (content) return `(${content})`;
-      const fallback = LEGACY_SILENT_LABELS[tagType];
+      const fallback = NONVERBAL_DEFAULT_LABELS[tagType as NonverbalTagType];
       return fallback ? `(${fallback})` : '';
     }
   );

@@ -164,7 +164,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
             onBack={() => onOpenChange(false)}
           />
           <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">
-            <div className="overflow-x-auto rounded-xl bg-grey-10 p-4 md:p-6">
+            <div className="overflow-x-auto rounded-lg bg-grey-10 p-4 md:p-6">
               <div className="min-w-[480px]">
                 {tableHeader}
                 {tableBody}
@@ -191,7 +191,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
           <Title as="h2" className="mb-10 text-2xl font-headline text-grey-100">
             크레딧 사용 내역
           </Title>
-          <div className="mb-6 w-[560px] rounded-xl bg-grey-10 p-6 lg:w-[600px]">
+          <div className="mb-6 w-[560px] rounded-lg bg-grey-10 p-6 lg:w-[600px]">
             {tableHeader}
             <div className="custom-scrollbar max-h-[400px] overflow-y-auto pr-2">
               {tableBody}

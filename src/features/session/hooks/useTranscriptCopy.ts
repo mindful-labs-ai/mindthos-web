@@ -5,7 +5,15 @@
 import { useToast } from '@/shared/ui/composites/Toast';
 
 import type { Speaker, TranscribeSegment } from '../types';
-import { getSpeakerDisplayName } from '../utils/speakerUtils';
+import { getSpeakerCopyName } from '../utils/getSpeakerInfo';
+import {
+  createAdvancedNvRegex,
+  createDeidRegex,
+  createLegacyNvRegex,
+  NONVERBAL_DEFAULT_LABELS,
+  parseNvEntries,
+  type NonverbalTagType,
+} from '../utils/transcriptTags';
 
 interface UseTranscriptCopyOptions {
   isReadOnly: boolean;
@@ -62,46 +70,45 @@ export function useTranscriptCopy({
           // 비언어 태그 변환
           let cleanedText = segment.text;
 
-          // 신규 ⟪nv:KEY⟫ + nv[] 배열 처리
+          // 신규 ⟪nv:KEY⟫ + nv[] 배열 처리 → (라벨)
           if (segment.nv && segment.nv.length > 0) {
-            const nvMap = new Map<string, string>();
-            for (const entry of segment.nv) {
-              const colonIdx = entry.indexOf(':');
-              if (colonIdx !== -1) {
-                nvMap.set(entry.slice(0, colonIdx), entry.slice(colonIdx + 1));
+            const nvMap = parseNvEntries(segment.nv);
+            cleanedText = cleanedText.replace(
+              createAdvancedNvRegex(),
+              (_, key: string) => {
+                const label = nvMap.get(key)?.label;
+                return label ? `(${label})` : '';
               }
-            }
-            cleanedText = cleanedText.replace(/⟪nv:([^⟫]+)⟫/g, (_, key) => {
-              const label = nvMap.get(key);
-              return label ? `(${label})` : '';
-            });
+            );
           }
 
-          // 레거시 {%X%내용%} 또는 {%X%} 형태 처리
-          cleanedText = cleanedText.replace(/\{%[SAEO]%([^%]+)%\}/g, '($1)');
-          cleanedText = cleanedText.replace(/\{%S%\}/g, '(침묵)');
-          cleanedText = cleanedText.replace(/\{%O%\}/g, '(겹침)');
-          cleanedText = cleanedText.replace(/\{%[AE]%\}/g, '');
+          // 레거시 {%X%내용%} 또는 {%X%} → (내용) / (침묵)·(겹침) / 제거
+          cleanedText = cleanedText.replace(
+            createLegacyNvRegex(),
+            (_, tagType: string, content?: string) => {
+              if (content) return `(${content})`;
+              const fallback =
+                NONVERBAL_DEFAULT_LABELS[tagType as NonverbalTagType];
+              return fallback ? `(${fallback})` : '';
+            }
+          );
 
           // 비식별화 태그: showDeid ON이면 라벨로, OFF면 원본으로 치환
           if (showDeid && segment.deid) {
             const deidMap = segment.deid;
             cleanedText = cleanedText.replace(
-              /⟪deid:(\w+)\|([^⟫]+)⟫/g,
-              (_, key) => `[${deidMap[key] || key}]`
+              createDeidRegex(),
+              (_, key: string) => `[${deidMap[key] || key}]`
             );
           } else {
-            cleanedText = cleanedText.replace(/⟪deid:\w+\|([^⟫]+)⟫/g, '$1');
+            cleanedText = cleanedText.replace(createDeidRegex(), '$2');
           }
 
           // 익명화 모드일 경우 화자 정보 제외
           if (isAnonymized) {
             return `#${speakerIndex} : ${cleanedText}`;
           } else {
-            const speakerName = getSpeakerDisplayName(
-              segment.speaker,
-              speakers
-            );
+            const speakerName = getSpeakerCopyName(segment.speaker, speakers);
             return `${speakerName} #${speakerIndex} : ${cleanedText}`;
           }
         })

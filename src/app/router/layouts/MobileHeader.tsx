@@ -234,7 +234,7 @@ function GenogramClientButton() {
                     };
                     window.addEventListener('popstate', onPop);
                   }}
-                  className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition-colors ${
+                  className={`flex w-full items-center justify-between rounded-lg border px-4 py-4 text-left transition-colors ${
                     selectedClient?.id === client.id
                       ? 'border-green-80 bg-green-10'
                       : 'border-grey-30 bg-white lg:hover:bg-grey-10'
@@ -353,7 +353,7 @@ function HeaderClientSelectButton() {
                     };
                     window.addEventListener('popstate', onPop);
                   }}
-                  className={`flex w-full items-center justify-between rounded-xl border px-4 py-4 text-left transition-colors ${
+                  className={`flex w-full items-center justify-between rounded-lg border px-4 py-4 text-left transition-colors ${
                     selectedClient?.id === client.id
                       ? 'border-green-80 bg-green-10'
                       : 'border-grey-30 bg-white lg:hover:bg-grey-10'
@@ -525,7 +525,7 @@ function MobileAddClientButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-3 rounded-xl bg-nav-hover-bg px-4 py-3 text-left transition-colors lg:hover:bg-grey-20 ${className ?? ''}`}
+      className={`flex w-full items-center gap-3 rounded-lg bg-nav-hover-bg px-4 py-3 text-left transition-colors lg:hover:bg-grey-20 ${className ?? ''}`}
     >
       <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-md bg-surface text-grey-70">
         <PlusIcon size={18} />

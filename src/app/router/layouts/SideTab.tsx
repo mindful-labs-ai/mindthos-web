@@ -65,7 +65,7 @@ const NavItem: React.FC<NavItemProps> = ({
       {badge && (
         <span
           className={cn(
-            'rounded-md px-1 py-0.5 text-xs font-bold',
+            'rounded-md px-1 py-0.5 text-xs font-headline',
             badge === 'beta'
               ? 'bg-primary text-primary-fg'
               : 'bg-nav-inactive-text text-surface'

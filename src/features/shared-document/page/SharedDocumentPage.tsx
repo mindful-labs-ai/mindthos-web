@@ -69,7 +69,7 @@ function CenterNotice({
  */
 function SharedScreenFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="lg:flex lg:min-h-dvh lg:justify-center lg:bg-[#E9EAF0]">
+    <div className="lg:flex lg:min-h-dvh lg:justify-center lg:bg-grey-30">
       <div className="w-full lg:max-w-[460px] lg:shadow-[0_0_40px_rgba(0,0,0,0.08)]">
         {children}
       </div>
@@ -285,7 +285,7 @@ export default function SharedDocumentPage() {
       />
       {submitError && (
         <div className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
-          <div className="mx-auto max-w-[480px] rounded-lg bg-red-80 px-4 py-3 text-sm font-medium text-white shadow-lg">
+          <div className="mx-auto max-w-[480px] rounded-lg bg-red-80 px-4 py-3 text-sm font-medium text-white shadow-elevated">
             {submitError}
           </div>
         </div>

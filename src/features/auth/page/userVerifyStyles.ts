@@ -1,5 +1,5 @@
 export const inputClass =
-  'h-10 w-full rounded-md border border-grey-40 bg-grey-10 px-4 text-sm font-normal text-grey-100 placeholder:text-input-placeholder outline-none transition-colors focus-visible:border-green-80 disabled:cursor-not-allowed disabled:text-grey-80 disabled:opacity-60';
+  'h-10 w-full rounded-md border border-grey-40 bg-grey-10 px-4 text-sm font-sub text-grey-100 placeholder:text-input-placeholder outline-none transition-colors focus-visible:border-green-80 disabled:cursor-not-allowed disabled:text-grey-80 disabled:opacity-60';
 
 export const inputErrorClass = 'border-danger focus-visible:border-danger';
 

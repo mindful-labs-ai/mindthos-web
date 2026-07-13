@@ -316,10 +316,10 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
     const partnerAttr = isPartner ? (attribute as PartnerAttribute) : null;
 
     return (
-      <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-grey-40 bg-white shadow-lg">
+      <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-grey-40 bg-white shadow-elevated">
         {/* 헤더 */}
         <div className="px-5 pt-5">
-          <h2 className="text-lg font-bold text-grey-100">{typeLabel}</h2>
+          <h2 className="text-lg font-headline text-grey-100">{typeLabel}</h2>
         </div>
 
         <hr className="mx-5 mt-3 border-grey-40" />
@@ -328,7 +328,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {/* 종류 (상태) */}
           {statusItems.length > 0 && (
             <section>
-              <h3 className="mb-2 text-base font-medium text-grey-100">종류</h3>
+              <h3 className="mb-2 text-m font-medium text-grey-100">종류</h3>
               <IconDropdown
                 items={statusItems}
                 value={currentStatus}
@@ -349,7 +349,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 <>
                   {showMarried && (
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-medium text-grey-100">
+                      <span className="text-m font-medium text-grey-100">
                         결혼일
                       </span>
                       <DateInput
@@ -363,7 +363,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                   )}
                   {showDivorced && (
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-medium text-grey-100">
+                      <span className="text-m font-medium text-grey-100">
                         이혼일
                       </span>
                       <DateInput
@@ -377,7 +377,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                   )}
                   {showReunited && (
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-medium text-grey-100">
+                      <span className="text-m font-medium text-grey-100">
                         재결합일
                       </span>
                       <DateInput
@@ -391,7 +391,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                   )}
                   {showRelStart && (
                     <div className="flex items-center justify-between">
-                      <span className="text-base font-medium text-grey-100">
+                      <span className="text-m font-medium text-grey-100">
                         연애 시작일
                       </span>
                       <DateInput
@@ -410,7 +410,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {/* 역방향 — 영향선만 표시 */}
           {type === ConnectionType.Influence_Line && (
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-grey-100">방향</span>
+              <span className="text-m font-medium text-grey-100">방향</span>
               <button
                 type="button"
                 className="flex h-6 w-14 items-center justify-center rounded-full bg-grey-30 px-0.5 transition-colors active:bg-grey-20"
@@ -424,7 +424,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
           {/* 메모 */}
           <section>
-            <h3 className="mb-2 text-base font-medium text-grey-100">메모</h3>
+            <h3 className="mb-2 text-m font-medium text-grey-100">메모</h3>
             <textarea
               value={connMemoValue}
               onChange={handleConnMemoChange}
@@ -439,7 +439,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {/* 선 두께 — Group_Line에서는 숨김 */}
           {!isGroup && (
             <section className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-grey-100">선 두께</h3>
+              <h3 className="text-m font-medium text-grey-100">선 두께</h3>
               <InlineDropdown
                 items={STROKE_WIDTH_ITEMS}
                 value={connection.layout.strokeWidth}
@@ -450,7 +450,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
           {/* 선 색상 */}
           <section className="flex items-center justify-between">
-            <h3 className="text-base font-medium text-grey-100">선 색상</h3>
+            <h3 className="text-m font-medium text-grey-100">선 색상</h3>
             <ColorPicker
               value={connection.layout.strokeColor}
               onChange={(v) => updateConnLayout('strokeColor', v)}
@@ -460,9 +460,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {/* 텍스트 색상 — relation/influence/group에서는 텍스트 렌더링이 없으므로 숨김 */}
           {!isRelationOrInfluence && !isGroup && (
             <section className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-grey-100">
-                텍스트 색상
-              </h3>
+              <h3 className="text-m font-medium text-grey-100">텍스트 색상</h3>
               <ColorPicker
                 value={connection.layout.textColor}
                 onChange={(v) => updateConnLayout('textColor', v)}
@@ -473,7 +471,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           {/* 글자 크기 — relation/influence/group에서는 텍스트 렌더링이 없으므로 숨김 */}
           {!isRelationOrInfluence && !isGroup && (
             <section className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-grey-100">글자 크기</h3>
+              <h3 className="text-m font-medium text-grey-100">글자 크기</h3>
               <InlineDropdown
                 items={FONT_SIZE_ITEMS}
                 value={String(connection.layout.fontSize ?? 0)}
@@ -498,7 +496,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
   const currentIsDead = isPerson ? attr!.isDead : (animalAttr?.isDead ?? false);
 
   return (
-    <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-grey-40 bg-white shadow-lg">
+    <div className="absolute right-0 top-0 z-10 h-full w-80 overflow-y-auto border-l border-grey-40 bg-white shadow-elevated">
       {/* 헤더: 이름 */}
       <div className="flex items-center justify-between px-5 pt-5">
         {isEditingName ? (
@@ -515,12 +513,12 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
                 setIsEditingName(false);
               }
             }}
-            className="h-8 flex-1 rounded-md border-2 border-grey-40 bg-white px-3 text-lg font-bold outline-none transition-colors"
+            className="h-8 flex-1 rounded-md border-2 border-grey-40 bg-white px-3 text-lg font-headline outline-none transition-colors"
           />
         ) : (
           <button
             type="button"
-            className="flex items-center gap-2 text-lg font-bold text-grey-100"
+            className="flex items-center gap-2 text-lg font-headline text-grey-100"
             onClick={() => setIsEditingName(true)}
           >
             {displayName || '이름 없음'}
@@ -534,7 +532,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
       <div className="flex flex-col gap-5 px-5 py-5">
         {/* 성별 / 타입 */}
         <section>
-          <h3 className="mb-2 text-base font-medium text-grey-100">성별</h3>
+          <h3 className="mb-2 text-m font-medium text-grey-100">성별</h3>
           <IconDropdown
             items={GENDER_TYPE_ITEMS}
             value={genderDropdownValue}
@@ -547,26 +545,26 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
         {/* IP (Identified Patient) — Person 전용 */}
         {isPerson && (
           <div className="flex items-center justify-between">
-            <span className="text-base font-medium text-grey-100">
+            <span className="text-m font-medium text-grey-100">
               IP(Identified Patient)
             </span>
             <input
               type="checkbox"
               checked={attr!.isIP ?? false}
               onChange={(e) => updateAttribute('isIP', e.target.checked)}
-              className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
+              className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-m after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
             />
           </div>
         )}
 
         {/* 사망 여부 (공통) */}
         <div className="flex items-center justify-between">
-          <span className="text-base font-medium text-grey-100">사망 여부</span>
+          <span className="text-m font-medium text-grey-100">사망 여부</span>
           <input
             type="checkbox"
             checked={currentIsDead}
             onChange={(e) => updateAttribute('isDead', e.target.checked)}
-            className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
+            className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-m after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
           />
         </div>
 
@@ -575,9 +573,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
           <>
             {/* 출생일 */}
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-grey-100">
-                출생일
-              </span>
+              <span className="text-m font-medium text-grey-100">출생일</span>
               <DateInput
                 key={`birth-${subject!.id}-${attr.lifeSpan.birth}`}
                 value={attr.lifeSpan.birth}
@@ -588,9 +584,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             {/* 사망일 — 사망 여부 체크 시에만 표시 */}
             {currentIsDead && (
               <div className="flex items-center justify-between">
-                <span className="text-base font-medium text-grey-100">
-                  사망일
-                </span>
+                <span className="text-m font-medium text-grey-100">사망일</span>
                 <DateInput
                   key={`death-${subject!.id}-${attr.lifeSpan.death}`}
                   value={attr.lifeSpan.death}
@@ -601,7 +595,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
             {/* 나이 */}
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-grey-100">나이</span>
+              <span className="text-m font-medium text-grey-100">나이</span>
               <div className="flex items-center gap-1">
                 <span className="text-sm text-grey-70">만</span>
                 <input
@@ -677,7 +671,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
             {/* 임상적 상태 */}
             <section>
-              <h3 className="mb-2 text-base font-medium text-grey-100">
+              <h3 className="mb-2 text-m font-medium text-grey-100">
                 임상적 상태
               </h3>
               <IconDropdown
@@ -691,14 +685,14 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
             {/* 인적 사항 정보 */}
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-base font-medium text-grey-100">
+                <span className="text-m font-medium text-grey-100">
                   부가 설명
                 </span>
                 <input
                   type="checkbox"
                   checked={attr.extraInfo.enable}
                   onChange={(e) => updateExtraInfo('enable', e.target.checked)}
-                  className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-base after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
+                  className="relative h-6 w-6 cursor-pointer appearance-none rounded-sm border-2 border-grey-40 bg-white after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-m after:font-black after:text-white after:opacity-0 after:content-['✓'] checked:border-grey-100 checked:bg-grey-100 checked:after:opacity-100"
                 />
               </div>
               {attr.extraInfo.enable && (
@@ -784,7 +778,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
         {/* 메모 */}
         <section>
-          <h3 className="mb-2 text-base font-medium text-grey-100">메모</h3>
+          <h3 className="mb-2 text-m font-medium text-grey-100">메모</h3>
           <textarea
             value={memoValue}
             onChange={handleMemoChange}
@@ -800,7 +794,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
         {style && (
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-base font-medium text-grey-100">
+              <span className="text-m font-medium text-grey-100">
                 도형 크기
               </span>
               <InlineDropdown
@@ -812,7 +806,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
             {/* 도형 색상 */}
             <section className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-grey-100">도형 색상</h3>
+              <h3 className="text-m font-medium text-grey-100">도형 색상</h3>
               <ColorPicker
                 value={style.bgColor}
                 onChange={(v) => updateStyle('bgColor', v)}
@@ -821,9 +815,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
             {/* 텍스트 색상 */}
             <section className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-grey-100">
-                텍스트 색상
-              </h3>
+              <h3 className="text-m font-medium text-grey-100">텍스트 색상</h3>
               <ColorPicker
                 value={style.textColor}
                 onChange={(v) => updateStyle('textColor', v)}
@@ -832,7 +824,7 @@ export const GenogramPropertyPanel: React.FC<GenogramPropertyPanelProps> = ({
 
             {/* 글자 크기 */}
             <section className="flex items-center justify-between">
-              <h3 className="text-base font-medium text-grey-100">글자 크기</h3>
+              <h3 className="text-m font-medium text-grey-100">글자 크기</h3>
               <InlineDropdown
                 items={FONT_SIZE_ITEMS}
                 value={String(style.fontSize ?? 0)}

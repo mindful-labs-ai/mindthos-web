@@ -393,7 +393,7 @@ export function SendDocumentModal({
                   />
                   <div
                     role="menu"
-                    className="absolute right-0 top-full z-modal mt-2 max-h-[426px] w-[261px] overflow-y-auto rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
+                    className="absolute right-0 top-full z-modal mt-2 max-h-[426px] w-[261px] overflow-y-auto rounded-lg border border-grey-30 bg-white p-2.5 shadow-modal"
                   >
                     {documentList}
                   </div>
@@ -441,7 +441,7 @@ export function SendDocumentModal({
                   />
                   <div
                     role="menu"
-                    className="absolute right-0 top-full z-modal mt-2 w-[205px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-[0px_4px_24px_rgba(0,0,0,0.1)]"
+                    className="absolute right-0 top-full z-modal mt-2 w-[205px] rounded-lg border border-grey-30 bg-white p-2.5 shadow-modal"
                   >
                     {deadlineList}
                   </div>
@@ -454,7 +454,7 @@ export function SendDocumentModal({
         {/* 내용 미리보기 — 알림톡 목업에 실제 파라미터 선반영 */}
         <div>
           <p className="text-m font-emphasize text-grey-100">내용 미리보기</p>
-          <div className="mt-3 rounded-lg border border-grey-40 bg-[#A5C2D3] px-6 py-6">
+          <div className="mt-3 rounded-lg border border-grey-40 bg-brand-kakao-chat px-6 py-6">
             {/* 톡 카드를 박스 중앙에, 아바타는 카드 왼쪽에 배치 */}
             <div className="relative mx-auto w-[286px]">
               <span className="absolute -left-[60px] top-0 hidden h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-grey-40 bg-grey-10 lg:flex">
@@ -467,7 +467,7 @@ export function SendDocumentModal({
               <div>
                 <p className="text-sm font-medium text-grey-100">마음토스</p>
                 <div className="mt-1.5 w-[286px] overflow-hidden rounded-[20px] border border-grey-40 bg-white">
-                  <div className="flex h-[50px] items-center bg-[#FFE412] px-[18px] text-sm font-emphasize text-grey-100">
+                  <div className="flex h-[50px] items-center bg-brand-kakao-button px-[18px] text-sm font-emphasize text-grey-100">
                     알림톡 도착
                   </div>
                   <div className="px-5 py-4 text-sm font-medium leading-[150%] text-grey-100">
@@ -483,7 +483,7 @@ export function SendDocumentModal({
                   </div>
                   <button
                     type="button"
-                    className="mx-4 mb-4 h-[43px] w-[254px] cursor-default rounded-lg bg-[#FFE412] text-m font-emphasize text-grey-100"
+                    className="mx-4 mb-4 h-[43px] w-[254px] cursor-default rounded-lg bg-brand-kakao-button text-m font-emphasize text-grey-100"
                   >
                     문서 확인하기
                   </button>

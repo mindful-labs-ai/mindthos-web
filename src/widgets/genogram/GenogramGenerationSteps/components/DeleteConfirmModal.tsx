@@ -72,7 +72,7 @@ export function DeleteConfirmModal({
         {/* 삭제 버튼 */}
         <button
           onClick={onConfirm}
-          className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-xl bg-primary font-medium text-primary-fg transition-colors"
+          className="typo-l lg:hover:bg-primary-600 h-14 w-full rounded-lg bg-primary font-medium text-primary-fg transition-colors"
         >
           삭제하기
         </button>

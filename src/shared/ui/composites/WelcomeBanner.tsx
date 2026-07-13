@@ -22,7 +22,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
 }) => {
   return (
     <div
-      className={`welcome-banner-height relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-green-80 to-amber-200 p-5 text-primary-fg transition-all md:p-12 ${className}`}
+      className={`welcome-banner-height relative mb-6 overflow-hidden rounded-lg bg-gradient-to-r from-green-80 to-amber-200 p-5 text-primary-fg transition-all md:p-12 ${className}`}
     >
       {onClose && (
         <button

@@ -86,7 +86,7 @@ export function ConfirmStep({
           {creditBadge}
           {confirmButton}
           {!isLoadingCredits && !hasEnoughCredits && (
-            <span className="text-sm text-red-500">
+            <span className="text-sm text-danger">
               크레딧이 부족해요 (현재: {remainingCredits}C)
             </span>
           )}
@@ -114,7 +114,7 @@ export function ConfirmStep({
           {creditBadge}
           {confirmButton}
           {!isLoadingCredits && !hasEnoughCredits && (
-            <span className="text-sm text-red-500">
+            <span className="text-sm text-danger">
               크레딧이 부족해요 (현재: {remainingCredits}C)
             </span>
           )}

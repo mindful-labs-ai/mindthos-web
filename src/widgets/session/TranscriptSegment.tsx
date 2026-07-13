@@ -1,22 +1,20 @@
 import React from 'react';
 
-import { Plus, Trash2 } from 'lucide-react';
+import { Play, Plus, Trash2 } from 'lucide-react';
 
 import type { Speaker, TranscribeSegment } from '@/features/session/types';
+import { extractDeidText } from '@/features/session/utils/extractDeidText';
 import { formatTime } from '@/features/session/utils/formatTime';
 import { getSpeakerInfo } from '@/features/session/utils/getSpeakerInfo';
 import {
-  applyDeidStyling,
-  extractDeidText,
-} from '@/features/session/utils/parseDeidText';
-import {
   parseNonverbalText,
   parseNvTagText,
-  renderTextWithNonverbal,
 } from '@/features/session/utils/parseNonverbalText';
 
 import { SegmentContentEditor } from './SegmentContentEditor';
+import { SegmentTimeEditPopup } from './SegmentTimeEditPopup';
 import { SpeakerEditPopup } from './SpeakerEditPopup';
+import { TranscriptText } from './TranscriptText';
 
 interface TranscriptSegmentProps {
   segment: TranscribeSegment;
@@ -44,6 +42,19 @@ interface TranscriptSegmentProps {
   onAddSegment?: (afterSegmentId: number, speaker: number) => void;
   /** 세그먼트 삭제 콜백 (편집 모드에서만) */
   onDeleteSegment?: (segmentId: number) => void;
+  /** 타임스탬프 기능 활성 여부 (시간 편집 노출 조건) */
+  enableTimestampFeatures?: boolean;
+  /** 오디오 총 길이(초) — 시간 편집 범위 계산용 */
+  audioDuration?: number;
+  /** 세그먼트 시간 수정 콜백 (편집 모드에서만) */
+  onSegmentTimeChange?: (segmentId: number, start: number, end: number) => void;
+  /** 세그먼트 분리/화자 전환 콜백 (편집 모드에서만) */
+  onSplitSegment?: (
+    segmentId: number,
+    boundaries: number[],
+    sliceSpeakers: number[],
+    speakerDefinitions?: Speaker[]
+  ) => void;
 }
 
 const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
@@ -66,8 +77,30 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   onSpeakerChange,
   onAddSegment,
   onDeleteSegment,
+  enableTimestampFeatures = false,
+  audioDuration = 0,
+  onSegmentTimeChange,
+  onSplitSegment,
 }) => {
   const [isSpeakerPopupOpen, setIsSpeakerPopupOpen] = React.useState(false);
+  const [isTimePopupOpen, setIsTimePopupOpen] = React.useState(false);
+
+  // 편집 모드 + 타임스탬프 기능 활성 시 시간 편집 가능
+  const canEditTime =
+    isEditable && enableTimestampFeatures && !!onSegmentTimeChange;
+
+  const handleTimeTriggerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsTimePopupOpen(true);
+  };
+
+  const handleTimeTriggerKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsTimePopupOpen(true);
+    }
+  };
 
   const { name, label, bgColor, textColor } = getSpeakerInfo(segment, speakers);
 
@@ -92,6 +125,15 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
 
   const handleContainerClick = () => {
     if (isClickable && segment.start !== null) {
+      onClick(segment.start);
+    }
+  };
+
+  // 세그먼트별 재생 버튼: 편집 모드에서도 해당 시작 시간으로 이동·재생
+  // (행 전체 클릭 seek는 편집 중 비활성이므로 전용 버튼으로 제공)
+  const handlePlayClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (segment.start !== null) {
       onClick(segment.start);
     }
   };
@@ -166,6 +208,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   return (
     <div
       ref={segmentRef}
+      data-segment-id={segment.id}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       className={`group/segment group relative flex gap-4 rounded-lg px-4 py-2.5 text-left transition-all duration-normal md:py-4 ${
@@ -184,7 +227,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
       {isEditable && onDeleteSegment && (
         <button
           onClick={handleDeleteSegment}
-          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-red-500 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:text-red-600"
+          className="pointer-events-none absolute right-2 top-2 rounded-md p-1.5 text-danger opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:text-danger-hover"
           aria-label="발화 삭제"
         >
           <Trash2 className="h-4 w-4" />
@@ -228,17 +271,58 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               {name}
             </span>
           )}
-          {showTimestampDisplay &&
-            segment.start != null &&
-            segment.start > 0 && (
-              <span className="text-sm text-grey-70 md:text-m">
-                {formatTime(segment.start)}
-              </span>
-            )}
-          {!showTimestamp && speakerUtteranceIndex !== undefined && (
-            <span className="text-sm text-grey-70 md:text-m">
-              #{speakerUtteranceIndex}
-            </span>
+          {canEditTime ? (
+            <SegmentTimeEditPopup
+              open={isTimePopupOpen}
+              onOpenChange={setIsTimePopupOpen}
+              segment={segment}
+              allSegments={allSegments}
+              audioDuration={audioDuration}
+              onApply={onSegmentTimeChange!}
+              triggerElement={
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleTimeTriggerClick}
+                  onKeyDown={handleTimeTriggerKeyDown}
+                  aria-label="시간 편집"
+                  className={`cursor-pointer text-grey-70 lg:hover:text-primary lg:hover:underline ${
+                    segment.start != null
+                      ? 'text-sm md:text-m'
+                      : 'text-xs md:text-sm'
+                  }`}
+                >
+                  {segment.start != null
+                    ? formatTime(segment.start)
+                    : '시간 설정'}
+                </span>
+              }
+            />
+          ) : (
+            <>
+              {showTimestampDisplay &&
+                segment.start != null &&
+                segment.start > 0 && (
+                  <span className="text-sm text-grey-70 md:text-m">
+                    {formatTime(segment.start)}
+                  </span>
+                )}
+              {!showTimestamp && speakerUtteranceIndex !== undefined && (
+                <span className="text-sm text-grey-70 md:text-m">
+                  #{speakerUtteranceIndex}
+                </span>
+              )}
+            </>
+          )}
+          {isEditable && segment.start !== null && (
+            <button
+              type="button"
+              onClick={handlePlayClick}
+              aria-label="이 발화 재생"
+              className="pointer-events-none flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-grey-70 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 lg:hover:bg-grey-30 lg:hover:text-primary"
+            >
+              <Play className="h-3.5 w-3.5" fill="currentColor" />
+            </button>
           )}
         </div>
         {isEditable ? (
@@ -249,30 +333,35 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             onTextChange={handleEditorTextChange}
             onNvChange={handleEditorNvChange}
             onDeidChange={handleEditorDeidChange}
+            speakers={speakers}
+            onSplitSegment={onSplitSegment}
           />
         ) : (
           <p
-            className={`m-0 text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
+            className={`m-0 min-h-[1lh] text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
           >
-            {hasDeid && showDeid && segment.deid
-              ? applyDeidStyling(
-                  renderTextWithNonverbal(textParts, sttModel),
-                  segment.deid
-                )
-              : renderTextWithNonverbal(textParts, sttModel)}
+            <TranscriptText
+              parts={textParts}
+              sttModel={sttModel}
+              deid={hasDeid && showDeid ? segment.deid : undefined}
+            />
           </p>
         )}
       </div>
 
-      {/* 편집 모드 세그먼트 추가 버튼 (중앙 하단) */}
+      {/* 편집 모드 세그먼트 추가 (중앙 하단, green-80 가로선 위에 + 버튼) */}
       {isEditable && onAddSegment && (
-        <button
-          onClick={handleAddSegment}
-          className="pointer-events-none absolute bottom-0 left-1/2 z-10 flex -translate-x-1/2 translate-y-1/2 items-center gap-1 rounded-md border border-primary bg-primary-subtle p-2 text-primary opacity-0 shadow-sm transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:scale-105 lg:hover:border-primary"
-          aria-label="발화 추가"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex translate-y-1/2 items-center justify-center opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100">
+          {/* 버튼 뒤로 가로지르는 선 (전체 너비의 2/5, 중앙) */}
+          <div className="absolute left-1/2 top-1/2 h-px w-2/5 -translate-x-1/2 -translate-y-1/2 bg-primary" />
+          <button
+            onClick={handleAddSegment}
+            className="relative flex items-center rounded-md border border-primary bg-primary-subtle p-1.5 text-primary shadow-subtle transition-all lg:hover:scale-105"
+            aria-label="발화 추가"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
       )}
     </div>
   );

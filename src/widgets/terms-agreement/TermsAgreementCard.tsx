@@ -28,7 +28,7 @@ export const TermsAgreementCard = ({
   onTermDetail,
 }: TermsAgreementCardProps) => {
   return (
-    <div className="flex min-h-screen w-full flex-col justify-center gap-24 rounded-2xl bg-surface px-4 py-8 shadow-sm md:px-12 lg:h-[845px] lg:min-h-full lg:max-w-[706px] lg:px-20">
+    <div className="flex min-h-screen w-full flex-col justify-center gap-24 rounded-2xl bg-surface px-4 py-8 shadow-subtle md:px-12 lg:h-[845px] lg:min-h-full lg:max-w-[706px] lg:px-20">
       {/* 타이틀 */}
       <div className="flex flex-col gap-4 text-center">
         <h2 className="text-xl font-emphasize text-grey-100 md:text-4xl">

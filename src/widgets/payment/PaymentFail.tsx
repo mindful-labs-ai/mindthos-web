@@ -18,9 +18,9 @@ export const PaymentFail = () => {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md p-6">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-danger-subtle">
             <svg
-              className="h-8 w-8 text-red-600"
+              className="h-8 w-8 text-danger"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -34,11 +34,11 @@ export const PaymentFail = () => {
 
           <div>
             <Title className="typo-xl font-headline">카드 등록 실패</Title>
-            <Text className="mt-2 text-gray-600">
+            <Text className="mt-2 text-grey-90">
               {errorMessage || '카드 등록 중 오류가 생겼어요.'}
             </Text>
             {errorCode && (
-              <Text className="typo-sm mt-1 text-gray-500">
+              <Text className="typo-sm mt-1 text-grey-80">
                 에러 코드: {errorCode}
               </Text>
             )}

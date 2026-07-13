@@ -158,9 +158,9 @@ export const PaymentSuccess = () => {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md p-6">
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-20">
             <svg
-              className="h-8 w-8 text-green-600"
+              className="h-8 w-8 text-green-80"
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -176,7 +176,7 @@ export const PaymentSuccess = () => {
             <Title className="typo-xl font-headline">
               {planId ? '플랜 변경 처리 중' : '카드 등록 처리 중'}
             </Title>
-            <Text className="mt-2 text-gray-600">
+            <Text className="mt-2 text-grey-90">
               {isLoading
                 ? planId
                   ? '결제를 준비하고 있어요. 잠시만 기다려 주세요.'

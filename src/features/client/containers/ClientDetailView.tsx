@@ -147,10 +147,10 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                 key={label}
                 type="button"
                 onClick={onClick}
-                className={`flex h-9 flex-shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-[#D6D8E1] px-4 text-sm font-headline transition-colors ${
+                className={`flex h-9 flex-shrink-0 items-center justify-center whitespace-nowrap rounded-lg border border-grey-40 px-4 text-sm font-headline transition-colors ${
                   isActive
                     ? 'bg-white text-grey-100'
-                    : 'bg-[#FAFBFF] text-[#BABCC7]'
+                    : 'bg-grey-10 text-grey-60'
                 }`}
               >
                 {label}
@@ -172,7 +172,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
           ) : (
             <div className="px-4 py-4 md:px-10 md:py-6">
               {/* 아코디언 내담자 정보 */}
-              <div className="mb-6 rounded-xl border border-grey-30 bg-white">
+              <div className="mb-6 rounded-lg border border-grey-30 bg-white">
                 <button
                   type="button"
                   onClick={() => setIsInfoOpen(!isInfoOpen)}
@@ -278,7 +278,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                 type="button"
                 aria-label="내담자 목록으로"
                 onClick={() => navigateWithUtm(ROUTES.CLIENTS)}
-                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-[#D6D8E1] bg-[#FAFBFF] text-[#9C9EA6] transition-colors lg:hover:bg-grey-20"
+                className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-grey-40 bg-grey-10 text-grey-70 transition-colors lg:hover:bg-grey-20"
               >
                 <ChevronLeft size={22} />
               </button>
@@ -298,10 +298,10 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                     key={label}
                     type="button"
                     onClick={onClick}
-                    className={`flex h-[42px] items-center justify-center rounded-lg border border-[#D6D8E1] px-[22px] text-m font-headline transition-colors ${
+                    className={`flex h-[42px] items-center justify-center rounded-lg border border-grey-40 px-[22px] text-m font-headline transition-colors ${
                       isActive
                         ? 'bg-white text-grey-100'
-                        : 'bg-[#FAFBFF] text-[#BABCC7] lg:hover:text-grey-80'
+                        : 'bg-grey-10 text-grey-60 lg:hover:text-grey-80'
                     }`}
                   >
                     {label}
@@ -351,14 +351,14 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
 
                 {/* 우측: 클라이언트 정보 카드 */}
                 <div className="sticky top-0 h-fit">
-                  <div className="rounded-2xl border border-[#D6D8E1] bg-white p-6 text-left">
+                  <div className="rounded-2xl border border-grey-40 bg-white p-6 text-left">
                     <div className="mb-6 flex items-center justify-between">
-                      <h2 className="text-m font-medium text-[#9C9EA6]">
+                      <h2 className="text-m font-medium text-grey-70">
                         클라이언트 정보
                       </h2>
                       <button
                         onClick={onEditClientClick}
-                        className="rounded-lg border border-[#EDEFF6] px-3.5 py-1.5 text-m font-medium text-[#9C9EA6] transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-80"
+                        className="rounded-lg border border-grey-30 px-3.5 py-1.5 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-80"
                       >
                         편집
                       </button>

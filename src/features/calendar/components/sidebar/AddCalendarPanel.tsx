@@ -26,14 +26,14 @@ export function AddCalendarPanel({
     <div className="flex h-full flex-col">
       {/* 헤더 */}
       <div className="flex items-center justify-between px-5 pb-4 pt-7">
-        <h2 className="text-sm font-emphasize text-[#222121]">
+        <h2 className="text-sm font-emphasize text-grey-100">
           캘린더 추가하기
         </h2>
         <button
           type="button"
           aria-label="닫기"
           onClick={onClose}
-          className="text-[#8b8c93]"
+          className="text-grey-70"
         >
           <X size={24} strokeWidth={2} />
         </button>

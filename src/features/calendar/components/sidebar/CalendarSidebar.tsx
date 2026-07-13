@@ -25,7 +25,7 @@ interface CalendarSidebarProps {
   onConnectGoogle?: () => void;
 }
 
-const Divider = () => <div className="border-t border-[#ecedf3]" />;
+const Divider = () => <div className="border-t border-grey-30" />;
 
 /** 우측 사이드탭 — 일정추가/미니달력/표시토글/나의캘린더/연동카드 */
 export function CalendarSidebar({

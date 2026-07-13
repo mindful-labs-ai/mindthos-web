@@ -58,7 +58,7 @@ export function MobileFilterSheet({
         )}
         {hasConnectedCalendars && (
           <>
-            <div className="border-t border-[#ecedf3]" />
+            <div className="border-t border-grey-30" />
             <MyCalendars
               categories={categories}
               categoryVisible={categoryVisible}

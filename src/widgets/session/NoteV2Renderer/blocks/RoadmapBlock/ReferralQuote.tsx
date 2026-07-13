@@ -10,7 +10,7 @@ interface ReferralQuoteProps {
 
 export function ReferralQuote({ value, editable }: ReferralQuoteProps) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-green-40 bg-gradient-to-br from-green-20 via-green-10 to-white p-3 shadow-sm">
+    <div className="relative overflow-hidden rounded-lg border border-green-40 bg-gradient-to-br from-green-20 via-green-10 to-white p-3 shadow-subtle">
       <div className="relative flex flex-col gap-2">
         <div className="note-card-title flex items-center gap-1.5">
           <UserPlusIcon size={14} />
