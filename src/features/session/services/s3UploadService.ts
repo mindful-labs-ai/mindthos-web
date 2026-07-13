@@ -89,6 +89,32 @@ function determineContentType(file: File): string {
   return 'audio/mpeg';
 }
 
+// 서버 DTO(create-upload-url.request.ts)의 @MaxLength(255)와 동일한 상한.
+const MAX_UPLOAD_FILENAME_LENGTH = 255;
+
+/**
+ * presign 요청에 실을 파일명 정규화.
+ * 백엔드는 파일명에서 확장자만 추출해 S3 키를 만들므로 본문 변형은 안전하다.
+ * - NFC 정규화: macOS가 주는 NFD(자모 분해) 한글은 같은 이름도 코드유닛이
+ *   2~3배로 계산돼 서버 길이 검증(400)에 걸리기 쉽다.
+ * - 255자 상한: 초과분은 확장자를 보존한 채 본문을 자른다.
+ */
+function sanitizeFilenameForUpload(name: string): string {
+  const normalized = (name.normalize('NFC').trim().split('/').pop() ?? '')
+    // 제어문자는 JSON 전송·로깅에서 문제만 일으키므로 제거
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f]/g, '');
+  const base = normalized || 'audio';
+  if (base.length <= MAX_UPLOAD_FILENAME_LENGTH) {
+    return base;
+  }
+  const extension = /\.[^.]+$/.exec(base)?.[0] ?? '';
+  return (
+    base.slice(0, Math.max(1, MAX_UPLOAD_FILENAME_LENGTH - extension.length)) +
+    extension
+  );
+}
+
 /**
  * 백엔드에서 Presigned URL 요청 — STT 백엔드 포트로 위임.
  */
@@ -245,10 +271,10 @@ export async function uploadAudioToS3(
     // 파일 타입이 비어있거나 신뢰할 수 없는 경우를 대비한 매핑
     const contentType = determineContentType(file);
 
-    // 4. 백엔드에서 Presigned URL 받기
+    // 4. 백엔드에서 Presigned URL 받기 (파일명은 서버 검증에 맞게 정규화)
     const { presigned_url, s3_key, public_url } = await getPresignedUrl(
       user_id,
-      file.name,
+      sanitizeFilenameForUpload(file.name),
       contentType
     );
 
