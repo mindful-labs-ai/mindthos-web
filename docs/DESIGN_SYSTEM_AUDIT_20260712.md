@@ -85,6 +85,16 @@ Primitive (기획 원본 hex) → Semantic (역할 매핑) → Tailwind 유틸�
 ~~P2-4 라디우스 갭~~ → **해소** (xs/2xl 편입, 전 스케일 토큰 참조)
 ~~P3-8 반복 그림자~~ → **해소** (`shadow-modal` 토큰)
 
+### P1 — 코드리뷰에서 확인된 시스템 결함 (기존 버그)
+
+0. **`var()` 색상 + 알파 수정자 CSS 미생성**: Tailwind v3는 `var(--x)` 형태 색상에
+   `/알파` 수정자를 적용할 수 없어 `bg-primary/10`·`bg-accent/10`·`bg-orange-100/10` 등
+   **13개 파일의 클래스가 처음부터 생성되지 않음** (Button accent hover, Chip
+   primary/accent 톤 배경, 편집기 deid 칩 배경 등 조용한 스타일 누락).
+   수정 방법: ① 알파 포함 토큰(`--color-primary-tint` 방식 — 캘린더에 적용 완료) 또는
+   ② 팔레트를 `rgb(var(--x-rgb) / <alpha-value>)` 채널 방식 전환.
+   고치면 의도한 배경이 처음 나타나는 시각 변화 → 디자인 확인 후 진행.
+
 ### P2 — 시스템 편입 후보 (판단 필요)
 
 1. **화자 아바타 팔레트**: `getSpeakerInfo.ts`의 10색 로테이션 + 역할색이 raw 팔레트 클래스.
