@@ -10,6 +10,12 @@ Mindthos Web is a Vite + React application. The repo is organized as follows:
 - 단위 테스트는 대상 파일 옆(`Button.test.tsx`, `__tests__/`)에 두고
   `src/test/setup.ts`에서 공통 설정을 불러옵니다.
 
+# Branch Naming
+
+- 새 작업 브랜치와 PR head 브랜치는 반드시 `feature/`로 시작합니다.
+- 형식은 `feature/<kebab-case-summary>`를 사용합니다.
+- 변경 유형(`fix`, `refactor`, `chore` 등)은 branch prefix가 아니라 commit prefix로 표현합니다.
+
 # Build and Test Instructions
 
 - **Setup**: 한 번 `pnpm install`을 실행하고 `.env.local`을 준비합니다.

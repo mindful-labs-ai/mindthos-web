@@ -68,6 +68,7 @@ async function requestCore<T>(
 
   const res = await fetch(`${API_BASE}${BASE_PATH}${path}`, {
     method: options.method ?? 'GET',
+    credentials: 'include',
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
