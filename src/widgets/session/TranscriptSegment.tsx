@@ -338,7 +338,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
           />
         ) : (
           <p
-            className={`m-0 text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
+            className={`m-0 min-h-[1lh] text-sm leading-relaxed text-grey-100 md:text-m ${isActive ? 'font-emphasize' : ''}`}
           >
             <TranscriptText
               parts={textParts}

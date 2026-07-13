@@ -788,7 +788,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
               setCaretPos(null);
               setHasSelection(false);
             }}
-            className={`m-0 w-full border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none md:text-m ${
+            className={`m-0 min-h-[1lh] w-full border-0 bg-transparent p-0 text-sm leading-relaxed text-grey-100 outline-none md:text-m ${
               isActive ? 'font-emphasize' : ''
             }`}
           />
