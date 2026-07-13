@@ -12,6 +12,7 @@ import type { TranscribeSegment } from '@/features/session/types';
 // ── 칩 스타일 ──
 
 const NV_CHIP_STYLES: Record<string, string> = {
+  S: 'bg-gray-100 text-gray-700 border-gray-300', // 침묵 - 회색
   A: 'bg-blue-100 text-blue-700 border-blue-300',
   E: 'bg-amber-100 text-amber-700 border-amber-300',
 };
@@ -49,7 +50,12 @@ function buildSegmentHtml(
     }
     html = html.replace(/⟪nv:([^⟫]+)⟫/g, (_, key) => {
       const label = nvMap.get(key) || key;
-      const tagType = key.startsWith('e') ? 'E' : 'A';
+      // 접두: e→감정(E), s→침묵(S), 그 외→액션(A) (뷰 렌더와 동일 매핑)
+      const tagType = key.startsWith('e')
+        ? 'E'
+        : key.startsWith('s')
+          ? 'S'
+          : 'A';
       const style = NV_CHIP_STYLES[tagType] || NV_CHIP_STYLES.A;
       return `<span data-chip="nv" data-nv-key="${escapeHtml(key)}" data-tag-type="${tagType}" contenteditable="false" class="mx-0.5 inline-flex cursor-pointer items-center rounded-md border px-1.5 py-0.5 align-middle text-xs font-medium ${style}">${escapeHtml(label)}</span>`;
     });

@@ -211,7 +211,10 @@ const CouponBoxModal: React.FC<CouponBoxModalProps> = ({
       {isMobileView ? (
         <>
           {/* 헤더 */}
-          <MobileModalHeader title="나의 쿠폰함" onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title="나의 쿠폰함"
+            onBack={() => onOpenChange(false)}
+          />
 
           {/* 콘텐츠 */}
           <div className="flex-1 overflow-y-auto px-4 py-4 md:px-10 md:py-6">

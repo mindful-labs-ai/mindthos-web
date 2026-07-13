@@ -26,7 +26,20 @@ export type S3UploadErrorCode =
   | 'NETWORK_ERROR' // 네트워크 오류
   | 'DURATION_EXTRACTION_FAILED'; // 오디오 길이 추출 실패
 
-export interface S3UploadError {
-  code: S3UploadErrorCode;
-  message: string;
+/**
+ * Error 서브클래스여야 한다 — 호출부(useMultiSessionCreate 등)의
+ * `error instanceof Error` 분기에서 plain object는 메시지가 '알 수 없는 오류'로
+ * 뭉개져 화면·Mixpanel 양쪽에서 실제 실패 원인이 유실된다.
+ */
+export class S3UploadError extends Error {
+  readonly code: S3UploadErrorCode;
+  /** 일시적 실패(네트워크 단절, 5xx 등) 여부 — S3 PUT 재시도 판단에 사용 */
+  readonly retryable: boolean;
+
+  constructor(code: S3UploadErrorCode, message: string, retryable = false) {
+    super(message);
+    this.name = 'S3UploadError';
+    this.code = code;
+    this.retryable = retryable;
+  }
 }

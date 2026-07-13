@@ -7,14 +7,11 @@
  * - 프론트엔드는 제한된 시간의 업로드 권한을 가진 Presigned URL만 사용
  */
 
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { sttBackend } from '@/shared/api/adapters/stt';
 import { FILE_UPLOAD_LIMITS } from '@/shared/constants/fileUpload';
 
+import { S3UploadError } from '../types/s3Upload.types';
 import type {
-  S3UploadError,
   UploadToS3Request,
   UploadToS3Response,
 } from '../types/s3Upload.types';
@@ -34,6 +31,16 @@ const SUPPORTED_EXTENSIONS = FILE_UPLOAD_LIMITS.AUDIO.FORMATS.map((ext) =>
 // 최대 파일 크기 (constants/fileUpload.ts의 설정을 따름)
 const MAX_FILE_SIZE_MB = FILE_UPLOAD_LIMITS.AUDIO.MAX_SIZE_MB;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+// S3 PUT 재시도 — 일시적 실패(네트워크 단절·5xx·429)만 대상. presigned URL은
+// 15분 유효하므로 수 초 간격 재시도에는 재발급이 필요 없다.
+const S3_PUT_MAX_ATTEMPTS = 3;
+const S3_PUT_RETRY_BASE_DELAY_MS = 1000;
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 /**
  * 파일 형식 검증
@@ -82,8 +89,34 @@ function determineContentType(file: File): string {
   return 'audio/mpeg';
 }
 
+// 서버 DTO(create-upload-url.request.ts)의 @MaxLength(255)와 동일한 상한.
+const MAX_UPLOAD_FILENAME_LENGTH = 255;
+
 /**
- * 백엔드에서 Presigned URL 요청
+ * presign 요청에 실을 파일명 정규화.
+ * 백엔드는 파일명에서 확장자만 추출해 S3 키를 만들므로 본문 변형은 안전하다.
+ * - NFC 정규화: macOS가 주는 NFD(자모 분해) 한글은 같은 이름도 코드유닛이
+ *   2~3배로 계산돼 서버 길이 검증(400)에 걸리기 쉽다.
+ * - 255자 상한: 초과분은 확장자를 보존한 채 본문을 자른다.
+ */
+function sanitizeFilenameForUpload(name: string): string {
+  const normalized = (name.normalize('NFC').trim().split('/').pop() ?? '')
+    // 제어문자는 JSON 전송·로깅에서 문제만 일으키므로 제거
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f]/g, '');
+  const base = normalized || 'audio';
+  if (base.length <= MAX_UPLOAD_FILENAME_LENGTH) {
+    return base;
+  }
+  const extension = /\.[^.]+$/.exec(base)?.[0] ?? '';
+  return (
+    base.slice(0, Math.max(1, MAX_UPLOAD_FILENAME_LENGTH - extension.length)) +
+    extension
+  );
+}
+
+/**
+ * 백엔드에서 Presigned URL 요청 — STT 백엔드 포트로 위임.
  */
 async function getPresignedUrl(
   userId: number,
@@ -95,23 +128,7 @@ async function getPresignedUrl(
   public_url: string;
   expires_in: number;
 }> {
-  try {
-    const data = await callEdgeFunction<{
-      presigned_url: string;
-      s3_key: string;
-      public_url: string;
-      expires_in: number;
-    }>(EDGE_FUNCTION_ENDPOINTS.SESSION.UPLOAD_URL, {
-      user_id: userId,
-      filename,
-      content_type: contentType,
-    });
-
-    return data;
-  } catch (error: unknown) {
-    const err = error as { message?: string };
-    throw new Error(err.message || 'Presigned URL 생성 실패');
-  }
+  return sttBackend.getUploadUrl(userId, filename, contentType);
 }
 
 /**
@@ -136,6 +153,84 @@ function extractAudioDuration(file: File): Promise<number> {
   });
 }
 
+/** HTTP 상태 기준 재시도 가능 여부 — 4xx는 같은 URL로 재시도해도 결과가 같다. */
+function isRetryableStatus(status: number): boolean {
+  return status >= 500 || status === 429 || status === 408;
+}
+
+/**
+ * Presigned URL로 S3에 단일 PUT 시도.
+ * XMLHttpRequest를 사용하여 진행률 추적. 실패는 항상 S3UploadError로 reject.
+ */
+function putFileToS3(params: {
+  presignedUrl: string;
+  file: File;
+  contentType: string;
+  onProgress?: (progress: number) => void;
+}): Promise<void> {
+  const { presignedUrl, file, contentType, onProgress } = params;
+
+  return new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    // 업로드 진행률 추적
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable && onProgress) {
+        // 20% ~ 100% 범위로 매핑
+        const percentComplete =
+          20 + Math.round((event.loaded / event.total) * 80);
+        onProgress(percentComplete);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(
+          new S3UploadError(
+            'UPLOAD_FAILED',
+            `업로드 실패: ${xhr.status} ${xhr.statusText}`,
+            isRetryableStatus(xhr.status)
+          )
+        );
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(
+        new S3UploadError(
+          'NETWORK_ERROR',
+          '네트워크 오류가 생겼어요. 인터넷 연결을 확인해 주세요.',
+          true
+        )
+      );
+    });
+
+    xhr.open('PUT', presignedUrl);
+    xhr.setRequestHeader('Content-Type', contentType);
+    xhr.send(file);
+  });
+}
+
+/** 일시적 실패(retryable)에 한해 지수적 지연을 두고 S3 PUT을 재시도한다. */
+async function putFileToS3WithRetry(
+  params: Parameters<typeof putFileToS3>[0]
+): Promise<void> {
+  for (let attempt = 1; attempt <= S3_PUT_MAX_ATTEMPTS; attempt += 1) {
+    try {
+      await putFileToS3(params);
+      return;
+    } catch (error) {
+      const failure = error as S3UploadError;
+      if (!failure.retryable || attempt === S3_PUT_MAX_ATTEMPTS) {
+        throw error;
+      }
+      await sleep(S3_PUT_RETRY_BASE_DELAY_MS * attempt);
+    }
+  }
+}
+
 /**
  * Presigned URL을 사용하여 S3에 오디오 파일 업로드
  */
@@ -147,20 +242,17 @@ export async function uploadAudioToS3(
   try {
     // 1. 파일 검증
     if (!validateFileType(file)) {
-      const error: S3UploadError = {
-        code: 'INVALID_FILE_TYPE',
-        message:
-          '지원하지 않는 파일 형식입니다. MP3, WAV, M4A 파일만 업로드 가능해요.',
-      };
-      throw error;
+      throw new S3UploadError(
+        'INVALID_FILE_TYPE',
+        '지원하지 않는 파일 형식입니다. MP3, WAV, M4A 파일만 업로드 가능해요.'
+      );
     }
 
     if (!validateFileSize(file)) {
-      const error: S3UploadError = {
-        code: 'FILE_TOO_LARGE',
-        message: `파일 크기가 너무 큽니다. 최대 ${MAX_FILE_SIZE_MB}MB까지 업로드 가능해요.`,
-      };
-      throw error;
+      throw new S3UploadError(
+        'FILE_TOO_LARGE',
+        `파일 크기가 너무 큽니다. 최대 ${MAX_FILE_SIZE_MB}MB까지 업로드 가능해요.`
+      );
     }
 
     // 2. 오디오 길이 추출 (비동기로 시도, 실패해도 계속 진행)
@@ -179,10 +271,10 @@ export async function uploadAudioToS3(
     // 파일 타입이 비어있거나 신뢰할 수 없는 경우를 대비한 매핑
     const contentType = determineContentType(file);
 
-    // 4. 백엔드에서 Presigned URL 받기
+    // 4. 백엔드에서 Presigned URL 받기 (파일명은 서버 검증에 맞게 정규화)
     const { presigned_url, s3_key, public_url } = await getPresignedUrl(
       user_id,
-      file.name,
+      sanitizeFilenameForUpload(file.name),
       contentType
     );
 
@@ -190,36 +282,12 @@ export async function uploadAudioToS3(
       onProgress(20); // Presigned URL 받음, 업로드 시작
     }
 
-    // 5. Presigned URL로 직접 PUT 요청하여 업로드
-    // XMLHttpRequest를 사용하여 진행률 추적
-    await new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      // 업로드 진행률 추적
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable && onProgress) {
-          // 20% ~ 100% 범위로 매핑
-          const percentComplete =
-            20 + Math.round((event.loaded / event.total) * 80);
-          onProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error(`업로드 실패: ${xhr.status} ${xhr.statusText}`));
-        }
-      });
-
-      xhr.addEventListener('error', () => {
-        reject(new Error('네트워크 오류가 생겼어요.'));
-      });
-
-      xhr.open('PUT', presigned_url);
-      xhr.setRequestHeader('Content-Type', contentType);
-      xhr.send(file);
+    // 5. Presigned URL로 직접 PUT 요청하여 업로드 (일시적 실패는 재시도)
+    await putFileToS3WithRetry({
+      presignedUrl: presigned_url,
+      file,
+      contentType,
+      onProgress,
     });
 
     // 5. 결과 반환
@@ -234,25 +302,27 @@ export async function uploadAudioToS3(
     };
   } catch (error) {
     // 에러 처리
-    if ((error as S3UploadError).code) {
+    if (error instanceof S3UploadError) {
       throw error;
     }
 
     if (error instanceof Error) {
       if (error.name === 'NetworkError' || error.message.includes('network')) {
-        const networkError: S3UploadError = {
-          code: 'NETWORK_ERROR',
-          message: '네트워크 오류가 생겼어요. 인터넷 연결을 확인해 주세요.',
-        };
-        throw networkError;
+        throw new S3UploadError(
+          'NETWORK_ERROR',
+          '네트워크 오류가 생겼어요. 인터넷 연결을 확인해 주세요.'
+        );
       }
     }
 
-    const uploadError: S3UploadError = {
-      code: 'UPLOAD_FAILED',
-      message: '파일 업로드 중 오류가 생겼어요.',
-    };
-    throw uploadError;
+    // presigned URL 발급 실패 등 — 서버가 준 메시지('로그인이 필요합니다.' 등)를
+    // 유실하지 않고 그대로 전달한다.
+    const originalMessage =
+      error instanceof Error && error.message ? error.message : undefined;
+    throw new S3UploadError(
+      'UPLOAD_FAILED',
+      originalMessage || '파일 업로드 중 오류가 생겼어요.'
+    );
   }
 }
 

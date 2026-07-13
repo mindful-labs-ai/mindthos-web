@@ -296,7 +296,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             hideCloseButton
             className="flex flex-col"
           >
-            <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
+            <MobileModalHeader
+              title="내담자 선택"
+              onBack={() => setIsOpen(false)}
+            />
             <div className="flex-1 space-y-2 overflow-y-auto p-4">
               {renderClientList()}
             </div>

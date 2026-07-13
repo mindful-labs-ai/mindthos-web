@@ -193,7 +193,10 @@ export const CancelSubscriptionModal: React.FC<
     >
       {isMobileView ? (
         <>
-          <MobileModalHeader title="정기 결제 중단하기" onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title="정기 결제 중단하기"
+            onBack={() => onOpenChange(false)}
+          />
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
               <p className="font-emphasize text-grey-100">

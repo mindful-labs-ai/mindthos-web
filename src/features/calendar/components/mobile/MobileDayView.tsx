@@ -2,11 +2,7 @@ import { cn } from '@/lib/cn';
 
 import { WEEKDAYS_KO, weekdayColorClass } from '../../constants';
 import type { CalendarEvent } from '../../types';
-import {
-  dayjs,
-  getWeekDays,
-  isSameDay,
-} from '../../utils/calendarDate';
+import { dayjs, getWeekDays, isSameDay } from '../../utils/calendarDate';
 import type { Dayjs } from '../../utils/calendarDate';
 import { EventBlock } from '../EventBlock';
 import { EventChip } from '../EventChip';

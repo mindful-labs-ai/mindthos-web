@@ -620,7 +620,10 @@ export const CreateMultiSessionModal: React.FC<
     >
       {/* 헤더 */}
       {isMobileView ? (
-        <MobileModalHeader title="녹음 파일 업로드하기" onBack={() => handleClose(false)} />
+        <MobileModalHeader
+          title="녹음 파일 업로드하기"
+          onBack={() => handleClose(false)}
+        />
       ) : (
         <div className="pt-4 text-center">
           <Title as="h3" className="font-headline">

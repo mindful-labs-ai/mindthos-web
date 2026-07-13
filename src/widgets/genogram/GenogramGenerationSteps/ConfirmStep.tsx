@@ -18,7 +18,9 @@ export function ConfirmStep({
 
   const creditBadge = (
     <div className="flex items-center gap-1 rounded-md bg-green-20 px-2 py-1">
-      <Text className="font-headline text-green-80">{CREDIT_COST.GENOGRAM}</Text>
+      <Text className="font-headline text-green-80">
+        {CREDIT_COST.GENOGRAM}
+      </Text>
       <svg
         width="14"
         height="14"

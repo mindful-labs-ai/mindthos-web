@@ -108,14 +108,15 @@ export function parseNvTagText(text: string, nv?: string[]): TextPart[] {
     return [{ type: 'text', content: text }];
   }
 
-  // nv 배열에서 KEY→{tagType, label} 매핑 생성
-  const nvMap = new Map<string, { tagType: 'A' | 'E'; label: string }>();
+  // nv 배열에서 KEY→{tagType, label} 매핑 생성.
+  // key 접두: e→감정(E), s→침묵(S), 그 외→액션(A). (벤더 STT가 침묵을 s 접두로 냄)
+  const nvMap = new Map<string, { tagType: 'S' | 'A' | 'E'; label: string }>();
   for (const entry of nv) {
     const colonIdx = entry.indexOf(':');
     if (colonIdx === -1) continue;
     const key = entry.slice(0, colonIdx);
     const label = entry.slice(colonIdx + 1);
-    const tagType = key.startsWith('e') ? 'E' : 'A';
+    const tagType = key.startsWith('e') ? 'E' : key.startsWith('s') ? 'S' : 'A';
     nvMap.set(key, { tagType, label });
   }
 
@@ -176,7 +177,12 @@ export function renderTextWithNonverbal(
   sttModel: string | null | undefined
 ): React.ReactNode {
   // 비언어 태그 렌더링이 필요한 모델만 칩으로 표시
-  if (sttModel !== 'gemini-3' && sttModel !== 'advanced') {
+  // (basic = 벤더 STT 기본 티어. 침묵 nv를 내므로 advanced와 동일하게 칩 렌더)
+  if (
+    sttModel !== 'gemini-3' &&
+    sttModel !== 'advanced' &&
+    sttModel !== 'basic'
+  ) {
     return parts.map((p) => p.content).join('');
   }
 

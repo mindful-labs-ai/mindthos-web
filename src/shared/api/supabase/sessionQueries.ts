@@ -10,110 +10,38 @@ import type {
   Session,
   SessionDnaListItem,
   SessionListItem,
-  SessionProcessingStatus,
   Speaker,
   Transcribe,
   TranscribeListItem,
 } from '@/features/session/types';
 import { formatSegmentText } from '@/features/session/utils/formatSegmentText';
 import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { sttBackend } from '@/shared/api/adapters/stt';
+import type { SessionStatusResult } from '@/shared/api/adapters/stt/sttBackendPort';
 
-export interface SessionStatusResponse {
-  success: boolean;
-  session_id: string;
-  processing_status: SessionProcessingStatus;
-  transcribe_id?: string;
-  progress_note_id?: string;
-  error_message?: string;
-  progress_percentage?: number;
-  current_step?: string;
-  estimated_completion_time?: string;
-}
-
-/** 잔액 부족(402) 분기 식별용 에러. UI 레이어에서 instanceof 로 분기. */
-export class InsufficientCreditError extends Error {
-  constructor(message = '크레딧이 부족해요.') {
-    super(message);
-    this.name = 'InsufficientCreditError';
-  }
-}
+/** 잔액 부족(402) 분기 식별용 에러 — 포트로 이동, instanceof 호환을 위해 재-export. */
+export { InsufficientCreditError } from '@/shared/api/adapters/stt';
+export type { SessionStatusResult } from '@/shared/api/adapters/stt';
 
 /**
- * 백그라운드 세션 생성 API 호출
- * Vercel API 라우트를 통해 CORS 문제 없이 호출.
- * 사용자 JWT를 Authorization 헤더로 전달 → api/session/create.ts 가 그대로 mavo-api 로 forwarding.
+ * 백그라운드 세션 생성 API 호출.
+ * 실제 백엔드 경로는 STT 백엔드 포트(sttBackend)가 결정한다
+ * (현행: Vercel 라우트 경유 mavo-api / 이관 후: mindthos-server).
  */
 export async function createSessionBackground(
   request: CreateSessionBackgroundRequest
 ): Promise<CreateSessionBackgroundResponse> {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const accessToken = session?.access_token;
-
-  const response = await fetch('/api/session/create', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-    body: JSON.stringify({
-      ...request,
-      title: request.title.slice(0, 50),
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const detail =
-      errorData.message ??
-      errorData.error ??
-      (Array.isArray(errorData.details)
-        ? errorData.details.join(', ')
-        : undefined) ??
-      `세션 작성 실패: ${response.statusText}`;
-
-    if (response.status === 402) {
-      throw new InsufficientCreditError(detail);
-    }
-    throw new Error(detail);
-  }
-
-  const data: CreateSessionBackgroundResponse = await response.json();
-
-  if (data.status !== 'accepted') {
-    throw new Error(data.message || '세션 작성 중 오류가 생겼어요.');
-  }
-
-  return data;
+  return sttBackend.createAudioSession(request);
 }
 
 /**
- * 세션 처리 상태 확인 API 호출
+ * 세션 처리 상태 조회 — STT 백엔드 포트로 위임.
+ * 플래그(VITE_USE_SERVER_STT)에 따라 서버(소유권 검사 포함) 또는 EF 경로 사용.
  */
 export async function getSessionStatus(
   sessionId: string
-): Promise<SessionStatusResponse> {
-  try {
-    const data = await callEdgeFunction<SessionStatusResponse>(
-      EDGE_FUNCTION_ENDPOINTS.SESSION.STATUS(sessionId),
-      null,
-      {
-        method: 'GET',
-      }
-    );
-
-    return data;
-  } catch (error: unknown) {
-    const err = error as { message?: string; statusText?: string };
-    throw new Error(
-      err.message || `세션 상태 확인 실패: ${err.statusText || ''}`
-    );
-  }
+): Promise<SessionStatusResult> {
+  return sttBackend.getSessionStatus(sessionId);
 }
 
 // ============================================================================
@@ -529,29 +457,10 @@ export async function getSessionDetail(sessionId: string): Promise<{
 }
 
 /**
- * 오디오 Presigned URL 생성 API 호출
+ * 오디오 Presigned URL 생성 API 호출 — STT 백엔드 포트로 위임.
  */
 export async function getAudioPresignedUrl(sessionId: string): Promise<string> {
-  try {
-    const data = await callEdgeFunction<{
-      success: boolean;
-      presigned_url: string;
-      message?: string;
-    }>(EDGE_FUNCTION_ENDPOINTS.SESSION.PRESIGNED_URL, {
-      session_id: sessionId,
-    });
-
-    if (!data.success || !data.presigned_url) {
-      throw new Error(data.message || 'Presigned URL을 가져올 수 없어요.');
-    }
-
-    return data.presigned_url;
-  } catch (error: unknown) {
-    const err = error as { message?: string; statusText?: string };
-    throw new Error(
-      err.message || `Presigned URL 생성 실패: ${err.statusText || ''}`
-    );
-  }
+  return sttBackend.getAudioPlaybackUrl(sessionId);
 }
 
 /**
@@ -1130,28 +1039,10 @@ export async function updateHandwrittenTranscribeContent(
 }
 
 /**
- * 직접 입력 세션 생성 API 호출
- * Edge Function을 통해 축어록 직접 입력 후 상담노트 생성
+ * 직접 입력 세션 생성 API 호출 — STT 백엔드 포트로 위임.
  */
 export async function createHandWrittenSession(
   request: CreateHandWrittenSessionRequest
 ): Promise<CreateHandWrittenSessionResponse> {
-  try {
-    const data = await callEdgeFunction<CreateHandWrittenSessionResponse>(
-      EDGE_FUNCTION_ENDPOINTS.SESSION.HAND_WRITTEN,
-      { ...request, title: request.title.slice(0, 50) }
-    );
-
-    if (!data.success) {
-      throw new Error(data.message || '직접 입력 상담 기록을 만들지 못했어요.');
-    }
-
-    return data;
-  } catch (error: unknown) {
-    const err = error as { message?: string; status?: number };
-    throw {
-      status: err.status || 500,
-      message: err.message || '직접 입력 세션 생성 중 오류가 생겼어요.',
-    };
-  }
+  return sttBackend.createHandWrittenSession(request);
 }

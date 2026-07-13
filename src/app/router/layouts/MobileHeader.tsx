@@ -203,7 +203,10 @@ function GenogramClientButton() {
         hideCloseButton
         className="flex flex-col"
       >
-        <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
+        <MobileModalHeader
+          title="내담자 선택"
+          onBack={() => setIsOpen(false)}
+        />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <MobileAddClientButton
             onClick={handleOpenAddClient}
@@ -320,7 +323,10 @@ function HeaderClientSelectButton() {
         hideCloseButton
         className="flex flex-col"
       >
-        <MobileModalHeader title="내담자 선택" onBack={() => setIsOpen(false)} />
+        <MobileModalHeader
+          title="내담자 선택"
+          onBack={() => setIsOpen(false)}
+        />
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <MobileAddClientButton
             onClick={handleOpenAddClient}

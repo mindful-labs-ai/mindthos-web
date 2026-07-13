@@ -266,7 +266,10 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <MobileModalHeader title="크레딧 충전하기" onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title="크레딧 충전하기"
+            onBack={() => onOpenChange(false)}
+          />
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
               <p className="text-l font-emphasize text-grey-100">

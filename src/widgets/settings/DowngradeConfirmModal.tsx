@@ -222,7 +222,10 @@ export const DowngradeConfirmModal: React.FC<DowngradeConfirmModalProps> = ({
     >
       {isMobileView ? (
         <>
-          <MobileModalHeader title="플랜 변경" onBack={() => onOpenChange(false)} />
+          <MobileModalHeader
+            title="플랜 변경"
+            onBack={() => onOpenChange(false)}
+          />
           <div className="flex-1 overflow-y-auto px-4 py-6 md:px-10">
             <div className="mb-8 text-center">
               <p className="font-emphasize text-grey-100">
