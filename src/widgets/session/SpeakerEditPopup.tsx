@@ -208,6 +208,32 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     }
   };
 
+  // 화자가 정확히 둘일 때(예: 상담사·내담자) 전체 맞바꾸기 (A↔B)
+  const canSwap = speakers.length === 2;
+  const handleSwapSpeakers = async () => {
+    if (!canSwap) return;
+    const [a, b] = speakers;
+    setIsApplying(true);
+    try {
+      const speakerChanges: Record<number, number> = {};
+      allSegments.forEach((seg) => {
+        if (seg.speaker === a.id) speakerChanges[seg.id] = b.id;
+        else if (seg.speaker === b.id) speakerChanges[seg.id] = a.id;
+      });
+      await onApply({ speakerChanges, speakerDefinitions: speakers });
+      trackEvent(MixpanelEvent.SpeakerEditApply, {
+        range: 'swap',
+        selection_type: 'swap',
+        affected_segments_count: Object.keys(speakerChanges).length,
+      });
+      onOpenChange(false);
+    } catch {
+      // 에러는 부모 컴포넌트에서 처리 (toast 표시)
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   const popupContent = (
     <div className="space-y-4 p-4">
       {/* Section 1: 참석자 선택 */}
@@ -284,6 +310,25 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
           </div>
         )}
       </div>
+
+      {/* Section 3: 화자 맞바꾸기 (화자가 둘일 때만) */}
+      {canSwap && (
+        <div className="border-t border-grey-20 pt-3">
+          <Text className="typo-sm mb-2 font-emphasize text-fg">
+            화자 맞바꾸기
+          </Text>
+          <Button
+            variant="outline"
+            tone="neutral"
+            onClick={handleSwapSpeakers}
+            disabled={isApplying}
+            className="w-full"
+          >
+            {getSpeakerDisplayName(speakers[0])} ↔{' '}
+            {getSpeakerDisplayName(speakers[1])} 전체 전환
+          </Button>
+        </div>
+      )}
 
       {/* 적용 버튼 */}
       <Button
