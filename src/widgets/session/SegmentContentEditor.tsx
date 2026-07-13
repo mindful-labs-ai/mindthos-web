@@ -475,6 +475,13 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         setCanSplitHere(false);
       }, [rangeCanSplit]);
 
+      // mouseup 시점엔 브라우저가 아직 선택을 확정하기 전일 수 있음
+      // (기존 드래그 선택 내부 클릭 → 캐럿 접힘이 mouseup 이후 발생) —
+      // 한 틱 뒤에 측정해 메뉴가 이전 드래그 상태로 멈추는 문제 방지
+      const saveSelectionDeferred = useCallback(() => {
+        window.setTimeout(saveSelection, 0);
+      }, [saveSelection]);
+
       // 저장된 range → 저장텍스트 분리 경계 계산
       const computeOffsets = useCallback((): {
         boundaries: number[];
@@ -804,7 +811,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             onKeyUp={saveSelection}
-            onMouseUp={saveSelection}
+            onMouseUp={saveSelectionDeferred}
             onClick={handleClick}
             onBlur={() => {
               setCaretPos(null);
