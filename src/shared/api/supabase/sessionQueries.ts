@@ -18,6 +18,8 @@ import { formatSegmentText } from '@/features/session/utils/formatSegmentText';
 import { supabase } from '@/lib/supabase';
 import { sttBackend } from '@/shared/api/adapters/stt';
 import type { SessionStatusResult } from '@/shared/api/adapters/stt/sttBackendPort';
+import { ServerApiError } from '@/shared/api/server/serverClient';
+import { deleteSession as deleteSessionOnServer } from '@/shared/api/server/sessionServerApi';
 
 /** 잔액 부족(402) 분기 식별용 에러 — 포트로 이동, instanceof 호환을 위해 재-export. */
 export { InsufficientCreditError } from '@/shared/api/adapters/stt';
@@ -990,16 +992,19 @@ export async function deleteTranscriptSegment(
 }
 
 /**
- * 세션 삭제 API 호출
+ * 세션 삭제 API 호출 — 서버(mindthos-server)로 위임한다.
+ *
+ * PostgREST 직접 DELETE는 sessions row만 지워서 축어록·상담노트·STT job을 고아로 남기고
+ * held 크레딧을 풀지 못했다. 서버 API는 진행 중 AI 작업 취소까지 한 트랜잭션으로 처리한다.
+ * 호출부 시그니처는 그대로라 화면 코드는 바뀌지 않는다.
  */
 export async function deleteSession(sessionId: string): Promise<void> {
-  const { error } = await supabase
-    .from('sessions')
-    .delete()
-    .eq('id', sessionId);
-
-  if (error) {
-    throw new Error(`세션 삭제 실패: ${error.message}`);
+  try {
+    await deleteSessionOnServer(sessionId);
+  } catch (error) {
+    const message =
+      error instanceof ServerApiError ? error.message : String(error);
+    throw new Error(`세션 삭제 실패: ${message}`);
   }
 }
 
