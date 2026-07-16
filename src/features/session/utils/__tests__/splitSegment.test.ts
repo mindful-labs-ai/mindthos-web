@@ -11,15 +11,13 @@ const seg = (
 ) => ({ id, start: null, end: null, text, speaker, ...extra });
 
 const make = (segments: unknown[]): Contents =>
-  ({ segments } as unknown as Contents);
+  ({ segments }) as unknown as Contents;
 
 describe('splitSegmentByBoundaries', () => {
   it('3분할 (화자 전환): 선택=B, 앞·뒤=A', () => {
     // "AAA BBB CCC" — BBB(4..7)를 화자1로
     const c = make([seg(1, 'AAA BBB CCC', 0)]);
-    const out = getSegments(
-      splitSegmentByBoundaries(c, 1, [4, 7], [0, 1, 0])
-    );
+    const out = getSegments(splitSegmentByBoundaries(c, 1, [4, 7], [0, 1, 0]));
     expect(out.map((s) => [s.id, s.text, s.speaker])).toEqual([
       [1, 'AAA', 0],
       [2, 'BBB', 1],

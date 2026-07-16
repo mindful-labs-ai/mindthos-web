@@ -36,10 +36,16 @@ describe('useTranscriptCopy.handleCopyTranscript', () => {
   });
 
   it('화자명과 화자별 발언 번호로 포맷한다 (화자별 카운터 독립 누적)', async () => {
-    const { result } = renderHook(() => useTranscriptCopy({ isReadOnly: false }));
+    const { result } = renderHook(() =>
+      useTranscriptCopy({ isReadOnly: false })
+    );
     await act(() =>
       result.current.handleCopyTranscript(
-        [seg(0, 0, '어서오세요'), seg(1, 1, '안녕하세요'), seg(2, 0, '오늘 어땠나요')],
+        [
+          seg(0, 0, '어서오세요'),
+          seg(1, 1, '안녕하세요'),
+          seg(2, 0, '오늘 어땠나요'),
+        ],
         speakers,
         false
       )
@@ -50,7 +56,9 @@ describe('useTranscriptCopy.handleCopyTranscript', () => {
   });
 
   it('익명화 모드에서는 화자명을 제외한다', async () => {
-    const { result } = renderHook(() => useTranscriptCopy({ isReadOnly: false }));
+    const { result } = renderHook(() =>
+      useTranscriptCopy({ isReadOnly: false })
+    );
     await act(() =>
       result.current.handleCopyTranscript([seg(0, 0, '안녕')], speakers, true)
     );
@@ -58,7 +66,9 @@ describe('useTranscriptCopy.handleCopyTranscript', () => {
   });
 
   it('비언어 태그를 (라벨)로 치환한다 — advanced·legacy 모두', async () => {
-    const { result } = renderHook(() => useTranscriptCopy({ isReadOnly: false }));
+    const { result } = renderHook(() =>
+      useTranscriptCopy({ isReadOnly: false })
+    );
     await act(() =>
       result.current.handleCopyTranscript(
         [
@@ -78,7 +88,9 @@ describe('useTranscriptCopy.handleCopyTranscript', () => {
     const segments = [
       seg(0, 1, '⟪deid:d1|정미연⟫ 씨가 왔다.', { deid: { d1: '인물1' } }),
     ];
-    const { result } = renderHook(() => useTranscriptCopy({ isReadOnly: false }));
+    const { result } = renderHook(() =>
+      useTranscriptCopy({ isReadOnly: false })
+    );
 
     await act(() =>
       result.current.handleCopyTranscript(segments, speakers, false, true)
@@ -92,7 +104,9 @@ describe('useTranscriptCopy.handleCopyTranscript', () => {
   });
 
   it('읽기 전용이면 복사하지 않고 안내 토스트를 띄운다', async () => {
-    const { result } = renderHook(() => useTranscriptCopy({ isReadOnly: true }));
+    const { result } = renderHook(() =>
+      useTranscriptCopy({ isReadOnly: true })
+    );
     await act(() =>
       result.current.handleCopyTranscript([seg(0, 0, '안녕')], speakers, false)
     );
@@ -104,7 +118,9 @@ describe('useTranscriptCopy.handleCopyTranscript', () => {
 
   it('클립보드 실패 시 실패 토스트를 띄운다', async () => {
     writeText.mockRejectedValueOnce(new Error('denied'));
-    const { result } = renderHook(() => useTranscriptCopy({ isReadOnly: false }));
+    const { result } = renderHook(() =>
+      useTranscriptCopy({ isReadOnly: false })
+    );
     await act(() =>
       result.current.handleCopyTranscript([seg(0, 0, '안녕')], speakers, false)
     );

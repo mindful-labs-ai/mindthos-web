@@ -34,7 +34,9 @@ describe('buildSegmentHtml — 태그 → 칩 HTML', () => {
 
   it('deid: showDeid ON은 라벨 칩, OFF는 인라인 원본 스팬을 만든다', () => {
     const deid = { d1: '인물1' };
-    const on = toDom(buildSegmentHtml('⟪deid:d1|정미연⟫', undefined, deid, true));
+    const on = toDom(
+      buildSegmentHtml('⟪deid:d1|정미연⟫', undefined, deid, true)
+    );
     const onChip = on.querySelector<HTMLElement>('[data-chip="deid"]');
     expect(onChip!.textContent).toBe('인물1');
     expect(onChip!.dataset.deidOriginal).toBe('정미연');

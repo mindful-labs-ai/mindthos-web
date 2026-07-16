@@ -296,8 +296,7 @@ function escapeRegExp(str: string): string {
  * 태그 토큰: 신규 nv(⟪nv:...⟫), deid(⟪deid:...⟫), 레거시 비언어({%S%} 등)
  * 이 토큰 "안"은 절대 치환하지 않음 — 태그 키·deid 원문 보호
  */
-const TAG_TOKEN_REGEX =
-  /⟪nv:[^⟫]+⟫|⟪deid:[^⟫]+⟫|\{%[SAEO]%(?:[^%]+%)?}/g;
+const TAG_TOKEN_REGEX = /⟪nv:[^⟫]+⟫|⟪deid:[^⟫]+⟫|\{%[SAEO]%(?:[^%]+%)?}/g;
 
 /**
  * 저장 텍스트에서 태그 토큰을 건너뛰고 일반 텍스트 구간만 치환

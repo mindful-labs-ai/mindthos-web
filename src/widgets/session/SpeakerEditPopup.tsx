@@ -77,8 +77,7 @@ export const SpeakerEditPopup: React.FC<SpeakerEditPopupProps> = ({
     return allSegments
       .map((seg, idx) => ({ seg, idx }))
       .filter(
-        ({ seg, idx }) =>
-          idx >= currentIndex && seg.speaker === segment.speaker
+        ({ seg, idx }) => idx >= currentIndex && seg.speaker === segment.speaker
       )
       .map(({ seg, idx }) => {
         const preview =
