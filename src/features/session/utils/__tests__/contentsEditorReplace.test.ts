@@ -78,7 +78,11 @@ describe('replaceInStoredText (태그 안전 치환)', () => {
 });
 
 describe('findReplaceAllSegments', () => {
-  const segments = [seg(1, '정민이 왔다'), seg(2, '아무개'), seg(3, '정민 정민')];
+  const segments = [
+    seg(1, '정민이 왔다'),
+    seg(2, '아무개'),
+    seg(3, '정민 정민'),
+  ];
 
   it('매치된 세그먼트만 edits에 담고 총 횟수를 반환한다', () => {
     const { edits, totalCount } = findReplaceAllSegments(
@@ -101,13 +105,15 @@ describe('countMatchesInSegments', () => {
 
 describe('replaceNthInStoredText (하나씩 치환)', () => {
   it('n번째 매치 하나만 치환한다', () => {
-    expect(replaceNthInStoredText('정민 정민 정민', '정민', '경민', 1)).toEqual({
-      text: '정민 경민 정민',
-      replaced: true,
-    });
-    expect(replaceNthInStoredText('정민 정민 정민', '정민', '경민', 0).text).toBe(
-      '경민 정민 정민'
+    expect(replaceNthInStoredText('정민 정민 정민', '정민', '경민', 1)).toEqual(
+      {
+        text: '정민 경민 정민',
+        replaced: true,
+      }
     );
+    expect(
+      replaceNthInStoredText('정민 정민 정민', '정민', '경민', 0).text
+    ).toBe('경민 정민 정민');
   });
 
   it('태그 밖 기준으로 카운트하며 토큰은 보호한다', () => {

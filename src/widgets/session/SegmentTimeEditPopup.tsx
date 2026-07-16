@@ -147,7 +147,11 @@ export const SegmentTimeEditPopup: React.FC<SegmentTimeEditPopupProps> = ({
         >
           {triggerElement}
         </div>
-        <Modal open={open} onOpenChange={onOpenChange} mobileVariant="bottomSheet">
+        <Modal
+          open={open}
+          onOpenChange={onOpenChange}
+          mobileVariant="bottomSheet"
+        >
           {content}
         </Modal>
       </>
