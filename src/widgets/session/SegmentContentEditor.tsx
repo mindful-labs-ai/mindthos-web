@@ -260,11 +260,12 @@ export function extractFromDom(
 // ── 캐럿 → 저장텍스트 오프셋 (분리용) ──
 
 /** deid-inline(showDeid OFF에서 편집가능한 deid 원문) 안이면 그 span 뒤 경계로 스냅 */
-function snapPastDeid(node: Node, offset: number): { node: Node; offset: number } {
+function snapPastDeid(
+  node: Node,
+  offset: number
+): { node: Node; offset: number } {
   const el =
-    node.nodeType === Node.TEXT_NODE
-      ? node.parentElement
-      : (node as Element);
+    node.nodeType === Node.TEXT_NODE ? node.parentElement : (node as Element);
   const host = el?.closest<HTMLElement>('[data-deid-inline],[data-deid-key]');
   if (host && host.parentNode) {
     const parent = host.parentNode;
@@ -526,7 +527,13 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           [segment.speaker, segment.speaker]
         );
         resetMenu();
-      }, [computeOffsets, onSplitSegment, segment.id, segment.speaker, resetMenu]);
+      }, [
+        computeOffsets,
+        onSplitSegment,
+        segment.id,
+        segment.speaker,
+        resetMenu,
+      ]);
 
       // 화자 전환 (선택=[A,B,A] 3분할 / 캐럿=[A,B] 2분할)
       const doSpeakerSwitch = useCallback(
@@ -551,7 +558,14 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           }
           resetMenu();
         },
-        [computeOffsets, speakers, onSplitSegment, segment.id, segment.speaker, resetMenu]
+        [
+          computeOffsets,
+          speakers,
+          onSplitSegment,
+          segment.id,
+          segment.speaker,
+          resetMenu,
+        ]
       );
 
       // 비언어 태그 추가 피커 열기 (캐럿 위치에 표시)
@@ -700,34 +714,34 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           const chip = target.closest<HTMLSpanElement>('[data-chip]');
           if (!chip) return;
 
-        const chipType = chip.dataset.chip as 'nv' | 'deid' | 'legacy-nv';
-        const key =
-          chipType === 'nv'
-            ? chip.dataset.nvKey!
-            : chipType === 'legacy-nv'
-              ? `legacy_${chip.dataset.legacyTag}`
-              : chip.dataset.deidKey!;
-        const currentValue = chip.textContent || '';
+          const chipType = chip.dataset.chip as 'nv' | 'deid' | 'legacy-nv';
+          const key =
+            chipType === 'nv'
+              ? chip.dataset.nvKey!
+              : chipType === 'legacy-nv'
+                ? `legacy_${chip.dataset.legacyTag}`
+                : chip.dataset.deidKey!;
+          const currentValue = chip.textContent || '';
 
-        const editorRect = editorRef.current.getBoundingClientRect();
-        const chipRect = chip.getBoundingClientRect();
+          const editorRect = editorRef.current.getBoundingClientRect();
+          const chipRect = chip.getBoundingClientRect();
 
-        const popoverWidth = 200; // input(120) + label + delete + padding 추정
-        let left = chipRect.left - editorRect.left;
-        const maxLeft = editorRect.width - popoverWidth;
-        if (left > maxLeft) left = Math.max(0, maxLeft);
+          const popoverWidth = 200; // input(120) + label + delete + padding 추정
+          let left = chipRect.left - editorRect.left;
+          const maxLeft = editorRect.width - popoverWidth;
+          if (left > maxLeft) left = Math.max(0, maxLeft);
 
-        setChipEdit({
-          key,
-          type: chipType,
-          value: currentValue,
-          rect: {
-            top: chipRect.bottom - editorRect.top + 4,
-            left,
-            width: Math.max(chipRect.width, 80),
-          },
-          chipEl: chip,
-        });
+          setChipEdit({
+            key,
+            type: chipType,
+            value: currentValue,
+            rect: {
+              top: chipRect.bottom - editorRect.top + 4,
+              left,
+              width: Math.max(chipRect.width, 80),
+            },
+            chipEl: chip,
+          });
         },
         [placingChip, emitChanges]
       );

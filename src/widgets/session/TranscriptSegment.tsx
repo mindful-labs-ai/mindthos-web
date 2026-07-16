@@ -319,7 +319,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
               type="button"
               onClick={handlePlayClick}
               aria-label="이 발화 재생"
-              className="pointer-events-none flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-grey-70 opacity-0 transition-all group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 lg:hover:bg-grey-30 lg:hover:text-primary"
+              className="pointer-events-none flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-grey-70 opacity-0 transition-all focus-visible:pointer-events-auto focus-visible:opacity-100 group-hover/segment:pointer-events-auto group-hover/segment:opacity-100 lg:hover:bg-grey-30 lg:hover:text-primary"
             >
               <Play className="h-3.5 w-3.5" fill="currentColor" />
             </button>

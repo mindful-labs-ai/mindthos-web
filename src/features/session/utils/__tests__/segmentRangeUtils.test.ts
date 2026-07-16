@@ -54,9 +54,9 @@ describe('calculateAffectedSegments', () => {
     });
 
     it('endSegmentId를 찾을 수 없으면 현재 세그먼트만 반환한다', () => {
-      expect(
-        calculateAffectedSegments(11, 1, 'range', segments, 999)
-      ).toEqual([11]);
+      expect(calculateAffectedSegments(11, 1, 'range', segments, 999)).toEqual([
+        11,
+      ]);
     });
 
     it('끝이 시작보다 앞이어도 정규화하고 같은 화자만 반환한다', () => {
