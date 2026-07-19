@@ -309,6 +309,7 @@ interface SegmentContentEditorProps {
   segment: TranscribeSegment;
   showDeid: boolean;
   isActive: boolean;
+  disabled?: boolean;
   onTextChange: (text: string) => void;
   onNvChange?: (nv: string[]) => void;
   onDeidChange?: (deid: Record<string, string>) => void;
@@ -329,6 +330,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       segment,
       showDeid,
       isActive,
+      disabled = false,
       onTextChange,
       onNvChange,
       onDeidChange,
@@ -372,6 +374,17 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       );
       const canSplit = !!onSplitSegment && !!speakers;
 
+      useEffect(() => {
+        if (!disabled) return;
+        setChipEdit(null);
+        setNvAdd(null);
+        setSpeakerPick(null);
+        setPlacingChip(null);
+        setCaretPos(null);
+        setHasSelection(false);
+        savedRangeRef.current = null;
+      }, [disabled]);
+
       // 편집 모드 진입 시 한 번만 HTML 빌드
       useEffect(() => {
         if (!editorRef.current || initializedRef.current) return;
@@ -386,7 +399,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
 
       // 변경 감지 → 데이터 추출
       const emitChanges = useCallback(() => {
-        if (!editorRef.current || isComposingRef.current) return;
+        if (disabled || !editorRef.current || isComposingRef.current) return;
         const { text, nv, deid } = extractFromDom(
           editorRef.current,
           segment.nv,
@@ -403,6 +416,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
         onTextChange,
         onNvChange,
         onDeidChange,
+        disabled,
       ]);
 
       const handleInput = useCallback(() => {
@@ -667,6 +681,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
       // Shift+Enter: 줄바꿈. 연속 Enter로 여러 번 분리되는 건 쓰로틀(400ms)로 방지
       const handleKeyDown = useCallback(
         (e: React.KeyboardEvent) => {
+          if (disabled) return;
           if (e.key !== 'Enter') return;
           // IME 조합 확정 Enter는 무시
           if (e.nativeEvent.isComposing || isComposingRef.current) return;
@@ -685,13 +700,14 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           lastSplitAtRef.current = now;
           doSplitSame();
         },
-        [canSplit, saveSelection, rangeCanSplit, doSplitSame]
+        [canSplit, disabled, saveSelection, rangeCanSplit, doSplitSame]
       );
 
       // 칩 클릭 → 편집 팝오버 (이동 배치 모드면 클릭 위치로 칩 이동)
       const handleClick = useCallback(
         (e: React.MouseEvent) => {
           e.stopPropagation();
+          if (disabled) return;
           if (!editorRef.current) return;
 
           if (placingChip) {
@@ -743,7 +759,7 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
             chipEl: chip,
           });
         },
-        [placingChip, emitChanges]
+        [disabled, placingChip, emitChanges]
       );
 
       // 칩 편집 확인
@@ -816,8 +832,9 @@ export const SegmentContentEditor: React.FC<SegmentContentEditorProps> =
           <div
             ref={editorRef}
             role="textbox"
-            tabIndex={0}
-            contentEditable
+            tabIndex={disabled ? -1 : 0}
+            contentEditable={!disabled}
+            aria-disabled={disabled}
             suppressContentEditableWarning
             onInput={handleInput}
             onCompositionStart={handleCompositionStart}

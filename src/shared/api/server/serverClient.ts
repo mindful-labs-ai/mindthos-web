@@ -1,3 +1,4 @@
+import { ROUTES } from '@/app/router/constants';
 import { supabase } from '@/lib/supabase';
 
 /**
@@ -13,6 +14,7 @@ const API_BASE = (import.meta.env.VITE_SERVER_API_URL ?? '').replace(
   ''
 );
 const BASE_PATH = '/v1';
+let authRecovery: Promise<void> | null = null;
 
 interface ServerEnvelope<T> {
   statusCode: string;
@@ -103,7 +105,38 @@ export async function serverRequest<T>(
   path: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  return requestCore<T>(path, options, await authHeader());
+  try {
+    return await requestCore<T>(path, options, await authHeader());
+  } catch (error) {
+    if (error instanceof ServerApiError && error.status === 401) {
+      try {
+        await redirectToAuth();
+      } catch {
+        // 인증 오류 원본을 유지한다. redirect 실패가 API 오류를 덮으면 안 된다.
+      }
+    }
+    throw error;
+  }
+}
+
+async function redirectToAuth(): Promise<void> {
+  if (authRecovery) return authRecovery;
+
+  authRecovery = (async () => {
+    const { useAuthStore } = await import('@/stores/authStore');
+    useAuthStore.getState().clear();
+    if (
+      typeof window !== 'undefined' &&
+      window.location.pathname !== ROUTES.AUTH
+    ) {
+      window.location.href = ROUTES.AUTH;
+    }
+  })();
+  try {
+    await authRecovery;
+  } finally {
+    authRecovery = null;
+  }
 }
 
 /**

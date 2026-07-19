@@ -130,8 +130,10 @@ export const SessionDetailContainer: React.FC = () => {
 
   const isHandwrittenSession = session?.audio_meta_data === null;
 
-  const handwrittenContent =
-    (transcribe as HandwrittenTranscribe)?.contents || '';
+  const handwrittenTranscribe = isHandwrittenSession
+    ? (transcribe as HandwrittenTranscribe | null)
+    : null;
+  const handwrittenContent = handwrittenTranscribe?.contents || '';
   const {
     isEditing: isEditingHandwritten,
     editContent: handwrittenEditContent,
@@ -141,7 +143,9 @@ export const SessionDetailContainer: React.FC = () => {
     handleSave: handleSaveHandwrittenEdit,
     handleContentChange: setHandwrittenEditContent,
   } = useHandwrittenEdit({
-    transcribeId: transcribe?.id,
+    transcribeId: handwrittenTranscribe?.id,
+    revision: handwrittenTranscribe?.revision,
+    contentsFingerprint: handwrittenTranscribe?.contents_md5,
     initialContent: handwrittenContent,
     sessionId: sessionId || '',
     isReadOnly,
@@ -215,6 +219,7 @@ export const SessionDetailContainer: React.FC = () => {
 
   const {
     isEditing,
+    isSaving: isSavingTranscript,
     editingContents,
     handleTextEdit,
     handleNvEdit,
@@ -299,6 +304,9 @@ export const SessionDetailContainer: React.FC = () => {
   const { showDeid, isDeidApplied, handleDeidentify, deidModal } =
     useDeidentification({
       sessionId,
+      transcribeId: transcribe?.id,
+      revision: transcribe?.revision,
+      contentsFingerprint: transcribe?.contents_md5 ?? undefined,
       userId: userIdForDeid ? Number(userIdForDeid) : undefined,
       segments: rawSegments,
       onSuccess: () => {
@@ -347,6 +355,7 @@ export const SessionDetailContainer: React.FC = () => {
     setActiveTab,
     isEditing,
     isEditingHandwritten,
+    isSaving: isSavingTranscript || isSavingHandwritten,
     onCancelEdit: handleCancelEdit,
     onCancelEditHandwritten: handleCancelHandwrittenEdit,
     setCreatingTabs,
@@ -490,8 +499,10 @@ export const SessionDetailContainer: React.FC = () => {
 
     if (currentlyEditing) {
       setCancelEditHandler(() => {
-        if (isEditing) handleCancelEdit();
-        if (isEditingHandwritten) handleCancelHandwrittenEdit();
+        const audioCanceled = !isEditing || handleCancelEdit();
+        const handwrittenCanceled =
+          !isEditingHandwritten || handleCancelHandwrittenEdit();
+        return audioCanceled && handwrittenCanceled;
       });
     } else {
       setCancelEditHandler(null);
@@ -504,6 +515,8 @@ export const SessionDetailContainer: React.FC = () => {
   }, [
     isEditing,
     isEditingHandwritten,
+    isSavingTranscript,
+    isSavingHandwritten,
     setIsEditingGlobal,
     setCancelEditHandler,
     handleCancelEdit,
@@ -593,6 +606,7 @@ export const SessionDetailContainer: React.FC = () => {
         canRedo,
         onUndo: handleUndo,
         onRedo: handleRedo,
+        isSaving: isSavingTranscript,
       };
     }
     if (isEditingHandwritten) {
@@ -618,6 +632,7 @@ export const SessionDetailContainer: React.FC = () => {
     isEditing,
     handleSaveAllEdits,
     handleCancelEdit,
+    isSavingTranscript,
     isEditingHandwritten,
     handleSaveHandwrittenEdit,
     handleCancelHandwrittenEdit,
@@ -720,6 +735,7 @@ export const SessionDetailContainer: React.FC = () => {
           <MobileHandwrittenToolbar
             isReadOnly={isReadOnly}
             isEditing={isEditingHandwritten}
+            isSaving={isSavingHandwritten}
             onEditStart={handleEditHandwrittenStart}
             onCopy={handleCopyHandwritten}
           />
@@ -738,6 +754,7 @@ export const SessionDetailContainer: React.FC = () => {
         <MobileTranscriptToolbar
           isReadOnly={isReadOnly}
           isEditing={isEditing}
+          isSaving={isSavingTranscript}
           isAnonymized={isAnonymized}
           enableTimestampFeatures={enableTimestampFeatures}
           isMenuOpen={isMenuOpen}
@@ -757,6 +774,7 @@ export const SessionDetailContainer: React.FC = () => {
         <TranscriptToolbar
           isReadOnly={isReadOnly}
           isEditing={isEditing}
+          isSaving={isSavingTranscript}
           isAnonymized={isAnonymized}
           enableTimestampFeatures={enableTimestampFeatures}
           isMenuOpen={isMenuOpen}
@@ -814,6 +832,7 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           editorVersion={editorVersion}
+          isSaving={isSavingTranscript}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}
@@ -840,6 +859,7 @@ export const SessionDetailContainer: React.FC = () => {
           isReadOnly={isReadOnly}
           isEditing={isEditing}
           editorVersion={editorVersion}
+          isSaving={isSavingTranscript}
           isAnonymized={isAnonymized}
           showDeid={showDeid}
           enableTimestampFeatures={enableTimestampFeatures}

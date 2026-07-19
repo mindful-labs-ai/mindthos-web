@@ -16,6 +16,9 @@ const makeTranscribe = (
   stt_model: sttModel,
   parsed_text: null,
   preview: null,
+  revision: 1,
+  contents_md5: '00000000000000000000000000000001',
+  updated_at: '2026-01-01T00:00:00Z',
   created_at: '2026-01-01T00:00:00Z',
 });
 

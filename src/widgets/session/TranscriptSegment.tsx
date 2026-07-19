@@ -21,6 +21,7 @@ interface TranscriptSegmentProps {
   speakers: Speaker[];
   isActive: boolean;
   isEditable?: boolean;
+  isSaving?: boolean;
   isAnonymized?: boolean;
   showDeid?: boolean;
   sttModel?: string | null;
@@ -62,6 +63,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
   speakers,
   isActive,
   isEditable = false,
+  isSaving = false,
   isAnonymized = false,
   showDeid = false,
   sttModel,
@@ -330,6 +332,7 @@ const TranscriptSegmentComponent: React.FC<TranscriptSegmentProps> = ({
             segment={segment}
             showDeid={showDeid}
             isActive={isActive}
+            disabled={isSaving}
             onTextChange={handleEditorTextChange}
             onNvChange={handleEditorNvChange}
             onDeidChange={handleEditorDeidChange}

@@ -21,8 +21,8 @@ interface SessionStoreState {
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
   // 편집 취소 핸들러 (세션 이동 확인 시 호출)
-  cancelEditHandler: (() => void) | null;
-  setCancelEditHandler: (handler: (() => void) | null) => void;
+  cancelEditHandler: (() => boolean) | null;
+  setCancelEditHandler: (handler: (() => boolean) | null) => void;
   addSession: (
     session: Session,
     transcribe: Transcribe,
