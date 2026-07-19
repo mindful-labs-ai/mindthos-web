@@ -461,13 +461,7 @@ export function useTranscriptEditSession({
         setHasEdits(true);
       }
     },
-    [
-      isReadOnly,
-      isEditing,
-      hasEdits,
-      isTargetMutationInFlight,
-      startEditBurst,
-    ]
+    [isReadOnly, isEditing, hasEdits, isTargetMutationInFlight, startEditBurst]
   );
 
   // ── nv 편집 (편집 모드 전용, ref 기반) ──
@@ -484,13 +478,7 @@ export function useTranscriptEditSession({
       nvEditsRef.current[segmentId] = nv;
       if (!hasEdits) setHasEdits(true);
     },
-    [
-      isReadOnly,
-      isEditing,
-      hasEdits,
-      isTargetMutationInFlight,
-      startEditBurst,
-    ]
+    [isReadOnly, isEditing, hasEdits, isTargetMutationInFlight, startEditBurst]
   );
 
   // ── deid 편집 (편집 모드 전용, ref 기반) ──
@@ -507,13 +495,7 @@ export function useTranscriptEditSession({
       deidEditsRef.current[segmentId] = deid;
       if (!hasEdits) setHasEdits(true);
     },
-    [
-      isReadOnly,
-      isEditing,
-      hasEdits,
-      isTargetMutationInFlight,
-      startEditBurst,
-    ]
+    [isReadOnly, isEditing, hasEdits, isTargetMutationInFlight, startEditBurst]
   );
 
   // ── 화자 변경 (듀얼 모드) ──
