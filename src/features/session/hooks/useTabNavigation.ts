@@ -7,6 +7,7 @@ import React from 'react';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { useToast } from '@/shared/ui/composites/Toast';
 
 interface UseTabNavigationOptions {
   activeTab: string;
@@ -14,10 +15,12 @@ interface UseTabNavigationOptions {
   isEditing: boolean;
   /** 직접 입력 세션 편집 중 여부 */
   isEditingHandwritten?: boolean;
+  /** 축어록 저장 요청이 이미 전송된 상태 */
+  isSaving?: boolean;
   /** 편집 취소 핸들러 (편집 상태 초기화) */
-  onCancelEdit: () => void;
+  onCancelEdit: () => boolean;
   /** 직접 입력 세션 편집 취소 핸들러 */
-  onCancelEditHandwritten?: () => void;
+  onCancelEditHandwritten?: () => boolean;
   /** 템플릿 선택 중인 탭들 setter */
   setCreatingTabs: React.Dispatch<
     React.SetStateAction<Record<string, number | null>>
@@ -46,11 +49,13 @@ export function useTabNavigation({
   setActiveTab,
   isEditing,
   isEditingHandwritten = false,
+  isSaving = false,
   onCancelEdit,
   onCancelEditHandwritten,
   setCreatingTabs,
   contentScrollRef,
 }: UseTabNavigationOptions): UseTabNavigationReturn {
+  const { toast } = useToast();
   const [isTabChangeModalOpen, setIsTabChangeModalOpen] = React.useState(false);
   const [pendingTabValue, setPendingTabValue] = React.useState<string | null>(
     null
@@ -58,6 +63,14 @@ export function useTabNavigation({
 
   const handleTabChange = React.useCallback(
     (value: string) => {
+      if (isSaving && activeTab === 'transcript' && value !== activeTab) {
+        toast({
+          title: '저장 중이에요',
+          description: '저장이 끝난 뒤 다른 탭으로 이동해 주세요.',
+          duration: 3000,
+        });
+        return;
+      }
       // 편집 중이고, 축어록 탭에서 다른 탭으로 변경하려는 경우 (일반 편집 또는 직접 입력 편집)
       if ((isEditing || isEditingHandwritten) && activeTab === 'transcript') {
         setPendingTabValue(value);
@@ -89,17 +102,19 @@ export function useTabNavigation({
       activeTab,
       isEditing,
       isEditingHandwritten,
+      isSaving,
       setCreatingTabs,
       setActiveTab,
       contentScrollRef,
+      toast,
     ]
   );
 
   const handleConfirmTabChange = React.useCallback(() => {
-    // 일반 편집 취소
-    onCancelEdit();
-    // 직접 입력 편집 취소
-    onCancelEditHandwritten?.();
+    const audioCanceled = !isEditing || onCancelEdit();
+    const handwrittenCanceled =
+      !isEditingHandwritten || (onCancelEditHandwritten?.() ?? true);
+    if (!audioCanceled || !handwrittenCanceled) return;
 
     if (pendingTabValue) {
       if (pendingTabValue === 'add') {
@@ -122,6 +137,8 @@ export function useTabNavigation({
   }, [
     onCancelEdit,
     onCancelEditHandwritten,
+    isEditing,
+    isEditingHandwritten,
     pendingTabValue,
     setCreatingTabs,
     setActiveTab,

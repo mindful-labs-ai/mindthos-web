@@ -1,13 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { deidentifyTranscript } from '@/shared/api/server/transcriptServerApi';
 import { CREDIT_COST } from '@/shared/constants/credit';
-import { creditQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  creditQueryKeys,
+  sessionQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useToast } from '@/shared/ui/composites/Toast';
 import {
@@ -18,23 +18,31 @@ import {
 
 import type { TranscribeSegment } from '../types';
 
-interface DeidResponse {
-  success: boolean;
-  session_id: string;
-  stats: DeidStats;
-}
-
 const DEID_CREDIT = CREDIT_COST.DEIDENTIFICATION;
 
 interface UseDeidentificationOptions {
   sessionId?: string;
+  transcribeId?: string;
+  revision?: number;
+  contentsFingerprint?: string;
   userId?: number;
   segments?: TranscribeSegment[];
   onSuccess?: () => void;
 }
 
+interface DeidentificationTarget {
+  sessionId: string;
+  transcribeId: string;
+  revision: number;
+  contentsFingerprint: string;
+  userId: number;
+}
+
 export function useDeidentification({
   sessionId,
+  transcribeId,
+  revision,
+  contentsFingerprint,
   userId,
   segments,
   onSuccess,
@@ -47,6 +55,10 @@ export function useDeidentification({
   const [phase, setPhase] = useState<DeidModalPhase>('confirm');
   const [stats, setStats] = useState<DeidStats | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const targetRef = useRef<DeidentificationTarget | null>(null);
+  const identityRef = useRef(`${sessionId ?? ''}:${transcribeId ?? ''}`);
+  const requestGenerationRef = useRef(0);
+  const isSubmittingRef = useRef(false);
 
   const isDeidApplied = useMemo(
     () =>
@@ -55,8 +67,40 @@ export function useDeidentification({
     [segments]
   );
 
+  const targetIdentity = `${sessionId ?? ''}:${transcribeId ?? ''}`;
+
+  useEffect(() => {
+    if (identityRef.current === targetIdentity) return;
+
+    identityRef.current = targetIdentity;
+    requestGenerationRef.current += 1;
+    isSubmittingRef.current = false;
+    targetRef.current = null;
+    setShowDeid(false);
+    setIsModalOpen(false);
+    setPhase('confirm');
+    setStats(null);
+    setErrorMessage('');
+  }, [targetIdentity]);
+
   const handleDeidentify = useCallback(() => {
     if (!isDeidApplied) {
+      if (
+        !sessionId ||
+        !transcribeId ||
+        revision === undefined ||
+        !contentsFingerprint ||
+        userId === undefined
+      ) {
+        return;
+      }
+      targetRef.current = {
+        sessionId,
+        transcribeId,
+        revision,
+        contentsFingerprint,
+        userId,
+      };
       setPhase('confirm');
       setStats(null);
       setErrorMessage('');
@@ -64,72 +108,106 @@ export function useDeidentification({
     } else {
       setShowDeid((prev) => !prev);
     }
-  }, [isDeidApplied]);
+  }, [
+    contentsFingerprint,
+    isDeidApplied,
+    revision,
+    sessionId,
+    transcribeId,
+    userId,
+  ]);
+
+  const reconcileTargetCaches = useCallback(
+    async (target: DeidentificationTarget) => {
+      await Promise.allSettled([
+        queryClient.invalidateQueries({
+          queryKey: sessionQueryKeys.detail(target.sessionId, false),
+        }),
+        queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+        queryClient.invalidateQueries({
+          queryKey: creditQueryKeys.summary(target.userId),
+        }),
+      ]);
+    },
+    [queryClient]
+  );
 
   const confirmDeidentify = useCallback(async () => {
-    if (!sessionId || !userId) return;
-
-    // 크레딧 가드
-    const guard = await checkCredit(DEID_CREDIT);
-    if (!guard.ok && !guard.unavailable) {
-      toast({
-        title: '크레딧 부족',
-        description: `비식별화에 ${DEID_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
-        duration: 5000,
-      });
+    const target = targetRef.current;
+    if (!target || isSubmittingRef.current) return;
+    if (`${target.sessionId}:${target.transcribeId}` !== identityRef.current) {
+      setIsModalOpen(false);
       return;
     }
 
-    const idempotencyKey = crypto.randomUUID();
-
+    const generation = requestGenerationRef.current;
+    isSubmittingRef.current = true;
     setPhase('loading');
+    let commandSent = false;
+
+    // 크레딧 가드
     try {
-      const response = await callEdgeFunction<DeidResponse>(
-        EDGE_FUNCTION_ENDPOINTS.DEID,
-        {
-          session_id: sessionId,
-          user_id: userId,
-          idempotency_key: idempotencyKey,
-        }
-      );
+      const guard = await checkCredit(DEID_CREDIT);
+      if (generation !== requestGenerationRef.current) return;
+      if (!guard.ok && !guard.unavailable) {
+        toast({
+          title: '크레딧 부족',
+          description: `비식별화에 ${DEID_CREDIT} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+          duration: 5000,
+        });
+        setPhase('confirm');
+        return;
+      }
+
+      commandSent = true;
+      const response = await deidentifyTranscript({
+        sessionId: target.sessionId,
+        transcribeId: target.transcribeId,
+        expectedRevision: target.revision,
+        expectedContentsFingerprint: target.contentsFingerprint,
+      });
+      await reconcileTargetCaches(target);
+      if (generation !== requestGenerationRef.current) return;
 
       setStats(response.stats);
       setPhase('complete');
       setShowDeid(true);
       onSuccess?.();
-
-      // 크레딧 잔액 갱신
-      queryClient.invalidateQueries({
-        queryKey: creditQueryKeys.summary(userId),
-      });
     } catch (err: unknown) {
+      if (commandSent) {
+        await reconcileTargetCaches(target);
+      }
+      if (generation !== requestGenerationRef.current) return;
       const error = err as {
         status?: number;
-        error?: string;
+        statusCode?: string;
         message?: string;
       };
       const status = error?.status;
-      const errorCode = error?.error;
       const rawMessage = error?.message ?? '';
 
       let message = '비식별화 중 오류가 생겼어요.';
-      if (rawMessage.startsWith('NO_DEID_TARGETS')) {
+      if (status === 422 && rawMessage.includes('대상이 발견되지')) {
         message = 'NO_DEID_TARGETS';
-      } else if (status === 402 || errorCode === 'INSUFFICIENT_CREDIT') {
+      } else if (status === 402) {
         message = '비식별화에 필요한 크레딧이 부족해요.';
-      } else if (status === 422 || errorCode === 'VALIDATION_FAILED') {
+      } else if (status === 409) {
+        message =
+          '처리 중 축어록이 변경됐어요. 최신 내용을 불러온 뒤 다시 시도해 주세요.';
+      } else if (status === undefined || status >= 500) {
+        message = '처리 결과를 확인할 수 없어 최신 내용을 다시 불러왔어요.';
+      } else if (status === 422) {
         message = '비식별화를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
       }
 
       setErrorMessage(message);
       setPhase('error');
-
-      // 에러 시에도 크레딧 잔액 갱신
-      queryClient.invalidateQueries({
-        queryKey: creditQueryKeys.summary(userId),
-      });
+    } finally {
+      if (generation === requestGenerationRef.current) {
+        isSubmittingRef.current = false;
+      }
     }
-  }, [sessionId, userId, checkCredit, toast, queryClient, onSuccess]);
+  }, [checkCredit, toast, reconcileTargetCaches, onSuccess]);
 
   const handleModalClose = useCallback(
     (open: boolean) => {

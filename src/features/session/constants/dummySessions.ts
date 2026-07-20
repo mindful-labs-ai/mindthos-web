@@ -1057,6 +1057,9 @@ export const dummyTranscribe: Transcribe[] = [
       stt_model: 'gemini-3',
     },
     stt_model: 'gemini-3',
+    revision: 1,
+    contents_md5: '00000000000000000000000000000001',
+    updated_at: '2025-12-08 05:04:37.824526+00',
     created_at: '2025-12-08 05:04:37.824526+00',
   },
   {
@@ -1571,6 +1574,9 @@ export const dummyTranscribe: Transcribe[] = [
       stt_model: 'gemini-3',
     },
     stt_model: 'gemini-3',
+    revision: 1,
+    contents_md5: '00000000000000000000000000000002',
+    updated_at: String(Date.now()),
     created_at: String(Date.now()),
   },
   {
@@ -2141,6 +2147,9 @@ export const dummyTranscribe: Transcribe[] = [
       stt_model: 'gemini-3',
     },
     stt_model: 'gemini-3',
+    revision: 1,
+    contents_md5: '00000000000000000000000000000003',
+    updated_at: String(Date.now()),
     created_at: String(Date.now()),
   },
 ];
