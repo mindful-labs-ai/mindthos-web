@@ -16,6 +16,7 @@ import { MixpanelError } from '@/shared/constants/mixpanelEvents';
 import { sessionQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
+import { useUnsavedChangesGuard } from '@/shared/hooks/useUnsavedChangesGuard';
 import { Tab } from '@/shared/ui/atoms/Tab';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
@@ -493,17 +494,33 @@ export const SessionDetailContainer: React.FC = () => {
     (state) => state.setCancelEditHandler
   );
 
+  const handleCancelCurrentEdit = React.useCallback(() => {
+    const audioCanceled = !isEditing || handleCancelEdit();
+    const handwrittenCanceled =
+      !isEditingHandwritten || handleCancelHandwrittenEdit();
+    return audioCanceled && handwrittenCanceled;
+  }, [
+    handleCancelEdit,
+    handleCancelHandwrittenEdit,
+    isEditing,
+    isEditingHandwritten,
+  ]);
+
+  useUnsavedChangesGuard(
+    () => isEditing || isEditingHandwritten,
+    '편집 중인 내용이 있어요. 다른 화면으로 이동하면 편집 내용이 초기화됩니다. 이동하시겠어요?',
+    {
+      browserHistoryOnly: true,
+      onDiscard: handleCancelCurrentEdit,
+    }
+  );
+
   React.useEffect(() => {
     const currentlyEditing = isEditing || isEditingHandwritten;
     setIsEditingGlobal(currentlyEditing);
 
     if (currentlyEditing) {
-      setCancelEditHandler(() => {
-        const audioCanceled = !isEditing || handleCancelEdit();
-        const handwrittenCanceled =
-          !isEditingHandwritten || handleCancelHandwrittenEdit();
-        return audioCanceled && handwrittenCanceled;
-      });
+      setCancelEditHandler(handleCancelCurrentEdit);
     } else {
       setCancelEditHandler(null);
     }
@@ -519,8 +536,7 @@ export const SessionDetailContainer: React.FC = () => {
     isSavingHandwritten,
     setIsEditingGlobal,
     setCancelEditHandler,
-    handleCancelEdit,
-    handleCancelHandwrittenEdit,
+    handleCancelCurrentEdit,
   ]);
 
   const handlePlayPauseWithInteraction = React.useCallback(() => {
