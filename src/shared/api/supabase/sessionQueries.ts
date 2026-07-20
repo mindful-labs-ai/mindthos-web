@@ -10,11 +10,9 @@ import type {
   Session,
   SessionDnaListItem,
   SessionListItem,
-  Speaker,
   Transcribe,
   TranscribeListItem,
 } from '@/features/session/types';
-import { formatSegmentText } from '@/features/session/utils/formatSegmentText';
 import { supabase } from '@/lib/supabase';
 import { sttBackend } from '@/shared/api/adapters/stt';
 import type { SessionStatusResult } from '@/shared/api/adapters/stt/sttBackendPort';
@@ -168,12 +166,16 @@ export async function getSessionsPage({
           .from('transcribes')
           .select(TRANSCRIBE_LIST_COLUMNS)
           .in('session_id', audioSessionIds)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
       : Promise.resolve({ data: [] as TranscribeListItem[], error: null }),
     handwrittenSessionIds.length > 0
       ? supabase
           .from('handwritten_transcribes')
           .select(HANDWRITTEN_LIST_COLUMNS)
           .in('session_id', handwrittenSessionIds)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
       : Promise.resolve({
           data: [] as HandwrittenTranscribeListItem[],
           error: null,
@@ -195,12 +197,16 @@ export async function getSessionsPage({
   }
 
   const transcribeMap = new Map<string, TranscribeListItem>();
-  (transcribes ?? []).forEach((t) => transcribeMap.set(t.session_id, t));
+  (transcribes ?? []).forEach((t) => {
+    if (!transcribeMap.has(t.session_id)) transcribeMap.set(t.session_id, t);
+  });
 
   const handwrittenMap = new Map<string, HandwrittenTranscribeListItem>();
-  (handwrittenTranscribes ?? []).forEach((t) =>
-    handwrittenMap.set(t.session_id, t)
-  );
+  (handwrittenTranscribes ?? []).forEach((t) => {
+    if (!handwrittenMap.has(t.session_id)) {
+      handwrittenMap.set(t.session_id, t);
+    }
+  });
 
   const progressNotesMap = new Map<string, ProgressNoteListItem[]>();
   (progressNotes ?? []).forEach((n) => {
@@ -271,12 +277,16 @@ export async function getAllSessionsByClient(
           .from('transcribes')
           .select(TRANSCRIBE_LIST_COLUMNS)
           .in('session_id', audioSessionIds)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
       : Promise.resolve({ data: [] as TranscribeListItem[] }),
     handwrittenSessionIds.length > 0
       ? supabase
           .from('handwritten_transcribes')
           .select(HANDWRITTEN_LIST_COLUMNS)
           .in('session_id', handwrittenSessionIds)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
       : Promise.resolve({ data: [] as HandwrittenTranscribeListItem[] }),
     supabase
       .from('progress_notes')
@@ -295,11 +305,15 @@ export async function getAllSessionsByClient(
   }
 
   const transcribeMap = new Map<string, TranscribeListItem>();
-  (transcribes ?? []).forEach((t) => transcribeMap.set(t.session_id, t));
+  (transcribes ?? []).forEach((t) => {
+    if (!transcribeMap.has(t.session_id)) transcribeMap.set(t.session_id, t);
+  });
   const handwrittenMap = new Map<string, HandwrittenTranscribeListItem>();
-  (handwrittenTranscribes ?? []).forEach((t) =>
-    handwrittenMap.set(t.session_id, t)
-  );
+  (handwrittenTranscribes ?? []).forEach((t) => {
+    if (!handwrittenMap.has(t.session_id)) {
+      handwrittenMap.set(t.session_id, t);
+    }
+  });
   const progressNotesMap = new Map<string, ProgressNoteListItem[]>();
   (progressNotes ?? []).forEach((n) => {
     const list = progressNotesMap.get(n.session_id) ?? [];
@@ -378,12 +392,16 @@ export async function getSessionList(userId: number): Promise<{
           .from('transcribes')
           .select('*')
           .in('session_id', audioSessionIds)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
       : Promise.resolve({ data: [] }),
     handwrittenSessionIds.length > 0
       ? supabase
           .from('handwritten_transcribes')
           .select('*')
           .in('session_id', handwrittenSessionIds)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
       : Promise.resolve({ data: [] }),
     supabase
       .from('progress_notes')
@@ -447,7 +465,16 @@ export async function getSessionDetail(sessionId: string): Promise<{
           .from('handwritten_transcribes')
           .select('*')
           .eq('session_id', sessionId)
-      : supabase.from('transcribes').select('*').eq('session_id', sessionId),
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .order('id', { ascending: false })
+          .limit(1)
+      : supabase
+          .from('transcribes')
+          .select('*')
+          .eq('session_id', sessionId)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .limit(1),
     supabase.from('progress_notes').select('*').eq('session_id', sessionId),
   ]);
 
@@ -466,33 +493,6 @@ export async function getAudioPresignedUrl(sessionId: string): Promise<string> {
 }
 
 /**
- * transcribe 리스트 미리보기 평문 생성 (segments[0:3], 300자 cap).
- * contents 변경(편집/추가/삭제) 시점에 preview 컬럼도 함께 갱신.
- */
-function buildTranscribePreview(contents: unknown): string | null {
-  if (!contents || typeof contents !== 'object') return null;
-  const c = contents as Record<string, unknown>;
-  let segments: Array<{ text?: string }> | null = null;
-  if (Array.isArray(c.segments)) {
-    segments = c.segments as Array<{ text?: string }>;
-  } else if (c.result && typeof c.result === 'object') {
-    const result = c.result as Record<string, unknown>;
-    if (Array.isArray(result.segments)) {
-      segments = result.segments as Array<{ text?: string }>;
-    }
-  }
-  if (!segments || segments.length === 0) return null;
-  const preview = segments
-    .slice(0, 3)
-    .map((s) => (typeof s.text === 'string' ? s.text : ''))
-    .filter(Boolean)
-    .join(' ')
-    .trim();
-  if (!preview) return null;
-  return preview.length > 300 ? preview.slice(0, 300) : preview;
-}
-
-/**
  * 세션 제목 업데이트 API 호출
  */
 export async function updateSessionTitle(
@@ -506,488 +506,6 @@ export async function updateSessionTitle(
 
   if (error) {
     throw new Error(`세션 제목 업데이트 실패: ${error.message}`);
-  }
-}
-
-/**
- * segment id로 배열에서 세그먼트 찾기
- * segment.id를 직접 비교하여 올바른 세그먼트를 찾습니다
- */
-function findSegmentIndexById(segments: any[], segmentId: number): number {
-  const index = segments.findIndex((seg) => seg.id === segmentId);
-  if (index === -1) {
-    throw new Error(`선택한 대화를 찾을 수 없어요.`);
-  }
-  return index;
-}
-
-/**
- * 초를 [MM:SS] 형식으로 변환
- */
-function formatTimestamp(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `[${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}]`;
-}
-
-/**
- * 화자 ID로 화자명 가져오기
- */
-function getSpeakerName(speakerId: number, speakers?: Speaker[]): string {
-  // 기본 화자명 (speakers 정보가 없거나 매칭되지 않을 때)
-  const defaultNames: Record<number, string> = {
-    0: '상담사',
-    1: '내담자',
-  };
-  const defaultName = defaultNames[speakerId] ?? `화자 ${speakerId + 1}`;
-
-  if (!speakers) {
-    return defaultName;
-  }
-  const speaker = speakers.find((s) => s.id === speakerId);
-  if (!speaker) {
-    return defaultName;
-  }
-  // customName이 있으면 우선 사용
-  if (speaker.customName) {
-    return speaker.customName;
-  }
-  switch (speaker.role) {
-    case 'counselor':
-      return '상담사';
-    case 'client1':
-      return '내담자';
-    case 'client2':
-      return '내담자2';
-    default:
-      // custom_ prefix role은 기본값으로 대체 (예: custom_3 → 화자 4)
-      if (speaker.role?.startsWith('custom_')) {
-        return defaultName;
-      }
-      return speaker.role || defaultName;
-  }
-}
-
-/**
- * 세그먼트 배열을 AI 소비용 평문으로 변환
- * - 형식: `[MM:SS] [화자명] 텍스트` (타임스탬프 없으면 `[순번]`)
- * - 비언어 태그 → `(라벨)` 로 감쌈
- * - 비식별화 태그 → 원본 그대로 복원
- * 자세한 변환 규칙은 `formatSegmentText` 참고.
- */
-function generateParsedText(segments: any[], speakers?: Speaker[]): string {
-  return segments
-    .map((segment, index) => {
-      const prefix =
-        segment.start !== null && segment.start !== undefined
-          ? formatTimestamp(segment.start)
-          : `[${index + 1}]`;
-      const speakerName = getSpeakerName(segment.speaker, speakers);
-      const text = formatSegmentText({
-        text: segment.text ?? '',
-        nv: segment.nv,
-      });
-      return `${prefix} [${speakerName}] ${text}`;
-    })
-    .join('\n');
-}
-
-/**
- * contents에서 segments와 speakers 추출
- */
-function extractSegmentsAndSpeakers(contents: any): {
-  segments: any[];
-  speakers?: Speaker[];
-} {
-  // New format: { stt_model, segments, speakers, ... }
-  if ('segments' in contents && Array.isArray(contents.segments)) {
-    return {
-      segments: contents.segments,
-      speakers: contents.speakers,
-    };
-  }
-  // Legacy format: { result: { segments, speakers } }
-  if ('result' in contents && contents.result?.segments) {
-    return {
-      segments: contents.result.segments,
-      speakers: contents.result.speakers,
-    };
-  }
-  return { segments: [] };
-}
-
-/**
- * contents에서 segments 배열을 추출하고 업데이트 적용 후 새로운 contents 반환
- */
-function updateSegmentsInContents(
-  contents: any,
-  updater: (segments: any[]) => any[]
-): any {
-  // New format: { stt_model, segments, ... }
-  if ('segments' in contents && Array.isArray(contents.segments)) {
-    const updatedSegments = updater([...contents.segments]);
-    return {
-      ...contents,
-      segments: updatedSegments,
-    };
-  }
-  // Legacy format: { result: { segments, speakers } }
-  else if ('result' in contents && contents.result?.segments) {
-    const updatedSegments = updater([...contents.result.segments]);
-    return {
-      ...contents,
-      result: {
-        ...contents.result,
-        segments: updatedSegments,
-      },
-    };
-  }
-
-  throw new Error('전사 결과가 없어요.');
-}
-
-/**
- * 전사 세그먼트 텍스트 업데이트 API 호출 (단일 세그먼트)
- */
-export async function updateTranscriptSegmentText(
-  transcribeId: string,
-  segmentId: number,
-  newText: string
-): Promise<void> {
-  // 1. 현재 transcribe 데이터 조회
-  const { data: transcribe, error: fetchError } = await supabase
-    .from('transcribes')
-    .select('contents')
-    .eq('id', transcribeId)
-    .single();
-
-  if (fetchError || !transcribe) {
-    throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
-    );
-  }
-
-  const contents = transcribe.contents;
-  if (!contents) {
-    throw new Error('전사 결과가 없어요.');
-  }
-
-  // 2. 세그먼트 업데이트 - segment.id로 직접 찾기
-  const updatedContents = updateSegmentsInContents(contents, (segments) => {
-    const segmentIndex = findSegmentIndexById(segments, segmentId);
-
-    segments[segmentIndex] = {
-      ...segments[segmentIndex],
-      text: newText,
-    };
-
-    return segments;
-  });
-
-  // 3. DB에 저장 — preview도 함께 갱신
-  const { error: updateError } = await supabase
-    .from('transcribes')
-    .update({
-      contents: updatedContents,
-      preview: buildTranscribePreview(updatedContents),
-    })
-    .eq('id', transcribeId);
-
-  if (updateError) {
-    throw new Error(`대화 업데이트 실패: ${updateError.message}`);
-  }
-}
-
-/**
- * 여러 전사 세그먼트 텍스트 일괄 업데이트 API 호출
- * segments 업데이트 후 parsed_text 컬럼에 타임스탬프 포함 텍스트 저장
- */
-export async function updateMultipleTranscriptSegments(
-  transcribeId: string,
-  updates: Record<number, string>
-): Promise<void> {
-  // 1. 현재 transcribe 데이터 조회
-  const { data: transcribe, error: fetchError } = await supabase
-    .from('transcribes')
-    .select('contents')
-    .eq('id', transcribeId)
-    .single();
-
-  if (fetchError || !transcribe) {
-    throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
-    );
-  }
-
-  const contents = transcribe.contents;
-  if (!contents) {
-    throw new Error('전사 결과가 없어요.');
-  }
-
-  // 2. 세그먼트 일괄 업데이트 - segment.id로 직접 찾기
-  const updatedContents = updateSegmentsInContents(contents, (segments) => {
-    // 모든 업데이트 적용
-    for (const [segmentIdStr, newText] of Object.entries(updates)) {
-      const segmentId = parseInt(segmentIdStr, 10);
-
-      try {
-        const segmentIndex = findSegmentIndexById(segments, segmentId);
-        segments[segmentIndex] = {
-          ...segments[segmentIndex],
-          text: newText,
-        };
-      } catch {
-        // 세그먼트를 찾을 수 없으면 스킵
-      }
-    }
-
-    return segments;
-  });
-
-  // 3. 업데이트된 segments로 parsed_text 생성
-  const { segments: updatedSegments, speakers } =
-    extractSegmentsAndSpeakers(updatedContents);
-  const parsedText = generateParsedText(updatedSegments, speakers);
-
-  // 4. DB에 저장 (contents + parsed_text + preview)
-  const { error: updateError } = await supabase
-    .from('transcribes')
-    .update({
-      contents: updatedContents,
-      parsed_text: parsedText,
-      preview: buildTranscribePreview(updatedContents),
-    })
-    .eq('id', transcribeId);
-
-  if (updateError) {
-    throw new Error(`대화 업데이트 실패: ${updateError.message}`);
-  }
-}
-
-/**
- * 전사 contents 전체를 저장 (텍스트 편집 + 세그먼트 추가/삭제를 한 번에)
- */
-export async function saveTranscriptContents(
-  transcribeId: string,
-  contents: any
-): Promise<void> {
-  const { segments, speakers } = extractSegmentsAndSpeakers(contents);
-  const parsedText = generateParsedText(segments, speakers);
-
-  const { error } = await supabase
-    .from('transcribes')
-    .update({
-      contents,
-      parsed_text: parsedText,
-      preview: buildTranscribePreview(contents),
-    })
-    .eq('id', transcribeId);
-
-  if (error) {
-    throw new Error(`축어록 저장 실패: ${error.message}`);
-  }
-}
-
-/**
- * 전사 세그먼트 업데이트 Payload
- */
-export interface TranscriptUpdatePayload {
-  textUpdates?: Record<number, string>; // segmentId -> newText
-  speakerUpdates?: Record<number, number>; // segmentId -> newSpeakerId
-  speakerDefinitions?: Speaker[]; // 업데이트된 speakers 배열
-}
-
-/**
- * 전사 세그먼트 종합 업데이트 API 호출 (text + speaker)
- * text, speaker, speakerDefinitions를 동시에 업데이트할 수 있어요.
- */
-export async function updateTranscriptSegments(
-  transcribeId: string,
-  updates: TranscriptUpdatePayload
-): Promise<void> {
-  // 1. 현재 transcribe 데이터 조회
-  const { data: transcribe, error: fetchError } = await supabase
-    .from('transcribes')
-    .select('contents')
-    .eq('id', transcribeId)
-    .single();
-
-  if (fetchError || !transcribe) {
-    throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
-    );
-  }
-
-  const contents = transcribe.contents;
-  if (!contents) {
-    throw new Error('전사 결과가 없어요.');
-  }
-
-  // 2. 세그먼트 업데이트 적용 (text + speaker)
-  const updatedContents = updateSegmentsInContents(contents, (segments) => {
-    return segments.map((seg) => {
-      const segmentId = seg.id;
-      const updated = { ...seg };
-
-      // text 업데이트
-      if (updates.textUpdates && segmentId in updates.textUpdates) {
-        updated.text = updates.textUpdates[segmentId];
-      }
-
-      // speaker 업데이트
-      if (updates.speakerUpdates && segmentId in updates.speakerUpdates) {
-        updated.speaker = updates.speakerUpdates[segmentId];
-      }
-
-      return updated;
-    });
-  });
-
-  // 3. speakers 배열 업데이트
-  let finalContents = updatedContents;
-  if (updates.speakerDefinitions) {
-    if ('result' in updatedContents && updatedContents.result) {
-      // Legacy format: { result: { segments, speakers } }
-      finalContents = {
-        ...updatedContents,
-        result: {
-          ...updatedContents.result,
-          speakers: updates.speakerDefinitions,
-        },
-      };
-    } else {
-      // New format: { stt_model, segments, speakers, ... }
-      // speakers 키가 없어도 추가
-      finalContents = {
-        ...updatedContents,
-        speakers: updates.speakerDefinitions,
-      };
-    }
-  }
-
-  // 4. 업데이트된 segments로 parsed_text 생성
-  const { segments: updatedSegments, speakers: updatedSpeakers } =
-    extractSegmentsAndSpeakers(finalContents);
-  const parsedText = generateParsedText(updatedSegments, updatedSpeakers);
-
-  // 5. DB에 저장 (contents + parsed_text + preview)
-  const { error: updateError } = await supabase
-    .from('transcribes')
-    .update({
-      contents: finalContents,
-      parsed_text: parsedText,
-      preview: buildTranscribePreview(finalContents),
-    })
-    .eq('id', transcribeId);
-
-  if (updateError) {
-    throw new Error(`대화 업데이트 실패: ${updateError.message}`);
-  }
-}
-
-/**
- * 전사 세그먼트 추가 (특정 세그먼트 뒤에 삽입)
- * Optimistic update는 호출부에서 처리, 이 함수는 DB만 업데이트
- */
-export async function addTranscriptSegment(
-  transcribeId: string,
-  afterSegmentId: number,
-  newSegment: { id: number; speaker: number; text: string }
-): Promise<void> {
-  const { data: transcribe, error: fetchError } = await supabase
-    .from('transcribes')
-    .select('contents')
-    .eq('id', transcribeId)
-    .single();
-
-  if (fetchError || !transcribe) {
-    throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
-    );
-  }
-
-  const contents = transcribe.contents;
-  if (!contents) {
-    throw new Error('전사 결과가 없어요.');
-  }
-
-  const updatedContents = updateSegmentsInContents(contents, (segments) => {
-    const afterIndex = findSegmentIndexById(segments, afterSegmentId);
-    const segmentToInsert = {
-      id: newSegment.id,
-      start: null,
-      end: null,
-      text: newSegment.text,
-      speaker: newSegment.speaker,
-    };
-    segments.splice(afterIndex + 1, 0, segmentToInsert);
-    return segments;
-  });
-
-  const { segments: updatedSegments, speakers } =
-    extractSegmentsAndSpeakers(updatedContents);
-  const parsedText = generateParsedText(updatedSegments, speakers);
-
-  const { error: updateError } = await supabase
-    .from('transcribes')
-    .update({
-      contents: updatedContents,
-      parsed_text: parsedText,
-      preview: buildTranscribePreview(updatedContents),
-    })
-    .eq('id', transcribeId);
-
-  if (updateError) {
-    throw new Error(`세그먼트 추가 실패: ${updateError.message}`);
-  }
-}
-
-/**
- * 전사 세그먼트 삭제
- * Optimistic update는 호출부에서 처리, 이 함수는 DB만 업데이트
- */
-export async function deleteTranscriptSegment(
-  transcribeId: string,
-  segmentId: number
-): Promise<void> {
-  const { data: transcribe, error: fetchError } = await supabase
-    .from('transcribes')
-    .select('contents')
-    .eq('id', transcribeId)
-    .single();
-
-  if (fetchError || !transcribe) {
-    throw new Error(
-      `전사 데이터 조회 실패: ${fetchError?.message || '전사 데이터를 찾을 수 없어요.'}`
-    );
-  }
-
-  const contents = transcribe.contents;
-  if (!contents) {
-    throw new Error('전사 결과가 없어요.');
-  }
-
-  const updatedContents = updateSegmentsInContents(contents, (segments) => {
-    const index = findSegmentIndexById(segments, segmentId);
-    segments.splice(index, 1);
-    return segments;
-  });
-
-  const { segments: updatedSegments, speakers } =
-    extractSegmentsAndSpeakers(updatedContents);
-  const parsedText = generateParsedText(updatedSegments, speakers);
-
-  const { error: updateError } = await supabase
-    .from('transcribes')
-    .update({
-      contents: updatedContents,
-      parsed_text: parsedText,
-      preview: buildTranscribePreview(updatedContents),
-    })
-    .eq('id', transcribeId);
-
-  if (updateError) {
-    throw new Error(`세그먼트 삭제 실패: ${updateError.message}`);
   }
 }
 
@@ -1022,24 +540,6 @@ export async function assignClientToSession(
 
   if (error) {
     throw new Error(`내담자 할당 실패: ${error.message}`);
-  }
-}
-
-/**
- * 직접 입력 세션 텍스트 업데이트 API 호출
- * handwritten_transcribes 테이블의 contents 업데이트
- */
-export async function updateHandwrittenTranscribeContent(
-  transcribeId: string,
-  contents: string
-): Promise<void> {
-  const { error } = await supabase
-    .from('handwritten_transcribes')
-    .update({ contents })
-    .eq('id', transcribeId);
-
-  if (error) {
-    throw new Error(`직접 입력 텍스트 업데이트 실패: ${error.message}`);
   }
 }
 

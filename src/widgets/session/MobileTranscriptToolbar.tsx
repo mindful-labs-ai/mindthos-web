@@ -21,6 +21,7 @@ import { useSessionStore } from '@/stores/sessionStore';
 interface MobileTranscriptToolbarProps {
   isReadOnly: boolean;
   isEditing: boolean;
+  isSaving: boolean;
   isAnonymized: boolean;
   enableTimestampFeatures: boolean;
   isMenuOpen: boolean;
@@ -42,6 +43,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
     ({
       isReadOnly,
       isEditing,
+      isSaving,
       isAnonymized,
       enableTimestampFeatures,
       isMenuOpen,
@@ -104,9 +106,10 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                     <button
                       type="button"
                       onClick={onEditStart}
+                      disabled={isSaving}
                       className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                     >
-                      편집
+                      {isSaving ? '저장 중...' : '편집'}
                     </button>
                     <button
                       type="button"
@@ -126,6 +129,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                               : 'border border-grey-30 text-grey-70 lg:hover:bg-grey-10 lg:hover:text-grey-100'
                         }`}
                         onClick={onDeidentify}
+                        disabled={isSaving}
                         aria-label="축어록 비식별화"
                       >
                         <DeidentificationIcon />
@@ -159,6 +163,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                           onEditStart();
                           setIsMenuOpen(false);
                         }}
+                        disabled={isSaving}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
                         <span className="text-l text-grey-100">편집</span>
@@ -183,6 +188,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                           onDeidentify();
                           setIsMenuOpen(false);
                         }}
+                        disabled={isSaving}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
                         <span className="text-l text-grey-100">
@@ -196,6 +202,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                         onClick={() => {
                           onDeidentify();
                         }}
+                        disabled={isSaving}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
                         <span className="text-l text-orange-100">
@@ -297,6 +304,7 @@ export const MobileTranscriptToolbar: React.FC<MobileTranscriptToolbarProps> =
                   <button
                     type="button"
                     onClick={onToggleFindReplace}
+                    disabled={isSaving}
                     aria-label="찾기 바꾸기"
                     className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
                       isFindReplaceOpen

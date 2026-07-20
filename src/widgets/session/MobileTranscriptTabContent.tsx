@@ -25,6 +25,7 @@ interface MobileTranscriptTabContentProps {
   isEditing: boolean;
   /** 세그먼트 편집기 강제 remount 버전 (찾기바꾸기/undo/redo 반영) */
   editorVersion?: number;
+  isSaving: boolean;
   isAnonymized: boolean;
   showDeid?: boolean;
   enableTimestampFeatures: boolean;
@@ -62,6 +63,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
       isReadOnly,
       isEditing,
       editorVersion = 0,
+      isSaving,
       isAnonymized,
       showDeid = false,
       enableTimestampFeatures,
@@ -136,6 +138,7 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                           index === currentSegmentIndex
                         }
                         isEditable={isEditing && !isReadOnly}
+                        isSaving={isSaving}
                         isAnonymized={isAnonymized}
                         showDeid={showDeid}
                         sttModel={transcribe?.stt_model}
@@ -156,25 +159,29 @@ export const MobileTranscriptTabContent: React.FC<MobileTranscriptTabContentProp
                         allSegments={segments}
                         clientId={clientId}
                         onSpeakerChange={
-                          isReadOnly ? undefined : onSpeakerChange
+                          isReadOnly || isSaving ? undefined : onSpeakerChange
                         }
                         onAddSegment={
-                          isEditing && !isReadOnly ? onAddSegment : undefined
+                          isEditing && !isReadOnly && !isSaving
+                            ? onAddSegment
+                            : undefined
                         }
                         onDeleteSegment={
-                          isEditing && !isReadOnly
+                          isEditing && !isReadOnly && !isSaving
                             ? handleDeleteRequest
                             : undefined
                         }
                         enableTimestampFeatures={enableTimestampFeatures}
                         audioDuration={audioDuration}
                         onSegmentTimeChange={
-                          isEditing && !isReadOnly
+                          isEditing && !isReadOnly && !isSaving
                             ? onSegmentTimeChange
                             : undefined
                         }
                         onSplitSegment={
-                          isEditing && !isReadOnly ? onSplitSegment : undefined
+                          isEditing && !isReadOnly && !isSaving
+                            ? onSplitSegment
+                            : undefined
                         }
                       />
                     );

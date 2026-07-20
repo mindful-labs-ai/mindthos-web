@@ -15,12 +15,13 @@ import { Modal } from '@/shared/ui/composites/Modal';
 interface MobileHandwrittenToolbarProps {
   isReadOnly: boolean;
   isEditing: boolean;
+  isSaving: boolean;
   onEditStart: () => void;
   onCopy: () => void;
 }
 
 export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
-  React.memo(({ isReadOnly, isEditing, onEditStart, onCopy }) => {
+  React.memo(({ isReadOnly, isEditing, isSaving, onEditStart, onCopy }) => {
     const { isTablet } = useDevice();
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
@@ -61,6 +62,7 @@ export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
                   <button
                     type="button"
                     onClick={onEditStart}
+                    disabled={isSaving}
                     className="rounded-md border border-grey-30 bg-white px-3.5 py-1 text-m font-medium text-grey-70 transition-colors lg:hover:bg-grey-10 lg:hover:text-grey-100"
                   >
                     편집
@@ -92,10 +94,12 @@ export const MobileHandwrittenToolbar: React.FC<MobileHandwrittenToolbarProps> =
                   >
                     <div className="mb-16 w-full space-y-1">
                       <button
+                        type="button"
                         onClick={() => {
                           onEditStart();
                           setIsMenuOpen(false);
                         }}
+                        disabled={isSaving}
                         className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-1.5 text-left transition-colors lg:hover:bg-surface"
                       >
                         <span className="text-l text-grey-100">편집</span>
