@@ -183,8 +183,8 @@ export function GenogramClientContainer() {
     } finally {
       steps.setLoading(false);
       setShouldForceRefresh(false);
-      // generate-family-summary edge function이 reserve→commit/release를 내부에서 끝낸 상태이므로
-      // 응답이 돌아온 시점에 잔액 동기화 (성공/실패 모두 적용 — failure는 release로 환불됨)
+      // 서버가 reserve→commit/release를 내부에서 끝낸 상태이므로(폴링이 완료된 시점)
+      // 잔액 동기화 (성공/실패 모두 적용 — failure는 release로 환불됨)
       const userIdNum = Number(userId);
       if (!Number.isNaN(userIdNum)) {
         queryClient.invalidateQueries({
