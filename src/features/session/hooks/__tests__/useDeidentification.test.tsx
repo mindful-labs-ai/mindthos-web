@@ -10,6 +10,7 @@ import {
 } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { DeidentificationStatusResponse } from '@/shared/api/server/transcriptServerApi';
 import {
   creditQueryKeys,
   sessionQueryKeys,
@@ -19,12 +20,14 @@ import { useDeidentification } from '../useDeidentification';
 
 const mocks = vi.hoisted(() => ({
   deidentifyTranscript: vi.fn(),
+  getDeidentificationStatus: vi.fn(),
   checkCredit: vi.fn(),
   toast: vi.fn(),
 }));
 
 vi.mock('@/shared/api/server/transcriptServerApi', () => ({
   deidentifyTranscript: mocks.deidentifyTranscript,
+  getDeidentificationStatus: mocks.getDeidentificationStatus,
 }));
 
 vi.mock('@/shared/hooks/useCreditGuard', () => ({
@@ -58,6 +61,27 @@ vi.mock('@/widgets/session/DeidentificationModal', () => ({
     ) : null,
 }));
 
+const pendingStatus: DeidentificationStatusResponse = {
+  id: 'deid-a',
+  status: 'pending' as const,
+  session_id: 'session-a',
+  transcribe_id: 'transcribe-a',
+};
+
+const succeededStatus: DeidentificationStatusResponse = {
+  ...pendingStatus,
+  status: 'succeeded' as const,
+  stats: {
+    total_segments: 2,
+    deid_segments: 1,
+    deid_tags: 1,
+    consistency_rate: 100,
+    nv_preserve_rate: 100,
+  },
+  revision: 2,
+  contents_fingerprint: 'b'.repeat(32),
+};
+
 describe('useDeidentification', () => {
   let queryClient: QueryClient;
 
@@ -67,25 +91,33 @@ describe('useDeidentification', () => {
       defaultOptions: { queries: { retry: false } },
     });
     mocks.checkCredit.mockResolvedValue({ ok: true, remaining: 100 });
-    mocks.deidentifyTranscript.mockResolvedValue({
-      success: true,
-      session_id: 'session-a',
-      stats: {
-        total_segments: 2,
-        deid_segments: 1,
-        deid_tags: 1,
-        consistency_rate: 100,
-        nv_preserve_rate: 100,
-      },
-      revision: 2,
-      contents_fingerprint: 'b'.repeat(32),
-    });
+    mocks.getDeidentificationStatus.mockResolvedValue(null);
+    mocks.deidentifyTranscript.mockResolvedValue(pendingStatus);
   });
 
   function wrapper({ children }: PropsWithChildren) {
     return (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
+  }
+
+  function renderDeidentification(onSuccess = vi.fn()) {
+    return {
+      onSuccess,
+      ...renderHook(
+        () =>
+          useDeidentification({
+            sessionId: 'session-a',
+            transcribeId: 'transcribe-a',
+            revision: 1,
+            contentsFingerprint: 'a'.repeat(32),
+            userId: 7,
+            segments: [],
+            onSuccess,
+          }),
+        { wrapper }
+      ),
+    };
   }
 
   async function confirm(result: {
@@ -95,28 +127,34 @@ describe('useDeidentification', () => {
     const modal = render(result.current.deidModal, { wrapper });
     await act(async () => {
       fireEvent.click(modal.getByRole('button', { name: 'confirm-deid' }));
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      await Promise.resolve();
     });
     return modal;
   }
 
-  it('Edge payload 없이 화면이 본 transcript snapshot으로 server command를 호출해야 합니다.', async () => {
-    const onSuccess = vi.fn();
-    const { result } = renderHook(
-      () =>
-        useDeidentification({
-          sessionId: 'session-a',
-          transcribeId: 'transcribe-a',
-          revision: 1,
-          contentsFingerprint: 'a'.repeat(32),
-          userId: 7,
-          segments: [],
-          onSuccess,
-        }),
-      { wrapper }
+  async function setStatus(status: DeidentificationStatusResponse) {
+    await act(async () => {
+      queryClient.setQueryData(
+        sessionQueryKeys.deidentificationStatus(
+          status.session_id,
+          status.transcribe_id
+        ),
+        status
+      );
+      await Promise.resolve();
+    });
+  }
+
+  it('POST 202 직후에는 완료 처리하지 않고 status polling을 대기해야 합니다.', async () => {
+    const { result, onSuccess } = renderDeidentification();
+    await waitFor(() =>
+      expect(mocks.getDeidentificationStatus).toHaveBeenCalledWith({
+        sessionId: 'session-a',
+        transcribeId: 'transcribe-a',
+      })
     );
 
-    await confirm(result);
+    const modal = await confirm(result);
 
     await waitFor(() =>
       expect(mocks.deidentifyTranscript).toHaveBeenCalledWith({
@@ -126,45 +164,227 @@ describe('useDeidentification', () => {
         expectedContentsFingerprint: 'a'.repeat(32),
       })
     );
-    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    modal.rerender(result.current.deidModal);
+    expect(modal.getByText('loading')).toBeTruthy();
+    expect(result.current.showDeid).toBe(false);
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it('일반 5xx를 credit pending으로 오인하지 않고 transcript cache를 다시 읽어야 합니다.', async () => {
+  it('pending/processing에서는 대기하고 succeeded에서만 완료·cache 재조정을 수행해야 합니다.', async () => {
+    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+    const { result, onSuccess } = renderDeidentification();
+    await waitFor(() =>
+      expect(mocks.getDeidentificationStatus).toHaveBeenCalledTimes(1)
+    );
+    const modal = await confirm(result);
+
+    await setStatus({ ...pendingStatus, status: 'processing' });
+    modal.rerender(result.current.deidModal);
+    expect(modal.getByText('loading')).toBeTruthy();
+    expect(onSuccess).not.toHaveBeenCalled();
+
+    await setStatus(succeededStatus);
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    modal.rerender(result.current.deidModal);
+    expect(modal.getByText('complete')).toBeTruthy();
+    expect(result.current.showDeid).toBe(true);
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: sessionQueryKeys.detail('session-a', false),
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions'] });
+    expect(invalidate).toHaveBeenCalledWith({
+      queryKey: creditQueryKeys.summary(7),
+    });
+  });
+
+  it('failed status의 error_code를 오류 UI로 변환하고 폴링을 종료해야 합니다.', async () => {
+    const { result, onSuccess } = renderDeidentification();
+    await waitFor(() =>
+      expect(mocks.getDeidentificationStatus).toHaveBeenCalledTimes(1)
+    );
+    const modal = await confirm(result);
+
+    await setStatus({
+      ...pendingStatus,
+      status: 'failed',
+      error_code: 'NO_DEID_TARGETS',
+    });
+
+    await waitFor(() => {
+      modal.rerender(result.current.deidModal);
+      expect(modal.getByText('error')).toBeTruthy();
+    });
+    expect(modal.getByText('NO_DEID_TARGETS')).toBeTruthy();
+    expect(result.current.showDeid).toBe(false);
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it('POST 5xx는 작업 대기 상태로 오인하지 않고 cache를 재조정해야 합니다.', async () => {
     mocks.deidentifyTranscript.mockRejectedValue({
       status: 503,
-      statusCode: 'SERVER_ERROR',
-      message: '비식별화 AI가 설정되지 않았어요.',
+      message: '비식별화 큐를 사용할 수 없어요.',
     });
     const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
-    const { result } = renderHook(
-      () =>
+    const { result } = renderDeidentification();
+    await waitFor(() =>
+      expect(mocks.getDeidentificationStatus).toHaveBeenCalledTimes(1)
+    );
+    const modal = await confirm(result);
+
+    await waitFor(() => {
+      modal.rerender(result.current.deidModal);
+      expect(
+        modal.getByText(
+          '처리 결과를 확인할 수 없어 최신 내용을 다시 불러왔어요.'
+        )
+      ).toBeTruthy();
+    });
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions'] });
+  });
+
+  it('재진입 시 POST 없이 최신 pending status를 조회해 polling UI를 복구해야 합니다.', async () => {
+    mocks.getDeidentificationStatus.mockResolvedValueOnce(pendingStatus);
+    const { result, onSuccess } = renderDeidentification();
+    const modal = render(result.current.deidModal, { wrapper });
+
+    await waitFor(() => {
+      modal.rerender(result.current.deidModal);
+      expect(modal.getByText('loading')).toBeTruthy();
+    });
+
+    expect(mocks.deidentifyTranscript).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
+
+    await setStatus(succeededStatus);
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    modal.rerender(result.current.deidModal);
+    expect(modal.getByText('complete')).toBeTruthy();
+  });
+
+  it('재진입 시 처음부터 terminal인 과거 job은 오류 모달을 다시 열지 않아야 합니다.', async () => {
+    const failedStatus: DeidentificationStatusResponse = {
+      ...pendingStatus,
+      status: 'failed',
+      error_code: 'NO_DEID_TARGETS',
+    };
+    mocks.getDeidentificationStatus.mockResolvedValueOnce(failedStatus);
+    const { result, onSuccess } = renderDeidentification();
+    const modal = render(result.current.deidModal, { wrapper });
+
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryData(
+          sessionQueryKeys.deidentificationStatus(
+            failedStatus.session_id,
+            failedStatus.transcribe_id
+          )
+        )
+      ).toEqual(failedStatus)
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    modal.rerender(result.current.deidModal);
+    expect(modal.queryByText('error')).toBeNull();
+    expect(modal.queryByText('NO_DEID_TARGETS')).toBeNull();
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it('status 조회 중 대상이 바뀌면 이전 세션 결과를 새 UI에 반영하지 않아야 합니다.', async () => {
+    let resolveStatus!: (value: typeof succeededStatus) => void;
+    mocks.getDeidentificationStatus
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveStatus = resolve;
+        })
+      )
+      .mockResolvedValueOnce(null);
+    const onSuccess = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ sessionId, transcribeId }) =>
         useDeidentification({
-          sessionId: 'session-a',
-          transcribeId: 'transcribe-a',
+          sessionId,
+          transcribeId,
           revision: 1,
           contentsFingerprint: 'a'.repeat(32),
           userId: 7,
           segments: [],
+          onSuccess,
         }),
-      { wrapper }
+      {
+        wrapper,
+        initialProps: {
+          sessionId: 'session-a',
+          transcribeId: 'transcribe-a',
+        },
+      }
+    );
+
+    await waitFor(() =>
+      expect(mocks.getDeidentificationStatus).toHaveBeenCalledTimes(1)
+    );
+    rerender({ sessionId: 'session-b', transcribeId: 'transcribe-b' });
+    await waitFor(() =>
+      expect(mocks.getDeidentificationStatus).toHaveBeenCalledTimes(2)
+    );
+    await act(async () => {
+      resolveStatus(succeededStatus);
+      await Promise.resolve();
+    });
+
+    expect(result.current.showDeid).toBe(false);
+    expect(onSuccess).not.toHaveBeenCalled();
+    const modal = render(result.current.deidModal, { wrapper });
+    expect(modal.queryByText('complete')).toBeNull();
+  });
+
+  it('POST 응답 전 대상이 바뀌면 accepted 결과를 새 세션 UI에 반영하지 않아야 합니다.', async () => {
+    let resolveCommand!: (value: DeidentificationStatusResponse) => void;
+    mocks.deidentifyTranscript.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveCommand = resolve;
+      })
+    );
+    const onSuccess = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ sessionId, transcribeId }) =>
+        useDeidentification({
+          sessionId,
+          transcribeId,
+          revision: 1,
+          contentsFingerprint: 'a'.repeat(32),
+          userId: 7,
+          segments: [],
+          onSuccess,
+        }),
+      {
+        wrapper,
+        initialProps: {
+          sessionId: 'session-a',
+          transcribeId: 'transcribe-a',
+        },
+      }
     );
 
     const modal = await confirm(result);
-
     await waitFor(() =>
       expect(mocks.deidentifyTranscript).toHaveBeenCalledTimes(1)
     );
-    await waitFor(() => expect(invalidate).toHaveBeenCalled());
+    rerender({ sessionId: 'session-b', transcribeId: 'transcribe-b' });
+    await act(async () => {
+      resolveCommand(pendingStatus);
+      await Promise.resolve();
+    });
+
     modal.rerender(result.current.deidModal);
-    expect(
-      modal.getByText('처리 결과를 확인할 수 없어 최신 내용을 다시 불러왔어요.')
-    ).toBeTruthy();
-    expect(invalidate).toHaveBeenCalledWith(
-      expect.objectContaining({ queryKey: ['sessions'] })
-    );
+    expect(modal.queryByText('loading')).toBeNull();
+    expect(result.current.showDeid).toBe(false);
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it('credit 확인 중 대상 세션이 바뀌면 이전 대상 요청과 UI 반영을 중단해야 합니다.', async () => {
+  it('credit 확인 중 대상 세션이 바뀌면 이전 POST를 전송하지 않아야 합니다.', async () => {
     let resolveGuard!: (value: { ok: true; remaining: number }) => void;
     mocks.checkCredit.mockReturnValueOnce(
       new Promise((resolve) => {
@@ -190,13 +410,8 @@ describe('useDeidentification', () => {
       }
     );
 
-    act(() => result.current.handleDeidentify());
-    const modal = render(result.current.deidModal, { wrapper });
-    act(() => {
-      fireEvent.click(modal.getByRole('button', { name: 'confirm-deid' }));
-    });
+    const modal = await confirm(result);
     expect(mocks.checkCredit).toHaveBeenCalledTimes(1);
-
     rerender({ sessionId: 'session-b', transcribeId: 'transcribe-b' });
     await act(async () => {
       resolveGuard({ ok: true, remaining: 100 });
@@ -208,100 +423,14 @@ describe('useDeidentification', () => {
     expect(modal.queryByRole('button', { name: 'confirm-deid' })).toBeNull();
   });
 
-  it('server command 전송 후 대상이 바뀌어도 원래 대상 cache와 credit은 재조정해야 합니다.', async () => {
-    let resolveCommand!: (value: {
-      success: boolean;
-      session_id: string;
-      stats: {
-        total_segments: number;
-        deid_segments: number;
-        deid_tags: number;
-        consistency_rate: number;
-        nv_preserve_rate: number;
-      };
-      revision: number;
-      contents_fingerprint: string;
-    }) => void;
-    mocks.deidentifyTranscript.mockReturnValueOnce(
-      new Promise((resolve) => {
-        resolveCommand = resolve;
-      })
-    );
-    const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
-    const onSuccess = vi.fn();
-    const { result, rerender } = renderHook(
-      ({ sessionId, transcribeId }) =>
-        useDeidentification({
-          sessionId,
-          transcribeId,
-          revision: 1,
-          contentsFingerprint: 'a'.repeat(32),
-          userId: 7,
-          segments: [],
-          onSuccess,
-        }),
-      {
-        wrapper,
-        initialProps: {
-          sessionId: 'session-a',
-          transcribeId: 'transcribe-a',
-        },
-      }
-    );
-
-    await confirm(result);
-    await waitFor(() =>
-      expect(mocks.deidentifyTranscript).toHaveBeenCalledTimes(1)
-    );
-    rerender({ sessionId: 'session-b', transcribeId: 'transcribe-b' });
-    await act(async () => {
-      resolveCommand({
-        success: true,
-        session_id: 'session-a',
-        stats: {
-          total_segments: 2,
-          deid_segments: 1,
-          deid_tags: 1,
-          consistency_rate: 100,
-          nv_preserve_rate: 100,
-        },
-        revision: 2,
-        contents_fingerprint: 'b'.repeat(32),
-      });
-      await Promise.resolve();
-    });
-
-    await waitFor(() =>
-      expect(invalidate).toHaveBeenCalledWith({
-        queryKey: sessionQueryKeys.detail('session-a', false),
-      })
-    );
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['sessions'] });
-    expect(invalidate).toHaveBeenCalledWith({
-      queryKey: creditQueryKeys.summary(7),
-    });
-    expect(onSuccess).not.toHaveBeenCalled();
-  });
-
-  it('credit preflight 중 확인을 연속 클릭해도 server command는 한 번만 보내야 합니다.', async () => {
+  it('credit preflight 중 확인을 연속 클릭해도 POST는 한 번만 전송해야 합니다.', async () => {
     let resolveGuard!: (value: { ok: true; remaining: number }) => void;
     mocks.checkCredit.mockReturnValueOnce(
       new Promise((resolve) => {
         resolveGuard = resolve;
       })
     );
-    const { result } = renderHook(
-      () =>
-        useDeidentification({
-          sessionId: 'session-a',
-          transcribeId: 'transcribe-a',
-          revision: 1,
-          contentsFingerprint: 'a'.repeat(32),
-          userId: 7,
-          segments: [],
-        }),
-      { wrapper }
-    );
+    const { result } = renderDeidentification();
 
     act(() => result.current.handleDeidentify());
     const modal = render(result.current.deidModal, { wrapper });

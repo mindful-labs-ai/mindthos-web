@@ -36,18 +36,41 @@ export interface DeidentifyTranscriptParams {
   expectedContentsFingerprint: string;
 }
 
-export interface DeidentifyTranscriptResponse {
-  success: boolean;
+export interface DeidentificationStatusParams {
+  sessionId: string;
+  transcribeId: string;
+}
+
+export type DeidentificationStatus =
+  | 'pending'
+  | 'processing'
+  | 'succeeded'
+  | 'failed';
+
+export interface DeidentificationStatusResponse {
+  id: string;
+  status: DeidentificationStatus;
   session_id: string;
-  stats: {
+  transcribe_id: string;
+  stats?: {
     total_segments: number;
     deid_segments: number;
     deid_tags: number;
     consistency_rate: number;
     nv_preserve_rate: number;
   };
-  revision: number;
-  contents_fingerprint: string;
+  revision?: number;
+  contents_fingerprint?: string;
+  error_code?: string;
+}
+
+export type DeidentifyTranscriptResponse = DeidentificationStatusResponse;
+
+function deidentificationPath({
+  sessionId,
+  transcribeId,
+}: DeidentificationStatusParams): string {
+  return `/sessions/${encodeURIComponent(sessionId)}/transcribes/${encodeURIComponent(transcribeId)}/deidentification`;
 }
 
 /**
@@ -114,7 +137,7 @@ export function deidentifyTranscript({
   expectedContentsFingerprint,
 }: DeidentifyTranscriptParams): Promise<DeidentifyTranscriptResponse> {
   return serverRequest<DeidentifyTranscriptResponse>(
-    `/sessions/${encodeURIComponent(sessionId)}/transcribes/${encodeURIComponent(transcribeId)}/deidentification`,
+    deidentificationPath({ sessionId, transcribeId }),
     {
       method: 'POST',
       body: {
@@ -122,5 +145,15 @@ export function deidentifyTranscript({
         expectedContentsFingerprint,
       },
     }
+  );
+}
+
+/** 현재 transcript의 최신 비식별화 작업 상태를 조회한다. */
+export function getDeidentificationStatus({
+  sessionId,
+  transcribeId,
+}: DeidentificationStatusParams): Promise<DeidentificationStatusResponse> {
+  return serverRequest<DeidentificationStatusResponse>(
+    deidentificationPath({ sessionId, transcribeId })
   );
 }
