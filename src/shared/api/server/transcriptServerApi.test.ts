@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   deidentifyTranscript,
+  getDeidentificationStatus,
   updateHandwrittenTranscript,
   updateTranscript,
 } from './transcriptServerApi';
@@ -104,6 +105,17 @@ describe('transcriptServerApi', () => {
           expectedContentsFingerprint: 'd'.repeat(32),
         },
       }
+    );
+  });
+
+  it('비식별화 상태는 같은 transcript resource에서 조회해야 합니다.', async () => {
+    await getDeidentificationStatus({
+      sessionId: 'session/a',
+      transcribeId: 'transcribe/a',
+    });
+
+    expect(mocks.serverRequest).toHaveBeenCalledWith(
+      '/sessions/session%2Fa/transcribes/transcribe%2Fa/deidentification'
     );
   });
 });
