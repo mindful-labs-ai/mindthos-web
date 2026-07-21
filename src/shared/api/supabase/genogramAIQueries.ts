@@ -333,6 +333,23 @@ export async function fetchRawAIOutput(
 }
 
 /**
+ * 현재 서버측 생성 상태만 조회한다(트리거·폴링 없이 1회).
+ * 마운트/재진입 시 진행 중(pending)이면 UI가 자동으로 로딩·폴링을 재개하도록 판단하는 용도.
+ * 조회 실패는 'none'으로 취급한다(수동 생성으로 폴백 — 화면을 막지 않음).
+ */
+export async function fetchGenerationStatus(
+  clientId: string
+): Promise<'none' | 'pending' | 'completed' | 'failed'> {
+  try {
+    const { status } = await getFamilySummaryStatus(clientId);
+    return status;
+  } catch (error) {
+    console.error('[genogramAIService] fetchGenerationStatus error:', error);
+    return 'none';
+  }
+}
+
+/**
  * AI JSON을 캔버스 형식으로 변환 (저장 없이)
  * 미리보기 등에 사용
  */

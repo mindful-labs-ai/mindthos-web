@@ -8,7 +8,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ServerApiError } from '@/shared/api/server/serverClient';
 
-import { fetchRawAIOutput, initFamilySummary } from './genogramAIQueries';
+import {
+  fetchGenerationStatus,
+  fetchRawAIOutput,
+  initFamilySummary,
+} from './genogramAIQueries';
 
 // ─── serverApi 모킹 ───────────────────────────────────────────────────────────
 
@@ -70,7 +74,10 @@ describe('fetchRawAIOutput', () => {
     vi.useFakeTimers();
     // crypto.randomUUID stub
     vi.stubGlobal('crypto', { randomUUID: mocks.randomUUID });
-    mocks.triggerFamilySummary.mockResolvedValue({ clientId: 'client-abc', status: 'pending' });
+    mocks.triggerFamilySummary.mockResolvedValue({
+      clientId: 'client-abc',
+      status: 'pending',
+    });
   });
 
   afterEach(() => {
@@ -118,7 +125,10 @@ describe('fetchRawAIOutput', () => {
     const result = await promise;
 
     expect(mocks.triggerFamilySummary).not.toHaveBeenCalled();
-    expect(result).toMatchObject({ success: true, data: { client_id: 'client-abc' } });
+    expect(result).toMatchObject({
+      success: true,
+      data: { client_id: 'client-abc' },
+    });
   });
 
   it('(b) pending 폴링 중 completed가 되면 familySummary를 ai_output으로 포함해야 한다', async () => {
@@ -201,7 +211,7 @@ describe('fetchRawAIOutput', () => {
 
   it('폴링 중 status=failed가 되면 PIPELINE_ERROR 코드와 서버 errorMessage를 반환해야 한다', async () => {
     mocks.getFamilySummaryStatus
-      .mockResolvedValueOnce(NONE_STATUS)   // initial
+      .mockResolvedValueOnce(NONE_STATUS) // initial
       .mockResolvedValueOnce(FAILED_STATUS); // poll
 
     const promise = fetchRawAIOutput('client-abc');
@@ -220,7 +230,10 @@ describe('fetchRawAIOutput', () => {
   it('폴링 중 failed이고 errorMessage가 없으면 기본 메시지를 반환해야 한다', async () => {
     mocks.getFamilySummaryStatus
       .mockResolvedValueOnce(NONE_STATUS)
-      .mockResolvedValueOnce({ clientId: 'client-abc', status: 'failed' as const });
+      .mockResolvedValueOnce({
+        clientId: 'client-abc',
+        status: 'failed' as const,
+      });
 
     const promise = fetchRawAIOutput('client-abc');
     await vi.runAllTimersAsync();
@@ -230,7 +243,9 @@ describe('fetchRawAIOutput', () => {
       success: false,
       error: { code: 'PIPELINE_ERROR' },
     });
-    expect((result as { success: false; error: { message: string } }).error.message).toBeTruthy();
+    expect(
+      (result as { success: false; error: { message: string } }).error.message
+    ).toBeTruthy();
   });
 
   // ── 타임아웃 ──────────────────────────────────────────────────────────────
@@ -349,7 +364,9 @@ describe('initFamilySummary', () => {
 
     expect(result).toMatchObject({
       success: false,
-      error: expect.objectContaining({ message: expect.stringContaining('delete failed') }),
+      error: expect.objectContaining({
+        message: expect.stringContaining('delete failed'),
+      }),
     });
   });
 
@@ -386,5 +403,32 @@ describe('initFamilySummary', () => {
 
     expect(chain.delete).toHaveBeenCalled();
     expect(chain.eq).toHaveBeenCalledWith('client_id', 'client-42');
+  });
+});
+
+describe('fetchGenerationStatus', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('서버 상태(pending)를 그대로 반환해야 한다', async () => {
+    mocks.getFamilySummaryStatus.mockResolvedValue(PENDING_STATUS);
+    await expect(fetchGenerationStatus('client-abc')).resolves.toBe('pending');
+  });
+
+  it('completed/none/failed 상태도 그대로 반환해야 한다', async () => {
+    mocks.getFamilySummaryStatus.mockResolvedValueOnce(COMPLETED_STATUS);
+    await expect(fetchGenerationStatus('client-abc')).resolves.toBe(
+      'completed'
+    );
+    mocks.getFamilySummaryStatus.mockResolvedValueOnce(NONE_STATUS);
+    await expect(fetchGenerationStatus('client-abc')).resolves.toBe('none');
+    mocks.getFamilySummaryStatus.mockResolvedValueOnce(FAILED_STATUS);
+    await expect(fetchGenerationStatus('client-abc')).resolves.toBe('failed');
+  });
+
+  it('조회 실패 시 none으로 폴백해야 한다(화면을 막지 않음)', async () => {
+    mocks.getFamilySummaryStatus.mockRejectedValue(new Error('network'));
+    await expect(fetchGenerationStatus('client-abc')).resolves.toBe('none');
   });
 });
