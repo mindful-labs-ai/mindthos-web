@@ -25,6 +25,8 @@ interface ServerEnvelope<T> {
 export class ServerApiError extends Error {
   readonly status: number;
   readonly statusCode: string;
+  readonly success = false;
+  readonly error: string;
   readonly raw?: unknown;
 
   constructor(
@@ -34,9 +36,14 @@ export class ServerApiError extends Error {
     raw?: unknown
   ) {
     super(message);
+    if (raw && typeof raw === 'object') {
+      Object.assign(this, raw);
+    }
     this.name = 'ServerApiError';
     this.status = status;
     this.statusCode = statusCode;
+    this.error = statusCode;
+    this.message = message;
     this.raw = raw;
   }
 }

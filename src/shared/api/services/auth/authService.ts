@@ -2,12 +2,12 @@ import { type AuthChangeEvent, type Session } from '@supabase/supabase-js';
 
 import { supabase } from '@/lib/supabase';
 import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+  serverRequest,
+  serverRequestPublic,
+} from '@/shared/api/server/serverClient';
 
-import { ERROR_MESSAGES } from './constants';
-import { handleAuthError, handleEdgeFunctionError } from './errorHandlers';
+import { AUTH_ENDPOINTS, ERROR_MESSAGES } from './constants';
+import { handleAuthApiError, handleAuthError } from './errorHandlers';
 import {
   AuthError,
   AuthErrorCode,
@@ -273,45 +273,45 @@ export const authService = {
 
   async checkUserExists(email: string): Promise<CheckUserExistsResponse> {
     try {
-      return await callEdgeFunction<CheckUserExistsResponse>(
-        EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_USER_EXISTS,
-        { email }
+      return await serverRequestPublic<CheckUserExistsResponse>(
+        AUTH_ENDPOINTS.CHECK_USER_EXISTS,
+        { method: 'POST', body: { email } }
       );
     } catch (error) {
-      throw handleEdgeFunctionError(error);
+      throw handleAuthApiError(error);
     }
   },
 
   async checkAuthMethod(email: string): Promise<CheckAuthMethodResponse> {
     try {
-      return await callEdgeFunction<CheckAuthMethodResponse>(
-        EDGE_FUNCTION_ENDPOINTS.AUTH.CHECK_AUTH_METHOD,
-        { email }
+      return await serverRequestPublic<CheckAuthMethodResponse>(
+        AUTH_ENDPOINTS.CHECK_AUTH_METHOD,
+        { method: 'POST', body: { email } }
       );
     } catch (error) {
-      throw handleEdgeFunctionError(error);
+      throw handleAuthApiError(error);
     }
   },
 
   async deleteAccount(email: string): Promise<AccountDeleteResponse> {
     try {
-      return await callEdgeFunction<AccountDeleteResponse>(
-        EDGE_FUNCTION_ENDPOINTS.AUTH.ACCOUNT_DELETE,
-        { email }
+      return await serverRequest<AccountDeleteResponse>(
+        AUTH_ENDPOINTS.ACCOUNT_DELETE,
+        { method: 'POST', body: { email } }
       );
     } catch (error) {
-      throw handleEdgeFunctionError(error);
+      throw handleAuthApiError(error);
     }
   },
 
   async resendVerification(email: string): Promise<ResendVerificationResponse> {
     try {
-      return await callEdgeFunction<ResendVerificationResponse>(
-        EDGE_FUNCTION_ENDPOINTS.AUTH.RESEND_VERIFICATION,
-        { email }
+      return await serverRequestPublic<ResendVerificationResponse>(
+        AUTH_ENDPOINTS.RESEND_VERIFICATION,
+        { method: 'POST', body: { email } }
       );
     } catch (error) {
-      throw handleEdgeFunctionError(error);
+      throw handleAuthApiError(error);
     }
   },
 

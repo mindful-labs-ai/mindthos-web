@@ -117,4 +117,33 @@ describe('serverClient', () => {
       })
     );
   });
+
+  it('EF 호환 오류 응답의 추가 필드를 기존 UI가 읽을 수 있게 유지한다', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: false,
+          error: 'RESEND_COOLDOWN',
+          message: '잠시 후 다시 시도해주세요.',
+          retry_after_seconds: 42,
+        }),
+        {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    );
+
+    await expect(
+      serverRequest('/auth/phone-verification/request')
+    ).rejects.toEqual(
+      expect.objectContaining({
+        status: 429,
+        success: false,
+        error: 'RESEND_COOLDOWN',
+        message: '잠시 후 다시 시도해주세요.',
+        retry_after_seconds: 42,
+      })
+    );
+  });
 });

@@ -3,7 +3,7 @@ import { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 import { ERROR_MESSAGES } from './constants';
 import { AuthError, AuthErrorCode } from './types';
 
-const EDGE_FUNCTION_ERROR_MAP: Record<string, AuthErrorCode> = {
+const AUTH_API_ERROR_MAP: Record<string, AuthErrorCode> = {
   EMAIL_ALREADY_EXISTS: AuthErrorCode.EMAIL_ALREADY_EXISTS,
   INVALID_EMAIL_FORMAT: AuthErrorCode.INVALID_EMAIL_FORMAT,
   EMAIL_REQUIRED: AuthErrorCode.EMAIL_REQUIRED,
@@ -12,8 +12,14 @@ const EDGE_FUNCTION_ERROR_MAP: Record<string, AuthErrorCode> = {
   EMAIL_ALREADY_VERIFIED: AuthErrorCode.EMAIL_ALREADY_VERIFIED,
 };
 
-export function handleEdgeFunctionError(error: unknown): AuthError {
-  const err = error as { error?: string; message?: string; status?: number };
+export function handleAuthApiError(error: unknown): AuthError {
+  const err = error as {
+    error?: string;
+    statusCode?: string;
+    message?: string;
+    status?: number;
+  };
+  const errorCode = err.error ?? err.statusCode;
 
   if (err.status === 429) {
     return new AuthError(
@@ -23,9 +29,9 @@ export function handleEdgeFunctionError(error: unknown): AuthError {
     );
   }
 
-  if (err.error && EDGE_FUNCTION_ERROR_MAP[err.error]) {
+  if (errorCode && AUTH_API_ERROR_MAP[errorCode]) {
     return new AuthError(
-      EDGE_FUNCTION_ERROR_MAP[err.error],
+      AUTH_API_ERROR_MAP[errorCode],
       err.message || ERROR_MESSAGES.GENERIC_ERROR,
       error
     );

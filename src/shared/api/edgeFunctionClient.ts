@@ -1,3 +1,5 @@
+import type { FunctionInvokeOptions } from '@supabase/supabase-js';
+
 import { ROUTES } from '@/app/router/constants';
 import { supabase } from '@/lib/supabase';
 
@@ -32,18 +34,6 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     CANCEL_UNDO: 'payment/cancel-undo',
     GET_CARD: 'payment/get-card',
   },
-  // 인증 관련 (백엔드 전용 API)
-  AUTH: {
-    CHECK_USER_EXISTS: 'auth/check-user-exists',
-    CHECK_AUTH_METHOD: 'auth/check-auth-method',
-    ACCOUNT_DELETE: 'auth/account-delete',
-    RESEND_VERIFICATION: 'auth/resend-verification',
-    PHONE_VERIFICATION: {
-      STATUS: 'auth/phone-verification/status',
-      REQUEST: 'auth/phone-verification/request',
-      VERIFY: 'auth/phone-verification/verify',
-    },
-  },
   // 가계도 관련
   GENOGRAM: {
     INIT: 'generate-family-summary/init',
@@ -51,17 +41,20 @@ export const EDGE_FUNCTION_ENDPOINTS = {
   },
 } as const;
 
+interface FunctionErrorWithContext extends Error {
+  context?: {
+    json?: () => Promise<Record<string, unknown>>;
+  };
+}
+
 /**
  * Supabase Edge Function을 호출하는 공용 유틸리티
  * Supabase SDK의 functions.invoke를 사용하여 자동 인증 및 세션 관리를 수행합니다.
  */
 export async function callEdgeFunction<T>(
   endpoint: string,
-  body?: any,
-  options?: {
-    method?: 'POST' | 'GET' | 'PUT' | 'PATCH' | 'DELETE';
-    headers?: Record<string, string>;
-  }
+  body?: FunctionInvokeOptions['body'] | null,
+  options?: Pick<FunctionInvokeOptions, 'method' | 'headers'>
 ): Promise<T> {
   const functionPath = endpoint.startsWith('/')
     ? endpoint.substring(1)
@@ -70,7 +63,7 @@ export async function callEdgeFunction<T>(
   const { data, error } = await supabase.functions.invoke(functionPath, {
     method: options?.method || 'POST',
     headers: options?.headers,
-    body: body,
+    body: body ?? undefined,
   });
 
   if (error) {
@@ -78,12 +71,12 @@ export async function callEdgeFunction<T>(
     let errorData: Record<string, unknown> = {};
 
     try {
-      if (
-        error instanceof Error &&
-        'context' in (error as any) &&
-        typeof (error as any).context?.json === 'function'
-      ) {
-        errorData = await (error as any).context.json();
+      const context =
+        error instanceof Error && 'context' in error
+          ? (error as FunctionErrorWithContext).context
+          : undefined;
+      if (context && typeof context.json === 'function') {
+        errorData = await context.json();
       }
     } catch {
       // ignore
