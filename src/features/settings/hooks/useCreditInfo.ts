@@ -1,11 +1,62 @@
 import { useQuery } from '@tanstack/react-query';
 
 import {
-  creditService,
-  type CreditInfo,
-} from '@/shared/api/supabase/creditQueries';
-import { creditQueryKeys } from '@/shared/constants/queryKeys';
+  getCreditSummary,
+  type CreditSummary,
+} from '@/shared/api/server/creditServerApi';
+import { planService, type Plan } from '@/shared/api/supabase/planQueries';
+import { creditQueryKeys, planQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
+
+export interface CreditInfo {
+  wallet: {
+    total: number;
+    used: number;
+    remaining: number;
+  };
+  plan: {
+    total: number;
+    used: number;
+    remaining: number;
+    type: string;
+    description: string;
+  };
+  subscription: {
+    start_at: string | null;
+    end_at: string | null;
+    reset_at: string | null;
+    scheduled_plan_id: string | null;
+  };
+}
+
+export const toCreditInfo = (
+  summary: CreditSummary,
+  plan: Plan | null | undefined
+): CreditInfo => {
+  const walletTotal =
+    summary.plan.issuedCredit + summary.promotional.issuedCredit;
+
+  return {
+    wallet: {
+      total: walletTotal,
+      used: walletTotal - summary.walletAvailableCredit,
+      remaining: summary.walletAvailableCredit,
+    },
+    plan: {
+      total: summary.plan.issuedCredit,
+      used: summary.plan.issuedCredit - summary.plan.availableCredit,
+      remaining: summary.plan.availableCredit,
+      type: plan?.type ?? (summary.plan.issuedCredit > 0 ? 'Starter' : 'Free'),
+      description: plan?.description ?? '',
+    },
+    subscription: {
+      start_at: null,
+      end_at: summary.plan.periodEndsAt,
+      reset_at: summary.plan.periodEndsAt,
+      scheduled_plan_id: null,
+    },
+  };
+};
 
 export const useCreditInfo = () => {
   const userId = useAuthStore((state) => state.userId);
@@ -18,8 +69,19 @@ export const useCreditInfo = () => {
 
   const summaryQuery = useQuery({
     queryKey: creditQueryKeys.summary(userIdNumber!),
-    queryFn: () => creditService.getCreditSummary(),
+    queryFn: getCreditSummary,
     enabled: !!userIdNumber,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
+  const planId = summaryQuery.data?.plan.planId ?? null;
+  const planQuery = useQuery({
+    queryKey: planQueryKeys.detail(planId ?? ''),
+    queryFn: () => planService.getPlanById(planId!),
+    enabled: !!planId,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -28,29 +90,16 @@ export const useCreditInfo = () => {
 
   let creditInfo: CreditInfo | undefined = undefined;
   if (summaryQuery.data) {
-    const s = summaryQuery.data;
-    creditInfo = {
-      plan: {
-        total: s.total_credit,
-        used: s.used_credit,
-        remaining: s.remaining_credit,
-        type: s.plan_type,
-        // 기존 인터페이스 호환 — description은 RPC에서 제공하지 않음
-        description: '',
-      },
-      subscription: {
-        start_at: s.start_at,
-        end_at: s.end_at,
-        reset_at: s.reset_at,
-        scheduled_plan_id: s.scheduled_plan_id,
-      },
-    };
+    creditInfo = toCreditInfo(summaryQuery.data, planQuery.data);
   }
 
   return {
     creditInfo,
-    isLoading: summaryQuery.isLoading,
-    error: summaryQuery.error?.message ?? null,
-    refetch: () => summaryQuery.refetch(),
+    isLoading: summaryQuery.isLoading || planQuery.isLoading,
+    error: summaryQuery.error?.message ?? planQuery.error?.message ?? null,
+    refetch: async () => {
+      await summaryQuery.refetch();
+      if (planId) await planQuery.refetch();
+    },
   };
 };

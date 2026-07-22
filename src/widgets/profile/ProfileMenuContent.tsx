@@ -89,8 +89,8 @@ export const ProfileMenuContent: React.FC<ProfileMenuContentProps> = ({
       {creditInfo && (
         <div className="mt-4">
           <CreditDisplay
-            totalCredit={creditInfo.plan.total}
-            usedCredit={creditInfo.plan.used}
+            totalCredit={creditInfo.wallet.total}
+            usedCredit={creditInfo.wallet.used}
             planLabel={getPlanLabel(creditInfo.plan.type)}
             planType={creditInfo.plan.type}
             daysUntilReset={calculateDaysUntilReset(
