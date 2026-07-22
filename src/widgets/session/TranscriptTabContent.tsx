@@ -32,6 +32,8 @@ interface TranscriptTabContentProps {
   isEditing: boolean;
   /** 세그먼트 편집기 강제 remount 버전 (찾기바꾸기/undo/redo 반영) */
   editorVersion?: number;
+  /** 저장 중에는 현재 contentEditable DOM을 유지한 채 입력만 잠근다. */
+  isSaving: boolean;
   /** 익명화 모드 여부 */
   isAnonymized: boolean;
   /** 비식별화 표시 여부 */
@@ -85,6 +87,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
       isReadOnly,
       isEditing,
       editorVersion = 0,
+      isSaving,
       isAnonymized,
       showDeid = false,
       enableTimestampFeatures,
@@ -159,6 +162,7 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                           index === currentSegmentIndex
                         }
                         isEditable={isEditing && !isReadOnly}
+                        isSaving={isSaving}
                         isAnonymized={isAnonymized}
                         showDeid={showDeid}
                         sttModel={transcribe?.stt_model}
@@ -179,25 +183,29 @@ export const TranscriptTabContent: React.FC<TranscriptTabContentProps> =
                         allSegments={segments}
                         clientId={clientId}
                         onSpeakerChange={
-                          isReadOnly ? undefined : onSpeakerChange
+                          isReadOnly || isSaving ? undefined : onSpeakerChange
                         }
                         onAddSegment={
-                          isEditing && !isReadOnly ? onAddSegment : undefined
+                          isEditing && !isReadOnly && !isSaving
+                            ? onAddSegment
+                            : undefined
                         }
                         onDeleteSegment={
-                          isEditing && !isReadOnly
+                          isEditing && !isReadOnly && !isSaving
                             ? handleDeleteRequest
                             : undefined
                         }
                         enableTimestampFeatures={enableTimestampFeatures}
                         audioDuration={audioDuration}
                         onSegmentTimeChange={
-                          isEditing && !isReadOnly
+                          isEditing && !isReadOnly && !isSaving
                             ? onSegmentTimeChange
                             : undefined
                         }
                         onSplitSegment={
-                          isEditing && !isReadOnly ? onSplitSegment : undefined
+                          isEditing && !isReadOnly && !isSaving
+                            ? onSplitSegment
+                            : undefined
                         }
                       />
                     );

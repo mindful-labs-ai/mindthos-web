@@ -66,9 +66,10 @@ export const HandwrittenToolbar: React.FC<HandwrittenToolbarProps> = React.memo(
                 type="button"
                 className="typo-sm mx-1 rounded-md border border-border bg-surface px-2.5 py-0.5 font-medium text-fg-muted transition-colors lg:hover:bg-surface lg:hover:text-fg"
                 onClick={onEditStart}
+                disabled={isSaving}
                 title="편집"
               >
-                편집
+                {isSaving ? '저장 중...' : '편집'}
               </button>
               <button
                 type="button"

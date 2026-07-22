@@ -271,7 +271,7 @@ export const SessionHistoryContainer: React.FC = () => {
   };
 
   const handleConfirmSessionChange = React.useCallback(() => {
-    cancelEditHandler?.();
+    if (cancelEditHandler && !cancelEditHandler()) return;
     if (pendingSessionId) {
       navigateWithUtm(getSessionDetailRoute(pendingSessionId));
     }

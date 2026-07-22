@@ -929,6 +929,9 @@ export const createMockSessionData = ({
     stt_model: 'gemini-3',
     parsed_text: null,
     preview: null,
+    revision: 1,
+    contents_md5: '00000000000000000000000000000000',
+    updated_at: now,
     created_at: now,
   };
 
