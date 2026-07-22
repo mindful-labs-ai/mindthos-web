@@ -1,9 +1,6 @@
 import type { GenogramReport } from '@/features/report/types/reportSchema';
 import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { serverRequest } from '@/shared/api/server/serverClient';
 
 // ============================================
 // 타입 정의
@@ -13,7 +10,7 @@ export interface ReportListItem {
   id: string;
   client_id: string;
   user_id: number;
-  template_key: string;
+  template_id: string;
   title: string;
   status: 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED';
   error_code: string | null;
@@ -142,10 +139,10 @@ export async function exportReport(params: {
 /** 내담자별 보고서 목록 조회 */
 export async function listReports(clientId: string): Promise<ReportListItem[]> {
   try {
-    const data = await callEdgeFunction<ListReportsResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.LIST,
-      { client_id: clientId }
-    );
+    const data = await serverRequest<ListReportsResponse>('/report/list', {
+      method: 'POST',
+      body: { client_id: clientId },
+    });
 
     if (!data.success) {
       throw new Error('보고서 목록을 불러오지 못했어요.');
@@ -163,9 +160,9 @@ export async function generateReport(
   params: GenerateReportRequest
 ): Promise<GenerateReportResponse['data']> {
   try {
-    const data = await callEdgeFunction<GenerateReportResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.GENERATE,
-      params
+    const data = await serverRequest<GenerateReportResponse>(
+      '/report/generate',
+      { method: 'POST', body: params }
     );
 
     if (!data.success) {
@@ -174,9 +171,9 @@ export async function generateReport(
 
     return data.data;
   } catch (error: unknown) {
-    const err = error as { message?: string; error?: string };
+    const err = error as { message?: string; statusCode?: string };
 
-    if (err.error === 'ACCESS_DENIED') {
+    if (err.statusCode === 'ACCESS_DENIED') {
       throw new Error('이 보고서를 생성하려면 세미나 수료가 필요해요.');
     }
 
@@ -221,10 +218,10 @@ export async function savePdfStorageKey(
   storageKey: string
 ): Promise<string> {
   try {
-    const data = await callEdgeFunction<SavePdfUrlResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.PDF_URL,
-      { report_id: reportId, storage_key: storageKey }
-    );
+    const data = await serverRequest<SavePdfUrlResponse>('/report/pdf-url', {
+      method: 'POST',
+      body: { report_id: reportId, storage_key: storageKey },
+    });
 
     if (!data.success) {
       throw new Error('PDF 저장 정보를 처리하지 못했어요.');
@@ -275,10 +272,10 @@ export async function retryReport(
   reportId: string
 ): Promise<RetryReportResponse['data']> {
   try {
-    const data = await callEdgeFunction<RetryReportResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.RETRY,
-      { report_id: reportId }
-    );
+    const data = await serverRequest<RetryReportResponse>('/report/retry', {
+      method: 'POST',
+      body: { report_id: reportId },
+    });
 
     if (!data.success) {
       throw new Error('보고서를 다시 만들지 못했어요.');
@@ -286,12 +283,12 @@ export async function retryReport(
 
     return data.data;
   } catch (error: unknown) {
-    const err = error as { message?: string; error?: string };
+    const err = error as { message?: string; statusCode?: string };
 
-    if (err.error === 'RETRY_COOLDOWN') {
+    if (err.statusCode === 'RETRY_COOLDOWN') {
       throw new Error(err.message || '재시도까지 잠시 기다려주세요.');
     }
-    if (err.error === 'MAX_RETRY_EXCEEDED') {
+    if (err.statusCode === 'MAX_RETRY_EXCEEDED') {
       throw new Error(err.message || '최대 재시도 횟수를 넘었어요.');
     }
 

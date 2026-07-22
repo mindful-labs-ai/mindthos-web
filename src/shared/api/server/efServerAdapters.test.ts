@@ -6,6 +6,12 @@ import { qualificationService } from '@/features/settings/services/qualification
 import { termsContentService } from '@/features/terms/services/termsContentService';
 import { termsAgreementService } from '@/features/terms-agreement/services/termsAgreementService';
 import { clientService } from '@/shared/api/supabase/clientQueries';
+import {
+  generateReport,
+  listReports,
+  retryReport,
+  savePdfStorageKey,
+} from '@/shared/api/supabase/reportQueries';
 
 import { ServerApiError } from './serverClient';
 
@@ -165,5 +171,94 @@ describe('legacy EF server adapters', () => {
       error: 'NAME_TOO_LONG',
       message: '이름이 너무 깁니다.',
     });
+  });
+
+  it('보고서 생성·목록·재시도·PDF 키 저장은 인증 서버 API를 사용한다', async () => {
+    const report = {
+      id: 'report-1',
+      client_id: 'client-1',
+      user_id: 1,
+      template_id: 'template-1',
+      title: '보고서',
+      status: 'SUCCEEDED' as const,
+      error_code: null,
+      retry_count: 0,
+      pdf_storage_key: null,
+      created_at: '2026-07-22T00:00:00Z',
+      last_attempted_at: null,
+    };
+    const generated = {
+      report_id: 'report-1',
+      formatted_json: {},
+      status: 'SUCCEEDED' as const,
+    };
+    const generatePayload = {
+      client_id: 'client-1',
+      template_key: 'default',
+      title: '보고서',
+      input_snapshot: { client_name: '홍길동' },
+    };
+
+    mocks.serverRequest
+      .mockResolvedValueOnce({
+        success: true,
+        data: { reports: [report], total: 1 },
+      })
+      .mockResolvedValueOnce({ success: true, data: generated })
+      .mockResolvedValueOnce({ success: true, data: generated })
+      .mockResolvedValueOnce({
+        success: true,
+        data: { report_id: 'report-1', storage_key: 'reports/report-1.pdf' },
+      });
+
+    await expect(listReports('client-1')).resolves.toEqual([report]);
+    await expect(generateReport(generatePayload)).resolves.toEqual(generated);
+    await expect(retryReport('report-1')).resolves.toEqual(generated);
+    await expect(
+      savePdfStorageKey('report-1', 'reports/report-1.pdf')
+    ).resolves.toBe('reports/report-1.pdf');
+
+    expect(mocks.serverRequest).toHaveBeenNthCalledWith(1, '/report/list', {
+      method: 'POST',
+      body: { client_id: 'client-1' },
+    });
+    expect(mocks.serverRequest).toHaveBeenNthCalledWith(2, '/report/generate', {
+      method: 'POST',
+      body: generatePayload,
+    });
+    expect(mocks.serverRequest).toHaveBeenNthCalledWith(3, '/report/retry', {
+      method: 'POST',
+      body: { report_id: 'report-1' },
+    });
+    expect(mocks.serverRequest).toHaveBeenNthCalledWith(4, '/report/pdf-url', {
+      method: 'POST',
+      body: {
+        report_id: 'report-1',
+        storage_key: 'reports/report-1.pdf',
+      },
+    });
+    expect(mocks.serverRequestPublic).not.toHaveBeenCalled();
+  });
+
+  it('보고서 서버 오류 코드를 사용자 안내로 변환한다', async () => {
+    mocks.serverRequest.mockRejectedValueOnce(
+      new ServerApiError(403, 'ACCESS_DENIED', '수료 확인이 필요합니다.')
+    );
+
+    await expect(
+      generateReport({
+        client_id: 'client-1',
+        template_key: 'default',
+        input_snapshot: {},
+      })
+    ).rejects.toThrow('이 보고서를 생성하려면 세미나 수료가 필요해요.');
+
+    mocks.serverRequest.mockRejectedValueOnce(
+      new ServerApiError(429, 'RETRY_COOLDOWN', '30초 뒤 다시 시도해 주세요.')
+    );
+
+    await expect(retryReport('report-1')).rejects.toThrow(
+      '30초 뒤 다시 시도해 주세요.'
+    );
   });
 });

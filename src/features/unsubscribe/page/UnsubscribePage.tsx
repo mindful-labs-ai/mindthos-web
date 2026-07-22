@@ -2,9 +2,13 @@ import { useState } from 'react';
 
 import { useSearchParams } from 'react-router-dom';
 
+import {
+  ServerApiError,
+  serverRequestPublic,
+} from '@/shared/api/server/serverClient';
+
 type ViewState = 'confirm' | 'loading' | 'success' | 'error';
 
-const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL;
 const LOGO_URL =
   'https://api.mindthos.com/storage/v1/object/public/public-img/logo_mindthos_hori.png';
 const MINDTHOS_HOME_URL = 'https://mindthos.com/';
@@ -23,19 +27,13 @@ const UnsubscribePage = () => {
     setView('loading');
 
     try {
-      const res = await fetch(
-        `https://${SUPABASE_URL}/functions/v1/unsubscribe`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-        }
-      );
-
-      const data = (await res.json()) as {
+      const data = await serverRequestPublic<{
         success: boolean;
         message?: string;
-      };
+      }>('/unsubscribe', {
+        method: 'POST',
+        body: { token },
+      });
 
       if (data.success) {
         setView('success');
@@ -43,8 +41,15 @@ const UnsubscribePage = () => {
         setErrorMsg(data.message || '처리 중 오류가 생겼어요.');
         setView('error');
       }
-    } catch {
-      setErrorMsg('인터넷 연결을 확인한 뒤 다시 시도해 주세요.');
+    } catch (error: unknown) {
+      if (error instanceof ServerApiError) {
+        const raw = error.raw as { data?: { message?: string } } | undefined;
+        setErrorMsg(
+          raw?.data?.message || error.message || '처리 중 오류가 생겼어요.'
+        );
+      } else {
+        setErrorMsg('인터넷 연결을 확인한 뒤 다시 시도해 주세요.');
+      }
       setView('error');
     }
   };
