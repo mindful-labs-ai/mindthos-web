@@ -1,9 +1,9 @@
 /**
  * Genogram AI 생성 서비스
- * Supabase Edge Function을 통해 상담 기록으로부터 가계도 생성
+ * mindthos-server(비동기 파이프라인)를 통해 상담 기록으로부터 가계도 생성
  *
  * 파이프라인:
- * 1. Edge Function 호출 → AI 원본 JSON 응답 받기
+ * 1. 서버에 생성 요청 → 상태 폴링(pending → completed)으로 AI 원본 JSON 수신
  * 2. aiJsonConverter로 좌표 계산 및 캔버스 변환
  * 3. DB 저장 및 프론트 렌더링
  */
@@ -16,9 +16,18 @@ import {
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { supabase } from '@/lib/supabase';
 import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+  getFamilySummaryStatus,
+  resetFamilySummary,
+  triggerFamilySummary,
+} from '@/shared/api/server/familySummaryServerApi';
+import { ServerApiError } from '@/shared/api/server/serverClient';
+
+// 상태 폴링 설정 — 다회기 분석 폴링과 유사한 주기, 전체 타임아웃 3분.
+const POLL_INTERVAL_MS = 2000;
+const POLL_TIMEOUT_MS = 3 * 60 * 1000;
+
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 타입 정의
@@ -86,8 +95,86 @@ export type GenerateFamilySummaryResult =
 // API 함수
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** 완료 상태의 familySummary를 기존 AI 원본 응답 형태로 감싼다. */
+function buildAIOutputResponse(
+  clientId: string,
+  familySummary: object
+): GenerateAIOutputResponse {
+  return {
+    success: true,
+    data: {
+      client_id: clientId,
+      // 서버 familySummary = 구 EF ai_output 원본. 좌표 검증/변환은 상위에서 수행.
+      ai_output: familySummary as AIGenogramOutput,
+      // total_transcripts는 서버가 더 이상 반환하지 않는다(소비처 없음).
+      stats: { total_transcripts: 0 },
+    },
+  };
+}
+
+/** fetchAIOutput 예외를 기존 에러 형태로 정규화. */
+function mapFetchError(error: unknown): GenerateAIOutputError {
+  console.error('[genogramAIService] fetchAIOutput error:', error);
+
+  if (error instanceof ServerApiError && error.status === 401) {
+    return {
+      success: false,
+      error: { code: 'UNAUTHORIZED', message: '로그인이 필요해요.' },
+    };
+  }
+
+  const err = error as { message?: string };
+  return {
+    success: false,
+    error: {
+      code: 'PIPELINE_ERROR',
+      message: err.message || 'AI 분석 중 오류가 생겼어요.',
+    },
+  };
+}
+
+/** completed/failed/타임아웃까지 상태를 폴링한다. */
+async function pollForCompletion(
+  clientId: string
+): Promise<GenerateAIOutputResult> {
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+
+  while (Date.now() < deadline) {
+    await delay(POLL_INTERVAL_MS);
+    const status = await getFamilySummaryStatus(clientId);
+
+    if (status.status === 'completed' && status.familySummary) {
+      return buildAIOutputResponse(clientId, status.familySummary);
+    }
+    if (status.status === 'failed') {
+      return {
+        success: false,
+        error: {
+          code: 'PIPELINE_ERROR',
+          message: status.errorMessage || 'AI 분석 중 오류가 생겼어요.',
+        },
+      };
+    }
+    // none/pending → 계속 폴링
+  }
+
+  return {
+    success: false,
+    error: {
+      code: 'PIPELINE_ERROR',
+      message: '가계도 생성이 지연되고 있어요. 잠시 후 다시 시도해 주세요.',
+    },
+  };
+}
+
 /**
- * Edge Function을 호출하여 AI 분석 결과 받기 (원본 JSON)
+ * 서버 비동기 파이프라인으로 AI 분석 결과 받기 (원본 JSON)
+ *
+ * (a) 현재 상태 조회 →
+ * (b) pending이면 재요청 없이 폴링만(재진입 시 중복 과금 방지) →
+ * (c) completed && !forceRefresh면 캐시된 familySummary 반환 →
+ * (d) 그 외(none/failed 또는 강제 재생성)엔 생성 트리거 후 폴링.
+ *
  * @param clientId 내담자 UUID
  * @param forceRefresh 캐시 무시하고 재생성 여부
  */
@@ -96,40 +183,29 @@ async function fetchAIOutput(
   forceRefresh = false
 ): Promise<GenerateAIOutputResult> {
   try {
-    const result = await callEdgeFunction<GenerateAIOutputResponse>(
-      EDGE_FUNCTION_ENDPOINTS.GENOGRAM.SUMMARY,
-      {
-        client_id: clientId,
-        force_refresh: forceRefresh,
-      }
-    );
+    const initial = await getFamilySummaryStatus(clientId);
 
-    return result;
-  } catch (error) {
-    console.error('[genogramAIService] fetchAIOutput error:', error);
-
-    const err = error as { message?: string; code?: string; status?: number };
-
-    // 인증 오류 처리
-    if (err.status === 401) {
-      return {
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: '로그인이 필요해요.',
-        },
-      };
+    // (c) 완료된 캐시가 있고 강제 재생성이 아니면 그대로 반환
+    if (
+      initial.status === 'completed' &&
+      initial.familySummary &&
+      !forceRefresh
+    ) {
+      return buildAIOutputResponse(clientId, initial.familySummary);
     }
 
-    return {
-      success: false,
-      error: {
-        code:
-          (err.code as GenerateAIOutputError['error']['code']) ||
-          'PIPELINE_ERROR',
-        message: err.message || 'AI 분석 중 오류가 생겼어요.',
-      },
-    };
+    // (b) 이미 생성 중이면 재요청(중복 과금) 없이 폴링만.
+    // (d) 그 외엔 새 작업 발행 후 폴링.
+    if (initial.status !== 'pending') {
+      await triggerFamilySummary(clientId, {
+        forceRefresh,
+        idempotencyKey: crypto.randomUUID(),
+      });
+    }
+
+    return await pollForCompletion(clientId);
+  } catch (error) {
+    return mapFetchError(error);
   }
 }
 
@@ -257,6 +333,23 @@ export async function fetchRawAIOutput(
 }
 
 /**
+ * 현재 서버측 생성 상태만 조회한다(트리거·폴링 없이 1회).
+ * 마운트/재진입 시 진행 중(pending)이면 UI가 자동으로 로딩·폴링을 재개하도록 판단하는 용도.
+ * 조회 실패는 'none'으로 취급한다(수동 생성으로 폴백 — 화면을 막지 않음).
+ */
+export async function fetchGenerationStatus(
+  clientId: string
+): Promise<'none' | 'pending' | 'completed' | 'failed'> {
+  try {
+    const { status } = await getFamilySummaryStatus(clientId);
+    return status;
+  } catch (error) {
+    console.error('[genogramAIService] fetchGenerationStatus error:', error);
+    return 'none';
+  }
+}
+
+/**
  * AI JSON을 캔버스 형식으로 변환 (저장 없이)
  * 미리보기 등에 사용
  */
@@ -294,32 +387,48 @@ type InitFamilySummaryResult =
 
 /**
  * 가계도 및 family_summary 초기화
+ *
+ * 서버측 요약·상태(resetFamilySummary)와 프론트가 소유한 genograms 테이블 row를 함께 비운다.
+ * 축어록 요약 등 파생 데이터 정리는 서버가 담당하므로 두 번째 인자는 더 이상 사용하지 않는다
+ * (호출부 시그니처 호환을 위해 유지).
+ *
  * @param clientId 내담자 UUID
- * @param clearTranscriptSummaries 축어록의 family_summary도 초기화 여부 (기본값: true)
  */
 export async function initFamilySummary(
   clientId: string,
-  clearTranscriptSummaries = true
+  _clearTranscriptSummaries = true
 ): Promise<InitFamilySummaryResult> {
   try {
-    const result = await callEdgeFunction<InitFamilySummaryResponse>(
-      EDGE_FUNCTION_ENDPOINTS.GENOGRAM.INIT,
-      {
-        client_id: clientId,
-        clear_transcript_summaries: clearTranscriptSummaries,
-      }
-    );
+    // 1. 서버측 요약·상태 초기화 (구 EF /init 대체)
+    await resetFamilySummary(clientId);
 
-    return result;
+    // 2. 프론트가 소유한 genograms 테이블 row 삭제 (saveGenogramToDatabase의 대칭)
+    const { error } = await supabase
+      .from('genograms')
+      .delete()
+      .eq('client_id', clientId);
+
+    if (error) {
+      throw new Error(`가계도 초기화 실패: ${error.message}`);
+    }
+
+    return {
+      success: true,
+      data: {
+        client_id: clientId,
+        deleted_genogram: true,
+        cleared_client_family_summary: true,
+        cleared_transcript_summaries: 0,
+      },
+    };
   } catch (error) {
     console.error('[genogramAIService] initFamilySummary error:', error);
 
-    // callEdgeFunction에서 throw된 에러 처리
-    const err = error as { message?: string; code?: string };
+    const err = error as { message?: string; statusCode?: string };
     return {
       success: false,
       error: {
-        code: err.code || 'EDGE_FUNCTION_ERROR',
+        code: err.statusCode || 'RESET_ERROR',
         message: err.message || '초기화 중 오류가 생겼어요.',
       },
     };

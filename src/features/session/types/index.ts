@@ -103,6 +103,11 @@ export interface Transcribe {
    * saveTranscript 시점에 app이 직접 작성. 기존 row는 NULL → FE에서 placeholder 처리.
    */
   preview: string | null;
+  /** 낙관적 잠금 버전. 편집 성공 시 서버가 원자적으로 +1 한다. */
+  revision: number;
+  /** DB의 canonical jsonb contents fingerprint(md5(contents::text)). */
+  contents_md5: string | null;
+  updated_at: string;
   created_at: string;
 }
 
@@ -118,6 +123,10 @@ export interface HandwrittenTranscribe {
    * INSERT/UPDATE 시 자동 동기화. 직접 변경 불가.
    */
   preview: string | null;
+  /** 낙관적 잠금 버전. 편집 성공 시 서버가 원자적으로 +1 한다. */
+  revision: number;
+  /** DB의 canonical contents fingerprint(md5(contents)). */
+  contents_md5: string | null;
   created_at: string;
   updated_at: string;
 }

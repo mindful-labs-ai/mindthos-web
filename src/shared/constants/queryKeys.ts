@@ -54,6 +54,8 @@ export const sessionQueryKeys = {
     ['session', sessionId, isDummySession] as const,
   detailById: (sessionId: string) => ['session', 'detail', sessionId] as const,
   status: (sessionId: string) => ['session-status', sessionId] as const,
+  deidentificationStatus: (sessionId: string, transcribeId: string) =>
+    ['transcript-deidentification', sessionId, transcribeId] as const,
   progressNoteStatus: (progressNoteId: string) =>
     ['progress-note-status', progressNoteId] as const,
   progressNotesPolling: (sessionId: string) =>

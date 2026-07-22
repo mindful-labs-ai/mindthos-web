@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
@@ -10,6 +16,7 @@ import { GenogramPage, type GenogramPageHandle } from '@/genogram';
 import type { SerializedGenogram } from '@/genogram/core/models/genogram';
 import { trackEvent } from '@/lib/mixpanel';
 import {
+  fetchGenerationStatus,
   fetchRawAIOutput,
   initFamilySummary,
   saveFamilySummary,
@@ -54,6 +61,11 @@ import {
 
 import { GenogramClientView } from './GenogramClientView';
 
+interface GenerationRequestIdentity {
+  clientId: string;
+  sequence: number;
+}
+
 export function GenogramClientContainer() {
   const [searchParams] = useSearchParams();
   const clientId = searchParams.get('clientId');
@@ -75,8 +87,11 @@ export function GenogramClientContainer() {
   );
 
   const steps = useGenogramSteps();
+  const generationSequenceRef = useRef(0);
+  const activeGenerationRef = useRef<GenerationRequestIdentity | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    activeGenerationRef.current = null;
     steps.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId]);
@@ -160,6 +175,56 @@ export function GenogramClientContainer() {
     [clientId, steps]
   );
 
+  // 생성 결과 fetch(트리거+폴링, 또는 pending이면 폴링만) 공통 로직.
+  // handleConfirm(사용자 클릭)과 자동 재개(마운트 시 pending)에서 함께 쓴다.
+  const runGenerationFetch = useCallback(
+    async (force: boolean) => {
+      if (!clientId) return;
+      const requestIdentity: GenerationRequestIdentity = {
+        clientId,
+        sequence: ++generationSequenceRef.current,
+      };
+      activeGenerationRef.current = requestIdentity;
+      const isCurrentRequest = () =>
+        activeGenerationRef.current?.clientId === requestIdentity.clientId &&
+        activeGenerationRef.current?.sequence === requestIdentity.sequence;
+
+      steps.setLoading(true);
+      steps.setError(null);
+
+      try {
+        const result = await fetchRawAIOutput(clientId, force);
+        if (!isCurrentRequest()) return;
+        if (!result.success) {
+          steps.setError(result.error.message);
+          return;
+        }
+        steps.setAiOutput(result.data.ai_output);
+        steps.setEditedJson(JSON.stringify(result.data.ai_output, null, 2));
+      } catch (error) {
+        if (!isCurrentRequest()) return;
+        steps.setError(
+          (error as Error).message || '알 수 없는 오류가 생겼어요.'
+        );
+      } finally {
+        if (isCurrentRequest()) {
+          activeGenerationRef.current = null;
+          steps.setLoading(false);
+          setShouldForceRefresh(false);
+        }
+        // 서버가 reserve→commit/release를 내부에서 끝낸 상태이므로(폴링이 완료된 시점)
+        // 잔액 동기화 (성공/실패 모두 적용 — failure는 release로 환불됨)
+        const userIdNum = Number(userId);
+        if (!Number.isNaN(userIdNum)) {
+          queryClient.invalidateQueries({
+            queryKey: creditQueryKeys.summary(userIdNum),
+          });
+        }
+      }
+    },
+    [clientId, steps, userId, queryClient]
+  );
+
   const handleConfirm = useCallback(async () => {
     if (!clientId) return;
     trackEvent(MixpanelEvent.GenogramStepChange, {
@@ -167,32 +232,37 @@ export function GenogramClientContainer() {
       to: 'analyze',
     });
     steps.setStep('analyze');
-    steps.setLoading(true);
-    steps.setError(null);
+    await runGenerationFetch(shouldForceRefresh);
+  }, [clientId, steps, shouldForceRefresh, runGenerationFetch]);
 
-    try {
-      const result = await fetchRawAIOutput(clientId, shouldForceRefresh);
-      if (!result.success) {
-        steps.setError(result.error.message);
-        return;
-      }
-      steps.setAiOutput(result.data.ai_output);
-      steps.setEditedJson(JSON.stringify(result.data.ai_output, null, 2));
-    } catch (error) {
-      steps.setError((error as Error).message || '알 수 없는 오류가 생겼어요.');
-    } finally {
-      steps.setLoading(false);
-      setShouldForceRefresh(false);
-      // generate-family-summary edge function이 reserve→commit/release를 내부에서 끝낸 상태이므로
-      // 응답이 돌아온 시점에 잔액 동기화 (성공/실패 모두 적용 — failure는 release로 환불됨)
-      const userIdNum = Number(userId);
-      if (!Number.isNaN(userIdNum)) {
-        queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.summary(userIdNum),
-        });
-      }
-    }
-  }, [clientId, steps, shouldForceRefresh, userId, queryClient]);
+  // 서버 상태 동기화: 생성 진행 중(pending)일 때 새로고침/재진입하면
+  // 자동으로 로딩·폴링을 재개한다. 재트리거는 하지 않으므로(fetchRawAIOutput이 pending을
+  // 감지해 폴링만) 중복 과금이 없다. clientId당 1회만 확인한다.
+  const resumeCheckedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!clientId) return;
+    if (isDataLoading || isFamilySummaryLoading) return;
+    if (steps.isOpen) return;
+    if (resumeCheckedRef.current === clientId) return;
+    resumeCheckedRef.current = clientId;
+
+    let cancelled = false;
+    void (async () => {
+      const status = await fetchGenerationStatus(clientId);
+      if (cancelled || status !== 'pending') return;
+      steps.open('analyze');
+      await runGenerationFetch(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    clientId,
+    isDataLoading,
+    isFamilySummaryLoading,
+    steps,
+    runGenerationFetch,
+  ]);
 
   const handleNextToRender = useCallback(() => {
     if (!steps.aiOutput) {

@@ -11,6 +11,13 @@ export interface UnsavedChangesGuard {
   cancel: () => void;
 }
 
+interface UnsavedChangesGuardOptions {
+  /** 브라우저 뒤로가기/앞으로가기만 차단하고 앱 내부 PUSH/REPLACE는 기존 UX에 맡긴다. */
+  browserHistoryOnly?: boolean;
+  /** 이탈을 확정하기 직전 편집 상태를 폐기한다. false면 이동을 취소한다. */
+  onDiscard?: () => boolean | void;
+}
+
 /**
  * 미저장 변경 이탈 가드 — 작성 중 내용이 유실될 수 있는 이탈에 경고를 띄운다.
  * (가계도 useGenogramSteps의 beforeunload + useBlocker 패턴 기반)
@@ -25,12 +32,15 @@ export interface UnsavedChangesGuard {
  */
 export function useUnsavedChangesGuard(
   when: () => boolean,
-  message: string
+  message: string,
+  { browserHistoryOnly = false, onDiscard }: UnsavedChangesGuardOptions = {}
 ): UnsavedChangesGuard {
   const whenRef = useRef(when);
+  const onDiscardRef = useRef(onDiscard);
   // 매 렌더 후 최신 when으로 갱신 — 내비게이션/이탈 이벤트는 커밋 이후에만 발생하므로 안전.
   useEffect(() => {
     whenRef.current = when;
+    onDiscardRef.current = onDiscard;
   });
 
   // 새로고침/탭 닫기 — 브라우저 네이티브 확인 다이얼로그
@@ -48,30 +58,40 @@ export function useUnsavedChangesGuard(
   const [blockedAction, setBlockedAction] = useState<string>('PUSH');
   const shouldBlock = useCallback<BlockerFunction>(
     ({ historyAction }) => {
+      if (browserHistoryOnly && historyAction !== 'POP') return false;
       const block = whenRef.current();
       if (block) setBlockedAction(historyAction);
       return block;
     },
-    [setBlockedAction]
+    [browserHistoryOnly]
   );
   const blocker = useBlocker(shouldBlock);
 
   // 앱 내 이동 차단 시에만 모달 — blocker 상태에서 파생(별도 state 동기화 불필요).
   const confirmOpen = blocker.state === 'blocked' && blockedAction !== 'POP';
 
-  // 브라우저 뒤로가기(POP) 차단 — 기존 방식(confirm) 유지.
+  const proceedAfterDiscard = useCallback(() => {
+    if (blocker.state !== 'blocked') return;
+    if (onDiscardRef.current?.() === false) {
+      blocker.reset();
+      return;
+    }
+    blocker.proceed();
+  }, [blocker]);
+
+  // 브라우저 뒤로가기/앞으로가기(POP) 차단 — 네이티브 confirm 후 편집 상태를 폐기한다.
   useEffect(() => {
     if (blocker.state !== 'blocked' || blockedAction !== 'POP') return;
     if (window.confirm(message)) {
-      blocker.proceed();
+      proceedAfterDiscard();
     } else {
       blocker.reset();
     }
-  }, [blocker, blockedAction, message]);
+  }, [blocker, blockedAction, message, proceedAfterDiscard]);
 
   const confirm = useCallback(() => {
-    if (blocker.state === 'blocked') blocker.proceed();
-  }, [blocker]);
+    proceedAfterDiscard();
+  }, [proceedAfterDiscard]);
 
   const cancel = useCallback(() => {
     if (blocker.state === 'blocked') blocker.reset();

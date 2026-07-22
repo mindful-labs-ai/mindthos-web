@@ -13,10 +13,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { trackError, trackEvent } from '@/lib/mixpanel';
-import {
-  saveTranscriptContents,
-  updateTranscriptSegments,
-} from '@/shared/api/supabase/sessionQueries';
+import { updateTranscript } from '@/shared/api/server/transcriptServerApi';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -74,8 +71,10 @@ interface UseTranscriptEditSessionOptions {
 interface UseTranscriptEditSessionReturn {
   isEditing: boolean;
   hasEdits: boolean;
+  isSaving: boolean;
   handleEditStart: () => void;
-  handleCancelEdit: () => void;
+  /** 저장 요청이 이미 전송된 경우 false를 반환해 화면 이탈을 막는다. */
+  handleCancelEdit: () => boolean;
   handleSaveAllEdits: () => Promise<void>;
   handleTextEdit: (segmentId: number, newText: string) => void;
   handleNvEdit: (segmentId: number, nv: string[]) => void;
@@ -126,8 +125,21 @@ interface UseTranscriptEditSessionReturn {
   editorVersion: number;
   /** 편집 중이면 스냅샷 기반 contents, 아니면 null */
   editingContents: Contents | null;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  setHasEdits: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface EditTarget {
+  sessionId: string;
+  transcribeId: string;
+  baseRevision: number;
+  baseContentsFingerprint: string;
+  baseContents: Contents;
+  generation: number;
+}
+
+interface InFlightTarget {
+  sessionId: string;
+  transcribeId: string;
+  generation?: number;
 }
 
 type CachedSessionData = {
@@ -153,6 +165,7 @@ export function useTranscriptEditSession({
 
   const [isEditing, setIsEditing] = React.useState(false);
   const [hasEdits, setHasEdits] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
   // 편집 중 UI에 반영할 스냅샷 (화자/추가/삭제는 state로 관리)
   const [editingContents, setEditingContents] = React.useState<Contents | null>(
     null
@@ -161,6 +174,27 @@ export function useTranscriptEditSession({
   const textEditsRef = React.useRef<Record<number, string>>({});
   const nvEditsRef = React.useRef<Record<number, string[]>>({});
   const deidEditsRef = React.useRef<Record<number, Record<string, string>>>({});
+  // contents와 저장 대상의 provenance를 한 묶음으로 고정한다.
+  const editTargetRef = React.useRef<EditTarget | null>(null);
+  // 이전 route/save 응답이 새 편집 세션의 state를 지우지 못하게 하는 세대 번호.
+  const editGenerationRef = React.useRef(0);
+  const mutationInFlightRef = React.useRef(false);
+  const mutationInFlightTargetRef = React.useRef<InFlightTarget | null>(null);
+
+  const isTargetMutationInFlight = React.useCallback(
+    (target: InFlightTarget | null): boolean => {
+      const inFlight = mutationInFlightTargetRef.current;
+      if (!inFlight || !target) return false;
+      return (
+        inFlight.sessionId === target.sessionId &&
+        inFlight.transcribeId === target.transcribeId &&
+        (inFlight.generation === undefined ||
+          target.generation === undefined ||
+          inFlight.generation === target.generation)
+      );
+    },
+    []
+  );
 
   // 편집 undo/redo 히스토리 + 편집기 remount 버전
   // 스냅샷은 버퍼(텍스트/nv/deid)를 병합(materialize)한 contents를 저장하므로
@@ -243,6 +277,7 @@ export function useTranscriptEditSession({
       transform: (materialized: Contents) => Contents,
       opts?: { remount?: boolean }
     ) => {
+      if (isTargetMutationInFlight(editTargetRef.current)) return;
       const base = editingContentsRef.current;
       if (!base) return;
       const materialized = materializeBuffers(base);
@@ -258,6 +293,7 @@ export function useTranscriptEditSession({
       clearBuffers,
       setEditing,
       bumpEditorVersion,
+      isTargetMutationInFlight,
     ]
   );
 
@@ -266,13 +302,42 @@ export function useTranscriptEditSession({
     [sessionId, isDummySession]
   );
 
-  /** 캐시에서 현재 contents 읽기 */
-  const getContentsFromCache = React.useCallback((): Contents | null => {
+  /** 캐시가 현재 route/transcribe와 정확히 일치할 때만 반환한다. */
+  const getTranscribeFromCache = React.useCallback((): Transcribe | null => {
     const cached = queryClient.getQueryData(sessionQueryKey) as
       | CachedSessionData
       | undefined;
-    return (cached?.transcribe?.contents as Contents) ?? null;
-  }, [queryClient, sessionQueryKey]);
+    const transcribe = cached?.transcribe;
+    if (
+      !transcribe ||
+      transcribe.id !== transcribeId ||
+      transcribe.session_id !== sessionId
+    ) {
+      return null;
+    }
+    return transcribe;
+  }, [queryClient, sessionId, sessionQueryKey, transcribeId]);
+
+  const resetEditState = React.useCallback(() => {
+    editGenerationRef.current += 1;
+    editTargetRef.current = null;
+    clearBuffers();
+    setEditing(null);
+    resetHistory();
+    setHasEdits(false);
+    setIsEditing(false);
+  }, [clearBuffers, resetHistory, setEditing]);
+
+  // 동일 컴포넌트 인스턴스가 다른 route를 렌더해도 이전 편집 스냅샷을 폐기한다.
+  React.useEffect(() => {
+    const target = editTargetRef.current;
+    if (
+      target &&
+      (target.sessionId !== sessionId || target.transcribeId !== transcribeId)
+    ) {
+      resetEditState();
+    }
+  }, [resetEditState, sessionId, transcribeId]);
 
   // ── 편집 시작 ──
 
@@ -286,13 +351,49 @@ export function useTranscriptEditSession({
       return;
     }
 
-    const contents = getContentsFromCache();
-    if (!contents) return;
+    const inFlightTarget = mutationInFlightTargetRef.current;
+    if (
+      inFlightTarget?.sessionId === sessionId &&
+      inFlightTarget.transcribeId === transcribeId
+    ) {
+      toast({
+        title: '저장 중이에요',
+        description: '현재 축어록 저장이 끝난 뒤 다시 편집해 주세요.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    const transcribe = getTranscribeFromCache();
+    const contents = transcribe?.contents as Contents | null | undefined;
+    if (
+      !transcribe ||
+      !contents ||
+      !Number.isInteger(transcribe.revision) ||
+      !transcribe.contents_md5
+    ) {
+      toast({
+        title: '편집 정보를 불러오지 못했어요',
+        description: '페이지를 새로고침한 뒤 다시 시도해 주세요.',
+        duration: 3000,
+      });
+      return;
+    }
 
     trackEvent(MixpanelEvent.TranscriptEditStart, { session_id: sessionId });
 
-    // 스냅샷 생성
-    setEditing(deepCloneContents(contents));
+    // contents와 대상 identity/revision/fingerprint를 같은 시점에 캡처한다.
+    const baseContents = deepCloneContents(contents);
+    editTargetRef.current = {
+      sessionId,
+      transcribeId: transcribe.id,
+      baseRevision: transcribe.revision,
+      baseContentsFingerprint: transcribe.contents_md5,
+      baseContents,
+      generation: editGenerationRef.current + 1,
+    };
+    editGenerationRef.current = editTargetRef.current.generation;
+    setEditing(deepCloneContents(baseContents));
     clearBuffers();
     resetHistory();
     setHasEdits(false);
@@ -305,7 +406,8 @@ export function useTranscriptEditSession({
   }, [
     isReadOnly,
     sessionId,
-    getContentsFromCache,
+    transcribeId,
+    getTranscribeFromCache,
     checkIsGuideLevel,
     nextGuideLevel,
     toast,
@@ -317,32 +419,41 @@ export function useTranscriptEditSession({
   // ── 편집 취소 ──
 
   const handleCancelEdit = React.useCallback(() => {
+    if (isTargetMutationInFlight(editTargetRef.current)) {
+      toast({
+        title: '저장 중이에요',
+        description: '저장이 끝난 뒤 이동해 주세요.',
+        duration: 3000,
+      });
+      return false;
+    }
     trackEvent(MixpanelEvent.TranscriptEditCancel, { session_id: sessionId });
 
-    // 스냅샷 폐기
-    setEditing(null);
-    clearBuffers();
-    resetHistory();
-    setHasEdits(false);
-    setIsEditing(false);
+    resetEditState();
 
     // 서버 원본으로 복원 — 상세 + 리스트(paginated/allByClient 등) 모두 무효화
     queryClient.invalidateQueries({ queryKey: sessionQueryKey });
     queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    return true;
   }, [
     sessionId,
     queryClient,
+    resetEditState,
     sessionQueryKey,
-    setEditing,
-    clearBuffers,
-    resetHistory,
+    toast,
+    isTargetMutationInFlight,
   ]);
 
   // ── 텍스트 편집 (편집 모드 전용, ref 기반) ──
 
   const handleTextEdit = React.useCallback(
     (segmentId: number, newText: string) => {
-      if (isReadOnly || !isEditing) return;
+      if (
+        isReadOnly ||
+        !isEditing ||
+        isTargetMutationInFlight(editTargetRef.current)
+      )
+        return;
 
       startEditBurst(segmentId);
       textEditsRef.current[segmentId] = newText;
@@ -350,31 +461,41 @@ export function useTranscriptEditSession({
         setHasEdits(true);
       }
     },
-    [isReadOnly, isEditing, hasEdits, startEditBurst]
+    [isReadOnly, isEditing, hasEdits, isTargetMutationInFlight, startEditBurst]
   );
 
   // ── nv 편집 (편집 모드 전용, ref 기반) ──
 
   const handleNvEdit = React.useCallback(
     (segmentId: number, nv: string[]) => {
-      if (isReadOnly || !isEditing) return;
+      if (
+        isReadOnly ||
+        !isEditing ||
+        isTargetMutationInFlight(editTargetRef.current)
+      )
+        return;
       startEditBurst(segmentId);
       nvEditsRef.current[segmentId] = nv;
       if (!hasEdits) setHasEdits(true);
     },
-    [isReadOnly, isEditing, hasEdits, startEditBurst]
+    [isReadOnly, isEditing, hasEdits, isTargetMutationInFlight, startEditBurst]
   );
 
   // ── deid 편집 (편집 모드 전용, ref 기반) ──
 
   const handleDeidEdit = React.useCallback(
     (segmentId: number, deid: Record<string, string>) => {
-      if (isReadOnly || !isEditing) return;
+      if (
+        isReadOnly ||
+        !isEditing ||
+        isTargetMutationInFlight(editTargetRef.current)
+      )
+        return;
       startEditBurst(segmentId);
       deidEditsRef.current[segmentId] = deid;
       if (!hasEdits) setHasEdits(true);
     },
-    [isReadOnly, isEditing, hasEdits, startEditBurst]
+    [isReadOnly, isEditing, hasEdits, isTargetMutationInFlight, startEditBurst]
   );
 
   // ── 화자 변경 (듀얼 모드) ──
@@ -400,6 +521,7 @@ export function useTranscriptEditSession({
       }
 
       if (isEditing) {
+        if (isTargetMutationInFlight(editTargetRef.current)) return;
         // ── 편집 모드: 스냅샷에만 적용 ──
         applyStructuralEdit((c) =>
           applyBulkSpeakerChanges(
@@ -409,40 +531,61 @@ export function useTranscriptEditSession({
           )
         );
       } else {
-        // ── 비편집 모드: 기존 즉시 저장 방식 ──
+        // ── 비편집 모드: 현재 캐시의 identity/version을 고정해 즉시 저장 ──
+        if (mutationInFlightRef.current) return;
+        mutationInFlightRef.current = true;
+        setIsSaving(true);
         try {
-          // Optimistic update
+          const transcribe = getTranscribeFromCache();
+          if (
+            !transcribe?.contents ||
+            !Number.isInteger(transcribe.revision) ||
+            !transcribe.contents_md5
+          ) {
+            throw new Error('현재 축어록의 편집 버전을 확인할 수 없어요.');
+          }
+
+          const target = {
+            sessionId,
+            transcribeId: transcribe.id,
+            expectedRevision: transcribe.revision,
+            expectedContentsFingerprint: transcribe.contents_md5,
+            baseContents: deepCloneContents(transcribe.contents as Contents),
+          };
+          mutationInFlightTargetRef.current = target;
+          const updatedContents = applyBulkSpeakerChanges(
+            transcribe.contents as Contents,
+            updates.speakerChanges,
+            updates.speakerDefinitions
+          );
+
+          const response = await updateTranscript({
+            ...target,
+            contents: updatedContents,
+          });
+
           queryClient.setQueryData(
             sessionQueryKey,
             (oldData: CachedSessionData | undefined) => {
-              if (!oldData?.transcribe?.contents) return oldData;
-              const contents = oldData.transcribe.contents as Contents;
-              const updatedContents = applyBulkSpeakerChanges(
-                contents,
-                updates.speakerChanges,
-                updates.speakerDefinitions
-              );
+              if (
+                oldData?.session.id !== target.sessionId ||
+                oldData.transcribe?.id !== target.transcribeId
+              ) {
+                return oldData;
+              }
               return {
                 ...oldData,
                 transcribe: {
                   ...oldData.transcribe,
                   contents: updatedContents,
+                  revision: response.revision,
+                  contents_md5: response.contentsFingerprint,
                 },
               };
             }
           );
-
-          // 서버 업데이트
-          await updateTranscriptSegments(transcribeId, {
-            speakerUpdates: updates.speakerChanges,
-            speakerDefinitions: updates.speakerDefinitions,
-          });
-
-          // 서버 최신 데이터로 갱신 — 상세 + 리스트 모두 (preview 갱신 반영)
-          await queryClient.invalidateQueries({
-            queryKey: sessionQueryKey,
-          });
           await queryClient.invalidateQueries({ queryKey: ['sessions'] });
+          await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
 
           toast({
             title: '화자 변경 완료',
@@ -465,6 +608,10 @@ export function useTranscriptEditSession({
               '화자를 변경하지 못했어요. 잠시 후 다시 시도해 주세요.',
             duration: 3000,
           });
+        } finally {
+          mutationInFlightRef.current = false;
+          mutationInFlightTargetRef.current = null;
+          setIsSaving(false);
         }
       }
     },
@@ -475,6 +622,8 @@ export function useTranscriptEditSession({
       sessionId,
       queryClient,
       sessionQueryKey,
+      getTranscribeFromCache,
+      isTargetMutationInFlight,
       toast,
       applyStructuralEdit,
     ]
@@ -484,7 +633,12 @@ export function useTranscriptEditSession({
 
   const handleAddSegment = React.useCallback(
     (afterSegmentId: number, speaker: number) => {
-      if (isReadOnly || !isEditing) return;
+      if (
+        isReadOnly ||
+        !isEditing ||
+        isTargetMutationInFlight(editTargetRef.current)
+      )
+        return;
 
       applyStructuralEdit((c) => {
         const segments = getSegments(c);
@@ -499,7 +653,7 @@ export function useTranscriptEditSession({
         return addSegmentAfter(c, afterSegmentId, newSegment);
       });
     },
-    [isReadOnly, isEditing, applyStructuralEdit]
+    [isReadOnly, isEditing, isTargetMutationInFlight, applyStructuralEdit]
   );
 
   // ── 세그먼트 삭제 (편집 모드 전용) ──
@@ -555,6 +709,7 @@ export function useTranscriptEditSession({
   // ── 되돌리기 (undo) ──
 
   const handleUndo = React.useCallback(() => {
+    if (isTargetMutationInFlight(editTargetRef.current)) return;
     if (pastRef.current.length === 0) return;
     const base = editingContentsRef.current;
     const current = base ? materializeBuffers(base) : null;
@@ -567,11 +722,18 @@ export function useTranscriptEditSession({
     setCanUndo(pastRef.current.length > 0);
     setCanRedo(futureRef.current.length > 0);
     setHasEdits(true);
-  }, [materializeBuffers, clearBuffers, setEditing, bumpEditorVersion]);
+  }, [
+    materializeBuffers,
+    clearBuffers,
+    setEditing,
+    bumpEditorVersion,
+    isTargetMutationInFlight,
+  ]);
 
   // ── 다시 실행 (redo) ──
 
   const handleRedo = React.useCallback(() => {
+    if (isTargetMutationInFlight(editTargetRef.current)) return;
     if (futureRef.current.length === 0) return;
     const base = editingContentsRef.current;
     const current = base ? materializeBuffers(base) : null;
@@ -584,13 +746,24 @@ export function useTranscriptEditSession({
     setCanUndo(pastRef.current.length > 0);
     setCanRedo(futureRef.current.length > 0);
     setHasEdits(true);
-  }, [materializeBuffers, clearBuffers, setEditing, bumpEditorVersion]);
+  }, [
+    materializeBuffers,
+    clearBuffers,
+    setEditing,
+    bumpEditorVersion,
+    isTargetMutationInFlight,
+  ]);
 
   // ── 찾기 · 바꾸기 (이 축어록 한정, 편집 모드) ──
 
   const handleReplaceAll = React.useCallback(
     (find: string, replaceWith: string, opts?: ReplaceOptions): number => {
-      if (isReadOnly || !isEditing) return 0;
+      if (
+        isReadOnly ||
+        !isEditing ||
+        isTargetMutationInFlight(editTargetRef.current)
+      )
+        return 0;
       const base = editingContentsRef.current;
       if (!base || !find) return 0;
       const materialized = materializeBuffers(base);
@@ -616,6 +789,7 @@ export function useTranscriptEditSession({
       clearBuffers,
       setEditing,
       bumpEditorVersion,
+      isTargetMutationInFlight,
     ]
   );
 
@@ -655,7 +829,12 @@ export function useTranscriptEditSession({
       replaceWith: string,
       opts?: ReplaceOptions
     ): boolean => {
-      if (isReadOnly || !isEditing) return false;
+      if (
+        isReadOnly ||
+        !isEditing ||
+        isTargetMutationInFlight(editTargetRef.current)
+      )
+        return false;
       const base = editingContentsRef.current;
       if (!base || !find) return false;
       const materialized = materializeBuffers(base);
@@ -684,6 +863,7 @@ export function useTranscriptEditSession({
       clearBuffers,
       setEditing,
       bumpEditorVersion,
+      isTargetMutationInFlight,
     ]
   );
 
@@ -708,6 +888,34 @@ export function useTranscriptEditSession({
       return;
     }
 
+    const target = editTargetRef.current;
+    if (
+      !target ||
+      target.sessionId !== sessionId ||
+      target.transcribeId !== transcribeId
+    ) {
+      const snapshotSessionId = target?.sessionId;
+      const snapshotTranscribeId = target?.transcribeId;
+      trackError(
+        MixpanelError.TranscriptSaveError,
+        new Error('편집 스냅샷과 현재 route의 대상이 일치하지 않아요.'),
+        {
+          session_id: sessionId,
+          transcribe_id: transcribeId,
+          snapshot_session_id: snapshotSessionId,
+          snapshot_transcribe_id: snapshotTranscribeId,
+          blocked_reason: 'edit_target_mismatch',
+        }
+      );
+      toast({
+        title: '이전 편집을 저장하지 않았어요',
+        description:
+          '다른 상담 기록으로 이동해 편집 내용을 안전하게 취소했어요.',
+        duration: 3000,
+      });
+      return;
+    }
+
     if (!editingContents) {
       toast({
         title: '문제가 생겼어요',
@@ -717,12 +925,22 @@ export function useTranscriptEditSession({
       return;
     }
 
+    if (!hasEdits) {
+      resetEditState();
+      return;
+    }
+
+    if (mutationInFlightRef.current) return;
+
     // 가이드 Level 3 → Level 4
     if (checkIsGuideLevel?.(3)) {
       scrollToTop?.();
       nextGuideLevel?.();
     }
 
+    mutationInFlightRef.current = true;
+    mutationInFlightTargetRef.current = target;
+    setIsSaving(true);
     try {
       // 텍스트 편집을 스냅샷에 병합
       const textEdits = textEditsRef.current;
@@ -730,77 +948,119 @@ export function useTranscriptEditSession({
       finalContents = applyBulkNvEdits(finalContents, nvEditsRef.current);
       finalContents = applyBulkDeidEdits(finalContents, deidEditsRef.current);
 
-      // 캐시에 최종 contents 반영 (UI 즉시 반영)
+      // 검증된 스냅샷 target으로만 저장한다. 성공 전에는 편집 상태를 유지한다.
+      const response = await updateTranscript({
+        sessionId: target.sessionId,
+        transcribeId: target.transcribeId,
+        expectedRevision: target.baseRevision,
+        expectedContentsFingerprint: target.baseContentsFingerprint,
+        baseContents: target.baseContents,
+        contents: finalContents,
+      });
+
       queryClient.setQueryData(
         sessionQueryKey,
         (oldData: CachedSessionData | undefined) => {
-          if (!oldData?.transcribe) return oldData;
+          if (
+            oldData?.session.id !== target.sessionId ||
+            oldData.transcribe?.id !== target.transcribeId
+          ) {
+            return oldData;
+          }
           return {
             ...oldData,
-            transcribe: { ...oldData.transcribe, contents: finalContents },
+            transcribe: {
+              ...oldData.transcribe,
+              contents: finalContents,
+              revision: response.revision,
+              contents_md5: response.contentsFingerprint,
+            },
           };
         }
       );
+      const isCurrentEdit =
+        editTargetRef.current?.generation === target.generation;
+      if (isCurrentEdit) {
+        resetEditState();
+      }
 
-      // 편집 상태 초기화
-      setEditing(null);
-      clearBuffers();
-      resetHistory();
-      setHasEdits(false);
-      setIsEditing(false);
-
-      // 서버에 전체 contents 저장
-      await saveTranscriptContents(transcribeId, finalContents);
-
-      // 서버에서 갱신된 preview 등 반영 — 리스트(paginated)도 invalidate
+      // 서버가 정규화한 contents/parsed_text/preview/updated_at으로 상세 캐시도 맞춘다.
+      await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
       await queryClient.invalidateQueries({ queryKey: ['sessions'] });
 
       trackEvent(MixpanelEvent.TranscriptEditComplete, {
-        session_id: sessionId,
+        session_id: target.sessionId,
+        transcribe_id: target.transcribeId,
         edited_segments_count: Object.keys(textEdits).length,
       });
 
-      toast({
-        title: '저장 완료',
-        description: '축어록을 수정했어요.',
-        duration: 3000,
-      });
+      if (isCurrentEdit) {
+        toast({
+          title: '저장 완료',
+          description: '축어록을 수정했어요.',
+          duration: 3000,
+        });
+      }
     } catch (error) {
-      // 실패 시 서버 데이터로 복원
+      // 충돌이면 stale 스냅샷을 폐기하고, 네트워크 오류면 사용자의 편집을 유지한다.
+      const isConflict =
+        typeof error === 'object' &&
+        error !== null &&
+        'status' in error &&
+        error.status === 409;
+      const isCurrentEdit =
+        editTargetRef.current?.generation === target.generation;
+      if (isConflict && isCurrentEdit) {
+        resetEditState();
+      }
       await queryClient.invalidateQueries({
         queryKey: sessionQueryKey,
       });
       await queryClient.invalidateQueries({ queryKey: ['sessions'] });
 
       trackError(MixpanelError.TranscriptSaveError, error, {
-        session_id: sessionId,
-        transcribe_id: transcribeId,
+        session_id: target.sessionId,
+        transcribe_id: target.transcribeId,
+        base_revision: target.baseRevision,
       });
-      toast({
-        title: '저장 실패',
-        description: '축어록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
-        duration: 3000,
-      });
+      if (isCurrentEdit) {
+        toast({
+          title: isConflict ? '최신 내용을 다시 불러왔어요' : '저장 실패',
+          description: isConflict
+            ? '다른 곳에서 축어록이 변경되어 이전 편집은 저장하지 않았어요.'
+            : '축어록을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          duration: 3000,
+        });
+      }
+    } finally {
+      mutationInFlightRef.current = false;
+      mutationInFlightTargetRef.current = null;
+      setIsSaving(false);
     }
   }, [
     isReadOnly,
     transcribeId,
     sessionId,
     editingContents,
+    hasEdits,
     checkIsGuideLevel,
     scrollToTop,
     nextGuideLevel,
     queryClient,
     sessionQueryKey,
+    resetEditState,
     toast,
-    setEditing,
-    clearBuffers,
-    resetHistory,
   ]);
 
   return {
     isEditing,
     hasEdits,
+    isSaving:
+      isSaving &&
+      isTargetMutationInFlight({
+        sessionId,
+        transcribeId: transcribeId ?? '',
+      }),
     handleEditStart,
     handleCancelEdit,
     handleSaveAllEdits,
@@ -822,7 +1082,5 @@ export function useTranscriptEditSession({
     replaceOne,
     editorVersion,
     editingContents,
-    setIsEditing,
-    setHasEdits,
   };
 }
