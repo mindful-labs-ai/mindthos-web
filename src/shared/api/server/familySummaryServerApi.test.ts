@@ -17,7 +17,10 @@ vi.mock('./serverClient', () => ({
 describe('familySummaryServerApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.serverRequest.mockResolvedValue({ clientId: 'c-1', status: 'pending' });
+    mocks.serverRequest.mockResolvedValue({
+      clientId: 'c-1',
+      status: 'pending',
+    });
   });
 
   describe('triggerFamilySummary', () => {
@@ -56,26 +59,39 @@ describe('familySummaryServerApi', () => {
 
       expect(mocks.serverRequest).toHaveBeenCalledWith('/family-summaries', {
         method: 'POST',
-        body: { clientId: 'c-1', forceRefresh: false, idempotencyKey: 'idem-xyz' },
+        body: {
+          clientId: 'c-1',
+          forceRefresh: false,
+          idempotencyKey: 'idem-xyz',
+        },
       });
     });
 
     it('forceRefresh가 undefined면 body에 포함하지 않아야 한다', async () => {
       await triggerFamilySummary('c-1', { forceRefresh: undefined });
 
-      const [, opts] = mocks.serverRequest.mock.calls[0] as [string, { body: Record<string, unknown> }];
+      const [, opts] = mocks.serverRequest.mock.calls[0] as [
+        string,
+        { body: Record<string, unknown> },
+      ];
       expect(opts.body).not.toHaveProperty('forceRefresh');
     });
 
     it('idempotencyKey가 undefined면 body에 포함하지 않아야 한다', async () => {
       await triggerFamilySummary('c-1', { idempotencyKey: undefined });
 
-      const [, opts] = mocks.serverRequest.mock.calls[0] as [string, { body: Record<string, unknown> }];
+      const [, opts] = mocks.serverRequest.mock.calls[0] as [
+        string,
+        { body: Record<string, unknown> },
+      ];
       expect(opts.body).not.toHaveProperty('idempotencyKey');
     });
 
     it('serverRequest의 반환값을 그대로 반환해야 한다', async () => {
-      mocks.serverRequest.mockResolvedValueOnce({ clientId: 'c-1', status: 'completed' });
+      mocks.serverRequest.mockResolvedValueOnce({
+        clientId: 'c-1',
+        status: 'completed',
+      });
 
       const result = await triggerFamilySummary('c-1');
 
@@ -111,7 +127,10 @@ describe('familySummaryServerApi', () => {
     });
 
     it('method 인자 없이 GET으로 호출해야 한다 (기본값)', async () => {
-      mocks.serverRequest.mockResolvedValueOnce({ clientId: 'c-1', status: 'pending' });
+      mocks.serverRequest.mockResolvedValueOnce({
+        clientId: 'c-1',
+        status: 'pending',
+      });
 
       await getFamilySummaryStatus('c-1');
 
@@ -143,10 +162,13 @@ describe('familySummaryServerApi', () => {
 
       await resetFamilySummary('c-1');
 
-      expect(mocks.serverRequest).toHaveBeenCalledWith('/family-summaries/reset', {
-        method: 'POST',
-        body: { clientId: 'c-1' },
-      });
+      expect(mocks.serverRequest).toHaveBeenCalledWith(
+        '/family-summaries/reset',
+        {
+          method: 'POST',
+          body: { clientId: 'c-1' },
+        }
+      );
     });
 
     it('정확히 한 번만 serverRequest를 호출해야 한다', async () => {
