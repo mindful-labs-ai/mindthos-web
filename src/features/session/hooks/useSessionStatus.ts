@@ -1,8 +1,7 @@
 /**
  * 세션 처리 상태 폴링 Hook
  *
- * STT 백엔드 포트를 경유하므로 VITE_USE_SERVER_STT 플래그에 따라
- * mindthos-server(소유권 검사) 또는 Edge Function 경로 중 하나가 선택된다.
+ * STT 백엔드 포트를 경유해 mindthos-server의 소유권 검사 경로를 사용한다.
  */
 
 import { useQuery } from '@tanstack/react-query';

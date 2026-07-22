@@ -5,18 +5,6 @@ import { supabase } from '@/lib/supabase';
  * 모든 Supabase Edge Function 엔드포인트를 한 곳에서 관리합니다.
  */
 export const EDGE_FUNCTION_ENDPOINTS = {
-  // 세션 관련
-  SESSION: {
-    STATUS: (sessionId: string) => `session/status/${sessionId}`,
-    PRESIGNED_URL: 'session/presigned-url',
-    UPLOAD_URL: 'session/upload-url',
-    HAND_WRITTEN: 'session/hand-written',
-  },
-  // 상담노트 관련
-  PROGRESS_NOTE: {
-    CREATE: 'progress-note',
-    ADD: 'note-layer',
-  },
   // 내담자 관련
   CLIENT: {
     CREATE: 'client/create',
