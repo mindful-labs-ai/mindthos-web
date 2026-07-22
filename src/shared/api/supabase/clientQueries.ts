@@ -11,7 +11,10 @@ import type {
 } from '@/features/client/types/clientApi.types';
 import type { AIGenogramOutput } from '@/features/genogram/utils/aiJsonConverter';
 import { supabase } from '@/lib/supabase';
-import { callEdgeFunction } from '@/shared/api/edgeFunctionClient';
+import {
+  ServerApiError,
+  serverRequest,
+} from '@/shared/api/server/serverClient';
 
 /**
  * 내담자의 family_summary 조회
@@ -211,9 +214,9 @@ export const clientService = {
     request: CreateClientRequest
   ): Promise<CreateClientResponse> {
     try {
-      const response = await callEdgeFunction<CreateClientResponse>(
+      const response = await serverRequest<CreateClientResponse>(
         '/clients/create',
-        request
+        { method: 'POST', body: request }
       );
 
       return response;
@@ -222,7 +225,10 @@ export const clientService = {
       throw {
         status: apiError.status || 500,
         success: false,
-        error: apiError.error || 'UNKNOWN_ERROR',
+        error:
+          error instanceof ServerApiError
+            ? error.statusCode
+            : apiError.error || 'UNKNOWN_ERROR',
         message: apiError.message || '내담자 등록 중 오류가 생겼어요.',
       } as ClientApiError;
     }

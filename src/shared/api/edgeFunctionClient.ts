@@ -56,12 +56,6 @@ export const EDGE_FUNCTION_ENDPOINTS = {
       VERIFY: 'auth/phone-verification/verify',
     },
   },
-  // 약관 관련
-  TERMS: {
-    CHECK: 'terms/check',
-    AGREE: 'terms/agree',
-    CONTENT: 'terms/content',
-  },
   // 가계도 관련
   GENOGRAM: {
     INIT: 'generate-family-summary/init',
@@ -73,22 +67,6 @@ export const EDGE_FUNCTION_ENDPOINTS = {
     LIST: 'report/list',
     RETRY: 'report/retry',
     PDF_URL: 'report/pdf-url',
-  },
-  // 쿠폰 관련
-  COUPONS: {
-    VALIDATE_ALL: 'coupons/validate',
-    VALIDATE: (userCouponId: string) => `coupons/validate/${userCouponId}`,
-    REGISTER: 'coupons/register',
-  },
-  // 공지사항
-  NOTICE: {
-    LIST: 'notice/list',
-  },
-  // 자격 관련
-  QUALIFICATION: {
-    LIST: 'qualifications/list',
-    USER: 'qualifications/user',
-    UPSERT: 'qualifications/upsert',
   },
 } as const;
 

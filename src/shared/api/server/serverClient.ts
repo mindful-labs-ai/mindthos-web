@@ -83,10 +83,12 @@ async function requestCore<T>(
   }
 
   if (!res.ok) {
-    const env = payload as Partial<ServerEnvelope<unknown>> | null;
+    const env = payload as
+      | (Partial<ServerEnvelope<unknown>> & { error?: string })
+      | null;
     throw new ServerApiError(
       res.status,
-      env?.statusCode ?? String(res.status),
+      env?.statusCode ?? env?.error ?? String(res.status),
       env?.message || `요청 실패 (${res.status})`,
       payload
     );

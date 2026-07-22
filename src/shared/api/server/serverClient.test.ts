@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { serverRequest, serverRequestPublic } from './serverClient';
+import {
+  ServerApiError,
+  serverRequest,
+  serverRequestPublic,
+} from './serverClient';
 
 const mocks = vi.hoisted(() => ({
   getSession: vi.fn(),
@@ -88,5 +92,29 @@ describe('serverClient', () => {
 
     expect(mocks.clearAuth).toHaveBeenCalledTimes(1);
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('EF 호환 오류 응답의 error 코드를 보존한다', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: false,
+          error: 'NAME_TOO_LONG',
+          message: '이름은 12자 이하로 입력해주세요.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    );
+
+    await expect(serverRequest('/clients/create')).rejects.toEqual(
+      expect.objectContaining<Partial<ServerApiError>>({
+        status: 400,
+        statusCode: 'NAME_TOO_LONG',
+        message: '이름은 12자 이하로 입력해주세요.',
+      })
+    );
   });
 });
