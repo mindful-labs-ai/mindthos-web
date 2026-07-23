@@ -30,7 +30,7 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
-        command: 'pnpm preview',
+        command: 'pnpm exec vite build --mode test && pnpm preview',
         url: 'http://localhost:4173',
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
