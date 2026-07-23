@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const externalBaseUrl = process.env.PLAYWRIGHT_BASE_URL;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -11,7 +13,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'line' : 'html',
   use: {
-    baseURL: 'http://localhost:4173',
+    baseURL: externalBaseUrl ?? 'http://localhost:4173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -25,10 +27,12 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm preview',
-    url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  webServer: externalBaseUrl
+    ? undefined
+    : {
+        command: 'pnpm preview',
+        url: 'http://localhost:4173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+      },
 });
