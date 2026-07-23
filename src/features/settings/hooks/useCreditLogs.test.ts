@@ -28,7 +28,7 @@ beforeEach(() => {
 });
 
 describe('useCreditLogs', () => {
-  it('서버 nextCursor를 다음 페이지 요청에 그대로 전달한다.', async () => {
+  it('[CREDIT-WEB-05] 서버 nextCursor를 다음 페이지 요청에 그대로 전달한다', async () => {
     useCreditLogs();
 
     const options = mocks.useInfiniteQuery.mock.calls[0][0];

@@ -46,7 +46,7 @@ describe('legacy EF server adapters', () => {
     vi.clearAllMocks();
   });
 
-  it('공지와 약관 본문은 공개 서버 API에서 조회한다', async () => {
+  it('[WEB-EF-06] 공지와 약관 본문은 공개 서버 API에서 조회한다', async () => {
     mocks.serverRequestPublic
       .mockResolvedValueOnce({ success: true, notices: [] })
       .mockResolvedValueOnce({
@@ -65,7 +65,7 @@ describe('legacy EF server adapters', () => {
     expect(mocks.serverRequest).not.toHaveBeenCalled();
   });
 
-  it('약관 동의 조회와 저장은 인증 서버 API를 사용한다', async () => {
+  it('[WEB-EF-07] 약관 동의 조회와 저장은 인증 서버 API를 사용한다', async () => {
     mocks.serverRequest.mockResolvedValue({ success: true });
     const payload = {
       agreements: [{ terms_id: 'terms-1', agreed: true }],
@@ -81,7 +81,7 @@ describe('legacy EF server adapters', () => {
     });
   });
 
-  it('자격 조회와 저장은 인증 서버 API를 사용한다', async () => {
+  it('[WEB-EF-08] 자격 조회와 저장은 인증 서버 API를 사용한다', async () => {
     mocks.serverRequest.mockResolvedValue({ qualifications: [] });
 
     await qualificationService.list();
@@ -100,7 +100,7 @@ describe('legacy EF server adapters', () => {
     );
   });
 
-  it('쿠폰 조회 쿼리를 인코딩하고 등록 payload를 유지한다', async () => {
+  it('[WEB-EF-09] 쿠폰 조회 쿼리를 인코딩하고 등록 payload를 유지한다', async () => {
     mocks.serverRequest
       .mockResolvedValueOnce({
         coupons: [
@@ -135,7 +135,7 @@ describe('legacy EF server adapters', () => {
     );
   });
 
-  it('내담자 생성은 기존 snake_case payload를 인증 서버 API에 그대로 보낸다', async () => {
+  it('[WEB-EF-10] 내담자 생성은 기존 snake_case payload를 인증 서버 API에 그대로 보낸다', async () => {
     const request = {
       counselor_email: 'counselor@example.com',
       name: '홍길동',
@@ -155,7 +155,7 @@ describe('legacy EF server adapters', () => {
     });
   });
 
-  it('내담자 생성의 서버 오류 코드를 기존 ClientApiError로 보존한다', async () => {
+  it('[WEB-EF-11] 내담자 생성의 서버 오류 코드를 기존 ClientApiError로 보존한다', async () => {
     mocks.serverRequest.mockRejectedValue(
       new ServerApiError(400, 'NAME_TOO_LONG', '이름이 너무 깁니다.')
     );
@@ -173,7 +173,7 @@ describe('legacy EF server adapters', () => {
     });
   });
 
-  it('보고서 생성·목록·재시도·PDF 키 저장은 인증 서버 API를 사용한다', async () => {
+  it('[WEB-EF-12] 보고서 생성·목록·재시도·PDF 키 저장은 인증 서버 API를 사용한다', async () => {
     const report = {
       id: 'report-1',
       client_id: 'client-1',
@@ -240,7 +240,7 @@ describe('legacy EF server adapters', () => {
     expect(mocks.serverRequestPublic).not.toHaveBeenCalled();
   });
 
-  it('보고서 서버 오류 코드를 사용자 안내로 변환한다', async () => {
+  it('[WEB-EF-13] 보고서 서버 오류 코드를 사용자 안내로 변환한다', async () => {
     mocks.serverRequest.mockRejectedValueOnce(
       new ServerApiError(403, 'ACCESS_DENIED', '수료 확인이 필요합니다.')
     );

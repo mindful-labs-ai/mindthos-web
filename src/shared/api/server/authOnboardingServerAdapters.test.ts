@@ -22,7 +22,7 @@ describe('auth and onboarding server adapters', () => {
     vi.clearAllMocks();
   });
 
-  it('로그인 전 인증 확인과 재발송은 공개 서버 API에 payload를 유지해 보낸다', async () => {
+  it('[WEB-EF-01] 로그인 전 인증 확인과 재발송은 공개 서버 API에 payload를 유지해 보낸다', async () => {
     const existsResponse = { success: true, exists: false };
     const methodResponse = {
       success: true,
@@ -65,7 +65,7 @@ describe('auth and onboarding server adapters', () => {
     expect(mocks.serverRequest).not.toHaveBeenCalled();
   });
 
-  it('계정 삭제는 로그인 세션이 필요한 서버 API에 email을 보낸다', async () => {
+  it('[WEB-EF-02] 계정 삭제는 로그인 세션이 필요한 서버 API에 email을 보낸다', async () => {
     const response = {
       success: true,
       deletedUser: { id: 3, email: 'user@example.com' },
@@ -83,7 +83,7 @@ describe('auth and onboarding server adapters', () => {
     expect(mocks.serverRequestPublic).not.toHaveBeenCalled();
   });
 
-  it('서버 인증 오류 코드를 기존 AuthErrorCode로 변환한다', async () => {
+  it('[WEB-EF-03] 서버 인증 오류 코드를 기존 AuthErrorCode로 변환한다', async () => {
     mocks.serverRequestPublic.mockRejectedValue({
       status: 400,
       statusCode: 'EMAIL_REQUIRED',
@@ -96,7 +96,7 @@ describe('auth and onboarding server adapters', () => {
     });
   });
 
-  it('휴대폰 인증 3개 동작은 로그인 세션이 필요한 POST API를 사용한다', async () => {
+  it('[WEB-EF-04] 휴대폰 인증 3개 동작은 로그인 세션이 필요한 POST API를 사용한다', async () => {
     const statusResponse = {
       success: true,
       required: true,
@@ -147,7 +147,7 @@ describe('auth and onboarding server adapters', () => {
     expect(mocks.serverRequestPublic).not.toHaveBeenCalled();
   });
 
-  it('온보딩 7개 동작은 payload를 바꾸지 않고 로그인 서버 API에 보낸다', async () => {
+  it('[WEB-EF-05] 온보딩 7개 동작은 payload를 바꾸지 않고 로그인 서버 API에 보낸다', async () => {
     const email = 'user@example.com';
     const savePayload = {
       email,

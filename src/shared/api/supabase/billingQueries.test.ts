@@ -17,7 +17,7 @@ describe('billingService server adapter', () => {
     vi.clearAllMocks();
   });
 
-  it('빌링키와 업그레이드 요청 5개를 기존 payload 그대로 POST한다', async () => {
+  it('[WEB-EF-14] 빌링키와 업그레이드 요청 5개를 기존 payload 그대로 POST한다', async () => {
     const billingRequest = {
       customerKey: 'customer-uuid',
       authKey: 'auth-key',
@@ -65,7 +65,7 @@ describe('billingService server adapter', () => {
     ]);
   });
 
-  it('카드 조회는 GET 결과의 card만 반환하고 삭제는 canonical DELETE를 사용한다', async () => {
+  it('[WEB-EF-15] 카드 조회는 GET 결과의 card만 반환하고 삭제는 canonical DELETE를 사용한다', async () => {
     const card = {
       type: 'CREDIT',
       company: '현대',
@@ -87,7 +87,7 @@ describe('billingService server adapter', () => {
     );
   });
 
-  it('플랜 관리 5개 요청은 payload를 유지하고 renew 결과를 직접 반환한다', async () => {
+  it('[WEB-EF-16] 플랜 관리 5개 요청은 payload를 유지하고 renew 결과를 직접 반환한다', async () => {
     const preview = { finalAmount: 12000 };
     const changed = { type: 'upgrade', newPlan: 'Pro' };
     const renewed = {
@@ -136,7 +136,7 @@ describe('billingService server adapter', () => {
     ]);
   });
 
-  it('선택 쿠폰이 없으면 payment payload에서 필드를 생략한다', async () => {
+  it('[WEB-EF-17] 선택 쿠폰이 없으면 payment payload에서 필드를 생략한다', async () => {
     mocks.serverRequest.mockResolvedValue({ success: true });
 
     await billingService.changePlan('plan-uuid');
@@ -153,7 +153,7 @@ describe('billingService server adapter', () => {
     });
   });
 
-  it('카드 조회 오류는 기존처럼 null로 처리하고 나머지 결제 오류는 그대로 전달한다', async () => {
+  it('[WEB-EF-18] 카드 조회 오류는 기존처럼 null로 처리하고 나머지 결제 오류는 그대로 전달한다', async () => {
     const consoleError = vi
       .spyOn(console, 'error')
       .mockImplementation(() => undefined);

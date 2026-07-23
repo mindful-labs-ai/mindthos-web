@@ -10,7 +10,9 @@ test.describe('Local credit QA', () => {
     'LOCAL_CREDIT_QA_E2E=1인 로컬 통합 환경에서만 실행합니다.'
   );
 
-  test('테스트 계정으로 통합 잔액과 QA 도구를 확인한다', async ({ page }) => {
+  test('[CREDIT-WEB-13] 테스트 계정으로 통합 잔액과 QA 도구를 확인한다', async ({
+    page,
+  }) => {
     await page.goto('/auth');
     await page.getByPlaceholder('이메일 주소').fill(qaEmail);
     await page.getByPlaceholder('비밀번호').fill(qaPassword);

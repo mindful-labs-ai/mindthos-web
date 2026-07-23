@@ -18,7 +18,7 @@ vi.mock('@/stores/authStore', () => ({
 }));
 
 describe('toCreditInfo', () => {
-  it('통합 Wallet 잔액과 구독 PLAN 지급량을 분리한다.', () => {
+  it('[CREDIT-WEB-01] 통합 Wallet 잔액과 구독 PLAN 지급량을 분리한다', () => {
     const summary: CreditSummary = {
       walletAvailableCredit: 105,
       heldCredit: 5,

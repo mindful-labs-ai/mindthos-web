@@ -81,7 +81,7 @@ vi.mock('@/shared/ui/composites/Modal', () => ({
 }));
 
 describe('CreditUsageModal', () => {
-  it('cursor로 누적된 모든 페이지를 Wallet 원장 형식으로 표시한다.', () => {
+  it('[CREDIT-WEB-07] cursor로 누적된 모든 페이지를 Wallet 원장 형식으로 표시한다', () => {
     render(<CreditUsageModal open onOpenChange={vi.fn()} />);
 
     expect(screen.getByText('축어록 생성')).toBeInTheDocument();

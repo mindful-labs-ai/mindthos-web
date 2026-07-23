@@ -24,7 +24,7 @@ beforeEach(() => {
 });
 
 describe('creditServerApi', () => {
-  it('요약과 cursor 기반 원장을 서버 credit endpoint에서 조회한다.', async () => {
+  it('[CREDIT-WEB-02] 요약과 cursor 기반 원장을 서버 credit endpoint에서 조회한다', async () => {
     await getCreditSummary();
     await getCreditHistory(20);
     await getCreditHistory(20, 'opaque/cursor+value');
@@ -37,7 +37,7 @@ describe('creditServerApi', () => {
     );
   });
 
-  it('로컬 QA 상태와 지급 요청 계약을 유지한다.', async () => {
+  it('[CREDIT-WEB-03] 로컬 QA 상태와 지급 요청 계약을 유지한다', async () => {
     await getDevCreditState();
     await grantDevCredit({
       policyCode: 'LOCAL_QA_PLAN_7D',
@@ -56,7 +56,7 @@ describe('creditServerApi', () => {
     });
   });
 
-  it('hold 생성·확정·해제와 미래 만료 요청 계약을 유지한다.', async () => {
+  it('[CREDIT-WEB-04] hold 생성·확정·해제와 미래 만료 요청 계약을 유지한다', async () => {
     await placeDevCreditHold({
       amount: 10,
       useType: 'credit_qa',
