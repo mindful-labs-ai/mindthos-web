@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 
 import { useCreditLogs } from '@/features/settings/hooks/useCreditLogs';
 import { trackEvent } from '@/lib/mixpanel';
-import type { CreditLedgerEntry } from '@/shared/api/server/creditServerApi';
+import type { CreditHistoryItem } from '@/shared/api/server/creditServerApi';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { MobileModalHeader } from '@/shared/ui';
@@ -57,7 +57,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
   };
 
   // 사용처 라벨 매핑
-  const getUsageLabel = (log: CreditLedgerEntry) => {
+  const getUsageLabel = (log: CreditHistoryItem) => {
     const metadata = log.metadata ?? {};
     const useType =
       typeof metadata.useType === 'string'
@@ -93,6 +93,8 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         return '리포트 생성';
       case 'deid_processing':
         return '비식별화 처리';
+      case 'billing_credit_discount':
+        return '플랜 잔여 크레딧 할인';
       case 'admin_charge':
         return '크레딧 지급';
       case 'admin_adjustment':
@@ -103,18 +105,16 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         return '크레딧 보상';
     }
 
-    const entryLabels: Record<CreditLedgerEntry['entryType'], string> = {
+    const eventLabels: Record<CreditHistoryItem['eventType'], string> = {
       GRANTED: '크레딧 지급',
-      HOLD_PLACED: '크레딧 사용 예약',
       HOLD_CAPTURED: '크레딧 사용 확정',
-      HOLD_RELEASED: '크레딧 예약 해제',
       GRANT_EXPIRED: '크레딧 만료',
       GRANT_REVOKED: '크레딧 회수',
       ADJUSTED: '크레딧 조정',
       REVERSED: '크레딧 복원',
     };
 
-    return entryLabels[log.entryType];
+    return eventLabels[log.eventType];
   };
 
   const logs = data?.pages.flatMap((page) => page.items) ?? [];
@@ -141,7 +141,9 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         >
           <p className="text-grey-100">{formatLogDate(log.occurredAt)}</p>
           <p className="font-medium text-grey-100">{getUsageLabel(log)}</p>
-          <p className="text-grey-100">{log.amount.toLocaleString()} 크레딧</p>
+          <p className="text-grey-100">
+            {log.amountDelta.toLocaleString()} 크레딧
+          </p>
         </div>
       ))}
       <div ref={ref} className="h-4 w-full">

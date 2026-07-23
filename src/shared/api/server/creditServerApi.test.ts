@@ -9,6 +9,7 @@ import {
   grantDevCredit,
   placeDevCreditHold,
   releaseDevCreditHold,
+  type CreditHistory,
 } from './creditServerApi';
 import { serverRequest } from './serverClient';
 
@@ -24,10 +25,30 @@ beforeEach(() => {
 });
 
 describe('creditServerApi', () => {
-  it('[CREDIT-WEB-02] 요약과 cursor 기반 원장을 서버 credit endpoint에서 조회한다', async () => {
+  it('[CREDIT-WEB-02] 요약과 cursor 기반 logical history를 서버 endpoint에서 조회한다', async () => {
+    const history = {
+      items: [
+        {
+          id: 'history-1',
+          eventType: 'HOLD_CAPTURED',
+          amountDelta: -10,
+          occurredAt: '2026-07-22T08:00:00.000Z',
+          holdId: 'hold-1',
+          metadata: { useType: 'session_creation' },
+        },
+      ],
+      nextCursor: 'next-cursor',
+    } satisfies CreditHistory;
+    request
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce(history)
+      .mockResolvedValueOnce(history);
+
     await getCreditSummary();
-    await getCreditHistory(20);
-    await getCreditHistory(20, 'opaque/cursor+value');
+    await expect(getCreditHistory(20)).resolves.toBe(history);
+    await expect(getCreditHistory(20, 'opaque/cursor+value')).resolves.toBe(
+      history
+    );
 
     expect(request).toHaveBeenNthCalledWith(1, '/credits/summary');
     expect(request).toHaveBeenNthCalledWith(2, '/credits/history?limit=20');

@@ -49,8 +49,25 @@ export interface CreditLedgerEntry {
   metadata: Record<string, unknown> | null;
 }
 
+export type CreditHistoryEventType =
+  | 'GRANTED'
+  | 'HOLD_CAPTURED'
+  | 'GRANT_EXPIRED'
+  | 'GRANT_REVOKED'
+  | 'ADJUSTED'
+  | 'REVERSED';
+
+export interface CreditHistoryItem {
+  id: string;
+  eventType: CreditHistoryEventType;
+  amountDelta: number;
+  occurredAt: string;
+  holdId: string | null;
+  metadata: Record<string, unknown> | null;
+}
+
 export interface CreditHistory {
-  items: CreditLedgerEntry[];
+  items: CreditHistoryItem[];
   nextCursor: string | null;
 }
 
