@@ -14,6 +14,11 @@ function renderPage() {
 }
 
 describe('UnsubscribePage', () => {
+  const supabaseUrl = import.meta.env.VITE_WEBAPP_SUPABASE_URL.replace(
+    /\/+$/,
+    ''
+  );
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -33,7 +38,7 @@ describe('UnsubscribePage', () => {
     await user.click(screen.getByRole('button', { name: '수신거부' }));
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'http://supabase.test/functions/v1/unsubscribe',
+      `${supabaseUrl}/functions/v1/unsubscribe`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
