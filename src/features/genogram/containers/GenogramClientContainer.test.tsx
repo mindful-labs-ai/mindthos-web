@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   invalidateQueries: vi.fn(),
   setQueryData: vi.fn(),
   convertAIJsonToCanvas: vi.fn(),
+  renderGenogramPage: vi.fn(),
 }));
 
 vi.mock('react-router-dom', () => ({
@@ -47,7 +48,10 @@ vi.mock('@/features/client/hooks/useClientList', () => ({
 }));
 
 vi.mock('@/genogram', () => ({
-  GenogramPage: () => null,
+  GenogramPage: () => {
+    mocks.renderGenogramPage();
+    return <div data-testid="genogram-page">genogram palette</div>;
+  },
 }));
 
 vi.mock('@/lib/mixpanel', () => ({
@@ -325,5 +329,25 @@ describe('GenogramClientContainer generation ownership', () => {
       'client-b',
       createOutput('Client B result')
     );
+  });
+});
+
+describe('GenogramClientContainer client access', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.clientId = 'unknown-client';
+    mocks.fetchGenerationStatus.mockResolvedValue('none');
+  });
+
+  it('does not expose the genogram editor for a client outside the user list', () => {
+    render(<GenogramClientContainer />);
+
+    expect(screen.getByText('내담자를 찾을 수 없어요.')).toBeInTheDocument();
+    expect(screen.queryByTestId('genogram-page')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'generate from records' })
+    ).not.toBeInTheDocument();
+    expect(mocks.renderGenogramPage).not.toHaveBeenCalled();
+    expect(mocks.fetchGenerationStatus).not.toHaveBeenCalled();
   });
 });
