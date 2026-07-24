@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { loadTossPayments } from '@tosspayments/tosspayments-sdk';
+import type { TossPaymentsPayment } from '@tosspayments/tosspayments-sdk';
 
 import { TOSS_PAYMENTS_CONFIG } from '../config/tossPayments';
 
 export const useTossPayments = (customerKey: string) => {
-  const [payment, setPayment] = useState<any>(null);
+  const [payment, setPayment] = useState<TossPaymentsPayment | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 

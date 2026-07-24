@@ -1,17 +1,32 @@
+/// <reference types="node" />
+
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
-const sourceModules = import.meta.glob('/src/**/*.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-  query: '?raw',
-}) as Record<string, string>;
+type SourceEntry = readonly [path: string, source: string];
 
-const productionSources = Object.entries(sourceModules).filter(
-  ([path]) =>
-    !path.includes('.test.') &&
-    !path.includes('.stories.') &&
-    !path.includes('/__tests__/')
-);
+const projectRoot = process.cwd();
+
+const readSources = (directory: string): SourceEntry[] =>
+  readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const absolutePath = join(directory, entry.name);
+    if (entry.isDirectory()) return readSources(absolutePath);
+    if (!entry.isFile() || !/\.tsx?$/.test(entry.name)) return [];
+
+    const path = `/${relative(projectRoot, absolutePath).split(sep).join('/')}`;
+    return [[path, readFileSync(absolutePath, 'utf8')] as const];
+  });
+
+const productionSources = ['src', 'api']
+  .flatMap((directory) => readSources(join(projectRoot, directory)))
+  .filter(
+    ([path]) =>
+      !path.includes('.test.') &&
+      !path.includes('.stories.') &&
+      !path.includes('/__tests__/')
+  );
 
 const findSources = (pattern: RegExp) =>
   productionSources
@@ -19,10 +34,13 @@ const findSources = (pattern: RegExp) =>
     .map(([path]) => path);
 
 describe('non-CRM server-only EF boundary', () => {
-  it('[WEB-EF-26] production source에 범용 Edge Function runtime fallback이 없다', () => {
+  it('[WEB-EF-26] src와 api에 범용 Edge Function runtime fallback이 없다', () => {
+    expect(productionSources.map(([path]) => path)).toContain(
+      '/api/session/create.ts'
+    );
     expect(
       findSources(
-        /supabase\.functions\.invoke|callEdgeFunction|edgeFunctionClient/
+        /\.functions\s*\.\s*invoke\s*\(|callEdgeFunction|edgeFunctionClient/
       )
     ).toEqual([]);
   });

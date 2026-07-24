@@ -6,7 +6,7 @@ import { queryClient } from '@/lib/queryClient';
 import { termsAgreementQueryKeys } from '@/shared/constants/queryKeys';
 
 import { termsAgreementService } from '../services/termsAgreementService';
-import type { TermItem } from '../types';
+import type { TermItem, TermsCheckResponse } from '../types';
 
 export const useTermsAgreement = (terms: TermItem[]) => {
   const [agreements, setAgreements] = useState<Record<string, boolean>>({});
@@ -50,11 +50,17 @@ export const useTermsAgreement = (terms: TermItem[]) => {
       });
     },
     onSuccess: () => {
-      queryClient.setQueryData(termsAgreementQueryKeys.check(), (old: any) => ({
-        ...old,
-        agreedAll: true,
-        pendingTerms: [],
-      }));
+      queryClient.setQueryData<TermsCheckResponse>(
+        termsAgreementQueryKeys.check(),
+        (old) =>
+          old
+            ? {
+                ...old,
+                agreedAll: true,
+                pendingTerms: [],
+              }
+            : old
+      );
     },
   });
 
