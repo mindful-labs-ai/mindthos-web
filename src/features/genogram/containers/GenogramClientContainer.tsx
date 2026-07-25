@@ -68,7 +68,7 @@ interface GenerationRequestIdentity {
 
 export function GenogramClientContainer() {
   const [searchParams] = useSearchParams();
-  const clientId = searchParams.get('clientId');
+  const requestedClientId = searchParams.get('clientId');
   const { setSearchParamsWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
   const { isMobile, isTablet } = useDevice();
@@ -79,7 +79,11 @@ export function GenogramClientContainer() {
   const { clients, isLoading: isClientsLoading } = useClientList();
   const genogramRef = useRef<GenogramPageHandle>(null);
 
-  const selectedClient = clients.find((c) => c.id === clientId) ?? null;
+  const selectedClient =
+    clients.find((c) => c.id === requestedClientId) ?? null;
+  const clientId = selectedClient?.id ?? null;
+  const isInvalidClientSelection =
+    !!requestedClientId && !isClientsLoading && !selectedClient;
 
   const { hasRecords } = useClientHasRecords(clientId ?? '');
   const { isLoading: isFamilySummaryLoading } = useClientFamilySummary(
@@ -125,7 +129,8 @@ export function GenogramClientContainer() {
 
   const activeClients = clients.filter((c) => !c.counsel_done);
   const hasNoClients = !isClientsLoading && activeClients.length === 0;
-  const isTemporaryMode = hasNoClients && !exitedTemporaryMode;
+  const isTemporaryMode =
+    !requestedClientId && hasNoClients && !exitedTemporaryMode;
 
   // 임시 모드(내담자 미지정)에서는 저장 대상이 없으므로 자동저장 차단.
   const autoSavePaused =
@@ -553,6 +558,14 @@ export function GenogramClientContainer() {
       return (
         <div className="flex h-full items-center justify-center">
           <span className="text-grey-70">불러오는 중...</span>
+        </div>
+      );
+    }
+
+    if (isInvalidClientSelection) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
         </div>
       );
     }

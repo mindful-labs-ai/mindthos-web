@@ -1,10 +1,13 @@
-export const EDGE_FUNCTION_BASE_URL = `${import.meta.env.VITE_WEBAPP_SUPABASE_URL}/functions/v1`;
-
-export const EDGE_FUNCTION_ENDPOINTS = {
+export const AUTH_ENDPOINTS = {
   CHECK_USER_EXISTS: '/auth/check-user-exists',
   CHECK_AUTH_METHOD: '/auth/check-auth-method',
   ACCOUNT_DELETE: '/auth/account-delete',
   RESEND_VERIFICATION: '/auth/resend-verification',
+  PHONE_VERIFICATION: {
+    STATUS: '/auth/phone-verification/status',
+    REQUEST: '/auth/phone-verification/request',
+    VERIFY: '/auth/phone-verification/verify',
+  },
 } as const;
 
 export const ERROR_MESSAGES = {

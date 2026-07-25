@@ -397,8 +397,8 @@ const MobileView = () => {
           </Title>
           {creditInfo && (
             <CreditDisplay
-              totalCredit={creditInfo.plan.total}
-              usedCredit={creditInfo.plan.used}
+              totalCredit={creditInfo.wallet.total}
+              usedCredit={creditInfo.wallet.used}
               planLabel={getPlanLabel(creditInfo.plan.type)}
               planType={creditInfo.plan.type}
               daysUntilReset={calculateDaysUntilReset(
@@ -473,8 +473,8 @@ const MobileView = () => {
           </button>
           {creditInfo && (
             <CreditDisplay
-              totalCredit={creditInfo.plan.total}
-              usedCredit={creditInfo.plan.used}
+              totalCredit={creditInfo.wallet.total}
+              usedCredit={creditInfo.wallet.used}
               planLabel={getPlanLabel(creditInfo.plan.type)}
               planType={creditInfo.plan.type}
               daysUntilReset={calculateDaysUntilReset(

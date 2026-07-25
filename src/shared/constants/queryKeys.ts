@@ -105,7 +105,7 @@ export const creditQueryKeys = {
   subscription: (userId: number) => ['credit', 'subscription', userId] as const,
   usage: (userId: number) => ['credit', 'usage', userId] as const,
   logs: (userId: number) => ['credit', 'logs', userId] as const,
-  // 신규 통합 RPC (get_credit_summary). 폴링 제거 + useCreditGuard와 같은 키 공유.
+  // 서버 통합 wallet summary. useCreditInfo / useCreditGuard가 같은 캐시를 공유.
   summary: (userId: number) => ['credit', 'summary', userId] as const,
 };
 
@@ -119,6 +119,7 @@ export const planQueryKeys = {
   all: ['plans'] as const,
   monthly: () => [...planQueryKeys.all, 'monthly'] as const,
   yearly: () => [...planQueryKeys.all, 'yearly'] as const,
+  detail: (planId: string) => [...planQueryKeys.all, 'detail', planId] as const,
 };
 
 // --- User ---

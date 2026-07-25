@@ -1,7 +1,5 @@
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { serverRequest } from '@/shared/api/server/serverClient';
+import { AUTH_ENDPOINTS } from '@/shared/api/services/auth/constants';
 
 export interface PhoneVerificationStatusResponse {
   success: boolean;
@@ -25,24 +23,25 @@ export interface PhoneVerificationVerifyResponse {
 
 export const phoneVerificationService = {
   async checkStatus(): Promise<PhoneVerificationStatusResponse> {
-    return await callEdgeFunction<PhoneVerificationStatusResponse>(
-      EDGE_FUNCTION_ENDPOINTS.AUTH.PHONE_VERIFICATION.STATUS
+    return await serverRequest<PhoneVerificationStatusResponse>(
+      AUTH_ENDPOINTS.PHONE_VERIFICATION.STATUS,
+      { method: 'POST' }
     );
   },
 
   async requestCode(
     phoneNumber: string
   ): Promise<PhoneVerificationRequestResponse> {
-    return await callEdgeFunction<PhoneVerificationRequestResponse>(
-      EDGE_FUNCTION_ENDPOINTS.AUTH.PHONE_VERIFICATION.REQUEST,
-      { phone_number: phoneNumber }
+    return await serverRequest<PhoneVerificationRequestResponse>(
+      AUTH_ENDPOINTS.PHONE_VERIFICATION.REQUEST,
+      { method: 'POST', body: { phone_number: phoneNumber } }
     );
   },
 
   async verifyCode(code: string): Promise<PhoneVerificationVerifyResponse> {
-    return await callEdgeFunction<PhoneVerificationVerifyResponse>(
-      EDGE_FUNCTION_ENDPOINTS.AUTH.PHONE_VERIFICATION.VERIFY,
-      { code }
+    return await serverRequest<PhoneVerificationVerifyResponse>(
+      AUTH_ENDPOINTS.PHONE_VERIFICATION.VERIFY,
+      { method: 'POST', body: { code } }
     );
   },
 };

@@ -31,8 +31,10 @@ export const ProfileMenu: React.FC<ProfileMenuProps> = ({ surface }) => {
     '?';
 
   const percentage =
-    creditInfo && creditInfo.plan.total > 0
-      ? Math.floor((creditInfo.plan.remaining / creditInfo.plan.total) * 100)
+    creditInfo && creditInfo.wallet.total > 0
+      ? Math.floor(
+          (creditInfo.wallet.remaining / creditInfo.wallet.total) * 100
+        )
       : 0;
 
   if (surface === 'dropdown') {

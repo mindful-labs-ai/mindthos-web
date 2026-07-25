@@ -1,24 +1,6 @@
 import type { ProgressNote } from '@/features/session/types';
 import { supabase } from '@/lib/supabase';
 import { sttBackend } from '@/shared/api/adapters/stt';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
-
-interface CreateProgressNoteParams {
-  sessionId: string;
-  userId: number;
-  templateId: number;
-  transcribedText: string;
-}
-
-interface CreateProgressNoteResponse {
-  success: boolean;
-  progress_note_id: string;
-  summary: string;
-  message?: string;
-}
 
 interface AddProgressNoteParams {
   sessionId: string;
@@ -68,36 +50,6 @@ export async function fetchSessionProgressNotes(
   }
 
   return data as ProgressNote[];
-}
-
-/**
- * 상담노트 생성 API 호출 (세션 플로우용)
- */
-export async function createProgressNote(
-  params: CreateProgressNoteParams
-): Promise<CreateProgressNoteResponse> {
-  try {
-    const data = await callEdgeFunction<CreateProgressNoteResponse>(
-      EDGE_FUNCTION_ENDPOINTS.PROGRESS_NOTE.CREATE,
-      {
-        session_id: params.sessionId,
-        user_id: params.userId,
-        template_id: params.templateId,
-        transcribed_text: params.transcribedText,
-      }
-    );
-
-    if (!data.success) {
-      throw new Error(data.message || '상담노트 작성 중 오류가 생겼어요.');
-    }
-
-    return data;
-  } catch (error: unknown) {
-    const err = error as { message?: string; statusText?: string };
-    throw new Error(
-      err.message || `상담노트 작성 실패: ${err.statusText || ''}`
-    );
-  }
 }
 
 /**

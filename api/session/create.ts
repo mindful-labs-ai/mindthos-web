@@ -20,11 +20,42 @@ interface CreateSessionResponse {
   message: string;
 }
 
-const SESSION_API =
-  process.env.SESSION_API_URL ?? process.env.VITE_SESSION_API_URL;
+interface SessionApiEnvironment {
+  SESSION_API_URL?: string;
+  VITE_SESSION_API_URL?: string;
+}
+
+export function resolveSessionApi(
+  environment: SessionApiEnvironment = process.env
+): string {
+  const sessionApi =
+    environment.SESSION_API_URL ?? environment.VITE_SESSION_API_URL;
+  if (!sessionApi) {
+    throw new Error('SESSION_API_URL이 설정되지 않았습니다.');
+  }
+
+  let url: URL;
+  try {
+    url = new URL(sessionApi);
+  } catch {
+    throw new Error('SESSION_API_URL은 유효한 Server URL이어야 합니다.');
+  }
+
+  const pathname = decodeURIComponent(url.pathname);
+  if (/\/functions\/v1(?:\/|$)/i.test(pathname)) {
+    throw new Error(
+      'SESSION_API_URL은 Supabase Edge Function을 가리킬 수 없습니다.'
+    );
+  }
+
+  return url.toString();
+}
+
 /**
- * 세션 생성 API 라우트
- * Vercel 서버리스 함수로 실행되어 CORS 문제를 우회
+ * 외부 호환을 위한 legacy Vercel proxy.
+ * 현재 Web STT 경로는 mindthos-server를 직접 호출하므로, 배포 트래픽이 0임을
+ * 확인하기 전에는 이 route를 제거하지 않는다. SESSION_API는 Server 소유
+ * session endpoint만 가리켜야 하며 Supabase Edge Function으로 되돌리지 않는다.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS 헤더 설정
@@ -80,7 +111,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const response = await fetch(`${SESSION_API}`, {
+    const sessionApi = resolveSessionApi();
+    const response = await fetch(sessionApi, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -5,6 +5,9 @@ import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 import {
   createSignedPdfUrl,
   listReports,
+  pollReportUntilTerminal,
+  ReportPollCancelledError,
+  ReportPollTimeoutError,
   retryReport,
 } from '@/shared/api/supabase/reportQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
@@ -14,6 +17,12 @@ type ToastFn = (opts: { title: string; description: string }) => void;
 interface UseReportListOptions {
   clientId?: string;
   toast: ToastFn;
+  /**
+   * 모달을 열거나 닫을 때마다 증가하는 단조 실행 토큰(부모와 공유).
+   * 재시도 플로우는 시작 시 값을 캡처하고, 현재 값과 달라지면 취소로 간주한다 —
+   * 닫힘 직후 재오픈이 이전(stale) 폴링을 되살리지 못하게 한다.
+   */
+  runIdRef?: React.MutableRefObject<number>;
 }
 
 export interface UseReportListReturn {
@@ -29,6 +38,7 @@ export interface UseReportListReturn {
 export function useReportList({
   clientId,
   toast,
+  runIdRef,
 }: UseReportListOptions): UseReportListReturn {
   const [reports, setReports] = useState<ReportListItem[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
@@ -55,15 +65,53 @@ export function useReportList({
 
   const handleRetryReport = useCallback(
     async (reportId: string) => {
+      if (!clientId) return;
+      // 실행 토큰을 캡처 — 이후 재오픈으로 값이 바뀌면 취소로 간주한다.
+      const myRun = runIdRef?.current;
+      const cancelled = () => runIdRef != null && runIdRef.current !== myRun;
       setRetryingId(reportId);
       try {
-        await retryReport(reportId);
-        toast({
-          title: '보고서 재생성 완료',
-          description: '보고서를 만들었어요.',
+        const dispatched = await retryReport(reportId);
+        // 이미 완료된 보고서 재시도는 즉시 성공으로 반환된다.
+        if (dispatched.status === 'SUCCEEDED') {
+          toast({
+            title: '보고서 재생성 완료',
+            description: '보고서를 만들었어요.',
+          });
+          await fetchReports();
+          return;
+        }
+
+        // IN_PROGRESS: 목록을 갱신해 "생성 중"을 노출하고 terminal까지 폴링한다.
+        await fetchReports();
+        setRetryingId(null);
+        const finalReport = await pollReportUntilTerminal(clientId, reportId, {
+          shouldCancel: cancelled,
         });
-        fetchReports();
+        // 폴링이 끝난 뒤 모달이 닫혔다면(재오픈 포함) 닫힌 모달에 토스트/갱신하지 않는다.
+        if (cancelled()) return;
+        await fetchReports();
+        toast(
+          finalReport.status === 'SUCCEEDED'
+            ? {
+                title: '보고서 재생성 완료',
+                description: '보고서를 만들었어요.',
+              }
+            : {
+                title: '재시도 실패',
+                description: '보고서를 생성하지 못했어요.',
+              }
+        );
       } catch (error) {
+        if (error instanceof ReportPollCancelledError) return;
+        if (error instanceof ReportPollTimeoutError) {
+          toast({
+            title: '보고서 생성 중',
+            description:
+              '보고서 생성이 조금 더 걸리고 있어요. 잠시 후 목록에서 확인해주세요.',
+          });
+          return;
+        }
         toast({
           title: '재시도 실패',
           description:
@@ -73,7 +121,7 @@ export function useReportList({
         setRetryingId(null);
       }
     },
-    [toast, fetchReports]
+    [clientId, toast, fetchReports, runIdRef]
   );
 
   const handleDownloadReport = useCallback(

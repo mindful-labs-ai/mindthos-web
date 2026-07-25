@@ -4,7 +4,10 @@ import { useSearchParams } from 'react-router-dom';
 
 type ViewState = 'confirm' | 'loading' | 'success' | 'error';
 
-const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL;
+const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL.replace(
+  /\/+$/,
+  ''
+);
 const LOGO_URL =
   'https://api.mindthos.com/storage/v1/object/public/public-img/logo_mindthos_hori.png';
 const MINDTHOS_HOME_URL = 'https://mindthos.com/';
@@ -23,16 +26,12 @@ const UnsubscribePage = () => {
     setView('loading');
 
     try {
-      const res = await fetch(
-        `https://${SUPABASE_URL}/functions/v1/unsubscribe`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-        }
-      );
-
-      const data = (await res.json()) as {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/unsubscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const data = (await response.json()) as {
         success: boolean;
         message?: string;
       };

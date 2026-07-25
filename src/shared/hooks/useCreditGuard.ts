@@ -3,9 +3,9 @@ import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import {
-  creditService,
+  getCreditSummary,
   type CreditSummary,
-} from '@/shared/api/supabase/creditQueries';
+} from '@/shared/api/server/creditServerApi';
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -14,9 +14,12 @@ export interface CreditGuardResult {
   required: number;
   remaining: number;
   summary: CreditSummary | null;
-  /** userId가 없거나 RPC가 실패한 경우 */
+  /** userId가 없거나 서버 조회가 실패한 경우 */
   unavailable?: boolean;
 }
+
+export const canUseCredit = (summary: CreditSummary, required: number) =>
+  summary.walletAvailableCredit >= required;
 
 export const useCreditGuard = () => {
   const queryClient = useQueryClient();
@@ -48,18 +51,18 @@ export const useCreditGuard = () => {
       try {
         const summary = await queryClient.fetchQuery({
           queryKey,
-          queryFn: () => creditService.getCreditSummary(),
+          queryFn: getCreditSummary,
           staleTime: 0,
         });
 
         return {
-          ok: summary.remaining_credit >= required,
+          ok: canUseCredit(summary, required),
           required,
-          remaining: summary.remaining_credit,
+          remaining: summary.walletAvailableCredit,
           summary,
         };
       } catch {
-        // RPC 실패 — UX는 서버 응답을 신뢰하도록 통과시키되 unavailable 플래그
+        // 조회 실패 — 실제 command의 서버 권한 검사를 신뢰하고 unavailable로 표시
         return {
           ok: true,
           required,
