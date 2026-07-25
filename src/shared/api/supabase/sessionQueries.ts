@@ -25,8 +25,7 @@ export type { SessionStatusResult } from '@/shared/api/adapters/stt';
 
 /**
  * 백그라운드 세션 생성 API 호출.
- * 실제 백엔드 경로는 STT 백엔드 포트(sttBackend)가 결정한다
- * (현행: Vercel 라우트 경유 mavo-api / 이관 후: mindthos-server).
+ * STT 백엔드 포트를 통해 mindthos-server에 위임한다.
  */
 export async function createSessionBackground(
   request: CreateSessionBackgroundRequest
@@ -35,8 +34,7 @@ export async function createSessionBackground(
 }
 
 /**
- * 세션 처리 상태 조회 — STT 백엔드 포트로 위임.
- * 플래그(VITE_USE_SERVER_STT)에 따라 서버(소유권 검사 포함) 또는 EF 경로 사용.
+ * 세션 처리 상태 조회 — 소유권 검사를 수행하는 서버 포트로 위임.
  */
 export async function getSessionStatus(
   sessionId: string

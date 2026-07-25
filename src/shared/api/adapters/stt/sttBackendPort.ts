@@ -10,8 +10,7 @@ import type {
  * STT 백엔드 포트 — 축어록 파이프라인이 백엔드로 나가는 호출 5종의 계약.
  *
  * 구현체:
- *  - edgeFunctionSttBackend: 현행(Supabase EF + Vercel 라우트 경유 mavo-api)
- *  - serverSttBackend: 신규(mindthos-server /v1) — 응답을 아래 기존 shape로 매핑
+ *  - serverSttBackend: mindthos-server /v1 응답을 아래 기존 shape로 매핑
  *
  * 축어록 데이터 자체(transcribes.contents 등)는 DB 직접 read/write라 이 포트의
  * 대상이 아니다 — 서버가 저장 계약을 고정하므로 파서/렌더/편집은 무변경.

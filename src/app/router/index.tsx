@@ -9,6 +9,7 @@ import CalendarOAuthCallbackPage from '@/features/calendar/page/CalendarOAuthCal
 import CalendarPage from '@/features/calendar/page/CalendarPage';
 import ClientDetailPage from '@/features/client/page/ClientDetailPage';
 import ClientListPage from '@/features/client/page/ClientListPage';
+import CreditQaPage from '@/features/credit-qa/page/CreditQaPage';
 import DocumentEditorPage from '@/features/document/page/DocumentEditorPage';
 import DocumentPage from '@/features/document/page/DocumentPage';
 import DocumentViewPage from '@/features/document/page/DocumentViewPage';
@@ -25,6 +26,7 @@ import TemplateListPage from '@/features/template/page/TemplateListPage';
 import TermsPage from '@/features/terms/page/TermsPage';
 import TermsAgreementPage from '@/features/terms-agreement/page/TermsAgreementPage';
 import UnsubscribePage from '@/features/unsubscribe/page/UnsubscribePage';
+import { env } from '@/lib/env';
 import PaymentFail from '@/widgets/payment/PaymentFail';
 import PaymentSuccess from '@/widgets/payment/PaymentSuccess';
 
@@ -185,6 +187,18 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      ...(env.VITE_ENABLE_CREDIT_QA
+        ? [
+            {
+              path: ROUTES.CREDIT_QA,
+              element: (
+                <ProtectedRoute skipTermsCheck skipSignupCheck>
+                  <CreditQaPage />
+                </ProtectedRoute>
+              ),
+            },
+          ]
+        : []),
       {
         path: ROUTES.NOT_FOUND,
         element: <NotFoundPage />,

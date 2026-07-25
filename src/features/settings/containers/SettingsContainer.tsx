@@ -443,8 +443,8 @@ export const SettingsContainer: React.FC = () => {
           }
         >
           <CreditDisplay
-            totalCredit={creditInfo.plan.total}
-            usedCredit={creditInfo.plan.used}
+            totalCredit={creditInfo.wallet.total}
+            usedCredit={creditInfo.wallet.used}
             planLabel={getPlanLabel(creditInfo.plan.type)}
             planType={creditInfo.plan.type}
             daysUntilReset={calculateDaysUntilReset(
@@ -457,7 +457,7 @@ export const SettingsContainer: React.FC = () => {
           />
         </div>
         <div className={isMobileView ? '' : 'flex-1'}>
-          <CreditUsageInfo remainingCredit={creditInfo.plan.remaining} />
+          <CreditUsageInfo remainingCredit={creditInfo.wallet.remaining} />
         </div>
       </div>
     </>

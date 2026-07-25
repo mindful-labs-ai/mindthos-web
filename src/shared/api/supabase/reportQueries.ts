@@ -1,9 +1,6 @@
 import type { GenogramReport } from '@/features/report/types/reportSchema';
 import { supabase } from '@/lib/supabase';
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { serverRequest } from '@/shared/api/server/serverClient';
 
 // ============================================
 // 타입 정의
@@ -13,7 +10,7 @@ export interface ReportListItem {
   id: string;
   client_id: string;
   user_id: number;
-  template_key: string;
+  template_id: string;
   title: string;
   status: 'IN_PROGRESS' | 'SUCCEEDED' | 'FAILED';
   error_code: string | null;
@@ -43,21 +40,20 @@ interface GenerateReportRequest {
   };
 }
 
-interface GenerateReportResponse {
-  success: boolean;
-  data: {
-    report_id: string;
-    formatted_json: GenogramReport;
-    status: 'SUCCEEDED';
-  };
-}
+/** report 상태 (목록 아이템과 동일). */
+export type ReportStatus = ReportListItem['status'];
 
-interface RetryReportResponse {
+/**
+ * generate/retry 응답 — 비동기 이관 후 inline 결과(formatted_json) 없이 report_id + 현재
+ * status만 반환한다(generate=IN_PROGRESS, retry=IN_PROGRESS 또는 이미 완료면 SUCCEEDED).
+ * 실제 formatted_json은 status가 terminal(SUCCEEDED)이 될 때까지 목록을 폴링한 뒤
+ * fetchReportDetail로 조회한다.
+ */
+interface DispatchReportResponse {
   success: boolean;
   data: {
     report_id: string;
-    formatted_json: GenogramReport;
-    status: 'SUCCEEDED';
+    status: ReportStatus;
   };
 }
 
@@ -142,10 +138,10 @@ export async function exportReport(params: {
 /** 내담자별 보고서 목록 조회 */
 export async function listReports(clientId: string): Promise<ReportListItem[]> {
   try {
-    const data = await callEdgeFunction<ListReportsResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.LIST,
-      { client_id: clientId }
-    );
+    const data = await serverRequest<ListReportsResponse>('/report/list', {
+      method: 'POST',
+      body: { client_id: clientId },
+    });
 
     if (!data.success) {
       throw new Error('보고서 목록을 불러오지 못했어요.');
@@ -158,14 +154,78 @@ export async function listReports(clientId: string): Promise<ReportListItem[]> {
   }
 }
 
-/** 보고서 생성 */
+// ============================================
+// 비동기 결과 폴링
+// ============================================
+
+// 폴링 설정 — 가계도 AI 폴링과 유사한 주기, 전체 타임아웃 5분(생성 60s+ · 서버 TTL 고려).
+const REPORT_POLL_INTERVAL_MS = 3000;
+const REPORT_POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+/** shouldCancel(모달 언마운트 등)로 폴링이 중단되면 던지는 센티넬. */
+export class ReportPollCancelledError extends Error {
+  constructor() {
+    super('report poll cancelled');
+    this.name = 'ReportPollCancelledError';
+  }
+}
+
+/** 타임아웃 안에 terminal 상태가 되지 않아 폴링을 포기할 때 던진다(아직 생성 중일 수 있음). */
+export class ReportPollTimeoutError extends Error {
+  constructor() {
+    super('report poll timed out');
+    this.name = 'ReportPollTimeoutError';
+  }
+}
+
+interface PollReportOptions {
+  intervalMs?: number;
+  timeoutMs?: number;
+  /** true면 즉시 ReportPollCancelledError로 중단(모달 닫힘/언마운트). */
+  shouldCancel?: () => boolean;
+}
+
+/**
+ * 비동기 생성/재시도 후 보고서가 terminal(SUCCEEDED/FAILED)이 될 때까지 목록을 폴링한다.
+ * - shouldCancel → ReportPollCancelledError
+ * - timeoutMs 초과 → ReportPollTimeoutError (호출부에서 "아직 생성 중" 폴백 처리)
+ */
+export async function pollReportUntilTerminal(
+  clientId: string,
+  reportId: string,
+  options: PollReportOptions = {}
+): Promise<ReportListItem> {
+  const intervalMs = options.intervalMs ?? REPORT_POLL_INTERVAL_MS;
+  const timeoutMs = options.timeoutMs ?? REPORT_POLL_TIMEOUT_MS;
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (options.shouldCancel?.()) throw new ReportPollCancelledError();
+    await delay(intervalMs);
+    if (options.shouldCancel?.()) throw new ReportPollCancelledError();
+
+    const reports = await listReports(clientId);
+    const target = reports.find((report) => report.id === reportId);
+    if (target && target.status !== 'IN_PROGRESS') {
+      return target;
+    }
+    // IN_PROGRESS(또는 아직 목록에 없음) → 계속 폴링
+  }
+
+  throw new ReportPollTimeoutError();
+}
+
+/** 보고서 생성 (비동기 dispatch — report_id + status 반환) */
 export async function generateReport(
   params: GenerateReportRequest
-): Promise<GenerateReportResponse['data']> {
+): Promise<DispatchReportResponse['data']> {
   try {
-    const data = await callEdgeFunction<GenerateReportResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.GENERATE,
-      params
+    const data = await serverRequest<DispatchReportResponse>(
+      '/report/generate',
+      { method: 'POST', body: params }
     );
 
     if (!data.success) {
@@ -174,9 +234,9 @@ export async function generateReport(
 
     return data.data;
   } catch (error: unknown) {
-    const err = error as { message?: string; error?: string };
+    const err = error as { message?: string; statusCode?: string };
 
-    if (err.error === 'ACCESS_DENIED') {
+    if (err.statusCode === 'ACCESS_DENIED') {
       throw new Error('이 보고서를 생성하려면 세미나 수료가 필요해요.');
     }
 
@@ -221,10 +281,10 @@ export async function savePdfStorageKey(
   storageKey: string
 ): Promise<string> {
   try {
-    const data = await callEdgeFunction<SavePdfUrlResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.PDF_URL,
-      { report_id: reportId, storage_key: storageKey }
-    );
+    const data = await serverRequest<SavePdfUrlResponse>('/report/pdf-url', {
+      method: 'POST',
+      body: { report_id: reportId, storage_key: storageKey },
+    });
 
     if (!data.success) {
       throw new Error('PDF 저장 정보를 처리하지 못했어요.');
@@ -270,15 +330,15 @@ export async function fetchReportTemplates(): Promise<ReportTemplate[]> {
   }));
 }
 
-/** 실패한 보고서 재시도 */
+/** 실패한 보고서 재시도 (비동기 dispatch — report_id + status 반환) */
 export async function retryReport(
   reportId: string
-): Promise<RetryReportResponse['data']> {
+): Promise<DispatchReportResponse['data']> {
   try {
-    const data = await callEdgeFunction<RetryReportResponse>(
-      EDGE_FUNCTION_ENDPOINTS.REPORT.RETRY,
-      { report_id: reportId }
-    );
+    const data = await serverRequest<DispatchReportResponse>('/report/retry', {
+      method: 'POST',
+      body: { report_id: reportId },
+    });
 
     if (!data.success) {
       throw new Error('보고서를 다시 만들지 못했어요.');
@@ -286,12 +346,12 @@ export async function retryReport(
 
     return data.data;
   } catch (error: unknown) {
-    const err = error as { message?: string; error?: string };
+    const err = error as { message?: string; statusCode?: string };
 
-    if (err.error === 'RETRY_COOLDOWN') {
+    if (err.statusCode === 'RETRY_COOLDOWN') {
       throw new Error(err.message || '재시도까지 잠시 기다려주세요.');
     }
-    if (err.error === 'MAX_RETRY_EXCEEDED') {
+    if (err.statusCode === 'MAX_RETRY_EXCEEDED') {
       throw new Error(err.message || '최대 재시도 횟수를 넘었어요.');
     }
 

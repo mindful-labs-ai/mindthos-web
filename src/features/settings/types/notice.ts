@@ -25,7 +25,7 @@ export interface Notice {
   version: string;
   category: string;
   title: string;
-  thumbnail: string;
+  thumbnail: string | null;
   date: string;
   content: ContentBlock[];
   createdAt: string;

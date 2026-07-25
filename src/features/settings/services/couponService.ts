@@ -1,7 +1,4 @@
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { serverRequest } from '@/shared/api/server/serverClient';
 
 import type {
   Coupon,
@@ -26,23 +23,19 @@ function toCoupon(response: CouponResponse): Coupon {
 export const couponService = {
   /** 유저의 전체 쿠폰 검증 */
   async validateAll(planType?: string): Promise<Coupon[]> {
-    const query = planType ? `?plan_type=${planType}` : '';
-    const endpoint = `${EDGE_FUNCTION_ENDPOINTS.COUPONS.VALIDATE_ALL}${query}`;
+    const query = planType ? `?plan_type=${encodeURIComponent(planType)}` : '';
+    const endpoint = `/coupons/validate${query}`;
 
-    const data = await callEdgeFunction<ValidateCouponsResponse>(
-      endpoint,
-      undefined,
-      { method: 'GET' }
-    );
+    const data = await serverRequest<ValidateCouponsResponse>(endpoint);
 
     return data.coupons.map(toCoupon);
   },
 
   /** 쿠폰 등록 */
   async register(couponId: string): Promise<RegisterCouponResponse> {
-    return await callEdgeFunction<RegisterCouponResponse>(
-      EDGE_FUNCTION_ENDPOINTS.COUPONS.REGISTER,
-      { coupon_id: couponId }
-    );
+    return await serverRequest<RegisterCouponResponse>('/coupons/register', {
+      method: 'POST',
+      body: { coupon_id: couponId },
+    });
   },
 };

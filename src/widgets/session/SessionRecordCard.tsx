@@ -3,6 +3,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
+import type { Client } from '@/features/client/types';
 import { useInterpolatedProgress } from '@/features/session/hooks/useInterpolatedProgress';
 import type { SessionRecord } from '@/features/session/types';
 import { extractTextOnly } from '@/features/session/utils/parseNonverbalText';
@@ -554,7 +555,7 @@ export const SessionRecordCard: React.FC<SessionRecordCardProps> = ({
     }
   };
 
-  const handleClientSelect = async (client: any) => {
+  const handleClientSelect = async (client: Client | null) => {
     if (isReadOnly) {
       showReadOnlyToast();
       return;

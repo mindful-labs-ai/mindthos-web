@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 
 import { useCreditLogs } from '@/features/settings/hooks/useCreditLogs';
 import { trackEvent } from '@/lib/mixpanel';
-import type { CreditLog } from '@/shared/api/supabase/creditQueries';
+import type { CreditHistoryItem } from '@/shared/api/server/creditServerApi';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { MobileModalHeader } from '@/shared/ui';
@@ -31,7 +31,6 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     isLoading,
     isError,
   } = useCreditLogs();
-
   const { ref, inView } = useInView();
 
   React.useEffect(() => {
@@ -42,9 +41,9 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
 
   React.useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+      void fetchNextPage();
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [fetchNextPage, hasNextPage, inView, isFetchingNextPage]);
 
   // 날짜 포맷 (YYYY.MM.DD / HH:mm)
   const formatLogDate = (dateString: string) => {
@@ -58,10 +57,16 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
   };
 
   // 사용처 라벨 매핑
-  const getUsageLabel = (log: CreditLog) => {
-    const metadata = (log.feature_metadata as Record<string, unknown>) || {};
+  const getUsageLabel = (log: CreditHistoryItem) => {
+    const metadata = log.metadata ?? {};
+    const useType =
+      typeof metadata.useType === 'string'
+        ? metadata.useType
+        : typeof metadata.use_type === 'string'
+          ? metadata.use_type
+          : null;
 
-    switch (log.use_type) {
+    switch (useType) {
       case 'session_creation':
         if (
           metadata.stt_model === 'gemini-3' ||
@@ -88,6 +93,8 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         return '리포트 생성';
       case 'deid_processing':
         return '비식별화 처리';
+      case 'billing_credit_discount':
+        return '플랜 잔여 크레딧 할인';
       case 'admin_charge':
         return '크레딧 지급';
       case 'admin_adjustment':
@@ -98,10 +105,19 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
         return '크레딧 보상';
     }
 
-    return log.log_memo || log.use_type;
+    const eventLabels: Record<CreditHistoryItem['eventType'], string> = {
+      GRANTED: '크레딧 지급',
+      HOLD_CAPTURED: '크레딧 사용 확정',
+      GRANT_EXPIRED: '크레딧 만료',
+      GRANT_REVOKED: '크레딧 회수',
+      ADJUSTED: '크레딧 조정',
+      REVERSED: '크레딧 복원',
+    };
+
+    return eventLabels[log.eventType];
   };
 
-  const logs = data?.pages.flatMap((page) => page) || [];
+  const logs = data?.pages.flatMap((page) => page.items) ?? [];
 
   // 공통: 테이블 본문
   const tableBody = isLoading ? (
@@ -123,10 +139,10 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
           key={log.id}
           className="grid grid-cols-[1.5fr_1.5fr_1fr] rounded-lg px-4 py-3 text-center text-sm transition-colors lg:hover:bg-grey-10"
         >
-          <p className="text-grey-100">{formatLogDate(log.created_at)}</p>
+          <p className="text-grey-100">{formatLogDate(log.occurredAt)}</p>
           <p className="font-medium text-grey-100">{getUsageLabel(log)}</p>
           <p className="text-grey-100">
-            {log.use_amount.toLocaleString()} 크레딧
+            {log.amountDelta.toLocaleString()} 크레딧
           </p>
         </div>
       ))}
@@ -145,7 +161,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
     <div className="mb-4 grid grid-cols-[1.5fr_1.5fr_1fr] px-4 text-center">
       <p className="text-sm font-medium text-grey-60">날짜 / 시간</p>
       <p className="text-sm font-medium text-grey-60">사용처</p>
-      <p className="text-sm font-medium text-grey-60">사용량</p>
+      <p className="text-sm font-medium text-grey-60">변동량</p>
     </div>
   );
 
@@ -171,7 +187,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
               </div>
             </div>
             <p className="mt-4 text-center text-xs text-grey-60">
-              *크레딧 사용 기록은 최대 3개월까지만 조회가능해요.
+              *스크롤하면 이전 크레딧 변동 기록을 계속 불러와요.
             </p>
           </div>
           <div className="flex-shrink-0 px-4 pb-4 md:px-10">
@@ -198,7 +214,7 @@ export const CreditUsageModal: React.FC<CreditUsageModalProps> = ({
             </div>
           </div>
           <p className="mt-4 text-center text-sm text-grey-60">
-            *크레딧 사용 기록은 최대 3개월까지만 조회가능해요.
+            *스크롤하면 이전 크레딧 변동 기록을 계속 불러와요.
           </p>
         </div>
       )}

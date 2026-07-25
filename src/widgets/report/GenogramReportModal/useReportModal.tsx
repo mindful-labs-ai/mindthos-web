@@ -13,6 +13,9 @@ import {
   exportReport,
   fetchReportDetail,
   generateReport,
+  pollReportUntilTerminal,
+  ReportPollCancelledError,
+  ReportPollTimeoutError,
 } from '@/shared/api/supabase/reportQueries';
 import type { ReportListItem } from '@/shared/api/supabase/reportQueries';
 import {
@@ -65,6 +68,12 @@ export function useReportModal({
 
   const { getTemplate } = useReportTemplates();
 
+  // 진행 중 비동기(생성/재시도 폴링 등)를 무효화하는 단조 증가 실행 토큰.
+  // 모달을 열거나 닫을 때마다 증가한다(하단 Effects). 각 비동기 플로우는 시작 시
+  // 토큰을 캡처하고 현재 값과 달라지면 취소로 간주한다 — 닫힘 직후 재오픈이
+  // 이전(stale) 플로우를 되살리지 못하게 한다.
+  const runIdRef = useRef(0);
+
   // ── 서브 훅 ──
   const {
     reports,
@@ -74,7 +83,7 @@ export function useReportModal({
     handleRetryReport,
     handleDownloadReport,
     setReports,
-  } = useReportList({ clientId, toast });
+  } = useReportList({ clientId, toast, runIdRef });
   const { processReport, isCapturing } = useGenogramCapture(genogramRef);
 
   // ── 스텝 & 생성 상태 ──
@@ -113,7 +122,6 @@ export function useReportModal({
   // ── Refs ──
 
   const prevPdfUrlRef = useRef<string | null>(null);
-  const cancelledRef = useRef(false);
   const successResolveRef = useRef<(() => void) | null>(null);
 
   // ── PDF URL 관리 ──
@@ -138,7 +146,9 @@ export function useReportModal({
   // ── 보고서 생성 플로우 ──
 
   const runGenerateFlow = useCallback(async () => {
-    cancelledRef.current = false;
+    // 이 플로우가 속한 실행 토큰. 이후 재오픈으로 토큰이 바뀌면 취소로 간주한다.
+    const myRun = runIdRef.current;
+    const cancelled = () => runIdRef.current !== myRun;
 
     try {
       const period =
@@ -155,7 +165,7 @@ export function useReportModal({
       const clientLabel = formData.clientName ? `_${formData.clientName}` : '';
       const reportTitle = `${templateName}${clientLabel}_${yy}/${mm}/${dd}`;
 
-      const result = await generateReport({
+      const dispatch = await generateReport({
         client_id: clientId!,
         template_key: GENOGRAM_REPORT_TEMPLATE_KEY,
         title: reportTitle,
@@ -166,11 +176,23 @@ export function useReportModal({
           counseling_period: period || undefined,
         },
       });
+      if (cancelled()) return;
 
-      if (cancelledRef.current) return;
+      // 비동기 이관: report_id를 받은 뒤 목록을 폴링해 terminal 상태까지 기다린다.
+      const finalReport = await pollReportUntilTerminal(
+        clientId!,
+        dispatch.report_id,
+        { shouldCancel: cancelled }
+      );
+      if (cancelled()) return;
+
+      if (finalReport.status === 'FAILED') {
+        throw new Error('보고서를 생성하지 못했어요.');
+      }
+
       trackEvent(MixpanelEvent.GenogramReportGenerateSuccess, {
         client_id: clientId,
-        report_id: result.report_id,
+        report_id: dispatch.report_id,
       });
       setGeneratingStatus('success');
 
@@ -179,26 +201,18 @@ export function useReportModal({
         setTimeout(resolve, 2000);
       });
       successResolveRef.current = null;
-      if (cancelledRef.current) return;
+      if (cancelled()) return;
 
-      const reportData = result.formatted_json;
-
-      if (!reportData) {
-        setStep('list');
-        fetchReports();
-        toast({
-          title: '보고서 생성 완료',
-          description: '가계도 분석 보고서를 만들었어요.',
-        });
-        return;
-      }
+      // formatted_json은 목록에 실리지 않으므로 완료 후 상세로 조회한다.
+      const reportData = await fetchReportDetail(dispatch.report_id);
+      if (cancelled()) return;
 
       const numberedBlob = await buildReportPdf(
         reportData,
         genogramRef,
         processReport
       );
-      if (cancelledRef.current) return;
+      if (cancelled()) return;
 
       // Storage 업로드
       if (userId && clientId) {
@@ -206,7 +220,7 @@ export function useReportModal({
           await uploadPdfToStorage(
             userId,
             clientId,
-            result.report_id,
+            dispatch.report_id,
             numberedBlob
           );
         } catch (uploadError) {
@@ -220,11 +234,22 @@ export function useReportModal({
 
       fetchReports();
       setPdfBlobUrl(numberedBlob);
-      setPreviewReportId(result.report_id);
+      setPreviewReportId(dispatch.report_id);
       setPreviewTitle(reportTitle);
       setStep('preview');
     } catch (error) {
-      if (cancelledRef.current) return;
+      if (cancelled() || error instanceof ReportPollCancelledError) return;
+      if (error instanceof ReportPollTimeoutError) {
+        // 아직 생성 중일 수 있다 — 목록으로 돌아가 진행 상태를 노출한다.
+        setStep('list');
+        fetchReports();
+        toast({
+          title: '보고서 생성 중',
+          description:
+            '보고서 생성이 조금 더 걸리고 있어요. 잠시 후 목록에서 확인해주세요.',
+        });
+        return;
+      }
       const errorMsg =
         error instanceof Error ? error.message : '오류가 생겼어요.';
       trackEvent(MixpanelError.GenogramReportGenerateFail, {
@@ -250,6 +275,8 @@ export function useReportModal({
 
   const handlePreviewReport = useCallback(
     async (report: ReportListItem) => {
+      const myRun = runIdRef.current;
+      const cancelled = () => runIdRef.current !== myRun;
       setPreviewReportId(report.id);
       setPreviewTitle(report.title);
       setStep('preview');
@@ -260,30 +287,30 @@ export function useReportModal({
       try {
         if (report.pdf_storage_key) {
           const signedUrl = await createSignedPdfUrl(report.pdf_storage_key);
-          if (cancelledRef.current) return;
+          if (cancelled()) return;
           const res = await fetch(signedUrl);
-          if (cancelledRef.current) return;
+          if (cancelled()) return;
           const blob = await res.blob();
-          if (cancelledRef.current) return;
+          if (cancelled()) return;
           setPdfBlobUrl(blob);
           return;
         }
 
         const reportData = await fetchReportDetail(report.id);
-        if (cancelledRef.current) return;
+        if (cancelled()) return;
         const numberedBlob = await buildReportPdf(
           reportData,
           genogramRef,
           processReport
         );
-        if (cancelledRef.current) return;
+        if (cancelled()) return;
 
         setPdfBlobUrl(numberedBlob);
 
         if (userId && clientId) {
           try {
             await uploadPdfToStorage(userId, clientId, report.id, numberedBlob);
-            if (!cancelledRef.current) fetchReports();
+            if (!cancelled()) fetchReports();
           } catch (uploadError) {
             if (!import.meta.env.PROD)
               console.error(
@@ -293,7 +320,7 @@ export function useReportModal({
           }
         }
       } catch (error) {
-        if (cancelledRef.current) return;
+        if (cancelled()) return;
         toast({
           title: '미리보기 실패',
           description:
@@ -301,7 +328,7 @@ export function useReportModal({
         });
         setStep('list');
       } finally {
-        if (!cancelledRef.current) setIsLoadingPreview(false);
+        if (!cancelled()) setIsLoadingPreview(false);
       }
     },
     [
@@ -357,12 +384,14 @@ export function useReportModal({
     setStep('generating');
     await runGenerateFlow();
 
-    // 크레딧 잔액 갱신
+    // 크레딧 잔액 갱신 — 콜백에서 비동기 커밋되므로, 관측되지 않는(inactive)
+    // summary 캐시도 refetch해야 게이지 재마운트 시 stale 잔액을 안 보인다.
     if (userId) {
       const userIdNum = Number(userId);
       if (!isNaN(userIdNum)) {
         queryClient.invalidateQueries({
           queryKey: creditQueryKeys.summary(userIdNum),
+          refetchType: 'all',
         });
       }
     }
@@ -373,12 +402,13 @@ export function useReportModal({
     setGeneratingError(null);
     await runGenerateFlow();
 
-    // 재시도도 새 reservation을 만들므로 잔액 동기화
+    // 재시도도 새 reservation을 만들므로 잔액 동기화 — inactive 캐시까지 refetch.
     if (userId) {
       const userIdNum = Number(userId);
       if (!isNaN(userIdNum)) {
         queryClient.invalidateQueries({
           queryKey: creditQueryKeys.summary(userIdNum),
+          refetchType: 'all',
         });
       }
     }
@@ -430,7 +460,8 @@ export function useReportModal({
   // 모달 열림/닫힘 동기화
   useEffect(() => {
     if (open) {
-      cancelledRef.current = false;
+      // 새 세션 진입 — 실행 토큰을 올려 이전 플로우를 무효화한다.
+      runIdRef.current++;
       invalidateAccess();
       setStep('list');
       setSnapshotImage(null);
@@ -450,7 +481,10 @@ export function useReportModal({
     }
 
     return () => {
-      cancelledRef.current = true;
+      // 닫힘/언마운트 — 토큰을 올려 진행 중 플로우를 취소한다.
+      // (라이브 ref의 현재 값을 증가시키는 것이 의도 — 렌더 시점 스냅샷을 쓰면 안 된다.)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      runIdRef.current++;
       revokePdfUrl();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -467,9 +501,10 @@ export function useReportModal({
       return;
     }
 
+    const myRun = runIdRef.current;
     (async () => {
       const list = await fetchReports();
-      if (list.length === 0 && !cancelledRef.current) {
+      if (list.length === 0 && runIdRef.current === myRun) {
         await handleCreateReport();
       }
     })();

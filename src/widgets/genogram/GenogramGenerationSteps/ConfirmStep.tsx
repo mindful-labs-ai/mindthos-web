@@ -13,7 +13,7 @@ export function ConfirmStep({
   isMobileView = false,
 }: ConfirmStepProps) {
   const { creditInfo, isLoading: isLoadingCredits } = useCreditInfo();
-  const remainingCredits = creditInfo?.plan?.remaining ?? 0;
+  const remainingCredits = creditInfo?.wallet.remaining ?? 0;
   const hasEnoughCredits = remainingCredits >= CREDIT_COST.GENOGRAM;
 
   const creditBadge = (

@@ -11,7 +11,10 @@ const envSchema = z.object({
   // VITE_API_URL: z.string().url(),
 
   // Feature flags (add as needed)
-  // VITE_ENABLE_ANALYTICS: z.string().transform((val) => val === 'true'),
+  VITE_ENABLE_CREDIT_QA: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
 
   // Supabase
   VITE_SUPABASE_URL: z.string().optional(),

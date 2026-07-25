@@ -1,7 +1,4 @@
-import {
-  callEdgeFunction,
-  EDGE_FUNCTION_ENDPOINTS,
-} from '@/shared/api/edgeFunctionClient';
+import { serverRequest } from '@/shared/api/server/serverClient';
 
 import type {
   TermsAgreeRequest,
@@ -11,17 +8,13 @@ import type {
 
 export const termsAgreementService = {
   async checkTerms(): Promise<TermsCheckResponse> {
-    return await callEdgeFunction<TermsCheckResponse>(
-      EDGE_FUNCTION_ENDPOINTS.TERMS.CHECK,
-      undefined,
-      { method: 'GET' }
-    );
+    return await serverRequest<TermsCheckResponse>('/terms/check');
   },
 
   async agreeToTerms(payload: TermsAgreeRequest): Promise<TermsAgreeResponse> {
-    return await callEdgeFunction<TermsAgreeResponse>(
-      EDGE_FUNCTION_ENDPOINTS.TERMS.AGREE,
-      payload
-    );
+    return await serverRequest<TermsAgreeResponse>('/terms/agree', {
+      method: 'POST',
+      body: payload,
+    });
   },
 };
