@@ -8,8 +8,7 @@ const SUPABASE_URL = import.meta.env.VITE_WEBAPP_SUPABASE_URL.replace(
   /\/+$/,
   ''
 );
-const LOGO_URL =
-  'https://api.mindthos.com/storage/v1/object/public/public-img/logo_mindthos_hori.png';
+const LOGO_URL = `${SUPABASE_URL}/storage/v1/object/public/public-img/logo_mindthos_hori.png`;
 const MINDTHOS_HOME_URL = 'https://mindthos.com/';
 
 const UnsubscribePage = () => {
