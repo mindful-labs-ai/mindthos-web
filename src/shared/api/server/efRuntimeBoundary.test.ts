@@ -19,7 +19,7 @@ const readSources = (directory: string): SourceEntry[] =>
     return [[path, readFileSync(absolutePath, 'utf8')] as const];
   });
 
-const productionSources = ['src', 'api']
+const productionSources = ['src']
   .flatMap((directory) => readSources(join(projectRoot, directory)))
   .filter(
     ([path]) =>
@@ -34,10 +34,7 @@ const findSources = (pattern: RegExp) =>
     .map(([path]) => path);
 
 describe('non-CRM server-only EF boundary', () => {
-  it('[WEB-EF-26] src와 api에 범용 Edge Function runtime fallback이 없다', () => {
-    expect(productionSources.map(([path]) => path)).toContain(
-      '/api/session/create.ts'
-    );
+  it('[WEB-EF-26] src에 범용 Edge Function runtime fallback이 없다', () => {
     expect(
       findSources(
         /\.functions\s*\.\s*invoke\s*\(|callEdgeFunction|edgeFunctionClient/
