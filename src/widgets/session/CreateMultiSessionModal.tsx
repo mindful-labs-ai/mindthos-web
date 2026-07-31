@@ -350,22 +350,27 @@ export const CreateMultiSessionModal: React.FC<
       return;
     }
 
-    // 크레딧 가드
-    const guard = await checkCredit(step2TotalCredit);
-    if (!guard.ok && !guard.unavailable) {
-      setCreditErrorSnackBar({
-        open: true,
-        message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
-      });
-      return;
-    }
+    const finalResults = await createSessions(
+      fileConfigs,
+      effectiveValidFiles,
+      async () => {
+        const guard = await checkCredit(step2TotalCredit);
+        if (!guard.ok && !guard.unavailable) {
+          setCreditErrorSnackBar({
+            open: true,
+            message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+          });
+          return false;
+        }
 
-    trackEvent(MixpanelEvent.MultiSessionCreateAttempt, {
-      file_count: fileConfigs.length,
-      total_credit: step2TotalCredit,
-    });
-
-    const finalResults = await createSessions(fileConfigs, effectiveValidFiles);
+        trackEvent(MixpanelEvent.MultiSessionCreateAttempt, {
+          file_count: fileConfigs.length,
+          total_credit: step2TotalCredit,
+        });
+        return true;
+      }
+    );
+    if (!finalResults) return;
 
     const successCount = finalResults.filter(
       (r) => r.status === 'success'
