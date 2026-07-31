@@ -5,7 +5,7 @@
  * - 중간 실패해도 나머지 계속 진행
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
@@ -183,6 +183,7 @@ export function useMultiSessionCreate({
   const [results, setResults] = useState<SessionCreateResult[]>([]);
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const isCreatingRef = useRef(false);
 
   const updateResult = useCallback(
     (fileId: string, update: Partial<SessionCreateResult>) => {
@@ -224,13 +225,11 @@ export function useMultiSessionCreate({
     [queryClient, userId]
   );
 
-  const createSessions = useCallback(
+  const createSessionsInternal = useCallback(
     async (
       configs: FileSessionConfig[],
       files: MultiFileInfo[]
     ): Promise<SessionCreateResult[]> => {
-      setIsCreating(true);
-
       // 순서대로 정렬
       const sortedConfigs = [...configs].sort((a, b) => a.order - b.order);
 
@@ -377,8 +376,6 @@ export function useMultiSessionCreate({
         void invalidateSessionLists();
       }
 
-      setIsCreating(false);
-
       return finalResults;
     },
     [
@@ -389,6 +386,27 @@ export function useMultiSessionCreate({
       optimisticallyPrependSession,
       onInsufficientCredit,
     ]
+  );
+
+  const createSessions = useCallback(
+    async (
+      configs: FileSessionConfig[],
+      files: MultiFileInfo[]
+    ): Promise<SessionCreateResult[]> => {
+      // 크레딧 확인 중에는 isCreating state가 아직 false일 수 있어 ref로 동기 잠금.
+      if (isCreatingRef.current) return [];
+
+      isCreatingRef.current = true;
+      setIsCreating(true);
+
+      try {
+        return await createSessionsInternal(configs, files);
+      } finally {
+        isCreatingRef.current = false;
+        setIsCreating(false);
+      }
+    },
+    [createSessionsInternal]
   );
 
   const reset = useCallback(() => {
