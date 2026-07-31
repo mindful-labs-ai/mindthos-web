@@ -58,6 +58,11 @@ function createWrapper() {
 describe('useMultiSessionCreate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.uploadAudio.mockResolvedValue({
+      file_path: 'users/1/session.wav',
+      file_size_mb: 1,
+      duration_seconds: 60,
+    });
     mocks.createSessionBackground.mockResolvedValue({
       session_id: 'session-1',
       status: 'accepted',
@@ -84,12 +89,12 @@ describe('useMultiSessionCreate', () => {
       { wrapper: createWrapper() }
     );
 
-    let firstCall!: Promise<SessionCreateResult[]>;
+    let firstCall!: Promise<SessionCreateResult[] | null>;
     act(() => {
       firstCall = result.current.createSessions([config], [file]);
     });
 
-    let secondCall!: Promise<SessionCreateResult[]>;
+    let secondCall!: Promise<SessionCreateResult[] | null>;
     await act(async () => {
       secondCall = result.current.createSessions([config], [file]);
     });
@@ -97,7 +102,7 @@ describe('useMultiSessionCreate', () => {
 
     expect(mocks.uploadAudio).toHaveBeenCalledTimes(1);
     expect(mocks.createSessionBackground).not.toHaveBeenCalled();
-    expect(secondResult).toEqual([]);
+    expect(secondResult).toBeNull();
 
     await act(async () => {
       resolveUpload({
@@ -108,6 +113,74 @@ describe('useMultiSessionCreate', () => {
       await firstCall;
     });
 
+    expect(mocks.createSessionBackground).toHaveBeenCalledTimes(1);
+  });
+
+  it('크레딧 조회 중 재진입해도 사전 검사와 세션 생성은 한 번만 실행한다', async () => {
+    let resolveCreditCheck!: (value: boolean) => void;
+    const beforeCreate = vi.fn(
+      () =>
+        new Promise<boolean>((resolve) => {
+          resolveCreditCheck = resolve;
+        })
+    );
+
+    const { result } = renderHook(
+      () => useMultiSessionCreate({ userId: 1, templateId: 1 }),
+      { wrapper: createWrapper() }
+    );
+
+    let firstCall!: Promise<SessionCreateResult[] | null>;
+    act(() => {
+      firstCall = result.current.createSessions([config], [file], beforeCreate);
+    });
+
+    let secondResult!: SessionCreateResult[] | null;
+    await act(async () => {
+      secondResult = await result.current.createSessions(
+        [config],
+        [file],
+        beforeCreate
+      );
+    });
+
+    expect(beforeCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.uploadAudio).not.toHaveBeenCalled();
+    expect(secondResult).toBeNull();
+
+    await act(async () => {
+      resolveCreditCheck(true);
+      await firstCall;
+    });
+
+    expect(mocks.uploadAudio).toHaveBeenCalledTimes(1);
+    expect(mocks.createSessionBackground).toHaveBeenCalledTimes(1);
+  });
+
+  it('크레딧 사전 검사에서 중단된 뒤에는 다시 생성할 수 있다', async () => {
+    const beforeCreate = vi.fn().mockResolvedValue(false);
+    const { result } = renderHook(
+      () => useMultiSessionCreate({ userId: 1, templateId: 1 }),
+      { wrapper: createWrapper() }
+    );
+
+    let blockedResult!: SessionCreateResult[] | null;
+    await act(async () => {
+      blockedResult = await result.current.createSessions(
+        [config],
+        [file],
+        beforeCreate
+      );
+    });
+
+    expect(blockedResult).toBeNull();
+    expect(mocks.uploadAudio).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.createSessions([config], [file]);
+    });
+
+    expect(mocks.uploadAudio).toHaveBeenCalledTimes(1);
     expect(mocks.createSessionBackground).toHaveBeenCalledTimes(1);
   });
 });

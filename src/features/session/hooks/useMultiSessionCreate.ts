@@ -166,8 +166,9 @@ interface UseMultiSessionCreateParams {
 interface UseMultiSessionCreateReturn {
   createSessions: (
     configs: FileSessionConfig[],
-    files: MultiFileInfo[]
-  ) => Promise<SessionCreateResult[]>;
+    files: MultiFileInfo[],
+    beforeCreate?: () => Promise<boolean>
+  ) => Promise<SessionCreateResult[] | null>;
   results: SessionCreateResult[];
   currentFileId: string | null;
   isCreating: boolean;
@@ -391,15 +392,20 @@ export function useMultiSessionCreate({
   const createSessions = useCallback(
     async (
       configs: FileSessionConfig[],
-      files: MultiFileInfo[]
-    ): Promise<SessionCreateResult[]> => {
-      // 크레딧 확인 중에는 isCreating state가 아직 false일 수 있어 ref로 동기 잠금.
-      if (isCreatingRef.current) return [];
+      files: MultiFileInfo[],
+      beforeCreate?: () => Promise<boolean>
+    ): Promise<SessionCreateResult[] | null> => {
+      // React state 반영 전 연속 호출도 막도록 전체 사전 검사부터 동기 잠금한다.
+      if (isCreatingRef.current) return null;
 
       isCreatingRef.current = true;
       setIsCreating(true);
 
       try {
+        if (beforeCreate && !(await beforeCreate())) {
+          return null;
+        }
+
         return await createSessionsInternal(configs, files);
       } finally {
         isCreatingRef.current = false;
