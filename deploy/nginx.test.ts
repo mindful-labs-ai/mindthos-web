@@ -17,6 +17,21 @@ const buildScript = readFileSync(
 );
 
 describe('ECS nginx runtime boundary', () => {
+  it('query string과 불필요한 개인정보성 header를 access log에 남기지 않는다', () => {
+    expect(nginxConfig).toContain('map $request_uri $mindthos_request_path');
+    expect(nginxConfig).toContain('~^([^?]*) $1;');
+    expect(nginxConfig).toContain('log_format mindthos_json escape=json');
+    expect(nginxConfig).toContain('access_log /dev/stdout mindthos_json;');
+    expect(nginxConfig).toContain('"path":"$mindthos_request_path"');
+    expect(nginxConfig).toContain('"cf_ray":"$http_cf_ray"');
+    expect(nginxConfig).not.toContain('"$request"');
+    expect(nginxConfig).not.toContain('$args');
+    expect(nginxConfig).not.toContain('$query_string');
+    expect(nginxConfig).not.toContain('$http_referer');
+    expect(nginxConfig).not.toContain('$http_cf_connecting_ip');
+    expect(nginxConfig).not.toContain('$http_x_forwarded_for');
+  });
+
   it('현재 asset 다음에 직전 image asset만 조회하고 HTML로 fallback하지 않는다', () => {
     expect(nginxConfig).toContain('location ^~ /assets/');
     expect(nginxConfig).toContain('try_files $uri @previous_asset;');
