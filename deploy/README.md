@@ -32,3 +32,15 @@ Nginx routing 경계:
 - 폐기된 Vercel `/api/session/create`는 `410 Gone`을 반환한다. 현재 Web의
   세션 생성은 `https://gateway.mindthos.com/v1/sessions`를 사용한다.
 - 그 밖의 `/api/*`는 JSON 404를 반환하며 SPA fallback에 들어가지 않는다.
+
+Nginx access log는 CloudWatch로 전달되는 JSON 한 줄 형식이다.
+
+- 최초 요청 경로는 `$request_uri`에서 query string을 제거한 `path`로 기록한다.
+  SPA fallback이 내부적으로 `/index.html`로 바뀌어도 사용자가 요청한 경로를
+  유지한다.
+- 결제 callback의 인증값, OAuth code 등 민감한 query string과 referrer,
+  클라이언트 IP는 기록하지 않는다.
+- 장애 분석에 필요한 시각, method, path, status, 응답 크기·시간, host,
+  Cloudflare Ray ID, User-Agent만 기록한다.
+- 운영 티켓이나 메신저에 CloudWatch 원문을 붙여 넣지 않고 필요한 필드만
+  최소한으로 공유한다.
