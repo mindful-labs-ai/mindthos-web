@@ -25,6 +25,12 @@ build한다. Apple Silicon에서도 ECS runtime과 같은 `linux/amd64`를 강�
 
 Nginx routing 경계:
 
+- `/v1/*`는 `MINDTHOS_API_PROXY_TARGET`으로 전달한다. staging ECS는
+  `http://server:3000`(Service Connect)을 주입하고 staging build는
+  `VITE_SERVER_API_URL=/`를 사용하므로 브라우저가 별도의
+  `gateway-dev.mindthos.com` Cloudflare Access 세션을 요구하지 않는다.
+  image 기본 target은 `https://gateway.mindthos.com`이라 production bundle의
+  기존 절대 URL 계약도 유지된다.
 - 현재 `/assets/*`를 먼저 찾고, 없으면 직전 release asset을 찾은 뒤 404를
   반환한다. 존재하지 않는 JavaScript 요청에 `index.html`을 반환하지 않는다.
 - 직전 release보다 오래된 탭에서 Vite lazy chunk가 실패하면

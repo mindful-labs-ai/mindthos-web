@@ -63,4 +63,20 @@ describe('ECS nginx runtime boundary', () => {
     expect(nginxConfig).toContain('location ^~ /api/');
     expect(nginxConfig).toContain('return 404');
   });
+
+  it('server API를 환경별 upstream으로 same-origin proxy한다', () => {
+    expect(nginxConfig).toContain('location ~ ^/v1(?:/|$)');
+    expect(nginxConfig).toContain('proxy_pass ${MINDTHOS_API_PROXY_TARGET};');
+    expect(nginxConfig).toContain('proxy_set_header Host $proxy_host;');
+    expect(nginxConfig).toContain('proxy_set_header X-Forwarded-Host $host;');
+    expect(dockerfile).toContain(
+      'MINDTHOS_API_PROXY_TARGET=https://gateway.mindthos.com'
+    );
+    expect(dockerfile).toContain(
+      'NGINX_ENVSUBST_FILTER=MINDTHOS_API_PROXY_TARGET'
+    );
+    expect(dockerfile).toContain(
+      'COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template'
+    );
+  });
 });
