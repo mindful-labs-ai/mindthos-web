@@ -8,7 +8,9 @@ import { supabase } from '@/lib/supabase';
  * - 응답: 서버는 `{ statusCode, message, data }` 봉투로 응답하므로 data만 반환.
  */
 
-// 배포 게이트웨이 절대 URL(끝 슬래시 제거). 비어 있으면 상대경로 → 로컬은 vite dev proxy가 forward.
+// 배포 API base(끝 슬래시 제거). `/` 또는 빈 값이면 same-origin 상대경로를
+// 사용한다. ECS nginx는 `/v1/*`를 server로 전달하고, 로컬 개발은 필요할 때
+// `VITE_SERVER_API_URL`에 직접 gateway URL을 지정한다.
 const API_BASE = (import.meta.env.VITE_SERVER_API_URL ?? '').replace(
   /\/+$/,
   ''
