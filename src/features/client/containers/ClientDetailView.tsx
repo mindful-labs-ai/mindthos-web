@@ -346,7 +346,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                   <div className="rounded-2xl border border-grey-40 bg-white p-6 text-left">
                     <div className="mb-6 flex items-center justify-between">
                       <h2 className="text-m font-medium text-grey-70">
-                        클라이언트 정보
+                        내담자 정보
                       </h2>
                       <button
                         onClick={onEditClientClick}
