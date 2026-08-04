@@ -25,6 +25,66 @@ describe('tutorialUi', () => {
     });
   });
 
+  it('미션 완료 워딩 이미지를 실제 다음 기능에 맞게 적용한다', () => {
+    expect(STEP_COMPLETE_COPY[TutorialStep.GENOGRAM_STAGE_1]).toMatchObject({
+      title: '튜토리얼 1단계 완료',
+      subtitle: expect.stringContaining('가계도'),
+      content: expect.stringContaining('가족 관계'),
+    });
+
+    expect(STEP_COMPLETE_COPY[TutorialStep.GENERIC_STAGE_1]).toMatchObject({
+      subtitle: '가이드를 봤으니 이제 직접 확인해볼까요?',
+      content:
+        '마음토스가 예시 상담기록을 준비했어요.\n우선 가상 내담자의 기록과 함께 마음토스를 살펴봐요.',
+    });
+
+    [
+      TutorialStep.CBT_STAGE_1,
+      TutorialStep.PSYCHODYNAMIC_STAGE_1,
+      TutorialStep.HUMANISTIC_STAGE_1,
+    ].forEach((step) => {
+      expect(STEP_COMPLETE_COPY[step].subtitle).toContain('AI 슈퍼비전');
+    });
+
+    [
+      TutorialStep.GENOGRAM_STAGE_2,
+      TutorialStep.CBT_STAGE_2,
+      TutorialStep.PSYCHODYNAMIC_STAGE_2,
+      TutorialStep.HUMANISTIC_STAGE_2,
+      TutorialStep.GENERIC_STAGE_2,
+    ].forEach((step) => {
+      expect(STEP_COMPLETE_COPY[step].subtitle).toContain(
+        '나만의 상담노트 양식'
+      );
+    });
+
+    [
+      TutorialStep.GENOGRAM_STAGE_3,
+      TutorialStep.CBT_STAGE_3,
+      TutorialStep.PSYCHODYNAMIC_STAGE_3,
+      TutorialStep.HUMANISTIC_STAGE_3,
+      TutorialStep.GENERIC_STAGE_3,
+    ].forEach((step) => {
+      expect(STEP_COMPLETE_COPY[step].subtitle).toContain(
+        '직접 상담 기록을 만들어볼까요?'
+      );
+    });
+
+    [
+      TutorialStep.GENOGRAM_STAGE_4,
+      TutorialStep.CBT_STAGE_4,
+      TutorialStep.PSYCHODYNAMIC_STAGE_4,
+      TutorialStep.HUMANISTIC_STAGE_4,
+      TutorialStep.GENERIC_STAGE_4,
+    ].forEach((step) => {
+      expect(STEP_COMPLETE_COPY[step]).toMatchObject({
+        title: '튜토리얼 완료!',
+        subtitle: '축하합니다!\n모든 튜토리얼을 완료했어요',
+        nextLabel: '지금 이벤트 보상 받기',
+      });
+    });
+  });
+
   it('미션과 단계 완료 모달의 subtitle에는 코호트명이 노출되지 않는다', () => {
     const cohortNamePattern = /커플·가족|가족체계|성인|CBT|정신역동|인간중심/;
 
@@ -53,9 +113,9 @@ describe('tutorialUi', () => {
       )
     ).toBe('2일');
     expect(formatTutorialRemainingTime(24 * 60 * 60 * 1000)).toBe('1일');
-    expect(
-      formatTutorialRemainingTime(24 * 60 * 60 * 1000 - 1000)
-    ).toBe('23:59:59');
+    expect(formatTutorialRemainingTime(24 * 60 * 60 * 1000 - 1000)).toBe(
+      '23:59:59'
+    );
     expect(formatTutorialRemainingTime(59 * 1000)).toBe('00:00:59');
     expect(formatTutorialRemainingTime(-1)).toBe('00:00:00');
   });

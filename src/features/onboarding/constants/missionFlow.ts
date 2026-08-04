@@ -93,6 +93,11 @@ export function isVideoMission(type: MissionType): boolean {
   return type === MISSION_TYPE.GUIDE_VIDEO || type === MISSION_TYPE.EXAMPLE;
 }
 
+/** 30초 최소 시청은 범용 1단계의 일반 가이드 영상에만 적용한다. */
+export function requiresMinimumVideoWatch(type: MissionType): boolean {
+  return type === MISSION_TYPE.GUIDE_VIDEO;
+}
+
 export function getCurrentMissionStep(
   cohort: CohortBranch,
   completedStage: number

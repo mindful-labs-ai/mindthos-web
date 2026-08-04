@@ -90,128 +90,113 @@ export interface TutorialMissionCopy extends TutorialMissionCopyText {
   afterAction?: TutorialMissionCopyText;
 }
 
+const NEXT_SUPERVISION_COMPLETE_COPY = {
+  subtitle: '다음은 선생님께 꼭 필요한 기능,\nAI 슈퍼비전에 대해서 알아볼까요?',
+  content:
+    '1회기가 아닌 다회기의 기록을 함께 분석해서\nAI가 슈퍼비전 보고서를 작성해주는 기능이에요.',
+  nextLabel: '다음 단계 시작하기',
+} as const;
+
+const NEXT_GENOGRAM_COMPLETE_COPY = {
+  subtitle:
+    '다음은 내담자의 관계와 맥락을 살펴보는 기능,\n가계도에 대해서 알아볼까요?',
+  content:
+    '내담자의 가족 관계를 한눈에 정리하고\nAI가 가계도 초안을 만들어주는 기능이에요.',
+  nextLabel: '다음 단계 시작하기',
+} as const;
+
+const NEXT_NOTE_COMPLETE_COPY = {
+  subtitle: '이제 거의 다 왔어요!\n다음으로 나만의 상담노트 양식을 골라볼까요?',
+  content:
+    '기본 노트 양식으로 선택하면, 상담기록을 만들 때\n해당 양식이 기본으로 생성됩니다.',
+  nextLabel: '다음 단계 시작하기',
+} as const;
+
+const NEXT_UPLOAD_COMPLETE_COPY = {
+  subtitle: '이제 마지막 단계만 남았어요.\n직접 상담 기록을 만들어볼까요?',
+  content:
+    '마음토스로 상담 기록을 정리하는 상담사는\n평균적으로 87% 이상 시간을 절약하고 있어요.',
+  nextLabel: '다음 단계 시작하기',
+} as const;
+
+const FINAL_REWARD_COMPLETE_COPY: StepCompleteCopy = {
+  title: '튜토리얼 완료!',
+  subtitle: '축하합니다!\n모든 튜토리얼을 완료했어요',
+  content:
+    '작은 선물로 스타터 플랜 1주일 체험권을 준비했어요.\n앞으로 7일간 마음토스를 자유롭게 사용해보세요!',
+  nextLabel: '지금 이벤트 보상 받기',
+};
+
 /** 단계 완료 모달 문구는 이 테이블만 수정하면 전체 UI에 반영된다. */
 export const STEP_COMPLETE_COPY: Record<TutorialStep, StepCompleteCopy> = {
   [TutorialStep.GENOGRAM_STAGE_1]: {
     title: '튜토리얼 1단계 완료',
-    subtitle: '상담기록 예시 확인하기',
-    content: '이제 가계도 예시를 통해 상담의 맥락을 살펴볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_GENOGRAM_COMPLETE_COPY,
   },
   [TutorialStep.GENOGRAM_STAGE_2]: {
     title: '튜토리얼 2단계 완료',
-    subtitle: '가계도 예시 확인하기',
-    content: '상담노트 양식을 선택하고 기록을 정리해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_NOTE_COMPLETE_COPY,
   },
   [TutorialStep.GENOGRAM_STAGE_3]: {
     title: '튜토리얼 3단계 완료',
-    subtitle: '나의 상담노트 양식 선택하기',
-    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_UPLOAD_COMPLETE_COPY,
   },
-  [TutorialStep.GENOGRAM_STAGE_4]: {
-    title: '튜토리얼 4단계 완료',
-    subtitle: '직접 상담 기록 만들기',
-    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
-    nextLabel: '튜토리얼 완료하기',
-  },
+  [TutorialStep.GENOGRAM_STAGE_4]: FINAL_REWARD_COMPLETE_COPY,
   [TutorialStep.CBT_STAGE_1]: {
     title: '튜토리얼 1단계 완료',
-    subtitle: '상담기록 예시 확인하기',
-    content: '다음으로 AI 슈퍼비전 예시를 살펴볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_SUPERVISION_COMPLETE_COPY,
   },
   [TutorialStep.CBT_STAGE_2]: {
     title: '튜토리얼 2단계 완료',
-    subtitle: 'AI 슈퍼비전 예시 확인하기',
-    content: '이제 CBT 상담노트 양식을 선택해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_NOTE_COMPLETE_COPY,
   },
   [TutorialStep.CBT_STAGE_3]: {
     title: '튜토리얼 3단계 완료',
-    subtitle: '나의 상담노트 양식 선택하기',
-    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_UPLOAD_COMPLETE_COPY,
   },
-  [TutorialStep.CBT_STAGE_4]: {
-    title: '튜토리얼 4단계 완료',
-    subtitle: '직접 상담 기록 만들기',
-    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
-    nextLabel: '튜토리얼 완료하기',
-  },
+  [TutorialStep.CBT_STAGE_4]: FINAL_REWARD_COMPLETE_COPY,
   [TutorialStep.PSYCHODYNAMIC_STAGE_1]: {
     title: '튜토리얼 1단계 완료',
-    subtitle: '상담기록 예시 확인하기',
-    content: '다음으로 AI 슈퍼비전 예시를 살펴볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_SUPERVISION_COMPLETE_COPY,
   },
   [TutorialStep.PSYCHODYNAMIC_STAGE_2]: {
     title: '튜토리얼 2단계 완료',
-    subtitle: 'AI 슈퍼비전 예시 확인하기',
-    content: '이제 정신역동 상담노트 양식을 선택해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_NOTE_COMPLETE_COPY,
   },
   [TutorialStep.PSYCHODYNAMIC_STAGE_3]: {
     title: '튜토리얼 3단계 완료',
-    subtitle: '나의 상담노트 양식 선택하기',
-    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_UPLOAD_COMPLETE_COPY,
   },
-  [TutorialStep.PSYCHODYNAMIC_STAGE_4]: {
-    title: '튜토리얼 4단계 완료',
-    subtitle: '직접 상담 기록 만들기',
-    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
-    nextLabel: '튜토리얼 완료하기',
-  },
+  [TutorialStep.PSYCHODYNAMIC_STAGE_4]: FINAL_REWARD_COMPLETE_COPY,
   [TutorialStep.HUMANISTIC_STAGE_1]: {
     title: '튜토리얼 1단계 완료',
-    subtitle: '상담기록 예시 확인하기',
-    content: '다음으로 AI 슈퍼비전 예시를 살펴볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_SUPERVISION_COMPLETE_COPY,
   },
   [TutorialStep.HUMANISTIC_STAGE_2]: {
     title: '튜토리얼 2단계 완료',
-    subtitle: 'AI 슈퍼비전 예시 확인하기',
-    content: '이제 인간중심 상담노트 양식을 선택해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_NOTE_COMPLETE_COPY,
   },
   [TutorialStep.HUMANISTIC_STAGE_3]: {
     title: '튜토리얼 3단계 완료',
-    subtitle: '나의 상담노트 양식 선택하기',
-    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_UPLOAD_COMPLETE_COPY,
   },
-  [TutorialStep.HUMANISTIC_STAGE_4]: {
-    title: '튜토리얼 4단계 완료',
-    subtitle: '직접 상담 기록 만들기',
-    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
-    nextLabel: '튜토리얼 완료하기',
-  },
+  [TutorialStep.HUMANISTIC_STAGE_4]: FINAL_REWARD_COMPLETE_COPY,
   [TutorialStep.GENERIC_STAGE_1]: {
     title: '튜토리얼 1단계 완료',
-    subtitle: '마음토스 200% 활용하는 법!',
-    content: '이제 성인 상담 기록 예시를 직접 살펴볼게요.',
+    subtitle: '가이드를 봤으니 이제 직접 확인해볼까요?',
+    content:
+      '마음토스가 예시 상담기록을 준비했어요.\n우선 가상 내담자의 기록과 함께 마음토스를 살펴봐요.',
     nextLabel: '다음 단계 시작하기',
   },
   [TutorialStep.GENERIC_STAGE_2]: {
     title: '튜토리얼 2단계 완료',
-    subtitle: '상담기록 예시 확인하기',
-    content: '상담노트 생성에 사용할 기본 양식을 설정해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_NOTE_COMPLETE_COPY,
   },
   [TutorialStep.GENERIC_STAGE_3]: {
     title: '튜토리얼 3단계 완료',
-    subtitle: '나의 상담노트 양식 선택하기',
-    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
-    nextLabel: '다음 단계 시작하기',
+    ...NEXT_UPLOAD_COMPLETE_COPY,
   },
-  [TutorialStep.GENERIC_STAGE_4]: {
-    title: '튜토리얼 4단계 완료',
-    subtitle: '직접 상담 기록 만들기',
-    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
-    nextLabel: '튜토리얼 완료하기',
-  },
+  [TutorialStep.GENERIC_STAGE_4]: FINAL_REWARD_COMPLETE_COPY,
 };
 
 const GUIDE_COPY: TutorialMissionCopyText = {

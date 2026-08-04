@@ -11,6 +11,7 @@ import {
   getCohortMissionFlow,
   isVideoMission,
   MISSION_TYPE,
+  requiresMinimumVideoWatch,
   type MissionStepConfig,
 } from '@/features/onboarding/constants/missionFlow';
 import {
@@ -126,24 +127,23 @@ function getVirtualClientKey(
 
 function getExampleRoute(
   variant: string,
-  virtualClient: TutorialVirtualClient | undefined
+  virtualClient: TutorialVirtualClient
 ): string {
-  const session = virtualClient?.sessions.find(
+  const session = virtualClient.sessions.find(
     (item) => item.session_number === 1
   );
-  const clientId = virtualClient?.client.id;
+  const clientId = virtualClient.client.id;
 
   if (variant === 'AI_SUPERVISION') {
-    return clientId
-      ? `/ai-supervision?clientId=${encodeURIComponent(clientId)}`
-      : '/ai-supervision';
+    return `/ai-supervision?clientId=${encodeURIComponent(clientId)}`;
   }
   if (variant === 'GENOGRAM') {
-    return clientId
-      ? `/genogram?clientId=${encodeURIComponent(clientId)}`
-      : '/genogram';
+    return `/genogram?clientId=${encodeURIComponent(clientId)}`;
   }
-  return session?.id ? `/sessions/${session.id}` : '/sessions';
+  if (!session) {
+    throw new Error('예시 상담 기록을 찾을 수 없어요.');
+  }
+  return `/sessions/${session.id}`;
 }
 
 const TemplateCard = ({
@@ -162,7 +162,7 @@ const TemplateCard = ({
     className={cn(
       'flex min-h-[164px] flex-col rounded-2xl border bg-surface p-6 text-left transition-colors',
       selected
-        ? 'border-primary ring-1 ring-primary'
+        ? 'border-primary ring-1 ring-inset ring-primary'
         : 'border-border lg:hover:border-primary'
     )}
   >
@@ -182,7 +182,7 @@ const TemplateCard = ({
   </button>
 );
 
-const TutorialContent = ({
+export const TutorialContent = ({
   content,
   className,
 }: {
@@ -224,61 +224,68 @@ export const VideoMission = ({
   source,
   content,
   canContinue,
+  minimumWatchSeconds,
   onTimeUpdate,
 }: {
   source?: string;
   content: string;
   canContinue: boolean;
+  minimumWatchSeconds: number;
   onTimeUpdate: (currentTime: number) => void;
 }) => {
   React.useEffect(() => {
-    if (source) return;
+    if (source || minimumWatchSeconds === 0) return;
 
-    // 영상 원본이 전달되기 전에도 로컬 QA에서 다음 단계까지 확인할 수 있도록
-    // placeholder를 30초 시청한 것으로 간주한다. 실제 영상이 연결되면 video 이벤트가 기준이 된다.
-    const timer = window.setTimeout(
-      () => onTimeUpdate(VIDEO_MIN_SECONDS),
-      VIDEO_MIN_SECONDS * 1000
-    );
-    return () => window.clearTimeout(timer);
-  }, [onTimeUpdate, source]);
+    // 영상 원본이 전달되기 전에도 버튼 카운트다운을 확인할 수 있게 한다.
+    let elapsedSeconds = 0;
+    const timer = window.setInterval(() => {
+      elapsedSeconds += 1;
+      onTimeUpdate(elapsedSeconds);
+      if (elapsedSeconds >= minimumWatchSeconds) {
+        window.clearInterval(timer);
+      }
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [minimumWatchSeconds, onTimeUpdate, source]);
 
   return (
     <div className="flex h-full min-h-[380px] flex-col items-center justify-center gap-5">
-      {source ? (
-        <video
-          className="max-h-[430px] w-full rounded-2xl border border-border bg-surface-contrast object-contain"
-          controls
-          playsInline
-          onTimeUpdate={(event) =>
-            onTimeUpdate(event.currentTarget.currentTime)
-          }
-          src={source}
-        >
-          <track
-            kind="captions"
-            label="한국어 자막"
-            src="/tutorial/placeholder.vtt"
-            srcLang="ko"
-          />
-        </video>
-      ) : (
-        <div
-          data-testid="tutorial-video-placeholder"
-          className="flex aspect-video w-full items-center justify-center rounded-2xl border border-border bg-surface-contrast"
-        >
-          <div className="flex flex-col items-center gap-4 text-fg-muted">
-            <Play className="size-12" strokeWidth={1.5} />
-            <span className="typo-xl font-headline text-danger">
-              마음토스_가이드_영상
-            </span>
-            <span className="typo-sm">영상 전달 후 src만 교체됩니다.</span>
+      <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
+        {source ? (
+          <video
+            className="h-full max-h-[430px] w-full rounded-2xl border border-border bg-surface-contrast object-contain"
+            controls
+            playsInline
+            onTimeUpdate={(event) =>
+              onTimeUpdate(event.currentTarget.currentTime)
+            }
+            src={source}
+          >
+            <track
+              kind="captions"
+              label="한국어 자막"
+              src="/tutorial/placeholder.vtt"
+              srcLang="ko"
+            />
+          </video>
+        ) : (
+          <div
+            data-testid="tutorial-video-placeholder"
+            className="flex aspect-video max-h-full w-full items-center justify-center rounded-2xl border border-border bg-surface-contrast"
+          >
+            <div className="flex flex-col items-center gap-4 text-fg-muted">
+              <Play className="size-12" strokeWidth={1.5} />
+              <span className="typo-xl font-headline text-danger">
+                마음토스_가이드_영상
+              </span>
+              <span className="typo-sm">영상 전달 후 src만 교체됩니다.</span>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       <TutorialContent
         content={content}
-        className="typo-m text-center leading-relaxed text-fg"
+        className="typo-m shrink-0 text-center leading-relaxed text-fg"
       />
       <span className="sr-only" aria-live="polite">
         {canContinue
@@ -292,9 +299,11 @@ export const VideoMission = ({
 export const ExampleMission = ({
   content,
   onOpenExample,
+  disabled = false,
 }: {
   content: string;
   onOpenExample: () => void;
+  disabled?: boolean;
 }) => {
   return (
     <div className="flex min-h-[380px] flex-col items-center justify-center gap-8">
@@ -305,7 +314,12 @@ export const ExampleMission = ({
         content={content}
         className="typo-m text-center leading-relaxed text-fg"
       />
-      <Button tone="primary" size="lg" onClick={onOpenExample}>
+      <Button
+        tone="primary"
+        size="lg"
+        disabled={disabled}
+        onClick={onOpenExample}
+      >
         예시 보러가기
       </Button>
     </div>
@@ -313,14 +327,12 @@ export const ExampleMission = ({
 };
 
 export const NoteMission = ({
-  content,
   cohort,
   templates,
   selectedTemplateId,
   isLoading,
   onSelect,
 }: {
-  content: string;
   cohort: CohortBranch;
   templates: TutorialTemplate[];
   selectedTemplateId: number | null;
@@ -348,23 +360,19 @@ export const NoteMission = ({
   ].filter((group) => group.items.length > 0);
 
   return (
-    <div className="min-h-[380px] overflow-y-auto rounded-2xl border border-border bg-surface-contrast p-6 sm:p-8">
-      <div className="mb-6 text-center">
-        <h3 className="typo-xl font-headline text-fg">
-          나의 상담노트 양식 선택하기
-        </h3>
-        <TutorialContent
-          content={content}
-          className="typo-sm mt-3 leading-relaxed text-fg-muted"
-        />
-      </div>
-
+    <div
+      data-testid="tutorial-note-template-container"
+      className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-surface-contrast p-6 sm:p-8"
+    >
       {isLoading ? (
         <div className="flex min-h-48 items-center justify-center text-fg-muted">
           <LoaderCircle className="size-6 animate-spin" />
         </div>
       ) : groups.length > 0 ? (
-        <div className="space-y-8">
+        <div
+          data-testid="tutorial-note-template-list"
+          className="min-h-0 flex-1 space-y-8 overflow-y-auto"
+        >
           {groups.map((group) => (
             <section key={group.title}>
               <h4 className="typo-l mb-4 font-headline text-fg">
@@ -412,7 +420,9 @@ export const TutorialCompletionModal = ({
     >
       <div className="flex flex-col items-center px-8 py-10 text-center">
         <h2 className="typo-xl font-headline text-fg">{copy.title}</h2>
-        <p className="typo-l mt-10 font-headline text-fg">{copy.subtitle}</p>
+        <p className="typo-l mt-10 whitespace-pre-line font-headline text-fg">
+          {copy.subtitle}
+        </p>
         <p className="typo-sm mt-5 whitespace-pre-line leading-relaxed text-fg-muted">
           {copy.content}
         </p>
@@ -479,7 +489,6 @@ export const TutorialRebootModal: React.FC = () => {
   const setTutorialRewardOpen = useQuestStore(
     (state) => state.setTutorialRewardOpen
   );
-  const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
   const setDefaultTemplateId = useAuthStore(
     (state) => state.setDefaultTemplateId
   );
@@ -492,11 +501,12 @@ export const TutorialRebootModal: React.FC = () => {
   const [completionStep, setCompletionStep] =
     React.useState<TutorialStep | null>(null);
   const [videoReady, setVideoReady] = React.useState(false);
+  const [videoElapsedSeconds, setVideoElapsedSeconds] = React.useState(0);
   const [noteVideoMode, setNoteVideoMode] = React.useState(false);
   const [sessionUploadOpen, setSessionUploadOpen] = React.useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<
     number | null
-  >(defaultTemplateId);
+  >(null);
   const [directUploadState, setDirectUploadState] = React.useState<
     'idle' | 'loading' | 'ready' | 'processing'
   >('idle');
@@ -527,6 +537,21 @@ export const TutorialRebootModal: React.FC = () => {
       ? baseMissionCopy.afterAction
       : baseMissionCopy;
   const isNoteVideo = mission?.type === MISSION_TYPE.NOTE && noteVideoMode;
+  const minimumWatchSeconds =
+    mission && requiresMinimumVideoWatch(mission.type) ? VIDEO_MIN_SECONDS : 0;
+  const canContinueVideo = minimumWatchSeconds === 0 || videoReady;
+  const remainingWatchSeconds = Math.max(
+    0,
+    minimumWatchSeconds - videoElapsedSeconds
+  );
+  const handleVideoTimeUpdate = React.useCallback(
+    (currentTime: number) => {
+      const elapsedSeconds = Math.floor(currentTime);
+      setVideoElapsedSeconds((elapsed) => Math.max(elapsed, elapsedSeconds));
+      setVideoReady((ready) => ready || currentTime >= minimumWatchSeconds);
+    },
+    [minimumWatchSeconds]
+  );
 
   const templatesQuery = useQuery({
     queryKey: templateQueryKeys.list(),
@@ -567,6 +592,15 @@ export const TutorialRebootModal: React.FC = () => {
       (client) => client.key === key
     );
   }, [cohort, virtualClientsQuery.data?.virtual_clients]);
+  const requiresVirtualClient =
+    mission?.type === MISSION_TYPE.EXAMPLE ||
+    mission?.type === MISSION_TYPE.CLIENT_AUDIO;
+  const virtualClientError =
+    requiresVirtualClient &&
+    (virtualClientsQuery.isError ||
+      (virtualClientsQuery.isSuccess && !virtualClient))
+      ? '가상 내담자 데이터를 불러오지 못했어요.'
+      : null;
 
   const tutorialFiles = React.useMemo<MultiFileInfo[]>(() => {
     if (directUploadState !== 'ready' && directUploadState !== 'processing') {
@@ -603,7 +637,9 @@ export const TutorialRebootModal: React.FC = () => {
 
     resetStepRef.current = activeStep;
     setVideoReady(false);
+    setVideoElapsedSeconds(0);
     setNoteVideoMode(false);
+    setSelectedTemplateId(null);
     setSessionUploadOpen(false);
     setDirectUploadState('idle');
     setActionError(null);
@@ -618,12 +654,6 @@ export const TutorialRebootModal: React.FC = () => {
   }, [sessionUploadOpen]);
 
   React.useEffect(() => {
-    if (isOpen && !noteVideoMode) {
-      setSelectedTemplateId(defaultTemplateId);
-    }
-  }, [defaultTemplateId, isOpen, noteVideoMode]);
-
-  React.useEffect(() => {
     return () => {
       if (exampleCompletionTimer.current !== null) {
         window.clearTimeout(exampleCompletionTimer.current);
@@ -632,6 +662,9 @@ export const TutorialRebootModal: React.FC = () => {
   }, []);
 
   const handleClose = () => {
+    resetStepRef.current = null;
+    setVideoReady(false);
+    setVideoElapsedSeconds(0);
     setTutorialGuideLevel(null);
     setNoteVideoMode(false);
     setSessionUploadOpen(false);
@@ -663,13 +696,24 @@ export const TutorialRebootModal: React.FC = () => {
   };
 
   const finishStep = async () => {
-    if (!activeStep) return false;
+    if (!activeStep || !cohort) return false;
+    const stage = getTutorialStage(cohort, activeStep);
     await tutorialService.progress({ tutorial_step: activeStep });
+    if (stage === 4) {
+      await tutorialService.complete();
+    }
     await queryClient.invalidateQueries({
       queryKey: tutorialQueryKeys.all,
       refetchType: 'all',
     });
     setTutorialGuideLevel(null);
+
+    if (stage === 4) {
+      setCompletionStep(null);
+      setTutorialRewardOpen(true);
+      return true;
+    }
+
     setCompletionStep(activeStep);
     return true;
   };
@@ -683,9 +727,14 @@ export const TutorialRebootModal: React.FC = () => {
         (isVideoMission(mission.type) ||
           mission.type === MISSION_TYPE.CLIENT_AUDIO ||
           isNoteVideo) &&
-        !videoReady
+        !canContinueVideo
       ) {
         return;
+      }
+
+      if (requiresVirtualClient && !virtualClient) {
+        if (virtualClientsQuery.isLoading) return;
+        throw new Error('가상 내담자 데이터를 불러오지 못했어요.');
       }
 
       if (mission.type === MISSION_TYPE.NOTE) {
@@ -694,12 +743,16 @@ export const TutorialRebootModal: React.FC = () => {
           await setDefaultTemplateMutation.mutateAsync(selectedTemplateId);
           setNoteVideoMode(true);
           setVideoReady(false);
+          setVideoElapsedSeconds(0);
           return;
         }
       }
 
       if (mission.type === MISSION_TYPE.EXAMPLE) {
         if (exampleCompletionTimer.current !== null) return;
+        if (!virtualClient) {
+          throw new Error('가상 내담자 데이터를 불러오지 못했어요.');
+        }
 
         setTutorialGuideLevel(null);
         navigateWithUtm(getExampleRoute(mission.variant, virtualClient));
@@ -824,24 +877,27 @@ export const TutorialRebootModal: React.FC = () => {
   }
 
   const isLoading = tutorialQuery.isLoading || !mission || !activeStep;
-  const hasRecord =
-    tutorialQuery.data?.hasRecord ?? readTutorialHasRecord();
-  const primaryLabel = missionCopy?.buttonText ?? '다음';
+  const hasRecord = tutorialQuery.data?.hasRecord ?? readTutorialHasRecord();
+  const primaryLabel =
+    requiresVirtualClient && !virtualClient && !virtualClientError
+      ? '불러오는 중...'
+      : minimumWatchSeconds > 0 && !canContinueVideo
+        ? `${remainingWatchSeconds}초 후 건너뛰기`
+        : (missionCopy?.buttonText ?? '다음');
   const primaryDisabled =
     isLoading ||
+    (requiresVirtualClient && !virtualClient) ||
     (mission &&
       (isVideoMission(mission.type) ||
         mission.type === MISSION_TYPE.CLIENT_AUDIO) &&
-      !videoReady) ||
-    (isNoteVideo && !videoReady) ||
+      !canContinueVideo) ||
+    (isNoteVideo && !canContinueVideo) ||
     (mission?.type === MISSION_TYPE.NOTE &&
       !selectedTemplateId &&
       !noteVideoMode);
 
   const shouldShowSessionUpload =
-    isOpen &&
-    sessionUploadOpen &&
-    mission?.type === MISSION_TYPE.CLIENT_AUDIO;
+    isOpen && sessionUploadOpen && mission?.type === MISSION_TYPE.CLIENT_AUDIO;
 
   return (
     <>
@@ -875,7 +931,14 @@ export const TutorialRebootModal: React.FC = () => {
             </p>
           </header>
 
-          <div className="mt-7 min-h-0 flex-1 overflow-y-auto">
+          <div
+            className={cn(
+              'mt-7 min-h-0 flex-1',
+              mission?.type === MISSION_TYPE.NOTE && !noteVideoMode
+                ? 'flex flex-col overflow-hidden'
+                : 'overflow-y-auto'
+            )}
+          >
             {tutorialQuery.isLoading ? (
               <div className="flex h-full min-h-[380px] items-center justify-center text-fg-muted">
                 <LoaderCircle className="size-8 animate-spin" />
@@ -892,12 +955,9 @@ export const TutorialRebootModal: React.FC = () => {
                   ]
                 }
                 content={missionCopy?.content ?? ''}
-                canContinue={videoReady}
-                onTimeUpdate={(currentTime) =>
-                  setVideoReady(
-                    (ready) => ready || currentTime >= VIDEO_MIN_SECONDS
-                  )
-                }
+                canContinue={canContinueVideo}
+                minimumWatchSeconds={minimumWatchSeconds}
+                onTimeUpdate={handleVideoTimeUpdate}
               />
             ) : isNoteVideo ? (
               <VideoMission
@@ -907,21 +967,18 @@ export const TutorialRebootModal: React.FC = () => {
                   ]
                 }
                 content={missionCopy?.content ?? ''}
-                canContinue={videoReady}
-                onTimeUpdate={(currentTime) =>
-                  setVideoReady(
-                    (ready) => ready || currentTime >= VIDEO_MIN_SECONDS
-                  )
-                }
+                canContinue={canContinueVideo}
+                minimumWatchSeconds={minimumWatchSeconds}
+                onTimeUpdate={handleVideoTimeUpdate}
               />
             ) : mission.type === MISSION_TYPE.EXAMPLE ? (
               <ExampleMission
                 content={missionCopy?.content ?? ''}
+                disabled={!virtualClient}
                 onOpenExample={() => void handlePrimaryAction()}
               />
             ) : mission.type === MISSION_TYPE.NOTE ? (
               <NoteMission
-                content={missionCopy?.content ?? ''}
                 cohort={cohort}
                 templates={templatesQuery.data ?? []}
                 selectedTemplateId={selectedTemplateId}
@@ -936,18 +993,21 @@ export const TutorialRebootModal: React.FC = () => {
                   ]
                 }
                 content={missionCopy?.content ?? ''}
-                canContinue={videoReady}
-                onTimeUpdate={(currentTime) =>
-                  setVideoReady(
-                    (ready) => ready || currentTime >= VIDEO_MIN_SECONDS
-                  )
-                }
+                canContinue={canContinueVideo}
+                minimumWatchSeconds={minimumWatchSeconds}
+                onTimeUpdate={handleVideoTimeUpdate}
               />
             ) : null}
+            {mission?.type === MISSION_TYPE.NOTE && !noteVideoMode && (
+              <TutorialContent
+                content={missionCopy?.content ?? ''}
+                className="typo-m mt-3 shrink-0 text-center leading-relaxed text-grey-100"
+              />
+            )}
           </div>
 
           <p className="typo-sm mt-6 min-h-5 shrink-0 text-center text-danger">
-            {actionError}
+            {actionError ?? virtualClientError}
           </p>
           <footer className="mt-4 flex w-full max-w-[372px] shrink-0 gap-3 self-center">
             <Button

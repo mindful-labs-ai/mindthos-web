@@ -10,6 +10,7 @@ import {
   getCohortMissionFlow,
   isVideoMission,
   MISSION_TYPE,
+  requiresMinimumVideoWatch,
   type MissionType,
 } from '@/features/onboarding/constants/missionFlow';
 import { getTutorialStep } from '@/features/onboarding/constants/tutorialStep';
@@ -19,6 +20,7 @@ import {
   VIDEO_MIN_SECONDS,
 } from '@/features/onboarding/constants/tutorialUi';
 import type { MultiFileInfo } from '@/features/session/types';
+import { cn } from '@/lib/cn';
 import type {
   TutorialVirtualClient,
   TutorialVirtualSession,
@@ -29,6 +31,7 @@ import { Button, Title } from '@/shared/ui';
 import { Modal } from '@/shared/ui/composites/Modal';
 import {
   NoteMission,
+  TutorialContent,
   TutorialCompletionModal,
   TutorialRewardModal,
   VideoMission,
@@ -160,6 +163,7 @@ const TutorialQaPage = () => {
   const [status, setStatus] = React.useState<QaStatus>('IN_PROGRESS');
   const [hasRecord, setHasRecord] = React.useState(false);
   const [videoReady, setVideoReady] = React.useState(false);
+  const [videoElapsedSeconds, setVideoElapsedSeconds] = React.useState(0);
   const [noteVideoMode, setNoteVideoMode] = React.useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = React.useState<
     number | null
@@ -174,6 +178,21 @@ const TutorialQaPage = () => {
     (item) => item.stage === stage
   );
   const isNoteVideo = mission?.type === MISSION_TYPE.NOTE && noteVideoMode;
+  const minimumWatchSeconds =
+    mission && requiresMinimumVideoWatch(mission.type) ? VIDEO_MIN_SECONDS : 0;
+  const canContinueVideo = minimumWatchSeconds === 0 || videoReady;
+  const remainingWatchSeconds = Math.max(
+    0,
+    minimumWatchSeconds - videoElapsedSeconds
+  );
+  const handleVideoTimeUpdate = React.useCallback(
+    (currentTime: number) => {
+      const elapsedSeconds = Math.floor(currentTime);
+      setVideoElapsedSeconds((elapsed) => Math.max(elapsed, elapsedSeconds));
+      setVideoReady((ready) => ready || currentTime >= minimumWatchSeconds);
+    },
+    [minimumWatchSeconds]
+  );
   const missionCopy =
     tutorialStep && noteVideoMode
       ? (TUTORIAL_MISSION_COPY[tutorialStep].afterAction ??
@@ -201,6 +220,7 @@ const TutorialQaPage = () => {
 
   React.useEffect(() => {
     setVideoReady(false);
+    setVideoElapsedSeconds(0);
     setNoteVideoMode(false);
     setDirectUploadState('idle');
     setSelectedTemplateId(null);
@@ -216,15 +236,22 @@ const TutorialQaPage = () => {
   };
 
   const openCompletion = () => {
-    setSurface('completion');
-    setStatus(stage === 4 ? 'COMPLETED' : 'IN_PROGRESS');
+    const isFinalStage = stage === 4;
+    setSurface(isFinalStage ? 'reward' : 'completion');
+    setStatus(isFinalStage ? 'COMPLETED' : 'IN_PROGRESS');
+  };
+
+  const closeMission = () => {
+    setVideoReady(false);
+    setVideoElapsedSeconds(0);
+    setSurface('closed');
   };
 
   const handlePrimaryAction = () => {
     if (!mission || !tutorialStep) return;
 
     if (isNoteVideo) {
-      if (!videoReady) return;
+      if (!canContinueVideo) return;
       openCompletion();
       return;
     }
@@ -232,6 +259,7 @@ const TutorialQaPage = () => {
     if (mission.type === MISSION_TYPE.NOTE) {
       setNoteVideoMode(true);
       setVideoReady(false);
+      setVideoElapsedSeconds(0);
       return;
     }
 
@@ -247,7 +275,7 @@ const TutorialQaPage = () => {
 
   const handleUploadComplete = React.useCallback(() => {
     setDirectUploadState('ready');
-    setSurface('completion');
+    setSurface('reward');
     setStatus('COMPLETED');
   }, []);
 
@@ -286,7 +314,7 @@ const TutorialQaPage = () => {
       (isVideoMission(mission.type) ||
         mission.type === MISSION_TYPE.CLIENT_AUDIO)) ||
     isNoteVideo
-      ? !videoReady
+      ? !canContinueVideo
       : mission?.type === MISSION_TYPE.NOTE && !noteVideoMode
         ? selectedTemplateId === null
         : false;
@@ -302,17 +330,15 @@ const TutorialQaPage = () => {
       return (
         <VideoMission
           content={missionCopy?.content ?? ''}
-          canContinue={videoReady}
-          onTimeUpdate={(currentTime) => {
-            if (currentTime >= VIDEO_MIN_SECONDS) setVideoReady(true);
-          }}
+          canContinue={canContinueVideo}
+          minimumWatchSeconds={minimumWatchSeconds}
+          onTimeUpdate={handleVideoTimeUpdate}
         />
       );
     }
 
     return (
       <NoteMission
-        content={missionCopy?.content ?? ''}
         cohort={cohort}
         templates={templates}
         selectedTemplateId={selectedTemplateId}
@@ -443,7 +469,7 @@ const TutorialQaPage = () => {
               </div>
             </div>
 
-            {mission && isVideoMission(mission.type) && (
+            {mission && requiresMinimumVideoWatch(mission.type) && (
               <div>
                 <p className="mb-2 text-sm font-medium text-fg-muted">
                   영상 30초 도달 상태
@@ -538,7 +564,7 @@ const TutorialQaPage = () => {
       {surface === 'mission' && mission && tutorialStep && (
         <Modal
           open
-          onOpenChange={(open) => !open && setSurface('closed')}
+          onOpenChange={(open) => !open && closeMission()}
           scrollableBody={false}
           className="h-[min(848px,90vh)] max-h-[90vh] w-[872px] max-w-[calc(100vw-2rem)] border-none p-0"
         >
@@ -551,8 +577,21 @@ const TutorialQaPage = () => {
                 {missionCopy?.subtitle ?? ''}
               </p>
             </header>
-            <div className="mt-7 min-h-0 flex-1 overflow-y-auto">
+            <div
+              className={cn(
+                'mt-7 min-h-0 flex-1',
+                mission.type === MISSION_TYPE.NOTE && !noteVideoMode
+                  ? 'flex flex-col overflow-hidden'
+                  : 'overflow-y-auto'
+              )}
+            >
               {renderMission()}
+              {mission.type === MISSION_TYPE.NOTE && !noteVideoMode && (
+                <TutorialContent
+                  content={missionCopy?.content ?? ''}
+                  className="typo-m mt-3 shrink-0 text-center leading-relaxed text-grey-100"
+                />
+              )}
             </div>
             <p className="typo-sm mt-6 min-h-5 shrink-0 text-center text-danger" />
             <footer className="mt-4 flex w-full max-w-[372px] shrink-0 gap-3 self-center">
@@ -560,7 +599,7 @@ const TutorialQaPage = () => {
                 variant="outline"
                 tone="neutral"
                 className="h-[41px] flex-1 font-emphasize"
-                onClick={() => setSurface('closed')}
+                onClick={closeMission}
               >
                 닫기
               </Button>
@@ -570,7 +609,9 @@ const TutorialQaPage = () => {
                 disabled={primaryDisabled}
                 onClick={handlePrimaryAction}
               >
-                {missionCopy?.buttonText ?? ''}
+                {minimumWatchSeconds > 0 && !canContinueVideo
+                  ? `${remainingWatchSeconds}초 후 건너뛰기`
+                  : (missionCopy?.buttonText ?? '')}
               </Button>
             </footer>
           </div>

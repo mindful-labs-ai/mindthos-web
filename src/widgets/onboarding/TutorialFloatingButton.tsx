@@ -1,18 +1,22 @@
 import React from 'react';
 
 import { useQuery } from '@tanstack/react-query';
-import { Gift } from 'lucide-react';
+import { Check, Gift } from 'lucide-react';
 
-import {
-  getCohortFromTutorialStep,
-  getTutorialStage,
-} from '@/features/onboarding/constants/tutorialStep';
+import { getCohortFromTutorialStep } from '@/features/onboarding/constants/tutorialStep';
+import { formatTutorialRemainingTime } from '@/features/onboarding/constants/tutorialUi';
 import { cn } from '@/lib/cn';
 import { getCohortSurveyStatus } from '@/shared/api/server/acquisitionServerApi';
 import { tutorialQueryKeys } from '@/shared/api/services/tutorial/constants';
 import { tutorialService } from '@/shared/api/services/tutorial/tutorialService';
+import { Button } from '@/shared/ui/atoms/Button';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
+
+import {
+  getTutorialMissionProgress,
+  TUTORIAL_MISSION_LABELS,
+} from './TutorialMissionArea';
 
 const ENTRY_QUERY_KEY = [...tutorialQueryKeys.all, 'entry'] as const;
 
@@ -66,10 +70,14 @@ export const TutorialFloatingButton: React.FC = () => {
     ? getCohortFromTutorialStep(state.tutorial_step)
     : null;
   const cohort = stateCohort ?? surveyQuery.data?.cohort ?? null;
-  const stage =
-    cohort && state?.tutorial_step
-      ? (getTutorialStage(cohort, state.tutorial_step) ?? 1)
-      : 1;
+  const progress =
+    state && cohort ? getTutorialMissionProgress(state, cohort) : null;
+  const stage = progress?.activeStage ?? 1;
+  const completedCount = progress?.completedCount ?? 0;
+  const missionLabels = cohort ? TUTORIAL_MISSION_LABELS[cohort] : [];
+  const remainingTime = expiresAt
+    ? formatTutorialRemainingTime(expiresAt - now)
+    : '7일';
   const isRewardAvailable =
     state?.status === 'COMPLETED' && !state.reward_claimed_at;
   const isAvailable =
@@ -106,13 +114,9 @@ export const TutorialFloatingButton: React.FC = () => {
 
   if (!isAvailable) return null;
 
-  const openTutorial = () => {
+  const openTutorial = (targetStage: number) => {
     setIsOpen(false);
-    if (isRewardAvailable) {
-      setTutorialRewardOpen(true);
-      return;
-    }
-    setTutorialGuideLevel(stage);
+    setTutorialGuideLevel(targetStage);
   };
 
   return (
@@ -123,21 +127,18 @@ export const TutorialFloatingButton: React.FC = () => {
         aria-label={
           isRewardAvailable ? '튜토리얼 보상 받기' : '튜토리얼 다시 열기'
         }
-        onClick={() =>
-          isRewardAvailable
-            ? setTutorialRewardOpen(true)
-            : setIsOpen((open) => !open)
-        }
+        onClick={() => setIsOpen((open) => !open)}
         className={cn(
           'fixed bottom-6 right-6 z-sticky',
-          'flex h-20 w-20 flex-col items-center justify-center rounded-full',
-          'border-2 border-primary bg-surface shadow-elevated transition-all',
+          'flex h-20 w-20 flex-col items-center justify-center',
+          'rounded-full border-2 border-primary bg-surface',
+          'shadow-elevated transition-all duration-normal',
           'active:scale-95 lg:hover:scale-105 lg:hover:shadow-prominent'
         )}
       >
         <Gift className="h-6 w-6 text-primary" />
         <span className="typo-xs mt-1 font-headline text-primary">
-          {isRewardAvailable ? '보상 받기' : '튜토리얼'}
+          {isRewardAvailable ? '보상 받기' : '가이드 진행 중'}
         </span>
       </button>
 
@@ -145,39 +146,105 @@ export const TutorialFloatingButton: React.FC = () => {
         <div
           ref={panelRef}
           className={cn(
-            'fixed bottom-28 right-6 z-overlay w-[320px] rounded-2xl',
-            'border border-border bg-surface p-6 shadow-prominent'
+            'fixed bottom-28 right-6 z-overlay',
+            'w-[352px] rounded-2xl border border-border bg-surface',
+            'animate-in select-none shadow-prominent duration-normal',
+            'fade-in slide-in-from-bottom-4'
           )}
         >
-          <h3 className="typo-xl font-headline text-fg">
-            {isRewardAvailable ? '튜토리얼 완료' : '튜토리얼 진행 중'}
-          </h3>
-          {isRewardAvailable ? (
-            <p className="typo-sm mt-4 text-fg-muted">
-              4단계를 모두 완료했어요. 보상을 받아보세요.
-            </p>
-          ) : (
-            <div className="mt-5 flex items-center gap-3">
+          <div className="p-6">
+            <h3 className="typo-xl font-headline text-fg">
+              신규 가입자 튜토리얼
+            </h3>
+
+            <div className="mt-4 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-strong">
                 <div
-                  className="h-full rounded-full bg-primary transition-all"
-                  style={{ width: `${((stage - 1) / 4) * 100}%` }}
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${(completedCount / 4) * 100}%` }}
                 />
               </div>
-              <span className="typo-sm text-fg-muted">{stage}/4 단계</span>
+              <span className="typo-sm font-medium text-fg-muted">
+                {completedCount}/4 완료
+              </span>
             </div>
-          )}
-          <button
-            type="button"
-            onClick={openTutorial}
-            className="typo-sm mt-6 w-full rounded-xl bg-primary px-4 py-3 font-headline text-primary-fg"
-          >
-            {isRewardAvailable
-              ? '튜토리얼 보상 받기'
-              : state?.status === 'NOT_STARTED'
-                ? '튜토리얼 시작하기'
-                : '튜토리얼 다시 시작하기'}
-          </button>
+
+            <div className="mt-6 space-y-4">
+              {missionLabels.map((label, index) => {
+                const missionStage = index + 1;
+                const isCompleted = missionStage <= completedCount;
+                const isInProgress =
+                  !isCompleted && missionStage === stage && !isRewardAvailable;
+
+                return (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={cn(
+                          'flex h-7 w-7 items-center justify-center rounded-full border-2 transition-colors duration-slow',
+                          isCompleted
+                            ? 'border-primary bg-primary text-primary-fg'
+                            : isInProgress
+                              ? 'border-primary bg-surface text-primary'
+                              : 'border-fg-muted bg-surface text-fg-muted'
+                        )}
+                      >
+                        <Check size={14} strokeWidth={3} />
+                      </div>
+                      <span
+                        className={cn(
+                          'typo-sm font-medium',
+                          isCompleted
+                            ? 'text-fg'
+                            : isInProgress
+                              ? 'font-headline text-fg'
+                              : 'text-fg-muted'
+                        )}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                    {isCompleted ? (
+                      <span className="typo-sm font-medium text-fg-muted">
+                        완료
+                      </span>
+                    ) : isInProgress ? (
+                      <button
+                        type="button"
+                        onClick={() => openTutorial(missionStage)}
+                        className="typo-sm font-headline text-primary lg:hover:text-primary-hover lg:hover:underline"
+                      >
+                        진행하기
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+
+            {!isRewardAvailable && (
+              <p className="typo-sm mt-6 text-center font-headline text-danger">
+                남은 기간 {remainingTime}
+              </p>
+            )}
+
+            <Button
+              tone="primary"
+              variant={isRewardAvailable ? 'solid' : 'ghost'}
+              size="lg"
+              className="mt-4 w-full font-headline"
+              disabled={!isRewardAvailable}
+              onClick={() => {
+                setIsOpen(false);
+                setTutorialRewardOpen(true);
+              }}
+            >
+              이벤트 보상 받기
+            </Button>
+          </div>
         </div>
       )}
     </>

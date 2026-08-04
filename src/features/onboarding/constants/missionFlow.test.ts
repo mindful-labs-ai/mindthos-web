@@ -4,6 +4,7 @@ import {
   COHORT_MISSION_FLOWS,
   getCurrentMissionStep,
   MISSION_TYPE,
+  requiresMinimumVideoWatch,
 } from './missionFlow';
 
 describe('missionFlow', () => {
@@ -38,5 +39,12 @@ describe('missionFlow', () => {
       variant: 'GENOGRAM',
     });
     expect(getCurrentMissionStep('GENERIC', 4)).toBeNull();
+  });
+
+  it('30초 최소 시청은 일반 가이드 영상에만 적용한다', () => {
+    expect(requiresMinimumVideoWatch(MISSION_TYPE.GUIDE_VIDEO)).toBe(true);
+    expect(requiresMinimumVideoWatch(MISSION_TYPE.EXAMPLE)).toBe(false);
+    expect(requiresMinimumVideoWatch(MISSION_TYPE.NOTE)).toBe(false);
+    expect(requiresMinimumVideoWatch(MISSION_TYPE.CLIENT_AUDIO)).toBe(false);
   });
 });

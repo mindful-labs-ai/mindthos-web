@@ -11,9 +11,11 @@ import {
 } from '@/features/settings/hooks/useCoupons';
 import { couponService } from '@/features/settings/services/couponService';
 import { clientQueryKeys } from '@/shared/constants/queryKeys';
+import { useDevice } from '@/shared/hooks/useDevice';
 import { useModalStore } from '@/stores/modalStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ComingSoonModal } from '@/widgets/common/ComingSoonModal';
+import { TutorialFloatingButton } from '@/widgets/onboarding/TutorialFloatingButton';
 
 // Lazy-loaded modals (즉시 보이지 않는 무거운 모달)
 const TutorialRebootModal = lazy(() =>
@@ -54,6 +56,9 @@ const SendDocumentModal = lazy(() =>
  * */
 export const GlobalModalContainer = () => {
   const location = useLocation();
+  const { isMobile, isTablet } = useDevice();
+  const isMobileView = isMobile || isTablet;
+  const isGenogramRoute = location.pathname.includes(ROUTES.GENOGRAM);
   const isTermsAgreementRoute = location.pathname === ROUTES.TERMS_AGREEMENT;
   const isUserVerifyRoute = location.pathname === ROUTES.USER_VERIFY;
   const isCohortSurveyRoute = location.pathname === ROUTES.ONBOARDING_COHORT;
@@ -177,6 +182,14 @@ export const GlobalModalContainer = () => {
             <TutorialRebootModal />
           </>
         )}
+
+      {/* 신규 Tutorial 플로팅 진입점 — 레거시와 동일한 데스크톱 노출 범위 */}
+      {!isMobileView &&
+        !isGenogramRoute &&
+        !isTermsAgreementRoute &&
+        !isUserVerifyRoute &&
+        !isCohortSurveyRoute &&
+        !isPaymentRoute && <TutorialFloatingButton />}
 
       {/* 사용자 정보 수정 모달 */}
       <UserEditModal open={isUserEditOpen} onOpenChange={handleCloseUserEdit} />

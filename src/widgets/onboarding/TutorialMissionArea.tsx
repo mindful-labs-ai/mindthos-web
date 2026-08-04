@@ -22,38 +22,39 @@ import { Button } from '@/shared/ui/atoms/Button';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
-const TUTORIAL_MISSION_LABELS: Record<CohortBranch, readonly string[]> = {
-  [COHORT_BRANCH.GENOGRAM]: [
-    '상담 기록 예시 보기',
-    '가계도 예시 보기',
-    '상담노트 양식 확인하기',
-    '녹음 파일 업로드하기',
-  ],
-  [COHORT_BRANCH.CBT]: [
-    '상담 기록 예시 보기',
-    '다회기 분석 예시 보기',
-    '상담노트 양식 확인하기',
-    '녹음 파일 업로드하기',
-  ],
-  [COHORT_BRANCH.PSYCHODYNAMIC]: [
-    '상담 기록 예시 보기',
-    '다회기 분석 예시 보기',
-    '상담노트 양식 확인하기',
-    '녹음 파일 업로드하기',
-  ],
-  [COHORT_BRANCH.HUMANISTIC]: [
-    '상담 기록 예시 보기',
-    '다회기 분석 예시 보기',
-    '상담노트 양식 확인하기',
-    '녹음 파일 업로드하기',
-  ],
-  [COHORT_BRANCH.GENERIC]: [
-    '마음토스 가이드 영상 보기',
-    '상담 기록 예시 보기',
-    '상담노트 양식 선택하기',
-    '녹음 파일 업로드하기',
-  ],
-};
+export const TUTORIAL_MISSION_LABELS: Record<CohortBranch, readonly string[]> =
+  {
+    [COHORT_BRANCH.GENOGRAM]: [
+      '상담 기록 예시 보기',
+      '가계도 예시 보기',
+      '상담노트 양식 확인하기',
+      '직접 상담 기록 만들기',
+    ],
+    [COHORT_BRANCH.CBT]: [
+      '상담 기록 예시 보기',
+      'AI 슈퍼비전 예시 보기',
+      '상담노트 양식 확인하기',
+      '직접 상담 기록 만들기',
+    ],
+    [COHORT_BRANCH.PSYCHODYNAMIC]: [
+      '상담 기록 예시 보기',
+      'AI 슈퍼비전 예시 보기',
+      '상담노트 양식 확인하기',
+      '직접 상담 기록 만들기',
+    ],
+    [COHORT_BRANCH.HUMANISTIC]: [
+      '상담 기록 예시 보기',
+      'AI 슈퍼비전 예시 보기',
+      '상담노트 양식 확인하기',
+      '직접 상담 기록 만들기',
+    ],
+    [COHORT_BRANCH.GENERIC]: [
+      '마음토스 가이드 영상 보기',
+      '상담 기록 예시 보기',
+      '상담노트 양식 선택하기',
+      '직접 상담 기록 만들기',
+    ],
+  };
 
 export interface TutorialMissionProgress {
   activeStage: 1 | 2 | 3 | 4;
@@ -80,14 +81,15 @@ export function getTutorialMissionProgress(
 }
 
 const Stepper = ({ completedCount, activeStage }: TutorialMissionProgress) => (
-  <div className="relative mt-3 px-[9%]">
-    <div className="absolute left-[10%] right-[10%] top-8 h-1 -translate-y-1/2 rounded-full bg-surface-strong" />
-    <div
-      className="absolute left-[12.5%] top-8 h-1 -translate-y-1/2 rounded-full bg-primary transition-all duration-500"
-      style={{
-        width: `${(Math.min(completedCount, 3) / 3) * 75}%`,
-      }}
-    />
+  <div className="relative mx-auto mt-3 w-full max-w-[302px] px-[18px]">
+    <div className="absolute inset-x-[18px] top-[38px] h-1 -translate-y-1/2 overflow-hidden rounded-full bg-surface-strong">
+      <div
+        className="h-full rounded-full bg-primary transition-all duration-500"
+        style={{
+          width: `${(Math.min(completedCount, 3) / 3) * 100}%`,
+        }}
+      />
+    </div>
     <div className="relative flex justify-between">
       {[1, 2, 3, 4].map((step) => {
         const isCompleted = step <= completedCount;
@@ -103,18 +105,21 @@ const Stepper = ({ completedCount, activeStage }: TutorialMissionProgress) => (
             >
               {step}
             </span>
-            <div
-              className={cn(
-                'flex size-6 items-center justify-center rounded-full border-2 bg-surface',
-                isCompleted
-                  ? 'border-primary bg-primary text-primary-fg'
-                  : isCurrent
-                    ? 'border-primary text-primary'
-                    : 'border-fg-muted text-fg-muted'
-              )}
-              aria-current={isCurrent ? 'step' : undefined}
-            >
-              <Check size={12} strokeWidth={4} />
+            <div className="flex h-9 items-center justify-center">
+              <div
+                className={cn(
+                  'flex items-center justify-center rounded-full border-2 bg-surface',
+                  isCurrent ? 'size-9' : 'size-6',
+                  isCompleted
+                    ? 'border-primary bg-primary text-primary-fg'
+                    : isCurrent
+                      ? 'border-primary text-primary'
+                      : 'border-fg-muted text-fg-muted'
+                )}
+                aria-current={isCurrent ? 'step' : undefined}
+              >
+                <Check size={isCurrent ? 18 : 12} strokeWidth={4} />
+              </div>
             </div>
           </div>
         );
