@@ -12,7 +12,11 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
-import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  billingQueryKeys,
+  cardQueryKeys,
+  creditQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { ArrowRightIcon, CreditIcon } from '@/shared/icons';
 import { MobileModalHeader } from '@/shared/ui';
@@ -118,12 +122,18 @@ export const CreditRenewalModal: React.FC<CreditRenewalModalProps> = ({
 
     await billingService.renewPlan(userCouponId);
 
+    // 재갱신도 새 subscribe 행을 만든다 — 구독 쿼리를 함께 갱신해야 갱신일이 맞는다
     if (userId) {
       const userIdNumber = parseInt(userId);
       if (!isNaN(userIdNumber)) {
-        await queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.summary(userIdNumber),
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: creditQueryKeys.summary(userIdNumber),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: billingQueryKeys.subscription(userIdNumber),
+          }),
+        ]);
       }
     }
 
