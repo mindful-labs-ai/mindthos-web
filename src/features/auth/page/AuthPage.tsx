@@ -5,6 +5,7 @@ import { authService } from '@/shared/api/services/auth/authService';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { SUPPORT_KAKAO_URL } from '@/shared/constants/support';
 import { GoogleIcon, KakaoIcon } from '@/shared/icons';
+import { SupportContactHint } from '@/shared/ui';
 import EmailVerificationStep from '@/widgets/auth/EmailVerificationStep';
 import PasswordResetRequestStep from '@/widgets/auth/PasswordResetRequestStep';
 import SignInForm from '@/widgets/auth/SignInForm';
@@ -127,7 +128,12 @@ const AuthPage = () => {
 
             {/* Form Section */}
             <div className="w-full">
-              {error && <div className="auth-error-area">{error}</div>}
+              {error && (
+                <div className="auth-error-area">
+                  {error}
+                  <SupportContactHint message={error} />
+                </div>
+              )}
 
               {formState === 'emailVerification' && pendingEmail ? (
                 <EmailVerificationStep

@@ -4,10 +4,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
+import { useInvalidateSubscriptionViews } from '@/features/settings/hooks/useInvalidateSubscriptionViews';
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
+import { cardQueryKeys } from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -21,6 +22,7 @@ export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const { navigateWithUtm } = useNavigateWithUtm();
   const queryClient = useQueryClient();
+  const invalidateSubscriptionViews = useInvalidateSubscriptionViews();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const user = useAuthStore((state) => state.user);
@@ -81,15 +83,8 @@ export const PaymentSuccess = () => {
           });
 
           if (response.success) {
-            // 크레딧/구독/사용량 단일 RPC로 통합 — summary key만 invalidate
-            if (userId) {
-              const userIdNumber = parseInt(userId);
-              if (!isNaN(userIdNumber)) {
-                await queryClient.invalidateQueries({
-                  queryKey: creditQueryKeys.summary(userIdNumber),
-                });
-              }
-            }
+            // 설정 화면이 언마운트 상태라 refetchType:'all'이 있어야 실제로 리페치된다
+            await invalidateSubscriptionViews({ refetchType: 'all' });
 
             trackEvent(MixpanelEvent.PlanUpgradeSuccess, { plan_id: planId });
 
@@ -113,10 +108,13 @@ export const PaymentSuccess = () => {
             authKey,
           });
 
-          // 카드 정보 쿼리 invalidate
+          // 설정 화면을 떠나 있어 카드 쿼리가 inactive다. 기본 invalidate는 stale
+          // 표시만 하고, 전역 refetchOnMount:false 탓에 돌아가도 옛 값이 그대로 쓰인다.
+          // refetchType:'all'로 여기서 새 카드를 미리 받아둔다.
           if (userId) {
             await queryClient.invalidateQueries({
               queryKey: cardQueryKeys.info(userId!),
+              refetchType: 'all',
             });
           }
 

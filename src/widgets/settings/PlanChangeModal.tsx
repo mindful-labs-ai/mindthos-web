@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 
-import { useQueryClient } from '@tanstack/react-query';
-
 import { getTermsRoute, TERMS_TYPES } from '@/app/router/constants';
 import { useTossPayments } from '@/features/payment/hooks/useTossPayments';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
+import { useInvalidateSubscriptionViews } from '@/features/settings/hooks/useInvalidateSubscriptionViews';
 import { usePlansByPeriod } from '@/features/settings/hooks/usePlans';
 import { getPlanTier } from '@/features/settings/utils/planUtils';
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { MobileModalHeader, Text, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -71,10 +69,9 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
     reason?: string;
   } | null>(null);
 
-  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const invalidateSubscriptionViews = useInvalidateSubscriptionViews();
   const user = useAuthStore((state) => state.user);
-  const userId = useAuthStore((state) => state.userId);
   const userName = useAuthStore((state) => state.userName);
   const { monthlyPlans, yearlyPlans, isLoading } = usePlansByPeriod();
   const { requestBillingAuth } = useTossPayments(user?.id || '');
@@ -221,15 +218,7 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         throw new Error('플랜 변경에 실패했어요. 다시 시도해 주세요.');
       }
 
-      // 크레딧/구독/사용량을 단일 RPC로 통합 — summary key만 invalidate
-      if (userId) {
-        const userIdNumber = parseInt(userId);
-        if (!isNaN(userIdNumber)) {
-          await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.summary(userIdNumber),
-          });
-        }
-      }
+      await invalidateSubscriptionViews();
 
       // 플랜 업그레이드 성공 트래킹
       trackEvent(MixpanelEvent.PlanUpgradeSuccess, {
@@ -302,15 +291,8 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         description: '구독 종료 후 새 플랜이 적용돼요.',
       });
 
-      // 크레딧/구독을 단일 RPC로 통합 — summary key만 invalidate
-      if (userId) {
-        const userIdNumber = parseInt(userId);
-        if (!isNaN(userIdNumber)) {
-          await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.summary(userIdNumber),
-          });
-        }
-      }
+      // 다운그레이드는 subscribe에 예약만 남기므로 구독 쿼리까지 갱신해야 화면이 바뀐다
+      await invalidateSubscriptionViews();
 
       onOpenChange(false);
     }

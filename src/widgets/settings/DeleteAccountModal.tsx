@@ -2,6 +2,7 @@ import React from 'react';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { SupportContactHint } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { Modal } from '@/shared/ui/composites/Modal';
@@ -55,6 +56,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
         {error && (
           <p className="typo-sm text-danger" role="alert">
             {error}
+            <SupportContactHint message={error} />
           </p>
         )}
 
