@@ -57,24 +57,25 @@ describe('CohortSurveyPage', () => {
       'h-dvh',
       'overflow-hidden'
     );
+    expect(container.querySelector('section')).toHaveClass('py-12');
     expect(
       screen.getByRole('heading', { name: '마음토스 시작하기' })
     ).toHaveClass('text-[20px]', 'font-semibold', 'text-green-80');
     expect(
+      screen.getByRole('heading', { name: '마음토스 시작하기' }).parentElement
+    ).toHaveClass('items-center', 'justify-center');
+    expect(
       screen.getByRole('heading', {
         name: '주로 어떤 내담자를 상담하시나요?',
       })
-    ).toHaveClass('text-[24px]', 'font-semibold', 'text-green-100');
+    ).toHaveClass('mt-6', 'text-[24px]', 'font-semibold', 'text-grey-100');
     expect(screen.getByText('일반 성인')).toHaveClass('text-[20px]');
 
     const optionList = screen.getByRole('button', {
       name: '일반 성인',
     }).parentElement;
-    expect(optionList?.parentElement).toHaveClass(
-      'min-h-0',
-      'flex-1',
-      'overflow-y-auto'
-    );
+    expect(optionList?.parentElement).toHaveClass('min-h-0', 'overflow-y-auto');
+    expect(optionList).toHaveClass('min-h-full', 'justify-center');
   });
 
   it('Q2와 Q3에서 180px 이전 버튼으로 직전 질문에 돌아간다', async () => {
@@ -92,6 +93,8 @@ describe('CohortSurveyPage', () => {
     expect(previousButton).toHaveClass(
       'w-[180px]',
       'shrink-0',
+      'border-[1px]',
+      'border-solid',
       'border-grey-40'
     );
 

@@ -179,95 +179,95 @@ export default function CohortSurveyPage() {
   }
 
   return (
-    <main className="flex h-dvh items-start overflow-hidden bg-surface-contrast px-4 py-6 sm:px-8 sm:py-10 lg:block lg:px-12 lg:py-20">
+    <main className="flex h-dvh items-start overflow-hidden bg-surface-contrast px-2 py-3 sm:px-4 sm:py-5 lg:block lg:px-12 lg:py-10">
       <div className="relative mx-auto flex h-full min-h-0 w-full items-center">
         <section
-          className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-[774px] flex-col overflow-hidden rounded-2xl border border-grey-40 bg-surface px-5 py-10 shadow-subtle sm:px-10 sm:py-12 lg:px-[57px] lg:py-[80px]"
+          className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-[774px] flex-col items-center overflow-hidden rounded-2xl border border-grey-40 bg-surface px-5 py-12 shadow-subtle sm:px-10 lg:px-[57px]"
           aria-labelledby="cohort-survey-title"
         >
-          <h1 className="shrink-0 text-center text-[20px] font-semibold leading-tight text-green-80">
-            마음토스 시작하기
-          </h1>
+          <header className="flex min-h-[80px] shrink-0 flex-col items-center justify-center text-center">
+            <h1 className="text-[20px] font-semibold leading-tight text-green-80">
+              마음토스 시작하기
+            </h1>
 
-          <h2
-            id="cohort-survey-title"
-            className="mt-2 shrink-0 text-center text-[24px] font-semibold leading-[1.45] text-green-100 sm:mt-3 lg:mt-10"
-          >
-            {question.title}
-          </h2>
-
-          <div className="mx-auto flex min-h-0 w-full max-w-[660px] flex-1 flex-col">
-            <div className="mt-8 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 sm:mt-10 lg:mt-12">
-              <div className="flex min-h-full flex-col justify-center gap-4 py-2">
-                {question.options.map((option) => {
-                  const isSelected = selectedChoice === option.choice;
-                  return (
-                    <button
-                      key={option.choice}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() =>
-                        setChoices((current) => ({
-                          ...current,
-                          [question.key]: option.choice,
-                        }))
-                      }
-                      className={cn(
-                        'relative flex min-h-[72px] shrink-0 items-center justify-center rounded-2xl border px-14 text-center transition-colors sm:min-h-[88px] sm:px-16',
-                        isSelected
-                          ? 'border-green-80 bg-green-10 text-fg'
-                          : 'border-grey-40 bg-surface text-fg lg:hover:bg-surface-contrast'
-                      )}
-                    >
-                      <span className="text-[20px] font-headline leading-snug">
-                        {option.label}
-                      </span>
-                      <span
-                        className={cn(
-                          'absolute left-5 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full',
-                          isSelected
-                            ? 'bg-green-80 text-white'
-                            : 'bg-grey-40 text-white'
-                        )}
-                        aria-hidden="true"
-                      >
-                        <Check size={17} strokeWidth={3} />
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div
-              className={cn(
-                'mt-8 flex shrink-0 items-center justify-center sm:mt-10 lg:mt-12',
-                questionIndex > 0 && 'gap-3'
-              )}
+            <h2
+              id="cohort-survey-title"
+              className="mt-6 text-[24px] font-semibold leading-[1.45] text-grey-100"
             >
-              {questionIndex > 0 && (
-                <Button
-                  tone="surface"
-                  variant="outline"
-                  size="lg"
-                  className="h-12 w-[180px] shrink-0 rounded-lg border-grey-40 bg-surface text-[18px] font-headline"
-                  disabled={surveyMutation.isPending}
-                  onClick={handlePrevious}
-                >
-                  이전
-                </Button>
-              )}
-              <Button
-                tone="primary"
-                size="lg"
-                className="h-12 w-full min-w-0 max-w-[375px] rounded-lg text-[18px] font-headline"
-                disabled={selectedChoice === null}
-                loading={surveyMutation.isPending}
-                onClick={handleNext}
-              >
-                {question.nextLabel}
-              </Button>
+              {question.title}
+            </h2>
+          </header>
+
+          <div className="mx-auto min-h-0 w-full max-w-[660px] flex-1 overflow-y-auto overscroll-contain pr-1">
+            <div className="flex min-h-full flex-col justify-center gap-4 py-2">
+              {question.options.map((option) => {
+                const isSelected = selectedChoice === option.choice;
+                return (
+                  <button
+                    key={option.choice}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() =>
+                      setChoices((current) => ({
+                        ...current,
+                        [question.key]: option.choice,
+                      }))
+                    }
+                    className={cn(
+                      'relative flex min-h-[72px] shrink-0 items-center justify-center rounded-2xl border px-14 text-center transition-colors sm:min-h-[88px] sm:px-16',
+                      isSelected
+                        ? 'border-green-80 bg-green-10 text-fg'
+                        : 'border-grey-40 bg-surface text-fg lg:hover:bg-surface-contrast'
+                    )}
+                  >
+                    <span className="text-[20px] font-headline leading-snug">
+                      {option.label}
+                    </span>
+                    <span
+                      className={cn(
+                        'absolute left-5 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full',
+                        isSelected
+                          ? 'bg-green-80 text-white'
+                          : 'bg-grey-40 text-white'
+                      )}
+                      aria-hidden="true"
+                    >
+                      <Check size={17} strokeWidth={3} />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+          </div>
+
+          <div
+            className={cn(
+              'mx-auto mt-6 flex w-full max-w-[660px] shrink-0 items-center justify-center',
+              questionIndex > 0 && 'gap-3'
+            )}
+          >
+            {questionIndex > 0 && (
+              <Button
+                tone="surface"
+                variant="outline"
+                size="lg"
+                className="h-12 w-[180px] shrink-0 rounded-lg border-[1px] border-solid border-grey-40 bg-surface text-[18px] font-headline"
+                disabled={surveyMutation.isPending}
+                onClick={handlePrevious}
+              >
+                이전
+              </Button>
+            )}
+            <Button
+              tone="primary"
+              size="lg"
+              className="h-12 w-full min-w-0 max-w-[375px] rounded-lg text-[18px] font-headline"
+              disabled={selectedChoice === null}
+              loading={surveyMutation.isPending}
+              onClick={handleNext}
+            >
+              {question.nextLabel}
+            </Button>
           </div>
         </section>
 
