@@ -15,6 +15,10 @@ import { GenogramClientContainer } from './GenogramClientContainer';
 
 const mocks = vi.hoisted(() => ({
   clientId: 'client-a',
+  clients: [
+    { id: 'client-a', name: 'Client A', counsel_done: false },
+    { id: 'client-b', name: 'Client B', counsel_done: false },
+  ],
   fetchGenerationStatus: vi.fn(),
   fetchRawAIOutput: vi.fn(),
   saveFamilySummary: vi.fn(),
@@ -39,10 +43,21 @@ vi.mock('@tanstack/react-query', () => ({
 
 vi.mock('@/features/client/hooks/useClientList', () => ({
   useClientList: () => ({
-    clients: [
-      { id: 'client-a', name: 'Client A', counsel_done: false },
-      { id: 'client-b', name: 'Client B', counsel_done: false },
-    ],
+    clients: mocks.clients,
+    isLoading: false,
+  }),
+}));
+
+vi.mock('@/features/client/hooks/useClientById', () => ({
+  useClientById: (clientId: string | null) => ({
+    client:
+      clientId === 'unknown-client'
+        ? null
+        : {
+            id: clientId,
+            name: clientId === 'jung-sua' ? '정수아' : `Client ${clientId}`,
+            counsel_done: false,
+          },
     isLoading: false,
   }),
 }));
@@ -113,13 +128,20 @@ vi.mock('@/widgets/genogram/export', () => ({
 
 vi.mock('@/widgets/genogram/GenogramEmptyState', () => ({
   GenogramEmptyState: ({
+    onStartEmpty,
     onStartFromRecords,
   }: {
+    onStartEmpty: () => void;
     onStartFromRecords: (forceRefresh?: boolean) => void;
   }) => (
-    <button type="button" onClick={() => onStartFromRecords(false)}>
-      generate from records
-    </button>
+    <>
+      <button type="button" onClick={onStartEmpty}>
+        start empty
+      </button>
+      <button type="button" onClick={() => onStartFromRecords(false)}>
+        generate from records
+      </button>
+    </>
   ),
 }));
 
@@ -349,5 +371,20 @@ describe('GenogramClientContainer client access', () => {
     ).not.toBeInTheDocument();
     expect(mocks.renderGenogramPage).not.toHaveBeenCalled();
     expect(mocks.fetchGenerationStatus).not.toHaveBeenCalled();
+  });
+
+  it('shows creation actions for a newly issued client missing from the cached list', () => {
+    mocks.clientId = 'jung-sua';
+    mocks.clients = [];
+
+    render(<GenogramClientContainer />);
+
+    expect(screen.getByRole('button', { name: 'start empty' })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'generate from records' })
+    ).toBeVisible();
+    expect(
+      screen.queryByText('내담자를 찾을 수 없어요.')
+    ).not.toBeInTheDocument();
   });
 });

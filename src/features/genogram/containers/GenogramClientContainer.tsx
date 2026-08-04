@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useClientById } from '@/features/client/hooks/useClientById';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
@@ -79,13 +80,13 @@ export function GenogramClientContainer() {
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
   const { clients, isLoading: isClientsLoading } = useClientList();
+  const { client: selectedClient, isLoading: isSelectedClientLoading } =
+    useClientById(requestedClientId);
   const genogramRef = useRef<GenogramPageHandle>(null);
 
-  const selectedClient =
-    clients.find((c) => c.id === requestedClientId) ?? null;
   const clientId = selectedClient?.id ?? null;
   const isInvalidClientSelection =
-    !!requestedClientId && !isClientsLoading && !selectedClient;
+    !!requestedClientId && !isSelectedClientLoading && !selectedClient;
 
   const { hasRecords } = useClientHasRecords(clientId ?? '');
   const { isLoading: isFamilySummaryLoading } = useClientFamilySummary(
@@ -537,6 +538,7 @@ export function GenogramClientContainer() {
 
   const isLoading =
     isClientsLoading ||
+    isSelectedClientLoading ||
     (clientId && isDataLoading) ||
     (clientId && isFamilySummaryLoading);
   const showCanvas = (clientId && hasData) || isTemporaryMode;

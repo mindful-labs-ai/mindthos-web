@@ -1,3 +1,4 @@
+import type { Client } from '@/features/client/types';
 import type {
   ClientApiError,
   CreateClientRequest,
@@ -133,6 +134,43 @@ export async function getClientsPage({
       : null;
 
   return { items, nextCursor };
+}
+
+/**
+ * URL 등에서 직접 선택된 내담자를 조회한다.
+ * 목록 캐시의 페이지/갱신 상태와 무관하게 현재 사용자의 소유권을 확인한다.
+ */
+export async function getClientById(
+  clientId: string,
+  counselorId: string
+): Promise<Client | null> {
+  const { data, error } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('id', clientId)
+    .eq('counselor_id', counselorId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`내담자 조회 실패: ${error.message}`);
+  }
+
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    counselor_id: String(data.counselor_id),
+    name: data.name,
+    phone_number: data.phone_number ?? '',
+    email: data.email,
+    counsel_theme: data.counsel_theme,
+    counsel_number: Number(data.counsel_number) || 0,
+    counsel_done: data.counsel_done ?? false,
+    memo: data.memo,
+    pin: data.pin ?? false,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+  };
 }
 
 // ============================================================================
