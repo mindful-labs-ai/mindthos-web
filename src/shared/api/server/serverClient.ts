@@ -10,7 +10,7 @@ import { useUtmStore } from '@/stores/utmStore';
  * - 응답: 서버는 `{ statusCode, message, data }` 봉투로 응답하므로 data만 반환.
  */
 
-// 배포 게이트웨이 절대 URL(끝 슬래시 제거). 비어 있으면 상대경로 → 로컬은 vite dev proxy가 forward.
+// Docker 배포는 동일 오리진(/), 로컬은 빈 값 + Vite dev proxy를 사용한다.
 const API_BASE = (import.meta.env.VITE_SERVER_API_URL ?? '').replace(
   /\/+$/,
   ''

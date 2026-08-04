@@ -9,6 +9,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 RUN --mount=type=secret,id=vite_env,target=/app/.env.production,required=true \
+    grep -qx 'VITE_SERVER_API_URL=/' /app/.env.production && \
     pnpm build
 
 FROM nginx:1.27-alpine
