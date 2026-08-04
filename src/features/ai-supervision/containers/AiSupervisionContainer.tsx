@@ -11,6 +11,7 @@ import {
   useClientTemplates,
   useCreateClientAnalysis,
 } from '@/features/client/hooks/useClientAnalysis';
+import { useClientById } from '@/features/client/hooks/useClientById';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { useAllClientSessions } from '@/features/session/hooks/useSessionsList';
@@ -56,8 +57,10 @@ export function AiSupervisionContainer() {
   );
 
   const { clients } = useClientList();
+  const { client: selectedClientById } = useClientById(clientId);
 
-  const selectedClient = clients.find((c) => c.id === clientId) ?? null;
+  const selectedClient =
+    selectedClientById ?? clients.find((c) => c.id === clientId) ?? null;
 
   const { data: templates } = useClientTemplates();
   const { data: analyses = [], isLoading: isLoadingAnalyses } =
@@ -65,6 +68,13 @@ export function AiSupervisionContainer() {
   const createAnalysisMutation = useCreateClientAnalysis();
 
   const displayAnalyses = analyses;
+  const queuedAnalysisVersion =
+    analyses.find(
+      (analysis) =>
+        analysis.ai_supervision?.status === 'pending' ||
+        analysis.ai_supervision?.status === 'in_progress'
+    )?.version ?? null;
+  const activePollingVersion = pollingVersion ?? queuedAnalysisVersion;
 
   // 분석 모달용 세션 목록 — 모달 열릴 때만 활성화 (내담자 상세와 동일)
   const { data: allClientSessionItems } = useAllClientSessions({
@@ -76,8 +86,8 @@ export function AiSupervisionContainer() {
 
   useClientAnalysisStatus({
     clientId: clientId || '',
-    version: pollingVersion || 0,
-    enabled: !!clientId && !!pollingVersion,
+    version: activePollingVersion || 0,
+    enabled: !!clientId && !!activePollingVersion,
     onComplete: () => {
       toast({
         title: '다회기 분석 완료',
@@ -178,7 +188,9 @@ export function AiSupervisionContainer() {
   ) : null;
 
   // 다회기 분석 모달용 세션 목록 — useAllClientSessions (limit 없음)
-  const analysisSessionList = (allClientSessionItems ?? []).map((s) => s.session);
+  const analysisSessionList = (allClientSessionItems ?? []).map(
+    (s) => s.session
+  );
 
   return (
     <div className="flex h-full w-full">
@@ -203,22 +215,24 @@ export function AiSupervisionContainer() {
           </div>
         ) : (
           <div className="mx-auto flex h-full w-full max-w-[1332px] flex-col">
-            {/* 헤더: 내담자명 + 우측 상담 기록 수 박스 */}
-            <div className="flex-shrink-0 px-4 pt-6 md:px-16 md:pt-[42px]">
-              <div className="mb-4 flex items-center justify-between gap-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  <h1 className="truncate text-2xl font-headline text-grey-100">
-                    {selectedClient.name}
-                  </h1>
-                </div>
-                <div className="flex h-10 flex-shrink-0 items-center gap-2 rounded-lg border border-grey-40 bg-white px-3">
-                  <File size={24} className="text-grey-60" />
-                  <span className="text-m font-medium text-grey-100">
-                    {sessionRecordCount}개의 상담 기록
-                  </span>
+            {/* 데스크톱 헤더: 내담자명 + 우측 상담 기록 수 박스 */}
+            {!isMobileView && (
+              <div className="flex-shrink-0 px-16 pt-[42px]">
+                <div className="mb-4 flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <h1 className="truncate text-2xl font-headline text-grey-100">
+                      {selectedClient.name}
+                    </h1>
+                  </div>
+                  <div className="flex h-10 flex-shrink-0 items-center gap-2 rounded-lg border border-grey-40 bg-white px-3">
+                    <File size={24} className="text-grey-60" />
+                    <span className="text-m font-medium text-grey-100">
+                      {sessionRecordCount}개의 상담 기록
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* 다회기 분석 (기존 탭 컴포넌트 그대로) — 모바일은 풀블리드 */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:px-16 md:py-6">

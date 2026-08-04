@@ -22,10 +22,11 @@ import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ClientSidebar } from '@/widgets/client/ClientSidebar';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
+import { useClientById } from '../hooks/useClientById';
 import { useClientList } from '../hooks/useClientList';
 import type { Client } from '../types';
 
-import { ClientDetailView } from './ClientDetailView';
+import { ClientDetailNotFoundView, ClientDetailView } from './ClientDetailView';
 
 export const ClientDetailContainer: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -41,6 +42,8 @@ export const ClientDetailContainer: React.FC = () => {
   const userId = useAuthStore((state) => state.userId);
 
   const { clients, isLoading: isLoadingClients } = useClientList();
+  const { client: selectedClient, isLoading: isLoadingSelectedClient } =
+    useClientById(clientId ?? null);
   const initialTab =
     searchParams.get('tab') === 'documents' ? 'documents' : 'info';
 
@@ -65,8 +68,8 @@ export const ClientDetailContainer: React.FC = () => {
 
   const client = React.useMemo(() => {
     if (!clientId) return null;
-    return clients.find((c) => c.id === clientId) || null;
-  }, [clients, clientId]);
+    return selectedClient ?? clients.find((c) => c.id === clientId) ?? null;
+  }, [clients, clientId, selectedClient]);
 
   const clientSessions = React.useMemo(() => {
     if (!clientId) return [];
@@ -154,7 +157,10 @@ export const ClientDetailContainer: React.FC = () => {
     />
   ) : null;
 
-  if (isLoadingClients || isLoadingSessions) {
+  if (
+    isLoadingSessions ||
+    (!client && (isLoadingClients || isLoadingSelectedClient))
+  ) {
     return (
       <div className="flex h-full w-full">
         {clientSidebar}
@@ -167,12 +173,10 @@ export const ClientDetailContainer: React.FC = () => {
 
   if (!client) {
     return (
-      <div className="flex h-full w-full">
-        {clientSidebar}
-        <div className="flex min-w-0 flex-1 items-center justify-center bg-surface-contrast">
-          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
-        </div>
-      </div>
+      <ClientDetailNotFoundView
+        sidebar={clientSidebar}
+        isMobileView={isMobileView}
+      />
     );
   }
 

@@ -18,6 +18,7 @@ import { cn } from '@/lib/cn';
 import { trackEvent } from '@/lib/mixpanel';
 import { captureCohortSurvey } from '@/shared/api/server/acquisitionServerApi';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { clientQueryKeys } from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button, Spinner } from '@/shared/ui';
 import { BackButton } from '@/shared/ui/atoms/BackButton';
@@ -111,9 +112,14 @@ export default function CohortSurveyPage() {
     mutationFn: (nextChoices: CohortSurveyChoices) =>
       captureCohortSurvey(nextChoices),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: cohortSurveyQueryKeys.status(),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: cohortSurveyQueryKeys.status(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: clientQueryKeys.all,
+        }),
+      ]);
       navigateWithUtm(ROUTES.ROOT, { replace: true });
     },
     onError: (error) => {
@@ -195,10 +201,7 @@ export default function CohortSurveyPage() {
   return (
     <main className="flex h-dvh flex-col overflow-hidden bg-surface lg:block lg:bg-surface-contrast lg:px-12 lg:py-10">
       <header className="flex h-[56px] shrink-0 items-center gap-3 border-b border-border px-4 sm:h-[60px] sm:px-6 lg:hidden">
-        <BackButton
-          aria-label="로그아웃"
-          onClick={() => void handleLogout()}
-        />
+        <BackButton aria-label="로그아웃" onClick={() => void handleLogout()} />
         <p className="text-m font-medium text-fg">회원가입</p>
       </header>
 

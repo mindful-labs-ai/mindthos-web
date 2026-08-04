@@ -157,6 +157,15 @@ export async function getClientById(
 
   if (!data) return null;
 
+  const { count: sessionCount, error: sessionCountError } = await supabase
+    .from('sessions')
+    .select('id', { count: 'exact', head: true })
+    .eq('client_id', clientId);
+
+  if (sessionCountError) {
+    console.error('내담자 세션 개수 조회 실패:', sessionCountError);
+  }
+
   return {
     id: data.id,
     counselor_id: String(data.counselor_id),
@@ -170,6 +179,7 @@ export async function getClientById(
     pin: data.pin ?? false,
     created_at: data.created_at,
     updated_at: data.updated_at,
+    session_count: sessionCount ?? undefined,
   };
 }
 

@@ -32,6 +32,54 @@ export interface ClientDetailViewProps {
   initialTab?: 'info' | 'documents';
 }
 
+export const ClientDetailNotFoundView = ({
+  sidebar,
+  isMobileView,
+}: {
+  sidebar?: React.ReactNode;
+  isMobileView: boolean;
+}) => {
+  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
+
+  if (isMobileView) {
+    return (
+      <div className="flex h-dvh w-full flex-col bg-app-bg">
+        <MobileModalHeader onBack={() => navigate(-1)} title="내담자 상세" />
+        <div className="flex min-h-0 flex-1 items-center justify-center px-6 text-center">
+          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full w-full">
+      {sidebar}
+      <div className="mx-auto flex h-full min-w-0 max-w-[1332px] flex-1 flex-col">
+        <div className="flex-shrink-0 px-16 pt-[42px]">
+          <div className="flex min-w-0 items-center gap-6">
+            <button
+              type="button"
+              aria-label="내담자 목록으로"
+              onClick={() => navigateWithUtm(ROUTES.CLIENTS)}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-grey-40 bg-grey-10 text-grey-70 transition-colors lg:hover:bg-grey-20"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <h1 className="truncate text-2xl font-headline text-grey-100">
+              내담자 상세
+            </h1>
+          </div>
+        </div>
+        <div className="flex min-h-0 flex-1 items-center justify-center px-6 text-center">
+          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
   sidebar,
