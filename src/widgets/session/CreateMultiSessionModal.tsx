@@ -219,9 +219,7 @@ export const CreateMultiSessionModal: React.FC<
     },
   });
   const isTutorialFakeUpload = isTutorialMode && isTutorialPreparedFile;
-  const effectiveResults = isTutorialFakeUpload
-    ? tutorialFakeResults
-    : results;
+  const effectiveResults = isTutorialFakeUpload ? tutorialFakeResults : results;
   const effectiveIsCreating = isTutorialFakeUpload
     ? isTutorialFakeCreating
     : isCreating;
@@ -460,23 +458,29 @@ export const CreateMultiSessionModal: React.FC<
       return;
     }
 
-    if (!isTutorialMode) {
-      const guard = await checkCredit(step2TotalCredit);
-      if (!guard.ok && !guard.unavailable) {
-        setCreditErrorSnackBar({
-          open: true,
-          message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+    const finalResults = await createSessions(
+      fileConfigs,
+      effectiveValidFiles,
+      async () => {
+        if (!isTutorialMode) {
+          const guard = await checkCredit(step2TotalCredit);
+          if (!guard.ok && !guard.unavailable) {
+            setCreditErrorSnackBar({
+              open: true,
+              message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+            });
+            return false;
+          }
+        }
+
+        trackEvent(MixpanelEvent.MultiSessionCreateAttempt, {
+          file_count: fileConfigs.length,
+          total_credit: step2TotalCredit,
         });
-        return;
+        return true;
       }
-    }
-
-    trackEvent(MixpanelEvent.MultiSessionCreateAttempt, {
-      file_count: fileConfigs.length,
-      total_credit: step2TotalCredit,
-    });
-
-    const finalResults = await createSessions(fileConfigs, effectiveValidFiles);
+    );
+    if (!finalResults) return;
 
     const successCount = finalResults.filter(
       (r) => r.status === 'success'

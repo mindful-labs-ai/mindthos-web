@@ -1,8 +1,8 @@
 /** 가계도 세미나 신청 페이지 */
 export const GENOGRAM_SEMINAR_URL = 'https://nextgenogram.mindthos.com/';
 
-/** 카카오톡 문의 오픈채팅 */
-export const KAKAO_SUPPORT_URL = 'https://open.kakao.com/o/sM96U0oh';
+/** 카카오톡 채널 1:1 채팅 문의 */
+export const KAKAO_SUPPORT_URL = 'https://pf.kakao.com/_GYyxdX/chat';
 
 /** 템플릿 요청 Google Form */
 export const TEMPLATE_REQUEST_FORM_URL = 'https://forms.gle/SSUsQNo7rh8ty4HY7';

@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 
+import { installPreloadErrorRecovery } from './app/preloadErrorRecovery';
 import './lib/env';
 import { ThemeProvider } from './app/providers/ThemeProvider';
 import { router } from './app/router';
@@ -14,6 +15,8 @@ import { ToastProvider } from './shared/ui/composites/Toast';
 import ErrorBoundary from './widgets/error/ErrorBoundary';
 import './styles/tailwind.css';
 import './styles/tokens.css';
+
+installPreloadErrorRecovery();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

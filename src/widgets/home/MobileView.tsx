@@ -277,17 +277,22 @@ const MobileView = () => {
       return;
     }
 
-    // 크레딧 가드
-    const guard = await checkCredit(step2TotalCredit);
-    if (!guard.ok && !guard.unavailable) {
-      setCreditErrorSnackBar({
-        open: true,
-        message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
-      });
-      return;
-    }
-
-    const finalResults = await createSessions(fileConfigs, validFiles);
+    const finalResults = await createSessions(
+      fileConfigs,
+      validFiles,
+      async () => {
+        const guard = await checkCredit(step2TotalCredit);
+        if (!guard.ok && !guard.unavailable) {
+          setCreditErrorSnackBar({
+            open: true,
+            message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+          });
+          return false;
+        }
+        return true;
+      }
+    );
+    if (!finalResults) return;
 
     const successCount = finalResults.filter(
       (r) => r.status === 'success'

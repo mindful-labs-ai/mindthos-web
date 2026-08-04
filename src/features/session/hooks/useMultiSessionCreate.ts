@@ -5,7 +5,7 @@
  * - 중간 실패해도 나머지 계속 진행
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
@@ -169,8 +169,9 @@ interface UseMultiSessionCreateParams {
 interface UseMultiSessionCreateReturn {
   createSessions: (
     configs: FileSessionConfig[],
-    files: MultiFileInfo[]
-  ) => Promise<SessionCreateResult[]>;
+    files: MultiFileInfo[],
+    beforeCreate?: () => Promise<boolean>
+  ) => Promise<SessionCreateResult[] | null>;
   results: SessionCreateResult[];
   currentFileId: string | null;
   isCreating: boolean;
@@ -187,6 +188,7 @@ export function useMultiSessionCreate({
   const [results, setResults] = useState<SessionCreateResult[]>([]);
   const [currentFileId, setCurrentFileId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const isCreatingRef = useRef(false);
 
   const updateResult = useCallback(
     (fileId: string, update: Partial<SessionCreateResult>) => {
@@ -228,13 +230,11 @@ export function useMultiSessionCreate({
     [queryClient, userId]
   );
 
-  const createSessions = useCallback(
+  const createSessionsInternal = useCallback(
     async (
       configs: FileSessionConfig[],
       files: MultiFileInfo[]
     ): Promise<SessionCreateResult[]> => {
-      setIsCreating(true);
-
       // 순서대로 정렬
       const sortedConfigs = [...configs].sort((a, b) => a.order - b.order);
 
@@ -384,8 +384,6 @@ export function useMultiSessionCreate({
         void invalidateSessionLists();
       }
 
-      setIsCreating(false);
-
       return finalResults;
     },
     [
@@ -397,6 +395,32 @@ export function useMultiSessionCreate({
       optimisticallyPrependSession,
       onInsufficientCredit,
     ]
+  );
+
+  const createSessions = useCallback(
+    async (
+      configs: FileSessionConfig[],
+      files: MultiFileInfo[],
+      beforeCreate?: () => Promise<boolean>
+    ): Promise<SessionCreateResult[] | null> => {
+      // React state 반영 전 연속 호출도 막도록 전체 사전 검사부터 동기 잠금한다.
+      if (isCreatingRef.current) return null;
+
+      isCreatingRef.current = true;
+      setIsCreating(true);
+
+      try {
+        if (beforeCreate && !(await beforeCreate())) {
+          return null;
+        }
+
+        return await createSessionsInternal(configs, files);
+      } finally {
+        isCreatingRef.current = false;
+        setIsCreating(false);
+      }
+    },
+    [createSessionsInternal]
   );
 
   const reset = useCallback(() => {

@@ -7,6 +7,7 @@ import { authService } from '@/shared/api/services/auth/authService';
 import { AuthError, AuthErrorCode } from '@/shared/api/services/auth/types';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { GoogleIcon, KakaoIcon, MailIcon } from '@/shared/icons';
+import { SupportContactHint } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 import { FormField } from '@/shared/ui/composites/FormField';
@@ -219,6 +220,7 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
             )}
           >
             {state.resendError || state.resendInfo}
+            <SupportContactHint message={state.resendError} />
           </div>
         )}
 
@@ -377,7 +379,12 @@ const PasswordResetRequestStep = ({ onBackToLogin }: Props) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {state.error && <div className="auth-error-area">{state.error}</div>}
+        {state.error && (
+          <div className="auth-error-area">
+            {state.error}
+            <SupportContactHint message={state.error} />
+          </div>
+        )}
 
         <FormField>
           <input

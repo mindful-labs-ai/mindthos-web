@@ -10,7 +10,9 @@ import { useUtmStore } from '@/stores/utmStore';
  * - 응답: 서버는 `{ statusCode, message, data }` 봉투로 응답하므로 data만 반환.
  */
 
-// Docker 배포는 동일 오리진(/), 로컬은 빈 값 + Vite dev proxy를 사용한다.
+// 배포 API base(끝 슬래시 제거). `/` 또는 빈 값이면 same-origin 상대경로를
+// 사용한다. ECS nginx는 `/v1/*`를 server로 전달하고, 로컬 개발은 필요할 때
+// `VITE_SERVER_API_URL`에 직접 gateway URL을 지정한다.
 const API_BASE = (import.meta.env.VITE_SERVER_API_URL ?? '').replace(
   /\/+$/,
   ''

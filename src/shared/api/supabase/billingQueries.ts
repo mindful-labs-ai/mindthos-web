@@ -111,25 +111,22 @@ export const billingService = {
    * 사용자의 카드 정보 조회
    */
   async getCard(_userId: number) {
-    try {
-      const response = await serverRequest<{
-        success: boolean;
-        card: {
-          type: string;
-          company: string;
-          number: string;
-          createdAt: string;
-        } | null;
-      }>(PAYMENT_ROUTES.GET_CARD);
+    const response = await serverRequest<{
+      success: boolean;
+      card: {
+        type: string;
+        company: string;
+        number: string;
+        createdAt: string;
+      } | null;
+    }>(PAYMENT_ROUTES.GET_CARD);
 
-      if (response.success) {
-        return response.card;
-      }
-      return null;
-    } catch (error) {
-      console.error('카드 정보 조회 실패:', error);
-      return null;
+    // 조회 실패를 삼키면 '카드 없음'과 구분되지 않아 등록한 카드가 사라진 것처럼 보인다
+    if (!response.success) {
+      throw new Error('카드 정보를 불러오지 못했어요.');
     }
+
+    return response.card;
   },
 
   /**
