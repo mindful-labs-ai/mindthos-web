@@ -6,6 +6,7 @@ import { Link, createSearchParams, useSearchParams } from 'react-router-dom';
 import { ROUTES, TERMS_TYPES } from '@/app/router/constants';
 import { useCardInfo } from '@/features/settings/hooks/useCardInfo';
 import { useCreditInfo } from '@/features/settings/hooks/useCreditInfo';
+import { useInvalidateSubscriptionViews } from '@/features/settings/hooks/useInvalidateSubscriptionViews';
 import {
   calculateDaysUntilReset,
   formatRenewalDate,
@@ -20,11 +21,7 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
-import {
-  billingQueryKeys,
-  cardQueryKeys,
-  creditQueryKeys,
-} from '@/shared/constants/queryKeys';
+import { cardQueryKeys } from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
   useUserAccesses,
@@ -100,6 +97,7 @@ export const SettingsContainer: React.FC = () => {
   const selectedNoticeId = view === 'noticeDetail' ? idParam : null;
 
   const queryClient = useQueryClient();
+  const invalidateSubscriptionViews = useInvalidateSubscriptionViews();
   const { toast } = useToast();
 
   const isPaidPlan =
@@ -178,22 +176,6 @@ export const SettingsContainer: React.FC = () => {
 
   const handleCancelSubscription = () => {
     setIsCancelModalOpen(true);
-  };
-
-  // 해지 예약 여부는 subscribe 행에서 오므로 summary와 함께 갱신해야 버튼 상태가 바뀐다
-  const invalidateSubscriptionViews = async () => {
-    if (!userId) return;
-    const userIdNumber = parseInt(userId);
-    if (isNaN(userIdNumber)) return;
-
-    await Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: creditQueryKeys.summary(userIdNumber),
-      }),
-      queryClient.invalidateQueries({
-        queryKey: billingQueryKeys.subscription(userIdNumber),
-      }),
-    ]);
   };
 
   const handleConfirmCancelSubscription = async () => {
@@ -410,7 +392,7 @@ export const SettingsContainer: React.FC = () => {
               >
                 {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
                 {isDowngradeScheduled && scheduledPlanType
-                  ? `${getPlanLabel(scheduledPlanType)} 플랜으로 변경 예정`
+                  ? `${getPlanLabel(scheduledPlanType)}으로 변경 예정`
                   : isCancellationScheduled
                     ? '해지 예정'
                     : '플랜 변경 예정'}
