@@ -11,7 +11,6 @@ import { FilterMenu } from '@/widgets/session/FilterMenu';
 
 export interface MobileSessionHistoryViewProps {
   sessionId?: string;
-  isDummyFlow: boolean;
   effectiveClients: Client[];
   sortOrder: 'newest' | 'oldest';
   selectedClientIds: string[];

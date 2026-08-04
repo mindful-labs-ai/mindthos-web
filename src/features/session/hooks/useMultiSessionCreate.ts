@@ -11,6 +11,7 @@ import { type InfiniteData, useQueryClient } from '@tanstack/react-query';
 
 import {
   createSessionBackground,
+  createTutorialFirstSession,
   InsufficientCreditError,
   type SessionsPageResult,
 } from '@/shared/api/supabase/sessionQueries';
@@ -159,6 +160,8 @@ function createOptimisticSessionItem({
 interface UseMultiSessionCreateParams {
   userId: number;
   templateId: number;
+  /** Tutorial 실제 파일 업로드는 첫 무료 전용 API를 사용한다. */
+  tutorialFirstUpload?: boolean;
   /** 서버 402 (잔액 부족) 응답이 떨어진 시점에 호출. 토스트/플랜 안내용. */
   onInsufficientCredit?: (message: string) => void;
 }
@@ -177,6 +180,7 @@ interface UseMultiSessionCreateReturn {
 export function useMultiSessionCreate({
   userId,
   templateId,
+  tutorialFirstUpload = false,
   onInsufficientCredit,
 }: UseMultiSessionCreateParams): UseMultiSessionCreateReturn {
   const queryClient = useQueryClient();
@@ -288,7 +292,10 @@ export function useMultiSessionCreate({
             uploadResult.duration_seconds || file.duration || 0;
           const clientId = config.clientId || null;
 
-          const response = await createSessionBackground({
+          const createSession = tutorialFirstUpload
+            ? createTutorialFirstSession
+            : createSessionBackground;
+          const response = await createSession({
             user_id: userId,
             title: file.name,
             s3_key: uploadResult.file_path,
@@ -384,6 +391,7 @@ export function useMultiSessionCreate({
     [
       userId,
       templateId,
+      tutorialFirstUpload,
       queryClient,
       updateResult,
       optimisticallyPrependSession,

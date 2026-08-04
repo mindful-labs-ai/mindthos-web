@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { cn } from '@/lib/cn';
 import { trackEvent } from '@/lib/mixpanel';
+import { tutorialService } from '@/shared/api/services/tutorial/tutorialService';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
@@ -54,7 +55,7 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
       {
         subtitle: '마음토스 상담 기록',
         description:
-          '가상 내담자 홍길동님의 축어록과 상담노트를\n직접 확인해볼까요? ',
+          '가상 내담자의 축어록과 상담노트를\n직접 확인해볼까요? ',
         media: {
           type: 'image',
           src: '/tutorial/mindthos-tutorial-guide-1-3.png',
@@ -78,7 +79,7 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
       {
         subtitle: '다회기 AI 슈퍼비전',
         description:
-          '가상 내담자 홍길동님의 다회기 AI 슈퍼비전 보고서를\n직접 확인해볼까요? ',
+          '가상 내담자의 다회기 AI 슈퍼비전 보고서를\n직접 확인해볼까요? ',
         media: {
           type: 'image',
           src: '/tutorial/mindthos-tutorial-guide-2-2.png',
@@ -150,6 +151,17 @@ export const TutorialGuideModal: React.FC = () => {
   const slide = config?.slides[currentSlide];
   const isLastSlide = currentSlide === totalSlides - 1;
 
+  const { data: virtualClientsData } = useQuery({
+    queryKey: ['tutorial', 'virtual-clients'],
+    queryFn: tutorialService.virtualClients,
+    enabled: isOpen && (tutorialGuideLevel === 1 || tutorialGuideLevel === 2),
+    staleTime: 5 * 60 * 1000,
+  });
+  const firstVirtualClient = virtualClientsData?.virtual_clients[0];
+  const firstVirtualSession = firstVirtualClient?.sessions.find(
+    (session) => session.session_number === 1
+  ) ?? firstVirtualClient?.sessions[0];
+
   // 모달 열릴 때 슬라이드 초기화
   React.useEffect(() => {
     if (isOpen) {
@@ -202,10 +214,16 @@ export const TutorialGuideModal: React.FC = () => {
 
     if (level === 1) {
       if (email) completeNextStep(email);
-      navigateWithUtm('/sessions/dummy_session_1');
+      if (firstVirtualSession) {
+        navigateWithUtm(`/sessions/${firstVirtualSession.id}`);
+      }
     } else if (level === 2) {
       if (email) completeNextStep(email);
-      navigateWithUtm('/ai-supervision?clientId=dummy_client_1');
+      if (firstVirtualClient) {
+        navigateWithUtm(
+          `/ai-supervision?clientId=${firstVirtualClient.client.id}`
+        );
+      }
     } else if (level === 3 && email) {
       // L3→L4 (업로드 준비 단계)
       await completeNextStep(email);

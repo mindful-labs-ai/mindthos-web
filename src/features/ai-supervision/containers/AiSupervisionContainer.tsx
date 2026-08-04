@@ -13,15 +13,10 @@ import {
 } from '@/features/client/hooks/useClientAnalysis';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
-import {
-  dummyClient,
-  dummySessionRelations,
-} from '@/features/session/constants/dummySessions';
 import { useAllClientSessions } from '@/features/session/hooks/useSessionsList';
 import { trackError, trackEvent } from '@/lib/mixpanel';
 import { clientAnalysisService } from '@/shared/api/supabase/clientAnalysisQueries';
 import { CREDIT_COST } from '@/shared/constants/credit';
-import { dummyClientAnalysisVersions } from '@/shared/constants/dummyClientAnalysis';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -30,7 +25,6 @@ import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { SideSupervisionIcon } from '@/shared/icons';
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { ClientAnalysisTab } from '@/widgets/client/ClientAnalysisTab';
@@ -63,26 +57,20 @@ export function AiSupervisionContainer() {
 
   const { clients } = useClientList();
 
-  // 온보딩 더미 플로우 (내담자 상세와 동일)
-  const isDummyFlow = clientId === 'dummy_client_1';
-  const isReadOnly = isDummyFlow;
-
-  const selectedClient = isDummyFlow
-    ? dummyClient
-    : (clients.find((c) => c.id === clientId) ?? null);
+  const selectedClient = clients.find((c) => c.id === clientId) ?? null;
 
   const { data: templates } = useClientTemplates();
   const { data: analyses = [], isLoading: isLoadingAnalyses } =
     useClientAnalyses(clientId || '');
   const createAnalysisMutation = useCreateClientAnalysis();
 
-  const displayAnalyses = isDummyFlow ? dummyClientAnalysisVersions : analyses;
+  const displayAnalyses = analyses;
 
   // 분석 모달용 세션 목록 — 모달 열릴 때만 활성화 (내담자 상세와 동일)
   const { data: allClientSessionItems } = useAllClientSessions({
     userId: userId ? Number(userId) : 0,
     clientId: clientId || '',
-    enabled: isAnalysisModalOpen && !isDummyFlow && !!clientId && !!userId,
+    enabled: isAnalysisModalOpen && !!clientId && !!userId,
     sortOrder: 'desc',
   });
 
@@ -126,14 +114,6 @@ export function AiSupervisionContainer() {
     sessionIds: string[];
     aiSupervisionTemplateId: number;
   }) => {
-    if (isReadOnly) {
-      toast({
-        title: '읽기 전용',
-        description: '실제 내담자에서 분석을 만들 수 있어요.',
-        duration: 3000,
-      });
-      return;
-    }
     if (!clientId) return;
 
     // 액션 직전에 fresh 잔액으로 가드
@@ -179,14 +159,6 @@ export function AiSupervisionContainer() {
   };
 
   const handleOpenCreateAnalysis = () => {
-    if (isReadOnly) {
-      toast({
-        title: '읽기 전용',
-        description: '실제 내담자에서 분석을 만들 수 있어요.',
-        duration: 3000,
-      });
-      return;
-    }
     setIsAnalysisModalOpen(true);
   };
 
@@ -194,11 +166,7 @@ export function AiSupervisionContainer() {
     setSearchParamsWithUtm({ clientId: client.id });
   };
 
-  // 상담 기록 수 — 더미는 더미 세션, 실데이터는 내담자 목록의 집계 사용
-  const sessionRecordCount = isDummyFlow
-    ? dummySessionRelations.filter((s) => s.session.client_id === clientId)
-        .length
-    : (selectedClient?.session_count ?? 0);
+  const sessionRecordCount = selectedClient?.session_count ?? 0;
 
   const clientSidebar = !isMobileView ? (
     <ClientSidebar
@@ -210,9 +178,7 @@ export function AiSupervisionContainer() {
   ) : null;
 
   // 다회기 분석 모달용 세션 목록 — useAllClientSessions (limit 없음)
-  const analysisSessionList = isDummyFlow
-    ? dummySessionRelations.map((s) => s.session)
-    : (allClientSessionItems ?? []).map((s) => s.session);
+  const analysisSessionList = (allClientSessionItems ?? []).map((s) => s.session);
 
   return (
     <div className="flex h-full w-full">
@@ -244,11 +210,6 @@ export function AiSupervisionContainer() {
                   <h1 className="truncate text-2xl font-headline text-grey-100">
                     {selectedClient.name}
                   </h1>
-                  {isDummyFlow && (
-                    <Badge tone="warning" variant="soft" size="sm">
-                      예시
-                    </Badge>
-                  )}
                 </div>
                 <div className="flex h-10 flex-shrink-0 items-center gap-2 rounded-lg border border-grey-40 bg-white px-3">
                   <File size={24} className="text-grey-60" />
@@ -263,9 +224,9 @@ export function AiSupervisionContainer() {
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:px-16 md:py-6">
               <ClientAnalysisTab
                 analyses={displayAnalyses}
-                isLoading={isLoadingAnalyses && !isDummyFlow}
+                isLoading={isLoadingAnalyses}
                 pollingVersion={pollingVersion}
-                isReadOnly={isReadOnly}
+                isReadOnly={false}
                 hasNoSessionRecords={sessionRecordCount === 0}
                 onSaveContent={handleSaveAnalysisContent}
                 onCreateAnalysis={handleOpenCreateAnalysis}

@@ -1,5 +1,7 @@
 import { ROUTES } from '@/app/router/constants';
 import { supabase } from '@/lib/supabase';
+import { appendUtmParams } from '@/shared/utils/utm';
+import { useUtmStore } from '@/stores/utmStore';
 
 /**
  * mindthos-server (NestJS) 전용 REST 클라이언트.
@@ -138,7 +140,13 @@ async function redirectToAuth(): Promise<void> {
       typeof window !== 'undefined' &&
       window.location.pathname !== ROUTES.AUTH
     ) {
-      window.location.href = ROUTES.AUTH;
+      const authUrl = appendUtmParams(
+        `${window.location.origin}${ROUTES.AUTH}`,
+        useUtmStore.getState().shouldPropagateToUrl
+          ? useUtmStore.getState().utmParams
+          : ''
+      );
+      window.location.replace(authUrl);
     }
   })();
   try {

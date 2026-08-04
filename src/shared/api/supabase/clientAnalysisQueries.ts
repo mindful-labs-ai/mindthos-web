@@ -104,6 +104,7 @@ export const clientAnalysisService = {
         {
           sessionIds: request.session_ids,
           aiSupervisionTemplateId: request.ai_supervision_template_id,
+          title: request.title,
         }
       );
 

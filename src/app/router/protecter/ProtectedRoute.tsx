@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 
 import { useSignupCheck } from '@/features/auth/hooks/useSignupCheck';
+import { useCohortSurveyCheck } from '@/features/onboarding/hooks/useCohortSurveyCheck';
 import { useTermsCheck } from '@/features/terms-agreement/hooks/useTermsCheck';
 import { SplashLoading } from '@/shared/ui/composites/SplashLoading';
 import { useAuthStore } from '@/stores/authStore';
@@ -13,6 +14,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   skipTermsCheck?: boolean;
   skipSignupCheck?: boolean;
+  skipCohortSurveyCheck?: boolean;
 }
 
 /**
@@ -29,10 +31,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   skipTermsCheck = false,
   skipSignupCheck = false,
+  skipCohortSurveyCheck = false,
 }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
   const utmParams = useUtmStore((state) => state.utmParams);
+  const shouldPropagateToUrl = useUtmStore(
+    (state) => state.shouldPropagateToUrl
+  );
+  const utmSearch = shouldPropagateToUrl && utmParams ? `?${utmParams}` : '';
   const { agreedAll, isLoading: isTermsLoading } = useTermsCheck(
     isAuthenticated && !skipTermsCheck
   );
@@ -42,27 +49,60 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     isAuthenticated && !skipSignupCheck && !skipTermsCheck && agreedAll;
   const { required: signupRequired, isLoading: isSignupLoading } =
     useSignupCheck(shouldCheckSignup);
+  const shouldCheckCohortSurvey =
+    isAuthenticated &&
+    !skipCohortSurveyCheck &&
+    !skipTermsCheck &&
+    agreedAll &&
+    !signupRequired;
+  const {
+    completed: cohortSurveyCompleted,
+    isLoading: isCohortSurveyLoading,
+    isError: isCohortSurveyError,
+  } = useCohortSurveyCheck(shouldCheckCohortSurvey);
 
   const isBusy =
     isLoading ||
     (isAuthenticated && !skipTermsCheck && isTermsLoading) ||
-    (shouldCheckSignup && isSignupLoading);
+    (shouldCheckSignup && isSignupLoading) ||
+    (shouldCheckCohortSurvey && isCohortSurveyLoading);
 
   if (!isBusy && !isAuthenticated) {
-    const search = utmParams ? `?${utmParams}` : '';
-    return <Navigate to={{ pathname: ROUTES.AUTH, search }} replace />;
+    return (
+      <Navigate to={{ pathname: ROUTES.AUTH, search: utmSearch }} replace />
+    );
   }
 
   if (!isBusy && !skipTermsCheck && !agreedAll) {
-    const search = utmParams ? `?${utmParams}` : '';
     return (
-      <Navigate to={{ pathname: ROUTES.TERMS_AGREEMENT, search }} replace />
+      <Navigate
+        to={{ pathname: ROUTES.TERMS_AGREEMENT, search: utmSearch }}
+        replace
+      />
     );
   }
 
   if (!isBusy && shouldCheckSignup && signupRequired) {
-    const search = utmParams ? `?${utmParams}` : '';
-    return <Navigate to={{ pathname: ROUTES.USER_VERIFY, search }} replace />;
+    return (
+      <Navigate
+        to={{ pathname: ROUTES.USER_VERIFY, search: utmSearch }}
+        replace
+      />
+    );
+  }
+
+  if (
+    !isBusy &&
+    shouldCheckCohortSurvey &&
+    !isCohortSurveyError &&
+    !cohortSurveyCompleted
+  ) {
+    return (
+      <Navigate
+        to={{ pathname: ROUTES.ONBOARDING_COHORT, search: utmSearch }}
+        replace
+      />
+    );
   }
 
   return (

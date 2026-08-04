@@ -7,6 +7,7 @@ export const ROUTES = {
   AUTH_CALLBACK: '/auth/callback',
   PASSWORD_RESET: '/auth/reset-password',
   USER_VERIFY: '/user-verify',
+  ONBOARDING_COHORT: '/onboarding/cohort',
   TERMS: '/terms',
   TERMS_AGREEMENT: '/terms-agreement',
   CLIENTS: '/clients',
@@ -30,6 +31,7 @@ export const ROUTES = {
   PSYCHOLOGY_ASSESSMENTS: '/psychology-assessments',
   UNSUBSCRIBE: '/unsubscribe',
   CREDIT_QA: '/dev/credit-qa',
+  TUTORIAL_QA: '/dev/tutorial-qa',
   /** 내담자 공유 링크(@Public, 로그인 불필요) — 알림톡 링크 진입점 */
   SHARED_DOCUMENT: '/shared-documents/:clientId/:sentRowId/:accessToken',
 } as const;

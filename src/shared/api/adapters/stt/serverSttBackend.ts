@@ -88,6 +88,40 @@ export const serverSttBackend: SttBackendPort = {
     }
   },
 
+  async createTutorialFirstAudioSession(
+    request: CreateSessionBackgroundRequest
+  ): Promise<CreateSessionBackgroundResponse> {
+    try {
+      const data = await serverRequest<{
+        sessionId: string;
+        sttModel: 'basic' | 'advanced';
+      }>('/tutorials/first-audio-session', {
+        method: 'POST',
+        body: {
+          title: request.title.slice(0, 50),
+          s3Key: request.s3_key,
+          fileSizeMb: request.file_size_mb,
+          durationSeconds: request.duration_seconds,
+          clientId: request.client_id ?? undefined,
+          sttModel: request.stt_model,
+          templateId: request.template_id,
+        },
+      });
+      return {
+        session_id: data.sessionId,
+        status: 'accepted',
+        stt_model: data.sttModel,
+        message: '',
+      };
+    } catch (error: unknown) {
+      if (error instanceof ServerApiError && error.status === 402) {
+        throw new InsufficientCreditError(error.message);
+      }
+      const err = error as { message?: string };
+      throw new Error(err.message || '튜토리얼 파일 업로드 중 오류가 생겼어요.');
+    }
+  },
+
   async createHandWrittenSession(
     request: CreateHandWrittenSessionRequest
   ): Promise<CreateHandWrittenSessionResponse> {

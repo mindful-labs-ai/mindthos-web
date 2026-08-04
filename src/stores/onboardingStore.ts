@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
+import { captureAcquisition } from '@/shared/api/server/acquisitionServerApi';
 import { onboardingService } from '@/shared/api/services/onboarding/onboardingService';
 import {
   OnboardingState,
@@ -119,6 +120,7 @@ export const useOnboardingStore = create<OnboardingStore>()(
 
       complete: async (email: string) => {
         const response = await onboardingService.complete({ email });
+        await captureAcquisition('cohort_complete');
 
         set(
           {

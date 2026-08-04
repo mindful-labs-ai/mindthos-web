@@ -1,0 +1,282 @@
+import type { CohortBranch } from './cohort';
+import { TutorialStep } from './tutorialStep';
+
+export const VIDEO_MIN_SECONDS = 30;
+export const EXAMPLE_MIN_SECONDS = 10;
+export const DIRECT_UPLOAD_MIN_SECONDS = 12;
+export const TUTORIAL_FAKE_FILE_SIZE_BYTES = 12.5 * 1024 * 1024;
+
+const TUTORIAL_SECOND_MS = 1000;
+const TUTORIAL_MINUTE_SECONDS = 60;
+const TUTORIAL_HOUR_SECONDS = 60 * TUTORIAL_MINUTE_SECONDS;
+const TUTORIAL_DAY_SECONDS = 24 * TUTORIAL_HOUR_SECONDS;
+
+/**
+ * Tutorial 만료까지 남은 시간을 사용자에게 표시할 문자열로 변환한다.
+ * 24시간 이상 남았을 때는 일수만, 24시간 미만일 때는 실시간 시계를 표시한다.
+ */
+export const formatTutorialRemainingTime = (remainingMs: number): string => {
+  const totalSeconds = Math.max(
+    0,
+    Math.floor(remainingMs / TUTORIAL_SECOND_MS)
+  );
+  const days = Math.floor(totalSeconds / TUTORIAL_DAY_SECONDS);
+  const hours = Math.floor(
+    (totalSeconds % TUTORIAL_DAY_SECONDS) / TUTORIAL_HOUR_SECONDS
+  );
+  const minutes = Math.floor(
+    (totalSeconds % TUTORIAL_HOUR_SECONDS) / TUTORIAL_MINUTE_SECONDS
+  );
+  const seconds = totalSeconds % TUTORIAL_MINUTE_SECONDS;
+  const clock = [hours, minutes, seconds]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':');
+
+  return days > 0 ? `${days}일` : clock;
+};
+
+/**
+ * 서버의 cohort별 기본 상담노트 매핑과 같은 기준을 사용한다.
+ * 템플릿 ID가 바뀌면 이 중앙 매핑만 갱신한다.
+ */
+export const TUTORIAL_RECOMMENDED_NOTE_TEMPLATE_ID_BY_COHORT: Record<
+  CohortBranch,
+  number
+> = {
+  GENOGRAM: 8,
+  CBT: 5,
+  PSYCHODYNAMIC: 18,
+  HUMANISTIC: 2,
+  GENERIC: 1,
+};
+
+export interface StepCompleteCopy {
+  title: string;
+  subtitle: string;
+  content: string;
+  nextLabel: string;
+}
+
+export interface TutorialMissionCopyText {
+  subtitle: string;
+  content: string;
+  buttonText: string;
+}
+
+export interface TutorialMissionCopy extends TutorialMissionCopyText {
+  /** GENERIC 상담노트 선택 후 영상 상태에서 사용하는 문구 */
+  afterAction?: TutorialMissionCopyText;
+}
+
+/** 단계 완료 모달 문구는 이 테이블만 수정하면 전체 UI에 반영된다. */
+export const STEP_COMPLETE_COPY: Record<TutorialStep, StepCompleteCopy> = {
+  [TutorialStep.GENOGRAM_STAGE_1]: {
+    title: '튜토리얼 1단계 완료',
+    subtitle: '상담기록 예시 확인하기',
+    content: '이제 가계도 예시를 통해 상담의 맥락을 살펴볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.GENOGRAM_STAGE_2]: {
+    title: '튜토리얼 2단계 완료',
+    subtitle: '가계도 예시 확인하기',
+    content: '상담노트 양식을 선택하고 기록을 정리해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.GENOGRAM_STAGE_3]: {
+    title: '튜토리얼 3단계 완료',
+    subtitle: '나의 상담노트 양식 선택하기',
+    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.GENOGRAM_STAGE_4]: {
+    title: '튜토리얼 4단계 완료',
+    subtitle: '직접 상담 기록 만들기',
+    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
+    nextLabel: '튜토리얼 완료하기',
+  },
+  [TutorialStep.CBT_STAGE_1]: {
+    title: '튜토리얼 1단계 완료',
+    subtitle: '상담기록 예시 확인하기',
+    content: '다음으로 AI 슈퍼비전 예시를 살펴볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.CBT_STAGE_2]: {
+    title: '튜토리얼 2단계 완료',
+    subtitle: 'AI 슈퍼비전 예시 확인하기',
+    content: '이제 CBT 상담노트 양식을 선택해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.CBT_STAGE_3]: {
+    title: '튜토리얼 3단계 완료',
+    subtitle: '나의 상담노트 양식 선택하기',
+    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.CBT_STAGE_4]: {
+    title: '튜토리얼 4단계 완료',
+    subtitle: '직접 상담 기록 만들기',
+    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
+    nextLabel: '튜토리얼 완료하기',
+  },
+  [TutorialStep.PSYCHODYNAMIC_STAGE_1]: {
+    title: '튜토리얼 1단계 완료',
+    subtitle: '상담기록 예시 확인하기',
+    content: '다음으로 AI 슈퍼비전 예시를 살펴볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.PSYCHODYNAMIC_STAGE_2]: {
+    title: '튜토리얼 2단계 완료',
+    subtitle: 'AI 슈퍼비전 예시 확인하기',
+    content: '이제 정신역동 상담노트 양식을 선택해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.PSYCHODYNAMIC_STAGE_3]: {
+    title: '튜토리얼 3단계 완료',
+    subtitle: '나의 상담노트 양식 선택하기',
+    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.PSYCHODYNAMIC_STAGE_4]: {
+    title: '튜토리얼 4단계 완료',
+    subtitle: '직접 상담 기록 만들기',
+    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
+    nextLabel: '튜토리얼 완료하기',
+  },
+  [TutorialStep.HUMANISTIC_STAGE_1]: {
+    title: '튜토리얼 1단계 완료',
+    subtitle: '상담기록 예시 확인하기',
+    content: '다음으로 AI 슈퍼비전 예시를 살펴볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.HUMANISTIC_STAGE_2]: {
+    title: '튜토리얼 2단계 완료',
+    subtitle: 'AI 슈퍼비전 예시 확인하기',
+    content: '이제 인간중심 상담노트 양식을 선택해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.HUMANISTIC_STAGE_3]: {
+    title: '튜토리얼 3단계 완료',
+    subtitle: '나의 상담노트 양식 선택하기',
+    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.HUMANISTIC_STAGE_4]: {
+    title: '튜토리얼 4단계 완료',
+    subtitle: '직접 상담 기록 만들기',
+    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
+    nextLabel: '튜토리얼 완료하기',
+  },
+  [TutorialStep.GENERIC_STAGE_1]: {
+    title: '튜토리얼 1단계 완료',
+    subtitle: '마음토스 200% 활용하는 법!',
+    content: '이제 성인 상담 기록 예시를 직접 살펴볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.GENERIC_STAGE_2]: {
+    title: '튜토리얼 2단계 완료',
+    subtitle: '상담기록 예시 확인하기',
+    content: '상담노트 생성에 사용할 기본 양식을 설정해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.GENERIC_STAGE_3]: {
+    title: '튜토리얼 3단계 완료',
+    subtitle: '나의 상담노트 양식 선택하기',
+    content: '이제 가상 내담자의 상담 기록을 직접 확인해볼게요.',
+    nextLabel: '다음 단계 시작하기',
+  },
+  [TutorialStep.GENERIC_STAGE_4]: {
+    title: '튜토리얼 4단계 완료',
+    subtitle: '직접 상담 기록 만들기',
+    content: '마음토스의 핵심 기능을 모두 살펴봤어요.',
+    nextLabel: '튜토리얼 완료하기',
+  },
+};
+
+const GUIDE_COPY: TutorialMissionCopyText = {
+  subtitle: '마음토스 200% 활용하는 법!',
+  content: '가이드 영상을 확인하고 마음토스를 200% 활용해봐요',
+  buttonText: '튜토리얼 완료',
+};
+
+const RECORD_EXAMPLE_COPY: TutorialMissionCopyText = {
+  subtitle: '상담기록 예시 확인하기',
+  content:
+    "'상담 기록'탭에서 내담자의 <주황색>축어록</주황색>과 <주황색>상담노트</주황색>를 확인할 수 있어요. /n 마음토스가 선생님을 위해서 예시 상담기록을 준비했어요. /n 직접 확인해볼까요?",
+  buttonText: '예시 상담기록 보기',
+};
+
+const SUPERVISION_EXAMPLE_COPY: TutorialMissionCopyText = {
+  subtitle: 'AI 슈퍼비전 예시 확인하기',
+  content:
+    '여러 회기를 진행한 내담자의 경우 /n 모든 회기에 대해서 통합적으로 분석한 /n <주황색>AI 슈퍼비전</주황색>을 받아볼 수 있어요.',
+  buttonText: '예시 슈퍼비전 보기',
+};
+
+const GENOGRAM_EXAMPLE_COPY: TutorialMissionCopyText = {
+  subtitle: '가계도 예시 확인하기',
+  content:
+    '마음토스의 가계도는 간편하게 그릴 수 있을 뿐 아니라 /n 내담자의 축어록이 있다면, AI가 가계도 초안을 /n클릭 한 번으로 만들어줘요.',
+  buttonText: '예시 가계도 보기',
+};
+
+const NOTE_TEMPLATE_COPY: TutorialMissionCopyText = {
+  subtitle: '나의 상담노트 양식 선택하기',
+  content:
+    '기본 노트로 설정하면 이후 상담기록을 만들때 /n 선택한 노트 양식이 기본적으로 같이 만들어져요. /n 자주 쓰는 양식은 기본 노트로 설정해보세요!',
+  buttonText: '다음',
+};
+
+const NOTE_TEMPLATE_VIDEO_COPY: TutorialMissionCopyText = {
+  subtitle: '나의 상담노트 양식 선택하기',
+  content:
+    "이제 기본 노트가 설정되었어요! /n 기본 노트 설정은 '상담노트 양식' 탭에서 /n 언제든지 바꿀 수 있어요.",
+  buttonText: '튜토리얼 완료',
+};
+
+const NOTE_TEMPLATE_MISSION_COPY: TutorialMissionCopy = {
+  ...NOTE_TEMPLATE_COPY,
+  afterAction: NOTE_TEMPLATE_VIDEO_COPY,
+};
+
+const SESSION_CREATE_COPY: TutorialMissionCopyText = {
+  subtitle: '직접 상담 기록 만들기',
+  content: '이제 상담 녹음 파일을 직접 업로드해서 /n 상담 기록을 만들어볼까요?',
+  buttonText: '상담 기록 만들기',
+};
+
+/**
+ * 실제 미션 모달의 문구는 이 테이블에서 단계별로 수정한다.
+ * 같은 미션을 사용하는 cohort는 같은 문구 객체를 공유하되, 단계 키는
+ * TutorialStep으로 유지해 이후 단계별 문구 변경을 허용한다.
+ */
+export const TUTORIAL_MISSION_COPY: Record<TutorialStep, TutorialMissionCopy> =
+  {
+    [TutorialStep.GENOGRAM_STAGE_1]: RECORD_EXAMPLE_COPY,
+    [TutorialStep.GENOGRAM_STAGE_2]: GENOGRAM_EXAMPLE_COPY,
+    [TutorialStep.GENOGRAM_STAGE_3]: NOTE_TEMPLATE_MISSION_COPY,
+    [TutorialStep.GENOGRAM_STAGE_4]: SESSION_CREATE_COPY,
+    [TutorialStep.CBT_STAGE_1]: RECORD_EXAMPLE_COPY,
+    [TutorialStep.CBT_STAGE_2]: SUPERVISION_EXAMPLE_COPY,
+    [TutorialStep.CBT_STAGE_3]: NOTE_TEMPLATE_MISSION_COPY,
+    [TutorialStep.CBT_STAGE_4]: SESSION_CREATE_COPY,
+    [TutorialStep.PSYCHODYNAMIC_STAGE_1]: RECORD_EXAMPLE_COPY,
+    [TutorialStep.PSYCHODYNAMIC_STAGE_2]: SUPERVISION_EXAMPLE_COPY,
+    [TutorialStep.PSYCHODYNAMIC_STAGE_3]: NOTE_TEMPLATE_MISSION_COPY,
+    [TutorialStep.PSYCHODYNAMIC_STAGE_4]: SESSION_CREATE_COPY,
+    [TutorialStep.HUMANISTIC_STAGE_1]: RECORD_EXAMPLE_COPY,
+    [TutorialStep.HUMANISTIC_STAGE_2]: SUPERVISION_EXAMPLE_COPY,
+    [TutorialStep.HUMANISTIC_STAGE_3]: NOTE_TEMPLATE_MISSION_COPY,
+    [TutorialStep.HUMANISTIC_STAGE_4]: SESSION_CREATE_COPY,
+    [TutorialStep.GENERIC_STAGE_1]: GUIDE_COPY,
+    [TutorialStep.GENERIC_STAGE_2]: RECORD_EXAMPLE_COPY,
+    [TutorialStep.GENERIC_STAGE_3]: NOTE_TEMPLATE_MISSION_COPY,
+    [TutorialStep.GENERIC_STAGE_4]: SESSION_CREATE_COPY,
+  };
+
+/** 영상은 추후 전달된 src만 이 테이블에 넣으면 바로 노출된다. */
+export const GUIDE_VIDEO_SOURCES: Partial<Record<TutorialStep, string>> = {};
+
+export const COHORT_TUTORIAL_CLIENT = {
+  GENOGRAM: 'LEE_YOUNGSUK',
+  DEFAULT: 'JUNG_SUA',
+} as const;

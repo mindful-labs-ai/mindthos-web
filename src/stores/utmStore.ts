@@ -1,17 +1,21 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
+import { UTM_KEYS } from '@/shared/utils/utm';
+
 /**
- * UTM 파라미터 전역 저장소
- * 첫 진입 시 UTM 파라미터를 저장하고, 이후 모든 라우팅에서 자동으로 유지합니다.
+ * 유입·코호트 파라미터 전역 저장소
+ * 첫 진입 시 파라미터를 저장하고, 인증 전까지 라우팅 URL에 유지합니다.
  * sessionStorage를 사용하여 탭/세션 단위로 유지돼요.
  */
 
 interface UtmState {
-  /** 저장된 UTM 파라미터 문자열 (예: "utm_source=google&utm_medium=cpc") */
+  /** 저장된 파라미터 문자열 (예: "utm_source=google&cohort=GENOGRAM") */
   utmParams: string;
   /** UTM이 초기화되었는지 여부 */
   isInitialized: boolean;
+  /** 인증·획득 처리 이후 라우팅 URL에 UTM을 계속 붙일지 여부 */
+  shouldPropagateToUrl: boolean;
 }
 
 interface UtmActions {
@@ -19,21 +23,13 @@ interface UtmActions {
   initializeUtm: (search: string) => void;
   /** UTM 파라미터 강제 업데이트 */
   setUtm: (utmParams: string) => void;
+  /** 서버 전송을 위해 저장값은 유지하고 URL 전파만 중단 */
+  stopUrlPropagation: () => void;
   /** UTM 파라미터 초기화 */
   clearUtm: () => void;
 }
 
 type UtmStore = UtmState & UtmActions;
-
-/** UTM 파라미터 키 목록 */
-const UTM_KEYS = [
-  'utm_source',
-  'utm_medium',
-  'utm_campaign',
-  'utm_term',
-  'utm_content',
-  'utm_id',
-] as const;
 
 /** 쿼리스트링에서 UTM 파라미터만 추출 */
 function extractUtmFromSearch(search: string): string {
@@ -56,6 +52,7 @@ export const useUtmStore = create<UtmStore>()(
       (set, get) => ({
         utmParams: '',
         isInitialized: false,
+        shouldPropagateToUrl: true,
 
         initializeUtm: (search: string) => {
           const { isInitialized, utmParams } = get();
@@ -78,11 +75,27 @@ export const useUtmStore = create<UtmStore>()(
         },
 
         setUtm: (utmParams: string) => {
-          set({ utmParams, isInitialized: true }, false, 'setUtm');
+          set(
+            { utmParams, isInitialized: true, shouldPropagateToUrl: true },
+            false,
+            'setUtm'
+          );
+        },
+
+        stopUrlPropagation: () => {
+          set({ shouldPropagateToUrl: false }, false, 'stopUrlPropagation');
         },
 
         clearUtm: () => {
-          set({ utmParams: '', isInitialized: false }, false, 'clearUtm');
+          set(
+            {
+              utmParams: '',
+              isInitialized: false,
+              shouldPropagateToUrl: true,
+            },
+            false,
+            'clearUtm'
+          );
         },
       }),
       {
@@ -104,3 +117,9 @@ export const useUtmStore = create<UtmStore>()(
     { name: 'UtmStore', enabled: !import.meta.env.PROD }
   )
 );
+
+/** 현재 상태에서 URL로 전파해도 되는 획득 파라미터만 반환합니다. */
+export function getUtmParamsForUrl(): string {
+  const { shouldPropagateToUrl, utmParams } = useUtmStore.getState();
+  return shouldPropagateToUrl ? utmParams : '';
+}

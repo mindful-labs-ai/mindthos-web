@@ -11,7 +11,6 @@ import {
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon } from '@/shared/icons';
 import { MobileModalHeader } from '@/shared/ui';
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { Modal } from '@/shared/ui/composites/Modal';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
@@ -23,7 +22,6 @@ export interface ClientDetailViewProps {
   client: Client;
   /** 데스크탑 좌측 내담자 사이드바 (모바일은 null) */
   sidebar?: React.ReactNode;
-  isDummyFlow: boolean;
   sessionRecordCount: number;
   onEditClientClick: () => void;
   sessionList: React.ReactNode;
@@ -37,7 +35,6 @@ export interface ClientDetailViewProps {
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
   sidebar,
-  isDummyFlow,
   sessionRecordCount,
   onEditClientClick,
   sessionList,
@@ -285,11 +282,6 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               <h1 className="truncate text-2xl font-headline text-grey-100">
                 {client.name}
               </h1>
-              {isDummyFlow && (
-                <Badge tone="warning" variant="soft" size="sm">
-                  예시
-                </Badge>
-              )}
             </div>
             <div className="flex flex-shrink-0 items-center gap-2">
               {domainLinks.map(({ label, onClick, isActive }) => {

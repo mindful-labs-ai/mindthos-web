@@ -5,6 +5,8 @@ import {
   serverRequest,
   serverRequestPublic,
 } from '@/shared/api/server/serverClient';
+import { appendUtmParams, parseUtmPayload } from '@/shared/utils/utm';
+import { useUtmStore } from '@/stores/utmStore';
 
 import { AUTH_ENDPOINTS, ERROR_MESSAGES } from './constants';
 import { handleAuthApiError, handleAuthError } from './errorHandlers';
@@ -13,6 +15,7 @@ import {
   AuthErrorCode,
   type AccountDeleteResponse,
   type AuthResponse,
+  type AuthProfileResponse,
   type CheckAuthMethodResponse,
   type CheckUserExistsResponse,
   type LoginCredentials,
@@ -22,6 +25,18 @@ import {
   type UserData,
   type UserDbRecord,
 } from './types';
+
+function getAuthCallbackUrl(): string {
+  const { shouldPropagateToUrl, utmParams } = useUtmStore.getState();
+  return appendUtmParams(
+    `${window.location.origin}/auth/callback`,
+    shouldPropagateToUrl ? utmParams : ''
+  );
+}
+
+function getStoredUtmMetadata(): Record<string, string> {
+  return parseUtmPayload(useUtmStore.getState().utmParams);
+}
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -56,8 +71,8 @@ export const authService = {
         email: signupData.email,
         password: signupData.password,
         options: {
-          data: signupData.metadata,
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: { ...signupData.metadata, ...getStoredUtmMetadata() },
+          emailRedirectTo: getAuthCallbackUrl(),
         },
       });
 
@@ -105,6 +120,23 @@ export const authService = {
 
   async getUserDataByEmail(email: string): Promise<UserData | null> {
     try {
+      try {
+        const profile =
+          await serverRequest<AuthProfileResponse>('/auth/profile');
+        return {
+          id: profile.id,
+          name: profile.name,
+          phoneNumber: profile.phone_number,
+          defaultTemplateId: profile.default_template_id,
+          organization: profile.organization,
+        };
+      } catch (serverError) {
+        console.warn(
+          'getUserDataByEmail server profile unavailable; using legacy RPC',
+          serverError
+        );
+      }
+
       const { data, error } = await supabase
         .rpc('get_user_by_email', {
           user_email: email,
@@ -320,7 +352,7 @@ export const authService = {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getAuthCallbackUrl(),
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -340,7 +372,7 @@ export const authService = {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'kakao',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: getAuthCallbackUrl(),
         },
       });
 

@@ -15,6 +15,10 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
+  VITE_ENABLE_TUTORIAL_QA: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
 
   // Supabase
   VITE_SUPABASE_URL: z.string().optional(),

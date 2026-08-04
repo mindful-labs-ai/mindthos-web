@@ -27,6 +27,7 @@ export interface ClientAnalysis {
   client_id: string;
   user_id: string;
   session_ids: string[];
+  title?: string | null;
   version: number;
   type: ClientAnalysisType;
   template_id: number;

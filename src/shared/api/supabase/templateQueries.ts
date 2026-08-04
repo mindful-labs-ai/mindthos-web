@@ -9,6 +9,10 @@ import type {
   ToggleTemplatePinResponse,
 } from '@/features/template/types/templateApi.types';
 import { supabase } from '@/lib/supabase';
+import {
+  ServerApiError,
+  serverRequest,
+} from '@/shared/api/server/serverClient';
 
 const createDatabaseError = (
   error: { message?: string },
@@ -149,24 +153,56 @@ export const templateService = {
     request: SetDefaultTemplateRequest
   ): Promise<SetDefaultTemplateResponse> {
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ default_template_id: request.template_id })
-        .eq('id', request.user_id);
+      const response = await serverRequest<{
+        updated: true;
+        default_template_id: number | null;
+      }>('/auth/default-template', {
+        method: 'PATCH',
+        body: { template_id: request.template_id },
+      });
+      return {
+        success: true,
+        message: response.updated
+          ? '기본 노트 양식으로 설정했어요.'
+          : undefined,
+      };
+    } catch (error) {
+      if (
+        error instanceof ServerApiError &&
+        error.status !== 404 &&
+        error.status < 500
+      ) {
+        throw error;
+      }
 
-      if (error) {
-        throw createDatabaseError(
-          error,
+      console.warn(
+        'setDefaultTemplate server API unavailable; using legacy public.users update',
+        error
+      );
+
+      try {
+        const { error: legacyError } = await supabase
+          .from('users')
+          .update({ default_template_id: request.template_id })
+          .eq('id', request.user_id);
+
+        if (legacyError) {
+          throw createDatabaseError(
+            legacyError,
+            '기본 노트 양식 설정 중 오류가 생겼어요.'
+          );
+        }
+
+        return {
+          success: true,
+          message: '기본 노트 양식으로 설정했어요.',
+        };
+      } catch (legacyError) {
+        throw normalizeApiError(
+          legacyError,
           '기본 노트 양식 설정 중 오류가 생겼어요.'
         );
       }
-
-      return {
-        success: true,
-        message: '기본 노트 양식으로 설정했어요.',
-      };
-    } catch (error) {
-      throw normalizeApiError(error, '기본 노트 양식 설정 중 오류가 생겼어요.');
     }
   },
 };

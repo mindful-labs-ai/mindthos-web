@@ -30,6 +30,10 @@ import { trackGAEvent } from '@/lib/gtag';
 import { trackEvent } from '@/lib/mixpanel';
 import { trackNaverConversion } from '@/lib/naverWcs';
 import {
+  captureAcquisition,
+  getUserMetadataUtm,
+} from '@/shared/api/server/acquisitionServerApi';
+import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
@@ -80,7 +84,7 @@ const UserVerifyPage: React.FC = () => {
   useEffect(() => {
     // API 에러 시에는 리다이렉트하지 않고 에러 UI를 보여준다.
     if (!isSignupLoading && !isSignupError && !required) {
-      navigateWithUtm(ROUTES.ROOT, { replace: true });
+      navigateWithUtm(ROUTES.ONBOARDING_COHORT, { replace: true });
     }
   }, [isSignupLoading, isSignupError, required, navigateWithUtm]);
 
@@ -113,6 +117,26 @@ const UserVerifyPage: React.FC = () => {
 
   const hasReferralOther = formData.referralSource === 'other';
 
+  const acquisitionCaptureAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      isSignupLoading ||
+      isSignupError ||
+      !required ||
+      !userId ||
+      acquisitionCaptureAttemptedRef.current
+    ) {
+      return;
+    }
+
+    acquisitionCaptureAttemptedRef.current = true;
+    void captureAcquisition(
+      'signup_authenticated',
+      getUserMetadataUtm(user?.user_metadata)
+    );
+  }, [isSignupError, isSignupLoading, required, user?.user_metadata, userId]);
+
   const clearFieldError = (field: keyof UserVerifyFormData) => {
     if (errors[field]) {
       setErrors((prev) => {
@@ -144,6 +168,10 @@ const UserVerifyPage: React.FC = () => {
         phoneNumber: data.phoneNumber,
         referralSource,
       });
+      await captureAcquisition(
+        'signup_complete',
+        getUserMetadataUtm(user?.user_metadata)
+      );
     },
     onSuccess: (_, variables) => {
       const authProvider =
@@ -189,7 +217,7 @@ const UserVerifyPage: React.FC = () => {
         queryKey: phoneVerificationQueryKeys.status(),
       });
       toast({ title: '회원가입이 완료됐어요.' });
-      navigateWithUtm(ROUTES.ROOT, { replace: true });
+      navigateWithUtm(ROUTES.ONBOARDING_COHORT, { replace: true });
     },
     onError: (error) => {
       trackEvent(MixpanelError.SignupFailed, {
