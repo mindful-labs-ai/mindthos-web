@@ -35,14 +35,18 @@ export interface CreditInfo {
     start_at: string | null;
     end_at: string | null;
     reset_at: string | null;
+    /** 예약된 플랜 변경. 해지면 Free, 다운그레이드면 대상 플랜이 들어온다 */
     scheduled_plan_id: string | null;
+    /** 위 예약이 해지인지 다운그레이드인지 가르는 값. 조회 전에는 null */
+    scheduled_plan_type: string | null;
   };
 }
 
 export const toCreditInfo = (
   summary: CreditSummary,
   plan: Plan | null | undefined,
-  subscription?: SubscriptionRow | null
+  subscription?: SubscriptionRow | null,
+  scheduledPlan?: Plan | null
 ): CreditInfo => {
   const walletTotal =
     summary.plan.issuedCredit + summary.promotional.issuedCredit;
@@ -65,6 +69,7 @@ export const toCreditInfo = (
       end_at: summary.plan.periodEndsAt,
       reset_at: summary.plan.periodEndsAt,
       scheduled_plan_id: subscription?.scheduled_plan_id ?? null,
+      scheduled_plan_type: scheduledPlan?.type ?? null,
     },
   };
 };
@@ -110,12 +115,25 @@ export const useCreditInfo = () => {
     refetchOnReconnect: false,
   });
 
+  // 예약 대상이 Free면 해지, 아니면 다운그레이드다. 같은 컬럼이라 플랜을 봐야 갈린다.
+  const scheduledPlanId = subscriptionQuery.data?.scheduled_plan_id ?? null;
+  const scheduledPlanQuery = useQuery({
+    queryKey: planQueryKeys.detail(scheduledPlanId ?? ''),
+    queryFn: () => planService.getPlanById(scheduledPlanId!),
+    enabled: !!scheduledPlanId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
   let creditInfo: CreditInfo | undefined = undefined;
   if (summaryQuery.data) {
     creditInfo = toCreditInfo(
       summaryQuery.data,
       planQuery.data,
-      subscriptionQuery.data
+      subscriptionQuery.data,
+      scheduledPlanQuery.data
     );
   }
 
@@ -124,16 +142,19 @@ export const useCreditInfo = () => {
     isLoading:
       summaryQuery.isLoading ||
       planQuery.isLoading ||
-      subscriptionQuery.isLoading,
+      subscriptionQuery.isLoading ||
+      scheduledPlanQuery.isLoading,
     error:
       summaryQuery.error?.message ??
       planQuery.error?.message ??
       subscriptionQuery.error?.message ??
+      scheduledPlanQuery.error?.message ??
       null,
     refetch: async () => {
       await summaryQuery.refetch();
       if (planId) await planQuery.refetch();
       await subscriptionQuery.refetch();
+      if (scheduledPlanId) await scheduledPlanQuery.refetch();
     },
   };
 };

@@ -85,6 +85,41 @@ describe('toCreditInfo', () => {
     expect(creditInfo.subscription.start_at).toBe('2026-06-23T00:00:00.000Z');
   });
 
+  it('[CREDIT-WEB-04] 해지와 다운그레이드를 예약 대상 플랜으로 구분한다', () => {
+    const scheduled = {
+      id: 'subscription-1',
+      user_id: 1,
+      plan_id: 'plus-plan',
+      start_at: '2026-06-23T00:00:00.000Z',
+      end_at: '2026-07-23T00:00:00.000Z',
+      last_paid_at: '2026-06-23T00:00:00.000Z',
+      scheduled_plan_id: 'target-plan',
+    };
+
+    // 해지: 예약 대상이 Free
+    expect(
+      toCreditInfo(summary, plan, scheduled, {
+        ...plan,
+        id: 'target-plan',
+        type: 'Free',
+      }).subscription.scheduled_plan_type
+    ).toBe('Free');
+
+    // 다운그레이드: 예약 대상이 하위 유료 플랜
+    expect(
+      toCreditInfo(summary, plan, scheduled, {
+        ...plan,
+        id: 'target-plan',
+        type: 'Starter',
+      }).subscription.scheduled_plan_type
+    ).toBe('Starter');
+
+    // 아직 조회 전이면 어느 쪽인지 단정하지 않는다
+    expect(
+      toCreditInfo(summary, plan, scheduled).subscription.scheduled_plan_type
+    ).toBeNull();
+  });
+
   it('[CREDIT-WEB-03] 예약이 없거나 subscribe 행이 없으면 null을 유지한다', () => {
     expect(toCreditInfo(summary, plan, null).subscription).toMatchObject({
       start_at: null,
