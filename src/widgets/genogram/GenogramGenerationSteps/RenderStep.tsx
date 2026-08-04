@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 
 import { trackEvent } from '@/lib/mixpanel';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
+import { SupportContactHint } from '@/shared/ui';
 import { Alert } from '@/shared/ui/atoms/Alert';
 import { Button } from '@/shared/ui/atoms/Button';
 
@@ -105,6 +106,9 @@ export function RenderStep({
         <div className="flex flex-col items-center gap-4">
           <Alert tone="danger">
             {error || '화면을 표시할 수 없어요. 잠시 후 다시 시도해 주세요.'}
+            <SupportContactHint
+              message={error || '잠시 후 다시 시도해 주세요'}
+            />
           </Alert>
           {onCancel && (
             <Button variant="outline" onClick={onCancel}>
