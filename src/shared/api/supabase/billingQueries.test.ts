@@ -153,27 +153,31 @@ describe('billingService server adapter', () => {
     });
   });
 
-  it('[WEB-EF-18] 카드 조회 오류는 기존처럼 null로 처리하고 나머지 결제 오류는 그대로 전달한다', async () => {
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => undefined);
+  it('[WEB-EF-18] 카드 조회 오류와 나머지 결제 오류를 모두 그대로 전달한다', async () => {
     const cardError = new Error('카드 조회 실패');
     const paymentError = new Error('결제 거절');
     mocks.serverRequest
       .mockRejectedValueOnce(cardError)
       .mockRejectedValueOnce(paymentError);
 
-    await expect(billingService.getCard(17)).resolves.toBeNull();
+    // 오류를 null로 삼키면 '카드 없음'과 구분되지 않아 등록한 카드가 사라진 것처럼 보인다
+    await expect(billingService.getCard(17)).rejects.toBe(cardError);
     await expect(
       billingService.issueBillingKey({
         customerKey: 'customer-uuid',
         authKey: 'auth-key',
       })
     ).rejects.toBe(paymentError);
+  });
 
-    expect(consoleError).toHaveBeenCalledWith(
-      '카드 정보 조회 실패:',
-      cardError
+  it('[WEB-EF-19] success:false 응답은 오류로 올리고, 카드 미등록은 null로 구분한다', async () => {
+    mocks.serverRequest
+      .mockResolvedValueOnce({ success: false, card: null })
+      .mockResolvedValueOnce({ success: true, card: null });
+
+    await expect(billingService.getCard(17)).rejects.toThrow(
+      '카드 정보를 불러오지 못했어요.'
     );
+    await expect(billingService.getCard(17)).resolves.toBeNull();
   });
 });

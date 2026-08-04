@@ -7,6 +7,7 @@ import { cn } from '@/lib/cn';
 import type { ClientsPageItem } from '@/shared/api/supabase/clientQueries';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { ClientSidebarAddIcon, ClientSidebarToggleIcon } from '@/shared/icons';
+import { SupportContactHint } from '@/shared/ui';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
 
@@ -133,6 +134,7 @@ export const ClientSidebar = ({
           !collapsed && (
             <p className="px-2 py-4 text-xs text-danger">
               내담자 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.
+              <SupportContactHint message="잠시 후 다시 시도해 주세요" />
             </p>
           )
         ) : isLoading ? (

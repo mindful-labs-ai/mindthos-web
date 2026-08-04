@@ -9,6 +9,9 @@ export type { BackButtonProps } from './atoms/BackButton';
 export { MobileModalHeader } from './atoms/MobileModalHeader';
 export type { MobileModalHeaderProps } from './atoms/MobileModalHeader';
 
+export { SupportContactHint } from './atoms/SupportContactHint';
+export type { SupportContactHintProps } from './atoms/SupportContactHint';
+
 export { Button } from './atoms/Button';
 export type {
   ButtonProps,
