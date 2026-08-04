@@ -3,7 +3,14 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
+import { ROUTES } from '@/app/router/constants';
+
 import CohortSurveyPage from './CohortSurveyPage';
+
+const { logoutMock, navigateWithUtmMock } = vi.hoisted(() => ({
+  logoutMock: vi.fn(),
+  navigateWithUtmMock: vi.fn(),
+}));
 
 vi.mock('@/features/auth/hooks/useSignupCheck', () => ({
   useSignupCheck: () => ({
@@ -30,7 +37,17 @@ vi.mock('@/shared/api/server/acquisitionServerApi', () => ({
 }));
 
 vi.mock('@/shared/hooks/useNavigateWithUtm', () => ({
-  useNavigateWithUtm: () => ({ navigateWithUtm: vi.fn() }),
+  useNavigateWithUtm: () => ({ navigateWithUtm: navigateWithUtmMock }),
+}));
+
+vi.mock('@/lib/mixpanel', () => ({
+  trackEvent: vi.fn(),
+}));
+
+vi.mock('@/stores/authStore', () => ({
+  useAuthStore: (
+    selector: (state: { logout: typeof logoutMock }) => unknown
+  ) => selector({ logout: logoutMock }),
 }));
 
 vi.mock('@/shared/ui/composites/Toast', () => ({
@@ -50,14 +67,48 @@ function renderPage() {
 }
 
 describe('CohortSurveyPage', () => {
+  it('모바일·태블릿 회원가입 헤더에서 로그아웃할 수 있다', async () => {
+    const user = userEvent.setup();
+    const { container } = renderPage();
+
+    const pageHeader = container.querySelector('main > header');
+    expect(pageHeader).toHaveClass(
+      'h-[56px]',
+      'px-4',
+      'sm:h-[60px]',
+      'sm:px-6',
+      'lg:hidden'
+    );
+    expect(screen.getByText('회원가입')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: '로그아웃' }));
+
+    expect(logoutMock).toHaveBeenCalledOnce();
+    expect(navigateWithUtmMock).toHaveBeenCalledWith(ROUTES.AUTH, {
+      replace: true,
+    });
+  });
+
   it('viewport는 고정하고 질문 선택 영역만 스크롤한다', () => {
     const { container } = renderPage();
 
     expect(container.querySelector('main')).toHaveClass(
       'h-dvh',
-      'overflow-hidden'
+      'flex-col',
+      'overflow-hidden',
+      'bg-surface'
     );
-    expect(container.querySelector('section')).toHaveClass('py-12');
+    const card = container.querySelector('section');
+    expect(card).toHaveClass(
+      'h-full',
+      'px-5',
+      'py-12',
+      'sm:rounded-2xl',
+      'sm:border',
+      'sm:px-10',
+      'sm:shadow-subtle'
+    );
+    expect(card).not.toHaveClass('rounded-2xl', 'border', 'shadow-subtle');
     expect(
       screen.getByRole('heading', { name: '마음토스 시작하기' })
     ).toHaveClass('text-[20px]', 'font-semibold', 'text-green-80');
@@ -76,6 +127,11 @@ describe('CohortSurveyPage', () => {
     }).parentElement;
     expect(optionList?.parentElement).toHaveClass('min-h-0', 'overflow-y-auto');
     expect(optionList).toHaveClass('min-h-full', 'justify-center');
+
+    const nextButtonArea = screen.getByRole('button', {
+      name: '다음',
+    }).parentElement;
+    expect(nextButtonArea).toHaveClass('mt-auto', 'shrink-0', 'pt-6');
   });
 
   it('Q2와 Q3에서 180px 이전 버튼으로 직전 질문에 돌아간다', async () => {

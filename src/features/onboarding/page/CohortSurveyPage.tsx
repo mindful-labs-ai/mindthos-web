@@ -15,10 +15,14 @@ import {
   cohortSurveyQueryKeys,
 } from '@/features/onboarding/hooks/useCohortSurveyCheck';
 import { cn } from '@/lib/cn';
+import { trackEvent } from '@/lib/mixpanel';
 import { captureCohortSurvey } from '@/shared/api/server/acquisitionServerApi';
+import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button, Spinner } from '@/shared/ui';
+import { BackButton } from '@/shared/ui/atoms/BackButton';
 import { useToast } from '@/shared/ui/composites/Toast';
+import { useAuthStore } from '@/stores/authStore';
 
 const TUTORIAL_CHARACTER_SRC = '/tutorial/tutorial-character.png';
 
@@ -66,6 +70,7 @@ export default function CohortSurveyPage() {
   const { navigateWithUtm } = useNavigateWithUtm();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const logout = useAuthStore((state) => state.logout);
   const {
     required,
     isLoading: isSignupLoading,
@@ -157,6 +162,15 @@ export default function CohortSurveyPage() {
     setQuestionIndex((current) => current - 1);
   };
 
+  const handleLogout = async () => {
+    try {
+      trackEvent(MixpanelEvent.Logout);
+      await logout();
+    } finally {
+      navigateWithUtm(ROUTES.AUTH, { replace: true });
+    }
+  };
+
   if (isSignupLoading || isSurveyLoading || required || completed) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-contrast">
@@ -179,10 +193,18 @@ export default function CohortSurveyPage() {
   }
 
   return (
-    <main className="flex h-dvh items-start overflow-hidden bg-surface-contrast px-2 py-3 sm:px-4 sm:py-5 lg:block lg:px-12 lg:py-10">
-      <div className="relative mx-auto flex h-full min-h-0 w-full items-center">
+    <main className="flex h-dvh flex-col overflow-hidden bg-surface lg:block lg:bg-surface-contrast lg:px-12 lg:py-10">
+      <header className="flex h-[56px] shrink-0 items-center gap-3 border-b border-border px-4 sm:h-[60px] sm:px-6 lg:hidden">
+        <BackButton
+          aria-label="로그아웃"
+          onClick={() => void handleLogout()}
+        />
+        <p className="text-m font-medium text-fg">회원가입</p>
+      </header>
+
+      <div className="relative mx-auto flex min-h-0 w-full flex-1 items-center sm:p-5 lg:h-full lg:p-0">
         <section
-          className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-[774px] flex-col items-center overflow-hidden rounded-2xl border border-grey-40 bg-surface px-5 py-12 shadow-subtle sm:px-10 lg:px-[57px]"
+          className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-[774px] flex-col items-center overflow-hidden bg-surface px-5 py-12 sm:rounded-2xl sm:border sm:border-grey-40 sm:px-10 sm:shadow-subtle lg:px-[57px]"
           aria-labelledby="cohort-survey-title"
         >
           <header className="flex min-h-[80px] shrink-0 flex-col items-center justify-center text-center">
@@ -242,7 +264,7 @@ export default function CohortSurveyPage() {
 
           <div
             className={cn(
-              'mx-auto mt-6 flex w-full max-w-[660px] shrink-0 items-center justify-center',
+              'mx-auto mt-auto flex w-full max-w-[660px] shrink-0 items-center justify-center pt-6',
               questionIndex > 0 && 'gap-3'
             )}
           >
