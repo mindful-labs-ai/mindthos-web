@@ -20,7 +20,11 @@ import {
   MixpanelError,
   MixpanelEvent,
 } from '@/shared/constants/mixpanelEvents';
-import { cardQueryKeys, creditQueryKeys } from '@/shared/constants/queryKeys';
+import {
+  billingQueryKeys,
+  cardQueryKeys,
+  creditQueryKeys,
+} from '@/shared/constants/queryKeys';
 import { useDevice } from '@/shared/hooks/useDevice';
 import {
   useUserAccesses,
@@ -170,20 +174,29 @@ export const SettingsContainer: React.FC = () => {
     setIsCancelModalOpen(true);
   };
 
+  // 해지 예약 여부는 subscribe 행에서 오므로 summary와 함께 갱신해야 버튼 상태가 바뀐다
+  const invalidateSubscriptionViews = async () => {
+    if (!userId) return;
+    const userIdNumber = parseInt(userId);
+    if (isNaN(userIdNumber)) return;
+
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: creditQueryKeys.summary(userIdNumber),
+      }),
+      queryClient.invalidateQueries({
+        queryKey: billingQueryKeys.subscription(userIdNumber),
+      }),
+    ]);
+  };
+
   const handleConfirmCancelSubscription = async () => {
     trackEvent(MixpanelEvent.SubscriptionCancel, {
       plan_type: creditInfo?.plan?.type,
     });
     await billingService.cancelSubscription();
 
-    if (userId) {
-      const userIdNumber = parseInt(userId);
-      if (!isNaN(userIdNumber)) {
-        await queryClient.invalidateQueries({
-          queryKey: creditQueryKeys.summary(userIdNumber),
-        });
-      }
-    }
+    await invalidateSubscriptionViews();
 
     toast({
       title: '구독 해지 예약',
@@ -195,14 +208,7 @@ export const SettingsContainer: React.FC = () => {
     try {
       await billingService.undoCancellation();
 
-      if (userId) {
-        const userIdNumber = parseInt(userId);
-        if (!isNaN(userIdNumber)) {
-          await queryClient.invalidateQueries({
-            queryKey: creditQueryKeys.summary(userIdNumber),
-          });
-        }
-      }
+      await invalidateSubscriptionViews();
 
       toast({
         title: '해지 예약 취소',
