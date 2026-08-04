@@ -35,20 +35,42 @@ export const formatTutorialRemainingTime = (remainingMs: number): string => {
   return days > 0 ? `${days}일` : clock;
 };
 
-/**
- * 서버의 cohort별 기본 상담노트 매핑과 같은 기준을 사용한다.
- * 템플릿 ID가 바뀌면 이 중앙 매핑만 갱신한다.
- */
-export const TUTORIAL_RECOMMENDED_NOTE_TEMPLATE_ID_BY_COHORT: Record<
+export interface TutorialRecommendedNoteTemplate {
+  id: number;
+  title: string;
+}
+
+/** 상담노트 선택 미션의 cohort별 추천 순서와 표시 이름이다. */
+export const TUTORIAL_RECOMMENDED_NOTE_TEMPLATES_BY_COHORT = {
+  GENOGRAM: [
+    { id: 8, title: '보웬 사례개념화 노트' },
+    { id: 11, title: '미누친 SFT 사례개념화 노트' },
+    { id: 15, title: '가족센터 상담노트' },
+  ],
+  CBT: [
+    { id: 5, title: 'CBT 사례개념화 노트' },
+    { id: 3, title: 'ACT 사례개념화 노트' },
+    { id: 21, title: 'DBT 사례개념화 노트' },
+    { id: 20, title: '심리도식치료 사례개념화 노트' },
+  ],
+  PSYCHODYNAMIC: [
+    { id: 24, title: '정신분석 사례개념화 노트' },
+    { id: 18, title: '대상관계이론 사례개념화 노트' },
+  ],
+  HUMANISTIC: [
+    { id: 2, title: '인간중심 사례개념화노트' },
+    { id: 12, title: '정서중심 사례개념화 노트' },
+    { id: 19, title: '게슈탈트 사례개념화 노트' },
+  ],
+  GENERIC: [
+    { id: 1, title: '마음토스 상담노트' },
+    { id: 2, title: '인간중심 사례개념화' },
+    { id: 5, title: 'CBT 사례개념화' },
+  ],
+} as const satisfies Record<
   CohortBranch,
-  number
-> = {
-  GENOGRAM: 8,
-  CBT: 5,
-  PSYCHODYNAMIC: 18,
-  HUMANISTIC: 2,
-  GENERIC: 1,
-};
+  readonly TutorialRecommendedNoteTemplate[]
+>;
 
 export interface StepCompleteCopy {
   title: string;

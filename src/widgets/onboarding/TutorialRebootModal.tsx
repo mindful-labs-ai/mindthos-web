@@ -26,7 +26,7 @@ import {
   STEP_COMPLETE_COPY,
   TUTORIAL_FAKE_FILE_SIZE_BYTES,
   TUTORIAL_MISSION_COPY,
-  TUTORIAL_RECOMMENDED_NOTE_TEMPLATE_ID_BY_COHORT,
+  TUTORIAL_RECOMMENDED_NOTE_TEMPLATES_BY_COHORT,
   VIDEO_MIN_SECONDS,
 } from '@/features/onboarding/constants/tutorialUi';
 import type { MultiFileInfo } from '@/features/session/types';
@@ -327,13 +327,20 @@ export const NoteMission = ({
   isLoading: boolean;
   onSelect: (templateId: number) => void;
 }) => {
-  const recommendedTemplateId =
-    TUTORIAL_RECOMMENDED_NOTE_TEMPLATE_ID_BY_COHORT[cohort];
-  const recommended = templates.filter(
-    (template) => template.id === recommendedTemplateId
+  const recommendationConfig =
+    TUTORIAL_RECOMMENDED_NOTE_TEMPLATES_BY_COHORT[cohort];
+  const recommendedTemplateIds = new Set<number>(
+    recommendationConfig.map((template) => template.id)
   );
+  const templateById = new Map(
+    templates.map((template) => [template.id, template])
+  );
+  const recommended = recommendationConfig.flatMap(({ id, title }) => {
+    const template = templateById.get(id);
+    return template ? [{ ...template, title }] : [];
+  });
   const submission = templates.filter(
-    (template) => template.id !== recommendedTemplateId
+    (template) => !recommendedTemplateIds.has(template.id)
   );
   const groups = [
     { title: '추천하는 양식', items: recommended },

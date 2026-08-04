@@ -7,7 +7,7 @@ import {
   STEP_COMPLETE_COPY,
   TUTORIAL_FAKE_FILE_SIZE_BYTES,
   TUTORIAL_MISSION_COPY,
-  TUTORIAL_RECOMMENDED_NOTE_TEMPLATE_ID_BY_COHORT,
+  TUTORIAL_RECOMMENDED_NOTE_TEMPLATES_BY_COHORT,
   VIDEO_MIN_SECONDS,
 } from './tutorialUi';
 
@@ -72,12 +72,32 @@ describe('tutorialUi', () => {
   });
 
   it('코호트별 추천 상담노트 템플릿 매핑이 중앙화되어 있다', () => {
-    expect(TUTORIAL_RECOMMENDED_NOTE_TEMPLATE_ID_BY_COHORT).toEqual({
-      GENOGRAM: 8,
-      CBT: 5,
-      PSYCHODYNAMIC: 18,
-      HUMANISTIC: 2,
-      GENERIC: 1,
+    expect(TUTORIAL_RECOMMENDED_NOTE_TEMPLATES_BY_COHORT).toEqual({
+      GENOGRAM: [
+        { id: 8, title: '보웬 사례개념화 노트' },
+        { id: 11, title: '미누친 SFT 사례개념화 노트' },
+        { id: 15, title: '가족센터 상담노트' },
+      ],
+      CBT: [
+        { id: 5, title: 'CBT 사례개념화 노트' },
+        { id: 3, title: 'ACT 사례개념화 노트' },
+        { id: 21, title: 'DBT 사례개념화 노트' },
+        { id: 20, title: '심리도식치료 사례개념화 노트' },
+      ],
+      PSYCHODYNAMIC: [
+        { id: 24, title: '정신분석 사례개념화 노트' },
+        { id: 18, title: '대상관계이론 사례개념화 노트' },
+      ],
+      HUMANISTIC: [
+        { id: 2, title: '인간중심 사례개념화노트' },
+        { id: 12, title: '정서중심 사례개념화 노트' },
+        { id: 19, title: '게슈탈트 사례개념화 노트' },
+      ],
+      GENERIC: [
+        { id: 1, title: '마음토스 상담노트' },
+        { id: 2, title: '인간중심 사례개념화' },
+        { id: 5, title: 'CBT 사례개념화' },
+      ],
     });
   });
 
