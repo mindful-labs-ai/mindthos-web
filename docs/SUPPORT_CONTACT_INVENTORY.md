@@ -12,10 +12,12 @@
 
 기존에 **서로 다른 오픈채팅방 두 개**가 쓰이고 있었고, 이번에 카카오톡 채널 하나로 합쳤다.
 
-수정 파일은 두 개뿐이다. 노출 지점이 상수를 참조하므로 링크·문구를 바꾸는 데 개별 화면을 손댈 필요가 없다.
+노출 지점이 모두 상수를 참조하므로, 링크와 문구를 바꾸는 데는 아래 두 파일이면 충분하다.
 
 - `src/shared/constants/support.ts` — `SUPPORT_KAKAO_URL`, `SUPPORT_LINK_LABEL`
 - `src/shared/constants/externalUrls.ts` — `KAKAO_SUPPORT_URL`
+
+여기에 더해 문의 경로가 없던 인라인 오류 10곳에 링크를 새로 붙였다(아래 참고).
 
 ## 어떻게 노출되나
 
@@ -106,25 +108,35 @@
 | `widgets/document/SendDocumentModal.tsx:87` | 문서 발송 실패 fallback |
 | `widgets/auth/PasswordResetRequestStep.tsx:48` | 비밀번호 재설정 요청 과다 |
 
-## 같은 문구지만 anchor가 붙지 않는 곳 (14건)
+## 인라인 오류에 문의 링크를 추가한 곳 (10개 지점)
 
-토스트가 아니라 인라인 텍스트·상태 메시지로 렌더된다. **문의 링크가 노출되지 않는다.**
+토스트가 아니라 `setError`·사이드바 문구로 그리던 오류에는 문의 경로가 없었다. 문의가 가장 필요한 순간(로그인 실패, 비밀번호 재설정 실패, 계정 탈퇴 실패)에도 사용자가 닿을 곳이 없어 `SupportContactHint`를 붙였다.
 
-| 위치 | 표시 형태 |
+`src/shared/ui/atoms/SupportContactHint.tsx` — 메시지에 트리거 문구가 있을 때만 링크를 그린다. 판단 기준을 토스트와 같게 둬서, 입력값 오류처럼 사용자가 스스로 고칠 수 있는 오류에는 나타나지 않는다.
+
+| 상황 | 표시 위치 | 파일 |
+|---|---|---|
+| 구글·카카오 로그인 연결 실패 | 로그인 폼 상단 | `AuthPage.tsx:130` |
+| 비밀번호 변경 실패 | 재설정 폼 | `PasswordResetForm.tsx:88` |
+| 재설정 메일 발송 실패 | 요청 폼 | `PasswordResetRequestStep.tsx:380` |
+| 재설정 메일 재발송 실패 | 발송 완료 화면 | `PasswordResetRequestStep.tsx:221` |
+| 인증 메일 재발송 실패 | 이메일 인증 단계 | `EmailVerificationStep.tsx:76` |
+| 계정 탈퇴 실패 | 탈퇴 확인 모달 | `DeleteAccountModal.tsx:57` |
+| 공유 문서 제출 실패 | 공유 문서 페이지 | `SharedDocumentPage.tsx:289` |
+| 내담자 목록 로드 실패 | 내담자 사이드바 | `client/ClientSidebar.tsx:142` |
+| 내담자 목록 로드 실패 | 심리검사 사이드바 | `psychology-assessments/…/ClientSidebar.tsx:135` |
+| 가계도 렌더 실패 | 생성 단계 Alert | `RenderStep.tsx:107` |
+
+로그인 실패는 구글·카카오 두 경로가 같은 영역에 그려져 지점 하나로 묶인다.
+
+### 링크를 붙이지 않은 인라인 오류
+
+| 위치 | 이유 |
 |---|---|
-| `AuthPage.tsx:68,89` | 구글·카카오 로그인 실패 (`setError` → 폼 상단) |
-| `SettingsContainer.tsx:260` | 계정 탈퇴 실패 (`setDeleteError` → 모달 내부) |
-| `SharedDocumentPage.tsx:174` | 공유 문서 제출 실패 (`setSubmitError`) |
-| `EmailVerificationStep.tsx:41` | 인증 메일 재발송 실패 |
-| `PasswordResetForm.tsx:77` | 비밀번호 변경 실패 |
-| `PasswordResetRequestStep.tsx:149,184` | 재설정 메일 발송·재발송 실패 |
-| `client/ClientSidebar.tsx:142` · `psychology-assessments/…/ClientSidebar.tsx:135` | 내담자 목록 로드 실패 (사이드바 문구) |
-| `RenderStep.tsx:107` | 가계도 렌더 실패 (`Alert`) |
-| `ErrorPage.tsx:21` · `ErrorBoundary.tsx:49` · `UserVerifyPage.tsx:366` | 문구는 인라인이지만 **바로 옆에 직접 박힌 anchor가 있어** 문의 링크는 보인다 |
-
-앞의 11곳은 사용자가 오류를 겪어도 문의 경로를 찾지 못한다. 문의 채널을 일관되게 노출하려면 후속 과제로 다룰 만하다 — 이번 변경 범위에는 넣지 않았다.
+| `ErrorPage.tsx:21` · `ErrorBoundary.tsx:49` · `UserVerifyPage.tsx:366` | 바로 옆에 직접 박힌 anchor가 이미 있다 |
 
 ## 주의
 
 - **트리거는 문구 일치다.** `잠시 후 다시 시도해 주세요`를 정확히 포함해야 anchor가 붙는다. `다시 시도해 주세요`만 쓴 메시지(심리검사 `userMessages.ts` 다수, `ChatConversationView.tsx` 등)에는 붙지 않는다. 새 토스트를 만들 때 문의를 노출하려면 문구를 그대로 써야 한다.
 - 링크를 다시 바꿀 때는 위 상수 두 개만 고치면 전 지점에 반영된다.
+- 인라인 오류에 문의를 노출하려면 `<SupportContactHint message={오류메시지} />`를 메시지 옆에 둔다. 트리거 판단은 컴포넌트가 하므로 조건문을 따로 쓰지 않아도 된다.

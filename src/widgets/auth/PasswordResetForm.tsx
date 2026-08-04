@@ -6,6 +6,7 @@ import { authService } from '@/shared/api/services/auth/authService';
 import { AuthError, AuthErrorCode } from '@/shared/api/services/auth/types';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { SupportContactHint } from '@/shared/ui';
 import { FormField } from '@/shared/ui/composites/FormField';
 import { useToast } from '@/shared/ui/composites/Toast';
 
@@ -85,7 +86,12 @@ const PasswordResetForm = ({ onSuccess }: Props) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && <div className="auth-error-area">{error}</div>}
+      {error && (
+        <div className="auth-error-area">
+          {error}
+          <SupportContactHint message={error} />
+        </div>
+      )}
 
       <div className="space-y-4">
         <FormField>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { cn } from '@/lib/cn';
 import { authService } from '@/shared/api/services/auth/authService';
 import { MailIcon } from '@/shared/icons';
+import { SupportContactHint } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
 
@@ -74,6 +75,7 @@ const EmailVerificationStep = ({ email, onBackToLogin }: Props) => {
           )}
         >
           {resendState.message}
+          <SupportContactHint message={resendState.message} />
         </div>
       )}
 
