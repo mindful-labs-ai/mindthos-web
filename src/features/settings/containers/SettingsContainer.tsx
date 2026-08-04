@@ -104,8 +104,14 @@ export const SettingsContainer: React.FC = () => {
 
   const isPaidPlan =
     creditInfo && creditInfo.plan.type.toLowerCase() !== 'free';
-  const hasCancellationScheduled =
+  // 해지와 다운그레이드는 subscribe의 같은 컬럼을 쓴다 — 예약 대상 플랜으로 갈린다
+  const hasScheduledChange =
     creditInfo?.subscription?.scheduled_plan_id != null;
+  const scheduledPlanType = creditInfo?.subscription?.scheduled_plan_type;
+  const isCancellationScheduled =
+    hasScheduledChange && scheduledPlanType?.toLowerCase() === 'free';
+  const isDowngradeScheduled =
+    hasScheduledChange && scheduledPlanType != null && !isCancellationScheduled;
 
   const scrollToTop = () => document.querySelector('main')?.scrollTo(0, 0);
 
@@ -211,13 +217,17 @@ export const SettingsContainer: React.FC = () => {
       await invalidateSubscriptionViews();
 
       toast({
-        title: '해지 예약 취소',
-        description: '구독이 계속 유지돼요.',
+        title: isDowngradeScheduled ? '변경 예약 취소' : '해지 예약 취소',
+        description: isDowngradeScheduled
+          ? '현재 플랜이 그대로 유지돼요.'
+          : '구독이 계속 유지돼요.',
       });
     } catch (error) {
       trackError(MixpanelError.CancelSubscriptionRevertError, error);
       toast({
-        title: '해지 예약 취소 실패',
+        title: isDowngradeScheduled
+          ? '변경 예약 취소 실패'
+          : '해지 예약 취소 실패',
         description: '잠시 후 다시 시도해 주세요.',
       });
     }
@@ -392,9 +402,18 @@ export const SettingsContainer: React.FC = () => {
             <span className="font-headline text-primary">
               {getPlanLabel(creditInfo.plan.type)}
             </span>
-            {hasCancellationScheduled ? (
-              <span className="text-danger">
-                {formatRenewalDate(creditInfo.subscription.end_at)} 해지 예정
+            {hasScheduledChange ? (
+              <span
+                className={
+                  isDowngradeScheduled ? 'text-fg-muted' : 'text-danger'
+                }
+              >
+                {formatRenewalDate(creditInfo.subscription.end_at)}{' '}
+                {isDowngradeScheduled && scheduledPlanType
+                  ? `${getPlanLabel(scheduledPlanType)} 플랜으로 변경 예정`
+                  : isCancellationScheduled
+                    ? '해지 예정'
+                    : '플랜 변경 예정'}
               </span>
             ) : (
               <>{formatRenewalDate(creditInfo.subscription.end_at)} 갱신 예정</>
@@ -413,7 +432,7 @@ export const SettingsContainer: React.FC = () => {
         >
           {isPaidPlan ? '플랜 관리' : '플랜 변경'}
         </Button>
-        {isPaidPlan && !hasCancellationScheduled && (
+        {isPaidPlan && !hasScheduledChange && (
           <Button
             variant="ghost"
             tone="neutral"
@@ -424,14 +443,14 @@ export const SettingsContainer: React.FC = () => {
             구독 해지
           </Button>
         )}
-        {hasCancellationScheduled && (
+        {hasScheduledChange && (
           <Button
             variant="outline"
             tone="neutral"
             size="sm"
             onClick={handleUndoCancellation}
           >
-            해지 예약 취소
+            {isDowngradeScheduled ? '변경 예약 취소' : '해지 예약 취소'}
           </Button>
         )}
       </div>
