@@ -4,14 +4,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
+import { useInvalidateSubscriptionViews } from '@/features/settings/hooks/useInvalidateSubscriptionViews';
 import { trackEvent } from '@/lib/mixpanel';
 import { billingService } from '@/shared/api/supabase/billingQueries';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import {
-  billingQueryKeys,
-  cardQueryKeys,
-  creditQueryKeys,
-} from '@/shared/constants/queryKeys';
+import { cardQueryKeys } from '@/shared/constants/queryKeys';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -25,6 +22,7 @@ export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const { navigateWithUtm } = useNavigateWithUtm();
   const queryClient = useQueryClient();
+  const invalidateSubscriptionViews = useInvalidateSubscriptionViews();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const user = useAuthStore((state) => state.user);
@@ -85,23 +83,8 @@ export const PaymentSuccess = () => {
           });
 
           if (response.success) {
-            // 업그레이드는 새 subscribe 행을 만들므로 summary와 구독을 함께 갱신한다.
-            // 설정 화면이 언마운트 상태라 refetchType:'all'이 있어야 실제로 리페치된다.
-            if (userId) {
-              const userIdNumber = parseInt(userId);
-              if (!isNaN(userIdNumber)) {
-                await Promise.all([
-                  queryClient.invalidateQueries({
-                    queryKey: creditQueryKeys.summary(userIdNumber),
-                    refetchType: 'all',
-                  }),
-                  queryClient.invalidateQueries({
-                    queryKey: billingQueryKeys.subscription(userIdNumber),
-                    refetchType: 'all',
-                  }),
-                ]);
-              }
-            }
+            // 설정 화면이 언마운트 상태라 refetchType:'all'이 있어야 실제로 리페치된다
+            await invalidateSubscriptionViews({ refetchType: 'all' });
 
             trackEvent(MixpanelEvent.PlanUpgradeSuccess, { plan_id: planId });
 
