@@ -13,7 +13,10 @@ RUN --mount=type=secret,id=vite_env,target=/app/.env.production,required=true \
 
 FROM nginx:1.27-alpine
 
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+ENV MINDTHOS_API_PROXY_TARGET=https://gateway.mindthos.com \
+    NGINX_ENVSUBST_FILTER=MINDTHOS_API_PROXY_TARGET
+
+COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
