@@ -26,7 +26,6 @@ export const TutorialFloatingButton: React.FC = () => {
   const [now, setNow] = React.useState(() => Date.now());
   const panelRef = React.useRef<HTMLDivElement>(null);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const autoOpened = React.useRef(false);
   const userId = useAuthStore((state) => state.userId);
   const setTutorialGuideLevel = useQuestStore(
     (state) => state.setTutorialGuideLevel
@@ -103,14 +102,6 @@ export const TutorialFloatingButton: React.FC = () => {
     if (isOpen) document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
-
-  React.useEffect(() => {
-    if (!isAvailable || state?.status !== 'NOT_STARTED' || autoOpened.current) {
-      return;
-    }
-    autoOpened.current = true;
-    setTutorialGuideLevel(1);
-  }, [isAvailable, setTutorialGuideLevel, state?.status]);
 
   if (!isAvailable) return null;
 

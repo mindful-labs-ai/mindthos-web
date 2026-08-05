@@ -104,4 +104,20 @@ describe('TutorialFloatingButton', () => {
     await user.click(screen.getByRole('button', { name: '진행하기' }));
     expect(setTutorialGuideLevelMock).toHaveBeenCalledWith(2);
   });
+
+  it('미시작 상태를 조회해도 실제 미션 모달을 바로 열지 않는다', async () => {
+    currentMock.mockResolvedValue({
+      tutorial_step: TutorialStep.CBT_STAGE_1,
+      status: 'NOT_STARTED',
+      started_at: null,
+      expires_at: null,
+      completed_at: null,
+      reward_claimed_at: null,
+    });
+
+    renderFloatingButton();
+
+    await screen.findByRole('button', { name: '튜토리얼 다시 열기' });
+    expect(setTutorialGuideLevelMock).not.toHaveBeenCalled();
+  });
 });

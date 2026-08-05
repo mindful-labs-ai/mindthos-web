@@ -22,6 +22,8 @@ import { Button } from '@/shared/ui/atoms/Button';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuestStore } from '@/stores/questStore';
 
+import { TutorialStartModal } from './TutorialStartModal';
+
 export const TUTORIAL_MISSION_LABELS: Record<CohortBranch, readonly string[]> =
   {
     [COHORT_BRANCH.GENOGRAM]: [
@@ -170,8 +172,53 @@ const RewardCard = ({
   </aside>
 );
 
+const getStartPromptStorageKey = (userId: string) =>
+  `tutorial-start-prompt-shown:${userId}`;
+
+const TutorialStartPrompt = ({
+  userId,
+  blocked,
+  onStart,
+}: {
+  userId: string;
+  blocked: boolean;
+  onStart: () => void;
+}) => {
+  const storageKey = getStartPromptStorageKey(userId);
+  const [isOpen, setIsOpen] = React.useState(() => {
+    try {
+      return !blocked && window.sessionStorage.getItem(storageKey) !== '1';
+    } catch {
+      return !blocked;
+    }
+  });
+
+  React.useEffect(() => {
+    if (!isOpen && !blocked) return;
+
+    try {
+      window.sessionStorage.setItem(storageKey, '1');
+    } catch {
+      // 저장소를 사용할 수 없어도 이번 안내는 정상 노출한다.
+    }
+  }, [blocked, isOpen, storageKey]);
+
+  return (
+    <TutorialStartModal
+      open={isOpen}
+      onDismiss={() => setIsOpen(false)}
+      onStart={() => {
+        setIsOpen(false);
+        onStart();
+      }}
+    />
+  );
+};
+
 export const TutorialMissionArea: React.FC = () => {
   const userId = useAuthStore((state) => state.userId);
+  const tutorialGuideLevel = useQuestStore((state) => state.tutorialGuideLevel);
+  const tutorialRewardOpen = useQuestStore((state) => state.tutorialRewardOpen);
   const setTutorialGuideLevel = useQuestStore(
     (state) => state.setTutorialGuideLevel
   );
@@ -240,12 +287,24 @@ export const TutorialMissionArea: React.FC = () => {
     ? formatTutorialRemainingTime(expiresAt - now)
     : '7일';
   const isCompleted = progress.completedCount === 4;
+  const shouldShowStartPrompt =
+    progress.completedCount === 0 &&
+    (state.status === 'NOT_STARTED' || state.status === 'IN_PROGRESS');
 
   return (
     <section
       aria-label="신규 가입자 튜토리얼"
       className="flex w-full flex-col gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5 md:flex-row md:gap-5"
     >
+      {shouldShowStartPrompt && (
+        <TutorialStartPrompt
+          key={String(userId)}
+          userId={String(userId)}
+          blocked={tutorialGuideLevel !== null || tutorialRewardOpen}
+          onStart={() => setTutorialGuideLevel(1)}
+        />
+      )}
+
       <div className="min-w-0 flex-1 px-1 py-1 sm:px-2">
         <header className="flex items-center gap-4">
           <h2 className="typo-l-headline text-fg">신규 가입자 튜토리얼</h2>

@@ -38,12 +38,19 @@ import {
   VideoMission,
   type TutorialTemplate,
 } from '@/widgets/onboarding/TutorialRebootModal';
+import { TutorialStartModal } from '@/widgets/onboarding/TutorialStartModal';
 import {
   CreateMultiSessionModal,
   type TutorialSessionUploadState,
 } from '@/widgets/session/CreateMultiSessionModal';
 
-type QaSurface = 'closed' | 'mission' | 'completion' | 'reward' | 'upload';
+type QaSurface =
+  | 'closed'
+  | 'start'
+  | 'mission'
+  | 'completion'
+  | 'reward'
+  | 'upload';
 type QaVisibleSurface = Exclude<QaSurface, 'closed'>;
 type QaStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'EXPIRED' | 'COMPLETED';
 
@@ -73,6 +80,7 @@ const STATUS_LABEL: Record<QaStatus, string> = {
 };
 
 const SURFACE_LABEL: Record<Exclude<QaSurface, 'closed'>, string> = {
+  start: '시작 안내 모달',
   mission: '미션 모달',
   completion: '단계 완료 모달',
   reward: '보상 모달',
@@ -562,6 +570,17 @@ const TutorialQaPage = () => {
           </div>
         </section>
       </div>
+
+      {surface === 'start' && (
+        <TutorialStartModal
+          open
+          onDismiss={() => setSurface('closed')}
+          onStart={() => {
+            setStageFromButton(1);
+            setSurface('mission');
+          }}
+        />
+      )}
 
       {surface === 'mission' && mission && tutorialStep && (
         <Modal
