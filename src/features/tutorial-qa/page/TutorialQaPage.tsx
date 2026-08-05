@@ -15,6 +15,7 @@ import {
 } from '@/features/onboarding/constants/missionFlow';
 import { getTutorialStep } from '@/features/onboarding/constants/tutorialStep';
 import {
+  GUIDE_VIDEO_SOURCES,
   TUTORIAL_FAKE_FILE_SIZE_BYTES,
   TUTORIAL_MISSION_COPY,
   VIDEO_MIN_SECONDS,
@@ -329,6 +330,7 @@ const TutorialQaPage = () => {
     ) {
       return (
         <VideoMission
+          source={GUIDE_VIDEO_SOURCES[tutorialStep]}
           content={missionCopy?.content ?? ''}
           canContinue={canContinueVideo}
           minimumWatchSeconds={minimumWatchSeconds}
