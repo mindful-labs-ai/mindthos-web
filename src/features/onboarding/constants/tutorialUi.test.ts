@@ -4,6 +4,7 @@ import { TutorialStep } from './tutorialStep';
 import {
   DIRECT_UPLOAD_MIN_SECONDS,
   formatTutorialRemainingTime,
+  GUIDE_VIDEO_SOURCES,
   STEP_COMPLETE_COPY,
   TUTORIAL_FAKE_FILE_SIZE_BYTES,
   TUTORIAL_MISSION_COPY,
@@ -99,6 +100,24 @@ describe('tutorialUi', () => {
 
   it('가이드 영상 완료 기준은 30초다', () => {
     expect(VIDEO_MIN_SECONDS).toBe(30);
+  });
+
+  it('모든 TutorialStep에 재생 가능한 영상 src가 연결되어 있다', () => {
+    expect(Object.keys(GUIDE_VIDEO_SOURCES)).toHaveLength(
+      Object.values(TutorialStep).length
+    );
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.GENERIC_STAGE_1]).toContain(
+      'overview'
+    );
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_1]).toContain(
+      'record-example'
+    );
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_2]).toContain(
+      'ai-supervision'
+    );
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.GENOGRAM_STAGE_2]).toBe(
+      GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_2]
+    );
   });
 
   it('튜토리얼 업로드 준비 상태의 시간과 파일 크기를 고정한다', () => {
