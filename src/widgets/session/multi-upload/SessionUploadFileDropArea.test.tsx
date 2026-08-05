@@ -70,4 +70,45 @@ describe('SessionUploadFileDropArea', () => {
     expect(screen.getByText('virtual-session.mp3')).toBeInTheDocument();
     expect(container.querySelector('input[type="file"]')).toBeNull();
   });
+
+  it('파일 한도에 도달하면 추가 드롭을 전달하지 않는다', () => {
+    const onDrop = vi.fn();
+    const existingFile: MultiFileInfo = {
+      id: 'existing',
+      file: new File(['audio'], 'existing-session.mp3', {
+        type: 'audio/mpeg',
+      }),
+      name: 'existing-session.mp3',
+      size: 12_500_000,
+      validationStatus: 'valid',
+    };
+
+    render(
+      <SessionUploadFileDropArea
+        files={[existingFile]}
+        isMobile={false}
+        isTablet={false}
+        isDragging={false}
+        canAddMore={false}
+        maxFiles={1}
+        onFilesSelected={vi.fn()}
+        onRemoveFile={vi.fn()}
+        onDrop={onDrop}
+      />
+    );
+
+    const dropArea = screen
+      .getByText('existing-session.mp3')
+      .closest('.bg-surface-contrast');
+    const additionalFile = new File(['audio'], 'additional-session.mp3', {
+      type: 'audio/mpeg',
+    });
+
+    expect(dropArea).not.toBeNull();
+    fireEvent.drop(dropArea as HTMLElement, {
+      dataTransfer: { files: [additionalFile] },
+    });
+
+    expect(onDrop).not.toHaveBeenCalled();
+  });
 });

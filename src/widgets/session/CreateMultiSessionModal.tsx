@@ -173,10 +173,19 @@ export const CreateMultiSessionModal: React.FC<
 
   const addRealFiles = useCallback(
     (newFiles: File[]) => {
-      if (isTutorialPreparedFile) return;
+      if (
+        isTutorialPreparedFile ||
+        (isTutorialMode && effectiveFiles.length > 0)
+      )
+        return;
       addFiles(isTutorialMode ? newFiles.slice(0, 1) : newFiles);
     },
-    [addFiles, isTutorialMode, isTutorialPreparedFile]
+    [
+      addFiles,
+      effectiveFiles.length,
+      isTutorialMode,
+      isTutorialPreparedFile,
+    ]
   );
 
   const removeUploadedFile = useCallback(

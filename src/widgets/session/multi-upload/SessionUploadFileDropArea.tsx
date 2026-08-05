@@ -92,15 +92,15 @@ export const SessionUploadFileDropArea: React.FC<
         />
       )}
       <div
-        onDragOver={canSelectFiles ? onDragOver : undefined}
-        onDragLeave={canSelectFiles ? onDragLeave : undefined}
-        onDrop={canSelectFiles ? onDrop : undefined}
+        onDragOver={canAddFile ? onDragOver : undefined}
+        onDragLeave={canAddFile ? onDragLeave : undefined}
+        onDrop={canAddFile ? onDrop : undefined}
         className={cn(
           'bg-surface-contrast p-4 transition-colors',
           isMobile && 'h-[28vh] min-h-[160px]',
           isTablet && 'h-[24vh] min-h-[160px]',
           !isMobile && !isTablet && 'h-[313px] rounded-lg',
-          isDragging && canSelectFiles
+          isDragging && canAddFile
             ? 'border-primary bg-primary-subtle'
             : 'border-surface-strong'
         )}
