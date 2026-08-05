@@ -180,13 +180,15 @@ export const CreateMultiSessionModal: React.FC<
         return;
       addFiles(isTutorialMode ? newFiles.slice(0, 1) : newFiles);
     },
-    [
-      addFiles,
-      effectiveFiles.length,
-      isTutorialMode,
-      isTutorialPreparedFile,
-    ]
+    [addFiles, effectiveFiles.length, isTutorialMode, isTutorialPreparedFile]
   );
+
+  const handleTutorialFileLimitExceeded = useCallback(() => {
+    toast({
+      title: '튜토리얼에서는 1개만 업로드 할 수 있어요.',
+      description: '기존 파일을 삭제한 뒤 다시 추가해 주세요.',
+    });
+  }, [toast]);
 
   const removeUploadedFile = useCallback(
     (fileId: string) => {
@@ -630,6 +632,9 @@ export const CreateMultiSessionModal: React.FC<
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={onDrop}
+      onFileLimitExceeded={
+        isTutorialMode ? handleTutorialFileLimitExceeded : undefined
+      }
     />
   );
 

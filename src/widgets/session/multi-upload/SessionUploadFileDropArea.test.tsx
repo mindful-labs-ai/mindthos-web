@@ -71,8 +71,9 @@ describe('SessionUploadFileDropArea', () => {
     expect(container.querySelector('input[type="file"]')).toBeNull();
   });
 
-  it('파일 한도에 도달하면 추가 드롭을 전달하지 않는다', () => {
+  it('파일 한도에 도달하면 추가 드롭을 거부하고 안내한다', () => {
     const onDrop = vi.fn();
+    const onFileLimitExceeded = vi.fn();
     const existingFile: MultiFileInfo = {
       id: 'existing',
       file: new File(['audio'], 'existing-session.mp3', {
@@ -88,27 +89,34 @@ describe('SessionUploadFileDropArea', () => {
         files={[existingFile]}
         isMobile={false}
         isTablet={false}
-        isDragging={false}
+        isDragging
         canAddMore={false}
         maxFiles={1}
         onFilesSelected={vi.fn()}
         onRemoveFile={vi.fn()}
         onDrop={onDrop}
+        onFileLimitExceeded={onFileLimitExceeded}
       />
     );
 
-    const dropArea = screen
-      .getByText('existing-session.mp3')
-      .closest('.bg-surface-contrast');
+    const limitNotice = screen.getByRole('alert');
+    const dropArea = limitNotice.parentElement;
     const additionalFile = new File(['audio'], 'additional-session.mp3', {
       type: 'audio/mpeg',
     });
 
+    expect(limitNotice).toHaveTextContent(
+      '튜토리얼에서는 1개만 업로드 할 수 있어요.'
+    );
+    expect(limitNotice).toHaveTextContent(
+      '기존 파일을 삭제한 뒤 다시 추가해 주세요.'
+    );
     expect(dropArea).not.toBeNull();
     fireEvent.drop(dropArea as HTMLElement, {
       dataTransfer: { files: [additionalFile] },
     });
 
     expect(onDrop).not.toHaveBeenCalled();
+    expect(onFileLimitExceeded).toHaveBeenCalledTimes(1);
   });
 });
