@@ -238,13 +238,9 @@ export const VideoMission = ({
   React.useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    // 브라우저 자동재생 정책에 소리가 차단되면 음소거로 재시도한다.
     try {
       const playAttempt: Promise<void> | undefined = video.play();
-      void playAttempt?.catch(() => {
-        video.muted = true;
-        void video.play()?.catch(() => undefined);
-      });
+      void playAttempt?.catch(() => undefined);
     } catch {
       // play를 지원하지 않는 환경(jsdom 등)에서는 무시한다.
     }
@@ -269,10 +265,12 @@ export const VideoMission = ({
     <div className="flex h-full min-h-[380px] flex-col items-center justify-center gap-5">
       <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
         {source ? (
+          // 가이드 영상은 전부 무음이라 muted를 고정해 모든 브라우저에서 자동재생을 보장한다.
           <video
             ref={videoRef}
             className="h-full max-h-[430px] w-full rounded-2xl border border-border bg-surface-contrast object-contain"
             autoPlay
+            muted
             loop
             controls
             playsInline
