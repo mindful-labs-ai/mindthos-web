@@ -56,7 +56,7 @@ describe('serverClient', () => {
     await serverRequest('/sessions');
 
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringMatching(/\/v1\/sessions$/),
+      '/v1/sessions',
       expect.objectContaining({
         credentials: 'include',
         headers: {
@@ -71,7 +71,7 @@ describe('serverClient', () => {
     await serverRequestPublic('/shared-documents/token');
 
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringMatching(/\/v1\/shared-documents\/token$/),
+      '/v1/shared-documents/token',
       expect.objectContaining({
         credentials: 'include',
         headers: {
