@@ -1,10 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
-import {
-  dummyClient,
-  dummySessionRelations,
-} from '@/features/session/constants/dummySessions';
 import { useSessionsList } from '@/features/session/hooks/useSessionsList';
 import type {
   HandwrittenTranscribeListItem,
@@ -25,7 +21,7 @@ export const useSessionRecords = ({
   userId,
   perPage = SESSIONS_PER_PAGE,
 }: UseSessionRecordsOptions) => {
-  const { clients, isLoading: isLoadingClients } = useClientList();
+  const { clients } = useClientList();
 
   // 페이지네이션 상태
   const [displayCount, setDisplayCount] = useState(perPage);
@@ -46,21 +42,8 @@ export const useSessionRecords = ({
 
   const sessionsFromQuery = sessionItems;
 
-  // 더미 플로우 여부
-  const isDummyFlow =
-    !isLoadingSessions &&
-    !isLoadingClients &&
-    sessionsFromQuery.length === 0 &&
-    clients.length === 0;
-
-  const sessionsWithTranscribes = isDummyFlow
-    ? dummySessionRelations
-    : sessionsFromQuery;
-
-  const effectiveClients = useMemo(
-    () => (isDummyFlow ? [dummyClient] : clients),
-    [isDummyFlow, clients]
-  );
+  const sessionsWithTranscribes = sessionsFromQuery;
+  const effectiveClients = clients;
 
   // 현재 표시할 세션 목록
   const displayedSessions = useMemo(() => {
@@ -165,7 +148,6 @@ export const useSessionRecords = ({
 
     // 상태
     isLoading: isLoadingSessions,
-    isDummyFlow,
     hasMoreSessions,
     displayCount,
 

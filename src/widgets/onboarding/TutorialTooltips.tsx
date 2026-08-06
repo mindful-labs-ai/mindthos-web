@@ -86,7 +86,7 @@ export const SessionTabTooltip = () => (
 export const SessionClickTooltip = () => (
   <ToolTipContainer
     title="상담 기록 상세 보기"
-    message="예시 : 홍길동 3회기 기록을 눌러서 상담 기록을 확인해보세요."
+    message="가상 내담자의 상담 기록을 눌러서 상담 기록을 확인해보세요."
     level={1}
     step={2}
   />
@@ -215,7 +215,7 @@ export const ClientTabTooltip = () => (
 export const ClientClickTooltip = () => (
   <ToolTipContainer
     title="내담자 상세 보기"
-    message="홍길동 내담자를 눌러서 상세 내용을 확인해보세요!"
+    message="가상 내담자를 눌러서 상세 내용을 확인해보세요!"
     level={2}
     step={2}
   />

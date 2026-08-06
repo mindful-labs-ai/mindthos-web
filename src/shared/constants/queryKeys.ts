@@ -5,7 +5,8 @@ export const clientQueryKeys = {
   list: (counselorId: string) =>
     [...clientQueryKeys.lists(), counselorId] as const,
   details: () => [...clientQueryKeys.all, 'detail'] as const,
-  detail: (id: string) => [...clientQueryKeys.details(), id] as const,
+  detail: (counselorId: string, id: string) =>
+    [...clientQueryKeys.details(), counselorId, id] as const,
   // C2 — 무한 스크롤 paginated 리스트. 검색/정렬별 분리 캐싱.
   // list(counselorId) 아래에 nest → list 또는 all invalidate 시 paginated도 자동 propagate
   paginated: (

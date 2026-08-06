@@ -4,21 +4,21 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
+import { DIRECT_UPLOAD_MIN_SECONDS } from '@/features/onboarding/constants/tutorialUi';
 import { useDragAndDrop } from '@/features/session/hooks/useDragAndDrop';
 import { useMultiFileUpload } from '@/features/session/hooks/useMultiFileUpload';
 import { useMultiSessionCreate } from '@/features/session/hooks/useMultiSessionCreate';
 import type {
   BatchSessionConfig,
   FileSessionConfig,
+  MultiFileInfo,
+  SessionCreateResult,
   SessionRequestSttModel,
 } from '@/features/session/types';
 import { calculateTotalCredit } from '@/features/session/utils/creditCalculator';
 import { cn } from '@/lib/cn';
 import { trackError, trackEvent } from '@/lib/mixpanel';
-import {
-  getAcceptString,
-  MULTI_UPLOAD_LIMITS,
-} from '@/shared/constants/fileUpload';
+import { MULTI_UPLOAD_LIMITS } from '@/shared/constants/fileUpload';
 import {
   MixpanelError,
   MixpanelEvent,
@@ -26,12 +26,7 @@ import {
 import { creditQueryKeys } from '@/shared/constants/queryKeys';
 import { useCreditGuard } from '@/shared/hooks/useCreditGuard';
 import { useDevice } from '@/shared/hooks/useDevice';
-import {
-  CloudUploadIcon,
-  CreditIcon,
-  SecurityShieldIcon,
-  UserIcon,
-} from '@/shared/icons';
+import { CreditIcon, UserIcon } from '@/shared/icons';
 import { MobileModalHeader, Title } from '@/shared/ui';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Text } from '@/shared/ui/atoms/Text';
@@ -45,7 +40,10 @@ import { ClientSelector } from '@/widgets/client/ClientSelector';
 import { MobileSttModelSelector } from '@/widgets/home/MobileSttModelSelector';
 
 import { MultiFileConfigItem } from './multi-upload/MultiFileConfigItem';
-import { MultiFileItem } from './multi-upload/MultiFileItem';
+import {
+  SessionUploadAiGuardNotice,
+  SessionUploadFileDropArea,
+} from './multi-upload/SessionUploadFileDropArea';
 import SttModelSelector from './SttModelSelector';
 
 /** 스크롤 가능한 방향에만 그라데이션을 보여주는 래퍼 */
@@ -97,32 +95,33 @@ const ScrollFadeWrapper: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-const AiGuardNotice = ({ className }: { className?: string }) => (
-  <div
-    className={cn(
-      'flex flex-col items-center gap-3 rounded-lg bg-grey-100 py-5 text-center text-white',
-      className
-    )}
-  >
-    <SecurityShieldIcon size={32} className="text-white" />
-    <p className="text-m font-emphasize">
-      마음토스에 올리는 모든 내담자 정보는
-      <br />
-      철저하게 암호화되며 AI 학습에 이용되지 않아요.
-    </p>
-  </div>
-);
-
 interface CreateMultiSessionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  tutorial?: TutorialSessionUploadState;
+}
+
+export interface TutorialSessionUploadState {
+  files: MultiFileInfo[];
+  clientName: string;
+  clientId?: string;
+  isRecordUnavailable: boolean;
+  directUploadState: 'idle' | 'loading' | 'ready' | 'processing';
+  onDirectUpload: () => void;
+  onRemoveUploadedFile: () => void;
+  onComplete: () => void | Promise<void>;
+  /** 로컬 Tutorial QA에서 실제 세션 생성 API를 건너뛴다. */
+  debug?: boolean;
 }
 
 type ModalStep = 'upload' | 'config';
 
+const TUTORIAL_FAKE_UPLOAD_TRANSFER_MS = 8_000;
+const TUTORIAL_FAKE_UPLOAD_TICK_MS = 800;
+
 export const CreateMultiSessionModal: React.FC<
   CreateMultiSessionModalProps
-> = ({ open, onOpenChange }) => {
+> = ({ open, onOpenChange, tutorial }) => {
   const { toast } = useToast();
   const userId = useAuthStore((state) => state.userId);
   const defaultTemplateId = useAuthStore((state) => state.defaultTemplateId);
@@ -147,6 +146,7 @@ export const CreateMultiSessionModal: React.FC<
   const openModal = useModalStore((state) => state.openModal);
   const { isMobile, isTablet } = useDevice();
   const isMobileView = isMobile || isTablet;
+  const isTutorialMode = tutorial !== undefined;
 
   // 파일 관리
   const { files, addFiles, removeFile, clearFiles, isProcessing, canAddMore } =
@@ -160,12 +160,35 @@ export const CreateMultiSessionModal: React.FC<
   const effectiveIsProcessing = isProcessing;
   const effectiveCanAddMore = canAddMore;
 
+  const hasTutorialLocalFiles = isTutorialMode && effectiveFiles.length > 0;
+  const isTutorialPreparedFile =
+    isTutorialMode &&
+    !hasTutorialLocalFiles &&
+    (tutorial.directUploadState === 'ready' ||
+      tutorial.directUploadState === 'processing') &&
+    tutorial.files.length > 0;
+  const stepOneValidFiles = isTutorialPreparedFile
+    ? tutorial.files
+    : effectiveValidFiles;
+
   const addRealFiles = useCallback(
     (newFiles: File[]) => {
-      addFiles(newFiles);
+      if (
+        isTutorialPreparedFile ||
+        (isTutorialMode && effectiveFiles.length > 0)
+      )
+        return;
+      addFiles(isTutorialMode ? newFiles.slice(0, 1) : newFiles);
     },
-    [addFiles]
+    [addFiles, effectiveFiles.length, isTutorialMode, isTutorialPreparedFile]
   );
+
+  const handleTutorialFileLimitExceeded = useCallback(() => {
+    toast({
+      title: '튜토리얼에서는 1개만 업로드 할 수 있어요.',
+      description: '기존 파일을 삭제한 뒤 다시 추가해 주세요.',
+    });
+  }, [toast]);
 
   const removeUploadedFile = useCallback(
     (fileId: string) => {
@@ -175,18 +198,30 @@ export const CreateMultiSessionModal: React.FC<
   );
 
   // 일괄 설정 (Step 1)
-  const [batchConfig, setBatchConfig] = useState<BatchSessionConfig>({
-    sttModel: 'advanced',
-    clientId: undefined,
-  });
+  const [batchConfig, setBatchConfig] = useState<BatchSessionConfig>(() => ({
+    sttModel: tutorial ? 'basic' : 'advanced',
+    clientId: tutorial?.clientId,
+  }));
+
+  React.useEffect(() => {
+    if (!tutorial?.clientId) return;
+    setBatchConfig((prev) =>
+      prev.clientId ? prev : { ...prev, clientId: tutorial.clientId }
+    );
+  }, [tutorial?.clientId]);
 
   // 개별 설정 (Step 2)
   const [fileConfigs, setFileConfigs] = useState<FileSessionConfig[]>([]);
+  const [tutorialFakeResults, setTutorialFakeResults] = useState<
+    SessionCreateResult[]
+  >([]);
+  const [isTutorialFakeCreating, setIsTutorialFakeCreating] = useState(false);
 
   // 세션 생성
   const { createSessions, results, isCreating } = useMultiSessionCreate({
     userId: userId ? parseInt(userId) : 0,
     templateId: defaultTemplateId || 1,
+    tutorialFirstUpload: isTutorialMode,
     onInsufficientCredit: (message) => {
       setCreditErrorSnackBar({
         open: true,
@@ -194,13 +229,15 @@ export const CreateMultiSessionModal: React.FC<
       });
     },
   });
-  const effectiveResults = results;
-  const effectiveIsCreating = isCreating;
+  const isTutorialFakeUpload = isTutorialMode && isTutorialPreparedFile;
+  const effectiveResults = isTutorialFakeUpload ? tutorialFakeResults : results;
+  const effectiveIsCreating = isTutorialFakeUpload
+    ? isTutorialFakeCreating
+    : isCreating;
 
   // Drag and Drop
   const { isDragging, handleDragOver, handleDragLeave, handleDrop } =
     useDragAndDrop();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 모달 닫기 핸들러
   const handleClose = useCallback(
@@ -211,6 +248,8 @@ export const CreateMultiSessionModal: React.FC<
         clearFiles();
         setBatchConfig({ sttModel: 'advanced', clientId: undefined });
         setFileConfigs([]);
+        setTutorialFakeResults([]);
+        setIsTutorialFakeCreating(false);
       }
       onOpenChange(isOpen);
     },
@@ -260,21 +299,8 @@ export const CreateMultiSessionModal: React.FC<
     [addRealFiles]
   );
 
-  const onDrop = (e: React.DragEvent) => {
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
     handleDrop(e, onFileDrop);
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputFiles = e.target.files;
-    if (inputFiles) {
-      addRealFiles(Array.from(inputFiles));
-    }
-    // 같은 파일 재선택 가능하도록 초기화
-    e.target.value = '';
-  };
-
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
   };
 
   // 일괄 설정 변경
@@ -289,6 +315,10 @@ export const CreateMultiSessionModal: React.FC<
   const handleBatchClientSelect = (client: Client | null) => {
     setBatchConfig((prev) => ({ ...prev, clientId: client?.id }));
   };
+
+  const selectedClient = clients.find(
+    (client) => client.id === batchConfig.clientId
+  );
 
   // 개별 설정 변경
   const handleConfigChange = (updatedConfig: FileSessionConfig) => {
@@ -305,7 +335,7 @@ export const CreateMultiSessionModal: React.FC<
 
   // 다음 단계로
   const handleNextStep = () => {
-    if (effectiveValidFiles.length === 0) {
+    if (stepOneValidFiles.length === 0) {
       toast({
         title: '업로드할 파일이 없어요',
         description: '업로드 가능한 파일을 추가해 주세요.',
@@ -316,11 +346,11 @@ export const CreateMultiSessionModal: React.FC<
     trackEvent(MixpanelEvent.MultiSessionStepChange, {
       from: 'upload',
       to: 'config',
-      file_count: effectiveValidFiles.length,
+      file_count: stepOneValidFiles.length,
     });
     // Step 2로 이동 시 개별 설정 초기화
     setFileConfigs(
-      effectiveValidFiles.map((file, index) => ({
+      stepOneValidFiles.map((file, index) => ({
         fileId: file.id,
         order: index + 1,
         sttModel: batchConfig.sttModel,
@@ -350,17 +380,108 @@ export const CreateMultiSessionModal: React.FC<
       return;
     }
 
+    if (tutorial && isTutorialFakeUpload) {
+      if (fileConfigs.length === 0) {
+        toast({
+          title: '업로드할 파일이 없어요',
+          description: '파일을 하나 추가한 뒤 상담 기록을 만들어 주세요.',
+          duration: 3000,
+        });
+        return;
+      }
+
+      const initialResults: SessionCreateResult[] = fileConfigs.map(
+        (config) => {
+          const file = configValidFiles.find(
+            (item) => item.id === config.fileId
+          );
+          return {
+            fileId: config.fileId,
+            fileName: file?.name ?? '',
+            status: 'pending',
+          };
+        }
+      );
+
+      setTutorialFakeResults(initialResults);
+      setIsTutorialFakeCreating(true);
+
+      try {
+        for (const config of fileConfigs) {
+          const file = configValidFiles.find(
+            (item) => item.id === config.fileId
+          );
+          if (!file) continue;
+
+          setTutorialFakeResults((previous) =>
+            previous.map((result) =>
+              result.fileId === config.fileId
+                ? { ...result, status: 'uploading', uploadProgress: 0 }
+                : result
+            )
+          );
+
+          for (let progress = 10; progress <= 100; progress += 10) {
+            await new Promise<void>((resolve) =>
+              window.setTimeout(resolve, TUTORIAL_FAKE_UPLOAD_TICK_MS)
+            );
+            setTutorialFakeResults((previous) =>
+              previous.map((result) =>
+                result.fileId === config.fileId
+                  ? { ...result, uploadProgress: progress }
+                  : result
+              )
+            );
+          }
+
+          setTutorialFakeResults((previous) =>
+            previous.map((result) =>
+              result.fileId === config.fileId
+                ? { ...result, status: 'creating' }
+                : result
+            )
+          );
+
+          await new Promise<void>((resolve) =>
+            window.setTimeout(
+              resolve,
+              Math.max(
+                0,
+                DIRECT_UPLOAD_MIN_SECONDS * 1000 -
+                  TUTORIAL_FAKE_UPLOAD_TRANSFER_MS
+              )
+            )
+          );
+
+          setTutorialFakeResults((previous) =>
+            previous.map((result) =>
+              result.fileId === config.fileId
+                ? { ...result, status: 'success', uploadProgress: 100 }
+                : result
+            )
+          );
+        }
+
+        await tutorial.onComplete();
+      } finally {
+        setIsTutorialFakeCreating(false);
+      }
+      return;
+    }
+
     const finalResults = await createSessions(
       fileConfigs,
       effectiveValidFiles,
       async () => {
-        const guard = await checkCredit(step2TotalCredit);
-        if (!guard.ok && !guard.unavailable) {
-          setCreditErrorSnackBar({
-            open: true,
-            message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
-          });
-          return false;
+        if (!isTutorialMode) {
+          const guard = await checkCredit(step2TotalCredit);
+          if (!guard.ok && !guard.unavailable) {
+            setCreditErrorSnackBar({
+              open: true,
+              message: `STT 세션 시작에 ${step2TotalCredit} 크레딧이 필요해요. (보유: ${guard.remaining})`,
+            });
+            return false;
+          }
         }
 
         trackEvent(MixpanelEvent.MultiSessionCreateAttempt, {
@@ -395,8 +516,11 @@ export const CreateMultiSessionModal: React.FC<
         duration: 5000,
       });
 
-      // 가이드(레벨 4) 진행 중이라면 완료 처리 (L4 → 최종 보상까지 자동 체이닝)
-      if (currentLevel === 4) {
+      if (tutorial) {
+        await tutorial.onComplete();
+        return;
+      } else if (currentLevel === 4) {
+        // 레거시 가이드(레벨 4) 진행 중이라면 완료 처리
         await completeNextStep(useAuthStore.getState().user?.email || '');
       }
     }
@@ -440,95 +564,85 @@ export const CreateMultiSessionModal: React.FC<
 
   // Step 2에서 사용할 validFiles (config에 있는 것만)
   const configValidFiles = useMemo(() => {
-    return effectiveValidFiles.filter((f) =>
+    return stepOneValidFiles.filter((f) =>
       fileConfigs.some((c) => c.fileId === f.id)
     );
-  }, [effectiveValidFiles, fileConfigs]);
+  }, [fileConfigs, stepOneValidFiles]);
 
-  // 공통 파일 입력
-  const fileInput = (
-    <input
-      ref={fileInputRef}
-      type="file"
-      accept={getAcceptString('audio')}
-      multiple
-      onChange={handleFileInputChange}
-      className="hidden"
-    />
-  );
+  const displayFiles = hasTutorialLocalFiles
+    ? effectiveFiles
+    : (tutorial?.files ?? effectiveFiles);
+  const displayValidFiles = hasTutorialLocalFiles
+    ? effectiveValidFiles
+    : tutorial
+      ? displayFiles.filter((file) => file.validationStatus === 'valid')
+      : effectiveValidFiles;
+  const displayIsProcessing = hasTutorialLocalFiles
+    ? effectiveIsProcessing
+    : tutorial
+      ? tutorial.directUploadState === 'loading' ||
+        tutorial.directUploadState === 'processing'
+      : effectiveIsProcessing;
+  const displayCanAddMore = hasTutorialLocalFiles
+    ? false
+    : tutorial
+      ? !isTutorialPreparedFile
+      : effectiveCanAddMore;
+  const tutorialDirectUploadCard =
+    tutorial?.isRecordUnavailable && displayFiles.length === 0 ? (
+      <div className="mx-auto mt-4 flex w-full max-w-[312px] items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3 text-left">
+        <div>
+          <p className="typo-xs font-headline text-fg">
+            지금 등록할 사례가 없다면,
+            <br />
+            가상 내담자 상담 녹음 파일로
+            <br />
+            상담 기록을 만들어보세요.
+          </p>
+        </div>
+        <Button
+          tone="primary"
+          variant="outline"
+          size="sm"
+          loading={tutorial.directUploadState === 'loading'}
+          onClick={tutorial.onDirectUpload}
+        >
+          바로 올리기
+        </Button>
+      </div>
+    ) : null;
 
-  // 공통 파일 드롭 영역
   const fileDropArea = (
-    <div
+    <SessionUploadFileDropArea
+      files={displayFiles}
+      isMobile={isMobile}
+      isTablet={isTablet}
+      isDragging={isDragging}
+      canAddMore={displayCanAddMore}
+      allowFileSelection={!isTutorialPreparedFile}
+      maxFiles={isTutorialMode ? 1 : undefined}
+      emptyStateHint={tutorial ? 'MP3, WAV 포맷 (최대 500 MB)' : undefined}
+      emptyStateContent={tutorialDirectUploadCard}
+      onFilesSelected={addRealFiles}
+      onRemoveFile={
+        hasTutorialLocalFiles
+          ? removeUploadedFile
+          : (tutorial?.onRemoveUploadedFile ?? removeUploadedFile)
+      }
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={onDrop}
-      className={cn(
-        'bg-surface-contrast p-4 transition-colors',
-        isMobile && 'h-[28vh] min-h-[160px]',
-        isTablet && 'h-[24vh] min-h-[160px]',
-        !isMobileView && 'h-[313px] rounded-lg',
-        isDragging
-          ? 'border-primary bg-primary-subtle'
-          : 'border-surface-strong'
-      )}
-    >
-      {effectiveFiles.length === 0 ? (
-        <div
-          className={cn(
-            'flex h-full flex-col items-center justify-center gap-4 break-keep',
-            !isMobileView && 'min-h-[160px]'
-          )}
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-contrast">
-            <CloudUploadIcon className="h-6 w-6 text-fg-muted" />
-          </div>
-          <div className="space-y-2 text-center">
-            <Text className="text-fg">
-              {isMobileView
-                ? '오디오 파일을 추가해 주세요'
-                : '오디오 파일을 여기에 끌어다 놓으세요'}
-            </Text>
-            <Text className="text-fg-muted">
-              최대 {MULTI_UPLOAD_LIMITS.MAX_FILES}개 파일
-            </Text>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleButtonClick}>
-            + 파일 선택하기
-          </Button>
-        </div>
-      ) : (
-        <div
-          className={cn(
-            'h-full w-full space-y-2 overflow-y-auto overscroll-contain',
-            !isMobileView && 'max-w-[488px]'
-          )}
-        >
-          {effectiveFiles.map((file) => (
-            <MultiFileItem
-              key={file.id}
-              file={file}
-              onRemove={removeUploadedFile}
-            />
-          ))}
-          {effectiveCanAddMore && (
-            <button
-              onClick={handleButtonClick}
-              className="h-[82px] w-full rounded-lg border-2 border-surface-strong text-center text-5xl font-thin text-fg-muted"
-            >
-              +
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+      onFileLimitExceeded={
+        isTutorialMode ? handleTutorialFileLimitExceeded : undefined
+      }
+    />
   );
 
   // 공통 크레딧 정보 (Step 1)
-  const creditInfo1 = effectiveValidFiles.length > 0 && (
+  const creditInfo1 = !isTutorialMode && displayValidFiles.length > 0 && (
     <div className="flex flex-1 flex-col items-center justify-start text-center text-l font-emphasize text-grey-100 lg:justify-center">
       <p>
-        <span className="text-green-80">{effectiveValidFiles.length}개</span>의
+        <span className="text-green-80">{displayValidFiles.length}개</span>의
         상담기록 생성으로
       </p>
       <p>
@@ -537,6 +651,45 @@ export const CreateMultiSessionModal: React.FC<
       </p>
     </div>
   );
+
+  const tutorialSettings = tutorial ? (
+    <>
+      <div className="flex flex-col justify-start lg:flex-row lg:justify-between">
+        <Text className="typo-sm mb-2 text-fg-muted">내담자 선택</Text>
+        <ClientSelector
+          clients={clients}
+          selectedClient={selectedClient ?? null}
+          onSelect={handleBatchClientSelect}
+          variant="dropdown"
+          open={isClientModalOpen}
+          onOpenChange={setIsClientModalOpen}
+          trigger={
+            <button
+              type="button"
+              className="flex min-w-[140px] items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-left text-sm font-medium text-fg lg:min-w-[160px]"
+            >
+              <UserIcon size={18} />
+              <span className="truncate">
+                {selectedClient?.name ?? tutorial.clientName}
+              </span>
+            </button>
+          }
+        />
+      </div>
+      <Text className="typo-sm mb-2 mt-2 text-fg-muted">축어록 선택</Text>
+      {isMobileView ? (
+        <MobileSttModelSelector
+          sttModel={batchConfig.sttModel}
+          setSttModel={handleBatchSttModelChange}
+        />
+      ) : (
+        <SttModelSelector
+          sttModel={batchConfig.sttModel}
+          setSttModel={handleBatchSttModelChange}
+        />
+      )}
+    </>
+  ) : null;
 
   // 공통 개별 설정 목록 (Step 2)
   const configList = (
@@ -577,7 +730,7 @@ export const CreateMultiSessionModal: React.FC<
               업로드 중이에요. 페이지를 벗어나지 마세요.
             </Text>
           </div>
-        ) : (
+        ) : !isTutorialMode ? (
           <div className="flex items-center gap-1 rounded-lg bg-primary-subtle px-3 py-1">
             <Text className="font-headline text-primary">
               {step2TotalCredit}
@@ -585,7 +738,7 @@ export const CreateMultiSessionModal: React.FC<
             <CreditIcon size={14} />
             <Text className="text-primary">사용</Text>
           </div>
-        )}
+        ) : null}
       </div>
       <div className="flex gap-2">
         <Button
@@ -630,7 +783,7 @@ export const CreateMultiSessionModal: React.FC<
           onBack={() => handleClose(false)}
         />
       ) : (
-        <div className="pt-4 text-center">
+        <div className="shrink-0 pt-4 text-center">
           <Title as="h3" className="font-headline">
             녹음 파일로 상담 기록 추가하기
           </Title>
@@ -642,8 +795,7 @@ export const CreateMultiSessionModal: React.FC<
         /* 모바일/태블릿 레이아웃 */
         step === 'upload' ? (
           <div className="flex flex-1 flex-col overflow-y-auto overscroll-contain">
-            {fileInput}
-            <AiGuardNotice className="mx-4 mt-4 shrink-0 md:mx-12" />
+            <SessionUploadAiGuardNotice className="mx-4 mt-4 shrink-0 md:mx-12" />
             {fileDropArea}
 
             {/* 일괄 설정 */}
@@ -652,46 +804,57 @@ export const CreateMultiSessionModal: React.FC<
                 일괄 설정
               </p>
 
-              <div className="flex items-center justify-between py-2">
-                <p className="text-l font-medium text-grey-100">내담자 선택</p>
-                <button
-                  type="button"
-                  onClick={() => setIsClientModalOpen(true)}
-                  className="flex items-center gap-2 rounded-md border border-grey-30 bg-white px-3 py-2 text-grey-60"
-                >
-                  <UserIcon size={18} />
+              {tutorial ? (
+                tutorialSettings
+              ) : (
+                <>
+                  <div className="flex items-center justify-between py-2">
+                    <p className="text-l font-medium text-grey-100">
+                      내담자 선택
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsClientModalOpen(true)}
+                      className="flex items-center gap-2 rounded-md border border-grey-30 bg-white px-3 py-2 text-grey-60"
+                    >
+                      <UserIcon size={18} />
 
-                  {(() => {
-                    const selectedName = clients.find(
-                      (c) => c.id === batchConfig.clientId
-                    )?.name;
-                    return selectedName ? (
-                      <span className="text-sm font-medium text-grey-100">
-                        {selectedName}
-                      </span>
-                    ) : (
-                      <span className="text-sm font-medium">선택 안됨</span>
-                    );
-                  })()}
-                </button>
-                <ClientSelector
-                  clients={clients}
-                  selectedClient={
-                    clients.find((c) => c.id === batchConfig.clientId) || null
-                  }
-                  onSelect={handleBatchClientSelect}
-                  variant="modal"
-                  open={isClientModalOpen}
-                  onOpenChange={setIsClientModalOpen}
-                />
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <p className="text-l font-medium text-grey-100">축어록 종류</p>
-                <MobileSttModelSelector
-                  sttModel={batchConfig.sttModel}
-                  setSttModel={handleBatchSttModelChange}
-                />
-              </div>
+                      {(() => {
+                        const selectedName = clients.find(
+                          (c) => c.id === batchConfig.clientId
+                        )?.name;
+                        return selectedName ? (
+                          <span className="text-sm font-medium text-grey-100">
+                            {selectedName}
+                          </span>
+                        ) : (
+                          <span className="text-sm font-medium">선택 안됨</span>
+                        );
+                      })()}
+                    </button>
+                    <ClientSelector
+                      clients={clients}
+                      selectedClient={
+                        clients.find((c) => c.id === batchConfig.clientId) ||
+                        null
+                      }
+                      onSelect={handleBatchClientSelect}
+                      variant="modal"
+                      open={isClientModalOpen}
+                      onOpenChange={setIsClientModalOpen}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <p className="text-l font-medium text-grey-100">
+                      축어록 종류
+                    </p>
+                    <MobileSttModelSelector
+                      sttModel={batchConfig.sttModel}
+                      setSttModel={handleBatchSttModelChange}
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             {creditInfo1}
@@ -709,38 +872,50 @@ export const CreateMultiSessionModal: React.FC<
         <div className="flex flex-1 flex-col items-stretch justify-center gap-6 px-12 py-8 md:flex-row">
           {/* 왼쪽: 파일 목록 */}
           <div className="flex h-full w-full max-w-[488px] flex-1 flex-col gap-4">
-            {fileInput}
-            <AiGuardNotice className="shrink-0" />
+            <SessionUploadAiGuardNotice className="shrink-0" />
             {fileDropArea}
-            <Text className="typo-sm mt-2 text-center text-fg-muted">
-              파일 개수{' '}
-              <span className="font-medium text-primary">
-                {effectiveFiles.length}
-              </span>{' '}
-              / {MULTI_UPLOAD_LIMITS.MAX_FILES}
-            </Text>
+            {!tutorial && (
+              <Text className="typo-sm mt-2 text-center text-fg-muted">
+                파일 개수{' '}
+                <span className="font-medium text-primary">
+                  {displayFiles.length}
+                </span>{' '}
+                / {MULTI_UPLOAD_LIMITS.MAX_FILES}
+              </Text>
+            )}
           </div>
 
           {/* 오른쪽: 일괄 설정 */}
           <div className="flex h-full w-full max-w-fit flex-col gap-y-6">
             <div>
               <Text className="my-2 font-emphasize text-fg">일괄 설정</Text>
-              <div className="flex flex-col justify-start lg:flex-row lg:justify-between">
-                <Text className="typo-sm mb-2 text-fg-muted">내담자 선택</Text>
-                <ClientSelector
-                  clients={clients}
-                  selectedClient={
-                    clients.find((c) => c.id === batchConfig.clientId) || null
-                  }
-                  onSelect={handleBatchClientSelect}
-                  variant="default"
-                />
-              </div>
-              <Text className="typo-sm mb-2 text-fg-muted">축어록 선택</Text>
-              <SttModelSelector
-                sttModel={batchConfig.sttModel}
-                setSttModel={handleBatchSttModelChange}
-              />
+              {tutorial ? (
+                tutorialSettings
+              ) : (
+                <>
+                  <div className="flex flex-col justify-start lg:flex-row lg:justify-between">
+                    <Text className="typo-sm mb-2 text-fg-muted">
+                      내담자 선택
+                    </Text>
+                    <ClientSelector
+                      clients={clients}
+                      selectedClient={
+                        clients.find((c) => c.id === batchConfig.clientId) ||
+                        null
+                      }
+                      onSelect={handleBatchClientSelect}
+                      variant="default"
+                    />
+                  </div>
+                  <Text className="typo-sm mb-2 text-fg-muted">
+                    축어록 선택
+                  </Text>
+                  <SttModelSelector
+                    sttModel={batchConfig.sttModel}
+                    setSttModel={handleBatchSttModelChange}
+                  />
+                </>
+              )}
             </div>
             {creditInfo1}
           </div>
@@ -754,18 +929,26 @@ export const CreateMultiSessionModal: React.FC<
 
       {/* 하단 버튼 */}
       <div
-        className={cn(isMobileView ? 'px-4 pb-4' : 'flex justify-center gap-3')}
+        className={cn(
+          isMobileView ? 'px-4 pb-4' : 'flex justify-center gap-3',
+          tutorial && 'flex-col items-center'
+        )}
       >
+        {tutorial && (
+          <Text className="typo-xs mb-3 text-center text-fg-muted">
+            튜토리얼에서는 크레딧이 소모되지 않아요.
+          </Text>
+        )}
         {step === 'upload' ? (
           <Button
             variant="solid"
             tone="primary"
             size="lg"
             onClick={handleNextStep}
-            disabled={effectiveValidFiles.length === 0 || effectiveIsProcessing}
+            disabled={displayValidFiles.length === 0 || displayIsProcessing}
             className={isMobileView ? 'w-full' : 'w-full max-w-[375px]'}
           >
-            {effectiveIsProcessing ? '파일 업로드 중...' : '다음'}
+            {displayIsProcessing ? '파일 업로드 중...' : '다음'}
           </Button>
         ) : (
           step2Buttons

@@ -25,7 +25,11 @@ export interface CreateSupervisionAnalysisResponse {
 /** 다회기 분석 생성 — 크레딧 예약 + 머신 큐 publish는 서버가 수행. */
 export function createSupervisionAnalysis(
   clientId: string,
-  body: { sessionIds: string[]; aiSupervisionTemplateId: number }
+  body: {
+    sessionIds: string[];
+    aiSupervisionTemplateId: number;
+    title?: string;
+  }
 ): Promise<CreateSupervisionAnalysisResponse> {
   return serverRequest<CreateSupervisionAnalysisResponse>(
     SUPERVISION_ANALYSIS_ROUTES.create(clientId),

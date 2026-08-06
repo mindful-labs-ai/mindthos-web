@@ -11,7 +11,6 @@ import {
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { ChevronDownIcon, SortDescIcon } from '@/shared/icons';
 import { MobileModalHeader } from '@/shared/ui';
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { Modal } from '@/shared/ui/composites/Modal';
 import type { SentDocument } from '@/stores/sentDocumentStore';
 
@@ -23,7 +22,6 @@ export interface ClientDetailViewProps {
   client: Client;
   /** 데스크탑 좌측 내담자 사이드바 (모바일은 null) */
   sidebar?: React.ReactNode;
-  isDummyFlow: boolean;
   sessionRecordCount: number;
   onEditClientClick: () => void;
   sessionList: React.ReactNode;
@@ -34,10 +32,57 @@ export interface ClientDetailViewProps {
   initialTab?: 'info' | 'documents';
 }
 
+export const ClientDetailNotFoundView = ({
+  sidebar,
+  isMobileView,
+}: {
+  sidebar?: React.ReactNode;
+  isMobileView: boolean;
+}) => {
+  const navigate = useNavigate();
+  const { navigateWithUtm } = useNavigateWithUtm();
+
+  if (isMobileView) {
+    return (
+      <div className="flex h-dvh w-full flex-col bg-app-bg">
+        <MobileModalHeader onBack={() => navigate(-1)} title="내담자 상세" />
+        <div className="flex min-h-0 flex-1 items-center justify-center px-6 text-center">
+          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full w-full">
+      {sidebar}
+      <div className="mx-auto flex h-full min-w-0 max-w-[1332px] flex-1 flex-col">
+        <div className="flex-shrink-0 px-16 pt-[42px]">
+          <div className="flex min-w-0 items-center gap-6">
+            <button
+              type="button"
+              aria-label="내담자 목록으로"
+              onClick={() => navigateWithUtm(ROUTES.CLIENTS)}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-grey-40 bg-grey-10 text-grey-70 transition-colors lg:hover:bg-grey-20"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <h1 className="truncate text-2xl font-headline text-grey-100">
+              내담자 상세
+            </h1>
+          </div>
+        </div>
+        <div className="flex min-h-0 flex-1 items-center justify-center px-6 text-center">
+          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
   client,
   sidebar,
-  isDummyFlow,
   sessionRecordCount,
   onEditClientClick,
   sessionList,
@@ -285,11 +330,6 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
               <h1 className="truncate text-2xl font-headline text-grey-100">
                 {client.name}
               </h1>
-              {isDummyFlow && (
-                <Badge tone="warning" variant="soft" size="sm">
-                  예시
-                </Badge>
-              )}
             </div>
             <div className="flex flex-shrink-0 items-center gap-2">
               {domainLinks.map(({ label, onClick, isActive }) => {
@@ -354,7 +394,7 @@ export const ClientDetailView: React.FC<ClientDetailViewProps> = ({
                   <div className="rounded-2xl border border-grey-40 bg-white p-6 text-left">
                     <div className="mb-6 flex items-center justify-between">
                       <h2 className="text-m font-medium text-grey-70">
-                        클라이언트 정보
+                        내담자 정보
                       </h2>
                       <button
                         onClick={onEditClientClick}

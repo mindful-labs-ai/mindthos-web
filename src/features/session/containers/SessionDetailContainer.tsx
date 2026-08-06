@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 
 import { ROUTES } from '@/app/router/constants';
-import { isDummySessionId } from '@/features/session/constants/dummySessions';
 import { useTemplateList } from '@/features/template/hooks/useTemplateList';
 import { trackError } from '@/lib/mixpanel';
 import { updateProgressNoteSummary } from '@/shared/api/supabase/progressNoteQueries';
@@ -112,8 +111,9 @@ export const SessionDetailContainer: React.FC = () => {
     enabled: !!sessionId,
   });
 
-  const isDummySession = isDummySessionId(sessionId || '');
-  const isReadOnly = isDummySession;
+  // 서버에서 발급된 가상 내담자 세션도 실제 상담 기록과 동일하게 재생·편집·삭제한다.
+  const isDummySession = false;
+  const isReadOnly = false;
 
   const sessionQueryKey = React.useMemo(
     () => sessionQueryKeys.detail(sessionId || '', isDummySession),

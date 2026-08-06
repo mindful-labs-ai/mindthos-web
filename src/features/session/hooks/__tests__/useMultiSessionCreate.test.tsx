@@ -14,11 +14,13 @@ import { useMultiSessionCreate } from '../useMultiSessionCreate';
 
 const mocks = vi.hoisted(() => ({
   createSessionBackground: vi.fn(),
+  createTutorialFirstSession: vi.fn(),
   uploadAudio: vi.fn(),
 }));
 
 vi.mock('@/shared/api/supabase/sessionQueries', () => ({
   createSessionBackground: mocks.createSessionBackground,
+  createTutorialFirstSession: mocks.createTutorialFirstSession,
   InsufficientCreditError: class InsufficientCreditError extends Error {},
 }));
 
@@ -67,6 +69,12 @@ describe('useMultiSessionCreate', () => {
       session_id: 'session-1',
       status: 'accepted',
       stt_model: 'advanced',
+      message: 'accepted',
+    });
+    mocks.createTutorialFirstSession.mockResolvedValue({
+      session_id: 'tutorial-session-1',
+      status: 'accepted',
+      stt_model: 'basic',
       message: 'accepted',
     });
   });
@@ -182,5 +190,52 @@ describe('useMultiSessionCreate', () => {
 
     expect(mocks.uploadAudio).toHaveBeenCalledTimes(1);
     expect(mocks.createSessionBackground).toHaveBeenCalledTimes(1);
+  });
+
+  it('Tutorial 실제 업로드는 S3 업로드 후 첫 파일 전용 API를 호출한다', async () => {
+    const tutorialConfig: FileSessionConfig = {
+      ...config,
+      sttModel: 'basic',
+      clientId: '00000000-0000-0000-0000-000000000001',
+    };
+
+    const { result } = renderHook(
+      () =>
+        useMultiSessionCreate({
+          userId: 67,
+          templateId: 1,
+          tutorialFirstUpload: true,
+        }),
+      { wrapper: createWrapper() }
+    );
+
+    let finalResults!: SessionCreateResult[] | null;
+    await act(async () => {
+      finalResults = await result.current.createSessions(
+        [tutorialConfig],
+        [file]
+      );
+    });
+
+    expect(mocks.uploadAudio).toHaveBeenCalledTimes(1);
+    expect(mocks.createSessionBackground).not.toHaveBeenCalled();
+    expect(mocks.createTutorialFirstSession).toHaveBeenCalledTimes(1);
+    expect(mocks.createTutorialFirstSession).toHaveBeenCalledWith({
+      user_id: 67,
+      title: 'session.wav',
+      s3_key: 'users/1/session.wav',
+      file_size_mb: 1,
+      duration_seconds: 60,
+      client_id: tutorialConfig.clientId,
+      stt_model: 'basic',
+      template_id: 1,
+    });
+    expect(finalResults).toEqual([
+      expect.objectContaining({
+        fileId: file.id,
+        status: 'success',
+        sessionId: 'tutorial-session-1',
+      }),
+    ]);
   });
 });

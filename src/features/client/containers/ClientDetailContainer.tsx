@@ -6,10 +6,6 @@ import {
   getClientDetailRoute,
   getSessionDetailRoute,
 } from '@/app/router/constants';
-import {
-  dummyClient,
-  dummySessionRelations,
-} from '@/features/session/constants/dummySessions';
 import { useClientSessions } from '@/features/session/hooks/useSessionsList';
 import type {
   HandwrittenTranscribeListItem,
@@ -21,16 +17,16 @@ import { getNoteTypesFromProgressNotes } from '@/shared/constants/noteTypeMappin
 import { useDevice } from '@/shared/hooks/useDevice';
 import { useInfiniteScroll } from '@/shared/hooks/useInfiniteScroll';
 import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
-import { useToast } from '@/shared/ui/composites/Toast';
 import { useAuthStore } from '@/stores/authStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ClientSidebar } from '@/widgets/client/ClientSidebar';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
+import { useClientById } from '../hooks/useClientById';
 import { useClientList } from '../hooks/useClientList';
 import type { Client } from '../types';
 
-import { ClientDetailView } from './ClientDetailView';
+import { ClientDetailNotFoundView, ClientDetailView } from './ClientDetailView';
 
 export const ClientDetailContainer: React.FC = () => {
   const { clientId } = useParams<{ clientId: string }>();
@@ -44,13 +40,12 @@ export const ClientDetailContainer: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
   const userId = useAuthStore((state) => state.userId);
-  const { toast } = useToast();
 
   const { clients, isLoading: isLoadingClients } = useClientList();
+  const { client: selectedClient, isLoading: isLoadingSelectedClient } =
+    useClientById(clientId ?? null);
   const initialTab =
     searchParams.get('tab') === 'documents' ? 'documents' : 'info';
-
-  const isDummyClientId = clientId === 'dummy_client_1';
 
   const {
     items: clientSessionItems,
@@ -61,7 +56,7 @@ export const ClientDetailContainer: React.FC = () => {
   } = useClientSessions({
     userId: userId ? Number(userId) : 0,
     clientId: clientId || '',
-    enabled: !!userId && !!clientId && !isDummyClientId,
+    enabled: !!userId && !!clientId,
     sortOrder: sortOrder === 'newest' ? 'desc' : 'asc',
   });
 
@@ -71,29 +66,15 @@ export const ClientDetailContainer: React.FC = () => {
     fetchNextPage,
   });
 
-  const isDummyFlow =
-    isDummyClientId ||
-    (!isLoadingClients &&
-      !isLoadingSessions &&
-      !clients.length &&
-      clientSessionItems.length === 0);
-  const isReadOnly = isDummyFlow;
-
   const client = React.useMemo(() => {
     if (!clientId) return null;
-    if (isDummyFlow) return dummyClient;
-    return clients.find((c) => c.id === clientId) || null;
-  }, [clients, clientId, isDummyFlow]);
+    return selectedClient ?? clients.find((c) => c.id === clientId) ?? null;
+  }, [clients, clientId, selectedClient]);
 
   const clientSessions = React.useMemo(() => {
     if (!clientId) return [];
-    if (isDummyFlow) {
-      return dummySessionRelations.filter(
-        (s) => s.session.client_id === clientId
-      );
-    }
     return clientSessionItems;
-  }, [clientId, isDummyFlow, clientSessionItems]);
+  }, [clientId, clientSessionItems]);
 
   const getCardPreview = (
     transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null,
@@ -155,26 +136,10 @@ export const ClientDetailContainer: React.FC = () => {
   };
 
   const handleEditModalOpen = (open: boolean) => {
-    if (isReadOnly && open) {
-      toast({
-        title: '읽기 전용',
-        description: '실제 내담자에서 정보를 수정할 수 있어요.',
-        duration: 3000,
-      });
-      return;
-    }
     setIsEditModalOpen(open);
   };
 
   const handleEditClientClick = () => {
-    if (isReadOnly) {
-      toast({
-        title: '읽기 전용',
-        description: '실제 내담자에서 정보를 수정할 수 있어요.',
-        duration: 3000,
-      });
-      return;
-    }
     setIsEditModalOpen(true);
   };
 
@@ -192,7 +157,10 @@ export const ClientDetailContainer: React.FC = () => {
     />
   ) : null;
 
-  if (isLoadingClients || isLoadingSessions) {
+  if (
+    isLoadingSessions ||
+    (!client && (isLoadingClients || isLoadingSelectedClient))
+  ) {
     return (
       <div className="flex h-full w-full">
         {clientSidebar}
@@ -205,12 +173,10 @@ export const ClientDetailContainer: React.FC = () => {
 
   if (!client) {
     return (
-      <div className="flex h-full w-full">
-        {clientSidebar}
-        <div className="flex min-w-0 flex-1 items-center justify-center bg-surface-contrast">
-          <p className="text-fg-muted">내담자를 찾을 수 없어요.</p>
-        </div>
-      </div>
+      <ClientDetailNotFoundView
+        sidebar={clientSidebar}
+        isMobileView={isMobileView}
+      />
     );
   }
 
@@ -221,7 +187,6 @@ export const ClientDetailContainer: React.FC = () => {
           <SessionRecordCard
             key={record.session_id}
             record={record}
-            isReadOnly={isReadOnly}
             onClick={handleSessionClick}
           />
         ))}
@@ -245,7 +210,6 @@ export const ClientDetailContainer: React.FC = () => {
     <ClientDetailView
       client={client}
       sidebar={clientSidebar}
-      isDummyFlow={isDummyFlow}
       sessionRecordCount={sessionRecords.length}
       onEditClientClick={handleEditClientClick}
       sessionList={sessionList}

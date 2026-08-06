@@ -67,6 +67,11 @@ export interface SttBackendPort {
     request: CreateSessionBackgroundRequest
   ): Promise<CreateSessionBackgroundResponse>;
 
+  /** Tutorial 4단계의 실제 첫 파일 업로드 — 서버가 무료 권리를 원자적으로 검증한다. */
+  createTutorialFirstAudioSession(
+    request: CreateSessionBackgroundRequest
+  ): Promise<CreateSessionBackgroundResponse>;
+
   /** 직접입력 세션 생성(레거시 EF session/hand-written). */
   createHandWrittenSession(
     request: CreateHandWrittenSessionRequest

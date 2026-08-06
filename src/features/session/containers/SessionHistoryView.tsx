@@ -4,7 +4,6 @@ import { Outlet } from 'react-router-dom';
 
 import type { Client } from '@/features/client/types';
 import { ChevronDownIcon, SortDescIcon, UserIcon } from '@/shared/icons';
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { Button } from '@/shared/ui/atoms/Button';
 import { Title } from '@/shared/ui/atoms/Title';
 import { PopUp } from '@/shared/ui/composites/PopUp';
@@ -12,7 +11,6 @@ import { FilterMenu } from '@/widgets/session/FilterMenu';
 
 export interface SessionHistoryViewProps {
   sessionId?: string;
-  isDummyFlow: boolean;
   effectiveClients: Client[];
   sortOrder: 'newest' | 'oldest';
   selectedClientIds: string[];
@@ -27,7 +25,6 @@ export interface SessionHistoryViewProps {
 
 export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
   sessionId,
-  isDummyFlow,
   effectiveClients,
   sortOrder,
   selectedClientIds,
@@ -53,11 +50,6 @@ export const SessionHistoryView: React.FC<SessionHistoryViewProps> = ({
               >
                 상담 기록
               </Title>
-              {isDummyFlow && (
-                <Badge tone="warning" variant="soft" size="sm">
-                  예시
-                </Badge>
-              )}
             </div>
 
             <div className="mt-6 flex justify-start gap-3">

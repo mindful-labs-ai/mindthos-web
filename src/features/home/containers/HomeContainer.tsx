@@ -8,10 +8,6 @@ import {
   getSessionDetailRoute,
 } from '@/app/router/constants';
 import { useClientList } from '@/features/client/hooks/useClientList';
-import {
-  dummyClient,
-  dummySessionRelations,
-} from '@/features/session/constants/dummySessions';
 import { useSessionsList } from '@/features/session/hooks/useSessionsList';
 import type {
   HandwrittenTranscribeListItem,
@@ -33,16 +29,13 @@ import {
   SuperVisionActionIcon,
   UploadActionIcon,
 } from '@/shared/icons';
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { useToast } from '@/shared/ui/composites/Toast';
 import { formatKoreanDate } from '@/shared/utils/date';
 import { useAuthStore } from '@/stores/authStore';
 import { useModalStore } from '@/stores/modalStore';
-import { useQuestStore } from '@/stores/questStore';
 import { ActionCard } from '@/widgets/home/ActionCard';
 import { GreetingSection } from '@/widgets/home/GreetingSection';
-import { HomeEventBanner } from '@/widgets/home/HomeEventBanner';
-import { QuestStep } from '@/widgets/onboarding/QuestStep';
+import { TutorialMissionArea } from '@/widgets/onboarding/TutorialMissionArea';
 import { SessionRecordCard } from '@/widgets/session/SessionRecordCard';
 
 import { HomeView } from './HomeView';
@@ -54,10 +47,6 @@ const HomeContainer = () => {
   const { navigateWithUtm } = useNavigateWithUtm();
   const userName = useAuthStore((state) => state.userName);
   const userId = useAuthStore((state) => state.userId);
-  const user = useAuthStore((state) => state.user);
-
-  const { currentLevel, isChecked, shouldShowOnboarding, startedAt } =
-    useQuestStore();
 
   const openModal = useModalStore((state) => state.openModal);
   const { toast } = useToast();
@@ -100,18 +89,10 @@ const HomeContainer = () => {
     }
   );
 
-  const { clients, isLoading: isLoadingClients } = useClientList();
+  const { clients } = useClientList();
 
-  const isDummyFlow =
-    !isLoadingSessions &&
-    !isLoadingClients &&
-    sessionItems.length === 0 &&
-    clients.length === 0;
-
-  const sessionsWithTranscribes = isDummyFlow
-    ? dummySessionRelations
-    : sessionItems;
-  const effectiveClients = isDummyFlow ? [dummyClient] : clients;
+  const sessionsWithTranscribes = sessionItems;
+  const effectiveClients = clients;
 
   const recentSessions = sessionsWithTranscribes.slice(0, 5);
 
@@ -173,19 +154,6 @@ const HomeContainer = () => {
     }
   );
 
-  const completedCount = currentLevel > 0 ? currentLevel - 1 : 0;
-
-  const calculateRemainingDays = (start: string | null) => {
-    if (!start) return 7;
-    const startDate = new Date(start);
-    const now = new Date();
-    const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 7);
-    const diff = endDate.getTime() - now.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  };
-  const remainingDays = calculateRemainingDays(startedAt);
-
   const handleUploadClick = () => {
     openModal('createMultiSession');
   };
@@ -217,33 +185,9 @@ const HomeContainer = () => {
     navigateWithUtm(getSessionDetailRoute(record.session_id));
   };
 
-  const handleCompleteQuest3 = () => {
-    if (user?.email) {
-      useQuestStore.getState().completeNextStep(user.email);
-    }
-  };
-
-  const hasSession = sessionItems.length > 0;
   const hasMoreSessions = sessionsWithTranscribes.length > 5;
 
-  // 워크숍 이벤트 배너 — 추가 기획 전까지 유저에게 노출하지 않는다(QA). 재개 시 true로.
-  const SHOW_HOME_EVENT_BANNER: boolean = false;
-  const onboardingSection = isChecked ? (
-    <div className="max-w-[1200px]">
-      {shouldShowOnboarding ? (
-        <QuestStep
-          completedStepCount={completedCount}
-          remainingDays={remainingDays}
-          onOpenCreateSession={handleUploadClick}
-          hasSession={hasSession}
-          onCompleteQuest3={handleCompleteQuest3}
-        />
-      ) : SHOW_HOME_EVENT_BANNER ? (
-        // 웰컴 배너 대체 — 이벤트 배너 띠 (닫음 상태는 위젯이 localStorage로 관리)
-        <HomeEventBanner />
-      ) : null}
-    </div>
-  ) : null;
+  const onboardingSection = <TutorialMissionArea />;
 
   const greetingSection = (
     <GreetingSection userName={userName!} date={formatKoreanDate()} />
@@ -297,11 +241,6 @@ const HomeContainer = () => {
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-l font-headline">지난 상담 기록</h2>
-          {isDummyFlow && (
-            <Badge tone="warning" variant="soft" size="sm">
-              예시
-            </Badge>
-          )}
         </div>
       </div>
 
@@ -315,7 +254,6 @@ const HomeContainer = () => {
             <SessionRecordCard
               key={record.session_id}
               record={record}
-              isReadOnly={isDummyFlow}
               onClick={handleSessionClick}
             />
           ))

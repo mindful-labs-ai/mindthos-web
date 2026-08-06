@@ -108,6 +108,45 @@ describe('serverSttBackend — 서버 camelCase 응답을 기존 snake_case shap
     ).rejects.toBeInstanceOf(InsufficientCreditError);
   });
 
+  it('createTutorialFirstAudioSession: 첫 무료 업로드 전용 API로 요청한다', async () => {
+    serverRequestMock.mockResolvedValue({
+      sessionId: 'tutorial-session-1',
+      sttModel: 'basic',
+    });
+
+    const result = await serverSttBackend.createTutorialFirstAudioSession({
+      user_id: 1,
+      title: '튜토리얼 상담 녹음',
+      s3_key: 'audio/x.mp3',
+      file_size_mb: 12.5,
+      duration_seconds: 600,
+      client_id: null,
+      stt_model: 'basic',
+      template_id: 3,
+    });
+
+    expect(serverRequestMock).toHaveBeenCalledWith(
+      '/tutorials/first-audio-session',
+      {
+        method: 'POST',
+        body: {
+          title: '튜토리얼 상담 녹음',
+          s3Key: 'audio/x.mp3',
+          fileSizeMb: 12.5,
+          durationSeconds: 600,
+          clientId: undefined,
+          sttModel: 'basic',
+          templateId: 3,
+        },
+      }
+    );
+    expect(result).toMatchObject({
+      session_id: 'tutorial-session-1',
+      status: 'accepted',
+      stt_model: 'basic',
+    });
+  });
+
   it('createHandWrittenSession: 기존 EF 응답 shape(success/snake_case)로 매핑하고, 에러는 {status,message}로 던진다', async () => {
     serverRequestMock.mockResolvedValue({
       sessionId: 'session-2',

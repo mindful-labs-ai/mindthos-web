@@ -8,6 +8,7 @@ export interface CreateClientAnalysisRequest {
   client_id: string;
   session_ids: string[];
   ai_supervision_template_id: number;
+  title?: string;
 }
 
 export interface CreateClientAnalysisResponse {

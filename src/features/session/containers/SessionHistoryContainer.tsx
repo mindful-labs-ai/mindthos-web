@@ -6,10 +6,6 @@ import { useParams } from 'react-router-dom';
 import { getSessionDetailRoute } from '@/app/router/constants';
 import { useClientsList } from '@/features/client/hooks/useClientsList';
 import type { Client } from '@/features/client/types';
-import {
-  dummyClient,
-  dummySessionRelations,
-} from '@/features/session/constants/dummySessions';
 import { useSessionsList } from '@/features/session/hooks/useSessionsList';
 import type {
   HandwrittenTranscribeListItem,
@@ -46,13 +42,12 @@ export const SessionHistoryContainer: React.FC = () => {
   // 클라이언트 카드와 동일한 RPC 사용 → session_count가 클라이언트 카드 표시값과 일치
   // 필터에 모든 클라이언트가 보여야 하므로 limit 충분히 크게 (p99=34, 안전망 500)
   const userIdNum = parseInt(userId || '0');
-  const { items: clientPageItems, isLoading: isLoadingClients } =
-    useClientsList({
-      counselorId: userIdNum,
-      sortOrder: 'desc',
-      limit: 500,
-      enabled: !!userId,
-    });
+  const { items: clientPageItems } = useClientsList({
+    counselorId: userIdNum,
+    sortOrder: 'desc',
+    limit: 500,
+    enabled: !!userId,
+  });
   // ClientsPageItem → Client 변환 (downstream 컴포넌트가 Client 타입 기대)
   const clients = React.useMemo<Client[]>(
     () =>
@@ -129,18 +124,8 @@ export const SessionHistoryContainer: React.FC = () => {
     fetchNextPage,
   });
 
-  const hasAnyRealData = sessionItems.length > 0 || clients.length > 0;
-  const isDummyFlow =
-    !isLoadingSessions && !isLoadingClients && !hasAnyRealData;
-
-  const sessionsWithData = React.useMemo(
-    () => (isDummyFlow ? dummySessionRelations : sessionItems),
-    [isDummyFlow, sessionItems]
-  );
-  const effectiveClients = React.useMemo(
-    () => (isDummyFlow ? [dummyClient] : clients),
-    [isDummyFlow, clients]
-  );
+  const sessionsWithData = sessionItems;
+  const effectiveClients = clients;
 
   const getCardPreview = (
     transcribe: TranscribeListItem | HandwrittenTranscribeListItem | null,
@@ -300,13 +285,13 @@ export const SessionHistoryContainer: React.FC = () => {
   // 사이드탭 활성(현재) 세션 제목 수정 — updateSessionTitle 후 목록/상세 캐시 갱신
   const handleSessionTitleUpdate = React.useCallback(
     async (newTitle: string) => {
-      if (!sessionId || isDummyFlow) return;
+      if (!sessionId) return;
       try {
         await updateSessionTitle(sessionId, newTitle);
         await queryClient.invalidateQueries({
           queryKey: sessionQueryKeys.all(userIdNum),
         });
-        // 상세 캐시(['session', sessionId, isDummy]) 프리픽스 매칭
+        // 세션 상세 캐시 프리픽스 매칭
         await queryClient.invalidateQueries({
           queryKey: ['session', sessionId],
         });
@@ -319,7 +304,7 @@ export const SessionHistoryContainer: React.FC = () => {
         throw error; // 아이템이 편집값을 원복하도록 전파
       }
     },
-    [sessionId, isDummyFlow, queryClient, userIdNum, toast]
+    [sessionId, queryClient, userIdNum, toast]
   );
 
   const sideList = sessionId ? (
@@ -353,7 +338,6 @@ export const SessionHistoryContainer: React.FC = () => {
         <SessionRecordCard
           key={record.session_id}
           record={record}
-          isReadOnly={isDummyFlow}
           onClick={() => handleCardClick(record)}
         />
       ))}
@@ -380,7 +364,6 @@ export const SessionHistoryContainer: React.FC = () => {
     return (
       <MobileSessionHistoryView
         sessionId={sessionId}
-        isDummyFlow={isDummyFlow}
         effectiveClients={effectiveClients}
         sortOrder={sortOrder}
         selectedClientIds={selectedClientIds}
@@ -397,7 +380,6 @@ export const SessionHistoryContainer: React.FC = () => {
   return (
     <SessionHistoryView
       sessionId={sessionId}
-      isDummyFlow={isDummyFlow}
       effectiveClients={effectiveClients}
       sortOrder={sortOrder}
       selectedClientIds={selectedClientIds}

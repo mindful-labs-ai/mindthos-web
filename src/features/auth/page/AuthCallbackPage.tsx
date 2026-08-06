@@ -7,9 +7,10 @@ import { trackEvent } from '@/lib/mixpanel';
 import { supabase } from '@/lib/supabase';
 import { authService } from '@/shared/api/services/auth/authService';
 import { MixpanelEvent } from '@/shared/constants/mixpanelEvents';
-import { useNavigateWithUtm } from '@/shared/hooks/useNavigateWithUtm';
 import { SplashLoading } from '@/shared/ui/composites/SplashLoading';
+import { removeUtmParamsFromCurrentUrl } from '@/shared/utils/utm';
 import { useAuthStore } from '@/stores/authStore';
+import { getUtmParamsForUrl, useUtmStore } from '@/stores/utmStore';
 
 /**
  * OAuth 콜백 페이지
@@ -18,9 +19,9 @@ import { useAuthStore } from '@/stores/authStore';
  * recovery 컨텍스트면 /auth/reset-password 로 우회시킨다.
  */
 const AuthCallbackPage = () => {
-  const { navigateWithUtm } = useNavigateWithUtm();
   const navigate = useNavigate();
   const initialize = useAuthStore((state) => state.initialize);
+  const initializeUtm = useUtmStore((state) => state.initializeUtm);
 
   useEffect(() => {
     const initialHash = window.location.hash;
@@ -28,11 +29,23 @@ const AuthCallbackPage = () => {
       initialHash.includes('type=recovery') ||
       new URLSearchParams(window.location.search).get('type') === 'recovery';
 
+    const currentUtmSearch = () => {
+      const utmParams = getUtmParamsForUrl();
+      return utmParams ? `?${utmParams}` : '';
+    };
+
     let handled = false;
     const redirectToReset = () => {
       if (handled) return;
       handled = true;
-      navigate(ROUTES.PASSWORD_RESET + initialHash, { replace: true });
+      navigate(
+        {
+          pathname: ROUTES.PASSWORD_RESET,
+          search: currentUtmSearch(),
+          hash: initialHash,
+        },
+        { replace: true }
+      );
     };
 
     const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -42,6 +55,8 @@ const AuthCallbackPage = () => {
     });
 
     const handleCallback = async () => {
+      initializeUtm(window.location.search);
+
       if (isRecoveryHash) {
         redirectToReset();
         return;
@@ -54,14 +69,22 @@ const AuthCallbackPage = () => {
           const method = session.user?.app_metadata?.provider ?? 'unknown';
           trackEvent(MixpanelEvent.LoginOAuthCallback, { method });
           await initialize();
+          useUtmStore.getState().stopUrlPropagation();
+          removeUtmParamsFromCurrentUrl();
           trackEvent(MixpanelEvent.LoginSuccess, { method });
-          navigateWithUtm(ROUTES.ROOT, { replace: true });
+          navigate(
+            { pathname: ROUTES.ROOT, search: currentUtmSearch() },
+            { replace: true }
+          );
         } else {
           trackEvent(MixpanelEvent.LoginFailed, {
             method: 'oauth',
             error: 'no_session',
           });
-          navigateWithUtm(ROUTES.AUTH, { replace: true });
+          navigate(
+            { pathname: ROUTES.AUTH, search: currentUtmSearch() },
+            { replace: true }
+          );
         }
       } catch (error) {
         trackEvent(MixpanelEvent.LoginFailed, {
@@ -69,7 +92,10 @@ const AuthCallbackPage = () => {
           error: error instanceof Error ? error.message : 'callback_error',
         });
         console.error('OAuth callback error:', error);
-        navigateWithUtm(ROUTES.AUTH, { replace: true });
+        navigate(
+          { pathname: ROUTES.AUTH, search: currentUtmSearch() },
+          { replace: true }
+        );
       }
     };
 
@@ -78,7 +104,7 @@ const AuthCallbackPage = () => {
     return () => {
       data.subscription.unsubscribe();
     };
-  }, [initialize, navigate, navigateWithUtm]);
+  }, [initialize, initializeUtm, navigate]);
 
   return <SplashLoading visible />;
 };

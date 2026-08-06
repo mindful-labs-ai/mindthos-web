@@ -15,6 +15,8 @@ const buildScript = readFileSync(
   join(projectRoot, 'deploy/build-image.sh'),
   'utf8'
 );
+const envExample = readFileSync(join(projectRoot, '.env.example'), 'utf8');
+const indexHtml = readFileSync(join(projectRoot, 'index.html'), 'utf8');
 
 describe('ECS nginx runtime boundary', () => {
   it('query string과 불필요한 개인정보성 header를 access log에 남기지 않는다', () => {
@@ -78,5 +80,11 @@ describe('ECS nginx runtime boundary', () => {
     expect(dockerfile).toContain(
       'COPY deploy/nginx.conf /etc/nginx/templates/default.conf.template'
     );
+    expect(dockerfile).toContain("grep -qx 'VITE_SERVER_API_URL=/'");
+    expect(envExample).toContain('VITE_SERVER_API_URL=/');
+  });
+
+  it('manifest를 불러올 때 Cloudflare Access cookie를 전달한다', () => {
+    expect(indexHtml).toContain('crossorigin="use-credentials"');
   });
 });

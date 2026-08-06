@@ -17,6 +17,7 @@ import ErrorPage from '@/features/error/page/ErrorPage';
 import NotFoundPage from '@/features/error/page/NotFoundPage';
 import GenogramClientPage from '@/features/genogram/pages/GenogramClientPage';
 import HomePage from '@/features/home/page/HomePage';
+import CohortSurveyPage from '@/features/onboarding/page/CohortSurveyPage';
 import PsychologyAssessmentsPage from '@/features/psychology-assessments/pages/PsychologyAssessmentsPage';
 import SessionDetailPage from '@/features/session/page/SessionDetailPage';
 import SessionHistoryPage from '@/features/session/page/SessionHistoryPage';
@@ -25,6 +26,7 @@ import SharedDocumentPage from '@/features/shared-document/page/SharedDocumentPa
 import TemplateListPage from '@/features/template/page/TemplateListPage';
 import TermsPage from '@/features/terms/page/TermsPage';
 import TermsAgreementPage from '@/features/terms-agreement/page/TermsAgreementPage';
+import TutorialQaPage from '@/features/tutorial-qa/page/TutorialQaPage';
 import UnsubscribePage from '@/features/unsubscribe/page/UnsubscribePage';
 import { env } from '@/lib/env';
 import PaymentFail from '@/widgets/payment/PaymentFail';
@@ -145,8 +147,16 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.USER_VERIFY,
         element: (
-          <ProtectedRoute skipSignupCheck>
+          <ProtectedRoute skipSignupCheck skipCohortSurveyCheck>
             <UserVerifyPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ROUTES.ONBOARDING_COHORT,
+        element: (
+          <ProtectedRoute skipCohortSurveyCheck>
+            <CohortSurveyPage />
           </ProtectedRoute>
         ),
       },
@@ -194,6 +204,18 @@ export const router = createBrowserRouter([
               element: (
                 <ProtectedRoute skipTermsCheck skipSignupCheck>
                   <CreditQaPage />
+                </ProtectedRoute>
+              ),
+            },
+          ]
+        : []),
+      ...(env.DEV || env.VITE_ENABLE_TUTORIAL_QA
+        ? [
+            {
+              path: ROUTES.TUTORIAL_QA,
+              element: (
+                <ProtectedRoute skipTermsCheck skipSignupCheck>
+                  <TutorialQaPage />
                 </ProtectedRoute>
               ),
             },

@@ -16,9 +16,12 @@ export const PublicOnlyRoute: React.FC<PublicOnlyRouteProps> = ({
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
   const utmParams = useUtmStore((state) => state.utmParams);
+  const shouldPropagateToUrl = useUtmStore(
+    (state) => state.shouldPropagateToUrl
+  );
 
   if (!isLoading && isAuthenticated) {
-    const search = utmParams ? `?${utmParams}` : '';
+    const search = shouldPropagateToUrl && utmParams ? `?${utmParams}` : '';
     return <Navigate to={{ pathname: ROUTES.ROOT, search }} replace />;
   }
 

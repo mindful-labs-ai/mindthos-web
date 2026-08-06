@@ -41,7 +41,6 @@ import {
   ChevronRightIcon,
 } from '@/shared/icons';
 import { Button, Title } from '@/shared/ui';
-import { Badge } from '@/shared/ui/atoms/Badge';
 import { Text } from '@/shared/ui/atoms/Text';
 import { SnackBar } from '@/shared/ui/composites/SnackBar';
 import { useToast } from '@/shared/ui/composites/Toast';
@@ -112,7 +111,6 @@ const MobileView = () => {
   const {
     sessionRecords,
     isLoading: isLoadingSessions,
-    isDummyFlow,
     hasMoreSessions,
     handleLoadMore,
   } = useSessionRecords({ userId });
@@ -498,11 +496,6 @@ const MobileView = () => {
             <Title as="h2" className="typo-l font-emphasize">
               상담기록
             </Title>
-            {isDummyFlow && (
-              <Badge tone="warning" variant="soft" size="sm">
-                예시
-              </Badge>
-            )}
           </div>
 
           <div className="space-y-3 pb-6">
@@ -513,11 +506,7 @@ const MobileView = () => {
             ) : sessionRecords.length > 0 ? (
               <>
                 {sessionRecords.map((record) => (
-                  <SessionRecordCard
-                    key={record.session_id}
-                    record={record}
-                    isReadOnly={isDummyFlow}
-                  />
+                  <SessionRecordCard key={record.session_id} record={record} />
                 ))}
 
                 {/* 더보기 버튼 */}

@@ -2,7 +2,6 @@ import React from 'react';
 
 import { getClientDetailRoute } from '@/app/router/constants';
 import { useClientsList } from '@/features/client/hooks/useClientsList';
-import { dummyClient } from '@/features/session/constants/dummySessions';
 import type { ClientsPageItem } from '@/shared/api/supabase/clientQueries';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { useDevice } from '@/shared/hooks/useDevice';
@@ -64,8 +63,6 @@ export const ClientListContainer: React.FC = () => {
     (state) => state.clearPendingScroll
   );
 
-  const isDummyFlow = !isLoading && !isError && clientPageItems.length === 0;
-
   // ClientsPageItem → Client 변환 (session_count는 RPC가 직접 반환)
   const toClient = (item: ClientsPageItem): Client => ({
     id: item.id,
@@ -84,7 +81,7 @@ export const ClientListContainer: React.FC = () => {
   });
 
   const realClients: Client[] = clientPageItems.map(toClient);
-  const effectiveClients = isDummyFlow ? [dummyClient] : realClients;
+  const effectiveClients = realClients;
 
   const filteredClients = useClientSearch(effectiveClients, searchQuery);
 
@@ -165,7 +162,6 @@ export const ClientListContainer: React.FC = () => {
             onClick={handleClientClick}
             onEditClick={handleEditClient}
             onAnalyzeClick={handleAnalyzeClick}
-            isReadOnly={isDummyFlow}
             searchQuery={searchQuery}
             isMobile={isMobile}
           />

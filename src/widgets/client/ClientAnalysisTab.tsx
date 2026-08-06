@@ -204,6 +204,11 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
     return template?.name || 'AI 슈퍼비전';
   };
 
+  const getAnalysisTitle = (
+    analysis: ClientAnalysis | null | undefined
+  ): string =>
+    analysis?.title?.trim() || getTemplateName(analysis?.template_id);
+
   // 날짜 포맷 헬퍼
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('ko-KR', {
@@ -215,7 +220,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
   // 버전 선택 아이템
   const versionItems: SelectItem[] = analyses.map((analysis) => {
-    const templateName = getTemplateName(analysis.ai_supervision?.template_id);
+    const analysisTitle = getAnalysisTitle(analysis.ai_supervision);
     const dateStr = formatDate(analysis.created_at);
 
     return {
@@ -225,7 +230,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
         <div className="flex flex-col">
           <span className="font-medium">{dateStr}</span>
           <span className="typo-xs text-fg-muted">
-            {templateName} / {analysis.session_ids.length}개 회기
+            {analysisTitle} / {analysis.session_ids.length}개 회기
           </span>
         </div>
       ),
@@ -275,7 +280,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
       const { buildSupervisionReportPdfBlob } = await import(
         './supervision/SupervisionReportPDF'
       );
-      const title = getTemplateName(analysis.template_id);
+      const title = getAnalysisTitle(analysis);
       const blob = await buildSupervisionReportPdfBlob({
         report,
         config: getTemplateConfig(analysis.template_id),
@@ -337,7 +342,7 @@ export const ClientAnalysisTab: React.FC<ClientAnalysisTabProps> = ({
 
     // 완료 상태
     if (analysis?.status === 'succeeded' && analysis.content) {
-      const title = getTemplateName(analysis.template_id);
+      const title = getAnalysisTitle(analysis);
       const dateStr = analysis.created_at
         ? formatDate(analysis.created_at)
         : '';

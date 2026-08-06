@@ -16,6 +16,14 @@ export interface UserDbRecord {
   updated_at: string;
 }
 
+export interface AuthProfileResponse {
+  id: string;
+  name: string | null;
+  phone_number: string | null;
+  organization: string | null;
+  default_template_id: number | null;
+}
+
 export interface UserData {
   id: string;
   name: string | null;

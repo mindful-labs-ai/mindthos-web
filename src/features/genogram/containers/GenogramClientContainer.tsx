@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -10,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Download } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
+import { useClientById } from '@/features/client/hooks/useClientById';
 import { useClientList } from '@/features/client/hooks/useClientList';
 import type { Client } from '@/features/client/types';
 import { GenogramPage, type GenogramPageHandle } from '@/genogram';
@@ -57,6 +59,7 @@ import {
   convertAIJsonToCanvas,
   convertCanvasToAIJson,
   extractPositionsFromCanvas,
+  isValidAIJson,
 } from '../utils/aiJsonConverter';
 
 import { GenogramClientView } from './GenogramClientView';
@@ -77,13 +80,13 @@ export function GenogramClientContainer() {
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
   const { clients, isLoading: isClientsLoading } = useClientList();
+  const { client: selectedClient, isLoading: isSelectedClientLoading } =
+    useClientById(requestedClientId);
   const genogramRef = useRef<GenogramPageHandle>(null);
 
-  const selectedClient =
-    clients.find((c) => c.id === requestedClientId) ?? null;
   const clientId = selectedClient?.id ?? null;
   const isInvalidClientSelection =
-    !!requestedClientId && !isClientsLoading && !selectedClient;
+    !!requestedClientId && !isSelectedClientLoading && !selectedClient;
 
   const { hasRecords } = useClientHasRecords(clientId ?? '');
   const { isLoading: isFamilySummaryLoading } = useClientFamilySummary(
@@ -151,6 +154,48 @@ export function GenogramClientContainer() {
     onChange,
     saveNow,
   } = useGenogramData(clientId ?? '', { paused: autoSavePaused });
+
+  // Tutorial 가계도는 서버에 AI 원본 JSON으로 발급될 수 있다. 기존 편집기는
+  // Canvas SerializedGenogram을 사용하므로 최초 로드 시 같은 변환기를 적용한다.
+  const normalizedInitialData = useMemo(() => {
+    if (!initialData) return null;
+    try {
+      const parsed = JSON.parse(initialData) as unknown;
+      if (!isValidAIJson(parsed)) return initialData;
+
+      const canvasData = convertAIJsonToCanvas(parsed);
+      canvasData.metadata.title = `${selectedClient?.name ?? '가상 내담자'} 가계도`;
+      canvasData.metadata.clientId = clientId ?? undefined;
+      return JSON.stringify(canvasData);
+    } catch {
+      return initialData;
+    }
+  }, [clientId, initialData, selectedClient?.name]);
+
+  useEffect(() => {
+    if (
+      !clientId ||
+      !userId ||
+      !initialData ||
+      !normalizedInitialData ||
+      normalizedInitialData === initialData
+    ) {
+      return;
+    }
+
+    queryClient.setQueryData(
+      genogramQueryKeys.data(clientId),
+      normalizedInitialData
+    );
+    saveNow(normalizedInitialData);
+  }, [
+    clientId,
+    initialData,
+    normalizedInitialData,
+    queryClient,
+    saveNow,
+    userId,
+  ]);
 
   const updateGenogramState = useCallback(() => {
     setCanUndo(genogramRef.current?.canUndo() ?? false);
@@ -493,6 +538,7 @@ export function GenogramClientContainer() {
 
   const isLoading =
     isClientsLoading ||
+    isSelectedClientLoading ||
     (clientId && isDataLoading) ||
     (clientId && isFamilySummaryLoading);
   const showCanvas = (clientId && hasData) || isTemporaryMode;
@@ -642,7 +688,7 @@ export function GenogramClientContainer() {
       <GenogramPage
         key={clientId}
         ref={genogramRef}
-        initialData={initialData ?? undefined}
+        initialData={normalizedInitialData ?? undefined}
         onChange={handleCanvasChange}
         readOnly={isMobile}
         emptyStateActions={

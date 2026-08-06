@@ -24,7 +24,12 @@ function hasProcessingSession(items: SessionListItem[]): boolean {
     return (
       status === 'pending' ||
       status === 'transcribing' ||
-      status === 'generating_note'
+      status === 'generating_note' ||
+      item.progressNotes.some(
+        (note) =>
+          note.processing_status === 'pending' ||
+          note.processing_status === 'in_progress'
+      )
     );
   });
 }
@@ -154,6 +159,10 @@ export function useClientSessions({
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    refetchInterval: (query) => {
+      const allItems = query.state.data?.pages.flatMap((p) => p.items) ?? [];
+      return hasProcessingSession(allItems) ? 8000 : false;
+    },
     retry: 2,
   });
 

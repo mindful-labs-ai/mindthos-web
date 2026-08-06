@@ -33,6 +33,13 @@ export async function createSessionBackground(
   return sttBackend.createAudioSession(request);
 }
 
+/** Tutorial 4단계 실제 첫 파일 업로드 — 서버가 무료 권리를 검증한다. */
+export async function createTutorialFirstSession(
+  request: CreateSessionBackgroundRequest
+): Promise<CreateSessionBackgroundResponse> {
+  return sttBackend.createTutorialFirstAudioSession(request);
+}
+
 /**
  * 세션 처리 상태 조회 — 소유권 검사를 수행하는 서버 포트로 위임.
  */

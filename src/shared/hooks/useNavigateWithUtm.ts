@@ -9,13 +9,13 @@ import {
 
 import { useUtmStore } from '@/stores/utmStore';
 
-import { mergeUtmParams } from '../utils/utm';
+import { mergeUtmParams, removeUtmParams } from '../utils/utm';
 
 /**
  * UTM 파라미터를 유지하면서 라우팅하는 훅
  *
  * 전역 저장소(utmStore)에 저장된 UTM 파라미터를 사용하여
- * URL을 직접 수정하지 않는 한 항상 UTM이 유지돼요.
+ * URL 전파가 활성화된 동안 라우팅 간 UTM을 유지해요.
  *
  * @example
  * // 기본 사용
@@ -32,6 +32,9 @@ export function useNavigateWithUtm() {
   const navigate = useNavigate();
   const location = useLocation();
   const storedUtm = useUtmStore((state) => state.utmParams);
+  const shouldPropagateToUrl = useUtmStore(
+    (state) => state.shouldPropagateToUrl
+  );
 
   /**
    * UTM 파라미터를 유지하면서 navigate
@@ -39,14 +42,16 @@ export function useNavigateWithUtm() {
   const navigateWithUtm = useCallback(
     (to: To | number, options?: NavigateOptions) => {
       // 저장된 UTM 사용 (없으면 현재 URL의 UTM 사용 - fallback)
-      const currentUtm = storedUtm;
+      const currentUtm = shouldPropagateToUrl ? storedUtm : '';
 
       if (typeof to === 'string') {
         // string 형태: '/path' 또는 '/path?query=value'
         const [pathname, search = ''] = to.split('?');
         const mergedSearch = currentUtm
           ? mergeUtmParams(search, currentUtm)
-          : search;
+          : shouldPropagateToUrl
+            ? search
+            : removeUtmParams(search);
         navigate(
           { pathname, search: mergedSearch ? `?${mergedSearch}` : '' },
           options
@@ -56,16 +61,19 @@ export function useNavigateWithUtm() {
         navigate(to);
       } else {
         // To 객체 형태: { pathname, search, hash }
+        const baseSearch = to.search || '';
         const mergedSearch = currentUtm
-          ? mergeUtmParams(to.search || '', currentUtm)
-          : to.search || '';
+          ? mergeUtmParams(baseSearch, currentUtm)
+          : shouldPropagateToUrl
+            ? baseSearch
+            : removeUtmParams(baseSearch);
         navigate(
           { ...to, search: mergedSearch ? `?${mergedSearch}` : '' },
           options
         );
       }
     },
-    [navigate, storedUtm]
+    [navigate, shouldPropagateToUrl, storedUtm]
   );
 
   /**
@@ -79,7 +87,7 @@ export function useNavigateWithUtm() {
         | ((prev: URLSearchParams) => URLSearchParams),
       options?: NavigateOptions
     ) => {
-      const currentUtm = storedUtm;
+      const currentUtm = shouldPropagateToUrl ? storedUtm : '';
 
       let newParams: URLSearchParams;
       if (typeof nextParams === 'function') {
@@ -99,7 +107,9 @@ export function useNavigateWithUtm() {
       // UTM 파라미터 병합
       const mergedSearch = currentUtm
         ? mergeUtmParams(newParams, currentUtm)
-        : newParams.toString();
+        : shouldPropagateToUrl
+          ? newParams.toString()
+          : removeUtmParams(newParams);
 
       navigate(
         {
@@ -109,13 +119,19 @@ export function useNavigateWithUtm() {
         options
       );
     },
-    [navigate, storedUtm, location.search, location.pathname]
+    [
+      navigate,
+      shouldPropagateToUrl,
+      storedUtm,
+      location.search,
+      location.pathname,
+    ]
   );
 
   /**
    * 저장된 UTM 파라미터
    */
-  const currentUtmParams = storedUtm;
+  const currentUtmParams = shouldPropagateToUrl ? storedUtm : '';
 
   return {
     navigateWithUtm,

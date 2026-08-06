@@ -15,14 +15,12 @@ import { useDevice } from '@/shared/hooks/useDevice';
 import { useModalStore } from '@/stores/modalStore';
 import { AddClientModal } from '@/widgets/client/AddClientModal';
 import { ComingSoonModal } from '@/widgets/common/ComingSoonModal';
-import { CompleteMissionModal } from '@/widgets/onboarding/CompleteMissionModal';
-import { MissionFloatingButton } from '@/widgets/onboarding/MissionFloatingButton';
-import { QuestMissionModal } from '@/widgets/onboarding/QuestMissionModal';
+import { TutorialFloatingButton } from '@/widgets/onboarding/TutorialFloatingButton';
 
 // Lazy-loaded modals (즉시 보이지 않는 무거운 모달)
-const TutorialGuideModal = lazy(() =>
-  import('@/widgets/onboarding/TutorialGuideModal').then((m) => ({
-    default: m.TutorialGuideModal,
+const TutorialRebootModal = lazy(() =>
+  import('@/widgets/onboarding/TutorialRebootModal').then((m) => ({
+    default: m.TutorialRebootModal,
   }))
 );
 const CreateMultiSessionModal = lazy(() =>
@@ -63,6 +61,7 @@ export const GlobalModalContainer = () => {
   const isGenogramRoute = location.pathname.includes(ROUTES.GENOGRAM);
   const isTermsAgreementRoute = location.pathname === ROUTES.TERMS_AGREEMENT;
   const isUserVerifyRoute = location.pathname === ROUTES.USER_VERIFY;
+  const isCohortSurveyRoute = location.pathname === ROUTES.ONBOARDING_COHORT;
   const isPaymentRoute = location.pathname.startsWith('/payment');
 
   // 모달 스토어에서 상태와 액션 가져오기
@@ -175,20 +174,22 @@ export const GlobalModalContainer = () => {
   return createPortal(
     <>
       {/* 온보딩 관련 모달 - 약관 동의/회원가입/결제 페이지에서는 숨김 */}
-      {!isTermsAgreementRoute && !isUserVerifyRoute && !isPaymentRoute && (
-        <>
-          <QuestMissionModal />
-          <CompleteMissionModal />
-          <TutorialGuideModal />
-        </>
-      )}
+      {!isTermsAgreementRoute &&
+        !isUserVerifyRoute &&
+        !isCohortSurveyRoute &&
+        !isPaymentRoute && (
+          <>
+            <TutorialRebootModal />
+          </>
+        )}
 
-      {/* 플로팅 버튼 (모달은 아니지만 전역 UI) - genogram/약관 동의/회원가입 라우트에서는 숨김 */}
+      {/* 신규 Tutorial 플로팅 진입점 — 레거시와 동일한 데스크톱 노출 범위 */}
       {!isMobileView &&
         !isGenogramRoute &&
         !isTermsAgreementRoute &&
         !isUserVerifyRoute &&
-        !isPaymentRoute && <MissionFloatingButton />}
+        !isCohortSurveyRoute &&
+        !isPaymentRoute && <TutorialFloatingButton />}
 
       {/* 사용자 정보 수정 모달 */}
       <UserEditModal open={isUserEditOpen} onOpenChange={handleCloseUserEdit} />
