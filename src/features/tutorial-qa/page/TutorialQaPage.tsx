@@ -119,7 +119,7 @@ const createDebugVirtualClient = (
 ): TutorialVirtualClient => {
   const isGenogram = cohort === COHORT_BRANCH.GENOGRAM;
   const key = isGenogram ? 'LEE_YOUNGSUK' : 'JUNG_SUA';
-  const name = isGenogram ? '이영숙' : '정수아';
+  const name = isGenogram ? '가상 내담자 이영숙' : '가상 내담자 정수아';
   const clientId = `tutorial-qa-client-${key.toLowerCase()}`;
 
   return {
