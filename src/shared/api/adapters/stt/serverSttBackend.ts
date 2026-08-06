@@ -118,7 +118,9 @@ export const serverSttBackend: SttBackendPort = {
         throw new InsufficientCreditError(error.message);
       }
       const err = error as { message?: string };
-      throw new Error(err.message || '튜토리얼 파일 업로드 중 오류가 생겼어요.');
+      throw new Error(
+        err.message || '튜토리얼 파일 업로드 중 오류가 생겼어요.'
+      );
     }
   },
 

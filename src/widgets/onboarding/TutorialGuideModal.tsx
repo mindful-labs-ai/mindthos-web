@@ -54,8 +54,7 @@ const GUIDE_CONFIGS: Record<number, GuideConfig> = {
       },
       {
         subtitle: '마음토스 상담 기록',
-        description:
-          '가상 내담자의 축어록과 상담노트를\n직접 확인해볼까요? ',
+        description: '가상 내담자의 축어록과 상담노트를\n직접 확인해볼까요? ',
         media: {
           type: 'image',
           src: '/tutorial/mindthos-tutorial-guide-1-3.png',
@@ -158,9 +157,10 @@ export const TutorialGuideModal: React.FC = () => {
     staleTime: 5 * 60 * 1000,
   });
   const firstVirtualClient = virtualClientsData?.virtual_clients[0];
-  const firstVirtualSession = firstVirtualClient?.sessions.find(
-    (session) => session.session_number === 1
-  ) ?? firstVirtualClient?.sessions[0];
+  const firstVirtualSession =
+    firstVirtualClient?.sessions.find(
+      (session) => session.session_number === 1
+    ) ?? firstVirtualClient?.sessions[0];
 
   // 모달 열릴 때 슬라이드 초기화
   React.useEffect(() => {

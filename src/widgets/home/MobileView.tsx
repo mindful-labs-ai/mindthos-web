@@ -506,10 +506,7 @@ const MobileView = () => {
             ) : sessionRecords.length > 0 ? (
               <>
                 {sessionRecords.map((record) => (
-                  <SessionRecordCard
-                    key={record.session_id}
-                    record={record}
-                  />
+                  <SessionRecordCard key={record.session_id} record={record} />
                 ))}
 
                 {/* 더보기 버튼 */}

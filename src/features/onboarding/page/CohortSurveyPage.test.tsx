@@ -45,9 +45,8 @@ vi.mock('@/lib/mixpanel', () => ({
 }));
 
 vi.mock('@/stores/authStore', () => ({
-  useAuthStore: (
-    selector: (state: { logout: typeof logoutMock }) => unknown
-  ) => selector({ logout: logoutMock }),
+  useAuthStore: (selector: (state: { logout: typeof logoutMock }) => unknown) =>
+    selector({ logout: logoutMock }),
 }));
 
 vi.mock('@/shared/ui/composites/Toast', () => ({

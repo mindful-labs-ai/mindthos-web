@@ -43,11 +43,11 @@ export const SessionHistoryContainer: React.FC = () => {
   // 필터에 모든 클라이언트가 보여야 하므로 limit 충분히 크게 (p99=34, 안전망 500)
   const userIdNum = parseInt(userId || '0');
   const { items: clientPageItems } = useClientsList({
-      counselorId: userIdNum,
-      sortOrder: 'desc',
-      limit: 500,
-      enabled: !!userId,
-    });
+    counselorId: userIdNum,
+    sortOrder: 'desc',
+    limit: 500,
+    enabled: !!userId,
+  });
   // ClientsPageItem → Client 변환 (downstream 컴포넌트가 Client 타입 기대)
   const clients = React.useMemo<Client[]>(
     () =>
