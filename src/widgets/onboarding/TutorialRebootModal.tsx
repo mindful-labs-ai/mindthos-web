@@ -233,6 +233,23 @@ export const VideoMission = ({
   minimumWatchSeconds: number;
   onTimeUpdate: (currentTime: number) => void;
 }) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    // 브라우저 자동재생 정책에 소리가 차단되면 음소거로 재시도한다.
+    try {
+      const playAttempt: Promise<void> | undefined = video.play();
+      void playAttempt?.catch(() => {
+        video.muted = true;
+        void video.play()?.catch(() => undefined);
+      });
+    } catch {
+      // play를 지원하지 않는 환경(jsdom 등)에서는 무시한다.
+    }
+  }, [source]);
+
   React.useEffect(() => {
     if (source || minimumWatchSeconds === 0) return;
 
@@ -253,7 +270,10 @@ export const VideoMission = ({
       <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
         {source ? (
           <video
+            ref={videoRef}
             className="h-full max-h-[430px] w-full rounded-2xl border border-border bg-surface-contrast object-contain"
+            autoPlay
+            loop
             controls
             playsInline
             onTimeUpdate={(event) =>

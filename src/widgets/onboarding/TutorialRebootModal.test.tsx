@@ -28,6 +28,54 @@ describe('VideoMission', () => {
     expect(video?.parentElement).toHaveClass('overflow-hidden');
   });
 
+  it('모달이 열리면 영상을 자동 반복 재생한다', () => {
+    const play = vi
+      .spyOn(window.HTMLMediaElement.prototype, 'play')
+      .mockResolvedValue(undefined);
+
+    const { container } = render(
+      <VideoMission
+        source="/tutorial/guide.mp4"
+        content="가이드"
+        canContinue
+        minimumWatchSeconds={0}
+        onTimeUpdate={vi.fn()}
+      />
+    );
+
+    const video = container.querySelector('video');
+    expect(video).toHaveAttribute('autoplay');
+    expect(video).toHaveAttribute('loop');
+    expect(play).toHaveBeenCalled();
+
+    play.mockRestore();
+  });
+
+  it('소리 있는 자동재생이 차단되면 음소거로 재시도한다', async () => {
+    const play = vi
+      .spyOn(window.HTMLMediaElement.prototype, 'play')
+      .mockRejectedValueOnce(new DOMException('blocked', 'NotAllowedError'))
+      .mockResolvedValue(undefined);
+
+    const { container } = render(
+      <VideoMission
+        source="/tutorial/guide.mp4"
+        content="가이드"
+        canContinue
+        minimumWatchSeconds={0}
+        onTimeUpdate={vi.fn()}
+      />
+    );
+
+    const video = container.querySelector('video');
+    await vi.waitFor(() => {
+      expect(play).toHaveBeenCalledTimes(2);
+      expect(video?.muted).toBe(true);
+    });
+
+    play.mockRestore();
+  });
+
   it('최소 시청 시간이 있는 placeholder의 경과 시간을 매초 알린다', () => {
     vi.useFakeTimers();
     const onTimeUpdate = vi.fn();
