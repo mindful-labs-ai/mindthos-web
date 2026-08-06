@@ -115,9 +115,13 @@ describe('tutorialUi', () => {
     expect(GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_2]).toContain(
       'ai-supervision'
     );
-    expect(GUIDE_VIDEO_SOURCES[TutorialStep.GENOGRAM_STAGE_2]).toBe(
-      GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_2]
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.GENOGRAM_STAGE_2]).toContain(
+      'genogram'
     );
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_3]).toContain(
+      'selectnote'
+    );
+    expect(GUIDE_VIDEO_SOURCES[TutorialStep.CBT_STAGE_4]).toContain('upload');
   });
 
   it('튜토리얼 업로드 준비 상태의 시간과 파일 크기를 고정한다', () => {
