@@ -214,6 +214,33 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
         userCouponId
       );
 
+      // 구독 만료~다음 청구 사이 공백기에는 크레딧 지갑 기준(웹)과 subscribe
+      // 최신 행 기준(서버)의 현재 플랜 판단이 어긋나, 업그레이드 플로우에서도
+      // 서버가 결제 없이 예약(downgrade)으로 응답할 수 있다. 결제가 없었으므로
+      // 결제 실패·완료 어느 쪽도 아닌 예약 완료로 안내한다.
+      if (response.type === 'downgrade') {
+        trackEvent(MixpanelEvent.PlanDowngradeScheduled, {
+          new_plan: selectedPlanId,
+        });
+
+        await invalidateSubscriptionViews();
+
+        const effectiveAt = response.effectiveAt
+          ? new Date(response.effectiveAt)
+          : null;
+        const isExpiredGap =
+          !effectiveAt || effectiveAt.getTime() <= Date.now();
+        toast({
+          title: '플랜 변경 예약 완료',
+          description: isExpiredGap
+            ? '결제 없이 예약만 완료됐어요. 다음 자동 결제 때 새 플랜 요금이 결제되면서 적용돼요.'
+            : '구독 종료 후 새 플랜이 적용돼요.',
+        });
+
+        onOpenChange(false);
+        return;
+      }
+
       if (response.type !== 'upgrade') {
         throw new Error('플랜 변경에 실패했어요. 다시 시도해 주세요.');
       }
